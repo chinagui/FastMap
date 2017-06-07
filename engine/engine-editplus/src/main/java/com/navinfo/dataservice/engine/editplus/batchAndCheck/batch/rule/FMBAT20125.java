@@ -60,7 +60,10 @@ public class FMBAT20125 extends BasicBatchRule {
 		}
 		String kindCode = poi.getKindCode();
 		String chain = poi.getChain();
-		String adminId=pidAdminId.get(poi.getPid()).toString();
+		String adminId=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminId=pidAdminId.get(poi.getPid()).toString();
+		}
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		if (!metadata.judgeScPointKind(kindCode, chain)) {
 			return;
@@ -115,13 +118,13 @@ public class FMBAT20125 extends BasicBatchRule {
 	}
 
 	private String transEng(IxPoiAddress chiAddress,MetadataApi metadata,String adminId) throws Exception{
-		String addOns = metadata.engConvert(chiAddress.getAddons(),adminId);// 附加信息
-		String roomNum = metadata.engConvert(keyAhead(chiAddress.getRoom(),metadata.queryAdRack(7)),adminId);// 房间号
-		String floor = metadata.engConvert(keyAhead(chiAddress.getFloor(),metadata.queryAdRack(7)),adminId);// 楼层
-		String unit = metadata.engConvert(keyAhead(chiAddress.getUnit(),metadata.queryAdRack(7)),adminId);// 楼门号
-		String building = metadata.engConvert(keyAhead(chiAddress.getBuilding(),metadata.queryAdRack(7)),adminId);// 楼栋号
-		String estab = metadata.engConvert(chiAddress.getEstab(),adminId);// 附属设施名
-		String surfix = metadata.engConvert(chiAddress.getSurfix(),adminId);// 后缀
+		String addOns = metadata.convertEng(chiAddress.getAddons());// 附加信息
+		String roomNum = metadata.convertEng(keyAhead(chiAddress.getRoom(),metadata.queryAdRack(7)));// 房间号
+		String floor = metadata.convertEng(keyAhead(chiAddress.getFloor(),metadata.queryAdRack(7)));// 楼层
+		String unit = metadata.convertEng(keyAhead(chiAddress.getUnit(),metadata.queryAdRack(7)));// 楼门号
+		String building = metadata.convertEng(keyAhead(chiAddress.getBuilding(),metadata.queryAdRack(7)));// 楼栋号
+		String estab = metadata.convertEng(chiAddress.getEstab());// 附属设施名
+		String surfix = metadata.convertEng(chiAddress.getSurfix());// 后缀
 		String houseNumTypeSubNum = "";
 		String houseNum = "";
 		if (StringUtils.isNotEmpty(chiAddress.getHousenum())) {
@@ -136,20 +139,20 @@ public class FMBAT20125 extends BasicBatchRule {
 			type = chiAddress.getType();
 		}
 		if (StringUtils.isNotEmpty(subnum)&&(subnum.startsWith("-")||subnum.startsWith("－"))) {
-			houseNumTypeSubNum = metadata.engConvert(type+keyAhead(houseNum+subnum,metadata.queryAdRack(1)),adminId);
+			houseNumTypeSubNum = metadata.convertEng(type+keyAhead(houseNum+subnum,metadata.queryAdRack(1)));
 		} else {
-			houseNumTypeSubNum = metadata.engConvert(keyAhead(subnum,metadata.queryAdRack(1))+type+houseNum,adminId);
+			houseNumTypeSubNum = metadata.convertEng(keyAhead(subnum,metadata.queryAdRack(1))+type+houseNum);
 		}
 		if (houseNumTypeSubNum.indexOf("No. No.")>=0) {
 			houseNumTypeSubNum = houseNumTypeSubNum.replace("No. No.", "No.");
 		} else if (houseNumTypeSubNum.indexOf("No. no.")>=0) {
 			houseNumTypeSubNum = houseNumTypeSubNum.replace("No. no.", "No.");
 		}
-		String prefix =  metadata.engConvert(chiAddress.getPrefix(),adminId);
-		String landMark = metadata.engConvert(chiAddress.getLandmark(),adminId);
-		String street = metadata.engConvert(chiAddress.getStreet(),adminId);
-		String place = metadata.engConvert(chiAddress.getPlace(),adminId);
-		String town = metadata.engConvert(chiAddress.getTown(),adminId);
+		String prefix =  metadata.convertEng(chiAddress.getPrefix());
+		String landMark = metadata.convertEng(chiAddress.getLandmark());
+		String street = metadata.convertEng(chiAddress.getStreet());
+		String place = metadata.convertEng(chiAddress.getPlace());
+		String town = metadata.convertEng(chiAddress.getTown());
 		if (addOns==null){
 			addOns="";
 		}

@@ -130,12 +130,17 @@ public class DataEditController extends BaseController {
 	@RequestMapping(value = "/clearRelatedPoi")
 	public ModelAndView clearRelatedPoi(HttpServletRequest request) {
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int resultId = dataJson.getInt("resultId");
-			dealerShipEditService.clearRelatedPoi(resultId);
+			dealerShipEditService.clearRelatedPoi(resultId,userId);
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

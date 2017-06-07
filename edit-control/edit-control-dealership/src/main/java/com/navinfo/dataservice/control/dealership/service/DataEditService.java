@@ -408,7 +408,7 @@ public class DataEditService {
 						//表内批表外
 						log.info(resultId+"开始根表内批表外操作");
 						insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
-						//清空关联POI
+						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
 						clearRelevancePoi(resultId, con);
 						//根据RESULT表维护SOURCE表
@@ -634,12 +634,13 @@ public class DataEditService {
 			log.info(resultId+"调用生成POI履历");
 			JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId);
 			producePOIDRecord(json, dailycon, userId);
-			int poiStatus = getPoiStatus(resultId, con);
-			log.info("resultId:"+resultId+"对应的poiStatus为"+poiStatus);
+			
+			String pid = resultKindCode.get("pid").toString();
+			int poiStatus = getPoiStatus(pid, dailycon);
+			log.info("resultId:"+resultId+"对应的在元数据库中poiStatus为"+poiStatus);
 			if(poiStatus == 0){
 				//POI状态修改为已提交3
 				log.info(resultId+"resultId对应的POI状态修改为已提交3");
-				String pid = resultKindCode.get("pid").toString();
 				updatePoiStatus(pid, dailycon);
 			}
 			//清空关联POI作业属性
@@ -846,21 +847,21 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static int getPoiStatus(int resultId, Connection con) throws Exception{
+	public static int getPoiStatus(String pid, Connection dailycon) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select t.deal_status from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			String selectSql = "select t.status from POI_EDIT_STATUS t where t.pid ="+pid;
 			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
 				@Override
 				public Integer handle(ResultSet rs) throws SQLException {
 					int result  = 0;
 					if (rs.next()) {
-						result = rs.getInt("deal_status");
+						result = rs.getInt("status");
 					}
 					return result;
 				}
 			};
-			return run.query(con, selectSql, rs);
+			return run.query(dailycon, selectSql, rs);
 		}catch(Exception e){
 			throw e;
 		}
@@ -969,7 +970,7 @@ public class DataEditService {
 	}
 	
 	/**
-	 * 清空关联poi Dao
+	 * 清空关联poi作业属性
 	 * @param con
 	 * @param 
 	 * @author songhe
@@ -991,18 +992,60 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public void clearRelatedPoi(int resultId) throws SQLException{
+	public void clearRelatedPoi(int resultId, long userId) throws SQLException{
 		Connection con = null;
+		Connection dailycon = null;
+		Connection mancon = null;
 		try{
-			//代理店数据库
 			con = DBConnector.getInstance().getDealershipConnection();
+			mancon = DBConnector.getInstance().getManConnection();
+			int regionId = getRegionId(resultId, con);
+			int dailyDbId = getDailyDbId(regionId, mancon);
+			dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
+			
+			String chainCode = getChainCodeByResultId(resultId, con);
+			//表内批表外
+			insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
+			//根据result维护source表
+			resultMaintainSource(resultId, con);
+			//清空关联POI作业属性
 			clearRelevancePoi(resultId, con);
 		}catch(Exception e){
 			e.printStackTrace();
 			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndClose(mancon);
+			DbUtils.rollbackAndClose(dailycon);
 		}finally{
 			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(mancon);
+			DbUtils.commitAndClose(dailycon);
 		}
+	}
+	
+	/**
+	 * 根据resultId获取chain表数据
+	 * @param con
+	 * @throws Exception 
+	 * @author songhe
+	 * */
+	public static String getChainCodeByResultId(int resultId, Connection con) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.CHAIN from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					String chain = null;
+					if (rs.next()) {
+						chain = rs.getString("CHAIN");
+					}
+					return chain;
+				}
+			};
+			return run.query(con, sql, rs);
+		}catch(Exception e){
+			throw e;
+			}
 	}
 	
 	/**

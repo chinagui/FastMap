@@ -385,6 +385,9 @@ public class DataPrepareService {
 		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
 		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
 		resultObj.setGeometry(sourceObj.getGeometry());
+		if(StringUtils.isEmpty(resultObj.getChain())){
+			resultObj.setChain(sourceObj.getChain());
+		}
 		
 	}
 

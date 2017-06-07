@@ -46,7 +46,10 @@ public class FMBAT20115 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		List<IxPoiName> names=poiObj.getIxPoiNames();
-		String admin=pidAdminId.get(poi.getPid()).toString();
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminCode=pidAdminId.get(poi.getPid()).toString();
+		}
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		boolean isChanged = false;
 		for (IxPoiName name:names) {
@@ -103,9 +106,9 @@ public class FMBAT20115 extends BasicBatchRule {
 					engOfficialName.setPoiPid(poi.getPid());
 					engOfficialName.setNameGroupid(standarName.getNameGroupid());
 					engOfficialName.setLangCode("ENG");
-					engOfficialName.setName(metadata.engConvert(standarName.getName(),pidAdminId.get(poi.getPid()).toString()));
+					engOfficialName.setName(metadata.convertEng(standarName.getName()));
 				} else {
-					engOfficialName.setName(metadata.engConvert(standarName.getName(),pidAdminId.get(poi.getPid()).toString()));
+					engOfficialName.setName(metadata.convertEng(standarName.getName()));
 					if (engStandarName != null) {
 						engStandarName.setName("");
 					}

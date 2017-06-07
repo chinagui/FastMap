@@ -1007,7 +1007,6 @@ public class DataEditService {
 			int regionId = getRegionId(resultId, con);
 			int dailyDbId = getDailyDbId(regionId, mancon);
 			dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
-			
 			String chainCode = getChainCodeByResultId(resultId, con);
 			//表内批表外
 			insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);

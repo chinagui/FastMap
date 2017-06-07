@@ -123,8 +123,6 @@ public class DataEditController extends BaseController {
 			}
 		} 
 	}
-      
-
 	
 	//代理店清除关联poi接口
 	@RequestMapping(value = "/clearRelatedPoi")

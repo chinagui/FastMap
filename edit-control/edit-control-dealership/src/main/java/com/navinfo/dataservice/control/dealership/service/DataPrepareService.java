@@ -345,9 +345,10 @@ public class DataPrepareService {
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+					changeResultObj(resultObj,sourceObj);
 				}
 				else{sourceObj=new IxDealershipSource();}
-				changeResultObj(resultObj,sourceObj);
+				
 				if(StringUtils.isEmpty(resultObj.getProvince())){
 					if(cpRegionMap.containsKey(resultObj.getProvince())){
 						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));

@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -358,5 +360,32 @@ public class RegionService {
 			return results;
 		}
 		
+	}
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> listDayDbIds() throws Exception {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "select distinct r.daily_db_id from region r";
+			return run.query(conn, selectSql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> result = new ArrayList<Integer>();
+					while(rs.next()){
+						result.add(rs.getInt("daily_db_id"));
+					}
+					return result;
+				}});
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
 	}
 }

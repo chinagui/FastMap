@@ -624,4 +624,37 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, String> getUsers() throws Exception {
+		Connection conn=null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select u.user_id,u.user_real_name from user_info u ";
+
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+
+			pstmt = conn.prepareStatement(selectSql);
+			resultSet = pstmt.executeQuery();
+			Map<Integer, String> result = new HashMap<Integer,String>();
+			
+			while (resultSet.next()) {
+				result.put(resultSet.getInt("user_id"), resultSet.getString("user_real_name"));
+			}
+
+			return result;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询users，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

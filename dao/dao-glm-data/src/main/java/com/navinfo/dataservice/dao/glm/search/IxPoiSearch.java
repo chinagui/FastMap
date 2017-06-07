@@ -895,7 +895,7 @@ public class IxPoiSearch implements ISearch {
 	 */
 	public JSONArray searchColumnPoiByPid(String firstWordItem,
 			String secondWorkItem, List<Integer> pids, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules) throws Exception {
+			JSONObject classifyRules, JSONObject ckRules,Map<Integer,JSONObject> isProblems) throws Exception {
 
 		JSONArray dataList = new JSONArray();
 
@@ -963,6 +963,12 @@ public class IxPoiSearch implements ISearch {
 					List<JSONObject> value = new ArrayList<JSONObject>();
 					poiObj.put("ckRules", value);
 				}
+				// isProblem赋值
+				if(isProblems!=null&&isProblems.containsKey(pid)){	
+					JSONObject isProblem = (JSONObject) isProblems.get(pid);
+					poiObj.put("isProblem", isProblem);
+				}
+
 				// 大陆作业无值，港澳后续补充
 				poiObj.put("namerefMsg", "");
 				// 获取特殊字段

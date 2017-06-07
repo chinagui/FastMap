@@ -26,7 +26,11 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -191,38 +195,55 @@ public class DataEditService {
 		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOURCE WHERE CFM_POI_NUM IN (%s)",
 				StringUtils.join(matchPoiNums, ','));
 		List<Object> adoptedPoiNum = new ArrayList<>();
+		List<Integer> adoptedPoiPid=new ArrayList<>();
 		if (matchPoiNums.size() != 0) {
 			adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 		}
 
 		for (String poiNum : matchPoiNums) {
-			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s", poiNum);
+			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2", poiNum);
 			int poiPid = run.queryForInt(connPoi, queryPoiPid);
+			
+			if(adoptedPoiNum.contains((Object)poiNum.replace("'", ""))){
+				adoptedPoiPid.add(poiPid);
+			}
+			
 			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
 			matchPois.add(poi);
 		}
 
-		JSONObject result = componentJsonData(corresDealership, matchPois, adoptedPoiNum, connPoi, conn);
+		JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
+		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn);
 		return result;
 	}
 
-	private JSONObject componentJsonData(IxDealershipResult dealership, List<IxPoi> matchPoi, List<Object> adoptedPoiNums,
-			Connection conn,Connection connDealership) throws Exception {
+
+	/**
+	 * dealership和poi共同组成详细加载数据
+	 * @param dealership
+	 * @param poiJson
+	 * @param adoptedPoiNums
+	 * @param connDealership
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject componentJsonData(IxDealershipResult dealership, JSONArray poiJson, List<Integer> adoptedPoiNums,
+			Connection connDealership) throws Exception {
 		JSONObject result = new JSONObject();
 
 		// dealership部分
 		JSONObject dealershipJson = new JSONObject();
-		dealershipJson.put("name", dealership.getName());
-		dealershipJson.put("nameShort", dealership.getNameShort());
-		dealershipJson.put("address", dealership.getAddress());
-		dealershipJson.put("kindCode", dealership.getKindCode());
-		dealershipJson.put("chainName", dealership.getChain());
-		dealershipJson.put("telSale", dealership.getTelSale());
-		dealershipJson.put("telService", dealership.getTelService());
-		dealershipJson.put("telOther", dealership.getTelOther());
-		dealershipJson.put("postCode", dealership.getPostCode());
-		dealershipJson.put("cfmMemo", dealership.getCfmMemo());
-		dealershipJson.put("fbContent", dealership.getFbContent());
+		dealershipJson.put("name", dealership.getName() == null ? "" : dealership.getName());
+		dealershipJson.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
+		dealershipJson.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
+		dealershipJson.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
+		dealershipJson.put("chainName", dealership.getChain() == null ? "" : dealership.getChain());
+		dealershipJson.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
+		dealershipJson.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
+		dealershipJson.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());
+		dealershipJson.put("postCode", dealership.getPostCode() == null ? "" : dealership.getPostCode());
+		dealershipJson.put("cfmMemo", dealership.getCfmMemo() == null ? "" : dealership.getCfmMemo());
+		dealershipJson.put("fbContent", dealership.getFbContent() == null ? "" : dealership.getFbContent());
 		dealershipJson.put("matchMethod", dealership.getMatchMethod());
 		dealershipJson.put("resultId", dealership.getResultId());
 		dealershipJson.put("dbId", dealership.getRegionId());
@@ -234,45 +255,7 @@ public class DataEditService {
 		dealershipJson.put("workflowStatus", dealership.getWorkflowStatus());
 		result.put("dealership", dealershipJson);
 
-		// 匹配poi部分
-		JSONArray poiJson = new JSONArray();
-		for (IxPoi poi : matchPoi) {
-			String poiName_1 = String.format(
-					"SELECT NAME FROM IX_POI_NAME WHERE NAME_CLASS=1 AND NAME_TYPE=1 AND (LANG_CODE = 'CHI' OR LANG_CODE = 'CHT') AND POI_PID=%d",
-					poi.getPid());
-			String poiName_2 = String.format(
-					"SELECT NAME FROM IX_POI_NAME WHERE NAME_CLASS=3 AND NAME_TYPE=1 AND (LANG_CODE = 'CHI' OR LANG_CODE = 'CHT')  AND POI_PID=%d",
-					poi.getPid());
-			String poiContact_sale = String.format(
-					"SELECT CONTACT C1 FROM IX_POI_CONTACT WHERE CONTACT_DEPART=8 AND CONTACT_TYPE=1 AND POI_PID = %d",
-					poi.getPid());
-			String poiContact_repair = String.format(
-					"SELECT CONTACT C2 FROM IX_POI_CONTACT WHERE CONTACT_DEPART=16 AND CONTACT_TYPE=1 AND POI_PID = %d",
-					poi.getPid());
-			String poiContact_other = String.format(
-					"SELECT CONTACT C3 FROM IX_POI_CONTACT WHERE CONTACT_DEPART=32 AND CONTACT_TYPE=1 AND POI_PID = %d",
-					poi.getPid());
-			String poiContact_special = String.format(
-					"SELECT CONTACT C4 FROM IX_POI_CONTACT WHERE CONTACT_TYPE=3 AND POI_PID = %d", poi.getPid());
-			String poiAddress = String.format(
-					"SELECT FULLNAME FROM IX_POI_ADDRESS WHERE POI_PID=%d AND (LANG_CODE = 'CHI' OR LANG_CODE = 'CHT')",
-					poi.getPid());
-
-			JSONObject obj = new JSONObject();
-			obj.put("poiNum",poi.getPoiNum());
-			obj.put("pid", poi.getPid());
-			obj.put("name", run.queryForString(conn, poiName_1));
-			obj.put("nameAlias", run.queryForString(conn, poiName_2));
-			obj.put("address", run.queryForString(conn, poiAddress));
-			obj.put("kindCode", poi.getKindCode());
-			obj.put("chain", poi.getChain());
-			obj.put("telSale", run.queryForString(conn, poiContact_sale));
-			obj.put("telService", run.queryForString(conn, poiContact_repair));
-			obj.put("telOther", run.queryForString(conn, poiContact_other));
-			obj.put("telSpecial", run.queryForString(conn, poiContact_special));
-			obj.put("postCode", poi.getPostCode());
-			poiJson.add(obj);
-		}
+		// pois
 		result.put("pois", poiJson);
 
 		// usedPid部分
@@ -408,16 +391,16 @@ public class DataEditService {
 				if(1 == workflow_status){
 					//调用差分一致业务逻辑
 					editResultCaseStatusSame(resultId, con);
+					//根据RESULT表维护SOURCE表
+					resultMaintainSource(resultId, con);
 				}else if(2 == workflow_status){
 					//表内批表外
 					insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 					//清空关联POI
 					clearRelevancePoi(resultId, con);
-				}else{
-					return "chainCode对应的workflow_status为："+ workflow_status;
+					//根据RESULT表维护SOURCE表
+					resultMaintainSource(resultId, con);
 				}
-				//根据RESULT表维护SOURCE表
-				resultMaintainSource(resultId, con);
 			}
 			
 			return "success ";

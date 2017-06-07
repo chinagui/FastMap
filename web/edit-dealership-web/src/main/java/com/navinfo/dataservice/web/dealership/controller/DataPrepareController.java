@@ -106,7 +106,7 @@ public class DataPrepareController extends BaseController {
 	}
 	
 	@RequestMapping(value = "/expTableDiff")
-	public ModelAndView expTableDiff(HttpServletRequest request,HttpServletResponse response) {
+	public void expTableDiff(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 //		response.setHeader("Access-Control-Allow-Origin", "*");
 //		response.setHeader("Access-Control-Allow-Methods",
@@ -151,10 +151,10 @@ public class DataPrepareController extends BaseController {
 	            e.printStackTrace();  
 	            logger.error(e.getMessage());
 	        } 
-			return new ModelAndView("jsonView", success(dealerBrandList));
+			//return new ModelAndView("jsonView", success("excel导出成功！"));
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
+			//return new ModelAndView("jsonView", exception(e));
 		}
 	}
 	

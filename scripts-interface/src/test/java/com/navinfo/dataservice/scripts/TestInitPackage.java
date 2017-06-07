@@ -76,7 +76,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -142,7 +142,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testgdbDonwnloadSp9() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -205,7 +205,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testImportSourceExcel() throws Exception{
 		JobScriptsInterface.initContext();
 

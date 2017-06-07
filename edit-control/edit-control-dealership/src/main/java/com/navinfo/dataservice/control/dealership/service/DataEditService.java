@@ -371,8 +371,6 @@ public class DataEditService {
 		Connection dailycon = null;
 		Connection mancon = null;
 		try{
-			//man库
-			mancon = DBConnector.getInstance().getManConnection();
 			//代理店数据库
 			con = DBConnector.getInstance().getDealershipConnection();
 	
@@ -382,19 +380,8 @@ public class DataEditService {
 
 			List<Integer> resultIdList = getResultId(chainCode, con);
 			for(int resultId : resultIdList){
-				int regionId = 0;
-				int dailyDbId = 0;
-				try{
-					regionId = getRegionId(resultId, con);
-					dailyDbId = getDailyDbId(regionId, mancon);
-					dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
-				}catch(Exception e){
-					log.error("resultId对应的dailyCon为"+dailyDbId+"连接日库异常");
-					continue;
-				}
 
 				int workflow_status = getWorkflowStatus(resultId, con);
-				log.info("resultId对应的workflow_status为：" + workflow_status);
 				
 				if(1 == workflow_status){
 					//调用差分一致业务逻辑
@@ -404,6 +391,18 @@ public class DataEditService {
 					log.info(resultId+"开始根据RESULT表维护SOURCE表");
 					resultMaintainSource(resultId, con);
 				}else if(2 == workflow_status){
+					int regionId = 0;
+					int dailyDbId = 0;
+					try{
+						//man库
+						mancon = DBConnector.getInstance().getManConnection();
+						regionId = getRegionId(resultId, con);
+						dailyDbId = getDailyDbId(regionId, mancon);
+						dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
+					}catch(Exception e){
+						log.error("resultId对应的dailyCon为"+dailyDbId+"连接日库异常");
+						continue;
+					}
 					//表内批表外
 					log.info(resultId+"开始根表内批表外操作");
 					insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);

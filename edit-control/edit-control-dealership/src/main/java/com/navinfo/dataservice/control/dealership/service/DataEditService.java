@@ -772,7 +772,7 @@ public class DataEditService {
 			};
 			return run.query(dailycon, sql, rs);
 		}catch(Exception e){
-			return null;
+			throw e;
 		}
 	}
 	
@@ -807,7 +807,7 @@ public class DataEditService {
 			return run.query(Metacon, sql, rs);
 		}catch(Exception e){
 			DbUtils.rollbackAndClose(Metacon);
-			return null;
+			throw e;
 		}finally{
 			DbUtils.close(Metacon);
 		}

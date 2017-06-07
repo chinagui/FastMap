@@ -1172,7 +1172,7 @@ public class DataEditService {
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
 							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
 							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-}
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;

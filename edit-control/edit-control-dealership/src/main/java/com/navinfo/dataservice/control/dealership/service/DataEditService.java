@@ -247,6 +247,8 @@ public class DataEditService {
 		dealershipJson.put("matchMethod", dealership.getMatchMethod());
 		dealershipJson.put("resultId", dealership.getResultId());
 		dealershipJson.put("dbId", dealership.getRegionId());
+		dealershipJson.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
+		dealershipJson.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());

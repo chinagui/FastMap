@@ -390,7 +390,9 @@ public class DataEditService {
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
 						resultMaintainSource(resultId, con);
+						con.commit();
 					}catch(Exception e){
+						con.rollback();
 						log.error(e.getMessage());
 						continue;
 					}
@@ -412,7 +414,9 @@ public class DataEditService {
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
 						resultMaintainSource(resultId, con);
+						con.commit();
 					}catch(Exception e){
+						con.rollback();
 						log.error(e.getMessage());
 						continue;
 					}

@@ -67,7 +67,7 @@ public class InitDealershipChainTable {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			int status = 1;
+			int status = 0;
 			int workType = 0;
 			int workStatus = 0;
 			

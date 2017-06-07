@@ -84,7 +84,7 @@ public class DataPrepareService {
 		
 		Connection con = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT * FROM "
 					+ "(SELECT A.*, ROWNUM RN FROM "
@@ -345,9 +345,10 @@ public class DataPrepareService {
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+					changeResultObj(resultObj,sourceObj);
 				}
 				else{sourceObj=new IxDealershipSource();}
-				changeResultObj(resultObj,sourceObj);
+				
 				if(StringUtils.isEmpty(resultObj.getProvince())){
 					if(cpRegionMap.containsKey(resultObj.getProvince())){
 						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
@@ -384,6 +385,9 @@ public class DataPrepareService {
 		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
 		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
 		resultObj.setGeometry(sourceObj.getGeometry());
+		if(StringUtils.isEmpty(resultObj.getChain())){
+			resultObj.setChain(sourceObj.getChain());
+		}
 		
 	}
 

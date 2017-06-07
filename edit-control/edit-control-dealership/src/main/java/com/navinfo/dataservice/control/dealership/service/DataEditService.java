@@ -133,12 +133,12 @@ public class DataEditService {
 		}
 
 		for (Map<String, Object> item : resultCol) {
-			JSONObject obj = new JSONObject();
-			obj.put("resultId", item.get("RESULT_ID"));
-			obj.put("name", item.get("NAME"));
-			obj.put("kindCode", item.get("KIND_CODE"));
-			obj.put("workflowStatus", item.get("WORKFLOW_STATUS"));
-			obj.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
+			Map<String,Object> objMap = new HashMap<>();
+			objMap.put("resultId", item.get("RESULT_ID"));
+			objMap.put("name", item.get("NAME"));
+			objMap.put("kindCode", item.get("KIND_CODE"));
+			objMap.put("workflowStatus", item.get("WORKFLOW_STATUS"));
+			objMap.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
 
 			// TODO:checkErrorNum需要计算
 			if (dealStatus == 2) {
@@ -155,7 +155,9 @@ public class DataEditService {
 					checkErrorNum = GetCheckResultCount(poiPid, conPoi);
 				}
 			}
-			obj.put("checkErrorNum", checkErrorNum);
+			objMap.put("checkErrorNum", checkErrorNum);
+			
+			JSONObject obj = JSONObject.fromObject(objMap);
 			result.add(obj);
 		}
 		return result;
@@ -232,29 +234,30 @@ public class DataEditService {
 		JSONObject result = new JSONObject();
 
 		// dealership部分
-		JSONObject dealershipJson = new JSONObject();
-		dealershipJson.put("name", dealership.getName() == null ? "" : dealership.getName());
-		dealershipJson.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
-		dealershipJson.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
-		dealershipJson.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
-		dealershipJson.put("chainName", dealership.getChain() == null ? "" : dealership.getChain());
-		dealershipJson.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
-		dealershipJson.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
-		dealershipJson.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());
-		dealershipJson.put("postCode", dealership.getPostCode() == null ? "" : dealership.getPostCode());
-		dealershipJson.put("cfmMemo", dealership.getCfmMemo() == null ? "" : dealership.getCfmMemo());
-		dealershipJson.put("fbContent", dealership.getFbContent() == null ? "" : dealership.getFbContent());
-		dealershipJson.put("matchMethod", dealership.getMatchMethod());
-		dealershipJson.put("resultId", dealership.getResultId());
-		dealershipJson.put("dbId", dealership.getRegionId());
-		dealershipJson.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
-		dealershipJson.put("cfmIsAdopted", dealership.getCfmIsAdopted());
+		Map<String,Object> dealershipMap=new HashMap<>();
+		dealershipMap.put("name", dealership.getName());
+		dealershipMap.put("nameShort", dealership.getNameShort());
+		dealershipMap.put("address", dealership.getAddress());
+		dealershipMap.put("kindCode", dealership.getKindCode());
+		dealershipMap.put("telSale", dealership.getTelSale());
+		dealershipMap.put("telService", dealership.getTelService());
+		dealershipMap.put("telOther", dealership.getTelOther());
+		dealershipMap.put("postCode", dealership.getPostCode());
+		dealershipMap.put("cfmMemo", dealership.getCfmMemo());
+		dealershipMap.put("fbContent", dealership.getFbContent());
+		dealershipMap.put("matchMethod", dealership.getMatchMethod());
+		dealershipMap.put("resultId", dealership.getResultId());
+		dealershipMap.put("dbId", dealership.getRegionId());
+		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum());
+		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
 		String sourceCfmMemo = run.queryForString(connDealership, sourcesql);
-		dealershipJson.put("sourceCfmMemo", sourceCfmMemo);
-		dealershipJson.put("workflowStatus", dealership.getWorkflowStatus());
+		dealershipMap.put("sourceCfmMemo", sourceCfmMemo);
+		dealershipMap.put("workflowStatus", dealership.getWorkflowStatus());
+		
+		JSONObject dealershipJson = JSONObject.fromObject(dealershipMap);
 		result.put("dealership", dealershipJson);
 
 		// pois

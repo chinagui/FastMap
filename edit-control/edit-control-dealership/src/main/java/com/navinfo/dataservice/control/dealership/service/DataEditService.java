@@ -772,7 +772,7 @@ public class DataEditService {
 			};
 			return run.query(dailycon, sql, rs);
 		}catch(Exception e){
-			throw e;
+			return null;
 		}
 	}
 	

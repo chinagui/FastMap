@@ -60,6 +60,10 @@ public class GdbDataExporter {
 
 		String operateDate = StringUtils.getCurrentTime();
 
+		System.out.println("exporting region_index: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+		
+		RegionIndexExporter.run(sqliteConn, stmt, meshes,dir);
+		
 		System.out.println("exporting rdline: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 		
 		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);

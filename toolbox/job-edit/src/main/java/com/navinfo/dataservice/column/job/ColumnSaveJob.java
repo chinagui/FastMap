@@ -303,22 +303,25 @@ public class ColumnSaveJob extends AbstractJob {
 		StringBuilder sb = new StringBuilder();
 		sb.append("                  MERGE INTO");
 		sb.append("                  COLUMN_QC_PROBLEM T");
-		sb.append("                  USING (SELECT CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN 0 ");	
-		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND 'namePinyin' = '"+secondWorkItem+"' THEN CP.IS_PROBLEM ");
-		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM IN (1,2) THEN CP.IS_PROBLEM ");
-		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM NOT IN (1,2) THEN 1 ELSE CP.IS_PROBLEM END IS_PROBLEM,");
+		sb.append("                  USING (SELECT CASE WHEN 'namePinyin' = '"+secondWorkItem+"' THEN CP.IS_PROBLEM ");	
+		sb.append("                                     WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '0' ");
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM IN ('1','2') THEN CP.IS_PROBLEM ");
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM NOT IN ('1','2') THEN '1' ELSE CP.IS_PROBLEM END IS_PROBLEM,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_type END errorType,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_level END errorLevel,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.problem_desc END problemDesc,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.tech_guidance END techDuidance,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.tech_scheme END techScheme,");
-		sb.append("                                CP.ID,tab.WORK_ITEM_ID, tab.NEWVLAUE,TAB.PID");
+		sb.append("                                CP.ID,CP.WORK_ITEM_ID, tab.NEWVLAUE,TAB.PID");
 		sb.append("                    FROM COLUMN_QC_PROBLEM CP,");
 		sb.append("                    (SELECT  WK.PID, CASE WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN  NM.NAMENEWVLAUE ");
 		sb.append("                                          WHEN 'poi_name' = '"+firstWorkItem+"' THEN  NM.NAMENEWVLAUE ELSE ADR.ADDRNEWVLAUE END NEWVLAUE");
 		sb.append("                    FROM (SELECT CASE");
 		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
 		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
+		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
+		sb.append("                                   WHEN 'namePinyin' = '"+secondWorkItem+"' THEN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.name_phonetic, ");
 		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                   ELSE");
 		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
@@ -415,6 +418,7 @@ public class ColumnSaveJob extends AbstractJob {
 	
 	private JSONObject string2json(String data){
 		JSONObject newdata = new JSONObject();
+		if(data==null){ return newdata;}
 		String[] strs=data.split("\\|");
 		for(String str:strs){
 			JSONObject js =JSONObject.fromObject("{\""+str.replace(":", "\":\"")+"\"}");
@@ -429,17 +433,23 @@ public class ColumnSaveJob extends AbstractJob {
 	}
 	private String json2string(JSONObject js){
 		String newdata = "";
+		if(js==null){return newdata;}
 		Iterator<String> keys = js.keys();  
 		while(keys.hasNext()){
 			String key=(String) keys.next();
 			String str=key+":"+js.getString(key);
-			newdata=newdata+"|"+str;
+			if(newdata.isEmpty()){
+				newdata=str;
+			}else{
+				newdata=newdata+"|"+str;
+			}
 		}
 		return newdata;
 	}
 	
 	private JSONObject dealFields(JSONObject data){
 		JSONObject newdata = new JSONObject();
+
 		List<String> newValue=Arrays.asList(((String) data.get("newValue")).split("\\|"));
 		List<String> oldValue=Arrays.asList(((String) data.get("oldValue")).split("\\|"));
 		
@@ -516,7 +526,6 @@ public class ColumnSaveJob extends AbstractJob {
 				+ " WHERE P.SECOND_WORK_ITEM = 'namePinyin' "
 				+ " AND P.PID IN ("+StringUtils.join(pidList, ",")+")"
 				+ " AND P.SUBTASK_ID = "+comSubTaskId+" "
-				+ " AND P.NEW_VALUE <> P.OLD_VALUE"
 				+ " AND P.IS_VALID=0 ";
 		try {
 			pstmt = conn.prepareStatement(sql);

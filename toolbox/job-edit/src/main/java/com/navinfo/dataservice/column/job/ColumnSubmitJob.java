@@ -399,6 +399,9 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
 		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
 		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
+		sb.append("                                   WHEN 'namePinyin' = '"+secondWorkItem+"' THEN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.name_phonetic, ");
+		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                   ELSE");
 		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
 		sb.append("                                    GROUP(ORDER BY N.NAME_ID)");
@@ -452,7 +455,7 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                     AND WK.PID = ORADR.POI_PID(+)) TP");
 		sb.append("                  ON (T.PID=TP.pid AND T.SUBTASK_ID ="+comSubTaskId+" AND T.SECOND_WORK_ITEM = '"+secondWorkItem+"'  AND T.IS_VALID = 0  )");
 		sb.append("                  WHEN MATCHED THEN");
-		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.NAMENEWVLAUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
+		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.OLDVALUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
 		sb.append("                  WHEN NOT MATCHED THEN ");
 		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
 				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:2,0,"+userId+",TP.ORNAME)");

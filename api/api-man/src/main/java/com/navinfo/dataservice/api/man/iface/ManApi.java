@@ -229,5 +229,10 @@ public interface ManApi{
 	 * @throws Exception 
 	 */
 	public Map<Integer, String> getUsers() throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception;
 }
 

@@ -41,6 +41,7 @@ public class WorkloadAccount {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected static VMThreadPoolExecutor threadPoolExecutor;
 	private static Map<Integer,Object> result = new HashMap<Integer,Object>();
+	private static Map<Integer,Integer> subtaskUserMap = new HashMap<Integer,Integer>();
 	protected Map<Integer,String> users = new HashMap<Integer,String>();
 
 	
@@ -50,6 +51,7 @@ public class WorkloadAccount {
 			//所有大区库，一个大区库起一个线程
 			List<Integer> dbIdList = manApi.listDayDbIds();
 			users = manApi.getUsers();
+			subtaskUserMap = manApi.getsubtaskUserMap();
 			
 			//执行导入
 			int dbSize = dbIdList.size();
@@ -247,7 +249,8 @@ public class WorkloadAccount {
 								if(status==1){
 									tmp.put("insert", insert+1);
 								}else if(status==2){
-									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0){
+									int subtaskId = (quickSubtaskId>mediumSubtaskId?mediumSubtaskId:quickSubtaskId);
+									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.get(subtaskId)==userId){
 										tmp.put("fresh", fresh+1);
 									}else{
 										tmp.put("update", update+1);
@@ -321,7 +324,6 @@ public class WorkloadAccount {
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
 		WorkloadAccount WorkloadAccount = new WorkloadAccount();
-//		RefinementLogDependent.refinementLogDependentMain(13);
 		WorkloadAccount.account();
 	}
 }

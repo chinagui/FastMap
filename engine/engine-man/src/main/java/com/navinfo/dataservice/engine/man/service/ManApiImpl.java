@@ -359,5 +359,14 @@ public class ManApiImpl implements ManApi {
 		return UserInfoService.getInstance().getUsers();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getsubtaskUserMap()
+	 */
+	@Override
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getsubtaskUserMap();
+	}
+
 }
 

@@ -2624,4 +2624,38 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+	
+			String selectSql = "SELECT S.SUBTASK_ID,S.EXE_USER_ID FROM SUBTASK S ";
+			log.info("getsubtaskUserMap SQL："+selectSql);
+			
+
+			ResultSetHandler<Map<Integer, Integer>> rsHandler = new ResultSetHandler<Map<Integer, Integer>>() {
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Integer> subtaskUserMap = new HashMap<Integer,Integer>();
+					while (rs.next()) {
+						subtaskUserMap.put(rs.getInt("SUBTASK_ID"), rs.getInt("EXE_USER_ID"));
+					}
+					return subtaskUserMap;
+				}	
+			};
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

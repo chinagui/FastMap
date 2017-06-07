@@ -563,18 +563,18 @@ public class IxDealershipResultOperator {
 	 * @param pois
 	 * @return
 	 */
-	public static JSONArray componentPoiData(List<IxPoi> pois) throws Exception{
+	public static JSONArray componentPoiData(List<IxPoi> pois) throws Exception {
 		JSONArray poiJson = new JSONArray();
 
 		for (IxPoi poi : pois) {
 			Map<String, Object> poiObj = new HashMap<>();
-			poiObj.put("poiNum", poi.getPoiNum());
+			poiObj.put("poiNum", poi.getPoiNum() == null ? "" : poi.getPoiNum());
 			poiObj.put("pid", poi.getPid());
-			poiObj.put("kindCode", poi.getKindCode());
-			poiObj.put("chain", poi.getChain());
-			poiObj.put("rowId", poi.getRowId());
+			poiObj.put("kindCode", poi.getKindCode() == null ? "" : poi.getKindCode());
+			poiObj.put("chain", poi.getChain() == null ? "" : poi.getChain());
+			poiObj.put("rowId", poi.getRowId() == null ? "" : poi.getRowId());
 			poiObj.put("level", poi.getLevel());
-			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(),0.00001,5));
+			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(), 0.00001, 5));
 			poiObj.put("xGuide", poi.getxGuide());
 			poiObj.put("yGuide", poi.getyGuide());
 
@@ -588,13 +588,13 @@ public class IxDealershipResultOperator {
 					continue;
 				}
 
-				nameMap.put("rowId", name.getRowId());
-				nameMap.put("nameStrPinyin", name.getNamePhonetic());
+				nameMap.put("rowId", name.getRowId() == null ? "" : name.getRowId());
+				nameMap.put("nameStrPinyin", name.getNamePhonetic() == null ? "" : name.getNamePhonetic());
 				nameMap.put("nameGrpId", name.getNameGroupid());
 				nameMap.put("nameId", name.getPid());
-				nameMap.put("langCode", name.getLangCode());
+				nameMap.put("langCode", name.getLangCode() == null ? "" : name.getLangCode());
 				nameMap.put("nameClass", name.getNameClass());
-				nameMap.put("name", name.getName());
+				nameMap.put("name", name.getName() == null ? "" : name.getName());
 				nameMap.put("nameType", name.getNameType());
 
 				JSONObject nameobj = JSONObject.fromObject(nameMap);
@@ -612,14 +612,17 @@ public class IxDealershipResultOperator {
 					continue;
 				}
 
-				addressMap.put("rowId", address.getRowId());
-				addressMap.put("roadName", address.getRoadname());
-				addressMap.put("langCode", address.getLangCode());
-				addressMap.put("fullNamePinyin", address.getFullnamePhonetic());
-				addressMap.put("addrName", address.getAddrname());
-				addressMap.put("roadNamePinyin", address.getRoadnamePhonetic());
-				addressMap.put("addrNamePinyin", address.getAddrnamePhonetic());
-				addressMap.put("fullName", address.getFullname());
+				addressMap.put("rowId", address.getRowId() == null ? "" : address.getRowId());
+				addressMap.put("roadName", address.getRoadname() == null ? "" : address.getRoadname());
+				addressMap.put("langCode", address.getLangCode() == null ? "" : address.getLangCode());
+				addressMap.put("fullNamePinyin",
+						address.getFullnamePhonetic() == null ? "" : address.getFullnamePhonetic());
+				addressMap.put("addrName", address.getAddrname() == null ? "" : address.getAddrname());
+				addressMap.put("roadNamePinyin",
+						address.getRoadnamePhonetic() == null ? "" : address.getRoadnamePhonetic());
+				addressMap.put("addrNamePinyin",
+						address.getAddrnamePhonetic() == null ? "" : address.getAddrnamePhonetic());
+				addressMap.put("fullName", address.getFullname() == null ? "" : address.getFullname());
 
 				JSONObject addressobj = JSONObject.fromObject(addressMap);
 				addresses.add(addressobj);
@@ -632,12 +635,12 @@ public class IxDealershipResultOperator {
 				Map<String, Object> contactMap = new HashMap<>();
 				IxPoiContact contact = (IxPoiContact) row;
 
-				contactMap.put("contact", contact.getContact());
+				contactMap.put("contact", contact.getContact() == null ? "" : contact.getContact());
 				contactMap.put("contactDepart", contact.getContactDepart());
 				contactMap.put("contactType", contact.getContactType());
 				contactMap.put("poiPid", contact.getPoiPid());
 				contactMap.put("priority", contact.getPriority());
-				contactMap.put("rowId", contact.getRowId());
+				contactMap.put("rowId", contact.getRowId() == null ? "" : contact.getRowId());
 				contactMap.put("uDate", contact.getuDate());
 				contactMap.put("uRecord", contact.getuRecord());
 

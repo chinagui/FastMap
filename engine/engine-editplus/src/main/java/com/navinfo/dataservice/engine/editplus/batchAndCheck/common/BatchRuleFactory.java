@@ -35,7 +35,7 @@ public class BatchRuleFactory {
 			synchronized (this) {
 				if (!operationMap.containsKey(operationName)) {
 					try {
-						String sql="SELECT OPERATION_CODE, BATCH_ID FROM BATCH_OPERATION_PLUS WHERE OPERATION_CODE=?";
+						String sql="SELECT OPERATION_CODE, BATCH_ID FROM BATCH_OPERATION_PLUS WHERE OPERATION_CODE=?  ORDER BY OPERATION_CODE,EXE_SEQ ";
 						PreparedStatement pstmt = null;
 						ResultSet rs = null;
 						Connection conn = null;

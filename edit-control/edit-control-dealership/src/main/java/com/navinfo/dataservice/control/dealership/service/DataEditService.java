@@ -1002,7 +1002,7 @@ public class DataEditService {
                 //需判断采纳POI是否被外业删除,为删除不可保存
                 if(sate==2){
                 	throw new Exception("该poi已被外业删除，不可用");
-			}
+                }
                 //需判断采纳POI是否被占用
                 if(isOccupied(poiNum ,dealershipConn)){
                 	throw new Exception("该poi已被占用，不可用");

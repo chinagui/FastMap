@@ -63,6 +63,11 @@ public class FMBAT20104 extends BasicBatchRule {
 		IxPoiName standardPoiName = poiObj.getOfficeStandardCHName();
 		IxPoiName originalPoiName = poiObj.getOfficeOriginCHName();
 		MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminCode=pidAdminId.get(poi.getPid()).toString();
+		}
+		
 		if (standardPoiName != null) {
 			// (1)如果存在
 			String standardName = "";
@@ -83,7 +88,7 @@ public class FMBAT20104 extends BasicBatchRule {
 			// NAME_PHONETIC根据官方标准名称转拼音；
 			// (3)将官方原始名称和官方标准名称(NAME)转全角；
 			// (4)为官方原始(NAME_CLASS=1,NAME_TYPE=2)拼音NAME_PHONETIC赋值；
-			String namePy = apiService.pyConvert(originalName,pidAdminId.get(poi.getPid()).toString(),null);
+			String namePy = apiService.pyConvert(originalName,adminCode,null);
 			standardPoiName.setName(originalName);
 			standardPoiName.setNamePhonetic(namePy);
 			originalPoiName.setName(originalName);
@@ -99,7 +104,7 @@ public class FMBAT20104 extends BasicBatchRule {
 				originalName = originalPoiName.getName();
 			}
 			originalName = ExcelReader.h2f(originalName);
-			String namePy = apiService.pyConvert(originalName,pidAdminId.get(poi.getPid()).toString(),null);
+			String namePy = apiService.pyConvert(originalName,adminCode,null);
 			
 			standardPoiName = poiObj.createIxPoiName();
 			standardPoiName.setNameClass(1);

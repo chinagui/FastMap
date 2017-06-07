@@ -106,7 +106,8 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray loadWorkListService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
+	public JSONArray loadWorkListService(String chainCode, Connection conn, long userId, int dealStatus)
+			throws Exception {
 		DBConnector connector = DBConnector.getInstance();
 		// 待作业→内页录入作业3；已提交，待提交→出品9
 		int flowStatus = 3;
@@ -133,10 +134,10 @@ public class DataEditService {
 		}
 
 		for (Map<String, Object> item : resultCol) {
-			Map<String,Object> objMap = new HashMap<>();
+			Map<String, Object> objMap = new HashMap<>();
 			objMap.put("resultId", item.get("RESULT_ID"));
-			objMap.put("name", item.get("NAME"));
-			objMap.put("kindCode", item.get("KIND_CODE"));
+			objMap.put("name", item.get("NAME") == null ? "" : item.get("NAME"));
+			objMap.put("kindCode", item.get("KIND_CODE") == null ? "" : item.get("KIND_CODE"));
 			objMap.put("workflowStatus", item.get("WORKFLOW_STATUS"));
 			objMap.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
 
@@ -156,7 +157,7 @@ public class DataEditService {
 				}
 			}
 			objMap.put("checkErrorNum", checkErrorNum);
-			
+
 			JSONObject obj = JSONObject.fromObject(objMap);
 			result.add(obj);
 		}
@@ -205,11 +206,14 @@ public class DataEditService {
 		for (String poiNum : matchPoiNums) {
 			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2", poiNum);
 			int poiPid = run.queryForInt(connPoi, queryPoiPid);
-			
-			if(adoptedPoiNum.contains((Object)poiNum.replace("'", ""))){
+
+			if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))) {
 				adoptedPoiPid.add(poiPid);
 			}
 			
+			if (poiPid < 0)
+				continue;
+
 			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
 			matchPois.add(poi);
 		}
@@ -234,29 +238,29 @@ public class DataEditService {
 		JSONObject result = new JSONObject();
 
 		// dealership部分
-		Map<String,Object> dealershipMap=new HashMap<>();
-		dealershipMap.put("name", dealership.getName());
-		dealershipMap.put("nameShort", dealership.getNameShort());
-		dealershipMap.put("address", dealership.getAddress());
-		dealershipMap.put("kindCode", dealership.getKindCode());
-		dealershipMap.put("telSale", dealership.getTelSale());
-		dealershipMap.put("telService", dealership.getTelService());
-		dealershipMap.put("telOther", dealership.getTelOther());
-		dealershipMap.put("postCode", dealership.getPostCode());
-		dealershipMap.put("cfmMemo", dealership.getCfmMemo());
-		dealershipMap.put("fbContent", dealership.getFbContent());
+		Map<String, Object> dealershipMap = new HashMap<>();
+		dealershipMap.put("name", dealership.getName() == null ? "" : dealership.getName());
+		dealershipMap.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
+		dealershipMap.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
+		dealershipMap.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
+		dealershipMap.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
+		dealershipMap.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
+		dealershipMap.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());
+		dealershipMap.put("postCode", dealership.getPostCode() == null ? "" : dealership.getPostCode());
+		dealershipMap.put("cfmMemo", dealership.getCfmMemo() == null ? "" : dealership.getCfmMemo());
+		dealershipMap.put("fbContent", dealership.getFbContent() == null ? "" : dealership.getFbContent());
 		dealershipMap.put("matchMethod", dealership.getMatchMethod());
 		dealershipMap.put("resultId", dealership.getResultId());
 		dealershipMap.put("dbId", dealership.getRegionId());
-		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum());
+		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
 		String sourceCfmMemo = run.queryForString(connDealership, sourcesql);
-		dealershipMap.put("sourceCfmMemo", sourceCfmMemo);
+		dealershipMap.put("sourceCfmMemo", sourceCfmMemo == null ? "" : sourceCfmMemo);
 		dealershipMap.put("workflowStatus", dealership.getWorkflowStatus());
-		
+
 		JSONObject dealershipJson = JSONObject.fromObject(dealershipMap);
 		result.put("dealership", dealershipJson);
 

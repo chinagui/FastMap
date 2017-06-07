@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.engine.man;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -124,6 +127,16 @@ public class taskTest extends InitApplication{
 	public void testReOpen() throws ServiceException
 	{
 		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
+	}
+	
+	@Test
+	public void testCreateCmsProgress() throws Exception
+	{
+		Connection conn= DBConnector.getInstance().getManConnection();
+		JSONObject parameter=new JSONObject();
+		parameter.put("TEST", 1);
+		TaskService.getInstance().createCmsProgress(conn,514,1,parameter);
+		DbUtils.commitAndCloseQuietly(conn);
 	}
 	
 	@Test

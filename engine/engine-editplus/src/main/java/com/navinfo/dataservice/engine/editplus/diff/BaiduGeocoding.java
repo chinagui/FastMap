@@ -7,6 +7,11 @@ import net.sf.json.JSONObject;
 
 import org.apache.http.client.ClientProtocolException;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+
 /**
  * @author jicaihua BaiduGeocoding API 调用实例
  */
@@ -15,7 +20,7 @@ public class BaiduGeocoding {
 	static String url = "http://api.map.baidu.com/geocoder/v2/?address=";
 	static String url2 = "&output=json&ak=" + ak;
 
-	public static JSONObject geocoder(String str) throws ClientProtocolException, IOException {
+	public static Geometry geocoder(String str) throws ClientProtocolException, IOException, ParseException {
 		System.out.println("str:" + str);
 		if ("".equals(str)||str== null) {
 			return null;
@@ -27,11 +32,19 @@ public class BaiduGeocoding {
 			String return_value = Parser_Tool.do_get(geocoderUrl);
 			System.out.println("return_value:" + return_value);
 			JSONObject json = JSONObject.fromObject(return_value);
-			return json.getJSONObject("result").getJSONObject("location");
+			if(json.containsKey("result")){
+				JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");
+				String wkt = "POINT(" +resultStr.getString("lng") + " " + resultStr.getString("lat") + ")";
+				Geometry point = new WKTReader().read(wkt);
+				return point;
+			}else{
+				return null;
+			}
+
 
 	}
 
-	public static void main(String[] args) throws ClientProtocolException, IOException {
+	public static void main(String[] args) throws ClientProtocolException, IOException, ParseException {
 		String ak = "PLDqC6Zpltfa1OIOk5lhQXtM";
 		String url = "http://api.map.baidu.com/geocoder/v2/?address=上海五角场万达广场&output=json&ak=" + ak;
 		// 1.地理编码服务，即根据地址来查经度纬度
@@ -43,6 +56,10 @@ public class BaiduGeocoding {
 		// System.out.println(toHexString(strDefaltEncode));
 		;
 		System.out.println("景洪工业园区（嘎栋片区）南溪大道5号:" + geocoder("景洪工业园区（嘎栋片区）南溪大道5号"));
+//		JSONObject a = geocoder("景洪工业园区（嘎栋片区）南溪大道5号");
+//		String b = "POINT(" +a.getString("lng") + " " + a.getString("lat") + ")";
+//		Geometry point = new WKTReader().read(b);
+
 		System.out.println("景洪市贡嘎工业园区南溪大道5号:" + geocoder("景洪市贡嘎工业园区南溪大道5号"));
 		System.out.println("西双版纳大成汽车销售服务有限公司:" + geocoder("西双版纳大成汽车销售服务有限公司"));
 		System.out.println("西双版纳孝尊汽车销售服务有限公司:" + geocoder("西双版纳孝尊汽车销售服务有限公司"));

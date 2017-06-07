@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.diff;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +15,7 @@ import java.util.Map.Entry;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -22,7 +24,9 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -33,14 +37,21 @@ public class PoiRecommender {
 
 	public static List<BasicObj> loadPoi(Geometry geometry) throws Exception {
 		List<BasicObj> poiList = new ArrayList<BasicObj>();
-		String sql = "SELECT pid FROM ix_poi p WHERE SDO_GEOM.SDO_DISTANCE(p.GEOMETRY, sdo_geometry(:1, 8307), 0.00000005) < 1";
+		String sql = "SELECT pid FROM ix_poi p WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'";
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
-			String wkt = GeoTranslator.jts2Wkt(geometry);
+			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(2000));
+		
+		    String wkt = GeoTranslator.jts2Wkt(buffer);
 			System.out.println(wkt);
-			pstmt.setString(1, wkt);
+			Clob geom = ConnectionUtil.createClob(conn);			
+			geom.setString(1, wkt);
+		    pstmt.setClob(1,geom);
+			
+//			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,resultSet.getInt("pid"), false);
@@ -85,10 +96,11 @@ public class PoiRecommender {
 		return fp;
 	}
 	
-	public static FastResult buildFastResult(IxDealershipResult dealResult,JSONObject loc){
+	public static FastResult buildFastResult(IxDealershipResult dealResult){
 		FastResult fr=new FastResult();
-		fr.setX(loc.getDouble("lng"));
-		fr.setY(loc.getDouble("lat"));
+		JSONArray array =GeoTranslator.jts2JSONArray(dealResult.getGeometry());
+		fr.setX(array.getDouble(0));
+		fr.setY(array.getDouble(1));
 		fr.setAddr(dealResult.getAddress());
 		fr.setName(dealResult.getName());
 		fr.setTel(StringUtil.sortPhone(StringUtil.contactFormat(dealResult.getPoiTel())));
@@ -98,18 +110,18 @@ public class PoiRecommender {
 
 	//推荐匹配poi
 	public static void recommenderPoi(IxDealershipResult dealResult) throws Exception{
-		JSONObject loc=new JSONObject();
-		if (dealResult.getAddress()!=null){
-			loc=BaiduGeocoding.geocoder(dealResult.getAddress());
-		}else{
-			loc=BaiduGeocoding.geocoder(dealResult.getName());
-		}
-		if(loc==null){
-			throw new Exception("result数据名称和地址都为空，无法Geocoding");
-		}
-		Geometry pointWkt = GeoTranslator.point2Jts(loc.getDouble("lng"),loc.getDouble("lat"));
-		dealResult.setGeometry(pointWkt);
-		FastResult fr=buildFastResult(dealResult, loc);
+//		JSONObject loc=new JSONObject();
+//		if (dealResult.getAddress()!=null){
+//			loc=BaiduGeocoding.geocoder(dealResult.getAddress());
+//		}else{
+//			loc=BaiduGeocoding.geocoder(dealResult.getName());
+//		}
+//		if(loc==null){
+//			throw new Exception("result数据名称和地址都为空，无法Geocoding");
+//		}
+//		Geometry pointWkt = GeoTranslator.point2Jts(loc.getDouble("lng"),loc.getDouble("lat"));
+//		dealResult.setGeometry(pointWkt);
+		FastResult fr=buildFastResult(dealResult);
 		//外扩两公里查询poi
 		List<BasicObj> poiList = loadPoi(dealResult.getGeometry());
 		Map<String, Double> matchPoi=new HashMap<String, Double>();

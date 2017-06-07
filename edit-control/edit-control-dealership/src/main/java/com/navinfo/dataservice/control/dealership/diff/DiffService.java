@@ -147,7 +147,6 @@ public class DiffService {
 		/**************** 一致,更新,新增  *******************/
 		for (IxDealershipResult i : dealershipResult) {
 			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-			resultDpAttrDiff.setChain(chain);
 
 			boolean flag = false;
 			String shortName = (null == i.getNameShort()? "":i.getNameShort());
@@ -160,6 +159,7 @@ public class DiffService {
 				IxDealershipSource j = mapMatchSame.get(t);
 				if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 					resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
+					resultDpAttrDiff.setChain(j.getChain());
 					log.info("update :" + i.getName() + "--" + i.getAddress());
 					updateList.add(resultDpAttrDiff);
 				}else{
@@ -194,6 +194,7 @@ public class DiffService {
 					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
+							resultDpAttrDiff.setChain(j.getChain());
 							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
@@ -229,6 +230,7 @@ public class DiffService {
 					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
+							resultDpAttrDiff.setChain(j.getChain());
 							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
@@ -266,6 +268,7 @@ public class DiffService {
 					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
+							resultDpAttrDiff.setChain(j.getChain());
 							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
@@ -307,6 +310,7 @@ public class DiffService {
 						
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
+							resultDpAttrDiff.setChain(j.getChain());
 							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
@@ -333,8 +337,8 @@ public class DiffService {
 
 			
 			/**************** 其他逻辑 *******************/
-			resultDpAttrDiff.setDealStatus(5);
 			resultDpAttrDiff = new IxDealershipResult(i);
+			resultDpAttrDiff.setDealStatus(5);
 			resultDpAttrDiff.setChain(chain);
 			if(resultDpAttrDiff.getName()==null){
 				log.info("ok");
@@ -353,6 +357,7 @@ public class DiffService {
 			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
 			if(dealershipResultsPreMap.containsKey(i.getSourceId())){
 				resultDpAttrDiff = dealershipResultsPreMap.get(i.getSourceId());
+				resultDpAttrDiff.setChain(i.getChain());
 				log.info("update :" + i.getName() + "--" + i.getAddress());
 				updateList.add(resultDpAttrDiff);
 			}else{
@@ -360,7 +365,6 @@ public class DiffService {
 				log.info("insert :" + i.getName() + "--" + i.getAddress());
 				insertList.add(resultDpAttrDiff);
 			}
-			resultDpAttrDiff.setChain(chain);
 			if ((dkeyMap.get(i.getSourceId()) == null)) {
 				/***************** 删除逻辑 ****************/
 				if (((sourceNameMap.get(i.getName()) == null)
@@ -377,8 +381,10 @@ public class DiffService {
 			}
 		}
 		log.info("Table Diff End");
+
 		resultMap.put(1, insertList);
 		resultMap.put(3, updateList);
+		
 
 		return resultMap;
 

@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
@@ -392,6 +394,7 @@ public class DataEditService {
 						//调用差分一致业务逻辑
 						log.info(resultId+"开始执行差分一致业务逻辑");
 						editResultCaseStatusSame(resultId, con);
+						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
 						resultMaintainSource(resultId, con);
@@ -416,6 +419,7 @@ public class DataEditService {
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
 						clearRelevancePoi(resultId, con);
+						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
 						resultMaintainSource(resultId, con);
@@ -654,6 +658,9 @@ public class DataEditService {
 			if(matchMethod == 1){
 				log.info(resultId+"resultId清空关联POI作业属性");
 				clearRelevancePoi(resultId, con);
+				//生成一条履历
+				int workflow_status = getWorkflowStatus(resultId, con);
+				inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 			}
 		}
 	}
@@ -1014,6 +1021,8 @@ public class DataEditService {
 			resultMaintainSource(resultId, con);
 			//清空关联POI作业属性
 			clearRelevancePoi(resultId, con);
+			int workflow_status = getWorkflowStatus(resultId, con);
+			inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 		}catch(Exception e){
 			e.printStackTrace();
 			DbUtils.rollbackAndClose(con);
@@ -1188,10 +1197,6 @@ public class DataEditService {
 		run.execute(conn, sql);
 	}
 
-	
-	
-	
-		
 	/**
 	 * 提交数据
 	 * @param chainCode
@@ -1230,13 +1235,7 @@ public class DataEditService {
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		
-		
 	}
-	
-			
-
-			
 			
 	/**
 	 * 提交时更新poi状态从0改为为3
@@ -1305,10 +1304,27 @@ public class DataEditService {
 		return 0;
 	}
 
-
-		
-		
-
-			
-
-		}
+	/**
+	 * 生成代理店履历
+	 * @param oldValue --> oldWorkStatus
+	 * @param newValue --> newWorkStatus
+	 * @param operRate 1新增2	删除3	修改
+	 * @param userId
+	 * @param con
+	 * @throws Exception 
+	 * 
+	 * */
+	public static void inserDealershipHistory(Connection con, int operRate, int resultId, int oldValue, int newValue, long userId) throws Exception{
+		try{
+			Date nowTime = new Date(System.currentTimeMillis());
+			String u_date = DateUtils.formatDate(nowTime);
+			QueryRunner run = new QueryRunner();
+			String sql = "insert into IX_DEALERSHIP_HISTORY  t (t.history_id,t.result_id,t.field_name,t.u_record,t.old_value,t.new_value,t.u_date,t.user_id) "
+					+ "VALUES (HISTORY_SEQ.NEXTVAL,"+resultId+",'workflow_status',"+operRate+","+oldValue+","+newValue+",'"+u_date+"',"+userId+")";
+			log.info("插入代理店履历："+sql);
+			run.execute(con, sql);
+		}catch(Exception e){
+			throw e;
+			}
+	}
+}

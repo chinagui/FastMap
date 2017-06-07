@@ -410,19 +410,19 @@ public class SubtaskService {
 		Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
 		if(infor==null){
-			//中线子任务，若作业员或组是修改时加的，则自动维护名称：任务名称_作业员
-			if(oldSubtask!=null){
-				if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
-					UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
-					newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName());
-					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
-				}
-				if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
-					String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
-					newSubtask.setName(newSubtask.getName()+"_"+groupName);
-					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
-				}
-			}
+//			//中线子任务，若作业员或组是修改时加的，则自动维护名称：任务名称_作业员
+//			if(oldSubtask!=null){
+//				if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+//					UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+//					newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName());
+//					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+//				}
+//				if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+//					String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+//					newSubtask.setName(newSubtask.getName()+"_"+groupName);
+//					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+//				}
+//			}
 			return newSubtask;
 		}		
 		//快线子任务名称自动赋值
@@ -440,12 +440,13 @@ public class SubtaskService {
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}	
 		}else{
-			if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
+			if(newSubtask.getExeUserId()!=0&&newSubtask.getExeUserId()!=oldSubtask.getExeUserId()){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
-			if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+			if(newSubtask.getExeGroupId()!=0&&newSubtask.getExeGroupId()!=oldSubtask.getExeGroupId()){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
 				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}

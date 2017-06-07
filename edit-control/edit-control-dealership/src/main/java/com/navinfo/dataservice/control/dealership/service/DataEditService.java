@@ -391,16 +391,16 @@ public class DataEditService {
 				if(1 == workflow_status){
 					//调用差分一致业务逻辑
 					editResultCaseStatusSame(resultId, con);
+					//根据RESULT表维护SOURCE表
+					resultMaintainSource(resultId, con);
 				}else if(2 == workflow_status){
 					//表内批表外
 					insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 					//清空关联POI
 					clearRelevancePoi(resultId, con);
-				}else{
-					return "chainCode对应的workflow_status为："+ workflow_status;
+					//根据RESULT表维护SOURCE表
+					resultMaintainSource(resultId, con);
 				}
-				//根据RESULT表维护SOURCE表
-				resultMaintainSource(resultId, con);
 			}
 			
 			return "success ";

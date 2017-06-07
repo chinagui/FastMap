@@ -84,7 +84,7 @@ public class DataPrepareService {
 		
 		Connection con = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT * FROM "
 					+ "(SELECT A.*, ROWNUM RN FROM "

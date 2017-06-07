@@ -177,7 +177,7 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
-		@RequestMapping(value = "/commitDealership")
+	@RequestMapping(value = "/commitDealership")
 	public ModelAndView commitDealership(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 

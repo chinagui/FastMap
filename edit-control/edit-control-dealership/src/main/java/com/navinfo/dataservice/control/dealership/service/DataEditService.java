@@ -377,28 +377,41 @@ public class DataEditService {
 			con = DBConnector.getInstance().getDealershipConnection();
 	
 			//品牌表赋值为3
+			log.info("chainCode:"+chainCode+"对应的数据开始品牌表赋值为3");
 			editChainStatus(chainCode, con);
 
 			List<Integer> resultIdList = getResultId(chainCode, con);
 			for(int resultId : resultIdList){
-				int regionId = getRegionId(resultId, con);
-				int dailyDbId = getDailyDbId(regionId, mancon);
-				
-				dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
+				int regionId = 0;
+				int dailyDbId = 0;
+				try{
+					regionId = getRegionId(resultId, con);
+					dailyDbId = getDailyDbId(regionId, mancon);
+					dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
+				}catch(Exception e){
+					log.error("resultId对应的dailyCon为"+dailyDbId+"连接日库异常");
+					continue;
+				}
 
 				int workflow_status = getWorkflowStatus(resultId, con);
+				log.info("resultId对应的workflow_status为：" + workflow_status);
 				
 				if(1 == workflow_status){
 					//调用差分一致业务逻辑
+					log.info(resultId+"开始执行差分一致业务逻辑");
 					editResultCaseStatusSame(resultId, con);
 					//根据RESULT表维护SOURCE表
+					log.info(resultId+"开始根据RESULT表维护SOURCE表");
 					resultMaintainSource(resultId, con);
 				}else if(2 == workflow_status){
 					//表内批表外
+					log.info(resultId+"开始根表内批表外操作");
 					insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 					//清空关联POI
+					log.info(resultId+"开始清空关联POI");
 					clearRelevancePoi(resultId, con);
 					//根据RESULT表维护SOURCE表
+					log.info(resultId+"开始根据RESULT表维护SOURCE表");
 					resultMaintainSource(resultId, con);
 				}
 			}
@@ -410,9 +423,15 @@ public class DataEditService {
 			DbUtils.rollbackAndClose(mancon);
 			DbUtils.rollbackAndClose(dailycon);
 		}finally{
-			DbUtils.commitAndClose(con);
-			DbUtils.commitAndClose(mancon);
-			DbUtils.commitAndClose(dailycon);
+			if(con != null){
+				DbUtils.commitAndClose(con);
+			}
+			if(mancon != null){
+				DbUtils.commitAndClose(mancon);
+			}
+			if(dailycon != null){
+				DbUtils.commitAndClose(dailycon);
+			}
 		}
 		return null;
 	}
@@ -580,12 +599,21 @@ public class DataEditService {
 		//根据chainCode查询对应外业采集POI_ID
 		String poiNumber = getResultPoiNumber(resultId, con);
 		if(poiNumber == null){
+			log.info("resultId" + resultId + "在日库中对应的poiNumber为空");
 			return;
 		}
 		//IX_POI数据
 		Map<String, Object> resultKindCode = getResultKindCode(poiNumber, dailycon);
+		if(resultKindCode == null || resultKindCode.size() == 0){
+			log.info("resultId" + resultId + "在日库中对应的内容为空");
+			return;
+		}
 		//元数据库中数据
 		Map<String, Object> metaKindCode = getMetaKindCode(chainCode);
+		if(metaKindCode == null || metaKindCode.size() == 0){
+			log.info("resultId" + resultId + "在元数据库中对应的内容为空");
+			return;
+		}
 		String dailyPoiChain = resultKindCode.get("poi_chain").toString();
 		String dailytPoiCode = resultKindCode.get("poi_kind_code").toString();
 		String MetaPoiChain = metaKindCode.get("poi_chain").toString();
@@ -594,24 +622,28 @@ public class DataEditService {
 			String MetaKindChain = metaKindCode.get("r_kind_chain").toString();
 			String MetaKind = metaKindCode.get("r_kind").toString();
 			//调用POI分类和品牌赋值方法
+			log.info(resultId+"调用POI分类和品牌赋值方法");
 			editResultTableBrands(resultId, MetaKindChain, MetaKind, con);
 			//调用生成POI履历
+			log.info(resultId+"调用生成POI履历");
 			JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId);
 			producePOIDRecord(json, dailycon, userId);
 			int poiStatus = getPoiStatus(resultId, con);
+			log.info("resultId:"+resultId+"对应的poiStatus为"+poiStatus);
 			if(poiStatus == 0){
 				//POI状态修改为已提交3
+				log.info(resultId+"resultId对应的POI状态修改为已提交3");
 				String pid = resultKindCode.get("pid").toString();
 				updatePoiStatus(pid, dailycon);
 			}
 			//清空关联POI作业属性
 			int matchMethod = getMatchMethodFromResult(resultId, con);
+			log.info(resultId+"resultId对应的matchMethod值为："+matchMethod);
 			if(matchMethod == 1){
+				log.info(resultId+"resultId清空关联POI作业属性");
 				clearRelevancePoi(resultId, con);
 			}
-			
 		}
-		
 	}
 	
 	/**
@@ -866,6 +898,7 @@ public class DataEditService {
 		try{
 			//查询对应resultID数据
 			int sourceId = getResultTable(resultId, con);
+			log.info("sourceId:"+sourceId);
 			if(sourceId != -1){
 				updateSource(con, resultId, sourceId);
 			}
@@ -922,6 +955,7 @@ public class DataEditService {
 					+ "t.IS_DELETED,t.FB_SOURCE,t.FB_CONTENT,t.FB_AUDIT_REMARK,t.FB_DATE,t.CFM_POI_NUM,t.CFM_MEMO,t.DEAL_CFM_DATE,t.POI_KIND_CODE,t.POI_CHAIN,t.POI_NAME,"
 					+ "t.POI_NAME_SHORT,t.POI_ADDRESS,t.POI_POST_CODE,t.POI_X_DISPLAY,t.POI_Y_DISPLAY,t.POI_X_GUIDE,"
 					+ "t.POI_Y_GUIDE,t.GEOMETRY from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resulId+")" + "where s.SOURCE_ID = "+sourceId;
+			log.info("根据result维护source的sql："+sql);
 			run.execute(con, sql);
 		}catch(Exception e){
 			throw e;
@@ -940,7 +974,7 @@ public class DataEditService {
 			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
 			run.execute(con, sql);
 		}catch(Exception e){
-		throw e;
+			throw e;
 		}
 	}
 	

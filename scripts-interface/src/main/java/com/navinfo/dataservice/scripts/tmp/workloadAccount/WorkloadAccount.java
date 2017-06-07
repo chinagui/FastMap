@@ -41,6 +41,7 @@ public class WorkloadAccount {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected static VMThreadPoolExecutor threadPoolExecutor;
 	private static Map<Integer,Object> result = new HashMap<Integer,Object>();
+	private static Map<Integer,Integer> subtaskUserMap = new HashMap<Integer,Integer>();
 	protected Map<Integer,String> users = new HashMap<Integer,String>();
 
 	
@@ -50,6 +51,7 @@ public class WorkloadAccount {
 			//所有大区库，一个大区库起一个线程
 			List<Integer> dbIdList = manApi.listDayDbIds();
 			users = manApi.getUsers();
+			subtaskUserMap = manApi.getsubtaskUserMap();
 			
 			//执行导入
 			int dbSize = dbIdList.size();
@@ -59,7 +61,7 @@ public class WorkloadAccount {
 			}
 			if(dbSize==1){
 				int dbId = dbIdList.get(0);
-				new WorkloadAccountThread(null, dbId);
+				new WorkloadAccountThread(null, dbId).run();
 	
 			}else{
 				if(dbSize>10){
@@ -131,12 +133,6 @@ public class WorkloadAccount {
 				QueryRunner run = new QueryRunner();
 				
 				StringBuilder sb = new StringBuilder();
-//				sb.append("SELECT A.US_ID, O.OP_DT, D.OP_ID, D.OB_PID, D.TB_NM, D.OP_TP  ");
-//				sb.append("  FROM LOG_ACTION A, LOG_OPERATION O, LOG_DETAIL D            ");
-//				sb.append(" WHERE A.ACT_ID = O.ACT_ID                                    ");
-//				sb.append("   AND O.OP_ID = D.OP_ID                                      ");
-//				sb.append("   AND D.OB_NM = 'IX_POI'                                     ");
-//				sb.append(" ORDER BY D.OB_PID, O.OP_DT                                   ");
 				
 				sb.append("SELECT A.US_ID, O.OP_DT, D.OP_ID, D.OB_PID, D.TB_NM, D.OP_TP,S.IS_UPLOAD,S.FRESH_VERIFIED,S.UPLOAD_DATE,S.QUICK_SUBTASK_ID,S.MEDIUM_SUBTASK_ID  ");
 				sb.append("  FROM LOG_ACTION A, LOG_OPERATION O, LOG_DETAIL D,POI_EDIT_STATUS S                                                                            ");
@@ -155,8 +151,15 @@ public class WorkloadAccount {
 				List<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
 				for(Map.Entry<String, Map<String,Integer>> entry:result.entrySet()){
 					String[] str = StringUtils.split(entry.getKey(), '_');
-					int userId = Integer.parseInt(str[0]);
-					String date = str[1];
+					int userId = 0;
+					String date = "";
+					if(str.length==2){
+						date = str[1];
+						userId = Integer.parseInt(str[0]);
+					}
+					if(userId==0&&date.equals("")){
+						continue;
+					}
 					Map<String,Object> cell = new HashMap<String,Object>();
 					cell.put("userId", userId);
 					cell.put("date", date);
@@ -164,8 +167,11 @@ public class WorkloadAccount {
 					cell.put("update", entry.getValue().get("update"));
 					cell.put("delete", entry.getValue().get("delete"));
 					cell.put("fresh", entry.getValue().get("fresh"));
-
-					cell.put("userName", users.get(userId));
+					if(users.containsKey(userId)){
+						cell.put("userName", users.get(userId));
+					}else{
+						cell.put("userName", "");
+					}
 					data.add(cell);
 				}
 				
@@ -197,8 +203,8 @@ public class WorkloadAccount {
 				return;
 			}
 			for(Map<String, Object> cell:data){
-				perstmt.setInt(1,Integer.parseInt(cell.get("user_id").toString()));
-				perstmt.setString(2,cell.get("user_name").toString());
+				perstmt.setInt(1,Integer.parseInt(cell.get("userId").toString()));
+				perstmt.setString(2,cell.get("userName").toString());
 				perstmt.setString(3,cell.get("date").toString());
 				perstmt.setInt(4,Integer.parseInt(cell.get("insert").toString()));
 				perstmt.setInt(5,Integer.parseInt(cell.get("update").toString()));
@@ -229,14 +235,13 @@ public class WorkloadAccount {
 				    int quickSubtaskId = 0;
 				    int mediumSubtaskId = 0;
 					while (rs.next()) {
-						pid = rs.getLong("OP_ID");
-						if(pidList.contains(pid)){
+						if(pidList.contains(rs.getLong("OB_PID"))){
 							continue;
 						}
 						if(!opId.equals(rs.getString("OP_ID"))){
 							pidList.add(pid);
 							//用户Id+日期构成KEY
-							String key = Integer.toString(userId) + date;
+							String key = Integer.toString(userId) + "_" + date;
 							if(result.containsKey(key)){
 								Map<String,Integer> tmp = result.get(key);
 								int insert = tmp.get("insert");
@@ -246,30 +251,49 @@ public class WorkloadAccount {
 
 								if(status==1){
 									tmp.put("insert", insert+1);
-								}else if(status==2){
-									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0){
+								}else if(status==3){
+									int subtaskId = (quickSubtaskId>mediumSubtaskId?mediumSubtaskId:quickSubtaskId);
+									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.get(subtaskId)==userId){
 										tmp.put("fresh", fresh+1);
 									}else{
 										tmp.put("update", update+1);
 									}
-								}else if(status==3){
+								}else if(status==2){
 									tmp.put("delete", delete+1);
 								}
 							}else{
 								Map<String,Integer> tmp = new HashMap<String,Integer>();
 								tmp.put("insert", 0);
-								tmp.put("update", 0);
 								tmp.put("delete", 0);
+								tmp.put("update", 0);
 								tmp.put("fresh", 0);
+								if(status==1){
+									tmp.put("insert", 1);
+								}else if(status==3){
+									int subtaskId = (quickSubtaskId>mediumSubtaskId?mediumSubtaskId:quickSubtaskId);
+									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.get(subtaskId)==userId){
+										tmp.put("fresh", 1);
+									}else{
+										tmp.put("update", 1);
+									}
+								}else if(status==2){
+									tmp.put("delete", 1);
+								}
 								result.put(key, tmp);
 							}
 							userId = rs.getInt("US_ID");
 							date = df.format(rs.getTimestamp("OP_DT"));
 							isUpload = rs.getInt("IS_UPLOAD");
-							uploadDate = df.format(rs.getTimestamp("UPLOAD_DATE"));
+							if(rs.getTimestamp("UPLOAD_DATE")!=null){
+								uploadDate = df.format(rs.getTimestamp("UPLOAD_DATE"));
+							}else{
+								uploadDate = "";
+							}
 							freshVerified = rs.getInt("FRESH_VERIFIED");
 							quickSubtaskId = rs.getInt("QUICK_SUBTASK_ID");
 							mediumSubtaskId = rs.getInt("MEDIUM_SUBTASK_ID");
+							pid = rs.getLong("OB_PID");
+							opId = rs.getString("OP_ID");
 						}
 						if(opId.equals(rs.getString("OP_ID"))){
 							//主表新增--新增
@@ -321,7 +345,6 @@ public class WorkloadAccount {
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
 		WorkloadAccount WorkloadAccount = new WorkloadAccount();
-//		RefinementLogDependent.refinementLogDependentMain(13);
 		WorkloadAccount.account();
 	}
 }

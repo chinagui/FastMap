@@ -33,7 +33,10 @@ public class FMD0130 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String adminId=pidAdminId.get(poi.getPid()).toString();
+			String adminId=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+				adminId=pidAdminId.get(poi.getPid()).toString();
+			}
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isCH()&&nameTmp.getNameType()==1

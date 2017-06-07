@@ -89,4 +89,8 @@
 		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"
 		request="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJobRequest" >
 	</type>
+	<type name="DealershipTableAndDbDiffJob"
+		class="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJob"
+		request="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJobRequest" >
+	</type>
 	</mapping>

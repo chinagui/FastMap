@@ -345,9 +345,10 @@ public class DataPrepareService {
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+					changeResultObj(resultObj,sourceObj);
 				}
 				else{sourceObj=new IxDealershipSource();}
-				changeResultObj(resultObj,sourceObj);
+				
 				if(StringUtils.isEmpty(resultObj.getProvince())){
 					if(cpRegionMap.containsKey(resultObj.getProvince())){
 						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
@@ -384,6 +385,9 @@ public class DataPrepareService {
 		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
 		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
 		resultObj.setGeometry(sourceObj.getGeometry());
+		if(StringUtils.isEmpty(resultObj.getChain())){
+			resultObj.setChain(sourceObj.getChain());
+		}
 		
 	}
 
@@ -588,21 +592,22 @@ public class DataPrepareService {
 							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
-							List<IxDealershipResult> update = resultMap.get(2);
-							List<IxDealershipResult> delete = resultMap.get(3);
-							for(IxDealershipResult bean:insert){
-								log.info(bean.getName()+bean.getAddress());
-								log.info(bean.getGeometry());
-								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							List<IxDealershipResult> update = resultMap.get(3);
+							log.info("insert object");
+							if(insert!=null&&insert.size()>0){
+								for(IxDealershipResult bean:insert){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+								}
 							}
-							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
-							}
-							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+							log.info("update object");
+							if(update!=null&&update.size()>0){
+								for(IxDealershipResult bean:update){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+								}
 							}
 							
-
 							int workType = 2;
 							int workStatus = 0;
 							updateIxDealershipChain(conn,chain,workStatus,workType);

@@ -306,7 +306,7 @@ public class ColumnSaveJob extends AbstractJob {
 		sb.append("                  USING (SELECT CASE WHEN 'namePinyin' = '"+secondWorkItem+"' THEN CP.IS_PROBLEM ");	
 		sb.append("                                     WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '0' ");
 		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM IN ('1','2') THEN CP.IS_PROBLEM ");
-		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM NOT IN ('1','2') THEN '1' ELSE CP.IS_PROBLEM END IS_PROBLEM,");
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM IS NULL THEN '1' ELSE CP.IS_PROBLEM END IS_PROBLEM,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_type END errorType,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_level END errorLevel,");
 		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.problem_desc END problemDesc,");

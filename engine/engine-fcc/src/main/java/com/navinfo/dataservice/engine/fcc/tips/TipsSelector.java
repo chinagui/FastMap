@@ -347,7 +347,7 @@ public class TipsSelector {
                         m.put("f", String.valueOf(deep.getInt("flag")));
 					}
 
-				} else if (type == 1106) {
+				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
 				} else if (type == 1102) {
 					m.put("c", String.valueOf(deep.getInt("inCt")));

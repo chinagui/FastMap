@@ -886,10 +886,11 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality");
-			sb.append(" from subtask st,task t,region r");
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type");
+			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
+			sb.append(" and t.program_id = p.program_id");
 			sb.append(" and (st.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql + ")");
 
 			if (dataJson.containsKey("stage")){
@@ -915,7 +916,7 @@ public class SubtaskOperation {
 
 
 			String selectSql = sb.toString();
-			
+			log.info("getListByUserSnapshotPage-sql:"+selectSql);
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
@@ -940,6 +941,7 @@ public class SubtaskOperation {
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+						subtask.put("programType", rs.getInt("PROGRAM_TYPE"));
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
@@ -1014,7 +1016,7 @@ public class SubtaskOperation {
 				}
 
 			};
-			log.info("getListByUserSnapshotPage-sql:"+selectSql);
+			
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 
 		}catch(Exception e){

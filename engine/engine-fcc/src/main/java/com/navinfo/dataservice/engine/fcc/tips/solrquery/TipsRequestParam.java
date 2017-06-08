@@ -5,6 +5,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrQueryUtils;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
@@ -17,7 +18,6 @@ import java.util.Set;
  * Created by zhangjunfang on 2017/5/20.
  */
 public class TipsRequestParam {
-	
 
     //获取Tips个数列表 tip/getStats 接口参数
     public String getTipStat(String parameter) throws Exception{
@@ -48,7 +48,7 @@ public class TipsRequestParam {
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
         }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
-        }else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED) {//已作业
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
         }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
@@ -70,34 +70,40 @@ public class TipsRequestParam {
         }//1.日编待质检tips：取stage=7，且t_dEditStatus=0
         else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
         	
-          	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+          	 builder.append(" AND stage:7 AND t_dEditStatus:0 ");
           	 
           }
           //日编已质检tips：取stage=7，且t_dEditStatus=2
           else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
           	
-       	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+       	   builder.append(" AND stage:7 AND t_dEditStatus:2 ");
           	 
         	
           }
           //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
           else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
           	
-       	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+       	   builder.append(" AND stage:7 AND t_dEditStatus:1 ");
           	 
+          }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+        	 
+        	  builder.append(" AND stage:7  ");
           }
+        
+        
 
         return builder.toString();
     }
-    
-    
+
+
     /**
-     * @Description:质检查询条件
-     * @param parameter
+     * 质检查询条件
+     * @param worker
+     * @param checker
+     * @param workStatus
+     * @param rowkeyList
      * @return
      * @throws Exception
-     * @author: y
-     * @time:2017-5-26 下午5:14:05
      */
     public String assambleSqlForCheckQuery(int worker,int checker,int workStatus,JSONArray rowkeyList) throws Exception{
 
@@ -248,23 +254,26 @@ public class TipsRequestParam {
         //1.日编待质检tips：取stage=7，且t_dEditStatus=0
         else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
         	
-       	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+       	 builder.append(" AND  stage:7 AND t_dEditStatus:0 ");
        	 
        }
        //日编已质检tips：取stage=7，且t_dEditStatus=2
        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
        	
-    	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+    	   builder.append(" AND stage:7 AND t_dEditStatus:2 ");
        	 
      	
        }
        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
        	
-    	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+    	   builder.append(" AND  stage:7 AND t_dEditStatus:1 ");
        	 
+       }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+      	 
+     	  builder.append(" AND stage:7  ");
        }
-
+        
         return builder.toString();
     }
 
@@ -343,7 +352,7 @@ public class TipsRequestParam {
 //        return builder.toString();
 //    }
 
-    public String getByTileWithGap(String parameter, boolean filterDelete) {
+    public String getByTileWithGap(String parameter) {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
         int x = jsonReq.getInt("x");
         int y = jsonReq.getInt("y");
@@ -396,22 +405,19 @@ public class TipsRequestParam {
                 stages.add(2);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             } else if ("m".equals(mdFlag)) {//月编
                 stages.add(1);
                 stages.add(3);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             }
         }
 
         StringBuilder builder = new StringBuilder();
         String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
         builder.append("wktLocation:\"intersects(" + wkt + ")\" ");
-
-        if (filterDelete) {
-            // 过滤删除的数据
-            builder.append(" AND -t_lifecycle:1 ");
-        }
 
         if (types.size() > 0) {
             this.getSolrStringArrayQuery(builder, types, "s_sourceType");
@@ -458,19 +464,26 @@ public class TipsRequestParam {
                         webBuilder.append(" AND stage:(1 5 6)");
                         webBuilder.append(")");
                         //接边Tips
-                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
+                        
+                        //待质检的tips
+                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0 AND t_tipStatus:2)");
+                        
+                        webBuilder.append(	"))");
+                        
+                      
                     }
                     if (workStatus.contains(1)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:1)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:1)");
                     }
                     if (workStatus.contains(2)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:2)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:2)");
                     }
                 }
 
@@ -485,8 +498,11 @@ public class TipsRequestParam {
             }
         }
 
+        System.out.println(builder.toString());
         // 过滤315 web不显示的tips 20170118
         this.getFilter315(builder);
+        
+        System.out.println(builder.toString());
 
         return builder.toString();
     }
@@ -495,16 +511,21 @@ public class TipsRequestParam {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
 //        JSONArray grids = jsonReq.getJSONArray("grids");
 //        String wkt = GridUtils.grids2Wkt(grids);
-        int subtaskId = jsonReq.getInt("subtaskId");
+        int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
 
 //        builder.append("wkt:\"intersects(" + wkt + ")\"");
 
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        if (taskSet != null && taskSet.size() > 0) {
-            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
         }
 
         return builder.toString();
@@ -616,16 +637,49 @@ public class TipsRequestParam {
 
     public String getTipsCheckUnCommit(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        int subtaskId = jsonReq.getInt("subtaskId");
+        int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
 
         builder.append("-t_tipStatus:2");
 
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        if (taskSet != null && taskSet.size() > 0) {
-            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
+        }
+
+        return builder.toString();
+    }
+
+    public String getTipsCheckTotal(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subTaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        int tipsStatus = jsonReq.getInt("tipStatus");
+        builder.append("t_tipStatus:");
+        builder.append(tipsStatus);
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
         }
 
         return builder.toString();

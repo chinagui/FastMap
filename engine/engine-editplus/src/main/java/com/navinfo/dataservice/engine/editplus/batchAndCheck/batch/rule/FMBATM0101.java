@@ -44,8 +44,10 @@ public class FMBATM0101 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		if (obj.objName().equals(ObjectName.IX_POI)) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
-			
-			String adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			String adminId=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+				adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			}
 			// 查询别名中文列表
 			List<IxPoiName> brList = poiObj.getAliasCHIName();
 			if (brList.size()!=0) {
@@ -57,14 +59,14 @@ public class FMBATM0101 extends BasicBatchRule {
 						IxPoiName originEngAlias = poiObj.getOriginAliasENGName(br.getNameGroupid());
 						MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 						if (originEngAlias != null) {
-							originEngAlias.setName(metadataApi.engConvert(br.getName(),adminId));
+							originEngAlias.setName(metadataApi.convertEng(br.getName()));
 						} else {
 							IxPoiName poiName = (IxPoiName) poiObj.createIxPoiName();
 							poiName.setNameGroupid(br.getNameGroupid());
 							poiName.setLangCode("ENG");
 							poiName.setNameClass(3);
 							poiName.setNameType(2);
-							poiName.setName(metadataApi.engConvert(br.getName(),adminId));
+							poiName.setName(metadataApi.convertEng(br.getName()));
 						}
 					}
 

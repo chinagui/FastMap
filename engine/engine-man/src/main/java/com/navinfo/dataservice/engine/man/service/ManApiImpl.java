@@ -287,9 +287,9 @@ public class ManApiImpl implements ManApi {
 
 
 	@Override
-	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
+		return SubtaskService.getInstance().getOpendMultiSubtaskGridMappingByDbId(dbId,type);
 	}
 
 	@Override
@@ -330,6 +330,42 @@ public class ManApiImpl implements ManApi {
 	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		return SubtaskService.getInstance().getCommonSubtaskByQualitySubtask(qualitySubtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getProvinceRegionIdMap()
+	 */
+	@Override
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception {
+		// TODO Auto-generated method stub
+		return CpRegionProvinceService.getInstance().getProvinceRegionIdMap();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#listDayDbIds()
+	 */
+	@Override
+	public List<Integer> listDayDbIds() throws Exception {
+		// TODO Auto-generated method stub
+		return RegionService.getInstance().listDayDbIds();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getUsers()
+	 */
+	@Override
+	public Map<Integer, String> getUsers() throws Exception {
+		// TODO Auto-generated method stub
+		return UserInfoService.getInstance().getUsers();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getsubtaskUserMap()
+	 */
+	@Override
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getsubtaskUserMap();
 	}
 
 }

@@ -121,7 +121,7 @@ public class TipsSelector {
                 mdFlag = jsonReq.getString("mdFlag");
             }
             TipsRequestParam param = new TipsRequestParam();
-            String query = param.getByTileWithGap(parameter, true);
+            String query = param.getByTileWithGap(parameter);
             List<JSONObject> snapshots = conn.queryTips(query, null);
 			for (JSONObject json : snapshots) {
 				rowkey = json.getString("id");
@@ -341,7 +341,11 @@ public class TipsSelector {
 					}else if(type == 1115) {//20170517 车道变化点Tips渲染接口新增参数
                         m.put("d", String.valueOf(deep.getInt("inNum")));
                         m.put("e", String.valueOf(deep.getInt("outNum")));
-                    }
+                    }else if(type == 1101) {//20170605 限速增加返回值 赵航用
+                        m.put("d", String.valueOf(deep.getInt("se")));
+                        m.put("e", String.valueOf(deep.getInt("value")));
+                        m.put("f", String.valueOf(deep.getInt("flag")));
+					}
 
 				} else if (type == 1106) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
@@ -2163,6 +2167,43 @@ public class TipsSelector {
         sdList.clear();
         sdList = null;
         return statObj;
+    }
+
+
+    public JSONObject listInfoTipsByPage(String parameter) throws Exception {
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        TipsRequestParam param = new TipsRequestParam();
+        String queryTotal = param.getTipsCheckTotal(parameter);
+        int curPage = jsonReq.getInt("curPage");
+        int pageSize = jsonReq.getInt("pageSize");
+        int firstNum = (curPage - 1) * pageSize + 1;
+        SolrDocumentList sdList = conn.queryTipsSolrDocByPage(queryTotal, null, firstNum, pageSize);
+        JSONObject jsonObject = new JSONObject();
+        long totalNum = sdList.getNumFound();
+        if (totalNum <= Integer.MAX_VALUE) {
+            jsonObject.put("total", totalNum);
+            long pageTotalNum = sdList.size();
+            JSONArray jsonArray = new JSONArray();
+            for (int i = 0; i < pageTotalNum; i++) {
+                JSONObject resultObj = new JSONObject();
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                String rowkey = snapshot.getString("id");
+                resultObj.put("rowkey", rowkey);
+                String sourceType = snapshot.getString("s_sourceType");
+                resultObj.put("sourceType", sourceType);
+                int lifecycle = snapshot.getInt("t_lifecycle");
+                resultObj.put("lifecycle", lifecycle);
+                String date = snapshot.getString("t_date");
+                resultObj.put("date", date);
+                jsonArray.add(resultObj);
+            }
+            jsonObject.put("result", jsonArray);
+        } else {
+            // 暂先不处理
+        }
+
+        return jsonObject;
     }
 
     public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {

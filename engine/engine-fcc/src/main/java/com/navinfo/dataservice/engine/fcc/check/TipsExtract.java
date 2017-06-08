@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -72,6 +74,16 @@ public class TipsExtract {
 			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Map<String,String> taskInfoMap=manApi.getCommonSubtaskByQualitySubtask(checkTaskId);
+			Integer workTaskId=Integer.valueOf(taskInfoMap.get("subtaskId"));//作业任务号
+			//1.判断作业任务是否关闭
+			
+			Subtask  subTask=manApi.queryBySubtaskId(workTaskId);
+			int subTaskStatus=subTask.getStatus();//0:关闭  ；1开启
+			
+			if(subTaskStatus!=0){
+				throw new IllegalArgumentException("日编子任务未关闭，不能进行抽取质检。");
+			}
+			
 			
 			/**
 			 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
@@ -88,7 +100,7 @@ public class TipsExtract {
 			 * @throws Exception 
 			 */
 			
-			Integer workTaskId=Integer.valueOf(taskInfoMap.get("subtaskId"));//作业任务号
+			
 			Integer workerId=Integer.valueOf(taskInfoMap.get("exeUserId"));//作业员编号
 			String workerName=taskInfoMap.get("exeUserName");//作业员姓名
 			String groupName=taskInfoMap.get("groupName");//组名
@@ -114,6 +126,9 @@ public class TipsExtract {
 			
 			Set<String> allType=finishedMap.keySet();
 		
+			//抽检后tips类型数（应为存在抽检比例没有配置的，默认0）
+			
+			Set<String> extType=new HashSet<String>();
 			
 			for (String type : allType) {
 				
@@ -127,14 +142,23 @@ public class TipsExtract {
 				
 				Double exCout=Math.ceil((double)typeAllCount*exPercent/100);
 				
-				extactCountMap.put(type,exCout.intValue());
+				int  count=exCout.intValue();
+				
+				if(count>0){
+					
+					extactCountMap.put(type,exCout.intValue());
+					
+					//抽检条数不为0才进行统计
+					
+					extType.add(type);
+				}
 				
 			}
 			
 			//3.进行tips抽取
 			List<JSONObject> allExpTipsList=new ArrayList<JSONObject>();
 					
-			for (String type : allType) {
+			for (String type : extType) {
 				
 				int extactLimit=extactCountMap.get(type);
 				
@@ -179,7 +203,7 @@ public class TipsExtract {
 			
 			task.setCheckStatus(0); //待质检
 			
-			task.setTipTypeCount(allType.size());
+			task.setTipTypeCount(extType.size());
 			
 			CheckTaskOperator taskOperate=new CheckTaskOperator();
 			
@@ -187,7 +211,7 @@ public class TipsExtract {
 			
 			result.put("total", total);
 			
-			result.put("typeCount", allType.size());
+			result.put("typeCount", extType.size());
 			
 			return result;
 			
@@ -235,6 +259,7 @@ public class TipsExtract {
 		    		solrIndex.put("t_dEditMeth", t_dEditMeth);
 		    		solrIndex.put("t_date", date);
 		    		solrIndex.put("stage", stage);
+		    		solrIndex.put("handler", checkerId);
 		    		solrConn.addTips(solrIndex);
 	
 		            String[] queryColNames={"track"};

@@ -95,4 +95,31 @@ public class CpRegionProvinceService {
 		}
 		
 	}
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT C.REGION_ID,C.PROVINCE FROM CP_REGION_PROVINCE C";
+			return run.query(conn, selectSql, new ResultSetHandler<Map<String,Integer>>(){
+
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> result = new HashMap<String,Integer>();
+					while(rs.next()){
+						result.put(rs.getString("PROVINCE"), rs.getInt("REGION_ID"));
+					}
+					return result;
+				}});
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 }

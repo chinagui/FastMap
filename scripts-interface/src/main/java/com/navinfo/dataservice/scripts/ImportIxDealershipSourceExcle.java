@@ -7,13 +7,11 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
@@ -38,7 +36,7 @@ public class ImportIxDealershipSourceExcle {
 	public static void main(String[] args) {
 
 		try {
-			if(args==null||args.length!=2){
+			if(args==null||args.length!=1){
 				System.out.println("ERROR:need args:filePath");
 				return;
 			}
@@ -161,10 +159,10 @@ public class ImportIxDealershipSourceExcle {
 				
 				
 				transMap2Bean(source, sourceObj);
-				int id =applyPid();
+//				int id =applyPid();
 				//id+=1;
 //				System.out.println("fid: "+sourceObj.getCfmPoiNum());
-				sourceObj.setSourceId(id);
+//				sourceObj.setSourceId(id);
 				sourceObj.setGeometry(pointWkt);
 				if(sourceObj.getProvince() != null && StringUtils.isNotEmpty(sourceObj.getProvince())){
 					sourceObj.setProvince(h2f(sourceObj.getProvince()));
@@ -250,14 +248,15 @@ public class ImportIxDealershipSourceExcle {
 				//持久化
 				QueryRunner run = new QueryRunner();
 				
-				String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+				String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(SOURCE_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
 //						+ "SDO_GEOMETRY(?,8307),?)";			
 						+ "?,?)";			
 //				System.out.println("createSql: "+createSql);
 				fid=bean.getCfmPoiNum();
 				run.update(conn, 
 						   createSql, 
-						   bean.getSourceId() , bean.getProvince(), bean.getCity(), bean.getProject(), 
+//						   bean.getSourceId() ,
+						   bean.getProvince(), bean.getCity(), bean.getProject(), 
 						   bean.getKindCode(), bean.getChain(), bean.getName(), bean.getNameShort(), 
 						   bean.getAddress(), bean.getTelSale(), bean.getTelService(), bean.getTelOther(), 
 						   bean.getPostCode(), bean.getNameEng(), bean.getAddressEng(), bean.getProvideDate(), 
@@ -286,7 +285,7 @@ public class ImportIxDealershipSourceExcle {
 				QueryRunner run = new QueryRunner();
 				
 				String sql = " INSERT INTO IX_DEALERSHIP_SOURCE ( sourceId , province, city, project, kindCode, chain, name, nameShort, address, telSale, telService, telOther, postCode, nameEng, addressEng, provideDate, isDeleted, fbSource, fbContent, fbAuditRemark, fbDate, cfmPoiNum, cfmMemo, dealCfmDate, poiKindCode, poiChain, poiName, poiNameShort, poiAddress, poiPostCode, poiXDisplay, poiYDisplay, poiXGuide, poiYGuide, geometry, poiTel ) "
-						+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+						+ " values(SOURCE_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 				
 				 // 关闭事务自动提交
 				   conn.setAutoCommit(false);
@@ -320,9 +319,9 @@ public class ImportIxDealershipSourceExcle {
 //				DbUtils.commitAndCloseQuietly(conn);
 			}
 		}
-	 private static int applyPid() throws Exception {
-			return PidUtil.getInstance().applyIxDealershipSourceId();
-		}
+//	 private static int applyPid() throws Exception {
+//			return PidUtil.getInstance().applyIxDealershipSourceId();
+//		}
 	 private static String h2f(String input) {
 	        char c[] = input.toCharArray();
 	        for (int i = 0; i < c.length; i++) {

@@ -348,7 +348,7 @@ public class UserGroupService {
 	}
 	
 	//根据用户组类型获取用户组列表
-	public List<UserGroup> listByType(UserGroup userGroup)throws ServiceException{
+	public List<UserGroup> listByType(int groupType,JSONObject conditionJson)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -359,8 +359,13 @@ public class UserGroupService {
 					+ " from user_group ug"
 					+ " WHERE UG.PARENT_GROUP_ID IS NULL";
 					
-			if(userGroup.getGroupType() != null){	
-				selectSql += " AND ug.group_type =" + userGroup.getGroupType();
+			if(groupType != -1){	
+				selectSql += " AND ug.group_type =" + groupType;
+			}
+			if(conditionJson!=null){
+				if(conditionJson.containsKey("groupSubtype")){
+					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
+				}
 			}
 
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
@@ -392,7 +397,7 @@ public class UserGroupService {
 	
 	
 	//根据用户组类型获取用户组列表及用户组下用户信息
-	public ArrayList<HashMap<?, ?>> listByTypeWithUserInfo(UserGroup userGroup,int snapshot)throws ServiceException{
+	public ArrayList<HashMap<?, ?>> listByTypeWithUserInfo(int groupType,JSONObject conditionJson)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -403,8 +408,13 @@ public class UserGroupService {
 					+ " where ug.group_id = gum.group_id "
 					+ " and gum.user_id = u.user_id ";
 		
-			if(userGroup.getGroupType() != null){	
-				selectSql += " and ug.group_type =" + userGroup.getGroupType();
+			if(groupType != -1){	
+				selectSql += " and ug.group_type =" + groupType;
+			}
+			if(conditionJson!=null){
+				if(conditionJson.containsKey("groupSubtype")){
+					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
+				}
 			}
 			selectSql += " order by ug.group_id";
 			

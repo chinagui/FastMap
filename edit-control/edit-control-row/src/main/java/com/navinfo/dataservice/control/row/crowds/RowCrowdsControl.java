@@ -183,7 +183,7 @@ public class RowCrowdsControl {
 				// 维护状态表poi_edit_status
 				logger.info("维护状态表:pid" + pid);
 				List<Long> pids = Arrays.asList(pid);
-				PoiEditStatus.normalPoi(dayConn, pids, subTaskId, taskId, subtaskType);
+				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType);
 			}else{
 				return "FID:" + fid + "数据未获取到大区库信息，不入库！";
 			}

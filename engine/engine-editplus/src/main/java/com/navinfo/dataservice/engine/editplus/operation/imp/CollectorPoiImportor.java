@@ -63,9 +63,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 	protected Set<Long> freshVerPois = new HashSet<Long>();
 	
 	//****zl 2017.06.06 ***
-	protected Map<Long,String> normalPois = new HashMap<Long,String>();
-	public Map<Long, String> getNormalPois() {
-		return normalPois;
+	protected Map<Long,String> allPois = new HashMap<Long,String>();
+	public Map<Long, String> getAllPois() {
+		return allPois;
 	}
 
 
@@ -181,10 +181,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 //							if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
 //								noChangedPois.add(poiObj.objPid());
 //							}
-					}else{//非鲜度验证
-						normalPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
-						
 					}
+					//所有的poi
+					allPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
+						
+					
 					
 					result.putObj(poiObj);
 					successNum++;
@@ -218,6 +219,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 					//删除
 					obj.deleteObj();
 					result.putObj(obj);
+					allPois.put(obj.objPid(), deletePois.get(((IxPoi)obj.getMainrow()).getPoiNum()).getString("rawFields"));
 					successNum++;
 					//关系数据处理
 					//同一关系处理

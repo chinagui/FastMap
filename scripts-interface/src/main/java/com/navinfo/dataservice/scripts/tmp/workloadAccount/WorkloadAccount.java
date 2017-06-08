@@ -261,7 +261,7 @@ public class WorkloadAccount {
 									tmp.put("insert", insert+1);
 								}else if(status==3){
 									int subtaskId = (quickSubtaskId>mediumSubtaskId?mediumSubtaskId:quickSubtaskId);
-									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.get(subtaskId)==userId){
+									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.containsKey(subtaskId)&&subtaskUserMap.get(subtaskId)==userId){
 										tmp.put("fresh", fresh+1);
 									}else{
 										tmp.put("update", update+1);
@@ -279,7 +279,7 @@ public class WorkloadAccount {
 									tmp.put("insert", 1);
 								}else if(status==3){
 									int subtaskId = (quickSubtaskId>mediumSubtaskId?mediumSubtaskId:quickSubtaskId);
-									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.get(subtaskId)==userId){
+									if(isUpload!=0&&uploadDate.equals(date)&&freshVerified!=0&&subtaskUserMap.containsKey(subtaskId)&&subtaskUserMap.get(subtaskId)==userId){
 										tmp.put("fresh", 1);
 									}else{
 										tmp.put("update", 1);

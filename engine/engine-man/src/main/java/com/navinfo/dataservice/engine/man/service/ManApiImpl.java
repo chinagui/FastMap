@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
+import com.navinfo.navicommons.database.QueryRunner;
+import net.sf.json.JSONArray;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -368,5 +370,18 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getsubtaskUserMap();
 	}
 
+    @Override
+    public JSONArray getGridIdsByTaskId(int taskId) throws Exception {
+        Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            return TaskService.getInstance().getGridListByTaskId(conn, taskId);
+        }catch(Exception e){
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+        }finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 }
 

@@ -51,6 +51,7 @@ public class InfoFeedbackMsgHandler implements MsgHandler {
 	 * @throws Exception
 	 */
 	public void save(String message) throws Exception {
+		log.info("FEEDBACK:"+message);
 		Connection conn = null;
 		try {
 			JSONObject msgJSON = JSONObject.fromObject(message);
@@ -68,6 +69,7 @@ public class InfoFeedbackMsgHandler implements MsgHandler {
 			values.add(DateUtils.stringToTimestamp(msgJSON.getString("feedbackDate"), DateUtils.DATE_COMPACTED_FORMAT));
 			values.add(msgJSON.getInt("taskId"));
 			QueryRunner run = new QueryRunner();
+			log.info("FEEDBACK:"+sql);
 			run.update(conn, sql, values.toArray());			
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);

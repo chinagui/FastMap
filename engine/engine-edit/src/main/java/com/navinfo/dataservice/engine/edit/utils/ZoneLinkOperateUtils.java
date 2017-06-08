@@ -1,15 +1,6 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONException;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -20,15 +11,21 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhaokk LINK 公共方法
@@ -75,6 +72,9 @@ public class ZoneLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
@@ -105,38 +105,15 @@ public class ZoneLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
         result.insertObject(link, ObjStatus.INSERT, link.pid());
         return link;
     }
-
-    /*
-     * 创建生成一条ZONELINK
-     * 继承原有LINK的属性
-     * */
-    public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, ZoneLink sourcelink, Result
-            result) throws Exception {
-        ZoneLink link = new ZoneLink();
-        link.setPid(PidUtil.getInstance().applyZoneLinkPid());
-        link.copy(sourcelink);
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-        Iterator<String> it = meshes.iterator();
-        while (it.hasNext()) {
-            setLinkChildrenMesh(link, Integer.parseInt(it.next()));
-        }
-        if (link.getKinds().isEmpty())
-            setLinkChildrenKind(link, g);
-        double linkLength = GeometryUtils.getLinkLength(g);
-        link.setLength(linkLength);
-        link.setGeometry(GeoTranslator.transform(g, 100000, 0));
-        link.setsNodePid(sNodePid);
-        link.seteNodePid(eNodePid);
-        result.insertObject(link, ObjStatus.INSERT, link.pid());
-        return link;
-    }
-
 
     /*
      * 维护link的子表 ZONE_LINK_MESH
@@ -310,38 +287,6 @@ public class ZoneLinkOperateUtils {
         }
         return maps;
 
-    }
-
-    /*
-     * 根据移动link端点重新生成link的几何
-     */
-    public static Geometry caleLinkGeomertyForMvNode(ZoneLink link, int nodePid, double lon, double lat) throws
-            JSONException {
-        Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
-        Coordinate[] cs = geom.getCoordinates();
-        double[][] ps = new double[cs.length][2];
-
-        for (int i = 0; i < cs.length; i++) {
-            ps[i][0] = cs[i].x;
-
-            ps[i][1] = cs[i].y;
-        }
-
-        if (link.getsNodePid() == nodePid) {
-            ps[0][0] = lon;
-
-            ps[0][1] = lat;
-        } else {
-            ps[ps.length - 1][0] = lon;
-
-            ps[ps.length - 1][1] = lat;
-        }
-        JSONObject geojson = new JSONObject();
-
-        geojson.put("type", "LineString");
-
-        geojson.put("coordinates", ps);
-        return (GeoTranslator.geojson2Jts(geojson, 1, 5));
     }
     /*
      * 创建行政区划线 针对跨图幅有两种情况

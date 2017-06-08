@@ -14,6 +14,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -866,4 +867,40 @@ public class TipsController extends BaseController {
                     ResponseUtils.assembleFailResult(e.getMessage()));
         }
     }
+
+    @RequestMapping(value = "/tip/noTaskToMidTask")
+    public void noTaskToMidTask(HttpServletRequest request,
+                              HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            if(!jsonReq.containsKey("taskId")) {
+                throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+            }
+
+            int midTaskId = jsonReq.getInt("taskId");
+            if(midTaskId == 0) {
+                throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+            }
+
+            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+            JSONArray gridList = manApi.getGridIdsByTaskId(midTaskId);
+            String wkt = GridUtils.grids2Wkt(gridList);
+            TipsOperator tipsOperator = new TipsOperator();
+            long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("total", totalNum);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(jsonObject));
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
+
 }

@@ -72,7 +72,7 @@ public class RenderController extends BaseController {
 
 			JSONObject data = null;
 
-			if (z <= 13) {
+			if (z <= 17) {
 
 				List<ObjType> tileTypes = new ArrayList<ObjType>();
 

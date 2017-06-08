@@ -11,7 +11,11 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -36,7 +40,12 @@ public class InitDealershipChainTable {
 			
 			if(initDataList.size() > 0){
 				//代理店数据库
-				DEconn = DBConnector.getInstance().getDealershipConnection();
+				DbInfo manInfo = DbService.getInstance().getOnlyDbByBizType("dealership");
+
+				OracleSchema manSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(manInfo.getConnectParam()));
+				DEconn = manSchema.getPoolDataSource().getConnection();
+//				DEconn = DBConnector.getInstance().getDealershipConnection();
 				//删除代理店source表中的数据
 				InitDealershipChainTable.deletChainDataBeforInit(DEconn);
 				//初始化source表

@@ -467,7 +467,7 @@ public class TipsOperateTest2 extends InitApplication{
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			String rowkey= op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+			String rowkey= op.saveOrUpdateTips(jsonInfo,command,user,0); //新增或者修改一个tips
 
 			//return new ModelAndView("jsonView", success());
 			

@@ -628,7 +628,8 @@ public class DataPrepareService {
 							
 							int workType = 2;
 							int workStatus = 0;
-							updateIxDealershipChain(conn,chain,workStatus,workType);
+							int chain_status = 1;
+							updateIxDealershipChain(conn,chain,workStatus,workType,chain_status);
 							log.info("import chian:" + chain);
 						}
 					}
@@ -692,15 +693,16 @@ public class DataPrepareService {
 
 	/**
 	 * @param conn 
+	 * @param chainStatus 
 	 * @param ixDealershipChain
 	 * @throws ServiceException 
 	 */
-	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType) throws ServiceException {
+	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType, int chainStatus) throws ServiceException {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			
-			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + ",C.CHAIN_STATUS = " + chainStatus + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
 			log.info("updateIxDealershipChain sql:" + updateSql);
 			run.update(conn, updateSql);
 		}catch(Exception e){

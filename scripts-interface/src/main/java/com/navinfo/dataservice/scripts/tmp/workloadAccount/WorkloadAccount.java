@@ -24,6 +24,9 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.dataservice.scripts.refinement.RefinementLogDependent;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -47,11 +50,16 @@ public class WorkloadAccount {
 	
 	public void account() throws Exception{
 		try{
-			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+//			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+//			//所有大区库，一个大区库起一个线程
+//			List<Integer> dbIdList = manApi.listDayDbIds();
+//			users = manApi.getUsers();
+//			subtaskUserMap = manApi.getsubtaskUserMap();
+			
 			//所有大区库，一个大区库起一个线程
-			List<Integer> dbIdList = manApi.listDayDbIds();
-			users = manApi.getUsers();
-			subtaskUserMap = manApi.getsubtaskUserMap();
+			List<Integer> dbIdList = RegionService.getInstance().listDayDbIds();
+			users = UserInfoService.getInstance().getUsers();
+			subtaskUserMap = SubtaskService.getInstance().getsubtaskUserMap();
 			
 			//执行导入
 			int dbSize = dbIdList.size();

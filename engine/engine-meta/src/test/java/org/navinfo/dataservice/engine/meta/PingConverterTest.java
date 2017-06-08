@@ -53,7 +53,7 @@ public class PingConverterTest {
 
 	}
 	
-//	@Test
+	@Test
 	public void testpyConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -67,7 +67,7 @@ public class PingConverterTest {
 
 	}
 	
-	@Test
+//	@Test
 	public void testvoiceConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 

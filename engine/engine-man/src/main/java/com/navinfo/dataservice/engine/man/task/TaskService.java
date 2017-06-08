@@ -3583,7 +3583,7 @@ public class TaskService {
 					+ "   AND TYPE = 0"
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
-					+ "   AND (WORK_KIND LIKE '|1|%' OR WORK_KIND LIKE '|0|1%')"
+					+ "   AND (WORK_KIND LIKE '1|%' OR WORK_KIND LIKE '0|1%')"
 					+ "   AND GROUP_ID != 0"
 					+ " UNION ALL"
 					+ " SELECT TASK_ID"
@@ -3592,7 +3592,7 @@ public class TaskService {
 					+ "   AND TYPE = 0"
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
-					+ "   AND WORK_KIND LIKE '|0|0%'"
+					+ "   AND WORK_KIND LIKE '0|0%'"
 					+ "   AND GROUP_ID = 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){

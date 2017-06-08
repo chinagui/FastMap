@@ -27,28 +27,23 @@ public class AdAdminTreeSelector extends AbstractSelector {
 	}
 
 	public IRow loadRowsBySubTaskId(int subtaskId, boolean isLock) throws Exception {
-		AdAdminTree result = new AdAdminTree();
-
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
-
 		// 添加中国大陆为top层级
 		AdAdmin topAdmin = adAdminSelector.loadByAdminId(214, isLock);
-
 		int topRegionId = topAdmin.getPid();
 
-		result = getAdAdminTreeById(topRegionId, isLock, 0);
+        AdAdminTree result = getAdAdminTreeById(topRegionId, isLock, 0);
 
 		// 项目库ID+0000 对应的行政区划代表点AdAdminId
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		
 		int  cityAdadminId = manApi.queryAdminIdBySubtask(subtaskId);
 		
-		if(cityAdadminId == 0)
-		{
+		if(cityAdadminId == 0) {
 			throw new Exception("根据子任务Id:"+subtaskId+" 获取admin_id失败");
 		}
 
-		AdAdmin adAdmin = adAdminSelector.loadByAdminId(cityAdadminId, isLock);
+		AdAdmin adAdmin = adAdminSelector.loadAdAdminRefAdminType(cityAdadminId, 8, false);
 
 		int regionId = adAdmin.getPid();
 
@@ -60,8 +55,8 @@ public class AdAdminTreeSelector extends AbstractSelector {
 
 		for (Integer childRegionId : regionIdList) {
 			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock, beiJinTree.getGroup().getPid());
-			if(childTree != null)
-			{
+
+			if(childTree != null) {
 				result.getChildren().get(0).getChildren().add(childTree);
 			}
 		}
@@ -83,8 +78,7 @@ public class AdAdminTreeSelector extends AbstractSelector {
 			return null;
 		}
 		
-		if(tree.getGroup() == null)
-		{
+		if(tree.getGroup() == null) {
 			return tree;
 		}
 		int group_id = tree.getGroup().getPid();
@@ -110,35 +104,25 @@ public class AdAdminTreeSelector extends AbstractSelector {
 	 * @return
 	 */
 	private AdAdminTree getAdAdminTreeById(int regionId, boolean isLock, int groupId) {
-
 		AdAdminTree result = null;
 
 		String sql = "SELECT tmp.group_id,CASE WHEN c.name IS NULL THEN '无' ELSE c.name END AS NAME FROM (SELECT b.GROUP_ID,a.REGION_ID "
-				+ "FROM AD_ADMIN A, AD_ADMIN_GROUP b " + "WHERE " + "A.REGION_ID = :1 "
-				+ "AND A.REGION_ID = b.REGION_ID_UP " + "AND b.U_RECORD != :2)tmp "
-				+ "Left join AD_ADMIN_NAME c " + "on tmp.region_id = c.region_id "
-				+ "AND c.LANG_CODE = 'CHI' " + "AND c.NAME_CLASS = 1";
-
+				+ "FROM AD_ADMIN A, AD_ADMIN_GROUP b " + "WHERE " + "A.REGION_ID = :1 AND A.REGION_ID = b.REGION_ID_UP " + "AND b.U_RECORD != :2)tmp "
+				+ "Left join AD_ADMIN_NAME c " + "on tmp.region_id = c.region_id AND c.LANG_CODE = 'CHI' " + "AND c.NAME_CLASS = 1";
 		if (isLock) {
 			sql += " for update nowait";
 		}
 
 		PreparedStatement pstmt = null;
-
 		ResultSet resultSet = null;
 
 		try {
 			pstmt = this.conn.prepareStatement(sql);
-
 			pstmt.setInt(1, regionId);
-
 			pstmt.setInt(2, 2);
-
 			resultSet = pstmt.executeQuery();
-
 			if (resultSet.next()) {
 				int group_id = resultSet.getInt("group_id");
-
 				AdAdminGroup group = (AdAdminGroup) new AbstractSelector(AdAdminGroup.class,conn).loadById(group_id, isLock);
 
 				if (group == null) {
@@ -148,13 +132,9 @@ public class AdAdminTreeSelector extends AbstractSelector {
 				}
 
 				result.setGroup(group);
-
 				result.setName(resultSet.getString("name"));
-
 				result.setRegionId(regionId);
-
 				AdAdminPartSelector partSelector = new AdAdminPartSelector(conn);
-
 				AdAdminPart part = partSelector.loadByRegionId(regionId, isLock);
 
 				if (part != null) {
@@ -162,15 +142,11 @@ public class AdAdminTreeSelector extends AbstractSelector {
 				}
 			} else {
 				String sql2 = "SELECT tmp.group_id,CASE WHEN c.name IS NULL THEN '无' ELSE c.name END AS NAME FROM (SELECT b.GROUP_ID,a.REGION_ID "
-						+ "FROM AD_ADMIN A, AD_ADMIN_PART b " + "WHERE " + "A.REGION_ID = :1 "
-						+ "AND A.REGION_ID = b.REGION_ID_DOWN and b.group_id = :2 "
-						+ "AND b.U_RECORD != :3)tmp " + "Left join AD_ADMIN_NAME c "
-						+ "on tmp.region_id = c.region_id " + "AND c.LANG_CODE = 'CHI' "
+						+ "FROM AD_ADMIN A, AD_ADMIN_PART b " + "WHERE " + "A.REGION_ID = :1 AND A.REGION_ID = b.REGION_ID_DOWN and b.group_id = :2 "
+						+ "AND b.U_RECORD != :3)tmp " + "Left join AD_ADMIN_NAME c on tmp.region_id = c.region_id " + "AND c.LANG_CODE = 'CHI' "
 						+ "AND c.NAME_CLASS = 1";
 				PreparedStatement pstmt2 = null;
-
 				ResultSet resultSet2 = null;
-				
 				pstmt2 = this.conn.prepareStatement(sql2);
 
 				pstmt2.setInt(1, regionId);
@@ -201,18 +177,15 @@ public class AdAdminTreeSelector extends AbstractSelector {
 				}
 			}
 		} catch (Exception e) {
-			if(result != null)
-			{
+			if(result != null) {
 				result.setPart(null);
 			}
 
 			e.printStackTrace();
-		}
-		finally{
+		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}
-
 		return result;
 	}
 

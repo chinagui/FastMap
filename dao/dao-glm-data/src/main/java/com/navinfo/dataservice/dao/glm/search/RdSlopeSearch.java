@@ -6,6 +6,13 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import net.sf.json.JSONArray;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -37,7 +44,6 @@ public class RdSlopeSearch implements ISearch {
 
 	@Override
 	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
-
 		RdSlopeSelector selector = new RdSlopeSelector(conn);
 
 		List<IRow> rows = selector.loadByIds(pidList, false, true);
@@ -59,12 +65,10 @@ public class RdSlopeSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+		List<SearchSnapshot> list = new ArrayList<>();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.LINK_PID FROM RD_LINK A, RD_SLOPE B WHERE  sdo_within_distance (A.geometry,sdo_geometry ( :1, 8307),'DISTANCE=0') = 'TRUE' AND A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 ) SELECT A.PID, A.TYPE, A.LINK_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_SLOPE A, TMP1 WHERE A.LINK_PID = TMP1.LINK_PID AND A.U_RECORD != 2 ";
+		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.LINK_PID, A.S_NODE_PID FROM RD_LINK A WHERE sdo_within_distance(A.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'AND A.U_RECORD != 2) SELECT A.PID, A.TYPE, A.LINK_PID, A.NODE_PID, TMP1.GEOMETRY, TMP1.S_NODE_PID FROM RD_SLOPE A, TMP1 WHERE A.LINK_PID = TMP1.LINK_PID AND A.U_RECORD != 2";
 
 		PreparedStatement pstmt = null;
 
@@ -100,33 +104,35 @@ public class RdSlopeSearch implements ISearch {
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+                Geometry geometry = GeoTranslator.geojson2Jts(geojson);
 
-				snapshot.setG(jo.getJSONArray("coordinates"));
+                int nodePid = resultSet.getInt("node_pid");
+                int sNodePid = resultSet.getInt("s_node_pid");
+                if (nodePid != sNodePid) {
+                    geometry = geometry.reverse();
+                }
+
+                double length = GeometryUtils.getLinkLength(geometry);
+
+                if (30.0d < length) {
+                    length = 30.0d;
+                } else {
+                    length = length / 3.0d;
+                }
+
+                Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance((LineString) geometry, length);
+
+				JSONArray array = Geojson.lonlat2Pixel(coordinate.x, coordinate.y, z, px, py);
+
+				snapshot.setG(array);
 
 				list.add(snapshot);
-
 			}
 		} catch (Exception e) {
-
 			throw new Exception(e);
 		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-
-				}
-			}
-
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
 		}
 
 		return list;

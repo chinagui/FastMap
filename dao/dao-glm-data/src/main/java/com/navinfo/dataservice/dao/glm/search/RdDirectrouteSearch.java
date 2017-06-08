@@ -64,12 +64,10 @@ public class RdDirectrouteSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+		List<SearchSnapshot> list = new ArrayList<>();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID,S_NODE_PID,E_NODE_PID, GEOMETRY FROM RD_LINK WHERE sdo_within_distance (geometry,sdo_geometry ( :1, 8307),'DISTANCE=0') = 'TRUE' AND U_RECORD != 2) SELECT  A.PID, A.node_pid,C.s_node_pid,C.e_node_pid,C.GEOMETRY  FROM RD_DIRECTROUTE A, TMP1 C WHERE A.IN_LINK_PID = C.LINK_PID AND A.U_RECORD != 2 ";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, GEOMETRY FROM RD_LINK WHERE sdo_within_distance(geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'AND U_RECORD != 2) SELECT RD.PID, RD.NODE_PID, C.S_NODE_PID, C.E_NODE_PID, C.GEOMETRY LINK_GEOMETRY, RN.GEOMETRY NODE_GEOMETRY FROM RD_DIRECTROUTE RD, TMP1 C, RD_NODE RN WHERE RD.IN_LINK_PID = C.LINK_PID AND RD.NODE_PID = RN.NODE_PID AND RD.U_RECORD != 2 AND RN.U_RECORD != 2";
 
 		PreparedStatement pstmt = null;
 
@@ -95,37 +93,33 @@ public class RdDirectrouteSearch implements ISearch {
 
 				snapshot.setT(35);
 
-				snapshot.setI(resultSet.getInt("pid"));
+				snapshot.setI(resultSet.getInt("PID"));
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				JGeometry geom = JGeometry.load(struct);
+				STRUCT linkStruct = (STRUCT) resultSet.getObject("LINK_GEOMETRY");
+                JGeometry linkGeom = JGeometry.load(linkStruct);
 
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				STRUCT nodeStruct = (STRUCT) resultSet.getObject("NODE_GEOMETRY");
 
-				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+				JSONObject geojson = Geojson.spatial2Geojson(nodeStruct);
+
+				Geojson.point2Pixel(geojson, z, px, py);
 
 				int sNodePid = resultSet.getInt("s_node_pid");
-
 				int eNodePid = resultSet.getInt("e_node_pid");
-
 				int nodePid = resultSet.getInt("node_pid");
-				double angle = AngleCalculator.getDisplayAngle(nodePid,
-						sNodePid, eNodePid, geom);
+				double angle = AngleCalculator.getDisplayAngle(nodePid, sNodePid, eNodePid, linkGeom);
 
 				jsonM.put("a", String.valueOf((int) angle));
 
-				snapshot.setG(jo.getJSONArray("coordinates"));
+				snapshot.setG(geojson.getJSONArray("coordinates"));
 				snapshot.setM(jsonM);
 
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-
 			throw new SQLException(e);
 		} finally {
-
 			DBUtils.closeResultSet(resultSet);
-
 			DBUtils.closeStatement(pstmt);
 		}
 

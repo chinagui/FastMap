@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -124,8 +123,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (faces.size() > 1) {
             Point point = linkGeometry.getCentroid();
             for (AdFace face : faces) {
-                Geometry geo = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
-                if (point.coveredBy(geo)) {
+                if (point.coveredBy(shrink(face.getGeometry()))) {
                     return face;
                 }
             }
@@ -145,7 +143,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
      */
     public static void updateAdminID(AdFace face, Geometry geometry, Connection conn, Result result) throws Exception {
         RdLinkSelector selector = new RdLinkSelector(conn);
-        Geometry faceGeometry = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
+        Geometry faceGeometry = shrink(face.getGeometry());
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
         if (faceGeometry.getCoordinates().length > 200)
             return;
@@ -165,10 +163,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (geometry.getCoordinates().length > 200)
             return;
         Map<Integer, RdLink> maps = new HashMap<>();
-        geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+        geometry = shrink(geometry);
 
-        Geometry p1 = GeoTranslator.transform(faceGeometry.getCentroid(), 0.00001, 5);
-        Geometry p2 = GeoTranslator.transform(geometry.getCentroid(), 0.00001, 5);
+        Geometry p1 = shrink(faceGeometry.getCentroid());
+        Geometry p2 = shrink(geometry.getCentroid());
         if (p1.equals(p2))
             return;
 
@@ -176,7 +174,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {
             int regionId = face.getRegionId();
-            Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+            Geometry linkGeometry = shrink(link.getGeometry());
             // 判断RdLink与AdFace的关系
             // RdLink包含在AdFace内
             if (isContainOrCover(linkGeometry, geometry)) {

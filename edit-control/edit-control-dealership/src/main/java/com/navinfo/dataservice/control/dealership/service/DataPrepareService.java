@@ -132,9 +132,9 @@ public class DataPrepareService {
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+			String selectSql = "select r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
-					+ "where r.source_id = s.source_id and c.chain_code = r.chain and s.chain =  '"+chainCode+"'";
+					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -142,6 +142,7 @@ public class DataPrepareService {
 					
 					List<Map<String, Object>> diffList = new ArrayList();
 					while (rs.next()) {
+						int poiNum = 0;
 						Map<String, Object> result = new HashMap<>();
 						result.put("resultId", rs.getString("result_id"));
 						result.put("sourceId", rs.getString("source_id"));
@@ -152,6 +153,22 @@ public class DataPrepareService {
 						result.put("workType", rs.getInt("work_type"));
 						result.put("dealSrcDiff", rs.getInt("work_status"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
+						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
+							poiNum = poiNum + 1;
+						}
+						if(rs.getString("poi_num_2") != null && "" != rs.getString("poi_num_2")){
+							poiNum = poiNum + 1;
+						}
+						if(rs.getString("poi_num_3") != null && "" != rs.getString("poi_num_3")){
+							poiNum = poiNum + 1;
+						}
+						if(rs.getString("poi_num_4") != null && "" != rs.getString("poi_num_4")){
+							poiNum = poiNum + 1;
+						}
+						if(rs.getString("poi_num_5") != null && "" != rs.getString("poi_num_5")){
+							poiNum = poiNum + 1;
+						}
+						result.put("poiNum", poiNum);
 						diffList.add(result);
 					}
 					return diffList;
@@ -160,6 +177,7 @@ public class DataPrepareService {
 			
 			return run.query(con, selectSql, rs);
 		}catch(Exception e){
+			e.printStackTrace();
 			DbUtils.rollbackAndClose(con);
 		}finally{
 			DbUtils.commitAndClose(con);

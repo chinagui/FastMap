@@ -658,8 +658,8 @@ public class SubtaskService {
 							//获取作业组名称
 							try {
 								String userGroupName = UserGroupService.getInstance().getGroupNameByGroupId(exeGroupId);
-								subtask.put("exeGroupId",exeUserId);
-								subtask.put("executerId",exeUserId);
+								subtask.put("exeGroupId",exeGroupId);
+								subtask.put("executerId",exeGroupId);
 								subtask.put("executer",userGroupName);
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block

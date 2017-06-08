@@ -147,7 +147,15 @@ public class TaskController extends BaseController {
 			}
 			long userId=tokenObj.getUserId();
 			int taskId=dataJson.getInt("taskId");
-			String message = TaskService.getInstance().close(taskId,userId);			
+			String overdueReason="";
+			if(dataJson.containsKey("overdueReason")){
+				overdueReason=dataJson.getString("overdueReason");
+			}
+			String overdueOtherReason="";
+			if(dataJson.containsKey("overdueOtherReason")){
+				overdueReason=dataJson.getString("overdueOtherReason");
+			}
+			String message = TaskService.getInstance().close(taskId,userId,overdueReason,overdueOtherReason);			
 			return new ModelAndView("jsonView", success(message));
 		}catch(Exception e){
 			log.error("任务关闭失败，原因："+e.getMessage(), e);

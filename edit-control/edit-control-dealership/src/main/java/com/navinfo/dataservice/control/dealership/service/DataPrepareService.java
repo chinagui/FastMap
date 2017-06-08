@@ -89,7 +89,7 @@ public class DataPrepareService {
 			String selectSql = "SELECT * FROM "
 					+ "(SELECT A.*, ROWNUM RN FROM "
 					+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
-							+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN > " + begainSize;
+							+ "A WHERE ROWNUM < " + endSize + ")WHERE RN >= " + begainSize;
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override

@@ -2176,7 +2176,7 @@ public class TipsSelector {
         String queryTotal = param.getTipsCheckTotal(parameter);
         int curPage = jsonReq.getInt("curPage");
         int pageSize = jsonReq.getInt("pageSize");
-        int firstNum = (curPage - 1) * pageSize + 1;
+        int firstNum = (curPage - 1) * pageSize;
         SolrDocumentList sdList = conn.queryTipsSolrDocByPage(queryTotal, null, firstNum, pageSize);
         JSONObject jsonObject = new JSONObject();
         long totalNum = sdList.getNumFound();

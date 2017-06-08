@@ -13,6 +13,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -234,5 +235,7 @@ public interface ManApi{
 	 * @throws Exception 
 	 */
 	public Map<Integer, Integer> getsubtaskUserMap() throws Exception;
+
+    public JSONArray getGridIdsByTaskId(int taskId) throws Exception;
 }
 

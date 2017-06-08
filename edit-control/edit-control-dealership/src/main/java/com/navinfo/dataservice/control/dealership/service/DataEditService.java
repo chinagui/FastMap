@@ -1145,7 +1145,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
-    			
+    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
             }
             
             //审核意见为转外业、转客户
@@ -1153,7 +1153,7 @@ public class DataEditService {
             	//更新IX_DEALERSHIP_RESULT.cfm_Memo
             	updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			//更新IX_DEALERSHIP_RESULT.workflow_status=4|5，且写履历
-            	
+            	updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
             }
             //不代理
         	if(wkfStatus==6){
@@ -1161,6 +1161,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=6，且写履历
+    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
         	}
  
             return log;
@@ -1207,6 +1208,15 @@ public class DataEditService {
 		}
 		
 		run.execute(conn, sql);
+	}
+	
+	public void updateResultWkfStatus(int wkfStatus,int resultId,Connection conn,long userId) throws Exception {
+		QueryRunner run = new QueryRunner();
+		String sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET r.WORKFLOW_STATUS＝%d  WHERE r.RESULT_ID=%d ",wkfStatus,resultId);
+		run.execute(conn, sql);
+		
+		int oldWorkflow= getWorkflowStatus(resultId, conn);
+		inserDealershipHistory(conn,3,resultId, oldWorkflow, wkfStatus,userId);
 	}
 
 	/**

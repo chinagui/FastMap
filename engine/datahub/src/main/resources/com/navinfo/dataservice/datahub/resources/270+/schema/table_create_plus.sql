@@ -163,6 +163,11 @@ QC_WORKER             NUMBER(10),
 ORIGINAL_INFO         VARCHAR2(200),
     constraint PK_COLUMN_QC_PROBLEM primary key (ID)
 );
+
+create sequence COLUMN_QC_PROBLEM_seq
+increment by 1
+start with 1
+maxvalue 999999999;
   
 /* GDB+ log part */
 CREATE TABLE LOG_ACTION(

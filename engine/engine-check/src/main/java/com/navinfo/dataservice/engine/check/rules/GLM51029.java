@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
@@ -54,10 +55,10 @@ public class GLM51029 extends baseRule {
                     continue;
                 }
 
-                if (GeometryTypeName.LINESTRING.equals(geometry.intersection(tmpGeo).getGeometryType()) ||
-                        GeometryTypeName.MULTILINESTRING.equals(geometry.intersection(tmpGeo).getGeometryType())) {
+                if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
                     continue;
                 }
+
                 setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
             }
         }

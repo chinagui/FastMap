@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.check.model.utils;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 
 import javax.naming.ldap.Rdn;
@@ -235,6 +237,19 @@ public class CheckGeometryUtils {
             }
         }
         return 5.5d;
+    }
+
+    /**
+     * 判断两个相交面是否仅为共边关系
+     * @param geometry 原始面几何
+     * @param tmpGeometry 相交面几何
+     * @return true：仅共边，false：不仅共边
+     */
+    public static boolean isOnlyEdgeShared(Geometry geometry, Geometry tmpGeometry) {
+        Geometry intersection = geometry.intersection(GeoTranslator.transform(tmpGeometry, GeoTranslator.dPrecisionMap, 5));
+        boolean flag = intersection.isEmpty() ? true : GeometryTypeName.LINESTRING.equals(intersection.getGeometryType())
+                || GeometryTypeName.MULTILINESTRING.equals(intersection.getGeometryType()) ? true : false;
+        return flag;
     }
 
 }

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -147,6 +149,19 @@ public class EditController extends BaseController {
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			if (jsonReq.containsKey("uuid")) {
+
+				int dbId = jsonReq.getInt("dbId");
+
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+
+				SearchAllObject p = new SearchAllObject(conn);
+
+				JSONObject jsonObject = p.loadByElementCondition(jsonReq);
+
+				return new ModelAndView("jsonView", success(jsonObject));
+			}
 
 			ObjType objType = ObjType.valueOf(jsonReq.getString("type"));
 			int pageNum = jsonReq.getInt("pageNum");
@@ -566,6 +581,46 @@ public class EditController extends BaseController {
 			JSONObject array = p.searchLinkByNode(condition);
 
 			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
+	 * 根据node查询以渲染格式返回的link
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/getGeoLiveInfo")
+	public ModelAndView getGeoLiveInfo(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject condition = JSONObject.fromObject(parameter);
+
+			SearchAllObject p = new SearchAllObject();
+
+			JSONObject result = p.getGeoLiveInfo(condition);
+
+			return new ModelAndView("jsonView", success(result));
 
 		} catch (Exception e) {
 

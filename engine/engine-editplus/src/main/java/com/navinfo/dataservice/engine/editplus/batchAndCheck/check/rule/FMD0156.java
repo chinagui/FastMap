@@ -36,7 +36,7 @@ public class FMD0156 extends BasicCheckRule {
 					String nameStr=nameTmp.getName();
 					IxPoiName chName = poiObj.getOfficeStandardCHName();
 					String chNameStr = chName.getName();
-					Pattern p = Pattern.compile(".*[ａ-ｚＡ-Ｚ０-９＠＿－／；：～＾“‘’”，．？！＊＃（）＜＞￥＄％＆＋＇＂·　、。《》°]+.*");
+					Pattern p = Pattern.compile("^[ａ-ｚＡ-Ｚ０-９＠＿－／；：～＾“‘’”，．？！＊＃（）＜＞￥＄％＆＋＇＂·　、。《》°]+$");
 					Matcher m = p.matcher(chNameStr);
 					boolean flag = m.matches();
 					if(nameStr==null||nameStr.isEmpty()){continue;}
@@ -56,7 +56,8 @@ public class FMD0156 extends BasicCheckRule {
 					Matcher m2 = p2.matcher(nameStr);
                     if(m1.matches()||m2.matches()){
                     	setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"No.的“.”点的前后不能存在空格");
-                    	return;}
+                    	return;
+                    }
 				}
 			}
 			}

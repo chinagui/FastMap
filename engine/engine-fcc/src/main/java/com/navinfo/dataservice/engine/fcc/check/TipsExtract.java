@@ -259,6 +259,7 @@ public class TipsExtract {
 		    		solrIndex.put("t_dEditMeth", t_dEditMeth);
 		    		solrIndex.put("t_date", date);
 		    		solrIndex.put("stage", stage);
+		    		solrIndex.put("handler", checkerId);
 		    		solrConn.addTips(solrIndex);
 	
 		            String[] queryColNames={"track"};

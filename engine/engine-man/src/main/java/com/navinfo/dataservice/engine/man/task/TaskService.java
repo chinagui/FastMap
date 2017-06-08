@@ -1560,7 +1560,7 @@ public class TaskService {
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
-			if(!StringUtils.isEmpty(overdueReason)&&!StringUtils.isEmpty(overdueOtherReason)){
+			if(!StringUtils.isEmpty(overdueReason)){
 				Task beanTask=new Task();
 				beanTask.setTaskId(taskId);
 				beanTask.setOverdueReason(overdueReason);

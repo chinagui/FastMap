@@ -79,7 +79,7 @@ public class DataPrepareService {
 	public List<Map<String, Object>> queryDealerBrand(int chainStatus,int pageSize, int pageNum) throws SQLException{
 		
 		//处理分页数据
-		int begainSize = (pageSize-1) * pageNum;
+		int begainSize = (pageSize-1) * pageNum+1;
 		int endSize = pageSize * pageNum;
 		
 		Connection con = null;
@@ -89,7 +89,7 @@ public class DataPrepareService {
 			String selectSql = "SELECT * FROM "
 					+ "(SELECT A.*, ROWNUM RN FROM "
 					+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
-							+ "A WHERE ROWNUM < " + endSize + ")WHERE RN >= " + begainSize;
+							+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override

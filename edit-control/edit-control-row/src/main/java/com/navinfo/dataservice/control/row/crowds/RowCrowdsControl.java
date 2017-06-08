@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -182,7 +183,8 @@ public class RowCrowdsControl {
 				imp.persistChangeLog(OperationSegment.SG_ROW, 0); //众包用户ID
 				// 维护状态表poi_edit_status
 				logger.info("维护状态表:pid" + pid);
-				List<Long> pids = Arrays.asList(pid);
+				Map<Long, String> pids = new HashMap<Long, String>();
+				pids.put(pid, null);
 				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType);
 			}else{
 				return "FID:" + fid + "数据未获取到大区库信息，不入库！";

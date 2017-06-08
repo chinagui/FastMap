@@ -1357,7 +1357,7 @@ public class TaskService {
 							task.put("groupName", rs.getString("GROUP_NAME"));
 						}
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
-						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
 						if(planStartDate != null){
 							task.put("planStartDate", df.format(planStartDate));
 						}else {task.put("planStartDate", "");}

@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -42,42 +44,34 @@ public class GLM22003 extends baseRule {
 	 * @throws Exception
 	 */
 	private void checkSameNode(RdSameNode rdSameNode) throws Exception {
+
 		List<IRow> parts = rdSameNode.getParts();
-		List<Integer> nodePids = new ArrayList<Integer>();
+
+		boolean hadRdNode=false;
+
+		RdSameNodePart rdSameNodePart =null;
 		for (IRow part:parts) {
-			RdSameNodePart rdSameNodePart = (RdSameNodePart)part;
-			nodePids.add(rdSameNodePart.getNodePid());
+			 rdSameNodePart = (RdSameNodePart)part;
+
+			if(rdSameNodePart.getTableName().toUpperCase().equals("RD_NODE"))
+			{
+				hadRdNode=true;
+
+				break;
+			}
 		}
-		// 检查组成同一关系的点是否包含道路Node
-		checkNode(nodePids,rdSameNode.getPid());
-	}
-
-	/**
-	 * 
-	 * @param nodePids
-	 * @param samePid
-	 * @throws Exception
-	 */
-	private void checkNode(List<Integer> nodePids, int samePid) throws Exception {
-		String pids = StringUtils.join(nodePids,",");
-		StringBuilder sb = new StringBuilder();
-		sb.append("select 1");
-		sb.append(" from rd_node t");
-		sb.append(" where t.node_pid in ");
-		sb.append("("+pids+")");
-		
-		
-		String sql = sb.toString();
-		log.info("RdSameNode后检查GLM22003:" + sql);
-
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		// 不包含道路node，报log
-		if(resultList.size() == 0){
-			String target = "[RD_SAME_NODE," + samePid + "]";
-			this.setCheckResult("", target, 0);
+		if(!hadRdNode&&rdSameNodePart!=null){
+
+			RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(this.getConn());
+
+			Geometry nodeGeo = sameNodeSelector.getGeoByNodePidAndTableName(
+					rdSameNodePart.getNodePid(), rdSameNodePart.getTableName(), true);
+
+			String target = "[RD_SAME_NODE," + rdSameNode.getPid() + "]";
+
+			this.setCheckResult(nodeGeo, target, 0);
 		}
 	}
 

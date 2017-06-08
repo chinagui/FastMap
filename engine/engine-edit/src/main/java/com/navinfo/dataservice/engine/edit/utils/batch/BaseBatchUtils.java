@@ -1,21 +1,21 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
-import org.json.JSONException;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import org.json.JSONException;
+
+import java.lang.reflect.Method;
+import java.sql.Connection;
 
 /**
  * @author zhangyt
@@ -64,28 +64,19 @@ public class BaseBatchUtils {
         return flag;
     }
 
-    /**
-     * 将传入几何缩小100000倍后返回
-     *
-     * @param g
-     * @return
-     * @throws JSONException
-     */
-    protected static Geometry shrink(Geometry g) throws JSONException {
-        return GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(g, 0.00001, 5));
+    protected static boolean isMeshNode (Connection conn, Result result, int nodePid) throws Exception {
+        RdNode node = loadRdNode(conn, result, nodePid);
+        if (null == node) {
+            return false;
+        }
+        Geometry nodeGeo = shrink(node.getGeometry());
+        if (MeshUtils.isPointAtMeshBorder(nodeGeo.getCoordinate().x, nodeGeo.getCoordinate().y)) {
+            return true;
+        }
+        return false;
     }
 
-    /**
-     * 判断点是否处于ring的组成线上
-     *
-     * @param conn
-     * @param nodePid
-     * @param faceGeometry
-     * @return
-     * @throws Exception
-     */
-    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry, Result result)
-            throws Exception {
+    private static RdNode loadRdNode(Connection conn, Result result, int nodePid) {
         RdNode node = null;
         try {
             node = (RdNode) new RdNodeSelector(conn).loadById(nodePid, false);
@@ -99,11 +90,36 @@ public class BaseBatchUtils {
                 }
             }
         }
+        return node;
+    }
+
+    /**
+     * 将传入几何缩小100000倍后返回
+     *
+     * @param g
+     * @return
+     * @throws JSONException
+     */
+    protected static Geometry shrink(Geometry g) throws JSONException {
+        return GeoTranslator.transform(g, Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+    }
+
+    /**
+     * 判断点是否处于ring的组成线上
+     *
+     * @param conn
+     * @param nodePid
+     * @param faceGeometry
+     * @return
+     * @throws Exception
+     */
+    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry, Result result) throws Exception {
+        RdNode node = loadRdNode(conn, result, nodePid);
         if (null == node)
             return false;
         // 获取边界线几何
-        Geometry faceBoundary = faceGeometry.getBoundary();
-        return faceBoundary.distance(node.getGeometry()) <= 1;
+        Geometry intersection = faceGeometry.getBoundary().intersection(shrink(node.getGeometry()));
+        return !intersection.isEmpty();
     }
 
     /**

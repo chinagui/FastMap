@@ -1,15 +1,6 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONException;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,22 +9,29 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhaokk LINK 公共方法
  */
 public class AdLinkOperateUtils {
 
-    /*
+    /**
      * 添加link获取下一条连接的link
      */
     public static boolean getNextLink(List<AdLink> links, Map<Integer, AdLink> map) throws Exception {
@@ -59,7 +57,7 @@ public class AdLinkOperateUtils {
         return false;
     }
 
-    /*
+    /**
      * 创建生成一条ADLINK
      * */
     public static void addLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
@@ -78,6 +76,9 @@ public class AdLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
@@ -85,7 +86,7 @@ public class AdLinkOperateUtils {
     }
 
 
-    /*
+    /**
      * 创建生成一条ADLINK返回
      * */
     public static AdLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result,AdLink sourceLink) throws Exception {
@@ -109,6 +110,9 @@ public class AdLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
@@ -116,53 +120,20 @@ public class AdLinkOperateUtils {
         return link;
     }
 
-    /*
-     * 创建生成一条ADLINK
-     * 继承原有LINK的属性
-     * */
-    public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, AdLink sourcelink, Result result) throws Exception {
-        AdLink link = new AdLink();
-        link.setPid(PidUtil.getInstance().applyAdLinkPid());
-        if(sourcelink != null)
-        {
-        	  link.copy(sourcelink);
-        }
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-        if (meshes.size() == 2) {
-            link.setKind(0);
-        }
-        Iterator<String> it = meshes.iterator();
-        List<IRow> meshIRows = new ArrayList<IRow>();
-        while (it.hasNext()) {
-            meshIRows.add(getLinkChildren(link, Integer.parseInt(it.next())));
-        }
-        link.setMeshes(meshIRows);
-        double linkLength = GeometryUtils.getLinkLength(g);
-        link.setLength(linkLength);
-        link.setGeometry(GeoTranslator.transform(g, 100000, 0));
-        link.setsNodePid(sNodePid);
-        link.seteNodePid(eNodePid);
-        result.insertObject(link, ObjStatus.INSERT, link.pid());
-        return link;
-    }
-
-
-    /*
+    /**
      * 维护link的子表 AD_LINK_MESH
      *
      * @param link
      */
     private static AdLinkMesh getLinkChildren(AdLink link, int meshId) {
-
         AdLinkMesh mesh = new AdLinkMesh();
-
         mesh.setLinkPid(link.getPid());
         mesh.setMesh(meshId);
         mesh.setMeshId(meshId);
         return mesh;
     }
 
-    /*
+    /**
      * 创建一条行政区划线对应的端点
      */
     public static JSONObject createAdNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result)
@@ -189,7 +160,7 @@ public class AdLinkOperateUtils {
 
     }
 
-    /*
+    /**
      * 分割行政区划线
      *
      * @param geometry 要分割线的几何 sNodePid 起点pid eNodePid 终点pid catchLinks
@@ -310,43 +281,12 @@ public class AdLinkOperateUtils {
 
     }
 
-    /*
-     * 根据移动link端点重新生成link的几何
-     */
-    public static Geometry caleLinkGeomertyForMvNode(AdLink link, int nodePid, double lon, double lat) throws JSONException {
-        Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
-        Coordinate[] cs = geom.getCoordinates();
-        double[][] ps = new double[cs.length][2];
-
-        for (int i = 0; i < cs.length; i++) {
-            ps[i][0] = cs[i].x;
-
-            ps[i][1] = cs[i].y;
-        }
-
-        if (link.getsNodePid() == nodePid) {
-            ps[0][0] = lon;
-
-            ps[0][1] = lat;
-        } else {
-            ps[ps.length - 1][0] = lon;
-
-            ps[ps.length - 1][1] = lat;
-        }
-        JSONObject geojson = new JSONObject();
-
-        geojson.put("type", "LineString");
-
-        geojson.put("coordinates", ps);
-        return (GeoTranslator.geojson2Jts(geojson, 1, 5));
-    }
-    /*
+    /**
      * 创建行政区划线 针对跨图幅有两种情况
 	 * 1.跨图幅和图幅交集是LineString 
 	 * 2.跨图幅和图幅交集是MultineString
 	 * 3.跨图幅需要生成和图廓线的交点
 	 */
-
     public static void createAdLinkWithMesh(Geometry g,
                                             Map<Coordinate, Integer> maps, Result result) throws Exception {
         if (g != null) {
@@ -388,7 +328,7 @@ public class AdLinkOperateUtils {
         return links;
     }
 
-    /*
+    /**
      * 创建行政区划线 针对跨图幅创建图廓点不能重复
      */
     public static void calAdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
@@ -418,7 +358,7 @@ public class AdLinkOperateUtils {
                 (int) node.get("e"), result);
     }
 
-    /*
+    /**
      * 创建行政区划线 针对跨图幅创建图廓点不能重复
      */
     public static AdLink getCalAdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,

@@ -1082,41 +1082,43 @@ public class DataEditService {
         Connection poiConn = null;
         Connection dealershipConn = null;
         JSONObject result = null;
-        String log="保存成功";
+        String log="";
         
         List<Integer> pids = new ArrayList<Integer>();
         
 		try{
             JSONObject dealershipInfo = JSONObject.fromObject(parameter.getString("dealershipInfo"));
             int wkfStatus= dealershipInfo.getInt("wkfStatus");
-            int dealershipDbId= dealershipInfo.getInt("dbId");
             int resultId = dealershipInfo.getInt("resultId");
             String cfmMemo = dealershipInfo.getString("cfmMemo");
-            dealershipConn = DBConnector.getInstance().getConnectionById(dealershipDbId);
+            dealershipConn = DBConnector.getInstance().getDealershipConnection();
 			
           //审核意见为内业录入
             if(wkfStatus==3){
             	JSONObject poiData = JSONObject.fromObject(parameter.getString("poiData"));
             	int poiDbId = poiData.getInt("dbId");
-                int objId = poiData.getInt("objId");
-                String poiNum = poiData.getString("poiNum");
+            	String cmd=poiData.getString("command");
+            	if(cmd.equals("UPDATE")){
+            		int objId = poiData.getInt("objId");
+                    String poiNum = poiData.getString("poiNum");
 
-                poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
-                
-                LogReader logRead = new LogReader(poiConn);
-                int sate=logRead.getObjectState(objId, "IX_POI");
-                //需判断采纳POI是否被外业删除,为删除不可保存
-                if(sate==2){
-                	throw new Exception("该poi已被外业删除，不可用");
-                }
-                //需判断采纳POI是否被占用
-                if(isOccupied(poiNum ,dealershipConn)){
-                	throw new Exception("该poi已被占用，不可用");
-                }
-                //需判断采纳POI是否已被使用
-                if(haveUsed(poiNum ,dealershipConn)){
-                	throw new Exception("该poi已被使用，不可用");
-                }
+                    poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
+                    
+                    LogReader logRead = new LogReader(poiConn);
+                    int sate=logRead.getObjectState(objId, "IX_POI");
+                    //需判断采纳POI是否被外业删除,为删除不可保存
+                    if(sate==2){
+                    	throw new Exception("该poi已被外业删除，不可用");
+                    }
+                    //需判断采纳POI是否被占用
+                    if(isOccupied(poiNum ,dealershipConn)){
+                    	throw new Exception("该poi已被占用，不可用");
+                    }
+                    //需判断采纳POI是否已被使用
+                    if(haveUsed(poiNum ,dealershipConn)){
+                    	throw new Exception("该poi已被使用，不可用");
+                    }
+            	}
 
                 //更新POI并且写履历
                 DefaultObjImportor importor = new DefaultObjImportor(poiConn,null);
@@ -1143,7 +1145,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
-    			
+    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
             }
             
             //审核意见为转外业、转客户
@@ -1151,7 +1153,7 @@ public class DataEditService {
             	//更新IX_DEALERSHIP_RESULT.cfm_Memo
             	updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			//更新IX_DEALERSHIP_RESULT.workflow_status=4|5，且写履历
-            	
+            	updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
             }
             //不代理
         	if(wkfStatus==6){
@@ -1159,6 +1161,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=6，且写履历
+    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
         	}
  
             return log;
@@ -1205,6 +1208,15 @@ public class DataEditService {
 		}
 		
 		run.execute(conn, sql);
+	}
+	
+	public void updateResultWkfStatus(int wkfStatus,int resultId,Connection conn,long userId) throws Exception {
+		QueryRunner run = new QueryRunner();
+		String sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET r.WORKFLOW_STATUS＝%d  WHERE r.RESULT_ID=%d ",wkfStatus,resultId);
+		run.execute(conn, sql);
+		
+		int oldWorkflow= getWorkflowStatus(resultId, conn);
+		inserDealershipHistory(conn,3,resultId, oldWorkflow, wkfStatus,userId);
 	}
 
 	/**

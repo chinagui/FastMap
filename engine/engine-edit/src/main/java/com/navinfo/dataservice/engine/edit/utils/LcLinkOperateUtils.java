@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -68,6 +69,9 @@ public class LcLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
@@ -101,6 +105,9 @@ public class LcLinkOperateUtils {
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+        if (link.getGeometry().isEmpty()) {
+            throw new ServiceException("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
@@ -114,30 +121,6 @@ public class LcLinkOperateUtils {
                 kind.setKind(8);
             link.getKinds().add(kind);
         }
-        return link;
-    }
-
-    /*
-     * 创建生成一条LCLINK 继承原有LINK的属性
-     */
-    public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, LcLink sourcelink, Result result)
-            throws Exception {
-        LcLink link = new LcLink();
-        link.setPid(PidUtil.getInstance().applyLcLinkPid());
-        link.copy(sourcelink);
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-        Iterator<String> it = meshes.iterator();
-        List<IRow> meshIRows = new ArrayList<IRow>();
-        while (it.hasNext()) {
-            meshIRows.add(getLinkChildren(link, Integer.parseInt(it.next())));
-        }
-        link.setMeshes(meshIRows);
-        double linkLength = GeometryUtils.getLinkLength(g);
-        link.setLength(linkLength);
-        link.setGeometry(GeoTranslator.transform(g, 100000, 0));
-        link.setsNodePid(sNodePid);
-        link.seteNodePid(eNodePid);
-        result.insertObject(link, ObjStatus.INSERT, link.pid());
         return link;
     }
 

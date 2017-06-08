@@ -1105,8 +1105,9 @@ System.out.println(sGeojson2);
             if(sourceType.equals("1205") || sourceType.equals("1206")
                     || sourceType.equals("1211")) {//新增或者修改
                 JSONObject deepJson = jsonInfo.getJSONObject("deep");
-                int relateLinkType = deepJson.getInt("type");
-                String relateId = deepJson.getString("id");
+                JSONObject fJson = deepJson.getJSONObject("f");
+                String relateId = fJson.getString("id");
+                int relateLinkType = fJson.getInt("type");
 
                 if(relateLinkType == 1) {//GDB LINK
                     java.sql.Connection oraConn = DBConnector.getInstance().getConnectionById(dbId);

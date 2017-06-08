@@ -56,7 +56,7 @@ public class TipsPreCheckUtils {
      * @throws Exception
      */
     public static boolean hasInSolr(SolrController solr, String id) throws Exception {
-        String query = "s_sourceType:1501 AND -t_lifecycle:3 AND relate_links:*|" + id + "|*";
+        String query = "s_sourceType:1501 AND -t_lifecycle:1 AND relate_links:*|" + id + "|*";
         SolrDocumentList solresult = solr.queryTipsSolrDocFilter(query, null);
         if (solresult.size() > 0){
             return true;

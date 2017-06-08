@@ -1087,7 +1087,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 					result.put("deepCarrental", json);
 				}
 			}
-			JSONObject res = getKcLogFlag(result, taskId, userId);
+			JSONObject res = getKcLogFlag(result, taskId, userId,isQuality);
 			return res;
 		} catch (Exception e){
 			throw e;
@@ -1106,7 +1106,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId) throws Exception{
+	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId,Integer isQuality) throws Exception{
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		
@@ -1119,7 +1119,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
 			sb.append("  and s.task_id = :1");
 			sb.append("  and s.handler = :2");
-			sb.append("  and s.qc_flag = 0");//0 常规 		1 质检
+			if(isQuality==0){//常规任务
+				sb.append("	AND s.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s.QC_FLAG = 1");
+			}
 			sb.append(" GROUP BY c.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, c1.second_work_item as type");
@@ -1128,7 +1133,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
 			sb.append("  and s1.task_id = :3");
 			sb.append("  and s1.handler = :4");
-			sb.append("  and s1.qc_flag = 0");//0 常规 	1 质检
+			if(isQuality==0){//常规任务
+				sb.append("	AND s1.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s1.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s1.QC_FLAG = 1");
+			}
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());

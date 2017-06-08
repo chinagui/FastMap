@@ -126,7 +126,7 @@ public class taskTest extends InitApplication{
 	@Test
 	public void testReOpen() throws ServiceException
 	{
-		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
+		TaskService.getInstance().reOpen(Long.valueOf(0), 514);
 	}
 	
 	@Test

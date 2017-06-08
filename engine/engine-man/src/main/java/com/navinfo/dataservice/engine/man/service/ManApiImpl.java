@@ -375,38 +375,12 @@ public class ManApiImpl implements ManApi {
         Connection conn = null;
         try{
             conn = DBConnector.getInstance().getManConnection();
-            return getGridListByTaskId(conn, taskId);
+            return TaskService.getInstance().getGridListByTaskId(conn, taskId);
         }catch(Exception e){
             DbUtils.rollbackAndCloseQuietly(conn);
             throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
         }finally {
             DbUtils.commitAndCloseQuietly(conn);
-        }
-    }
-
-    /**
-     * @param taskId
-     * @return
-     * @throws Exception
-     */
-    public JSONArray getGridListByTaskId(Connection conn, int taskId) throws Exception {
-        try{
-            QueryRunner run = new QueryRunner();
-            String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
-
-            ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
-                public JSONArray handle(ResultSet rs) throws SQLException {
-                    ArrayList<String> arrayList = new ArrayList<String>();
-                    while(rs.next()) {
-                        arrayList.add(rs.getString("GRID_ID"));
-                    }
-                    return JSONArray.fromObject(arrayList);
-                }
-            };
-            return run.query(conn, selectSql, rsHandler);
-        }catch(Exception e){
-            DbUtils.rollbackAndCloseQuietly(conn);
-            throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
         }
     }
 }

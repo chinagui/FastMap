@@ -1167,7 +1167,7 @@ System.out.println(sGeojson2);
 			return rowkey;
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
-			throw new Exception("更新tips出错：" + e.getMessage() + "\n" + jsonInfo,
+			throw new Exception("更新tips出错：" + e.getMessage(),
 					e);
 		}
 

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -175,25 +176,26 @@ public class GLM08004_2 extends baseRule{
 		if(resultList.size()>0){
 			this.setCheckResult("", "", 0);
 		}
-		//检查经过线
-		StringBuilder sb2 = new StringBuilder();
+		if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+            //检查经过线
+            StringBuilder sb2 = new StringBuilder();
 
-		sb2.append("SELECT 1 FROM RD_LINK_FORM RF WHERE RF.FORM_OF_WAY = 20 ");
-		sb2.append(" AND RF.U_RECORD <> 2");
-		sb2.append(" AND RF.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
-		sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RF.LINK_PID");
-		sb2.append(" AND RLF.FORM_OF_WAY = 50");
-		sb2.append(" AND RLF.U_RECORD <> 2)");
+            sb2.append("SELECT 1 FROM RD_LINK_FORM RF WHERE RF.FORM_OF_WAY = 20 ");
+            sb2.append(" AND RF.U_RECORD <> 2");
+            sb2.append(" AND RF.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(), ",") + ")");
+            sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RF.LINK_PID");
+            sb2.append(" AND RLF.FORM_OF_WAY = 50");
+            sb2.append(" AND RLF.U_RECORD <> 2)");
 
-		String sql2 = sb2.toString();
-		log.info("RdRestriction前检查GLM08004_2:" + sql2);
+            String sql2 = sb2.toString();
+            log.info("RdRestriction前检查GLM08004_2:" + sql2);
 
-		resultList = getObj.exeSelect(this.getConn(), sql2);
+            resultList = getObj.exeSelect(this.getConn(), sql2);
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
-		}
-		
+            if (resultList.size() > 0) {
+                this.setCheckResult("", "", 0);
+            }
+        }
 	}
 
 	/* (non-Javadoc)

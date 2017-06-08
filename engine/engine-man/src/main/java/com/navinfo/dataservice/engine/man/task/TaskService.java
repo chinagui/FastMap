@@ -3015,8 +3015,7 @@ public class TaskService {
 					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID,PARAMETER)"
 					+ "VALUES"
 					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL,?)" ;
-			Clob clob=null;
-			clob = conn.createClob();
+			Clob clob=ConnectionUtil.createClob(conn);
 			clob.setString(1, parameter.toString());
 			
 			run.update(conn, selectSql,clob);

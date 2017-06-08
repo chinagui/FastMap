@@ -1,6 +1,5 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -9,7 +8,6 @@ import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1087,7 +1085,7 @@ public abstract class MeshUtils {
 //    	System.out.println(minPoint[0]+" , "+minPoint[1]+" , "+maxPoint[2]+" , "+maxPoint[3]);
     	return new double[]{minPoint[0],minPoint[1],maxPoint[2],maxPoint[3]};
     }
-    public static int[] getMinMaxInteger(Set set){
+    public static int[] getMinMaxInteger(Set<Integer> set){
 
     	Integer max = Collections.max(set);
     	Integer min = Collections.min(set);

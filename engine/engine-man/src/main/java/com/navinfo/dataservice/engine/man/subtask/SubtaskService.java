@@ -410,19 +410,19 @@ public class SubtaskService {
 		Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
 		if(infor==null){
-			//中线子任务，若作业员或组是修改时加的，则自动维护名称：任务名称_作业员
-			if(oldSubtask!=null){
-				if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
-					UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
-					newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName());
-					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
-				}
-				if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
-					String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
-					newSubtask.setName(newSubtask.getName()+"_"+groupName);
-					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
-				}
-			}
+//			//中线子任务，若作业员或组是修改时加的，则自动维护名称：任务名称_作业员
+//			if(oldSubtask!=null){
+//				if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+//					UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+//					newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName());
+//					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+//				}
+//				if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+//					String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+//					newSubtask.setName(newSubtask.getName()+"_"+groupName);
+//					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+//				}
+//			}
 			return newSubtask;
 		}		
 		//快线子任务名称自动赋值
@@ -440,12 +440,13 @@ public class SubtaskService {
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}	
 		}else{
-			if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
+			if(newSubtask.getExeUserId()!=0&&newSubtask.getExeUserId()!=oldSubtask.getExeUserId()){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
-			if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+			if(newSubtask.getExeGroupId()!=0&&newSubtask.getExeGroupId()!=oldSubtask.getExeGroupId()){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
 				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
@@ -2620,6 +2621,40 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getGroupNameBySubtaskId，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+	
+			String selectSql = "SELECT S.SUBTASK_ID,S.EXE_USER_ID FROM SUBTASK S ";
+			log.info("getsubtaskUserMap SQL："+selectSql);
+			
+
+			ResultSetHandler<Map<Integer, Integer>> rsHandler = new ResultSetHandler<Map<Integer, Integer>>() {
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Integer> subtaskUserMap = new HashMap<Integer,Integer>();
+					while (rs.next()) {
+						subtaskUserMap.put(rs.getInt("SUBTASK_ID"), rs.getInt("EXE_USER_ID"));
+					}
+					return subtaskUserMap;
+				}	
+			};
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

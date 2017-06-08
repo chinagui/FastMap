@@ -34,7 +34,10 @@ public class FMBAT20141 extends BasicBatchRule {
 	@Override
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj=(IxPoiObj) obj;
-		String adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+			adminCode=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+		}
 		//存在IX_POI_NAME标准化中文名称，新增或者修改履历
 		List<IxPoiName> names = poiObj.getStandardCHIName();
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -43,14 +46,14 @@ public class FMBAT20141 extends BasicBatchRule {
 				String newName=name.getName();
 				//批拼音
 				String fullName = ExcelReader.h2f(newName);
-				name.setNamePhonetic(metadataApi.pyConvert(fullName,adminId,null));
+				name.setNamePhonetic(metadataApi.pyConvert(fullName,adminCode,null));
 				
 			} else if (name.getHisOpType().equals(OperationType.UPDATE)&&name.hisOldValueContains(IxPoiName.NAME)) {
 				String oldName=(String) name.getHisOldValue(IxPoiName.NAME);
 				String newName=name.getName();
 				if(!newName.equals(oldName)){
 					//批拼音
-					name.setNamePhonetic(metadataApi.pyConvert(newName,adminId,null));
+					name.setNamePhonetic(metadataApi.pyConvert(newName,adminCode,null));
 				}
 			}
 		}

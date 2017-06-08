@@ -49,9 +49,13 @@ public class FMBAT20103 extends BasicBatchRule {
 		if (chiAddress == null) {
 			return;
 		}
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminCode=pidAdminId.get(poi.getPid()).toString();
+		}
 		if (chiAddress.getHisOpType().equals(OperationType.INSERT) || chiAddress.getHisOpType().equals(OperationType.UPDATE)) {
 			chiAddress.setFullname(ExcelReader.h2f(chiAddress.getFullname()));
-			chiAddress.setFullnamePhonetic(apiService.pyConvert(chiAddress.getFullname(),pidAdminId.get(poi.getPid()).toString(),null));
+			chiAddress.setFullnamePhonetic(apiService.pyConvert(chiAddress.getFullname(),adminCode,null));
 		} 
 	}
 

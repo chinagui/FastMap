@@ -254,7 +254,7 @@ public class DataPrepareService {
 		log.info("start 表表差分物理删除无效记录");
 		String sql="DELETE FROM IX_DEALERSHIP_RESULT"
 				+ " WHERE CHAIN = '"+chainCode+"'"
-				+ "   AND RESULT_ID  IN ";
+				+ "   AND RESULT_ID NOT IN ";
 		QueryRunner run=new QueryRunner();
 		if(resultIdSet.size()>1000){
 			sql= sql+"(SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
@@ -345,9 +345,10 @@ public class DataPrepareService {
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+					changeResultObj(resultObj,sourceObj);
 				}
 				else{sourceObj=new IxDealershipSource();}
-				changeResultObj(resultObj,sourceObj);
+				
 				if(StringUtils.isEmpty(resultObj.getProvince())){
 					if(cpRegionMap.containsKey(resultObj.getProvince())){
 						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
@@ -384,6 +385,9 @@ public class DataPrepareService {
 		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
 		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
 		resultObj.setGeometry(sourceObj.getGeometry());
+		if(StringUtils.isEmpty(resultObj.getChain())){
+			resultObj.setChain(sourceObj.getChain());
+		}
 		
 	}
 
@@ -467,9 +471,9 @@ public class DataPrepareService {
 					+ " s.tel_service old_tel_service,s.tel_other old_tel_other,s.post_code old_post_code,"
 					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
 					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
-					+ " where r.source_id = s.source_id "
+					+ " where r.source_id = s.source_id(+) "
 					+ " and r.chain = '"+chainCode+"'";
-			
+			log.info("selectSql: "+selectSql);
 			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
 				@Override
 				public List<ExpIxDealershipResult> handle(ResultSet rs) throws SQLException {
@@ -588,24 +592,26 @@ public class DataPrepareService {
 							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
-							List<IxDealershipResult> update = resultMap.get(2);
-							List<IxDealershipResult> delete = resultMap.get(3);
-							for(IxDealershipResult bean:insert){
-								log.info(bean.getName()+bean.getAddress());
-								log.info(bean.getGeometry());
-								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							List<IxDealershipResult> update = resultMap.get(3);
+							log.info("insert object");
+							if(insert!=null&&insert.size()>0){
+								for(IxDealershipResult bean:insert){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+								}
 							}
-							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
-							}
-							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+							log.info("update object");
+							if(update!=null&&update.size()>0){
+								for(IxDealershipResult bean:update){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+								}
 							}
 							
-
 							int workType = 2;
 							int workStatus = 0;
-							updateIxDealershipChain(conn,chain,workStatus,workType);
+							int chain_status = 1;
+							updateIxDealershipChain(conn,chain,workStatus,workType,chain_status);
 							log.info("import chian:" + chain);
 						}
 					}
@@ -669,15 +675,16 @@ public class DataPrepareService {
 
 	/**
 	 * @param conn 
+	 * @param chainStatus 
 	 * @param ixDealershipChain
 	 * @throws ServiceException 
 	 */
-	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType) throws ServiceException {
+	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType, int chainStatus) throws ServiceException {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			
-			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + ",C.CHAIN_STATUS = " + chainStatus + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
 			log.info("updateIxDealershipChain sql:" + updateSql);
 			run.update(conn, updateSql);
 		}catch(Exception e){

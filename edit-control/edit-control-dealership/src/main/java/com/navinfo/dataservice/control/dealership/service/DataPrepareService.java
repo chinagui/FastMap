@@ -471,9 +471,9 @@ public class DataPrepareService {
 					+ " s.tel_service old_tel_service,s.tel_other old_tel_other,s.post_code old_post_code,"
 					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
 					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
-					+ " where r.source_id = s.source_id "
+					+ " where r.source_id = s.source_id(+) "
 					+ " and r.chain = '"+chainCode+"'";
-			
+			log.info("selectSql: "+selectSql);
 			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
 				@Override
 				public List<ExpIxDealershipResult> handle(ResultSet rs) throws SQLException {

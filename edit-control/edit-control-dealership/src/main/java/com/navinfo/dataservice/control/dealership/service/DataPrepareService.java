@@ -680,13 +680,16 @@ public class DataPrepareService {
 		for (File f : flist) {
 		    if (f.isDirectory()) {
 		        for(File fileInner:f.listFiles()){
-		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")){
+		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")||fileInner.getAbsoluteFile().toString().contains(".xls")){
 		        		list.add(fileInner.getAbsolutePath());
 		        		break;
 		        	}
 		        }
 		        getDirectory(f,list);
 		    } else {
+		    	if(f.getAbsoluteFile().toString().contains(".xlsx")||f.getAbsoluteFile().toString().contains(".xls")){
+	        		list.add(f.getAbsolutePath());
+	        	}
 		    }
 		}
 	}

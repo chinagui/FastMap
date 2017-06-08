@@ -322,8 +322,12 @@ public class DiffService {
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
 
-						if(resultDpAttrDiff.getGeometry()==null&&resultDpAttrDiff.getAddress()!=null){
-							resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+						if(resultDpAttrDiff.getGeometry()==null){
+							if(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress())!=null){
+								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+							}else{
+								throw new Exception("无法获取geometry");
+							}
 						}
 						flag = true;
 						break;
@@ -344,8 +348,12 @@ public class DiffService {
 			}
 			log.info("insert :" + i.getName() + "--" + i.getAddress());
 			insertList.add(resultDpAttrDiff);
-			if(resultDpAttrDiff.getGeometry()==null&&resultDpAttrDiff.getAddress()!=null){
-				resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+			if(resultDpAttrDiff.getGeometry()==null){
+				if(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress())!=null){
+					resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+				}else{
+					throw new Exception("无法获取geometry");
+				}
 			}
 			/**************** 其他逻辑 *******************/
 			

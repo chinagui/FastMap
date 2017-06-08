@@ -79,8 +79,8 @@ public class DataPrepareService {
 	public List<Map<String, Object>> queryDealerBrand(int chainStatus,int pageSize, int pageNum) throws SQLException{
 		
 		//处理分页数据
-		int begainSize = pageSize;
-		int endSize = (pageSize+1) * pageNum;
+		int begainSize = (pageSize-1) * pageNum;
+		int endSize = pageSize * pageNum;
 		
 		Connection con = null;
 		try{

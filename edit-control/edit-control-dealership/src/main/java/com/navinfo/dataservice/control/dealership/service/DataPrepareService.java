@@ -142,7 +142,7 @@ public class DataPrepareService {
 					
 					List<Map<String, Object>> diffList = new ArrayList();
 					while (rs.next()) {
-						int poi_num = 0;
+						int poiNum = 0;
 						Map<String, Object> result = new HashMap<>();
 						result.put("resultId", rs.getString("result_id"));
 						result.put("sourceId", rs.getString("source_id"));
@@ -154,21 +154,21 @@ public class DataPrepareService {
 						result.put("dealSrcDiff", rs.getInt("work_status"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
 						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
-							poi_num = poi_num + 1;
+							poiNum = poiNum + 1;
 						}
 						if(rs.getString("poi_num_2") != null && "" != rs.getString("poi_num_2")){
-							poi_num = poi_num + 1;
+							poiNum = poiNum + 1;
 						}
 						if(rs.getString("poi_num_3") != null && "" != rs.getString("poi_num_3")){
-							poi_num = poi_num + 1;
+							poiNum = poiNum + 1;
 						}
 						if(rs.getString("poi_num_4") != null && "" != rs.getString("poi_num_4")){
-							poi_num = poi_num + 1;
+							poiNum = poiNum + 1;
 						}
 						if(rs.getString("poi_num_5") != null && "" != rs.getString("poi_num_5")){
-							poi_num = poi_num + 1;
+							poiNum = poiNum + 1;
 						}
-						result.put("poiNum", poi_num);
+						result.put("poiNum", poiNum);
 						diffList.add(result);
 					}
 					return diffList;

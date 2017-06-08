@@ -461,7 +461,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static int getRegionId(int resultId, Connection con) throws Exception{
+	public int getRegionId(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.region_id from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
@@ -488,7 +488,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static int getDailyDbId(int regionId, Connection mancon) throws Exception{
+	public int getDailyDbId(int regionId, Connection mancon) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.daily_db_id from REGION t where t.region_id =" + regionId;
@@ -517,7 +517,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static void editChainStatus(String chainCode, Connection con) throws Exception{
+	public void editChainStatus(String chainCode, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_CHAIN t set t.work_status = 3 where t.chain_code = '"+chainCode+"'";
@@ -535,7 +535,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static int getWorkflowStatus(int resultId, Connection con) throws Exception{
+	public int getWorkflowStatus(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select r.workflow_status from IX_DEALERSHIP_RESULT r where r.RESULT_ID = "+resultId;
@@ -565,7 +565,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static List<Integer> getResultId(String chainCode, Connection con) throws Exception{
+	public List<Integer> getResultId(String chainCode, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select r.RESULT_ID from IX_DEALERSHIP_RESULT r where r.chain = '"+chainCode+"'";
@@ -595,7 +595,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static void editResultCaseStatusSame(int resultId, Connection con) throws Exception{
+	public void editResultCaseStatusSame(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_RESULT t set t.deal_status = 3, t.workflow_status = 9 where t.RESULT_ID ="+resultId;
@@ -614,7 +614,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static void insideEditOutside(int resultId, String chainCode, Connection con, Connection dailycon, long userId, int dailyDbId) throws Exception{
+	public void insideEditOutside(int resultId, String chainCode, Connection con, Connection dailycon, long userId, int dailyDbId) throws Exception{
 		//根据chainCode查询对应外业采集POI_ID
 		String poiNumber = getResultPoiNumber(resultId, con);
 		if(poiNumber == null){
@@ -675,7 +675,7 @@ public class DataEditService {
 	 * @param result
 	 * 
 	 * */
-	public static JSONObject prepareDeepControlData(Map<String, Object> poiMap, int dailyDbId){
+	public JSONObject prepareDeepControlData(Map<String, Object> poiMap, int dailyDbId){
 		
 		Map<String, Object> data = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
@@ -708,7 +708,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public static void producePOIDRecord(JSONObject json, Connection dailycon, long userId) throws Exception{
+	public void producePOIDRecord(JSONObject json, Connection dailycon, long userId) throws Exception{
 		try {
             DefaultObjImportor importor = new DefaultObjImportor(dailycon,null);
 			EditJson editJson = new EditJson();
@@ -731,7 +731,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static int getMatchMethodFromResult(int resultId, Connection con) throws Exception{
+	public int getMatchMethodFromResult(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select t.match_method from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resultId;
@@ -759,7 +759,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static void updatePoiStatus(String pid, Connection dailycon) throws Exception{
+	public void updatePoiStatus(String pid, Connection dailycon) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update POI_EDIT_STATUS t set t.status = 3 where t.pid = "+pid;
@@ -777,7 +777,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static Map<String, Object> getResultKindCode(String poiNumber, Connection dailycon) throws Exception{
+	public Map<String, Object> getResultKindCode(String poiNumber, Connection dailycon) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.row_id,t.pid,t.kind_code,t.chain from IX_POI t where t.poi_num ='"+poiNumber+"'";
@@ -809,7 +809,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public static Map<String, Object> getMetaKindCode(String chainCode) throws SQLException{
+	public Map<String, Object> getMetaKindCode(String chainCode) throws SQLException{
 		Connection Metacon = null;
 		try{
 			Metacon = DBConnector.getInstance().getMetaConnection();
@@ -844,7 +844,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static void editResultTableBrands(int resultId, String brand, String kindCode, Connection con) throws Exception{
+	public void editResultTableBrands(int resultId, String brand, String kindCode, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_RESULT t "
@@ -863,7 +863,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static int getPoiStatus(String pid, Connection dailycon) throws Exception{
+	public int getPoiStatus(String pid, Connection dailycon) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select t.status from POI_EDIT_STATUS t where t.pid ="+pid;
@@ -891,7 +891,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static String getResultPoiNumber(int resultId, Connection con) throws Exception{
+	public String getResultPoiNumber(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select t.cfm_poi_num from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId+ "and t.IS_DELETED = 0";
@@ -917,7 +917,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static void resultMaintainSource(int resultId, Connection con) throws Exception{
+	public void resultMaintainSource(int resultId, Connection con) throws Exception{
 		try{
 			//查询对应resultID数据
 			int sourceId = getResultTable(resultId, con);
@@ -936,7 +936,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static int getResultTable(int resultId, Connection con) throws Exception{
+	public int getResultTable(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.SOURCE_ID from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
@@ -964,7 +964,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static void updateSource(Connection con, int resulId, int sourceId) throws Exception{
+	public void updateSource(Connection con, int resulId, int sourceId) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_SOURCE s set "
@@ -991,7 +991,7 @@ public class DataEditService {
 	 * @param 
 	 * @author songhe
 	 * */
-	public static void clearRelevancePoi(int resultId, Connection con) throws Exception{
+	public void clearRelevancePoi(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
@@ -1033,9 +1033,15 @@ public class DataEditService {
 			DbUtils.rollbackAndClose(mancon);
 			DbUtils.rollbackAndClose(dailycon);
 		}finally{
-			DbUtils.commitAndClose(con);
-			DbUtils.commitAndClose(mancon);
-			DbUtils.commitAndClose(dailycon);
+			if(con != null){
+				DbUtils.commitAndClose(con);
+			}
+			if(mancon != null){
+				DbUtils.commitAndClose(mancon);
+			}
+			if(dailycon != null){
+				DbUtils.commitAndClose(dailycon);
+			}
 		}
 	}
 	
@@ -1045,7 +1051,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public static String getChainCodeByResultId(int resultId, Connection con) throws Exception{
+	public String getChainCodeByResultId(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.CHAIN from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
@@ -1318,7 +1324,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public static void inserDealershipHistory(Connection con, int operRate, int resultId, int oldValue, int newValue, long userId) throws Exception{
+	public void inserDealershipHistory(Connection con, int operRate, int resultId, int oldValue, int newValue, long userId) throws Exception{
 		try{
 			Date nowTime = new Date(System.currentTimeMillis());
 			String u_date = DateUtils.formatDate(nowTime);

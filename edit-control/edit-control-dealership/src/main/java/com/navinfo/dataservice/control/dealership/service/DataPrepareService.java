@@ -254,7 +254,7 @@ public class DataPrepareService {
 		log.info("start 表表差分物理删除无效记录");
 		String sql="DELETE FROM IX_DEALERSHIP_RESULT"
 				+ " WHERE CHAIN = '"+chainCode+"'"
-				+ "   AND RESULT_ID  IN ";
+				+ "   AND RESULT_ID NOT IN ";
 		QueryRunner run=new QueryRunner();
 		if(resultIdSet.size()>1000){
 			sql= sql+"(SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";

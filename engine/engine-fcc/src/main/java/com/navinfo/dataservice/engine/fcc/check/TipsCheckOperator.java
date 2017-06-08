@@ -273,7 +273,7 @@ public class TipsCheckOperator {
         	
         	solrIndex.put("t_dEditMeth", t_dEditMeth);
         	
-        	solrIndex.put("date", date);
+        	solrIndex.put("t_date", date);
         	
         	solrConn.addTips(solrIndex);
         	

@@ -55,13 +55,13 @@ public class RegionIndexExporter {
 		}
 			prep.setInt(1, regionId);
 
-			prep.setDouble(2, xyArr[0]);
+			prep.setDouble(2, xyArr[0]);//最小经度
 
-			prep.setDouble(3, xyArr[1]);
+			prep.setDouble(3, xyArr[2]);//最大经度
 
-			prep.setDouble(4, xyArr[2]);
+			prep.setDouble(4, xyArr[1]);//最小维度
 
-			prep.setDouble(5, xyArr[3]);
+			prep.setDouble(5, xyArr[3]);//最大维度
 
 			prep.executeUpdate();
 		

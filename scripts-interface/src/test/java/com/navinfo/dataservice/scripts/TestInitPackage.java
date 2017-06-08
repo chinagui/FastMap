@@ -82,10 +82,11 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 
 		String path="f:/gdb/";
 		String type="month";
+		int regionId = 1;
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
-		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,0);
+		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,regionId);
 
 		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 				.getBean("datahubApi");

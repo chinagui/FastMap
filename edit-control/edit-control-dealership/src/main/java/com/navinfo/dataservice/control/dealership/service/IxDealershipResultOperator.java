@@ -2,7 +2,9 @@ package com.navinfo.dataservice.control.dealership.service;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oracle.sql.STRUCT;
 
@@ -368,6 +370,7 @@ public class IxDealershipResultOperator {
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CHAIN")){
 				columns.add(" CHAIN=? ");
 				values.add(bean.getChain());
+				log.info("chain:" + bean.getChain());
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				columns.add(" NAME=? ");
@@ -560,82 +563,93 @@ public class IxDealershipResultOperator {
 	 * @param pois
 	 * @return
 	 */
-	public static JSONArray componentPoiData(List<IxPoi> pois) {
+	public static JSONArray componentPoiData(List<IxPoi> pois) throws Exception {
 		JSONArray poiJson = new JSONArray();
 
 		for (IxPoi poi : pois) {
-			JSONObject obj = new JSONObject();
-			obj.put("poiNum", poi.getPoiNum());
-			obj.put("pid", poi.getPid());
-			obj.put("kindCode", poi.getKindCode());
-			obj.put("chain", poi.getChain());
-			obj.put("rowId", poi.getRowId());
-			obj.put("level", poi.getLevel());
+			Map<String, Object> poiObj = new HashMap<>();
+			poiObj.put("poiNum", poi.getPoiNum() == null ? "" : poi.getPoiNum());
+			poiObj.put("pid", poi.getPid());
+			poiObj.put("kindCode", poi.getKindCode() == null ? "" : poi.getKindCode());
+			poiObj.put("chain", poi.getChain() == null ? "" : poi.getChain());
+			poiObj.put("rowId", poi.getRowId() == null ? "" : poi.getRowId());
+			poiObj.put("level", poi.getLevel());
+			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(), 0.00001, 5));
+			poiObj.put("xGuide", poi.getxGuide());
+			poiObj.put("yGuide", poi.getyGuide());
 
 			// 名称
 			JSONArray names = new JSONArray();
 			for (IRow row : poi.getNames()) {
-				JSONObject nameobj = new JSONObject();
+				Map<String, Object> nameMap = new HashMap<>();
 				IxPoiName name = (IxPoiName) row;
 
-				if (!name.getLangCode().equals("CHI")&&!name.getLangCode().equals("CHT")) {
+				if (!name.getLangCode().equals("CHI") && !name.getLangCode().equals("CHT")) {
 					continue;
 				}
 
-				nameobj.put("rowId", name.getRowId());
-				nameobj.put("nameStrPinyin", name.getNamePhonetic());
-				nameobj.put("nameGrpId", name.getNameGroupid());
-				nameobj.put("nameId", name.getPid());
-				nameobj.put("langCode", name.getLangCode());
-				nameobj.put("nameClass", name.getNameClass());
-				nameobj.put("name", name.getName());
-				nameobj.put("nameType", name.getNameType());
+				nameMap.put("rowId", name.getRowId() == null ? "" : name.getRowId());
+				nameMap.put("nameStrPinyin", name.getNamePhonetic() == null ? "" : name.getNamePhonetic());
+				nameMap.put("nameGrpId", name.getNameGroupid());
+				nameMap.put("nameId", name.getPid());
+				nameMap.put("langCode", name.getLangCode() == null ? "" : name.getLangCode());
+				nameMap.put("nameClass", name.getNameClass());
+				nameMap.put("name", name.getName() == null ? "" : name.getName());
+				nameMap.put("nameType", name.getNameType());
 
+				JSONObject nameobj = JSONObject.fromObject(nameMap);
 				names.add(nameobj);
 			}
-			obj.put("names", names);
+			poiObj.put("names", names);
 
 			// 地址
 			JSONArray addresses = new JSONArray();
 			for (IRow row : poi.getAddresses()) {
-				JSONObject addressobj = new JSONObject();
+				Map<String, Object> addressMap = new HashMap<>();
 				IxPoiAddress address = (IxPoiAddress) row;
 
-				if (!address.getLangCode().equals("CHI")&&!address.getLangCode().equals("CHT")) {
+				if (!address.getLangCode().equals("CHI") && !address.getLangCode().equals("CHT")) {
 					continue;
 				}
 
-				addressobj.put("rowId", address.getRowId());
-				addressobj.put("roadName", address.getRoadname());
-				addressobj.put("langCode", address.getLangCode());
-				addressobj.put("fullNamePinyin", address.getFullnamePhonetic());
-				addressobj.put("addrName", address.getAddrname());
-				addressobj.put("roadNamePinyin", address.getRoadnamePhonetic());
-				addressobj.put("addrNamePinyin", address.getAddrnamePhonetic());
-				addressobj.put("fullName", address.getFullname());
+				addressMap.put("rowId", address.getRowId() == null ? "" : address.getRowId());
+				addressMap.put("roadName", address.getRoadname() == null ? "" : address.getRoadname());
+				addressMap.put("langCode", address.getLangCode() == null ? "" : address.getLangCode());
+				addressMap.put("fullNamePinyin",
+						address.getFullnamePhonetic() == null ? "" : address.getFullnamePhonetic());
+				addressMap.put("addrName", address.getAddrname() == null ? "" : address.getAddrname());
+				addressMap.put("roadNamePinyin",
+						address.getRoadnamePhonetic() == null ? "" : address.getRoadnamePhonetic());
+				addressMap.put("addrNamePinyin",
+						address.getAddrnamePhonetic() == null ? "" : address.getAddrnamePhonetic());
+				addressMap.put("fullName", address.getFullname() == null ? "" : address.getFullname());
 
+				JSONObject addressobj = JSONObject.fromObject(addressMap);
 				addresses.add(addressobj);
 			}
-			obj.put("addresses", addresses);
+			poiObj.put("addresses", addresses);
 
 			// 电话
 			JSONArray contacts = new JSONArray();
 			for (IRow row : poi.getContacts()) {
-				JSONObject contactobj = new JSONObject();
+				Map<String, Object> contactMap = new HashMap<>();
 				IxPoiContact contact = (IxPoiContact) row;
 
-				contactobj.put("contact", contact.getContact());
-				contactobj.put("contactDepart", contact.getContactDepart());
-				contactobj.put("contactType", contact.getContactType());
-				contactobj.put("poiPid", contact.getPoiPid());
-				contactobj.put("priority", contact.getPriority());
-				contactobj.put("rowId", contact.getRowId());
-				contactobj.put("uDate", contact.getuDate());
-				contactobj.put("uRecord", contact.getuRecord());
+				contactMap.put("contact", contact.getContact() == null ? "" : contact.getContact());
+				contactMap.put("contactDepart", contact.getContactDepart());
+				contactMap.put("contactType", contact.getContactType());
+				contactMap.put("poiPid", contact.getPoiPid());
+				contactMap.put("priority", contact.getPriority());
+				contactMap.put("rowId", contact.getRowId() == null ? "" : contact.getRowId());
+				contactMap.put("uDate", contact.getuDate());
+				contactMap.put("uRecord", contact.getuRecord());
 
+				JSONObject contactobj = JSONObject.fromObject(contactMap);
 				contacts.add(contactobj);
 			}
-			obj.put("contacts", contacts);
+			poiObj.put("contacts", contacts);
+
+			JSONObject obj = JSONObject.fromObject(poiObj);
 			poiJson.add(obj);
 		}
 

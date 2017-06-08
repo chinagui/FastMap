@@ -250,9 +250,11 @@ public class ColumnSubmitJob extends AbstractJob {
 					}
 				}else{
 					//质检提交时调用，更新质检问题表状态
-					updateColumnQcProblems(allPidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
-					log.info("常规提交时，对未打质检标记的数据，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=3、SECOND_WORK_STATUS=3、HANDLER=0:"+allPidList);
-					updateDeepStatus(allPidList, conn, 3,second,1);
+					if(allPidList!=null&&allPidList.size()>0){
+						updateColumnQcProblems(allPidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
+						log.info("常规提交时，对未打质检标记的数据，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=3、SECOND_WORK_STATUS=3、HANDLER=0:"+allPidList);
+						updateDeepStatus(allPidList, conn, 3,second,1);
+					}
 				}
 				
 				

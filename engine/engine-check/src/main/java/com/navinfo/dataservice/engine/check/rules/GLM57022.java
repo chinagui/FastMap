@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
@@ -37,9 +38,7 @@ public class GLM57022 extends baseRule {
             String wkt = GeoTranslator.jts2Wkt(geometry, GeoTranslator.dPrecisionMap,5);
             List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
             for (CmgBuildface cmgface : list) {
-                Geometry tmpGeometry = GeoTranslator.transform(cmgface.getGeometry(), GeoTranslator.dPrecisionMap, 5);
-                if (GeometryTypeName.LINESTRING.equals(geometry.intersection(tmpGeometry).getGeometryType())
-                        || GeometryTypeName.MULTILINESTRING.equals(geometry.intersection(tmpGeometry).getGeometryType())) {
+                if (CheckGeometryUtils.isOnlyEdgeShared(geometry, cmgface.getGeometry())) {
                     continue;
                 }
 

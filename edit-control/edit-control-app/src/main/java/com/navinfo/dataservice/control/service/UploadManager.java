@@ -101,16 +101,11 @@ public class UploadManager {
 				CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
 				imp.setSubtaskId(subtaskId);
 				imp.operate(cmd);
-				//获取所有pois
-				Map<Long, BasicObj> operationPois = imp.getResult().getObjsMapByType(ObjectName.IX_POI);
-				Set<Long> allPois = new HashSet<Long>();
-				if(operationPois!=null&&operationPois.size()>0){
-					for(Long l:operationPois.keySet()){
-						allPois.add(l);
-					}
-				}
+				
+				
 				Set<Long> freshVerPois = imp.getFreshVerPois();
-				Map<Long,String> normalPois = imp.getNormalPois();
+				//获取所有pois
+				Map<Long,String> allPois = imp.getAllPois();
 				//写入数据库
 				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
@@ -136,7 +131,11 @@ public class UploadManager {
 				result.addWarnSps(spImp.getErrLogs());
 				//维护编辑状态
 //				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
-				PoiEditStatus.forCollector(conn,normalPois,freshVerPois,subtaskId,taskId,taskType);
+				//从所有的poi map中排除鲜度验证的poi
+				for(Long fpi : freshVerPois){
+					allPois.remove(fpi);
+				}
+				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

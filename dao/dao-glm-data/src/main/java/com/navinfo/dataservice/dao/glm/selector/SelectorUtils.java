@@ -317,7 +317,7 @@ public class SelectorUtils {
 
 		switch (rowTableName) {
 		// 交限
-		case "RD_ RESTRICTION_VIA":
+		case "RD_RESTRICTION_VIA":
 			return "RD_RESTRICTION";
 		case "RD_RESTRICTION_CONDITION":
 			return "RD_RESTRICTION";

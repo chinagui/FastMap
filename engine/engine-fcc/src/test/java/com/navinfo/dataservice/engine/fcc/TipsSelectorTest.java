@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.navinfo.dataservice.engine.fcc.tips.TipsInfoCheckOperator;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.fcc.tips.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -33,9 +35,6 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
-import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
-import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -279,11 +278,19 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	public void testOther() {
 
 		try {
-            TipsSelector selector = new TipsSelector();
-            String parameter = "{tipStatus:1,subtaskId:57,programType:1,curPage:2,pageSize:10}";
-            JSONObject jsonObject = selector.listInfoTipsByPage(parameter);
-            System.out.println("**************************************************");
-            System.out.println(jsonObject.toString());
+
+            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+            JSONArray gridList = manApi.getGridIdsByTaskId(2190);
+            String wkt = GridUtils.grids2Wkt(gridList);
+            TipsOperator tipsOperator = new TipsOperator();
+            long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, 2190);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("total", totalNum);
+//            TipsSelector selector = new TipsSelector();
+//            String parameter = "{tipStatus:1,subTaskId:249,programType:4,curPage:1,pageSize:10}";
+//            JSONObject jsonObject = selector.listInfoTipsByPage(parameter);
+//            System.out.println("**************************************************");
+//            System.out.println(jsonObject.toString());
 
 //            System.out.println("**************************************************");
 ////            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();

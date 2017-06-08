@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
@@ -107,6 +108,10 @@ public class GLM50029 extends baseRule {
             if (face.pid() == zoneFace.pid()) {
                 continue;
             }
+            if (CheckGeometryUtils.isOnlyEdgeShared(geometry, zoneFace.getGeometry())) {
+                continue;
+            }
+
             AdAdmin adAdmin = null;
             try {
                 adAdmin = (AdAdmin) adminSelector.loadById(zoneFace.getRegionId(), false);

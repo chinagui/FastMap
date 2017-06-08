@@ -691,7 +691,7 @@ public class TipsOperator {
      * @param midTaskId
      * @throws Exception
      */
-    public void batchNoTaskDataByMidTask(String wkt, int midTaskId)
+    public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
             throws Exception {
         StringBuilder builder = new StringBuilder();
         builder.append("wkt:\"intersects(");
@@ -705,7 +705,7 @@ public class TipsOperator {
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            SolrDocumentList sdList = solr.queryTipsSolrDoc(builder.toString(), null);
+            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), null);
             long totalNum = sdList.getNumFound();
             if (totalNum <= fetchNum) {
                 for (int i = 0; i < totalNum; i++) {
@@ -733,6 +733,7 @@ public class TipsOperator {
             }
             htab.put(puts);
             htab.close();
+            return totalNum;
         }catch (Exception e) {
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);

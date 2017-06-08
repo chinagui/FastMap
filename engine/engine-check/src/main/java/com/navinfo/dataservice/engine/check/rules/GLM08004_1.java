@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import org.apache.log4j.Logger;
 
 /** 
  * @ClassName: GLM08004_1
@@ -26,6 +28,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 修改交限/卡车交限：RdRestrictionDetail(新增，修改outLinkPid),RdRestrictionVia(新增，修改LinkPid)
  */
 public class GLM08004_1 extends baseRule{
+
+    private Logger logger = Logger.getLogger(GLM08004_1.class);
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
@@ -148,6 +152,7 @@ public class GLM08004_1 extends baseRule{
 		Set<Integer> viaLinkPids = new HashSet<Integer>();
 		
 		linkPids.add(restriObj.getInLinkPid());
+		logger.info("linkPids.size() " + linkPids.size() + ", inLinkPid: " + restriObj.getInLinkPid());
 		for(IRow objTmp:restriObj.getDetails()){
 			RdRestrictionDetail detailObj=(RdRestrictionDetail) objTmp;
 			linkPids.add(detailObj.getOutLinkPid());
@@ -161,7 +166,7 @@ public class GLM08004_1 extends baseRule{
 		
 		sb.append("SELECT 1 FROM RD_LINK_FORM RF WHERE RF.FORM_OF_WAY = 22 ");
 		sb.append(" AND RF.U_RECORD <> 2");
-		sb.append(" AND RF.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
+		sb.append(" AND RF.LINK_PID IN (" + StringUtils.join(linkPids, ",") +")");
 
 		String sql = sb.toString();
 		log.info("RdRestriction前检查GLM08004_1:" + sql);
@@ -173,25 +178,27 @@ public class GLM08004_1 extends baseRule{
 		if(resultList.size()>0){
 			this.setCheckResult("", "", 0);
 		}
-		//检查经过线
-		StringBuilder sb2 = new StringBuilder();
 
-		sb2.append("SELECT 1 FROM RD_LINK_FORM RF WHERE RF.FORM_OF_WAY = 22 ");
-		sb2.append(" AND RF.U_RECORD <> 2");
-		sb2.append(" AND RF.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
-		sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RF.LINK_PID");
-		sb2.append(" AND RLF.FORM_OF_WAY = 50");
-		sb2.append(" AND RLF.U_RECORD <> 2)");
+		if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+            //检查经过线
+            StringBuilder sb2 = new StringBuilder();
 
-		String sql2 = sb2.toString();
-		log.info("RdRestriction前检查GLM08004_1:" + sql2);
+            sb2.append("SELECT 1 FROM RD_LINK_FORM RF WHERE RF.FORM_OF_WAY = 22 ");
+            sb2.append(" AND RF.U_RECORD <> 2");
+            sb2.append(" AND RF.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(), ",") + ")");
+            sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RF.LINK_PID");
+            sb2.append(" AND RLF.FORM_OF_WAY = 50");
+            sb2.append(" AND RLF.U_RECORD <> 2)");
 
-		resultList = getObj.exeSelect(this.getConn(), sql2);
+            String sql2 = sb2.toString();
+            log.info("RdRestriction前检查GLM08004_1:" + sql2);
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
-		}
-		
+            resultList = getObj.exeSelect(this.getConn(), sql2);
+
+            if (resultList.size() > 0) {
+                this.setCheckResult("", "", 0);
+            }
+        }
 	}
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)

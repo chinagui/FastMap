@@ -1357,7 +1357,7 @@ public class TaskService {
 							task.put("groupName", rs.getString("GROUP_NAME"));
 						}
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
-						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
 						if(planStartDate != null){
 							task.put("planStartDate", df.format(planStartDate));
 						}else {task.put("planStartDate", "");}
@@ -1552,7 +1552,7 @@ public class TaskService {
 	 * 快线采集任务关闭，需对poi，tips采集成果批中线任务号
 	 * 发送消息
 	 */
-	public String close(int taskId, long userId)throws Exception{
+	public String close(int taskId, long userId,String overdueReason,String overdueOtherReason)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
@@ -1560,6 +1560,13 @@ public class TaskService {
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
+			if(!StringUtils.isEmpty(overdueReason)){
+				Task beanTask=new Task();
+				beanTask.setTaskId(taskId);
+				beanTask.setOverdueReason(overdueReason);
+				beanTask.setOverdueOtherReason(overdueOtherReason);
+				TaskOperation.updateTask(conn, beanTask);
+			}
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			log.info("更新"+taskId+"任务对应的block状态，如果所有task都已关闭，则block状态置3关闭");
 			TaskOperation.closeBlock(conn,task.getBlockId());
@@ -2449,6 +2456,46 @@ public class TaskService {
 	
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public TaskCmsProgress queryTaskCmsProgressByType(Connection conn,int taskId,int phaseType) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "SELECT Phase_id,task_id,PHASE,STATUS,parameter FROM TASK_CMS_PROGRESS "
+					+ "WHERE TASK_ID= " + taskId+" AND PHASE="+phaseType;
+			log.info(selectSql);
+			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
+				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
+					while(rs.next()) {
+						TaskCmsProgress progress=new TaskCmsProgress();
+						progress.setTaskId(rs.getInt("task_id"));
+						progress.setPhaseId(rs.getInt("phase_id"));
+						progress.setPhase(rs.getInt("phase"));
+						
+						JSONObject parameter = JSONObject.fromObject(rs.getString("PARAMETER"));
+						if(parameter.containsKey("meshIds")){
+							List<Integer> meshIds = (List<Integer>) JSONArray.toCollection((JSONArray) parameter.get("meshIds"));
+							Set<Integer> meshIdSet = new HashSet<Integer>();
+							meshIdSet.addAll(meshIds);
+							progress.setMeshIds(meshIdSet);
+						}
+						return progress;
+					}
+					return null;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
 	 * status 2成功 3失败
 	 * @param phaseId
@@ -3146,7 +3193,7 @@ public class TaskService {
 			Task task = queryByTaskId(conn,taskId);
 			//Task task = queryByTaskId(newTaskId);
 			if(task.getType() == 3){
-				updateDayToMonthMesh(conn,newTaskId);
+				updateDayToMonthMesh(conn,taskId);
 			}
 			
 		} catch (Exception e) {
@@ -3163,14 +3210,18 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	private void updateDayToMonthMesh(Connection conn,int taskId) throws Exception {
-		JSONArray gridList = getGridListByTaskId(conn,taskId);
+		TaskCmsProgress progress = queryTaskCmsProgressByType(conn, taskId,1);
 		Set<Integer> meshIdSet = new HashSet<Integer>();
-		for(Object gridId:gridList.toArray()){
-			meshIdSet.add(Integer.parseInt(gridId.toString().substring(0, gridId.toString().length()-3)));
+		if(progress!=null){
+			meshIdSet=progress.getMeshIds();
+		}else{
+			JSONArray gridList = getGridListByTaskId(conn,taskId);
+			
+			for(Object gridId:gridList.toArray()){
+				meshIdSet.add(Integer.parseInt(gridId.toString().substring(0, gridId.toString().length()-2)));
+			}
 		}
-		if(meshIdSet.size() <= 0){
-			return;
-		}
+		if(meshIdSet.size() <= 0){return;}
 		Connection meta = null;
 		try{
 			meta = DBConnector.getInstance().getMetaConnection();
@@ -3532,7 +3583,7 @@ public class TaskService {
 					+ "   AND TYPE = 0"
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
-					+ "   AND (WORK_KIND LIKE '|1|%' OR WORK_KIND LIKE '|0|1%')"
+					+ "   AND (WORK_KIND LIKE '1|%' OR WORK_KIND LIKE '0|1%')"
 					+ "   AND GROUP_ID != 0"
 					+ " UNION ALL"
 					+ " SELECT TASK_ID"
@@ -3541,7 +3592,7 @@ public class TaskService {
 					+ "   AND TYPE = 0"
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
-					+ "   AND WORK_KIND LIKE '|0|0%'"
+					+ "   AND WORK_KIND LIKE '0|0%'"
 					+ "   AND GROUP_ID = 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){

@@ -101,7 +101,7 @@ public class CheckTaskOperator {
 	 */
 	public void closeTask(int checkTaskId) throws Exception {
 		
-		String updateSql="UPDATE CHECK_TASK SET CHECK_STATUS=1 WHERE TASK_ID=?";
+		String updateSql="UPDATE CHECK_TASK SET CHECK_STATUS=1,CHECK_END_DATE=SYSDATE WHERE TASK_ID=?";
 		PreparedStatement pst = null;
 		Connection conn = null;
 

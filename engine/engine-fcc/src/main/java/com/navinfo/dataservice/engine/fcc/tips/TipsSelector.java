@@ -347,7 +347,7 @@ public class TipsSelector {
                         m.put("f", String.valueOf(deep.getInt("flag")));
 					}
 
-				} else if (type == 1106) {
+				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
 				} else if (type == 1102) {
 					m.put("c", String.valueOf(deep.getInt("inCt")));
@@ -2176,7 +2176,7 @@ public class TipsSelector {
         String queryTotal = param.getTipsCheckTotal(parameter);
         int curPage = jsonReq.getInt("curPage");
         int pageSize = jsonReq.getInt("pageSize");
-        int firstNum = (curPage - 1) * pageSize + 1;
+        int firstNum = (curPage - 1) * pageSize;
         SolrDocumentList sdList = conn.queryTipsSolrDocByPage(queryTotal, null, firstNum, pageSize);
         JSONObject jsonObject = new JSONObject();
         long totalNum = sdList.getNumFound();

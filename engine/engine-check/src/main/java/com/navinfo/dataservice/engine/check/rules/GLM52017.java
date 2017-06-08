@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
@@ -46,6 +47,10 @@ public class GLM52017 extends baseRule {
 
             List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
             for (LuFace luFace : list) {
+                if (CheckGeometryUtils.isOnlyEdgeShared(geometry, luFace.getGeometry())) {
+                    continue;
+                }
+
                 if (21 == luFace.getKind() && face.pid() != luFace.pid()) {
                     setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()), 0);
                 }

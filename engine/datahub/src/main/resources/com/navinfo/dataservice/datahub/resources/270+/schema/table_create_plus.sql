@@ -156,13 +156,18 @@ TECH_GUIDANCE         VARCHAR2(100),
 TECH_SCHEME           VARCHAR2(100),
 WORK_TIME             TIMESTAMP,
 QC_TIME               TIMESTAMP,
-IS_PROBLEM            NUMBER(1),
+IS_PROBLEM            VARCHAR2(100),
 IS_VALID              NUMBER(1),
 WORKER                NUMBER(10),
 QC_WORKER             NUMBER(10),
 ORIGINAL_INFO         VARCHAR2(200),
     constraint PK_COLUMN_QC_PROBLEM primary key (ID)
 );
+
+create sequence COLUMN_QC_PROBLEM_seq
+increment by 1
+start with 1
+maxvalue 999999999;
   
 /* GDB+ log part */
 CREATE TABLE LOG_ACTION(

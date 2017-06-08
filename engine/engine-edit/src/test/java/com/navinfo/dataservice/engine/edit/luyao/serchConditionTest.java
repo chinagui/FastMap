@@ -1,22 +1,24 @@
 package com.navinfo.dataservice.engine.edit.luyao;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.geolive.GeoliveHelper;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
+import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class serchConditionTest extends InitApplication {
 
@@ -248,7 +250,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"gap\":10,\"types\":[\"rdLinkFormOfWay10\",\"rdLinkNameType\"],\"z\":19,\"x\":431657,\"y\":198398}";
+			String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"rdLinkImiCode\",\"rdLinkNameType\"],\"z\":19,\"x\":431657,\"y\":198398}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -693,4 +695,554 @@ public class serchConditionTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
+
+	@Test
+	public void testGetByPid() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+
+
+			int pid = 2842164;
+
+			IObj obj = p.searchDataByPid(ObjType.CMGBUILDING, pid);
+
+
+			System.out.println(obj.Serialize(ObjLevel.FULL));
+
+
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testGetByPid1() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			int pid = 401000040;
+
+			String objType = "CMGBUILDING";
+
+			IObj obj = p.searchDataByPid(ObjType.CMGBUILDING, pid);
+
+			if (obj != null) {
+				JSONObject json = obj.Serialize(ObjLevel.FULL);
+				if (!json.containsKey("geometry")) {
+					int pageNum = 1;
+					int pageSize = 1;
+					JSONObject data = new JSONObject();
+					data.put(obj.primaryKey().toLowerCase(), pid);
+					SelectorUtils selectorUtils = new SelectorUtils(conn);
+					JSONObject jsonObject = selectorUtils
+							.loadByElementCondition(data,
+									ObjType.valueOf(objType), pageSize,
+									pageNum, false);
+					json.put("geometry", jsonObject.getJSONArray("rows")
+							.getJSONObject(0).getString("geometry"));
+				}
+				json.put("geoLiveType", objType);
+//				return new ModelAndView("jsonView", success(json));
+
+			} else {
+//				return new ModelAndView("jsonView", success());
+			}
+
+
+			System.out.println(obj.Serialize(ObjLevel.FULL));
+
+
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject1() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject json= new JSONObject();
+
+			json.put("uuid","123");
+			json.put("pageNum",2);
+			json.put("pageSize",10);
+
+			json.put("mainTableName","RD_LINK");
+			json.put("searchTableName","RD_LINK_FORM");
+			json.put("primaryKey","LINK_PID");
+			json.put("foreignKey","LINK_PID");
+
+			JSONObject jsonCondition1 = new JSONObject();
+
+			jsonCondition1.put("fieldType","Integer");
+			jsonCondition1.put("operator",">");
+			jsonCondition1.put("fieldName","FORM_OF_WAY");
+			jsonCondition1.put("value",1);
+
+			JSONObject jsonCondition2 = new JSONObject();
+
+			jsonCondition2.put("fieldType","Integer");
+			jsonCondition2.put("operator","<");
+			jsonCondition2.put("fieldName","FORM_OF_WAY");
+			jsonCondition2.put("value",51);
+
+			JSONArray jsonConditions= new JSONArray();//json.getJSONArray("conditions");
+
+			jsonConditions.add(jsonCondition1);
+			jsonConditions.add(jsonCondition2);
+
+			json.put("conditions",jsonConditions);
+
+//			meshIds
+
+//			JSONArray jsonMeshId= new JSONArray();
+//			jsonMeshId.add();
+//			jsonMeshId.add();
+
+			JSONArray jsonGridId= new JSONArray();
+			jsonGridId.add(59564401);
+			jsonGridId.add(59564402);
+			json.put("gridIds",jsonGridId);
+
+			JSONObject  pids = p.loadByElementCondition(json);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	@Test
+	public void SearchAllObject2() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject json= new JSONObject();
+
+			json.put("uuid","123");
+			json.put("pageNum",2);
+			json.put("pageSize",10);
+
+			json.put("mainTableName","RD_LINK");
+			json.put("searchTableName","RD_LINK");
+			json.put("primaryKey","LINK_PID");
+			json.put("foreignKey","LINK_PID");
+
+			JSONObject jsonCondition1 = new JSONObject();
+
+			jsonCondition1.put("fieldType","Integer");
+			jsonCondition1.put("operator",">");
+			jsonCondition1.put("fieldName","kind");
+			jsonCondition1.put("value",0);
+
+			JSONObject jsonCondition2 = new JSONObject();
+
+			jsonCondition2.put("fieldType","Integer");
+			jsonCondition2.put("operator","<");
+			jsonCondition2.put("fieldName","kind");
+			jsonCondition2.put("value",7);
+
+			JSONArray jsonConditions= new JSONArray();//json.getJSONArray("conditions");
+
+			jsonConditions.add(jsonCondition1);
+			jsonConditions.add(jsonCondition2);
+
+			json.put("conditions",jsonConditions);
+
+			JSONArray jsonMeshId= new JSONArray();
+			jsonMeshId.add(595644);
+			json.put("meshIds",jsonMeshId);
+
+//			JSONArray jsonGridId= new JSONArray();
+//			jsonGridId.add(59564401);
+//			jsonGridId.add(59564402);
+//			json.put("gridIds",jsonGridId);
+
+			JSONObject  pids = p.loadByElementCondition(json);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject3() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject json= new JSONObject();
+
+			json.put("uuid","123");
+			json.put("pageNum",2);
+			json.put("pageSize",10);
+
+			json.put("mainTableName","RD_LINK");
+			json.put("searchTableName","RD_LINK");
+			json.put("primaryKey","LINK_PID");
+			json.put("foreignKey","LINK_PID");
+
+			JSONArray jsonConditions= new JSONArray();//json.getJSONArray("conditions");
+
+			json.put("conditions",jsonConditions);
+
+
+//
+//			JSONArray jsonMeshId= new JSONArray();
+//			jsonMeshId.add(595644);
+//			json.put("meshIds",jsonMeshId);
+
+			JSONArray jsonGridId= new JSONArray();
+			jsonGridId.add(59564401);
+			json.put("gridIds",jsonGridId);
+
+			JSONObject  pids = p.loadByElementCondition(json);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject4() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject json= new JSONObject();
+
+			json.put("uuid","123");
+			json.put("pageNum",2);
+			json.put("pageSize",10);
+
+			json.put("mainTableName","RD_LINK");
+			json.put("searchTableName","RD_LINK");
+			json.put("primaryKey","LINK_PID");
+			json.put("foreignKey","LINK_PID");
+
+			JSONObject jsonCondition1 = new JSONObject();
+
+			jsonCondition1.put("fieldType","Integer");
+			jsonCondition1.put("operator","IN");
+			jsonCondition1.put("fieldName","kind");
+
+			JSONArray jsonValues= new JSONArray();
+			jsonValues.add(1);
+			jsonValues.add(2);
+			jsonValues.add(3);
+			jsonValues.add(4);
+			jsonValues.add(5);
+			jsonValues.add(6);
+			jsonCondition1.put("values",jsonValues);
+
+			JSONObject jsonCondition2 = new JSONObject();
+
+			jsonCondition2.put("fieldType","Integer");
+			jsonCondition2.put("operator","=");
+			jsonCondition2.put("fieldName","DIRECT");
+			jsonCondition2.put("value",1);
+
+			JSONArray jsonConditions= new JSONArray();//json.getJSONArray("conditions");
+
+			jsonConditions.add(jsonCondition1);
+			jsonConditions.add(jsonCondition2);
+
+			json.put("conditions",jsonConditions);
+
+			JSONArray jsonMeshId= new JSONArray();
+			jsonMeshId.add(595644);
+			json.put("meshIds",jsonMeshId);
+
+//			JSONArray jsonGridId= new JSONArray();
+//			jsonGridId.add(59564401);
+//			jsonGridId.add(59564402);
+//			json.put("gridIds",jsonGridId);
+
+			JSONObject  pids = p.loadByElementCondition(json);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+	}
+
+	@Test
+	public void SearchAllObject5() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject json= new JSONObject();
+			json.put("uuid","123");
+			json.put("mainTableName","RD_LINK");
+			json.put("searchTableName","RD_LINK_FORM");
+
+
+			json.put("pageNum",2);
+			json.put("pageSize",10);
+
+			JSONObject jsonCondition1 = new JSONObject();
+
+			jsonCondition1.put("fieldType","Integer");
+			jsonCondition1.put("operator","IN");
+			jsonCondition1.put("fieldName","FORM_OF_WAY");
+
+			JSONArray jsonValues= new JSONArray();
+			jsonValues.add(1);
+			jsonValues.add(2);
+			jsonValues.add(10);
+			jsonValues.add(11);
+			jsonValues.add(12);
+			jsonValues.add(50);
+
+			jsonCondition1.put("values",jsonValues);
+
+			JSONObject jsonCondition2 = new JSONObject();
+
+			jsonCondition2.put("fieldType","Integer");
+			jsonCondition2.put("operator","=");
+			jsonCondition2.put("fieldName","AUXI_FLAG");
+			jsonCondition2.put("value",0);
+
+			JSONArray jsonConditions= new JSONArray();//json.getJSONArray("conditions");
+
+			jsonConditions.add(jsonCondition1);
+			jsonConditions.add(jsonCondition2);
+
+			json.put("conditions",jsonConditions);
+
+//			meshIds
+
+//			JSONArray jsonMeshId= new JSONArray();
+//			jsonMeshId.add();
+//			jsonMeshId.add();
+
+			JSONArray jsonGridId= new JSONArray();
+			jsonGridId.add(59564401);
+			jsonGridId.add(59564402);
+			json.put("gridIds",jsonGridId);
+
+			JSONObject  pids = p.loadByElementCondition(json);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchGeolive() throws Exception {
+
+		try {
+			String str="123";
+
+			str +="456"+null;
+
+			GeoliveHelper geoliveHelper = GeoliveHelper.getIstance();
+
+			String foreignKey = geoliveHelper.getForeignKey("RD_LINK_FORM", "RD_LINK");
+
+			String primaryKey = geoliveHelper.getPrimaryKey("RD_LINK");
+
+			SearchAllObject p = new SearchAllObject();
+
+			JSONObject result;
+
+			JSONObject condition1 =new JSONObject();
+
+			condition1.put("searchType","PARENT_TABLE_LABLE");
+
+			result = p.getGeoLiveInfo(condition1);
+
+			JSONObject condition2 =new JSONObject();
+
+			condition2.put("searchType","TABLE_LABLE");
+
+			condition2.put("tableName","RD_LINK");
+
+			result = p.getGeoLiveInfo(condition2);
+
+			JSONObject condition3 =new JSONObject();
+
+			condition3.put("searchType","TABLE_INFO");
+
+			condition3.put("tableName","RD_LINK_FORM");
+
+			result = p.getGeoLiveInfo(condition3);
+
+
+
+			System.out.println(result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject6() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_LANE_CONNEXITY\",\"searchTableName\":\"RD_LANE_TOPOLOGY\",\"pageNum\":4,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"Integer\",\"operator\":\"=\",\"fieldName\":\"RELATIONSHIP_TYPE\",\"value\":1}]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  pids = p.loadByElementCondition(jsonReq);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject7() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_BRANCH\",\"searchTableName\":\"RD_BRANCH\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"Integer\",\"operator\":\"=\",\"fieldName\":\"RELATIONSHIP_TYPE\",\"value\":1}]}";
+
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  pids = p.loadByElementCondition(jsonReq);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void SearchAllObject8() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_BRANCH\",\"searchTableName\":\"RD_BRANCH_DETAIL\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"Integer\",\"operator\":\"=\",\"fieldName\":\"BRANCH_TYPE\",\"value\":1}]}";
+
+
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  result = p.loadByElementCondition(jsonReq);
+
+
+			System.out.println(result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject9() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_SAMELINK\",\"searchTableName\":\"RD_SAMELINK_PART\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"String\",\"operator\":\"=\",\"fieldName\":\"TABLE_NAME\",\"value\":\"RD_LINK\"}]}";
+
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  result = p.loadByElementCondition(jsonReq);
+
+
+			System.out.println(result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject10() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_SAMENODE\",\"searchTableName\":\"RD_SAMENODE_PART\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"String\",\"operator\":\"=\",\"fieldName\":\"TABLE_NAME\",\"value\":\"RD_NODE\"}]}";
+
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  result = p.loadByElementCondition(jsonReq);
+
+
+			System.out.println(result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject11() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_CROSS\",\"searchTableName\":\"RD_CROSS\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"String\",\"operator\":\"=\",\"fieldName\":\"TYPE\",\"value\":1}]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  result = p.loadByElementCondition(jsonReq);
+
+
+			System.out.println(result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

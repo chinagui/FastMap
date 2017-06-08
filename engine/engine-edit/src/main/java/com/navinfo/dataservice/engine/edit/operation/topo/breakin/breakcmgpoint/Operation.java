@@ -129,8 +129,8 @@ public class Operation implements IOperation {
             //cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
             //cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
             result.insertObject(cmgface, ObjStatus.UPDATE, cmgface.pid());
-            for (int seq = 0; seq < cmglinkPids.size(); seq++) {
-                CmgfaceUtil.createCmgfaceTopo(result, cmglinkPids.get(seq), cmgface.pid(), seq);
+            for (int seq = 0; seq < cmglinkPids.size();) {
+                CmgfaceUtil.createCmgfaceTopo(result, cmglinkPids.get(seq), cmgface.pid(), ++seq);
             }
         }
     }

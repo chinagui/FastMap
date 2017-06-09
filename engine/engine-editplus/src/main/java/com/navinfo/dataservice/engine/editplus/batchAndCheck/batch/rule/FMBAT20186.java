@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -30,10 +33,11 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class FMBAT20186 extends BasicBatchRule {
 	
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	
 	private Map<Long,Long> childPidParentPid;
 	private Map<Long, List<Long>> childrenMap;
-	private boolean isParent = false;
-	private boolean isChild = false;
+
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
@@ -44,20 +48,21 @@ public class FMBAT20186 extends BasicBatchRule {
 		childPidParentPid = IxPoiSelector.getParentPidsByChildrenPids(getBatchRuleCommand().getConn(), pidList);
 		childrenMap = IxPoiSelector.getChildrenPidsByParentPidList(getBatchRuleCommand().getConn(), pidList);
 		
+
 		Set<Long> parentPids = new HashSet<Long>();
-		
-		if(childPidParentPid.isEmpty()&&childrenMap.isEmpty()){return;}
-		if(!childPidParentPid.isEmpty()&&childrenMap.isEmpty()){
-			isChild=true;
+		if(!childPidParentPid.isEmpty()){
 			for (Long childPid:childPidParentPid.keySet()) {
 				parentPids.add(childPidParentPid.get(childPid));
 			}
 		}
-		if(childPidParentPid.isEmpty()&&!childrenMap.isEmpty()){
-			isParent=true;
+		
+		if(!childrenMap.isEmpty()){
 			for (Long childPid:childrenMap.keySet()) {
 				parentPids.addAll(childrenMap.get(childPid));
 			}
+		}
+		if(parentPids.size()==0){
+			return;
 		}
 
 		Set<String> referSubrow =  new HashSet<String>();
@@ -69,13 +74,26 @@ public class FMBAT20186 extends BasicBatchRule {
 
 	@Override
 	public void runBatch(BasicObj obj) throws Exception {
+		boolean isParent = false;
+		boolean isChild = false;
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
+		
+		if(!childPidParentPid.isEmpty()){
+			if(childPidParentPid.containsKey(poi.getPid())){
+				isChild = true;
+			}
+		}
+		
+		if(!childrenMap.isEmpty()){
+			if(childrenMap.containsKey(poi.getPid())){
+				isParent = true;
+			}
+		}
+		
 		if(isChild){
-			System.out.println("--------FMBAT20186子触发批处理开始-----------");
 			if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")
 					|| poi.getHisOpType().equals(OperationType.DELETE)) {
-				System.out.println("--------FMBAT20186子不符合触发条件-----------");
 				return;
 			}
 			Long parentPid = childPidParentPid.get(poi.getPid());
@@ -100,14 +118,11 @@ public class FMBAT20186 extends BasicBatchRule {
 					}
 					
 					if(!(childCHIAddressEqualsParent&&childENGAddressEqualsParent)){
-						System.out.println("--------FMBAT20186清除子地址开始-----------");
 						if(!addressListNull){
 							for(int i=addressList.size()-1;i>=0;i--){
 								poiObj.deleteSubrow(addressList.get(i));
 							}
 						}
-						System.out.println("--------FMBAT20186清除子地址完成-----------");
-						System.out.println("--------FMBAT20186创建子地址开始-----------");
 						for (IxPoiAddress parentAddress:parentAddressList) {
 							IxPoiAddress newAddress = poiObj.createIxPoiAddress();
 							newAddress.setPoiPid(poi.getPid());
@@ -121,7 +136,6 @@ public class FMBAT20186 extends BasicBatchRule {
 							newAddress.setAddrname(parentAddress.getAddrname());
 							newAddress.setAddrnamePhonetic(parentAddress.getAddrnamePhonetic());
 						}
-						System.out.println("--------FMBAT20186创建子地址完成-----------");
 						
 					}
 					
@@ -133,14 +147,11 @@ public class FMBAT20186 extends BasicBatchRule {
 			boolean childContactEqualsParent = judgeChildContactEqualsParent(parentContactList, contactList);
 			
 			if(!childContactEqualsParent){
-				System.out.println("--------FMBAT20186清除子电话开始-----------");
 				if(contactList!=null && !contactList.isEmpty()){
 					for(int i=contactList.size()-1;i>=0;i--){
 						poiObj.deleteSubrow(contactList.get(i));
 					}
 				}
-				System.out.println("--------FMBAT20186清除子电话完成-----------");
-				System.out.println("--------FMBAT20186创建子电话开始-----------");
 
 				for (IxPoiContact parentContact:parentContactList) {
 					IxPoiContact newContact = poiObj.createIxPoiContact();
@@ -150,15 +161,11 @@ public class FMBAT20186 extends BasicBatchRule {
 					newContact.setContactDepart(parentContact.getContactDepart());
 					newContact.setPriority(parentContact.getPriority());
 				}
-				System.out.println("--------FMBAT20186创建子电话完成-----------");
 			}
-			System.out.println("--------FMBAT20186子触发批处理完成-----------");
 		}
 		if(isParent){
-			System.out.println("--------FMBAT20186父触发批处理开始-----------");
 			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")
 					||poi.getHisOpType().equals(OperationType.DELETE)) {
-				System.out.println("--------FMBAT20186父不符合触发条件-----------");
 				return;
 			}
 
@@ -192,13 +199,10 @@ public class FMBAT20186 extends BasicBatchRule {
 					if(!(childCHIAddressEqualsParent&&childENGAddressEqualsParent)){
 						if(!childAddressListNull){
 							// 地址
-							System.out.println("--------FMBAT20186清除子地址开始-----------");
 							for(int i=childAddressList.size()-1;i>=0;i--){
 								child.deleteSubrow(childAddressList.get(i));
 							}
-							System.out.println("--------FMBAT20186清除子地址完成-----------");
 						}
-						System.out.println("--------FMBAT20186创建子地址开始-----------");
 						for (IxPoiAddress parentAddress:parentAddressList) {
 							IxPoiAddress newAddress = child.createIxPoiAddress();
 							newAddress.setPoiPid(childPoi.getPid());
@@ -212,7 +216,6 @@ public class FMBAT20186 extends BasicBatchRule {
 							newAddress.setAddrname(parentAddress.getAddrname());
 							newAddress.setAddrnamePhonetic(parentAddress.getAddrnamePhonetic());
 						}
-						System.out.println("--------FMBAT20186创建子地址完成-----------");
 					}
 					
 				}
@@ -225,14 +228,11 @@ public class FMBAT20186 extends BasicBatchRule {
 				
 				if(!childContactEqualsParent){
 					if(!childContactListNull){
-						System.out.println("--------FMBAT20186清除子电话开始-----------");
 						for(int i=childContactList.size()-1;i>=0;i--){
 							child.deleteSubrow(childContactList.get(i));
 						}
-						System.out.println("--------FMBAT20186清除子电话完成-----------");
 					}
 					
-					System.out.println("--------FMBAT20186创建子电话开始-----------");
 					for (IxPoiContact parentContact:parentContactList) {
 						IxPoiContact newContact = child.createIxPoiContact();
 						newContact.setPoiPid(childPoi.getPid());
@@ -241,10 +241,8 @@ public class FMBAT20186 extends BasicBatchRule {
 						newContact.setContactDepart(parentContact.getContactDepart());
 						newContact.setPriority(parentContact.getPriority());
 					}
-					System.out.println("--------FMBAT20186创建子电话完成-----------");
 				}
 			}
-			System.out.println("--------FMBAT20186父触发批处理完成-----------");
 		}
 		
 		

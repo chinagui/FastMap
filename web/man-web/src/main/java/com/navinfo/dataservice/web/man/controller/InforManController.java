@@ -31,8 +31,6 @@ public class InforManController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	private InforManService service=InforManService.getInstance();
-
-
 	
 	/**
 	 * 情报管理--查看及编辑情报信息
@@ -98,65 +96,5 @@ public class InforManController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
-	/**
-	 * 情报管理--查看及编辑情报信息
-	 * 结构变更，删除
-	 * @param request
-	 * @return
-	 */
-	/*@RequestMapping(value = "/inforMan/queryByTaskId")
-	public ModelAndView queryByTaskId(HttpServletRequest request) {
-		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			HashMap<String,Object> data = service.queryByTaskId(dataJson.getInt("taskId"));
-			
-			if(data!=null){
-				return new ModelAndView("jsonView", success(data));
-			}
-			else{
-				return new ModelAndView("jsonView", success(null));
-			}
-		} catch (Exception e) {
-			log.error("获取明细失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}*/
 
-	/**
-	 * 情报管理--查看及编辑情报信息
-	 * 
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/inforMan/listAll")
-	public ModelAndView listAll(HttpServletRequest request) {
-		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			JSONObject condition = dataJson.getJSONObject("condition");
-			JSONObject order = dataJson.getJSONObject("order");
-
-			int curPageNum = 1;// 默认为第一页
-			String curPage = dataJson.getString("pageNum");
-			if (StringUtils.isNotEmpty(curPage)) {
-				curPageNum = Integer.parseInt(curPage);
-			}
-			int curPageSize = 20;// 默认为20条记录/页
-			String curSize = dataJson.getString("pageSize");
-			if (StringUtils.isNotEmpty(curSize)) {
-				curPageSize = Integer.parseInt(curSize);
-			}
-			Page data = service.listAll(condition, order, curPageNum, curPageSize);
-			Map<String, Object> resultMap = new HashMap<String, Object>();
-			resultMap.put("result", data.getResult());
-			resultMap.put("totalCount", data.getTotalCount());
-			return new ModelAndView("jsonView", success(resultMap));
-		} catch (Exception e) {
-			log.error("获取列表失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
 }

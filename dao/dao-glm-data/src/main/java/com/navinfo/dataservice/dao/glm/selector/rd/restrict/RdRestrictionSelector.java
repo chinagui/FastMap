@@ -287,10 +287,8 @@ public class RdRestrictionSelector extends AbstractSelector {
 		return reses;
 	}
 
-	public IRow loadRdRestrictionByLinkNode(int linkPid, int nodePid,
-			boolean isLock) throws Exception {
-
-		RdRestriction restrict = new RdRestriction();
+	public List<RdRestriction> loadRdRestrictionByLinkNode(int linkPid, int nodePid, boolean isLock) throws Exception {
+		List<RdRestriction> restrictions = new ArrayList<>();
 		String sql = "select a.* from rd_restriction a  where a.in_link_pid = :1 and a.node_pid=:2 and a.u_record!=:3 ";
 
 		if (isLock) {
@@ -312,31 +310,19 @@ public class RdRestrictionSelector extends AbstractSelector {
 
 			resultSet = pstmt.executeQuery();
 
-			if (resultSet.next()) {
-
-				ReflectionAttrUtils.executeResultSet(restrict, resultSet);
-				this.setChildData(restrict, isLock);
-
-			} else {
-				logger.info("未找到RdRestriction: linkPid " + linkPid
-						+ ", nodePid " + nodePid);
-				throw new DataNotFoundException("数据不存在");
-			}
-
-			if (resultSet.next()) {
-
-				throw new Exception("存在多条交限");
+			while (resultSet.next()) {
+			    RdRestriction restriction = new RdRestriction();
+				ReflectionAttrUtils.executeResultSet(restriction, resultSet);
+				this.setChildData(restriction, isLock);
+                restrictions.add(restriction);
 			}
 		} catch (Exception e) {
-
 			throw e;
 		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}
-
-		return restrict;
-
+		return restrictions;
 	}
 
 	public List<RdRestriction> loadRdRestrictionByLinkNode(int linkPid,

@@ -528,6 +528,13 @@ public class TipsRequestParam {
             builder.append(subtaskId);
         }
 
+        if(jsonReq.containsKey("type")) {
+            builder.append(" AND ");
+            builder.append(" s_sourceType:2001 ");
+            builder.append(" AND ");
+            builder.append(" t_lifecycle:3 ");
+        }
+
         return builder.toString();
     }
 

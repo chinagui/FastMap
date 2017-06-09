@@ -1332,7 +1332,7 @@ public class IxPoiSearch implements ISearch {
 					JSONObject addrObj = address.Serialize(null);
 					// 由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
 					if (address.getLangCode().equals("CHI")) {
-						String addrnameStr = stringIsNull(address.getProvince())
+						String roadnameStr = stringIsNull(address.getProvince())
 								+ "|"
 								+ stringIsNull(address.getCity())
 								+ "|"
@@ -1344,7 +1344,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getStreet());
 
-						String roadnameStr = stringIsNull(address.getLandmark())
+						String addrnameStr = stringIsNull(address.getLandmark())
 								+ "|"
 								+ stringIsNull(address.getPrefix())
 								+ "|"
@@ -1368,7 +1368,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getAddons());
 
-						String addrnamePhoneticStr = stringIsNull(address
+						String roadnamePhoneticStr = stringIsNull(address
 								.getProvPhonetic())
 								+ "|"
 								+ stringIsNull(address.getCityPhonetic())
@@ -1381,7 +1381,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getStreetPhonetic());
 
-						String roadnamePhoneticStr = stringIsNull(address
+						String addrnamePhoneticStr = stringIsNull(address
 								.getLandmarkPhonetic())
 								+ "|"
 								+ stringIsNull(address.getPrefixPhonetic())

@@ -1016,6 +1016,7 @@ public class DataEditService {
 			con = DBConnector.getInstance().getDealershipConnection();
 			mancon = DBConnector.getInstance().getManConnection();
 			int regionId = getRegionId(resultId, con);
+			//异常统一抛出，返回前端异常原因
 			if(regionId == -1){
 				throw new Exception("resultId:"+resultId+"不存在");
 			}

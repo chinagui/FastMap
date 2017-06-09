@@ -1,8 +1,3 @@
-DROP SEQUENCE HISTORY_SEQ;
-DROP SEQUENCE RESULT_SEQ;
-DROP SEQUENCE SOURCE_SEQ;
-
-
 -- Create sequence 
 create sequence HISTORY_SEQ
 minvalue 1

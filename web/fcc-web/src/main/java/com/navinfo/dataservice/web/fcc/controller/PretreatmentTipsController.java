@@ -492,15 +492,17 @@ public class PretreatmentTipsController extends BaseController {
 			
 			int command = jsonReq.getInt("command"); //command,0：save or:1：update
 			
-			if (command!=0&&command!=1) {
+			if (command!=0 && command!=1) {
 				throw new IllegalArgumentException("参数错误：command不在范围内【0,1】");
 			}
 			
 			int user = jsonReq.getInt("user");
 
+			int dbId = jsonReq.getInt("dbId");
+
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			String rowkey = op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+			String rowkey = op.saveOrUpdateTips(jsonInfo, command, user, dbId); //新增或者修改一个tips
 			
 			JSONObject  data=new JSONObject();
 			

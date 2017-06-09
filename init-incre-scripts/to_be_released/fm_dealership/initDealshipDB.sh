@@ -1,9 +1,8 @@
-#export NLS_LANG=.AL32UTF8
-export LANG=en_US.UTF-8
+export NLS_LANG=.AL32UTF8
 source ./initDealershipDB.conf
 
-sqlplus $dealership_user/$dealership_user$dealership_ip @./create_table_sequence.sql
-
+sqlplus $dealership_user/$dealership_user$dealership_ip @./create_table.sql
+sqlplus $dealership_user/$dealership_user$dealership_ip @./create_seq.sql
 
 
 

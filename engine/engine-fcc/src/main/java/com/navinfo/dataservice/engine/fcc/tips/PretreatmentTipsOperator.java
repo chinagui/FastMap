@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -9,6 +10,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
@@ -23,11 +25,14 @@ import net.sf.json.JSONString;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * 预处理tips操作类
@@ -70,7 +75,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public void create(String sourceType, JSONObject lineGeometry, int user,
 			JSONObject deep, String memo, int qSubTaskId) throws Exception {
 
-		Connection hbaseConn;
+		Connection hbaseConn = null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
@@ -1088,21 +1093,44 @@ System.out.println(sGeojson2);
 	 * @throws Exception
 	 * @time:2017-3-13 下午3:45:36
 	 */
-	public String saveOrUpdateTips(JSONObject jsonInfo, int command, int user)
+	public String saveOrUpdateTips(JSONObject jsonInfo, int command, int user, int dbId)
 			throws Exception {
 		String rowkey = "";
 		Connection hbaseConn;
 		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
+            JSONObject source = jsonInfo.getJSONObject("source");
+            String sourceType = source.getString("s_sourceType");
+
+            if(sourceType.equals("1205") || sourceType.equals("1206")
+                    || sourceType.equals("1211")) {//新增或者修改
+                JSONObject deepJson = jsonInfo.getJSONObject("deep");
+                JSONObject fJson = deepJson.getJSONObject("f");
+                String relateId = fJson.getString("id");
+                int relateLinkType = fJson.getInt("type");
+
+                if(relateLinkType == 1) {//GDB LINK
+                    java.sql.Connection oraConn = DBConnector.getInstance().getConnectionById(dbId);
+                    boolean isGdbHas = TipsPreCheckUtils.hasInGdb(oraConn, relateId);
+                    if(isGdbHas) {
+                        logger.error("新增tips出错：原因：关联要素具有上线下分离属性link");
+                        throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性link");
+                    }
+                }
+
+                boolean isSolrHas = TipsPreCheckUtils.hasInSolr(solr, relateId);
+                if(isSolrHas) {//Solr
+                    logger.error("新增tips出错：原因：关联要素具有上线下分离属性Tips");
+                    throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性Tips");
+                }
+            }
+
+            hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
-			
-			JSONObject source = jsonInfo.getJSONObject("source");
 
-			String sourceType = source.getString("s_sourceType");
 			// 新增
 			if (command == COMMAND_INSERT) {
 
@@ -1139,7 +1167,7 @@ System.out.println(sGeojson2);
 			return rowkey;
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
-			throw new Exception("更新tips出错：" + e.getMessage() + "\n" + jsonInfo,
+			throw new Exception("更新tips出错：" + e.getMessage(),
 					e);
 		}
 

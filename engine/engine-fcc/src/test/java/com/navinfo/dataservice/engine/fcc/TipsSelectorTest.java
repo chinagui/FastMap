@@ -278,14 +278,17 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	public void testOther() {
 
 		try {
-
-            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-            JSONArray gridList = manApi.getGridIdsByTaskId(2190);
-            String wkt = GridUtils.grids2Wkt(gridList);
-            TipsOperator tipsOperator = new TipsOperator();
-            long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, 2190);
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("total", totalNum);
+			TipsSelector selector = new TipsSelector();
+			String parameter = "{\"subTaskId\":188,\"programType\":1}";
+			System.out.println("**************************************************");
+			System.out.println(selector.statInfoTask(parameter));
+//            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+//            JSONArray gridList = manApi.getGridIdsByTaskId(2190);
+//            String wkt = GridUtils.grids2Wkt(gridList);
+//            TipsOperator tipsOperator = new TipsOperator();
+//            long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, 2190);
+//            JSONObject jsonObject = new JSONObject();
+//            jsonObject.put("total", totalNum);
 //            TipsSelector selector = new TipsSelector();
 //            String parameter = "{tipStatus:1,subTaskId:249,programType:4,curPage:1,pageSize:10}";
 //            JSONObject jsonObject = selector.listInfoTipsByPage(parameter);

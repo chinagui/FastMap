@@ -258,9 +258,9 @@ public class TipsLineRelateQuery {
 						// 3 道路NODE；
 						if (fInfo.getInt("type") == 3) {
 
-							nodeStr = fInfo.getString("id") + LINK_SEPARATOR;
+							nodeStr += fInfo.getString("id") + LINK_SEPARATOR;
 						} else {
-							linkStr = fInfo.getString("id") + LINK_SEPARATOR;
+							linkStr += fInfo.getString("id") + LINK_SEPARATOR;
 						}
 					}
 				}

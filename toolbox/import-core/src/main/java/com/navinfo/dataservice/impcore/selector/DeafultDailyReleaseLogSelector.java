@@ -19,15 +19,10 @@ import com.navinfo.dataservice.commons.sql.SqlClause;
  * 描述：import-coreDeafultDailyReleaseLogSelector.java
  */
 public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
-	List<Integer> grids =null;
 	public DeafultDailyReleaseLogSelector(OracleSchema logSchema,List<Integer> grids) {
 		super(logSchema);
 		this.grids = grids;
 		// TODO Auto-generated constructor stub
-	}
-
-	protected List<Integer> getGrids() {
-		return grids;
 	}
 	
 	protected  SqlClause getPrepareSql(Connection conn) throws Exception{

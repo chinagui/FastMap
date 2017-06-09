@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
@@ -79,6 +81,7 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 		tabNames.add("IX_POI_CONTACT");
 		tabNames.add("IX_POI_ADDRESS");
 		tabNames.add("IX_POI_PHOTO");
+		tabNames.add("IX_POI_HOTEL");
 		return tabNames;
 	}
 	/**
@@ -104,6 +107,33 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 				}else{
 					// 该对象逻辑删除
 					ixPoi.deleteObj();
+					// IX_POI_PHOTO
+					JSONObject photos = tPoi.getJSONObject("PHOTO");
+					if(photos != null && !photos.isEmpty() && !photos.isNullObject()){
+						Iterator keys = photos.keys();
+						while(keys.hasNext()){
+							String key = (String) keys.next();
+							String photoName = photos.getString(key);
+							String photoPid = photoName.replace(".jpg", "");
+							IxPoiPhoto ixPoiPhoto = ixPoi.createIxPoiPhoto();
+							ixPoiPhoto.setPid(photoPid);
+							if("p1".equals(key)){
+								ixPoiPhoto.setTag(3);
+							}
+							if("p2".equals(key)){
+								ixPoiPhoto.setTag(1);
+							}
+							if("p3".equals(key)){
+								ixPoiPhoto.setTag(2);
+							}
+							if("p4".equals(key)){
+								ixPoiPhoto.setTag(100);
+							}
+							if("p5".equals(key)){
+								ixPoiPhoto.setTag(4);
+							}
+						}
+					}
 				}
 				listPoiObjs.add(ixPoi);
 				this.result.putAll(listPoiObjs);
@@ -141,13 +171,19 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 				if(!ixPoi.isDeleted()){
 					IxPoi ixPoiMain = (IxPoi)ixPoi.getMainrow();
 					String langCode = "CHI";
+					String newName = "";
+					IxPoiName ixPoiName = ixPoi.getOfficeOriginCHIName();
+					if(ixPoiName != null){
+						newName = ixPoiName.getName();
+					}
+					String kindCode = ixPoiMain.getKindCode();
+					MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
 					// 遍历履历中变更字段，同时维护日库数据
 					for(int i=0;i<editHistory.size();i++){
 						JSONObject history = editHistory.getJSONObject(i);
 						JSONObject newValue = history.getJSONObject("newValue");
 						if(newValue.containsKey("name")){
-							String newName = ExcelReader.h2f(tPoi.getString("REAUDITNAME"));
-							IxPoiName ixPoiName = ixPoi.getOfficeOriginCHIName();
+							newName = ExcelReader.h2f(tPoi.getString("REAUDITNAME"));
 							if(ixPoiName != null){
 								ixPoiName.setName(newName);
 							}else{
@@ -159,8 +195,17 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 							}
 						}
 						if(newValue.containsKey("kindCode")){
-							String kindCode = tPoi.getString("RECLASSCODE");
-							ixPoiMain.setKindCode(kindCode);
+							String newKindCode = tPoi.getString("RECLASSCODE");
+							if(newKindCode != null && !newKindCode.equals(kindCode)){
+								ixPoiMain.setKindCode(newKindCode);
+								// 星级酒店特殊处理 需要新增IX_POI_HOTEL子表
+								if("120101".equals(newKindCode)){
+									IxPoiHotel hotel = ixPoi.createIxPoiHotel();
+									hotel.setRating(1);
+								}
+								kindCode = newKindCode;
+							}
+							
 						}
 						if(newValue.containsKey("address")){
 							String newAddress = ExcelReader.h2f(tPoi.getString("REAUDITADDRESS"));
@@ -175,7 +220,7 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						}
 						if(newValue.containsKey("contacts")){
 							String newAllPhone = tPoi.getString("REAUDITPHONE");
-							String[] phones = newAllPhone.split("|");
+							String[] phones = newAllPhone.split("\\|");
 							ixPoi.deleteSubrows("IX_POI_CONTACT");
 							for(int j=0;j<phones.length;j++){
 								int type = 1;
@@ -190,10 +235,88 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 								ixPoiContact.setPriority(j+1);
 							}
 						}
-						if(newValue.containsKey("photo")){
-							// IX_POI_PHOTO暂时不处理
+						if(newValue.containsKey("location")){
+							// 显示坐标取小数点后5位
+							double x = DoubleUtil.keepSpecDecimal(tPoi.getDouble("GEOX"));
+							double y = DoubleUtil.keepSpecDecimal(tPoi.getDouble("GEOY"));
+							// 显示坐标经纬度--图幅号码meshId
+							String[] meshes = MeshUtils.point2Meshes(x, y);
+							if(meshes.length>1){
+								throw new ImportException("POI坐标不能在图框线上");
+							}
+							ixPoiMain.setMeshId(Integer.parseInt(meshes[0]));
+							// 显示坐标经纬度--显示坐标
+							Geometry geometry = GeoTranslator.point2Jts(x, y);
+							ixPoiMain.setGeometry(geometry);
+							// 引导坐标和引导link
+							Map<Long, Coordinate> pidGuide = getGuideLinkPid(x, y);
+							if (!pidGuide.isEmpty()){
+								for(long linkPid: pidGuide.keySet()){
+									ixPoiMain.setLinkPid(linkPid);
+									double xGuide = DoubleUtil.keepSpecDecimal(pidGuide.get(linkPid).x);
+									double yGuide = DoubleUtil.keepSpecDecimal(pidGuide.get(linkPid).y);
+									ixPoiMain.setXGuide(xGuide);
+									ixPoiMain.setYGuide(yGuide);
+								}
+							}else{
+								// 没找到引导link
+								log.info("没找到引导link，fid:" + fid);
+							}
 						}
 					}
+					// TRUCK
+					int truck = metadataApi.getCrowdTruck(kindCode);
+					if(truck != ixPoiMain.getTruckFlag()){
+						ixPoiMain.setTruckFlag(truck);
+					}
+					// LEVEL
+					JSONObject jsonObj=new JSONObject();
+					jsonObj.put("dbId", tPoi.getInt("dbId"));
+					jsonObj.put("pid",Integer.valueOf(String.valueOf(ixPoiMain.getPid())));
+					jsonObj.put("poi_num",fid);
+					jsonObj.put("kindCode",kindCode);
+					jsonObj.put("chainCode","");
+					jsonObj.put("name",newName);
+					jsonObj.put("level","");
+					// 星级酒店特殊处理
+					if("120101".equals(kindCode)){
+						jsonObj.put("rating",1);
+					}else{
+						jsonObj.put("rating",0);
+					}
+					String level = metadataApi.getLevelForMulti(jsonObj);
+					if(level != null && !level.equals(ixPoiMain.getLevel())){
+						ixPoiMain.setLevel(level);
+					}
+					// IX_POI_PHOTO
+					JSONObject photos = tPoi.getJSONObject("PHOTO");
+					if(photos != null && !photos.isEmpty() && !photos.isNullObject()){
+						Iterator keys = photos.keys();
+						while(keys.hasNext()){
+							String key = (String) keys.next();
+							String photoName = photos.getString(key);
+							String photoPid = photoName.replace(".jpg", "");
+							IxPoiPhoto ixPoiPhoto = ixPoi.createIxPoiPhoto();
+							ixPoiPhoto.setPid(photoPid);
+//							ixPoiPhoto.setRowId(photoPid);
+							if("p1".equals(key)){
+								ixPoiPhoto.setTag(3);
+							}
+							if("p2".equals(key)){
+								ixPoiPhoto.setTag(1);
+							}
+							if("p3".equals(key)){
+								ixPoiPhoto.setTag(2);
+							}
+							if("p4".equals(key)){
+								ixPoiPhoto.setTag(100);
+							}
+							if("p5".equals(key)){
+								ixPoiPhoto.setTag(4);
+							}
+						}
+					}
+					
 				}else{
 					throw new Exception("该数据已经逻辑删除");
 				}
@@ -248,6 +371,11 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					// KIND_CODE
 					String kindCode = tPoi.getString("RECLASSCODE");
 					ixPoi.setKindCode(kindCode);
+					// 星级酒店特殊处理 需要新增IX_POI_HOTEL子表
+					if("120101".equals(kindCode)){
+						IxPoiHotel hotel = poi.createIxPoiHotel();
+						hotel.setRating(1);
+					}
 					// LEVEL
 					JSONObject jsonObj=new JSONObject();
 					jsonObj.put("dbId", tPoi.getInt("dbId"));
@@ -257,8 +385,12 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					jsonObj.put("chainCode","");
 					jsonObj.put("name",name);
 					jsonObj.put("level","");
-					// 星级酒店特殊处理？
-					jsonObj.put("rating",0);
+					// 星级酒店特殊处理
+					if("120101".equals(kindCode)){
+						jsonObj.put("rating",1);
+					}else{
+						jsonObj.put("rating",0);
+					}
 					MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
 					String level = metadataApi.getLevelForMulti(jsonObj);
 					ixPoi.setLevel(level);
@@ -309,7 +441,33 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					IxPoiFlag ixPoiFlag = poi.createIxPoiFlag();
 					ixPoiFlag.setFlagCode(flag);
 					// IX_POI_PHOTO
-					// TODO
+					JSONObject photos = tPoi.getJSONObject("PHOTO");
+					if(photos != null && !photos.isEmpty() && !photos.isNullObject()){
+						Iterator keys = photos.keys();
+						while(keys.hasNext()){
+							String key = (String) keys.next();
+							String photoName = photos.getString(key);
+							String photoPid = photoName.replace(".jpg", "");
+							IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
+							ixPoiPhoto.setPid(photoPid);
+//							ixPoiPhoto.setRowId(photoPid);
+							if("p1".equals(key)){
+								ixPoiPhoto.setTag(3);
+							}
+							if("p2".equals(key)){
+								ixPoiPhoto.setTag(1);
+							}
+							if("p3".equals(key)){
+								ixPoiPhoto.setTag(2);
+							}
+							if("p4".equals(key)){
+								ixPoiPhoto.setTag(100);
+							}
+							if("p5".equals(key)){
+								ixPoiPhoto.setTag(4);
+							}
+						}	
+					}
 					// GUIDE_X,GUIDE_Y,LINK_PID
 					Map<Long, Coordinate> pidGuide = getGuideLinkPid(x, y);
 					if (!pidGuide.isEmpty()){

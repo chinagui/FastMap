@@ -49,6 +49,7 @@ public class GdbImportJob extends AbstractJob {
 					DbConnectConfig.createConnectConfig(logDbInfo.getConnectParam()));
 			if("default".equals(req.getImpType())){
 				logSelector = new DefaultLogSelector(logSchema);
+				logSelector.setGrids(req.getGrids());
 			}else if("fullAndNonLock".equals(req.getImpType())){
 				logSelector = new FullAndNonLockSelector(logSchema);
 			}

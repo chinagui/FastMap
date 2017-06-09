@@ -866,11 +866,13 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		sql.append("           AND S.SECOND_WORK_STATUS IN (1, 2)");
 		sql.append("           AND S.HANDLER = " + userId);
 		sql.append("           AND S.TASK_ID = " + taskId);
-		if(isQuality==0){//常规任务
-			sql.append("	AND S.COMMON_HANDLER = "+userId);
-		}else if(isQuality==1){//质检任务
-			sql.append("	AND S.COMMON_HANDLER <> "+userId);
-			sql.append("	AND S.QC_FLAG = 1");
+		if(!firstWorkItem.equals("poi_deep")){
+			if(isQuality==0){//常规任务
+				sql.append("	AND S.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sql.append("	AND S.COMMON_HANDLER <> "+userId);
+				sql.append("	AND S.QC_FLAG = 1");
+			}
 		}
 		sql.append("         GROUP BY CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS) TT,");
 		sql.append("       (SELECT DISTINCT CF.SECOND_WORK_ITEM");
@@ -1010,17 +1012,11 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(" with t1 as");
-			sb.append("  (select s.pid, c.first_work_item, c.second_work_item");
+			sb.append("  (select s.pid, c.first_work_item, c.second_work_item,S.COMMON_HANDLER,s.QC_FLAG ");
 			sb.append("  from poi_column_status s, poi_column_workitem_conf c, ix_poi p");
 			sb.append(" where s.work_item_id = c.work_item_id");
 			sb.append("   and s.work_item_id != 'FM-YW-20-017'");
 			sb.append("   and s.pid = p.pid");
-			if(isQuality==0){//常规任务
-				sb.append("	AND s.COMMON_HANDLER = "+userId);
-			}else if(isQuality==1){//质检任务
-				sb.append("	AND s.COMMON_HANDLER <> "+userId);
-				sb.append("	AND s.QC_FLAG = 1");
-			}
 			sb.append("   and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 			sb.append("   and ((c.first_work_item in ('poi_name', 'poi_address') and");
 			sb.append("       s.first_work_status = 1) or");
@@ -1046,6 +1042,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" select count (1) as num, p.first_work_item as type");
 			sb.append("   from t1 p");
 			sb.append("  where p.first_work_item in ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
+			if(isQuality==0){//常规任务
+				sb.append("	AND p.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND p.COMMON_HANDLER <> "+userId);
+				sb.append("	AND p.QC_FLAG = 1");
+			}
 			sb.append("  GROUP BY p.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, p1.second_work_item as type");
@@ -1087,7 +1089,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 					result.put("deepCarrental", json);
 				}
 			}
-			JSONObject res = getKcLogFlag(result, taskId, userId);
+			JSONObject res = getKcLogFlag(result, taskId, userId,isQuality);
 			return res;
 		} catch (Exception e){
 			throw e;
@@ -1106,7 +1108,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId) throws Exception{
+	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId,Integer isQuality) throws Exception{
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		
@@ -1119,7 +1121,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
 			sb.append("  and s.task_id = :1");
 			sb.append("  and s.handler = :2");
-			sb.append("  and s.qc_flag = 0");//0 常规 		1 质检
+			if(isQuality==0){//常规任务
+				sb.append("	AND s.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s.QC_FLAG = 1");
+			}
 			sb.append(" GROUP BY c.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, c1.second_work_item as type");
@@ -1128,7 +1135,6 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
 			sb.append("  and s1.task_id = :3");
 			sb.append("  and s1.handler = :4");
-			sb.append("  and s1.qc_flag = 0");//0 常规 	1 质检
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());

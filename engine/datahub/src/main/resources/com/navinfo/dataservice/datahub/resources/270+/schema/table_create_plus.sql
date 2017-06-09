@@ -149,20 +149,25 @@ SECOND_WORK_ITEM      VARCHAR2(50),
 WORK_ITEM_ID          VARCHAR2(50),
 OLD_VALUE             VARCHAR2(500),
 NEW_VALUE             VARCHAR2(500),
-ERROR_TYPE            VARCHAR2(50),
-ERROR_LEVEL           VARCHAR2(10),
+ERROR_TYPE            VARCHAR2(100),
+ERROR_LEVEL           VARCHAR2(200),
 PROBLEM_DESC          VARCHAR2(500),
-TECH_GUIDANCE         VARCHAR2(100),
-TECH_SCHEME           VARCHAR2(100),
+TECH_GUIDANCE         VARCHAR2(500),
+TECH_SCHEME           VARCHAR2(500),
 WORK_TIME             TIMESTAMP,
 QC_TIME               TIMESTAMP,
-IS_PROBLEM            NUMBER(1),
+IS_PROBLEM            VARCHAR2(100),
 IS_VALID              NUMBER(1),
 WORKER                NUMBER(10),
 QC_WORKER             NUMBER(10),
 ORIGINAL_INFO         VARCHAR2(200),
     constraint PK_COLUMN_QC_PROBLEM primary key (ID)
 );
+
+create sequence COLUMN_QC_PROBLEM_seq
+increment by 1
+start with 1
+maxvalue 999999999;
   
 /* GDB+ log part */
 CREATE TABLE LOG_ACTION(

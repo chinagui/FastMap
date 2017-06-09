@@ -486,10 +486,10 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('160', 'poi_englishname', 'officalStandardEngName', 'FM-D01-45', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('161', 'poi_englishname', 'photoEngName', 'FM-D01-52', 2, 1);
+values ('172', 'poi_englishname', 'photoEngName', 'FM-D01-104', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('162', 'poi_englishname', 'photoEngName', 'FM-D01-86', 2, 1);
+values ('161', 'poi_englishname', 'photoEngName', 'FM-D01-52', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('163', 'poi_englishname', 'photoEngName', 'FM-D01-80', 2, 1);
@@ -519,7 +519,7 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('171', 'poi_englishname', 'photoEngName', 'FM-D01-98', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('172', 'poi_englishname', 'photoEngName', 'FM-D01-104', 2, 1);
+values ('162', 'poi_englishname', 'photoEngName', 'FM-D01-86', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('173', 'poi_englishname', 'photoEngName', 'FM-D01-60', 2, 1);
@@ -537,25 +537,7 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('177', 'poi_englishname', 'photoEngName', 'FM-D01-84', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('178', 'poi_name', 'aliasName', 'FM-D01-35', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('179', 'poi_name', 'aliasName', 'GLM60437', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('180', 'poi_name', 'aliasName', 'GLM60339', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('181', 'poi_name', 'aliasName', 'FM-D01-42', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('182', 'poi_name', 'aliasName', 'FM-D01-10', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('183', 'poi_name', 'aliasName', 'FM-D01-22', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('184', 'poi_name', 'aliasName', 'GLM60439', 2, 1);
+values ('190', 'poi_name', 'aliasName', 'FM-D01-19', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('185', 'poi_name', 'aliasName', 'FM-D01-13', 2, 1);
@@ -570,16 +552,34 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('188', 'poi_name', 'aliasName', 'FM-D01-25', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('180', 'poi_name', 'aliasName', 'GLM60339', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('181', 'poi_name', 'aliasName', 'FM-D01-42', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('182', 'poi_name', 'aliasName', 'FM-D01-10', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('183', 'poi_name', 'aliasName', 'FM-D01-22', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('179', 'poi_name', 'aliasName', 'GLM60437', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('184', 'poi_name', 'aliasName', 'GLM60439', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('178', 'poi_name', 'aliasName', 'FM-D01-35', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('189', 'poi_name', 'aliasName', 'FM-D01-16', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('190', 'poi_name', 'aliasName', 'FM-D01-19', 2, 1);
+values ('195', 'poi_name', 'namePinyin', 'GLM60415', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('191', 'poi_name', 'namePinyin', 'FM-D01-31', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('192', 'poi_name', 'namePinyin', 'FM-D01-32', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('193', 'poi_name', 'namePinyin', 'FM-D01-33', 2, 1);
@@ -588,37 +588,22 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('194', 'poi_name', 'namePinyin', 'FM-D01-30', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('195', 'poi_name', 'namePinyin', 'GLM60415', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('196', 'poi_name', 'nameUnify', 'FM-D01-41', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('197', 'poi_name', 'nameUnify', 'FM-D01-24', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('198', 'poi_name', 'nameUnify', 'FM-D01-12', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('199', 'poi_name', 'nameUnify', 'GLM60414', 2, 1);
+values ('192', 'poi_name', 'namePinyin', 'FM-D01-32', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('200', 'poi_name', 'nameUnify', 'FM-D01-34', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('209', 'poi_name', 'nameUnify', 'GLM60003', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('210', 'poi_name', 'nameUnify', 'FM-D01-21', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('201', 'poi_name', 'nameUnify', 'FM-D01-37', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('202', 'poi_name', 'nameUnify', 'FM-D01-27', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('203', 'poi_name', 'nameUnify', 'FM-D01-15', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('204', 'poi_name', 'nameUnify', 'FM-D01-18', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('205', 'poi_name', 'nameUnify', 'GLM60158', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('206', 'poi_name', 'nameUnify', 'FM-D01-09', 2, 1);
@@ -630,22 +615,37 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('208', 'poi_name', 'nameUnify', 'GLM60069', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('209', 'poi_name', 'nameUnify', 'GLM60003', 2, 1);
+values ('205', 'poi_name', 'nameUnify', 'GLM60158', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('210', 'poi_name', 'nameUnify', 'FM-D01-21', 2, 1);
+values ('197', 'poi_name', 'nameUnify', 'FM-D01-24', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('211', 'poi_name', 'shortName', 'FM-D01-24', 2, 1);
+values ('203', 'poi_name', 'nameUnify', 'FM-D01-15', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('212', 'poi_name', 'shortName', 'FM-D01-21', 2, 1);
+values ('204', 'poi_name', 'nameUnify', 'FM-D01-18', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('213', 'poi_name', 'shortName', 'FM-D01-43', 2, 1);
+values ('199', 'poi_name', 'nameUnify', 'GLM60414', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('196', 'poi_name', 'nameUnify', 'FM-D01-41', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('198', 'poi_name', 'nameUnify', 'FM-D01-12', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('229', 'poi_name', 'shortName', 'GLM60331', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('214', 'poi_name', 'shortName', 'FM-D01-40', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('223', 'poi_name', 'shortName', 'FM-D01-17', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('213', 'poi_name', 'shortName', 'FM-D01-43', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('215', 'poi_name', 'shortName', 'FM-D01-39', 2, 1);
@@ -654,10 +654,16 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('216', 'poi_name', 'shortName', 'FM-D01-36', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('217', 'poi_name', 'shortName', 'GLM60407', 2, 1);
+values ('221', 'poi_name', 'shortName', 'FM-D01-23', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('218', 'poi_name', 'shortName', 'GLM60304', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('227', 'poi_name', 'shortName', 'FM-D01-14', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('226', 'poi_name', 'shortName', 'FM-D01-11', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('219', 'poi_name', 'shortName', 'FM-D01-29', 2, 1);
@@ -666,34 +672,89 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('220', 'poi_name', 'shortName', 'FM-D01-26', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('221', 'poi_name', 'shortName', 'FM-D01-23', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('222', 'poi_name', 'shortName', 'FM-D01-19', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('223', 'poi_name', 'shortName', 'FM-D01-17', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('224', 'poi_name', 'shortName', 'FM-D01-20', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('225', 'poi_name', 'shortName', 'FM-D01-18', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('226', 'poi_name', 'shortName', 'FM-D01-11', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('227', 'poi_name', 'shortName', 'FM-D01-14', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('228', 'poi_name', 'shortName', 'FM-D01-22', 2, 1);
-
-insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
-values ('229', 'poi_name', 'shortName', 'GLM60331', 2, 1);
+values ('217', 'poi_name', 'shortName', 'GLM60407', 2, 1);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('230', 'poi_englishaddress', 'nonImportantLongEngAddress', 'FM-GLM60189', 3, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('241', 'poi_deep', 'deepDetail', 'FM-M-DP-001', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('242', 'poi_deep', 'deepParking', 'FM-ZY-20-153', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('243', 'poi_deep', 'deepDetail', 'FM-YW-20-218', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('244', 'poi_deep', 'deepDetail', 'FM-ZY-20-237', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('245', 'poi_deep', 'deepDetail', 'FM-YW-20-219', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('246', 'poi_deep', 'deepDetail', 'FM-YW-20-220', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('247', 'poi_deep', 'deepDetail', 'FM-YW-20-221', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('248', 'poi_deep', 'deepParking', 'FM-ZY-20-155', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('249', 'poi_deep', 'deepCarrental', 'FM-ZY-20-198', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('250', 'poi_deep', 'deepCarrental', 'FM-ZY-20-199', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('251', 'poi_deep', 'deepCarrental', 'FM-ZY-20-238', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('252', 'poi_deep', 'deepParking', 'FM-YW-20-227', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('253', 'poi_deep', 'deepParking', 'FM-YW-20-235', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('254', 'poi_deep', 'deepDetail', 'FM-YW-20-222', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('255', 'poi_deep', 'deepParking', 'FM-YW-20-224', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('231', 'poi_deep', 'deepParking', 'FM-ZY-20-149', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('232', 'poi_deep', 'deepParking', 'FM-ZY-20-151', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('233', 'poi_deep', 'deepParking', 'FM-ZY-20-152', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('234', 'poi_deep', 'deepParking', 'FM-ZY-20-154', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('235', 'poi_deep', 'deepDetail', 'FM-M-DP-003', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('236', 'poi_deep', 'deepParking', 'FM-M-DP-005', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('237', 'poi_deep', 'deepParking', 'FM-M-DP-008', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('238', 'poi_deep', 'deepCarrental', 'FM-M-DP-009', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('239', 'poi_deep', 'deepCarrental', 'FM-M-DP-011', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('240', 'poi_deep', 'deepCarrental', 'FM-M-DP-013', 2, 1);
+
 COMMIT;
 
 insert into poi_column_op_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, SAVE_EXEBATCH, SAVE_BATCHRULES, SAVE_EXECHECK, SAVE_CKRULES, SAVE_EXECLASSIFY, SAVE_CLASSIFYRULES, SUBMIT_EXEBATCH, SUBMIT_BATCHRULES, SUBMIT_EXECHECK, SUBMIT_CKRULES, SUBMIT_EXECLASSIFY, SUBMIT_CLASSIFYRULES, TYPE, FIRST_SUBMIT_EXEBATCH, FIRST_SUBMIT_BATCHRULES, FIRST_SUBMIT_EXECHECK, FIRST_SUBMIT_CKRULES, FIRST_SUBMIT_EXECLASSIFY, FIRST_SUBMIT_CLASSIFYRULES)
@@ -706,7 +767,7 @@ insert into poi_column_op_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, SAVE_EXEB
 values ('3', 'poi_name', 'aliasName', 1, 'FM-BAT-20-141', 1, 'FM-A04-18', 1, 'FM-A04-18', 0, '', 1, 'FM-D01-10,FM-D01-13,FM-D01-16,FM-D01-19,FM-D01-22,FM-D01-25,FM-D01-28,FM-D01-35,FM-D01-38,GLM60339,GLM60439,GLM60437,FM-D01-42', 0, '', 1, 1, 'FM-BAT-20-145,FM-BAT-20-115', 1, 'FM-YW-20-052,FM-A07-02-01,FM-14Sum-12-03,FM-14Sum-12-08,FM-A04-12,FM-A04-13,FM-CHR73001,FM-GLM60154,FM-GLM60211,FM-A04-17,FM-A04-19,FM-A04-20,FM-A07-14,FM-GLM60254,FM-GLM60304,FM-GLM60407,FM-YW-20-036,FM-YW-20-058,FM-YW-20-060,FM-YW-20-146,FM-YW-20-147,FM-YW-20-148,FM-YW-20-149', 1, 'FM-YW-20-052');
 
 insert into poi_column_op_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, SAVE_EXEBATCH, SAVE_BATCHRULES, SAVE_EXECHECK, SAVE_CKRULES, SAVE_EXECLASSIFY, SAVE_CLASSIFYRULES, SUBMIT_EXEBATCH, SUBMIT_BATCHRULES, SUBMIT_EXECHECK, SUBMIT_CKRULES, SUBMIT_EXECLASSIFY, SUBMIT_CLASSIFYRULES, TYPE, FIRST_SUBMIT_EXEBATCH, FIRST_SUBMIT_BATCHRULES, FIRST_SUBMIT_EXECHECK, FIRST_SUBMIT_CKRULES, FIRST_SUBMIT_EXECLASSIFY, FIRST_SUBMIT_CLASSIFYRULES)
-values ('4', 'poi_name', 'shortName', 1, 'FM-BAT-20-141', 1, 'FM-M01-01,FM-A04-18', 1, 'FM-M01-01,FM-A04-18', 1, 'FM-BAT-20-145,FM-BAT-20-115', 1, 'FM-YW-20-052,FM-D01-11,FM-D01-14,FM-D01-17,GLM60331,FM-D01-20,FM-D01-23,FM-D01-26,FM-D01-29,GLM60304,GLM60407,FM-D01-36,FM-D01-39,FM-D01-40,FM-D01-43', 1, 'FM-YW-20-052', 1, 1, 'FM-BAT-20-145,FM-BAT-20-115', 1, 'FM-YW-20-052,FM-A07-02-01,FM-14Sum-12-03,FM-14Sum-12-08,FM-A04-12,FM-A04-13,FM-CHR73001,FM-GLM60154,FM-GLM60211,FM-A04-17,FM-A04-19,FM-A04-20,FM-A07-14,FM-GLM60254,FM-GLM60304,FM-GLM60407,FM-YW-20-036,FM-YW-20-058,FM-YW-20-060,FM-YW-20-146,FM-YW-20-147,FM-YW-20-148,FM-YW-20-149', 1, 'FM-YW-20-052');
+values ('4', 'poi_name', 'shortName', 1, 'FM-BAT-20-141', 1, 'FM-M01-01,FM-A04-18', 1, 'FM-A04-18', 1, 'FM-BAT-20-145,FM-BAT-20-115', 1, 'FM-YW-20-052,FM-D01-11,FM-D01-14,FM-D01-17,GLM60331,FM-D01-20,FM-D01-23,FM-D01-26,FM-D01-29,GLM60304,GLM60407,FM-D01-36,FM-D01-39,FM-D01-40,FM-D01-43', 1, 'FM-YW-20-052', 1, 1, 'FM-BAT-20-145,FM-BAT-20-115', 1, 'FM-YW-20-052,FM-A07-02-01,FM-14Sum-12-03,FM-14Sum-12-08,FM-A04-12,FM-A04-13,FM-CHR73001,FM-GLM60154,FM-GLM60211,FM-A04-17,FM-A04-19,FM-A04-20,FM-A07-14,FM-GLM60254,FM-GLM60304,FM-GLM60407,FM-YW-20-036,FM-YW-20-058,FM-YW-20-060,FM-YW-20-146,FM-YW-20-147,FM-YW-20-148,FM-YW-20-149', 1, 'FM-YW-20-052');
 
 insert into poi_column_op_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, SAVE_EXEBATCH, SAVE_BATCHRULES, SAVE_EXECHECK, SAVE_CKRULES, SAVE_EXECLASSIFY, SAVE_CLASSIFYRULES, SUBMIT_EXEBATCH, SUBMIT_BATCHRULES, SUBMIT_EXECHECK, SUBMIT_CKRULES, SUBMIT_EXECLASSIFY, SUBMIT_CLASSIFYRULES, TYPE, FIRST_SUBMIT_EXEBATCH, FIRST_SUBMIT_BATCHRULES, FIRST_SUBMIT_EXECHECK, FIRST_SUBMIT_CKRULES, FIRST_SUBMIT_EXECLASSIFY, FIRST_SUBMIT_CLASSIFYRULES)
 values ('5', 'poi_address', 'addrPinyin', 0, '', 0, '', 0, '', 0, '', 1, 'FM-A09-16,FM-A09-17,FM-YW-20-008', 0, '', 1, 1, 'FM-BAT-20-125,FM-BAT-20-164,FM-BAT-M01-05', 1, 'FM-ZY-20-136,FM-ZY-20-137,FM-ZY-20-138,FM-14Sum-06-03,FM-A09-13,FM-A09-14,FM-A09-03,FM-A09-04,FM-A09-05,FM-A09-06,FM-A09-07,FM-A09-08,FM-A09-09,FM-A09-10,FM-A09-11,FM-A09-12,FM-A09-16,FM-A09-17,FM-CHR73003,FM-CHR73002,FM-YW-20-008,FM-YW-20-009,FM-GLM60302,FM-YW-20-059,FM-YW-20-061,FM-YW-20-065,FM-GLM60377,FM-YW-20-038,FM-YW-20-039,FM-ZY-20-135,FM-YW-20-078,FM-YW-20-079,FM-YW-20-080,FM-YW-20-081,FM-YW-20-082,FM-YW-20-083', 0, '');

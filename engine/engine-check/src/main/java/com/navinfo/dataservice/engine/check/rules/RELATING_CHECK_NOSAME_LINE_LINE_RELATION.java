@@ -24,6 +24,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -145,28 +146,10 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 			else if (obj instanceof RdRestriction) {
 				RdRestriction rdRestriction = (RdRestriction) obj;
 				//不查卡车交限
-				if((rdRestriction.getDetails()!=null)&&(rdRestriction.getDetails().size()>0)){
-					List<IRow> rdRestrictionDetailList = rdRestriction.getDetails();
-					for(IRow iRow:rdRestrictionDetailList){
-						if(iRow instanceof RdRestrictionDetail){
-							RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)iRow;
-							if((rdRestrictionDetail.getConditions()!=null)&&(rdRestrictionDetail.getConditions().size()>0)){
-								List<IRow> rdRestrictionConditionList = rdRestrictionDetail.getConditions();
-								for(IRow iiRow:rdRestrictionConditionList){
-									if(iiRow instanceof RdRestrictionCondition){
-										RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition)iiRow;
-										if(rdRestrictionCondition.getVehicle()==4){
-											return;
-										}
-									}
-								}
-							}
-						}					
-					}
-				}
-				boolean result = checkRdRestriction(rdRestriction,
-						checkCommand.getOperType());
-				if (!result) {
+                if (isTruckRestriction(rdRestriction))
+                    return;
+                boolean result = checkRdRestriction(rdRestriction, checkCommand.getOperType());
+				if (result) {
 					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组普通交限");
 					return;
 				}
@@ -229,7 +212,35 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 	}
 
-	/**
+    /**
+     * 是否卡车交限
+     * @param rdRestriction
+     * @return
+     */
+    private boolean isTruckRestriction(RdRestriction rdRestriction) {
+        if((rdRestriction.getDetails()!=null)&&(rdRestriction.getDetails().size()>0)){
+            List<IRow> rdRestrictionDetailList = rdRestriction.getDetails();
+            for(IRow iRow:rdRestrictionDetailList){
+                if(iRow instanceof RdRestrictionDetail){
+                    RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)iRow;
+                    if((rdRestrictionDetail.getConditions()!=null)&&(rdRestrictionDetail.getConditions().size()>0)){
+                        List<IRow> rdRestrictionConditionList = rdRestrictionDetail.getConditions();
+                        for(IRow iiRow:rdRestrictionConditionList){
+                            if(iiRow instanceof RdRestrictionCondition){
+                                RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition)iiRow;
+                                if(rdRestrictionCondition.getVehicle()==4){
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
 	 * @param rdRestrictionDetail
 	 * @return
 	 * @throws Exception
@@ -431,31 +442,21 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdRestriction(RdRestriction rdRestriction,
-			OperType operType) throws Exception {
+	private boolean checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
 		if (operType == OperType.CREATE) {
 			int inLinkPid = rdRestriction.getInLinkPid();
 			int nodePid = rdRestriction.getNodePid();
 
-			StringBuilder sb = new StringBuilder();
+            List<RdRestriction> restrictions = new RdRestrictionSelector(getConn())
+                    .loadRdRestrictionByLinkNode(inLinkPid, nodePid,false);
 
-			sb.append("SELECT RR.PID FROM RD_RESTRICTION RR WHERE RR.u_record !=2");
-			sb.append(" AND RR.IN_LINK_PID = ");
-			sb.append(inLinkPid);
-			sb.append(" AND RR.NODE_PID = ");
-			sb.append(nodePid);
-
-			String sql = sb.toString();
-
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-
-			if (resultList.size() > 0) {
-				return false;
-			}
+            for (RdRestriction restriction : restrictions) {
+                if (!isTruckRestriction(restriction)) {
+                    return true;
+                }
+            }
 		}
-		return true;
+		return false;
 	}
 
 	private boolean checkRdBranch(RdBranch rdBranch) throws Exception {

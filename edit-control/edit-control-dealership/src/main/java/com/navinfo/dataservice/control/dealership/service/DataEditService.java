@@ -438,9 +438,9 @@ public class DataEditService {
 			return "success ";
 		}catch(Exception e){
 			e.printStackTrace();
-			DbUtils.rollbackAndClose(con);
-			DbUtils.rollbackAndClose(mancon);
-			DbUtils.rollbackAndClose(dailycon);
+			DbUtils.rollback(con);
+			DbUtils.rollback(mancon);
+			DbUtils.rollback(dailycon);
 		}finally{
 			if(con != null){
 				DbUtils.commitAndClose(con);
@@ -468,11 +468,11 @@ public class DataEditService {
 			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
 				@Override
 				public Integer handle(ResultSet rs) throws SQLException {
-					int regionId = 0;
 					if (rs.next()) {
-						regionId = rs.getInt("region_id");
+						int regionId = rs.getInt("region_id");
+						return regionId;
 					}
-					return regionId;
+					return -1;
 				}
 			};
 			
@@ -495,11 +495,11 @@ public class DataEditService {
 			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
 				@Override
 				public Integer handle(ResultSet rs) throws SQLException {
-					int dailyDbId = 0;
 					if (rs.next()) {
-						dailyDbId = rs.getInt("daily_db_id");
+						int dailyDbId = rs.getInt("daily_db_id");
+						return dailyDbId;
 					}
-					return dailyDbId;
+					return -1;
 				}
 			};
 			
@@ -1008,7 +1008,7 @@ public class DataEditService {
 	 * @author songhe
 	 * 
 	 * */
-	public void clearRelatedPoi(int resultId, long userId) throws SQLException{
+	public void clearRelatedPoi(int resultId, long userId) throws Exception{
 		Connection con = null;
 		Connection dailycon = null;
 		Connection mancon = null;
@@ -1016,22 +1016,31 @@ public class DataEditService {
 			con = DBConnector.getInstance().getDealershipConnection();
 			mancon = DBConnector.getInstance().getManConnection();
 			int regionId = getRegionId(resultId, con);
+			if(regionId == -1){
+				throw new Exception("resultId:"+resultId+"不存在");
+			}
 			int dailyDbId = getDailyDbId(regionId, mancon);
+			if(dailyDbId == -1){
+				throw new Exception("regionId:"+regionId+"对应的dailyDbId为空");
+			}
 			dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
 			String chainCode = getChainCodeByResultId(resultId, con);
+			if(chainCode == null || "".equals(chainCode)){
+				throw new Exception("resultId:"+resultId+"对应的chainCode为空");
+			}
 			//表内批表外
 			insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 			//根据result维护source表
 			resultMaintainSource(resultId, con);
 			//清空关联POI作业属性
-			clearRelevancePoi(resultId, con);
 			int workflow_status = getWorkflowStatus(resultId, con);
+			clearRelevancePoi(resultId, con);
 			inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 		}catch(Exception e){
-			e.printStackTrace();
-			DbUtils.rollbackAndClose(con);
-			DbUtils.rollbackAndClose(mancon);
-			DbUtils.rollbackAndClose(dailycon);
+			DbUtils.rollback(con);
+			DbUtils.rollback(mancon);
+			DbUtils.rollback(dailycon);
+			throw e;
 		}finally{
 			if(con != null){
 				DbUtils.commitAndClose(con);

@@ -246,7 +246,7 @@ public class ColumnSubmitJob extends AbstractJob {
 						log.info("常规提交时，对打了质检标记的数据，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=1、SECOND_WORK_STATUS=1、HANDLER=0:"+qcPidList);
 						updateDeepStatus(qcPidList, conn, 1,second,1);
 						log.info("常规提交时，初始化质检问题记录表column_qc_problem");
-						insertColumnQcProblems(qcPidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
+						insertColumnQcProblems(qcPidList,conn,comSubTaskId,firstWorkItem,second,userId);
 					}
 				}else{
 					//质检提交时调用，更新质检问题表状态

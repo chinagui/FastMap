@@ -1043,7 +1043,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("   from t1 p");
 			sb.append("  where p.first_work_item in ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
 			if(isQuality==0){//常规任务
-				sb.append("	AND p.COMMON_HANDLER = "+userId);
+				sb.append("	AND p.COMMON_HANDLER =0 ");
 			}else if(isQuality==1){//质检任务
 				sb.append("	AND p.COMMON_HANDLER <> "+userId);
 				sb.append("	AND p.QC_FLAG = 1");

@@ -757,6 +757,7 @@ public class DataPrepareService {
 	 * 
 	 * */
 	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws SQLException{
+		//处理数据
 		Map<String, Object> cofirmData = convertCofirmData(dataJson);
 		Connection con = null;
 		try{

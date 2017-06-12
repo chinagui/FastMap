@@ -207,6 +207,7 @@ public class DataPrepareController extends BaseController {
 		
 	}
 	
+	//客户/外业确认列表接口
 	@RequestMapping(value = "/cofirmDataList")
 	public ModelAndView cofirmDataList(HttpServletRequest request) {
 		try {

@@ -1,13 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -30,8 +22,15 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Operation implements IOperation {
 
@@ -301,15 +300,14 @@ public class Operation implements IOperation {
             boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 
             // 需要往map中加入的对象，拷贝command.getUpdateLink()
-            ZoneLink link = new ZoneLink();
-            if (isChanged) {
+            //if (isChanged) {
                 result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
-                link.setPid(this.command.getUpdateLink().getPid());
-                link.copy(this.command.getUpdateLink());
+            //}
 
-                link.setGeometry(GeoTranslator.transform(command.getLinkGeom(), 100000, 0));
-            }
-
+            ZoneLink link = new ZoneLink();
+            link.setPid(this.command.getUpdateLink().getPid());
+            link.copy(this.command.getUpdateLink());
+            link.setGeometry(GeoTranslator.transform(command.getLinkGeom(), 100000, 0));
             links.add(link);
         } else {
             Iterator<String> it = meshes.iterator();

@@ -25,7 +25,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
+import org.apache.solr.common.util.Hash;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
@@ -936,10 +936,12 @@ public class DataEditService {
 	public void resultMaintainSource(int resultId, Connection con) throws Exception{
 		try{
 			//查询对应resultID数据
-			int sourceId = getResultTable(resultId, con);
+			Map<String, Object> dataMap =  getResultTable(resultId, con);
+			int sourceId = Integer.parseInt(String.valueOf(dataMap.get("sourceId")));
 			log.info("sourceId:"+sourceId);
-			if(sourceId != -1){
-				updateSource(con, resultId, sourceId);
+			if(dataMap != null && sourceId != 0){
+				int dealSrcDiff = Integer.parseInt(String.valueOf(dataMap.get("dealSrcDiff")));
+				updateSource(con, resultId, sourceId, dealSrcDiff);
 			}
 		}catch(Exception e){
 			throw e;
@@ -952,18 +954,20 @@ public class DataEditService {
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public int getResultTable(int resultId, Connection con) throws Exception{
+	public Map<String, Object> getResultTable(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "select t.SOURCE_ID from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
-			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
+			String sql = "select t.DEAL_SRC_DIFF,t.SOURCE_ID from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
 				@Override
-				public Integer handle(ResultSet rs) throws SQLException {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> map = new HashMap();
 					if (rs.next() && rs.getInt("SOURCE_ID") != 0) {
-						int sourceId = rs.getInt("SOURCE_ID");
-						return sourceId;
+						map.put("sourceId", rs.getInt("SOURCE_ID"));
+						map.put("dealSrcDiff", rs.getInt("DEAL_SRC_DIFF"));
+						return map;
 					}
-					return -1;
+					return null;
 				}
 			};
 			return run.query(con, sql, rs);
@@ -977,25 +981,42 @@ public class DataEditService {
 	 * @param con
 	 * @param resulId
 	 * @param sourceId
+	 * @param dealSrcDiff 更新策略标识
 	 * @throws Exception 
 	 * @author songhe
 	 * */
-	public void updateSource(Connection con, int resulId, int sourceId) throws Exception{
+	public void updateSource(Connection con, int resulId, int sourceId, int dealSrcDiff) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_SOURCE s set "
-					+ "(s.PROVINCE,s.POI_TEL,s.CITY,s.PROJECT,s.KIND_CODE,s.CHAIN,s.NAME,s.NAME_SHORT,s.ADDRESS,s.TEL_SALE, "
-					+ "s.TEL_SERVICE,s.TEL_OTHER,s.POST_CODE,s.NAME_ENG,s.ADDRESS_ENG,s.PROVIDE_DATE,"
-					+ "s.IS_DELETED,s.FB_SOURCE,s.FB_CONTENT,s.FB_AUDIT_REMARK,s.FB_DATE,s.CFM_POI_NUM,s.CFM_MEMO,s.DEAL_CFM_DATE,s.POI_KIND_CODE,s.POI_CHAIN,"
-					+ "s.POI_NAME,s.POI_NAME_SHORT,s.POI_ADDRESS,s.POI_POST_CODE,s.POI_X_DISPLAY,s.POI_Y_DISPLAY,"
-					+ "s.POI_X_GUIDE,s.POI_Y_GUIDE,s.GEOMETRY)"
-					+ "=(select t.PROVINCE,t.POI_TEL,t.CITY,t.PROJECT,t.KIND_CODE,t.CHAIN,t.NAME,t.NAME_SHORT,t.ADDRESS,t.TEL_SALE, "
-					+ "t.TEL_SERVICE,t.TEL_OTHER,t.POST_CODE,t.NAME_ENG,t.ADDRESS_ENG,t.PROVIDE_DATE,"
-					+ "t.IS_DELETED,t.FB_SOURCE,t.FB_CONTENT,t.FB_AUDIT_REMARK,t.FB_DATE,t.CFM_POI_NUM,t.CFM_MEMO,t.DEAL_CFM_DATE,t.POI_KIND_CODE,t.POI_CHAIN,t.POI_NAME,"
-					+ "t.POI_NAME_SHORT,t.POI_ADDRESS,t.POI_POST_CODE,t.POI_X_DISPLAY,t.POI_Y_DISPLAY,t.POI_X_GUIDE,"
-					+ "t.POI_Y_GUIDE,t.GEOMETRY from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resulId+")" + "where s.SOURCE_ID = "+sourceId;
+			String sql = null;
+			String isDeletedSql = null;
+			if(dealSrcDiff == 2){
+				sql = "update IX_DEALERSHIP_SOURCE s set "
+						+ "(s.FB_SOURCE,s.FB_CONTENT,s.FB_AUDIT_REMARK,s.FB_DATE,s.CFM_POI_NUM,s.CFM_MEMO,s.DEAL_CFM_DATE,s.POI_KIND_CODE,s.POI_CHAIN,"
+						+ "s.POI_NAME,s.POI_NAME_SHORT,s.POI_ADDRESS,s.POI_POST_CODE,s.POI_X_DISPLAY,s.POI_Y_DISPLAY,"
+						+ "s.POI_X_GUIDE,s.POI_Y_GUIDE,s.GEOMETRY)"
+						+ "=(select t.FB_SOURCE,t.FB_CONTENT,t.FB_AUDIT_REMARK,t.FB_DATE,t.CFM_POI_NUM,t.CFM_MEMO,t.DEAL_CFM_DATE,t.POI_KIND_CODE,t.POI_CHAIN,t.POI_NAME,"
+						+ "t.POI_NAME_SHORT,t.POI_ADDRESS,t.POI_POST_CODE,t.POI_X_DISPLAY,t.POI_Y_DISPLAY,t.POI_X_GUIDE,"
+						+ "t.POI_Y_GUIDE,t.GEOMETRY from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resulId+")" + "where s.SOURCE_ID = "+sourceId;
+				isDeletedSql = "update IX_DEALERSHIP_SOURCE s set s.is_deleted = 1 where s.SOURCE_ID = "+sourceId;
+			}else{
+				sql = "update IX_DEALERSHIP_SOURCE s set "
+						+ "(s.PROVINCE,s.POI_TEL,s.CITY,s.PROJECT,s.KIND_CODE,s.CHAIN,s.NAME,s.NAME_SHORT,s.ADDRESS,s.TEL_SALE, "
+						+ "s.TEL_SERVICE,s.TEL_OTHER,s.POST_CODE,s.NAME_ENG,s.ADDRESS_ENG,s.PROVIDE_DATE,"
+						+ "s.FB_SOURCE,s.FB_CONTENT,s.FB_AUDIT_REMARK,s.FB_DATE,s.CFM_POI_NUM,s.CFM_MEMO,s.DEAL_CFM_DATE,s.POI_KIND_CODE,s.POI_CHAIN,"
+						+ "s.POI_NAME,s.POI_NAME_SHORT,s.POI_ADDRESS,s.POI_POST_CODE,s.POI_X_DISPLAY,s.POI_Y_DISPLAY,"
+						+ "s.POI_X_GUIDE,s.POI_Y_GUIDE,s.GEOMETRY)"
+						+ "=(select t.PROVINCE,t.POI_TEL,t.CITY,t.PROJECT,t.KIND_CODE,t.CHAIN,t.NAME,t.NAME_SHORT,t.ADDRESS,t.TEL_SALE, "
+						+ "t.TEL_SERVICE,t.TEL_OTHER,t.POST_CODE,t.NAME_ENG,t.ADDRESS_ENG,t.PROVIDE_DATE,"
+						+ "t.FB_SOURCE,t.FB_CONTENT,t.FB_AUDIT_REMARK,t.FB_DATE,t.CFM_POI_NUM,t.CFM_MEMO,t.DEAL_CFM_DATE,t.POI_KIND_CODE,t.POI_CHAIN,t.POI_NAME,"
+						+ "t.POI_NAME_SHORT,t.POI_ADDRESS,t.POI_POST_CODE,t.POI_X_DISPLAY,t.POI_Y_DISPLAY,t.POI_X_GUIDE,"
+						+ "t.POI_Y_GUIDE,t.GEOMETRY from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resulId+")" + "where s.SOURCE_ID = "+sourceId;
+				isDeletedSql = "update IX_DEALERSHIP_SOURCE s set s.is_deleted = 0 where s.SOURCE_ID = "+sourceId;
+			}
+			log.info("dealSrcDiff:" + dealSrcDiff);
 			log.info("根据result维护source的sql："+sql);
 			run.execute(con, sql);
+			run.execute(con, isDeletedSql);
 		}catch(Exception e){
 			throw e;
 		}

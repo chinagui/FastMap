@@ -232,4 +232,27 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	//客户/外业确认列表接口
+	@RequestMapping(value = "/openChain")
+	public ModelAndView openChain(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("chainCode")){
+				throw new Exception("chainCode不能为空");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			
+			dealerShipService.openChain(chainCode);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("开启失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

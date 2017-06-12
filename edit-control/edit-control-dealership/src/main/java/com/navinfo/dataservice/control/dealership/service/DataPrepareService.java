@@ -782,7 +782,7 @@ public class DataPrepareService {
 			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
 			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
 			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
-				sb.append(" and r.chain = " + String.valueOf(cofirmData.get("chainCode")));
+				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
 			}
 			if(cofirmData.containsKey("name") && cofirmData.get("name") != null){
 				sb.append(" and r.name like '%" + String.valueOf(cofirmData.get("name")) + "%'");
@@ -856,13 +856,13 @@ public class DataPrepareService {
 		cofirmDataMap.put("type", type);
 		cofirmDataMap.put("cfmStatus", cfmStatus);
 		
-		if(dataJson.containsKey("chainCode") && dataJson.get("chainCode") != null){
+		if(dataJson.containsKey("chainCode") && dataJson.get("chainCode") != null && StringUtils.isNotBlank(dataJson.get("chainCode").toString())){
 			cofirmDataMap.put("chainCode", dataJson.getString("chainCode"));
 		}
-		if(dataJson.containsKey("name") && dataJson.get("name") != null){
+		if(dataJson.containsKey("name") && dataJson.get("name") != null && StringUtils.isNotBlank(dataJson.get("name").toString())){
 			cofirmDataMap.put("name", dataJson.getString("name"));
 		}
-		if(dataJson.containsKey("address") && dataJson.get("address") != null){
+		if(dataJson.containsKey("address") && dataJson.get("address") != null && StringUtils.isNotBlank(dataJson.get("address").toString())){
 			cofirmDataMap.put("address", dataJson.getString("address"));
 		}
 		log.info("要查询确认列表属性为："+type+",确认状态为："+cfmStatus+"的数据");
@@ -898,6 +898,33 @@ public class DataPrepareService {
 			return 0;
 		}
 		return poiNum;
+	}
+	
+	/**
+	 * 重启品牌
+	 * 品牌状态改为“未开启”即chain_status=0，
+	 * 品牌作业类型CHAIN.work_type改为“无”即0，
+	 * 品牌作业状态CHAIN.work_status改为“无”即0。
+	 * @param chainCode
+	 * @throws Exception 
+	 * 
+	 * */
+	public void openChain(String chainCode) throws Exception{
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = 0, C.WORK_TYPE = 0, C.CHAIN_STATUS = 0 WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			log.info("openChain sql:" + updateSql);
+			run.execute(con, updateSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollback(con);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
 	}
 	
 	

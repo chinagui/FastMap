@@ -101,19 +101,30 @@ public class MetaController extends BaseController {
 
             String word = jsonReq.getString("word");
 
+            String newWord = "";
+            
             String adminId = null;
             if(jsonReq.containsKey("adminId")){
             	adminId = jsonReq.getString("adminId");
             }
             PinyinConverter py = new PinyinConverter();
 
+            //特殊处理  以G、S、Y、X、C、Z开头的词(分歧编辑中)
+            if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") == 1 ){
+            	newWord = py.wordConvert(word, adminId);
+            }
+            
 //          String[] result = py.convert(word);
             String[] result = py.pyVoiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();
 
-                json.put("phonetic", result[0]);
+                if(newWord != null && StringUtils.isNotEmpty(newWord)){
+                	json.put("phonetic", py.pyConvert(word, adminId, null));
+                }else{
+                	json.put("phonetic", result[0]);
+                }
 
                 json.put("voicefile", result[1]);
 

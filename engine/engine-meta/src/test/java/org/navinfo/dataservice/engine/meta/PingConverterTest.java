@@ -53,15 +53,14 @@ public class PingConverterTest {
 
 	}
 	
-	@Test
+//	@Test
 	public void testpyConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
 //		String res = py.pyConvert("上海弄堂", "310000", null);
-		String res = py.pyConvert("S271", null, null);
+		String res = py.pyConvert("S271", "310000", null);
+		System.out.println("res: "+res);
 		
-
-		System.out.println(res);
 		//Shang Hai Nong Tang
 		//带行政区划号后  Shang Hai Long Tang
 
@@ -80,18 +79,30 @@ public class PingConverterTest {
 
 	}
 	
-//	@Test
+	@Test
 	public void testpyvConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String[] res = py.pyVoiceConvert("S271", null, null, null);
+		/*String[] res = py.pyVoiceConvert("S271", null, "310000", null);
 				//("上海弄堂", "310000", null);
 
 		System.out.println(res);
 		
 		System.out.println(res[0]);
 
-		System.out.println(res[1]);
+		System.out.println(res[1]);*/
+		
+		String newWord = py.wordConvert("Ｓ２７0", "310000");
+		System.out.println("newWord: "+newWord);
+		
+		String[] res1 = py.pyVoiceConvert(newWord, null, "310000", null);
+		//("上海弄堂", "310000", null);
+
+		System.out.println(res1);
+		
+		System.out.println(res1[0]);
+		
+		System.out.println(res1[1]);
 
 	}
 	

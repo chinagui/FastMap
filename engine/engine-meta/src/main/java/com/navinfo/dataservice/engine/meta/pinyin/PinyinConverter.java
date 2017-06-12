@@ -4,9 +4,9 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -793,15 +793,6 @@ public class PinyinConverter {
 			}
 			DbUtils.closeQuietly(cs);
 	
-			/*if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-	
-				}
-			}*/
-			
-	
 		}
 		
 		if (StringUtils.isEmpty(result)){
@@ -810,6 +801,142 @@ public class PinyinConverter {
 		return result;
 	}
 	
+	public String pyConvert2(String word,String adminId,String isRdName,Connection conn) throws Exception {
+		CallableStatement cs = null;
+		
+//		String initSql = "{call py_utils_word.init_context_param}";
+		
+		String sql = "select py_utils_word.convert_hz_tone(:1,    :2,    :3) phonetic from dual";
+	
+		PreparedStatement pstmt = null;
+	
+		ResultSet resultSet = null;
+	
+		String result = "";
+	
+		try {
+	
+//			cs = conn.prepareCall(initSql);
+//			
+//			cs.execute();
+			
+			pstmt = conn.prepareStatement(sql);
+	
+			pstmt.setString(1, word);
+			
+			pstmt.setString(2, adminId);
+			
+			pstmt.setString(3, isRdName);
+	
+			resultSet = pstmt.executeQuery();
+	
+			if (resultSet.next()) {
+	
+				result = resultSet.getString("phonetic");
+	
+			} else {
+				return "";
+			}
+		} catch (Exception e) {
+	
+			throw new Exception(e);
+	
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+	
+				}
+			}
+	
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+	
+				}
+			}
+			DbUtils.closeQuietly(cs);
+	
+		}
+		
+		if (StringUtils.isEmpty(result)){
+			return "";
+		}
+		return result;
+	}
+	/**
+	 * @Title: pyConvert
+	 * @Description: 转拼音
+	 * @param word  
+	 * @param adminId  行政区划号
+	 * @param isRdName 是否是道路名标识   1 是 默认是否
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月16日 下午5:32:33 
+	 */
+	public String wordConvert(String word,String adminId) throws Exception {
+		CallableStatement cs = null;
+		
+		String initSql = "";
+		
+		String result = "";
+	
+		Connection conn = null;
+	
+		try {
+	
+			conn = DBConnector.getInstance().getMetaConnection();
+			initSql = "{call PY_UTILS_WORD.CONVERT_ROAD_NAME(?,?)}";
+//			String py = pyConvert2(word, adminId, null, conn);
+			
+			cs = conn.prepareCall(initSql);
+			cs.setString(1, word);
+			cs.setString(2, "");
+			cs.registerOutParameter(1, Types.VARCHAR);
+			cs.registerOutParameter(2, Types.VARCHAR);
+			cs.executeUpdate();
+			result =cs.getString(1);
+			System.out.println(result);
+			System.out.println(cs.getString(2));
+			/*String wordConvertSql = "declare \n"
+					+ " 	HZ VARCHAR2(50):= '"+word+"'; \n"
+					+ " 	PY VARCHAR2(50):= '"+py+"'; \n"
+					+ " begin \n"
+					+ "		PY_UTILS_WORD.CONVERT_ROAD_NAME(HZ,PY); \n"
+					+ "		"
+					+ ""
+					+ "end;";
+
+			ProcedureBase procedureBase = new ProcedureBase(conn);
+	        procedureBase.callProcedure(initSql);*/
+			
+		
+		} catch (Exception e) {
+	
+			throw new Exception(e);
+	
+		} finally {
+			
+			DbUtils.closeQuietly(cs);
+	
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+	
+				}
+			}
+		}
+		
+		if (result == null){
+			return "";
+		}
+		return result;
+	}
 	public static void main(String[] args) throws Exception {
 
 		PinyinConverter py = new PinyinConverter();

@@ -46,7 +46,6 @@ public class PoiRecommender {
 			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(2000));
 		
 		    String wkt = GeoTranslator.jts2Wkt(buffer);
-			System.out.println(wkt);
 			Clob geom = ConnectionUtil.createClob(conn);			
 			geom.setString(1, wkt);
 		    pstmt.setClob(1,geom);

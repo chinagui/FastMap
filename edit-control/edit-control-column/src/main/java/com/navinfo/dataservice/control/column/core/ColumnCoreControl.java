@@ -630,7 +630,7 @@ public class ColumnCoreControl {
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
-			JSONArray datas = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,nameId);
+			JSONArray datas = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,nameId,apiService);
 			
 			return datas;
 		} catch (Exception e) {
@@ -679,7 +679,7 @@ public class ColumnCoreControl {
 				data = columnStatusSelector.saveQcProblem(pid, firstWorkItem, secondWorkItem, errorType, 
 						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId());
 			}else{
-				JSONArray jsonArray = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,null);
+				JSONArray jsonArray = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,null,apiService);
 				JSONObject jsonObject = (JSONObject) jsonArray.get(0);
 				data = columnStatusSelector.saveQcProblemWithPinYin(pid, firstWorkItem, secondWorkItem, errorType, 
 						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId(),jsonObject,nameId);

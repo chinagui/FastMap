@@ -42,7 +42,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testUpdate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter = "{\"name\":\"20171010_526_\",\"subtaskId\":350,\"descp\":null,\"planStartDate\":\"20171011\",\"planEndDate\":\"20171011\",\"exeUserId\":4574,\"gridIds\":[51572532],\"workKind\":3,\"hasQuality\":0}";
+		String parameter ="{\"name\":\"江苏省宿迁市城区_20170612_多源组test1\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -52,6 +52,21 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.update(dataJson,0);			
+	}
+	
+	@Test
+	public void testCreate() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter ="{\"taskId\":617;\"name\":\"江苏省宿迁市城区_20170612_多源组test1_me\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		service.create(0,dataJson);			
 	}
 	
 	@Test

@@ -230,22 +230,6 @@ public class RefinementLogDependent {
 	
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
-		Connection conn = DBConnector.getInstance().getConnectionById(13);
-		LogReader logReader = new LogReader(conn);
-		List<String> grids = new ArrayList<String>();
-		grids.add("59567233");
-		Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObjSpecial("IX_POI", "IX_POI", grids, null, null);
-		Map<Integer,Collection<Long>> pidMap2 = logReader.getUpdatedObj("IX_POI", "IX_POI", grids, "201601010000", "201801010000");
-		Map<Integer,Collection<Long>> pidMap3 = logReader.getUpdatedObj("IX_POI", "IX_POI", grids, "201601010000");
-
-		Map<Integer,Collection<Long>> pidMap4 = logReader.getUpdatedObj("IX_POI", "IX_POI", "59567233", "201601010000");
-		int state = logReader.getObjectState(95711786,"IX_POI");
-		
-		List<Long> pids = new ArrayList<Long>();
-		pids.add(95711786L);
-		Map<Long,Integer> states = logReader.getObjectState(pids,"IX_POI");
-
-		
 		RefinementLogDependent RefinementLogDependent = new RefinementLogDependent();
 //		RefinementLogDependent.refinementLogDependentMain(13);
 		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));

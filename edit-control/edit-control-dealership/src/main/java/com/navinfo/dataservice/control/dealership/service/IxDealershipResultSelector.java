@@ -270,4 +270,15 @@ public class IxDealershipResultSelector {
 		return new QueryRunner().query(conn,sql,getSourceHander());		
 
 	}
+	
+	/**
+	 * 通过sql
+	 * @param conn
+	 * @param sql
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Integer, IxDealershipResult> getIxDealershipResultsBySql(Connection conn,String sql) throws Exception{
+		return new QueryRunner().query(conn, sql, getSourceHander());
+	}
 }

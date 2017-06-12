@@ -919,6 +919,7 @@ public class DataPrepareService {
 	public void openChain(String chainCode) throws Exception{
 		Connection con = null;
 		try{
+			
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			

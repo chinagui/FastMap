@@ -27,33 +27,6 @@ public class PingConverterTest {
 	}
 
 //	@Test
-	public void testQueryPingYin() throws Exception {
-		PinyinConverter py = new PinyinConverter();
-
-		String[] res = py.convert("京承高速收费站1");
-
-		System.out.println(res);
-
-		System.out.println(res[0]);
-
-		System.out.println(res[1]);
-
-	}
-	
-//	@Test
-	public void testConvertPingYin() throws Exception {
-		PinyinConverter py = new PinyinConverter();
-
-		for (int i=0;i<=10;i++){
-			String res = py.convertHz("１号楼");
-			System.out.println(res);
-		}
-
-//		System.out.println(res);
-
-	}
-	
-//	@Test
 	public void testpyConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 

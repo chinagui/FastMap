@@ -101,7 +101,7 @@ public class MetaController extends BaseController {
 
             String word = jsonReq.getString("word");
 
-            String newWord = "";
+            String oldWord = word;
             
             String adminId = null;
             if(jsonReq.containsKey("adminId")){
@@ -111,7 +111,7 @@ public class MetaController extends BaseController {
 
             //特殊处理  以G、S、Y、X、C、Z开头的词(分歧编辑中)
             if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") == 1 ){
-            	newWord = py.wordConvert(word, adminId);
+            	word = py.wordConvert(word, adminId);
             }
             
 //          String[] result = py.convert(word);
@@ -120,8 +120,8 @@ public class MetaController extends BaseController {
             if (result != null) {
                 JSONObject json = new JSONObject();
 
-                if(newWord != null && StringUtils.isNotEmpty(newWord)){
-                	json.put("phonetic", py.pyConvert(word, adminId, null));
+                if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") == 1 ){
+                	json.put("phonetic", py.pyConvert(oldWord, adminId, null));
                 }else{
                 	json.put("phonetic", result[0]);
                 }
@@ -212,10 +212,15 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             String word = jsonReq.getString("word");
+            
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
 
             PinyinConverter py = new PinyinConverter();
 
-            String[] result = py.autoConvert(word);
+            String[] result = py.pyVoiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();

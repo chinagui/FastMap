@@ -3,6 +3,7 @@ package com.navinfo.dataservice.web.dealership.controller;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,9 +56,13 @@ public class DataPrepareController extends BaseController {
 				pageNum = dataJson.getInt("pageNum");
 			}
 			
-			int chainStatus = dataJson.getInt("chainStatus");
-			List<Map<String, Object>> dealerBrandList = dealerShipService.queryDealerBrand(chainStatus, pageSize, pageNum);
+			List<Map<String, Object>> dealerBrandList = new ArrayList<>();
+			int chainStatus = -1;
+			if(dataJson.containsKey("chainStatus")){
+				chainStatus = dataJson.getInt("chainStatus");
+			}
 			
+			dealerBrandList = dealerShipService.queryDealerBrand(chainStatus, pageSize, pageNum);
 			Map<String, Object> result = new HashMap<>();
 			result.put("total", dealerBrandList.size());
 			result.put("record", dealerBrandList);
@@ -255,4 +260,51 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+//	@RequestMapping(value = "/exportToClient")
+//	public void exportToClient(HttpServletRequest request,HttpServletResponse response) {
+//		response.setContentType("octets/stream");
+//		try {
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			if (dataJson == null) {
+//				throw new IllegalArgumentException("parameter参数不能为空。");
+//			}
+//			String chainCode = dataJson.getString("chainCode");
+//			
+//			List<ExpIxDealershipResult> dealerBrandList = dealerShipService.searchTableDiff(chainCode);
+//
+//			ExportExcel<ExpIxDealershipResult> ex = new ExportExcel<ExpIxDealershipResult>();  
+//			
+//			String excelName = "表表差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+//			//转码防止乱码  
+//	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
+//	        
+//			String[] headers =  
+//		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+//		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+//		        		"厂商提供英文地址", "旧一览表ID", "旧一览表省份" ,
+//		        		"旧一览表城市", "旧一览表项目", "旧一览表分类", "旧一览表品牌" , "旧一览表名称", "旧一览表简称", "旧一览表地址",
+//		        		"旧一览表电话（其他）" ,
+//		        		"旧一览表电话（销售）", "旧一览表电话（服务）", "旧一览表邮编", "旧一览表英文名称" , "旧一览表英文地址", 
+//		        		"新旧一览表差分结果"  };  
+//			
+//			try  
+//	        {  
+//	            OutputStream out = response.getOutputStream();  
+//	            ex.exportExcel("表表差分结果", headers, dealerBrandList, out, "yyyy-MM-dd");
+//	            out.close();  
+//	            logger.error("excel导出成功！");  
+//	        } catch (FileNotFoundException e) {  
+//	            e.printStackTrace();  
+//	            logger.error(e.getMessage());
+//	        } catch (IOException e) {  
+//	            e.printStackTrace();  
+//	            logger.error(e.getMessage());
+//	        } 
+//			//return new ModelAndView("jsonView", success("excel导出成功！"));
+//		} catch (Exception e) {
+//			logger.error("查询失败，原因：" + e.getMessage(), e);
+//			//return new ModelAndView("jsonView", exception(e));
+//		}
+//	}
 }

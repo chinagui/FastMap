@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -32,6 +33,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: DealershipTableAndDbDiffJob
@@ -143,6 +145,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			log.info("开始处理deal_src_diff=4更新的数据");
 			for (IxDealershipResult dealResult : updateDealResultList) {
 				log.info("resultId:"+dealResult.getResultId());
+//				if (dealResult.getResultId()!=21222){continue;}
 				Connection regionConn = DBConnector.getInstance().getConnectionById(queryDbIdByregionId(dealResult.getRegionId()));
 				if (hasValidPoi(dealResult,regionConn)) {
 					BasicObj poiObj=queryPoiByPid(dealResult,regionConn);
@@ -246,7 +249,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			conn = DBConnector.getInstance().getDealershipConnection();
 
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id "
+			String selectSql = "select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
 					+ "from IX_DEALERSHIP_RESULT r where r.workflow_status!=9 and r.chain= '" + chainCode
 					+ "' and r.deal_src_diff=" + dealSrcDiff;
 
@@ -271,6 +274,13 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 						dealResult.setMatchMethod(rs.getInt("match_method"));
 						dealResult.setCfmPoiNum(rs.getString("cfm_poi_num"));
 						dealResult.setSourceId(rs.getInt("source_id"));
+	
+						try {
+							dealResult.setGeometry(GeoTranslator.struct2Jts((STRUCT) rs.getObject("GEOMETRY")));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
 						resultList.add(dealResult);
 
@@ -346,27 +356,29 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1");
-		
-		PoiRecommender.conn=con;
-		IxDealershipResult dealResult = new IxDealershipResult();
-		dealResult.setResultId(7746);
-		dealResult.setKindCode("334322");
-		dealResult.setName("eeee");
-		dealResult.setNameShort("eerer");
-		dealResult.setChain("4007");
-		dealResult.setAddress("jdfdfdd36号");
-		dealResult.setTelSale("89903899");
-		dealResult.setTelService("89903899");
-		dealResult.setTelOther("89903899");
-		dealResult.setPostCode("0357");
-		dealResult.setMatchMethod(0);
-		dealResult.setCfmPoiNum("0751120826XJJ00009");
-		dealResult.setSourceId(26360);
+		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.131:1521/orcl",
+				"FM_DEALERSHIP", "FM_DEALERSHIP");
+		QueryRunner run = new QueryRunner();
+		PoiRecommender.conn=conn;
+		IxDealershipResult dealResult1 = new IxDealershipResult();
+		dealResult1.setResultId(21424);
+		dealResult1.setIsDeleted(1);
+		dealResult1.setName("eeee");
+		dealResult1.setNameShort("eerer");
+		dealResult1.setChain("4007");
+		dealResult1.setAddress("jdfdfdd36号");
+		dealResult1.setTelSale("89903899");
+		dealResult1.setTelService("89903899");
+		dealResult1.setTelOther("89903899");
+		dealResult1.setPostCode("0357");
+		dealResult1.setMatchMethod(0);
+		dealResult1.setCfmPoiNum("0751120826XJJ00009");
+		dealResult1.setSourceId(26360);
 		
 		List<IxDealershipResult> diffFinishResultList=new ArrayList();
-		diffFinishResultList.add(dealResult);
+		diffFinishResultList.add(dealResult1);
+		
+
 		HandlerDealership job=new HandlerDealership();
 		job.updateDealershipDb(diffFinishResultList, "4007");
 //		System.out.println(queryPidByPoiNum("0010061024HYX00212",con));

@@ -19,7 +19,7 @@ public class IxDealershipHistoryOperator {
 				QueryRunner run = new QueryRunner();
 				String sqlStr="insert into ix_dealership_history "
 						+ "(history_id,result_id,field_name,u_record,old_value,new_value,u_date,user_id)"
-						+ "value(HISTORY_SEQ.NEXTVAL,'WORKFLOW_STATUS',2,'"+bean.getOldValues()+"','"+bean.getWorkflowStatus()+"',sysdate,"+userId+")";
+						+ "values(HISTORY_SEQ.NEXTVAL,"+ bean.getResultId() +",'WORKFLOW_STATUS',2,'"+bean.getOldValues().get("WORKFLOW_STATUS")+"','"+bean.getWorkflowStatus()+"',sysdate,"+userId+")";
 				run.execute(conn,sqlStr);
 			};
 		}catch(Exception e){

@@ -86,7 +86,7 @@ public class HandlerDealership {
 			nameShortFlag = false;
 		}
 		// 判断分类是否相等
-		if (!dealershipMR.getKindCode().equals(p.getKindCode())) {
+		if ((dealershipMR.getKindCode()!=null&&p.getKindCode()!=null) &&(!dealershipMR.getKindCode().equals(p.getKindCode()))) {
 			str.append("分类不同；");
 			kindFlag = false;
 		}
@@ -96,7 +96,7 @@ public class HandlerDealership {
 			chainFlag = false;
 		}
 		// 判断地址是否相等
-		if (dealershipMR.getAddress() != null && poiAddr.getAddrname() != null
+		if (dealershipMR.getAddress() != null && !("".equals(dealershipMR.getAddress())) && poiAddr.getAddrname() != null
 				&& (!dealershipMR.getAddress().equals(poiAddr.getAddrname()))) {
 			str.append("地址不同；");
 			kindFlag = false;
@@ -162,27 +162,32 @@ public class HandlerDealership {
 
 		IxPoiAddress poiAddr = poiObj.getChiAddress();
 		// 判断官方标准名称是否相等
-		if (!dealershipMR.getPoiName().equals(poiName.getName())) {
+		if (dealershipMR.getPoiName() != null && !("".equals(dealershipMR.getPoiName())) && poiName.getName() != null
+				&& (!dealershipMR.getPoiName().equals(poiName.getName()))) {
 			str.append("官方标准名称不同；");
 			nameFlag = false;
 		}
 		// 判断分类是否相等
-		if (!dealershipMR.getPoiKindCode().equals(p.getKindCode())) {
+		if (dealershipMR.getPoiKindCode() != null && !("".equals(dealershipMR.getPoiKindCode())) && p.getKindCode() != null
+				&& (!dealershipMR.getPoiKindCode().equals(p.getKindCode()))) {
 			str.append("分类不同；");
 			kindFlag = false;
 		}
 		// 判断品牌是否相等
-		if (!dealershipMR.getPoiChain().equals(p.getChain())) {
+		if (dealershipMR.getPoiChain() != null && !("".equals(dealershipMR.getPoiChain())) && p.getChain() != null
+				&& (!dealershipMR.getPoiChain().equals(p.getChain()))) {
 			str.append("品牌不同；");
 			chainFlag = false;
 		}
 		// 判断地址是否相等
-		if (!dealershipMR.getPoiAddress().equals(poiAddr.getAddrname())) {
+		if (dealershipMR.getPoiAddress() != null && !("".equals(dealershipMR.getPoiAddress())) && poiAddr.getAddrname() != null
+				&& (!dealershipMR.getPoiAddress().equals(poiAddr.getAddrname()))) {
 			str.append("地址不同；");
 			kindFlag = false;
 		}
 		// 判断邮编是否相等
-		if (!dealershipMR.getPoiPostCode().equals(p.getPostCode())) {
+		if (dealershipMR.getPoiPostCode() != null && !("".equals(dealershipMR.getPoiPostCode())) && p.getPostCode() != null
+				&& (!dealershipMR.getPoiPostCode().equals(p.getPostCode()))) {
 			str.append("邮编不同；");
 			postCodeFlag = false;
 		}
@@ -242,12 +247,12 @@ public class HandlerDealership {
 			
 //			 conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.131:1521/orcl",
 //					"FM_DEALERSHIP", "FM_DEALERSHIP");
-//			
+			
 
 			// 更新result表
 			String updateResultSql = "UPDATE ix_dealership_result r SET r.workflow_status=?,r.is_deleted=?,r.match_method=?,r.poi_num_1=?,r.poi_num_2=?,r.poi_num_3=?,r.poi_num_4=?,r.poi_num_5=?, "
 					+ " r.similarity=?,r.cfm_poi_num=?,r.cfm_is_adopted=?,r.deal_cfm_date=?,r.poi_kind_code=?,r.poi_chain=?,r.poi_name=?,r.poi_name_short=?,r.poi_address=?,r.poi_tel=?,"
-					+ " r.poi_post_code=?,r.poi_x_display=?,r.poi_y_display=?,r.poi_y_guide=?,r.poi_x_guide=? where r.result_id=?;";
+					+ " r.poi_post_code=?,r.poi_x_display=?,r.poi_y_display=?,r.poi_y_guide=?,r.poi_x_guide=? where r.result_id=?";
 
 			Object[][] param = new Object[diffFinishResultList.size()][];
 

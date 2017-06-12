@@ -1,12 +1,5 @@
 package com.navinfo.dataservice.dao.glm.search;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -17,12 +10,18 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -175,6 +174,7 @@ public class RdRestrictionSearch implements ISearch {
 			
 			double py = MercatorProjection.tileYToPixelY(y);
 
+			int index = 1;
 			while (resultSet.next()) {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
@@ -256,10 +256,9 @@ public class RdRestrictionSearch implements ISearch {
 					offset = 0; break;
 				}
 
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 1, (21 - z)*6+offset, 4);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, index++, (21 - z)*6+offset, 4);
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
-						px, py));
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z, px, py));
 
 				snapshot.setM(jsonM);
 

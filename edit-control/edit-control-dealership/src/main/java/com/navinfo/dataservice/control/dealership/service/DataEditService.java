@@ -1412,14 +1412,14 @@ public class DataEditService {
 		
 		//excel文件上传到服务器		
 		//保存文件
-//		String filePath = SystemConfigFactory.getSystemConfig().getValue(
-//					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
-		String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+//		String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 		log.info("文件由本地上传到服务器指定位置"+filePath);
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
-		String chainCode = "4007";
-//		String chainCode = returnParam.getString("chainCode");
+//		String chainCode = "4007";
+		String chainCode = returnParam.getString("chainCode");
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);

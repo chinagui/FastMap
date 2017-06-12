@@ -749,4 +749,155 @@ public class DataPrepareService {
 	}
 	
 	
+	/**
+	 * 客户/外业确认列表
+	 * @param dataJson
+	 * @return 分页后的结果List
+	 * @author songhe
+	 * 
+	 * */
+	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws SQLException{
+		Map<String, Object> cofirmData = convertCofirmData(dataJson);
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			//数据状态
+			String cfmStatus = String.valueOf(cofirmData.get("cfmStatus"));
+			//列表类型
+			int workflowStatus = 0;
+			if("1".equals(cofirmData.get("type").toString())){
+				workflowStatus = 5;
+			}
+			if("2".equals(cofirmData.get("type").toString())){
+				workflowStatus = 4;
+			}
+			//分页信息
+			int begainSize = Integer.parseInt(String.valueOf(cofirmData.get("begainSize")));
+			int endSize = Integer.parseInt(String.valueOf(cofirmData.get("endSize")));
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
+			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
+			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
+				sb.append(" and r.chain = " + String.valueOf(cofirmData.get("chainCode")));
+			}
+			if(cofirmData.containsKey("name") && cofirmData.get("name") != null){
+				sb.append(" and r.name like '%" + String.valueOf(cofirmData.get("name")) + "%'");
+			}
+			if(cofirmData.containsKey("address") && cofirmData.get("address") != null){
+				sb.append(" and r.address like '%" + String.valueOf(cofirmData.get("address")) + "%'");
+			}
+			sb.append(")A WHERE ROWNUM <= "+endSize+")WHERE RN >= "+begainSize);
+			
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> cofirmDataList = new ArrayList();
+					while (rs.next()) {
+						Map<String, Object> resultMap = new HashMap<>();
+						resultMap.put("resultId", rs.getInt("result_id"));
+						resultMap.put("name", rs.getString("name"));
+						resultMap.put("address", rs.getString("address"));
+						resultMap.put("kindCode", rs.getString("kind_code"));
+						resultMap.put("city", rs.getString("city"));
+						resultMap.put("toInfoDate ", rs.getString("to_info_date"));
+						resultMap.put("cfmMemo", rs.getString("cfm_memo"));
+						resultMap.put("fbDate", rs.getString("fb_date"));
+						resultMap.put("fbContent", rs.getString("fb_content"));
+						resultMap.put("fbAuditRemark", rs.getString("fb_audit_remark"));
+						int poiNum = calculatePoiNum(rs);
+						resultMap.put("matchPoiNum", poiNum);
+						resultMap.put("toClientDate", rs.getString("kind_code"));
+						cofirmDataList.add(resultMap);
+					}
+					return cofirmDataList;
+				}
+			};
+			log.info("客户/外业确认列表查询sql:"+sb.toString());
+			return run.query(con, sb.toString(), rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+	}
+	
+	/**
+	 * 处理客户/外业确认列表上传的数据
+	 * @param dataJson
+	 * @return 处理后的数据map
+	 * @author songhe
+	 * 
+	 * */
+	public synchronized Map<String, Object> convertCofirmData(JSONObject dataJson){
+		
+		Map<String, Object> cofirmDataMap =  new HashMap<>();
+		//默认的页码和每页数据设置为1，20
+		int pageSize = 1;
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+		}
+		int pageNum = 20;
+		if(dataJson.containsKey("pageNum")){
+			pageNum = dataJson.getInt("pageNum");
+		}
+		//处理分页查询的结束和开始位
+		int begainSize = (pageSize-1) * pageNum+1;
+		int endSize = pageSize * pageNum;
+		cofirmDataMap.put("begainSize", begainSize);
+		cofirmDataMap.put("endSize", endSize);
+		
+		int type = dataJson.getInt("type");
+		int cfmStatus = dataJson.getInt("cfmStatus");
+		cofirmDataMap.put("type", type);
+		cofirmDataMap.put("cfmStatus", cfmStatus);
+		
+		if(dataJson.containsKey("chainCode") && dataJson.get("chainCode") != null){
+			cofirmDataMap.put("chainCode", dataJson.getString("chainCode"));
+		}
+		if(dataJson.containsKey("name") && dataJson.get("name") != null){
+			cofirmDataMap.put("name", dataJson.getString("name"));
+		}
+		if(dataJson.containsKey("address") && dataJson.get("address") != null){
+			cofirmDataMap.put("address", dataJson.getString("address"));
+		}
+		log.info("要查询确认列表属性为："+type+",确认状态为："+cfmStatus+"的数据");
+		return cofirmDataMap;
+	}
+	
+	
+	/**
+	 * 计算推荐POI总数方法
+	 * @param ResultHandler
+	 * @return 计算的推荐POI总数
+	 * */
+	public synchronized int calculatePoiNum(ResultSet rs){
+		int poiNum = 0;
+		try {
+			if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_2") != null && "" != rs.getString("poi_num_2")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_3") != null && "" != rs.getString("poi_num_3")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_4") != null && "" != rs.getString("poi_num_4")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_5") != null && "" != rs.getString("poi_num_5")){
+				poiNum = poiNum + 1;
+			}
+		} catch (Exception e) {
+			log.error("计算推荐POI数量出错，原因为：",e);
+			return 0;
+		}
+		return poiNum;
+	}
+	
+	
 }

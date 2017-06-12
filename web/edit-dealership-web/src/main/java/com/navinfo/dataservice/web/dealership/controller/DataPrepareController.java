@@ -206,4 +206,29 @@ public class DataPrepareController extends BaseController {
 		}
 		
 	}
+	
+	@RequestMapping(value = "/cofirmDataList")
+	public ModelAndView cofirmDataList(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("type")){
+				throw new Exception("type不能为空");
+			}
+			
+			if(!dataJson.containsKey("cfmStatus")){
+				throw new Exception("cfmStatus不能为空");
+			}
+			
+			List<Map<String, Object>> cofirmDataList = dealerShipService.cofirmDataList(dataJson);
+			
+			return new ModelAndView("jsonView", success(cofirmDataList));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

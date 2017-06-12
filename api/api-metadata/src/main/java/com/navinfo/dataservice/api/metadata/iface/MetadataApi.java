@@ -194,12 +194,14 @@ public interface MetadataApi {
 	public List<String> getDeepAdminCodeList() throws Exception;
 
 	/**
-	 * 转英文
-	 * @param word
-	 * @return
+	 * <p>中文转英文接口</p>
+     * 根据SC_POINT_CHI2KEY_WORD转英文（未匹配内容转为拼音）
+	 * @param word 待翻译文本
+     * @param admin 行政区划号码
+	 * @return 翻译后文本
 	 * @throws Exception
 	 */
-	public String convertEng(String word) throws Exception;
+	public String convertEng(String word, String admin);
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
 	

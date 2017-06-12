@@ -35,14 +35,14 @@ public class ConvertUtil {
         while (-1 != sourceText.indexOf("//")) {
             sourceText = sourceText.replaceAll("//", "/");
         }
-        return sourceText.trim();
+        return sourceText;
     }
 
     public static String removeRepeatSpace(String sourceText){
         while (-1 != sourceText.indexOf("  ")) {
             sourceText = sourceText.replaceAll("  ", " ");
         }
-        return sourceText.trim();
+        return sourceText;
     }
 
     public static String trimSymbolSpace(String sourceText){
@@ -60,7 +60,7 @@ public class ConvertUtil {
         sourceText = sourceText.replaceAll("\\+ ", "+");
         sourceText = sourceText.replaceAll(" / ", "/");
         sourceText = sourceText.replaceAll("/ ", "/");
-        return sourceText;
+        return sourceText.trim();
     }
 
     public static String firstCapital(String sourceText){
@@ -216,15 +216,6 @@ public class ConvertUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(isChinesePunctuation('·'));
-        System.out.println(isChinesePunctuation('a'));
-        System.out.println(isChinesePunctuation('z'));
-        System.out.println(isChinesePunctuation('A'));
-        System.out.println(isChinesePunctuation('Z'));
-        System.out.println(isChinesePunctuation('.'));
-        System.out.println(isChinesePunctuation('!'));
-        System.out.println(isChinesePunctuation('@'));
-        System.out.println(isChinesePunctuation('·'));
-        System.out.println(isChinesePunctuation('：'));
+        System.out.println(isChinese('℃'));
     }
 }

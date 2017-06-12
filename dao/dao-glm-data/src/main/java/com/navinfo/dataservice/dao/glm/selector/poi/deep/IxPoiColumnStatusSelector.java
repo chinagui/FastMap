@@ -16,7 +16,9 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -1043,7 +1045,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("   from t1 p");
 			sb.append("  where p.first_work_item in ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
 			if(isQuality==0){//常规任务
-				sb.append("	AND p.COMMON_HANDLER = "+userId);
+				sb.append("	AND p.COMMON_HANDLER =0 ");
 			}else if(isQuality==1){//质检任务
 				sb.append("	AND p.COMMON_HANDLER <> "+userId);
 				sb.append("	AND p.QC_FLAG = 1");
@@ -1278,7 +1280,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray queryQcProblem(int subtaskId ,Integer pid,String firstWorkItem,String secondWorkItem,String nameId) throws Exception {
+	public JSONArray queryQcProblem(int subtaskId ,Integer pid,String firstWorkItem,String secondWorkItem,String nameId,ManApi apiService) throws Exception {
 		JSONArray jsonArray  = new JSONArray();
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT * FROM COLUMN_QC_PROBLEM");
@@ -1388,8 +1390,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 				
 				
 				jsonObject.put("isValid", resultSet.getInt("IS_VALID"));
-				jsonObject.put("worker", resultSet.getInt("WORKER"));
-				jsonObject.put("qcWorker", resultSet.getInt("QC_WORKER"));
+				
+				UserInfo worker  = apiService.getUserInfoByUserId(resultSet.getInt("WORKER"));
+				UserInfo qcWorker  = apiService.getUserInfoByUserId(resultSet.getInt("QC_WORKER"));
+				
+				jsonObject.put("worker", worker.getUserRealName()+resultSet.getInt("WORKER"));
+				jsonObject.put("qcWorker",qcWorker.getUserRealName()+resultSet.getInt("QC_WORKER"));
 				jsonObject.put("originalInfo", StringUtils.isEmpty(resultSet.getString("ORIGINAL_INFO"))?"":resultSet.getString("ORIGINAL_INFO"));
 				jsonArray.add(jsonObject);
 			}

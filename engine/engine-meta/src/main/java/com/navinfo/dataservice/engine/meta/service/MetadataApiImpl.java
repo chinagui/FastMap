@@ -23,7 +23,6 @@ import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
-import com.navinfo.dataservice.engine.meta.model.ScBcrossnodeMatchck;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
@@ -54,16 +53,13 @@ import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 import com.navinfo.navicommons.database.QueryRunner;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -370,15 +366,6 @@ public class MetadataApiImpl implements MetadataApi {
 		return result;
 	}
 	
-	@Override
-	public String pyConvertHz(String word) throws Exception {
-		PinyinConverter py = new PinyinConverter();
-
-		String result = py.convertHz(word);
-
-		return result;
-	}
-
 	@Override
 	public MetadataMap getMetadataMap() throws Exception {
 		MetadataMap result = new MetadataMap();

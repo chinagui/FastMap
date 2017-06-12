@@ -233,7 +233,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	//客户/外业确认列表接口
+	//重启品牌
 	@RequestMapping(value = "/openChain")
 	public ModelAndView openChain(HttpServletRequest request) {
 		try {
@@ -245,10 +245,10 @@ public class DataPrepareController extends BaseController {
 			if(!dataJson.containsKey("chainCode")){
 				throw new Exception("chainCode不能为空");
 			}
-			String chainCode = dataJson.getString("chainCode");
-			
-			dealerShipService.openChain(chainCode);
-			
+			List<String> chainList = dataJson.getJSONArray("chainCode");
+			for(String chainCode: chainList){
+				dealerShipService.openChain(chainCode);
+			}
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("开启失败，原因：" + e.getMessage(), e);

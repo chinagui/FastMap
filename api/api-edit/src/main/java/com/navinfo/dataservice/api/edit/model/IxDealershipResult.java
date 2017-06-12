@@ -409,7 +409,7 @@ public class IxDealershipResult implements IObj {
 		return workflowStatus;
 	}
 	public void setWorkflowStatus(int workflowStatus) {
-		if(this.checkValue("WORK_FLOW_STATUS",this.workflowStatus,workflowStatus)){
+		if(this.checkValue("WORKFLOW_STATUS",this.workflowStatus,workflowStatus)){
 			this.workflowStatus = workflowStatus;
 		}
 	}

@@ -30,6 +30,10 @@ public class PoiServiceNew {
 		return SingletonHolder.INSTANCE;
 	}
 	
+	public void logTest(){
+		log.info("PoiServiceNew...");
+	}
+	
 	public UploadResult upload(int uploadId,int subtaskId,long userId)throws Exception{
 		//1. 解压上传文件
 		//1.1 获取上传文件信息

@@ -1,15 +1,20 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -24,10 +29,19 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.control.dealership.diff.DiffService;
+import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
+import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
@@ -41,6 +55,8 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.exception.ServiceException;
+
 import net.sf.json.JSONArray;
 
 
@@ -1358,5 +1374,97 @@ public class DataEditService {
 		}catch(Exception e){
 			throw e;
 			}
+	}
+
+	/**
+	 * @param userId 
+	 * @param resultIds
+	 * @throws ServiceException 
+	 */
+	public void passDealership(long userId, JSONArray resultIds) throws ServiceException {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			Map<Integer,IxDealershipResult> ixDealershipResultMap = IxDealershipResultSelector.getByResultIds(conn, JSONArray.toCollection(resultIds));
+			for(IxDealershipResult ixDealershipResult:ixDealershipResultMap.values()){
+				ixDealershipResult.setWorkflowStatus(3);
+				ixDealershipResult.setCfmStatus(0);
+				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
+			}
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param request
+	 * @param userId
+	 * @throws Exception 
+	 */
+	public void impConfirmData(HttpServletRequest request, long userId) throws Exception {
+		log.info("start 客户确认导入");
+		
+		//excel文件上传到服务器		
+		//保存文件
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+//		String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+		log.info("文件由本地上传到服务器指定位置"+filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile=returnParam.getString("filePath");
+//		String chainCode = "4007";
+		String chainCode = returnParam.getString("chainCode");
+		log.info("文件已上传至"+localFile);
+		//导入表表差分结果excel
+		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+			//导入到oracle库中
+			for(Map<String, Object> map:sourceMaps){
+				IxDealershipResult ixDealershipResult = new IxDealershipResult();
+				ixDealershipResult.setResultId(Integer.parseInt(map.get("resultId").toString()));
+				ixDealershipResult.setFbAuditRemark(map.get("fbAuditRemark").toString());
+				ixDealershipResult.setFbContent(map.get("fbContent").toString());
+				ixDealershipResult.setFbDate(map.get("fbDate").toString());
+				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
+				ixDealershipResult.setFbSource(2);
+				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
+			}
+			log.info("end 客户确认导入");
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param upFile
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impConfirmExcel(String upFile) throws Exception {
+		log.info("start 导入表表差分结果excel："+upFile);
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		
+		excelHeader.put("UUID", "resultId");
+		excelHeader.put("四维确认备注", "cfmMemo");
+		excelHeader.put("负责人反馈结果", "fbContent");
+		excelHeader.put("审核意见", "fbAuditRemark");
+		excelHeader.put("反馈时间", "fbDate");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入客户确认excel："+upFile);
+		return sources;
 	}
 }

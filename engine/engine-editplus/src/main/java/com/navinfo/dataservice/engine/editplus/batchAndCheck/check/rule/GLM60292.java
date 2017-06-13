@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +10,11 @@ import java.util.Set;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.IxSamePoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /**
  * @ClassName GLM60292
@@ -29,28 +28,24 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 报出Log;XXXX不是指定分类，无法制作同一关系
  */
 public class GLM60292 extends BasicCheckRule {
-
-	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
-	private Set<String> filterPid = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String kindCode = poi.getKindCode();
-			if(kindCode == null){return;}
-			//是否有同一关系
-			if(!samePoiMap.containsKey(poi.getPid())){return;}
-			//存在同一关系且IX_SAMEPOI.RELATION_TYPE=1
-			List<Long> samePoiGroupIds = CheckUtil.getSamePoiGroupIds(poi.getPid(), 1, this.getCheckRuleCommand().getConn());
-			if(samePoiGroupIds == null ||samePoiGroupIds.isEmpty()){return;}
-			Long parentId=samePoiMap.get(poi.getPid());
-			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
-			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
-			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
-			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null){return;}
+		if(obj.objName().equals(ObjectName.IX_SAMEPOI)){
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			IxSamepoi poi=(IxSamepoi) poiObj.getMainrow();
+			if(poi.getRelationType()!=1){return;}
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			if(parts==null||parts.size()<2){return;}
+			
+			BasicObj obj1 = myReferDataMap.get(ObjectName.IX_POI).get(parts.get(0).getPoiPid());
+			IxPoi poi1 = (IxPoi) obj1.getMainrow();
+			String kind1=poi1.getKindCode();
+			
+			BasicObj obj2 = myReferDataMap.get(ObjectName.IX_POI).get(parts.get(1).getPoiPid());
+			IxPoi poi2 = (IxPoi) obj2.getMainrow();
+			String kind2=poi2.getKindCode();
+			
 			//SC_POINT_KIND_NEW表的TYPE=6
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<Map<String, String>> scPointKindNew6List = metadataApi.scPointKindNewChainKind6Map();
@@ -65,14 +60,10 @@ public class GLM60292 extends BasicCheckRule {
 				}
 			}
 			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
-			if((keys.contains(kindCode)&&values.contains(kindCodeP))
-					||(keys.contains(kindCodeP)&&values.contains(kindCode))){
-				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
-				if(!filterPid.contains(targets)){
-					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), kindNameByKindCode.get(kindCode)+"不是指定分类，无法制作同一关系");
-				}
-				filterPid.add(targets);
-				filterPid.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
+			if((keys.contains(kind1)&&values.contains(kind2))
+					||(keys.contains(kind2)&&values.contains(kind1))){
+				String targets = "[IX_POI,"+poi1.getPid()+"];[IX_POI,"+poi2.getPid()+"]";
+				setCheckResult(poi1.getGeometry(), targets,poi1.getMeshId(), kindNameByKindCode.get(kind1)+"不是指定分类，无法制作同一关系");
 				return;
 			}
 		}
@@ -82,12 +73,16 @@ public class GLM60292 extends BasicCheckRule {
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
-			pidList.add(obj.objPid());
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			IxSamepoi poi=(IxSamepoi) poiObj.getMainrow();
+			if(poi.getRelationType()!=1){continue;}
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			for(IxSamepoiPart tmp:parts){
+				pidList.add(tmp.getPoiPid());
+			}
 		}
-		samePoiMap = IxPoiSelector.getSamePoiPidsByThisPids(getCheckRuleCommand().getConn(), pidList);
-		Set<String> referSubrow=new HashSet<String>();
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(samePoiMap.values(), ObjectName.IX_POI, referSubrow, false);
-		myReferDataMap.put(ObjectName.IX_POI, referObjs);
+		Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(pidList, ObjectName.IX_POI, null, false);
+		myReferDataMap.put(ObjectName.IX_POI, result);
 	}
 
 }

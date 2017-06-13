@@ -15,6 +15,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
@@ -57,7 +60,6 @@ public class PermitCheckGscnodeNotMove extends baseRule {
                     linkType = ObjType.CMGBUILDLINK; break;
                 default:
             }
-
             Geometry geometry = CheckGeometryUtils.getGeometry(row);
             if (row.changedFields().containsKey("geometry")) {
                 geometry = GeoTranslator.geojson2Jts((JSONObject) row.changedFields().get("geometry"));

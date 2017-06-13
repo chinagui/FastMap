@@ -3,6 +3,7 @@ package com.navinfo.dataservice.web.dealership.controller;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 
 import net.sf.json.JSONObject;
@@ -55,9 +57,13 @@ public class DataPrepareController extends BaseController {
 				pageNum = dataJson.getInt("pageNum");
 			}
 			
-			int chainStatus = dataJson.getInt("chainStatus");
-			List<Map<String, Object>> dealerBrandList = dealerShipService.queryDealerBrand(chainStatus, pageSize, pageNum);
+			List<Map<String, Object>> dealerBrandList = new ArrayList<>();
+			int chainStatus = -1;
+			if(dataJson.containsKey("chainStatus")){
+				chainStatus = dataJson.getInt("chainStatus");
+			}
 			
+			dealerBrandList = dealerShipService.queryDealerBrand(chainStatus, pageSize, pageNum);
 			Map<String, Object> result = new HashMap<>();
 			result.put("total", dealerBrandList.size());
 			result.put("record", dealerBrandList);
@@ -205,5 +211,100 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		
+	}
+	
+	//客户/外业确认列表接口
+	@RequestMapping(value = "/cofirmDataList")
+	public ModelAndView cofirmDataList(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("type")){
+				throw new Exception("type不能为空");
+			}
+			
+			if(!dataJson.containsKey("cfmStatus")){
+				throw new Exception("cfmStatus不能为空");
+			}
+			
+			List<Map<String, Object>> cofirmDataList = dealerShipService.cofirmDataList(dataJson);
+			
+			return new ModelAndView("jsonView", success(cofirmDataList));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//重启品牌
+	@RequestMapping(value = "/openChain")
+	public ModelAndView openChain(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("chainCode")){
+				throw new Exception("chainCode不能为空");
+			}
+			List<String> chainList = dataJson.getJSONArray("chainCode");
+			for(String chainCode: chainList){
+				dealerShipService.openChain(chainCode);
+			}
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("开启失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/exportToClient")
+	public void exportToClient(HttpServletRequest request,HttpServletResponse response) {
+		response.setContentType("octets/stream");
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			
+			List<ExpClientConfirmResult> clientConfirmResultList = dealerShipService.expClientConfirmResultList(chainCode);//得到客户确认-待发布中品牌数据
+
+			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
+			
+			String excelName = "客户确认-待发布列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			//转码防止乱码  
+	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
+	        
+			String[] headers =  
+		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+		        		"厂商提供英文地址", "库中PID","FID","库中POI名称","库中POI别名","库中分类","库中CHAIN","库中POI地址",
+		        		"库中电话","库中邮编","与库差分结果","新旧一览表差分结果","四维确认备注"};  
+			
+			try  
+	        {  
+	            OutputStream out = response.getOutputStream();  
+	            		//new FileOutputStream("f://a.xls");  
+	            ex.exportExcel("客户确认-待发布列表", headers, clientConfirmResultList, out, "yyyy-MM-dd");
+//	            exportExcel(headers, dealerBrandList, out);  
+	            out.close();  
+	            logger.error("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } 
+			//return new ModelAndView("jsonView", success("excel导出成功！"));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			//return new ModelAndView("jsonView", exception(e));
+		}
 	}
 }

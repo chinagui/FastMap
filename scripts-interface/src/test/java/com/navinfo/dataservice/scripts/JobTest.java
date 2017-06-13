@@ -59,7 +59,7 @@ public class JobTest {
 //			jobPra.put("timestamp", new Date());
 //
 //			long jobId = JobService.getInstance().create("MultiSrc2FmDaySyncJob", jobPra, 0,0, "创建FM日库多源增量包");
-	    	int jobId = 132;
+	    	int jobId = 3998;
 
 			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			JobInfo jobInfo=apiService.getJobById(jobId);

@@ -188,8 +188,10 @@ public class DataEditService {
 		List<String> matchPoiNums = getMatchPoiNum(corresDealership);
 		List<IxPoi> matchPois = new ArrayList<>();
 
+		Connection mancon = DBConnector.getInstance().getManConnection();
 		int regionDbId = corresDealership.getRegionId();
-		Connection connPoi = DBConnector.getInstance().getConnectionById(regionDbId);
+		int dbId = getDailyDbId(regionDbId,mancon);
+		Connection connPoi = DBConnector.getInstance().getConnectionById(dbId);
 		IxPoiSelector poiSelector = new IxPoiSelector(connPoi);
 
 		// dealership_source中是否已存在的cfm_poi_num
@@ -1468,7 +1470,7 @@ public class DataEditService {
 	
 	public String closeChainService(Connection conn,String chainCode) throws Exception{
 		String msg = "";
-		if(chainCode.isEmpty()) {
+		if(chainCode == null||chainCode.isEmpty()) {
 			return msg;
 		}
 		
@@ -1484,6 +1486,7 @@ public class DataEditService {
 		run.execute(conn, updateSql);
 		
 		return msg;
+	}
 
 	/**
 	 * @param chainCode

@@ -280,17 +280,14 @@ public class IxPoiSelector {
 	}
 	
 	/**
-	 * 查找一个poi的父子家族关系
+	 * 查找一个poi的父子家族关系,poi不允许出现一子多父
 	 * a子 b父
-	 * 例如：a->b->c->d a->m->c 
-	 * 输入：a
-	 * 返回：{a:[b,m],b:[c],c:[d],m:[c]}
 	 * a->b->c->d->a
 	 * 输入：a
-	 * 返回：{a:[b],b:[c],c:[d],d:[a]}
+	 * 返回：{a:b,b:c,c:d,d:a}
 	 * @param conn
 	 * @param pidList
-	 * @return Map<Long, Set<Long>>  key:child value:parent set
+	 * @return Map<Long, Long>  key:child value:parent
 	 * @throws Exception
 	 */
 	public static Map<Long, Long> getAllParentChildByPids(Connection conn,Set<Long> pidList) throws Exception {

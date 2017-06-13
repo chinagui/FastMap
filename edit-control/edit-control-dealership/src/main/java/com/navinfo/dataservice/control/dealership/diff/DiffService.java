@@ -160,13 +160,15 @@ public class DiffService {
 				IxDealershipSource j = mapMatchSame.get(t);
 				if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 					resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-//					resultDpAttrDiff.setChain(j.getChain());
-					log.info("update :" + i.getName() + "--" + i.getAddress());
+//					log.info("update :" + i.getName() + "--" + i.getAddress());
 					updateList.add(resultDpAttrDiff);
 				}else{
 					resultDpAttrDiff = new IxDealershipResult(i);
-					resultDpAttrDiff.setChain(j.getChain());
-					log.info("insert :" + i.getName() + "--" + i.getAddress());
+					if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+						resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+					}
+//					resultDpAttrDiff.setChain(j.getChain());
+//					log.info("insert :" + i.getName() + "--" + i.getAddress());
 					insertList.add(resultDpAttrDiff);
 				}
 
@@ -195,13 +197,16 @@ public class DiffService {
 					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("update :" + i.getName() + "--" + i.getAddress());
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
 							resultDpAttrDiff = new IxDealershipResult(i);
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("insert :" + i.getName() + "--" + i.getAddress());
+							if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+								resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+							}
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("insert :" + i.getName() + "--" + i.getAddress());
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
@@ -231,13 +236,16 @@ public class DiffService {
 					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("update :" + i.getName() + "--" + i.getAddress());
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
 							resultDpAttrDiff = new IxDealershipResult(i);
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("insert :" + i.getName() + "--" + i.getAddress());
+							if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+								resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+							}
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("insert :" + i.getName() + "--" + i.getAddress());
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
@@ -269,13 +277,16 @@ public class DiffService {
 					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("update :" + i.getName() + "--" + i.getAddress());
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
 							resultDpAttrDiff = new IxDealershipResult(i);
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("insert :" + i.getName() + "--" + i.getAddress());
+							if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+								resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+							}
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("insert :" + i.getName() + "--" + i.getAddress());
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
@@ -311,13 +322,16 @@ public class DiffService {
 						
 						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("update :" + i.getName() + "--" + i.getAddress());
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("update :" + i.getName() + "--" + i.getAddress());
 							updateList.add(resultDpAttrDiff);
 						}else{
 							resultDpAttrDiff = new IxDealershipResult(i);
-							resultDpAttrDiff.setChain(j.getChain());
-							log.info("insert :" + i.getName() + "--" + i.getAddress());
+							if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+								resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+							}
+//							resultDpAttrDiff.setChain(j.getChain());
+//							log.info("insert :" + i.getName() + "--" + i.getAddress());
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
@@ -343,10 +357,13 @@ public class DiffService {
 			resultDpAttrDiff = new IxDealershipResult(i);
 			resultDpAttrDiff.setDealStatus(5);
 			resultDpAttrDiff.setChain(chain);
-			if(resultDpAttrDiff.getName()==null){
-				log.info("ok");
+			if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+				resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 			}
-			log.info("insert :" + i.getName() + "--" + i.getAddress());
+//			if(resultDpAttrDiff.getName()==null){
+//				log.info("ok");
+//			}
+//			log.info("insert :" + i.getName() + "--" + i.getAddress());
 			insertList.add(resultDpAttrDiff);
 			if(resultDpAttrDiff.getGeometry()==null){
 				if(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress())!=null){
@@ -367,12 +384,12 @@ public class DiffService {
 			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
 			if(dealershipResultsPreMap.containsKey(i.getSourceId())){
 				resultDpAttrDiff = dealershipResultsPreMap.get(i.getSourceId());
-				resultDpAttrDiff.setChain(i.getChain());
-				log.info("update :" + i.getName() + "--" + i.getAddress());
+//				resultDpAttrDiff.setChain(i.getChain());
+//				log.info("update :" + i.getName() + "--" + i.getAddress());
 				updateList.add(resultDpAttrDiff);
 			}else{
 				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
-				log.info("insert :" + i.getName() + "--" + i.getAddress());
+//				log.info("insert :" + i.getName() + "--" + i.getAddress());
 				insertList.add(resultDpAttrDiff);
 			}
 			if ((dkeyMap.get(i.getSourceId()) == null)) {
@@ -449,6 +466,8 @@ public class DiffService {
 			resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 		}else if(i.getProvince()!=null&&provinceRegionIdMap.get(i.getProvince())!=null){
 			resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(i.getProvince()));
+		}else{
+			System.out.println("ok");
 		}
 		if(resultDpAttrDiff.getChain()==null){
 			resultDpAttrDiff.setChain(i.getChain());

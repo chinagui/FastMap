@@ -208,6 +208,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 			if(flg){
 				result.add(obj);
+			}else{
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				errLog.put(ixPoi.getPoiNum(), "FID为" + ixPoi.getPoiNum() + "的数据找不到对应的多源子任务！");
 			}
 		}
 		return result;

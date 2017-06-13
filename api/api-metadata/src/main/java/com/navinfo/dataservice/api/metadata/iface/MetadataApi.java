@@ -125,13 +125,6 @@ public interface MetadataApi {
 	
 	public String[] pyConvert(String word) throws Exception;
 	
-	/**
-	 * 转拼音，不转数字英文字母
-	 * @param word
-	 * @return
-	 * @throws Exception
-	 */
-	public String pyConvertHz(String word) throws Exception;
 	
 	/**
 	 * 根据瓦片渲染TMC_POINT

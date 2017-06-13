@@ -28,16 +28,16 @@ import com.vividsolutions.jts.geom.Geometry;
  *
  */
 public class ImportIxDealershipSourceExcle {
-
-//	private static QueryRunner runner = new QueryRunner();
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
 		try {
+			
+			System.out.println("args.length:"+args.length);
 			if(args==null||args.length!=1){
-				System.out.println("ERROR:need args:filePath");
+				System.out.println("ERROR:need args:filePath11111111111");
 				return;
 			}
 

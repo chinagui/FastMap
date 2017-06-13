@@ -46,7 +46,6 @@ public class PoiRecommender {
 			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(2000));
 		
 		    String wkt = GeoTranslator.jts2Wkt(buffer);
-			System.out.println(wkt);
 			Clob geom = ConnectionUtil.createClob(conn);			
 			geom.setString(1, wkt);
 		    pstmt.setClob(1,geom);
@@ -79,8 +78,8 @@ public class PoiRecommender {
 		 
 		fp.setX(array.getDouble(0));
 		fp.setY(array.getDouble(1));
-		fp.setAddr(poiAddr.getAddrname());
-		fp.setName(poiName.getName());
+		if(poiAddr.getAddrname()==null){fp.setAddr("");}
+		if(poiName.getName()==null){fp.setName("");}
 		
 		StringBuffer sb = new StringBuffer();
 		String telephone = "";
@@ -139,6 +138,8 @@ public class PoiRecommender {
 			sb.append(mapping.getValue()).append(";");
 			if(i==0){
 				dealResult.setPoiNum1(mapping.getKey());
+				dealResult.setCfmPoiNum(mapping.getKey());;
+				dealResult.setCfmIsAdopted(1);
 			}
 			else if(i==1){
 				dealResult.setPoiNum2(mapping.getKey());

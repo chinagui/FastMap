@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 
 import net.sf.json.JSONObject;
@@ -271,27 +272,26 @@ public class DataPrepareController extends BaseController {
 			}
 			String chainCode = dataJson.getString("chainCode");
 			
-			List<ExpIxDealershipResult> dealerBrandList = dealerShipService.searchTableDiff(chainCode);
+			List<ExpClientConfirmResult> clientConfirmResultList = dealerShipService.expClientConfirmResultList(chainCode);//得到客户确认-待发布中品牌数据
 
-			ExportExcel<ExpIxDealershipResult> ex = new ExportExcel<ExpIxDealershipResult>();  
+			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
 			
-			String excelName = "表表差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String excelName = "客户确认-待发布列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
 	        
 			String[] headers =  
 		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
 		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
-		        		"厂商提供英文地址", "旧一览表ID", "旧一览表省份" ,
-		        		"旧一览表城市", "旧一览表项目", "旧一览表分类", "旧一览表品牌" , "旧一览表名称", "旧一览表简称", "旧一览表地址",
-		        		"旧一览表电话（其他）" ,
-		        		"旧一览表电话（销售）", "旧一览表电话（服务）", "旧一览表邮编", "旧一览表英文名称" , "旧一览表英文地址", 
-		        		"新旧一览表差分结果"  };  
+		        		"厂商提供英文地址", "库中PID","FID","库中POI名称","库中POI别名","库中分类","库中CHAIN","库中POI地址",
+		        		"库中电话","库中邮编","与库差分结果","新旧一览表差分结果","四维确认备注"};  
 			
 			try  
 	        {  
 	            OutputStream out = response.getOutputStream();  
-	            ex.exportExcel("表表差分结果", headers, dealerBrandList, out, "yyyy-MM-dd");
+	            		//new FileOutputStream("f://a.xls");  
+	            ex.exportExcel("客户确认-待发布列表", headers, clientConfirmResultList, out, "yyyy-MM-dd");
+//	            exportExcel(headers, dealerBrandList, out);  
 	            out.close();  
 	            logger.error("excel导出成功！");  
 	        } catch (FileNotFoundException e) {  

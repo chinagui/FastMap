@@ -3,11 +3,13 @@ package com.navinfo.dataservice.column.job;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -20,6 +22,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class ColumnCoreOperation {
 
@@ -40,6 +45,7 @@ public class ColumnCoreOperation {
 			String[] strClassifyRules = ((String) mapParams.get("classifyRules")).split(",");
 			int userId = (Integer) mapParams.get("userId");
 			List pidList = (List) mapParams.get("pids"); // 每条数据需包含pid
+			Map<Integer,JSONObject> qcFlag =(Map<Integer,JSONObject>) mapParams.get("qcFlag");
 			List ckRules = new ArrayList();
 			for(int i=0;i<strCkRules.length;i++){
 				ckRules.add(strCkRules[i]);
@@ -57,11 +63,19 @@ public class ColumnCoreOperation {
 
 				// 取poi_column_status中打标记结果
 				List existClassifyList = columnStatusSelector.queryClassifyByPid(pid,classifyRules);
-
+				
+				int existQcFlag =0;
+				int existComHandler = 0;
+				if(qcFlag.containsKey(pid)){
+					JSONObject data=qcFlag.get(pid);
+					existQcFlag = data.getInt("qc_flag");
+					existComHandler = data.getInt("common_handler");
+				}
+				
 				// poi_deep_status不存在的作业项插入,存在的更新
 				checkResultList.retainAll(classifyRules);
 				if (checkResultList.size()>0) {
-					insertWorkItem(checkResultList, conn, pid, userId, taskId);
+					insertWorkItem(checkResultList, conn, pid, userId, taskId,existQcFlag,existComHandler);
 				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
@@ -82,7 +96,7 @@ public class ColumnCoreOperation {
 	 * @param pid
 	 * @throws Exception
 	 */
-	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid,int userId,int taskId) throws Exception {
+	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid,int userId,int taskId,int existQcFlag,int existComHandler) throws Exception {
 		PreparedStatement pstmt = null;
 
 		try {
@@ -95,10 +109,10 @@ public class ColumnCoreOperation {
 						+ "' as d," + " sysdate as e," + pid + " as f " + "  FROM dual) T2 ");
 				sb.append(" ON ( T1.pid=T2.f and T1.work_item_id = T2.d) ");
 				sb.append(" WHEN MATCHED THEN ");
-				sb.append(" UPDATE SET T1.handler = T2.b,T1.task_id= T2.c,T1.first_work_status = 1,T1.second_work_status = 1,T1.apply_date = T2.e ");
+				sb.append(" UPDATE SET T1.handler = T2.b,T1.task_id= T2.c,T1.first_work_status = 1,T1.second_work_status = 1,T1.apply_date = T2.e,T1.qc_flag="+existQcFlag+",T1.common_handler="+existComHandler+" ");
 				sb.append(" WHEN NOT MATCHED THEN ");
-				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler,T1.task_id,T1.apply_date) VALUES"
-						+ " (T2.f,T2.d,1,1,T2.b,T2.c,T2.e)");
+				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler,T1.task_id,T1.apply_date,T1.qc_flag,T1.common_handler) VALUES"
+						+ " (T2.f,T2.d,1,1,T2.b,T2.c,T2.e,"+existQcFlag+","+existComHandler+")");
 				
 				pstmt = conn.prepareStatement(sb.toString());
 				pstmt.addBatch();
@@ -145,6 +159,47 @@ public class ColumnCoreOperation {
 			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
 		}
 
+	}
+	/**
+	 * 从poi_column_status表获取重分类前该POI的qc_flag值
+	 * 
+	 * @param pidList
+	 * @param userId
+	 * @param conn
+	 * @param comSubTaskId
+	 * @throws Exception
+	 */
+	public Map<Integer,JSONObject> getColumnDataQcFlag(List<Integer> pidList,int userId,Connection conn,int comSubTaskId,int isQuality) throws Exception {
+		Map<Integer,JSONObject> result = new HashMap<Integer,JSONObject>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT DISTINCT ps.pid,ps.qc_flag,ps.common_handler FROM POI_COLUMN_STATUS PS ");
+		sql.append(" WHERE PS.PID IN ("+StringUtils.join(pidList, ",")+") ");
+		sql.append("	AND PS.HANDLER = "+userId);
+		if(isQuality==0){
+			sql.append("	AND PS.COMMON_HANDLER = "+userId);
+		}else if(isQuality==1){
+			sql.append("	AND PS.COMMON_HANDLER <> "+userId);
+		}
+		sql.append("	AND PS.task_id = "+comSubTaskId);
+
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject data=new JSONObject();
+				data.put("qc_flag", resultSet.getInt("qc_flag"));
+				data.put("common_handler", resultSet.getInt("common_handler"));
+				result.put(resultSet.getInt("pid"),data);
+			} 
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
 	}
 
 	public static void main(String[] args) throws Exception {

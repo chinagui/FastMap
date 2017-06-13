@@ -15,7 +15,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-//import com.navinfo.nirobot.business.TipsTaskCheckMR;
+import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -679,10 +679,10 @@ public class TipsController extends BaseController {
             ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
             List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
             Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
-//            TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
-//            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
             JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("total", total);
+            jsonObject.put("total", total);
 
             response.getWriter().println(
                     ResponseUtils.assembleRegularResult(jsonObject));

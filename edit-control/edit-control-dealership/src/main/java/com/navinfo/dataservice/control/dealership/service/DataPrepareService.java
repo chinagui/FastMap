@@ -614,14 +614,12 @@ public class DataPrepareService {
 							log.info("insert object");
 							if(insert!=null&&insert.size()>0){
 								for(IxDealershipResult bean:insert){
-									log.info(bean.getChain());
 									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 								}
 							}
 							log.info("update object");
 							if(update!=null&&update.size()>0){
 								for(IxDealershipResult bean:update){
-									log.info(bean.getChain());
 									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 								}
 							}

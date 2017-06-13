@@ -281,4 +281,20 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/queryChainDetail")
+	public ModelAndView queryChainDetail(HttpServletRequest request) {
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			String chainCode=jsonObj.getString("chainCode");
+			Map<String,Object> result = dealerShipEditService.queryChainDetail(chainCode);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error("转内业失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

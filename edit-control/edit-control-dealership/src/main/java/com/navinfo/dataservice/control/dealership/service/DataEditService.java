@@ -1464,4 +1464,26 @@ public class DataEditService {
 		log.info("end 导入客户确认excel："+upFile);
 		return sources;
 	}
+
+	/**
+	 * @param chainCode
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryChainDetail(String chainCode) throws ServiceException {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			Map<String,Object> result = IxDealershipChainOperator.getByChainCode(conn, chainCode);
+			return result;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

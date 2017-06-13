@@ -90,7 +90,8 @@ public class DataEditService {
 		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
 				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
 		run.execute(conn, updateSql);
-
+		conn.commit();
+		
 		return resultID.size();
 	}
 
@@ -1464,6 +1465,25 @@ public class DataEditService {
 		log.info("end 导入客户确认excel："+upFile);
 		return sources;
 	}
+	
+	public String closeChainService(Connection conn,String chainCode) throws Exception{
+		String msg = "";
+		if(chainCode.isEmpty()) {
+			return msg;
+		}
+		
+		String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+		int leftChainResult = run.queryForInt(conn, sql);
+		
+		if(leftChainResult != 0){
+			msg = String.format("品牌%s数据存在未作业数据，无法关闭品牌！", chainCode);
+			return msg;
+		}
+		
+		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = %s",chainCode);
+		run.execute(conn, updateSql);
+		
+		return msg;
 
 	/**
 	 * @param chainCode

@@ -1,17 +1,16 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import org.apache.commons.lang.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.IxSamePoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
@@ -27,47 +26,49 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class GLM60272 extends BasicCheckRule {
 	
-	private Map<Long,Long> samePoiPid = new HashMap<Long,Long>();
-	
-	private Set<String> filterPid = new HashSet<String>();
+	Map<Long, Long> childParentMap=null;
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		IxPoiObj poiObj = (IxPoiObj) obj;
-		IxPoi poi = (IxPoi) poiObj.getMainrow();
-		// 已删除的数据不检查
-		if (poi.getOpType().equals(OperationType.PRE_DELETED)) {
-			return;
-		}
-
-		Set<Long> pidList = new HashSet<Long>();
-		pidList.add(poi.getPid());
-		
-		
-		// 无同一关系
-		if (!samePoiPid.containsKey(poi.getPid())) {
-			return;
-		}
-		
-		Map<Long,Long> parentPids = IxPoiSelector.getAllParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
-		List<Long> childPids = IxPoiSelector.getAllChildPidsByParentPid(getCheckRuleCommand().getConn(), pidList);
-		// 不存在父子关系
-		if (parentPids.size() == 0 && childPids.size() == 0) {
-			return;
-		}
-		List<Long> allPids = new ArrayList<Long>();
-		for (Long parentPid:parentPids.keySet()) {
-			allPids.add(parentPid);
-		}
-		allPids.addAll(childPids);
-		String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+samePoiPid.get(poi.getPid())+"]";
-		if (allPids.contains(samePoiPid.get(poi.getPid()))) {
-			if(!filterPid.contains(targets)){
-				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+		if(obj.objName().equals(ObjectName.IX_SAMEPOI)){
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			//父子关系列表
+			Set<Long> allChildParent=new HashSet<Long>();
+			for(IxSamepoiPart tmp:parts){
+				Long pid=tmp.getPoiPid();
+				if(allChildParent.contains(pid)){
+					String targets = "";
+					for(Long tmpPid:allChildParent){
+						if(!StringUtils.isEmpty(targets)){targets=targets+";";}
+						targets=targets+"[IX_POI,"+tmpPid+"]";
+					}
+					setCheckResult("", targets,0, null);
+					return;
+				}
+				allChildParent.add(pid);
+				Long childPid=pid;
+				int num=0;
+				while(childParentMap.containsKey(childPid)){
+					Long parentPid=childParentMap.get(pid);
+					if(allChildParent.contains(parentPid)){
+						String targets = "";
+						for(Long tmpPid:allChildParent){
+							if(!StringUtils.isEmpty(targets)){targets=targets+";";}
+							targets=targets+"[IX_POI,"+tmpPid+"]";
+						}
+						setCheckResult("", targets,0, null);
+						return;
+					}
+					allChildParent.add(parentPid);
+					childPid=parentPid;
+					num++;
+					if(num==6){
+						log.info("存在父子关系死循环，规则直接返回");
+						return;
+					}
+				}
 			}
-			filterPid.add(targets);
-			filterPid.add("[IX_POI,"+samePoiPid.get(poi.getPid())+"];[IX_POI,"+poi.getPid()+"]");
-			return;
 		}
 	}
 
@@ -75,9 +76,13 @@ public class GLM60272 extends BasicCheckRule {
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
-			pidList.add(obj.objPid());
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			for(IxSamepoiPart tmp:parts){
+				pidList.add(tmp.getPoiPid());
+			}
 		}
-		samePoiPid = IxPoiSelector.getSamePoiPidsByThisPids(getCheckRuleCommand().getConn(), pidList);
+		childParentMap = IxPoiSelector.getAllParentChildByPids(getCheckRuleCommand().getConn(), pidList);
 	}
 
 }

@@ -5,7 +5,6 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,28 +23,24 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * 代理店数据准备类
@@ -81,15 +76,22 @@ public class DataPrepareService {
 		//处理分页数据
 		int begainSize = (pageSize-1) * pageNum+1;
 		int endSize = pageSize * pageNum;
-		
 		Connection con = null;
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT * FROM "
-					+ "(SELECT A.*, ROWNUM RN FROM "
-					+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
-							+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			String selectSql = null;
+			if(chainStatus != -1){
+				selectSql = "SELECT * FROM "
+						+ "(SELECT A.*, ROWNUM RN FROM "
+						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
+								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			}else{
+				selectSql = "SELECT * FROM "
+						+ "(SELECT A.*, ROWNUM RN FROM "
+						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t )"
+								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			}
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -910,6 +912,7 @@ public class DataPrepareService {
 	public void openChain(String chainCode) throws Exception{
 		Connection con = null;
 		try{
+			
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			
@@ -925,5 +928,84 @@ public class DataPrepareService {
 		}
 	}
 	
+	
+	/**
+	 * 得到客户确认-待发布中品牌数据
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<ExpClientConfirmResult> expClientConfirmResultList(String chainCode) throws Exception{
+		
+		Connection conn = null;
+	
+		//获取代理店数据库连接
+		conn=DBConnector.getInstance().getDealershipConnection();
+		try{
+			List<ExpClientConfirmResult> ClientConfirmResultList = IxDealershipResultSelector.getClientConfirmResultList(chainCode,conn);
+			if(ClientConfirmResultList!=null&&!ClientConfirmResultList.isEmpty()){
+				for (ExpClientConfirmResult result : ClientConfirmResultList) {
+					Connection regionConn = null;
+					try {
+						int regionId = getRegionId(result.getResultId(), conn);
+						regionConn = DBConnector.getInstance().getConnectionById(regionId);
+						int pid = IxDealershipResultSelector.setRegionFiledByPoiNum(result,regionConn);//根据poiNum赋值日库中对应POI相关的字段
+						if(pid!=0){
+							IxDealershipResultSelector.setPoiStandrandNameByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiAliasNameByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiAddressByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiContactByPid(result,regionConn);
+						}
+						IxDealershipResultSelector.updateResultCfmStatus(result.getResultId(),2,conn);//将导出对应的记录的RESULT.cfm_status状态改为“待确认”即2
+						IxDealershipResultSelector.updateResultToClientDate(result.getResultId(),conn);//更新TO_CLIENT_DATE为当前时间
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw e;
+					} finally{
+						DbUtils.commitAndCloseQuietly(regionConn);
+					}
+				}
+				
+			}
+			
+			
+			return ClientConfirmResultList;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+			
+	}
+	
+	/**
+	 * 获取reginID
+	 * @throws Exception 
+	 * @author songhe
+	 * 
+	 * */
+	public int getRegionId(int resultId, Connection conn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.region_id from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+				
+					if (rs.next()) {
+						int regionId = rs.getInt("region_id");
+							return regionId;
+					}
+					return -1;
+				}
+			};
+			
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			throw e;
+
+		}
+	}
 	
 }

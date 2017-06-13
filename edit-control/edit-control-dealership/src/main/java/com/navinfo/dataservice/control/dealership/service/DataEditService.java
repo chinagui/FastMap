@@ -1,52 +1,33 @@
 package com.navinfo.dataservice.control.dealership.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.util.Hash;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
-import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.control.dealership.diff.DiffService;
-import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -58,8 +39,6 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
-
-
 import net.sf.json.JSONObject;
 
 /**
@@ -102,10 +81,10 @@ public class DataEditService {
 
 		String queryListSql = String.format(
 				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-				0, 3, 1, chainCode, 50 - count);
+				0, 3, 0, chainCode, 50 - count);
 		List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
-		if(resultID.size()==0)
+		if(resultID.size() == 0)
 			return 0;
 		
 		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
@@ -1144,12 +1123,11 @@ public class DataEditService {
             if(wkfStatus==3){
             	JSONObject poiData = JSONObject.fromObject(parameter.getString("poiData"));
             	int poiDbId = poiData.getInt("dbId");
+            	poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
             	String cmd=poiData.getString("command");
             	if(cmd.equals("UPDATE")){
             		int objId = poiData.getInt("objId");
                     String poiNum = poiData.getString("poiNum");
-
-                    poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
                     
                     LogReader logRead = new LogReader(poiConn);
                     int sate=logRead.getObjectState(objId, "IX_POI");
@@ -1286,7 +1264,7 @@ public class DataEditService {
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
 									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
 							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
 						}
 					} catch (Exception e) {

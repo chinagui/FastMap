@@ -1,37 +1,34 @@
 package com.navinfo.dataservice.control.dealership;
 
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.DataConfirmService;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
+import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
+import com.navinfo.dataservice.control.dealership.service.model.InformationExportResult;
+
+import net.sf.json.JSONObject;
 
 
 
@@ -92,5 +89,59 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			System.out.println(e.getMessage());
 		}
 	}
+		@Test
+		public void Test01() throws Exception{
+			DataEditService de = DataEditService.getInstance();
+			Connection conn = null;
+			conn = DBConnector.getInstance().getDealershipConnection();
+			JSONArray data = de.loadWorkListService("4007", conn, 1674, 1);
+			//JSONObject data=de.diffDetailService(14764, conn);
+		}
+		
+		@Test
+		public void test02() throws Exception{
+			DataConfirmService confirm = DataConfirmService.getInstance();
+			Connection conn = DBConnector.getInstance().getDealershipConnection();
+			List<InformationExportResult> informationList = confirm.getOutConfirmList(conn, "");
+			ExportExcel<InformationExportResult> excel = new ExportExcel<InformationExportResult>();
+			
+			try  
+	        {  
+	            OutputStream out = new FileOutputStream("f://情报下载.xls");  
+	            excel.exportExcel(confirm.headers, informationList, out);  
+	            out.close();  
+	            System.out.println("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	        } 
+		}
+		
+		@Test
+		public void testExportToClient() throws Exception{
+			DataPrepareService ds = DataPrepareService.getInstance();
+			List<ExpClientConfirmResult> clientConfirmResultList = ds.expClientConfirmResultList("4007");//得到客户确认-待发布中品牌数据
+
+			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
+			String[] headers =  
+		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+		        		"厂商提供英文地址", "库中PID","FID","库中POI名称","库中POI别名","库中分类","库中CHAIN","库中POI地址",
+		        		"库中电话","库中邮编","与库差分结果","新旧一览表差分结果","四维确认备注"};  
+			try  
+	        {  
+	            OutputStream out = new FileOutputStream("e://a.xls");  
+	            ex.exportExcel(headers, clientConfirmResultList, out);  
+	            out.close();  
+//	            JOptionPane.showMessageDialog(null, "导出成功!");  
+
+	            System.out.println("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	        } 
+		}
 	
 }

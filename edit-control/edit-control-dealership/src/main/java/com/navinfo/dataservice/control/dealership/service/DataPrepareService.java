@@ -942,7 +942,10 @@ public class DataPrepareService {
 		//获取代理店数据库连接
 		conn=DBConnector.getInstance().getDealershipConnection();
 		try{
-			List<ExpClientConfirmResult> ClientConfirmResultList = IxDealershipResultSelector.getClientConfirmResultList(chainCode,conn);
+			List<ExpClientConfirmResult> ClientConfirmResultList = null;
+			if(StringUtils.isNotBlank(chainCode)){
+				ClientConfirmResultList = IxDealershipResultSelector.getClientConfirmResultList(chainCode,conn);
+			}
 			if(ClientConfirmResultList!=null&&!ClientConfirmResultList.isEmpty()){
 				for (ExpClientConfirmResult result : ClientConfirmResultList) {
 					Connection regionConn = null;

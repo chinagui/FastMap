@@ -1253,7 +1253,10 @@ public class DataEditService {
 	 */
 	public void commitDealership(String chainCode, Connection conn,long userId) throws Exception {
 		try {
-			List<IxDealershipResult> resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
+			List<IxDealershipResult> resultList = null;
+			if(StringUtils.isNotBlank(chainCode)){
+				resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
+			}
 			if(resultList!=null&&!resultList.isEmpty()){
 				for (IxDealershipResult result : resultList) {
 					Connection regionConn = null;
@@ -1485,6 +1488,8 @@ public class DataEditService {
 		
 		return msg;
 
+	}
+	
 	/**
 	 * @param chainCode
 	 * @return
@@ -1505,5 +1510,34 @@ public class DataEditService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 关闭作业
+	 * @param userId
+	 * @param resultIds
+	 * @throws Exception 
+	 */
+	public void closeWork(long userId, JSONArray resultIds) throws Exception {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			Map<Integer,IxDealershipResult> ixDealershipResultMap = IxDealershipResultSelector.getByResultIds(conn, JSONArray.toCollection(resultIds));
+			for(IxDealershipResult ixDealershipResult:ixDealershipResultMap.values()){
+				ixDealershipResult.setCfmStatus(3);
+				ixDealershipResult.setWorkflowStatus(9);
+				ixDealershipResult.setDealStatus(3);
+				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
+			}
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
 	}
 }

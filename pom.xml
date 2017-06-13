@@ -16,6 +16,7 @@
 		<module>code-generator</module>
 		<module>api</module>
 		<module>edit-control</module>
+		<module>monitor</module>
   </modules>
 
     <packaging>pom</packaging>

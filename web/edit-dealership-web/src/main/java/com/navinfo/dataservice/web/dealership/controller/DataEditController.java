@@ -270,7 +270,7 @@ public class DataEditController extends BaseController {
 	
 	
 	@RequestMapping(value = "/impConfirmData")
-	public ModelAndView impTableDiff(HttpServletRequest request) {
+	public ModelAndView impConfirmData(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token"); 
 			dealerShipEditService.impConfirmData(request,tokenObj.getUserId());
@@ -278,6 +278,69 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/queryChainDetail")
+	public ModelAndView queryChainDetail(HttpServletRequest request) {
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			String chainCode=jsonObj.getString("chainCode");
+			Map<String,Object> result = dealerShipEditService.queryChainDetail(chainCode);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error("转内业失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 关闭作业
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/closeWork")
+	public ModelAndView closeWork(HttpServletRequest request) {
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			JSONArray resultIds=jsonObj.getJSONArray("resultIds");
+			dealerShipEditService.closeWork(userId,resultIds);			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("关闭作业，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value="/closeChain")
+	public ModelAndView closeChain(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+		try {
+			JSONObject jsonObj = JSONObject.fromObject(request.getParameter("parameter"));
+			if (jsonObj == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			String chainCode = jsonObj.getString("chainCode");
+			conn = DBConnector.getInstance().getDealershipConnection();
+			String msg = dealerShipEditService.closeChainService(conn, chainCode);
+
+			if (msg.isEmpty()) {
+				return new ModelAndView("jsonView", success());
+			} else {
+				return new ModelAndView("jsonView", fail(msg));
+			}
+		} catch (Exception e) {
+			logger.error("关闭作业，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

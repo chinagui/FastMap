@@ -40,7 +40,7 @@ public class DataConfirmController extends BaseController {
 
 			String chain = "";
 			if (jsonObj.has("chainCode")) {
-				chain = jsonObj.getString("chains");
+				chain = jsonObj.getString("chainCode");
 			}
 
 			conn = DBConnector.getInstance().getDealershipConnection();

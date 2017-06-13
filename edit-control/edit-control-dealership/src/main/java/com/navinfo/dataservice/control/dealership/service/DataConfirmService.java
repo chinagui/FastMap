@@ -55,7 +55,7 @@ public class DataConfirmService {
 		String sqlstr = "";
 		if (!chainCode.isEmpty()) {
 			sqlstr = String.format(
-					"SELECT * FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS = 4 AND CFM_STATUS = 1 AND CHAIN = %s",
+					"SELECT * FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS = 4 AND CFM_STATUS = 1 AND CHAIN = '%s'",
 					chainCode);
 		} else {
 			sqlstr = "SELECT * FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS = 4 AND CFM_STATUS = 1";
@@ -128,15 +128,15 @@ public class DataConfirmService {
 			expInfo.setSimilarity(dealership.getSimilarity());
 
 			Coordinate geo = dealership.getGeometry() == null ? null : dealership.getGeometry().getCoordinate();
-			expInfo.setxLocate(geo == null ? "" : String.valueOf(geo.x));
-			expInfo.setyLocate(geo == null ? "" : String.valueOf(geo.y));
+			expInfo.setXLocate(geo == null ? "" : String.valueOf(geo.x));
+			expInfo.setYLocate(geo == null ? "" : String.valueOf(geo.y));
 
 			expInfo.setCfmPoiNum(dealership.getCfmPoiNum());
 			expInfo.setCfmMemo(dealership.getCfmMemo());
 			expInfo.setExpectTime("");
 			expInfo.setInfoType("");
 
-			String sql = String.format("SELECT CHAIN_WEIGHT FROM IX_DEALERSHIP_CHAIN WHERE CHAIN_CODE = %s",
+			String sql = String.format("SELECT CHAIN_WEIGHT FROM IX_DEALERSHIP_CHAIN WHERE CHAIN_CODE = '%s'",
 					dealership.getChain());
 			int chainWeight = run.queryForInt(conn, sql);
 			switch (chainWeight) {
@@ -149,6 +149,7 @@ public class DataConfirmService {
 			}
 
 			expInfo.setRegionId(String.valueOf(dealership.getRegionId()));
+			arrayResult.add(expInfo);
 		}
 		return arrayResult;
 	}

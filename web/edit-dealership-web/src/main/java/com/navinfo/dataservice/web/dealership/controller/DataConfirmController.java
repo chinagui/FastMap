@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,12 +26,13 @@ import com.navinfo.dataservice.control.dealership.service.model.InformationExpor
 
 import net.sf.json.JSONObject;
 
+@Controller
 public class DataConfirmController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DataPrepareController.class);
 	private DataConfirmService confirmService = DataConfirmService.getInstance();
 
 	@RequestMapping(value = "/downInfo")
-	public ModelAndView downloadInfo(HttpServletRequest request, HttpServletResponse response)
+	public void downloadInfo(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException {
 		response.setContentType("octets/stream");
 		Connection conn = null;
@@ -63,11 +65,10 @@ public class DataConfirmController extends BaseController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return new ModelAndView("jsonView", success());
+			//return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
-			logger.error(e.toString());
-			return new ModelAndView("jsonView", fail(e.toString()));
+			//return new ModelAndView("jsonView", fail(e.toString()));
 		} finally {
 			if (conn != null) {
 				conn.close();

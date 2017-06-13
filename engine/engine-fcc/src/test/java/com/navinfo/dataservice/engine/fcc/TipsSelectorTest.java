@@ -278,10 +278,10 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	public void testOther() {
 
 		try {
-			TipsSelector selector = new TipsSelector();
-			String parameter = "{\"subTaskId\":188,\"programType\":1}";
-			System.out.println("**************************************************");
-			System.out.println(selector.statInfoTask(parameter));
+//			TipsSelector selector = new TipsSelector();
+//			String parameter = "{\"subTaskId\":188,\"programType\":1}";
+//			System.out.println("**************************************************");
+//			System.out.println(selector.statInfoTask(parameter));
 //            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 //            JSONArray gridList = manApi.getGridIdsByTaskId(2190);
 //            String wkt = GridUtils.grids2Wkt(gridList);
@@ -300,13 +300,13 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 //            System.out.println("**************************************************");
 //            System.out.println("**************************************************");
 //            System.out.println("**************************************************");
-//            TipsSelector selector = new TipsSelector();
-//            Set<Integer> subTaskIds = new HashSet<>();
-//            subTaskIds.add(137);
-//            Set<Integer> meshSet = selector.getTipsMeshIdSet(subTaskIds);
-//            for(Integer mesh : meshSet) {
-//                System.out.println(mesh);
-//            }
+            TipsSelector selector = new TipsSelector();
+            Set<Integer> subTaskIds = new HashSet<>();
+            subTaskIds.add(605);
+            Set<Integer> meshSet = selector.getTipsMeshIdSet(subTaskIds);
+            for(Integer mesh : meshSet) {
+                System.out.println(mesh);
+            }
 //            System.out.println(operator.updateInfoCheckResult(8, 1, 1));
 //            System.out.println("**************************************************");
 //            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());

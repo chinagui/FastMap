@@ -215,9 +215,9 @@ public class GeoliveHelper {
 
     private void josnAddSubLabel() {
 
-        JSONArray subLabels = new JSONArray();
-
         for (String tableName : parentTables) {
+
+            JSONArray subLabels = new JSONArray();
 
             JSONObject labelTmp = new JSONObject();
 

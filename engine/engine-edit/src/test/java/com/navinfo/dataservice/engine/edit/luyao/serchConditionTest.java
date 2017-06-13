@@ -75,7 +75,8 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":13,\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":407000013,\"nodePid\":420000011,\"outLinkPid\":520000007,\"type\":\"RDLANECONNEXITY\"}}";
+			String parameter = "{\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":313529,\"nodePid\":305244,\"outLinkPid\":320384},\"dbId\":13}";
+
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -1063,15 +1064,8 @@ public class serchConditionTest extends InitApplication {
 	public void SearchGeolive() throws Exception {
 
 		try {
-			String str="123";
 
-			str +="456"+null;
 
-			GeoliveHelper geoliveHelper = GeoliveHelper.getIstance();
-
-			String foreignKey = geoliveHelper.getForeignKey("RD_LINK_FORM", "RD_LINK");
-
-			String primaryKey = geoliveHelper.getPrimaryKey("RD_LINK");
 
 			SearchAllObject p = new SearchAllObject();
 
@@ -1090,6 +1084,14 @@ public class serchConditionTest extends InitApplication {
 			condition2.put("tableName","RD_LINK");
 
 			result = p.getGeoLiveInfo(condition2);
+
+			JSONObject condition4 =new JSONObject();
+
+			condition4.put("searchType","TABLE_LABLE");
+
+			condition4.put("tableName","RD_SLOPE");
+
+			result = p.getGeoLiveInfo(condition4);
 
 			JSONObject condition3 =new JSONObject();
 
@@ -1228,6 +1230,29 @@ public class serchConditionTest extends InitApplication {
 		try {
 
 			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_CROSS\",\"searchTableName\":\"RD_CROSS\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[59564401,59564402],\"meshIds\":[595644],\"conditions\":[{\"fieldType\":\"String\",\"operator\":\"=\",\"fieldName\":\"TYPE\",\"value\":1}]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchAllObject p = new SearchAllObject(conn);
+
+			JSONObject  result = p.loadByElementCondition(jsonReq);
+
+
+			System.out.println(result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void SearchAllObject12() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":13,\"uuid\":\"123\",\"mainTableName\":\"RD_LINK\",\"searchTableName\":\"RD_LINK\",\"pageNum\":1,\"pageSize\":10,\"gridIds\":[],\"meshIds\":[595673],\"conditions\":[{\"fieldType\":\"String\",\"operator\":\"=\",\"fieldName\":\"TYPE\",\"value\":1}]}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

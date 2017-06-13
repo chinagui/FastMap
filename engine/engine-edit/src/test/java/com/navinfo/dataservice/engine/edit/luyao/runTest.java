@@ -134,4 +134,13 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	@Test
+	public void run_001() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSAMENODE\",\"dbId\":13,\"subtaskId\":29,\"data\":{\"nodes\":[{\"nodePid\":506000034,\"isMain\":1,\"type\":\"ADNODE\"},{\"nodePid\":503000021,\"isMain\":0,\"type\":\"ZONENODE\"}]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

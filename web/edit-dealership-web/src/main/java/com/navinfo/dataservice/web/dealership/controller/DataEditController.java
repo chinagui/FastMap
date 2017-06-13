@@ -297,4 +297,27 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 关闭作业
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/closeWork")
+	public ModelAndView closeWork(HttpServletRequest request) {
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			JSONArray resultIds=jsonObj.getJSONArray("resultIds");
+			dealerShipEditService.closeWork(userId,resultIds);			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("关闭作业，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

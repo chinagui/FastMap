@@ -1138,7 +1138,15 @@ public class TipsSelector {
 		return json;
 	}
 
-
+    public JSONArray searchDataByRowkeyNew(JSONArray rowkeyArray) throws Exception {
+        JSONArray data = new JSONArray();
+        for(int i = 0; i < rowkeyArray.size(); i ++) {
+            String rowkey = rowkeyArray.getString(i);
+            JSONObject jsonObject = this.searchDataByRowkeyNew(rowkey);
+            data.add(jsonObject);
+        }
+        return data;
+    }
 	/**
 	 * 通过rowkey获取Tips(返回符合规格模型的数据)
 	 *
@@ -2084,7 +2092,7 @@ public class TipsSelector {
 	 */
 	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
 		List<Map> list = new ArrayList<>();
-		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds);
+		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
 		Map<String,int[]> statsMap = new HashMap<>();
 		for(JSONObject snapshot : snapshots) {
 			String wkt = snapshot.getString("wkt");//统计坐标
@@ -2211,13 +2219,11 @@ public class TipsSelector {
         Table htab = null;
         Set<Integer> meshSet = new HashSet<>();
         try {
-            List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet);
+            List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet, TaskType.PROGRAM_TYPE_M);
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-
             for (JSONObject snapshot : snapshots) {
                 String rowkey = snapshot.getString("id");
-                System.out.println("********************rowkey" + rowkey);
                 //当前geometery
                 JSONObject gLocation = JSONObject.fromObject(snapshot.getString("g_location"));
                 Geometry curGeo = GeoTranslator.geojson2Jts(gLocation);

@@ -32,7 +32,7 @@ public class DataConfirmController extends BaseController {
 	private DataConfirmService confirmService = DataConfirmService.getInstance();
 
 	@RequestMapping(value = "/downInfo")
-	public ModelAndView downloadInfo(HttpServletRequest request, HttpServletResponse response)
+	public void downloadInfo(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException {
 		response.setContentType("octets/stream");
 		Connection conn = null;
@@ -65,11 +65,10 @@ public class DataConfirmController extends BaseController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return new ModelAndView("jsonView", success());
+			//return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
-			logger.error(e.toString());
-			return new ModelAndView("jsonView", fail(e.toString()));
+			//return new ModelAndView("jsonView", fail(e.toString()));
 		} finally {
 			if (conn != null) {
 				conn.close();

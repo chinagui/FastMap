@@ -580,7 +580,9 @@ public class TaskService {
 	private void taskPushMsgByMsg(Connection conn,	List<Object[]> msgContentList, long userId) throws Exception {
 		Object[][] msgList=new Object[msgContentList.size()][3];
 		int num=0;
+		UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, userId);
 		for(Object[] msgContent:msgContentList){
+			//if(Long.parseLong(msgContent[0].toString())==0){continue;}
 			msgList[num]=msgContent;
 			num+=1;
 			//发送邮件
@@ -603,13 +605,8 @@ public class TaskService {
                 	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
                 }
 			}
-			//查询用户名称
-			String pushUserName = null;
-			if(userInfo != null){
-				pushUserName = (String) userInfo.getUserRealName();
-			}
 			//发送消息到消息队列
-			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong(msgContent[0].toString())}, 2, (String)msgContent[3], pushUserName);
+			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong(msgContent[0].toString())}, 2, (String)msgContent[3], pushObj.getUserRealName());
 		}
 	}
 	

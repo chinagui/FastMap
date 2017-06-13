@@ -314,9 +314,9 @@ public class TipsLineRelateQuery {
 						// 3 道路NODE；
 						if (f.getInt("type") == 3) {
 
-							nodeStr = f.getString("id") + LINK_SEPARATOR;
+							nodeStr += f.getString("id") + LINK_SEPARATOR;
 						} else {
-							linkStr = f.getString("id") + LINK_SEPARATOR;
+							linkStr += f.getString("id") + LINK_SEPARATOR;
 						}
 					}
 				}
@@ -363,9 +363,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (in.getInt("type") == 3) {
 
-					nodeStr = in.getString("id") + LINK_SEPARATOR;
+					nodeStr += in.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr = in.getString("id") + LINK_SEPARATOR;
+					linkStr += in.getString("id") + LINK_SEPARATOR;
 				}
 			}
 		}
@@ -391,9 +391,9 @@ public class TipsLineRelateQuery {
 							// 3 道路NODE；
 							if (out.getInt("type") == 3) {
 
-								nodeStr = out.getString("id") + LINK_SEPARATOR;
+								nodeStr += out.getString("id") + LINK_SEPARATOR;
 							} else {
-								linkStr = out.getString("id") + LINK_SEPARATOR;
+								linkStr += out.getString("id") + LINK_SEPARATOR;
 							}
 						}
 					}
@@ -443,9 +443,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (in.getInt("type") == 3) {
 
-					nodeStr = in.getString("id") + LINK_SEPARATOR;
+					nodeStr += in.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr = in.getString("id") + LINK_SEPARATOR;
+					linkStr += in.getString("id") + LINK_SEPARATOR;
 				}
 			}
 
@@ -482,9 +482,9 @@ public class TipsLineRelateQuery {
 										// 3 道路NODE；
 										if (out.getInt("type") == 3) {
 
-											nodeStr = out.getString("id") + LINK_SEPARATOR;
+											nodeStr += out.getString("id") + LINK_SEPARATOR;
 										} else {
-											linkStr = out.getString("id") + LINK_SEPARATOR;
+											linkStr += out.getString("id") + LINK_SEPARATOR;
 										}
 
 									}
@@ -553,9 +553,9 @@ public class TipsLineRelateQuery {
 									// 3 道路NODE；
 									if (oInfo.getInt("type") == 3) {
 
-										nodeStr = oInfo.getString("id") + LINK_SEPARATOR;
+										nodeStr += oInfo.getString("id") + LINK_SEPARATOR;
 									} else {
-										linkStr = oInfo.getString("id") + LINK_SEPARATOR;
+										linkStr += oInfo.getString("id") + LINK_SEPARATOR;
 									}
 								}
 							}
@@ -583,9 +583,9 @@ public class TipsLineRelateQuery {
 						// 3 道路NODE；
 						if (oInfo.getInt("type") == 3) {
 
-							nodeStr = oInfo.getString("id") + LINK_SEPARATOR;
+							nodeStr += oInfo.getString("id") + LINK_SEPARATOR;
 						} else {
-							linkStr = oInfo.getString("id") + LINK_SEPARATOR;
+							linkStr += oInfo.getString("id") + LINK_SEPARATOR;
 						}
 
 					}
@@ -633,9 +633,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (f.getInt("type") == 3) {
 
-					nodeStr = f.getString("id") + LINK_SEPARATOR;
+					nodeStr += f.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr = f.getString("id") + LINK_SEPARATOR;
+					linkStr += f.getString("id") + LINK_SEPARATOR;
 				}
 			}
 
@@ -672,9 +672,9 @@ public class TipsLineRelateQuery {
 										// 3 道路NODE；
 										if (out.getInt("type") == 3) {
 
-											nodeStr = out.getString("id") + LINK_SEPARATOR;
+											nodeStr += out.getString("id") + LINK_SEPARATOR;
 										} else {
-											linkStr =out.getString("id") + LINK_SEPARATOR;
+											linkStr +=out.getString("id") + LINK_SEPARATOR;
 										}
 									}
 								}
@@ -728,9 +728,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (in.getInt("type") == 3) {
 
-					nodeStr = in.getString("id") + LINK_SEPARATOR;
+					nodeStr += in.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr =in.getString("id") + LINK_SEPARATOR;
+					linkStr +=in.getString("id") + LINK_SEPARATOR;
 				}
 			}
 		}
@@ -745,9 +745,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (out.getInt("type") == 3) {
 
-					nodeStr = out.getString("id") + LINK_SEPARATOR;
+					nodeStr += out.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr =out.getString("id") + LINK_SEPARATOR;
+					linkStr +=out.getString("id") + LINK_SEPARATOR;
 				}
 			}
 
@@ -792,9 +792,9 @@ public class TipsLineRelateQuery {
 				// 3 道路NODE；
 				if (in.getInt("type") == 3) {
 
-					nodeStr = in.getString("id") + LINK_SEPARATOR;
+					nodeStr += in.getString("id") + LINK_SEPARATOR;
 				} else {
-					linkStr =in.getString("id") + LINK_SEPARATOR;
+					linkStr +=in.getString("id") + LINK_SEPARATOR;
 				}
 			}
 		}
@@ -826,9 +826,9 @@ public class TipsLineRelateQuery {
 									// 3 道路NODE；
 									if (outInfo.getInt("type") == 3) {
 
-										nodeStr = outInfo.getString("id") + LINK_SEPARATOR;
+										nodeStr += outInfo.getString("id") + LINK_SEPARATOR;
 									} else {
-										linkStr =outInfo.getString("id") + LINK_SEPARATOR;
+										linkStr +=outInfo.getString("id") + LINK_SEPARATOR;
 									}
 								}
 							}

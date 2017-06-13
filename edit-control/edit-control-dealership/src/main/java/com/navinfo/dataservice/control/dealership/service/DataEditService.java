@@ -1417,8 +1417,6 @@ public class DataEditService {
 		log.info("文件由本地上传到服务器指定位置"+filePath);
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
-//		String chainCode = "4007";
-		String chainCode = returnParam.getString("chainCode");
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);

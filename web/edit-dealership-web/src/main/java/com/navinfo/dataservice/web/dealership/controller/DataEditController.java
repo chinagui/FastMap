@@ -270,7 +270,7 @@ public class DataEditController extends BaseController {
 	
 	
 	@RequestMapping(value = "/impConfirmData")
-	public ModelAndView impTableDiff(HttpServletRequest request) {
+	public ModelAndView impConfirmData(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token"); 
 			dealerShipEditService.impConfirmData(request,tokenObj.getUserId());

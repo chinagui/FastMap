@@ -219,7 +219,7 @@ public class DataEditService {
 		}
 
 		JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
-		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn);
+		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
 		return result;
 	}
 
@@ -234,7 +234,7 @@ public class DataEditService {
 	 * @throws Exception
 	 */
 	private JSONObject componentJsonData(IxDealershipResult dealership, JSONArray poiJson, List<Integer> adoptedPoiNums,
-			Connection connDealership) throws Exception {
+			Connection connDealership, int dbId) throws Exception {
 		JSONObject result = new JSONObject();
 
 		// dealership部分
@@ -251,7 +251,7 @@ public class DataEditService {
 		dealershipMap.put("fbContent", dealership.getFbContent() == null ? "" : dealership.getFbContent());
 		dealershipMap.put("matchMethod", dealership.getMatchMethod());
 		dealershipMap.put("resultId", dealership.getResultId());
-		dealershipMap.put("dbId", dealership.getRegionId());
+		dealershipMap.put("dbId", dbId);
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
@@ -1481,12 +1481,13 @@ public class DataEditService {
 		int leftChainResult = run.queryForInt(conn, sql);
 		
 		if(leftChainResult != 0){
-			msg = String.format("品牌%s数据存在未作业数据，无法关闭品牌！", chainCode);
+			msg = String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode);
 			return msg;
 		}
 		
 		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = %s",chainCode);
 		run.execute(conn, updateSql);
+		conn.commit();
 		
 		return msg;
 	}

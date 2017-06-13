@@ -320,4 +320,28 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value="/closeChain")
+	public ModelAndView closeChain(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+		try {
+			JSONObject jsonObj = JSONObject.fromObject(request.getParameter("parameter"));
+			if (jsonObj == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			String chainCode = jsonObj.getString("chainCode");
+			conn = DBConnector.getInstance().getDealershipConnection();
+			String msg = dealerShipEditService.closeChainService(conn, chainCode);
+
+			if (msg.isEmpty()) {
+				return new ModelAndView("jsonView", success());
+			} else {
+				return new ModelAndView("jsonView", fail(msg));
+			}
+		} catch (Exception e) {
+			logger.error("关闭作业，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

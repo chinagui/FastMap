@@ -191,6 +191,7 @@ public class ColumnSaveJob extends AbstractJob {
 			log.info("执行重分类");
 			if (columnOpConf.getSaveExeclassify()==1) {
 				if (columnOpConf.getSaveCkrules() != null && columnOpConf.getSaveClassifyrules() != null) {
+					
 					HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 					classifyMap.put("userId", userId);
 					classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
@@ -198,7 +199,10 @@ public class ColumnSaveJob extends AbstractJob {
 					
 					classifyMap.put("pids", pidList);
 					ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-					columnCoreOperation.runClassify(classifyMap,conn,taskId);
+					//增加质检功能后，需要维护重分类后的质检标记
+					Map<Integer,JSONObject> qcFlag = columnCoreOperation.getColumnDataQcFlag(pidList,userId,conn,comSubTaskId,isQuality);
+					classifyMap.put("qcFlag", qcFlag);
+					columnCoreOperation.runClassify(classifyMap,conn,comSubTaskId);
 				}
 			}
 			

@@ -8,16 +8,25 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.commons.util.ExportExcel;
+import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.DataConfirmService;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
+import com.navinfo.dataservice.control.dealership.service.model.InformationExportResult;
 
 import net.sf.json.JSONObject;
 
@@ -80,6 +89,27 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			System.out.println(e.getMessage());
 		}
 	}
+		@Test
+		public void Test01() throws Exception{
+			DataEditService de = DataEditService.getInstance();
+			Connection conn = null;
+			conn = DBConnector.getInstance().getDealershipConnection();
+			JSONArray data = de.loadWorkListService("4007", conn, 1674, 1);
+			//JSONObject data=de.diffDetailService(14764, conn);
+		}
+		
+		@Test
+		public void test02() throws Exception{
+			DataConfirmService confirm = DataConfirmService.getInstance();
+			Connection conn = DBConnector.getInstance().getDealershipConnection();
+			List<InformationExportResult> informationList = confirm.getOutConfirmList(conn, "");
+			ExportExcel<InformationExportResult> excel = new ExportExcel<InformationExportResult>();
+			
+			try  
+	        {  
+	            OutputStream out = new FileOutputStream("f://情报下载.xls");  
+	            excel.exportExcel(confirm.headers, informationList, out);  
+	            out.close();  
 		
 		@Test
 		public void testExportToClient() throws Exception{
@@ -98,6 +128,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	            ex.exportExcel(headers, clientConfirmResultList, out);  
 	            out.close();  
 //	            JOptionPane.showMessageDialog(null, "导出成功!");  
+
 	            System.out.println("excel导出成功！");  
 	        } catch (FileNotFoundException e) {  
 	            e.printStackTrace();  

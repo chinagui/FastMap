@@ -1490,8 +1490,6 @@ public class DataEditService {
 		
 		return msg;
 	}
-
-	}
 	
 	/**
 	 * @param chainCode

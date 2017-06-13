@@ -1144,12 +1144,11 @@ public class DataEditService {
             if(wkfStatus==3){
             	JSONObject poiData = JSONObject.fromObject(parameter.getString("poiData"));
             	int poiDbId = poiData.getInt("dbId");
+            	poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
             	String cmd=poiData.getString("command");
             	if(cmd.equals("UPDATE")){
             		int objId = poiData.getInt("objId");
                     String poiNum = poiData.getString("poiNum");
-
-                    poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
                     
                     LogReader logRead = new LogReader(poiConn);
                     int sate=logRead.getObjectState(objId, "IX_POI");

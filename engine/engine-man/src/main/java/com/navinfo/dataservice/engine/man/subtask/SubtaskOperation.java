@@ -2138,12 +2138,13 @@ public class SubtaskOperation {
 			if(subtask.getExeUserId()!=0){
 				UserInfo receiver = UserInfoService.getInstance().getUserInfoByUserId(subtask.getExeUserId());
 				receiverList.add(receiver);
-			}else{
+			}else if(subtask.getExeGroupId()!=0){
 				UserGroup bean = new UserGroup();
 				bean.setGroupId(subtask.getExeGroupId());
 				receiverList = UserInfoService.getInstance().list(bean);
 			}
-			
+			if(receiverList==null||receiverList.size()==0){return;}
+			UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, userId);
 			//发送消息
 			for(UserInfo receiver:receiverList){
 					/*采集/日编/月编子任务发布
@@ -2168,17 +2169,14 @@ public class SubtaskOperation {
 					JSONObject msgParam = new JSONObject();
 					msgParam.put("relateObject", "SUBTASK");
 					msgParam.put("relateObjectId", subtask.getSubtaskId());
-					//查询用户名称
-					UserInfo pushUser = UserInfoOperation.getUserInfoByUserId(conn, userId);
-					String pushUserName = pushUser.getUserRealName();
 					
 					Message message = new Message();
 					message.setMsgTitle(msgTitle);
 					message.setMsgContent(msgContent);
-					message.setPushUserId(pushUser.getUserId());
+					message.setPushUserId(pushObj.getUserId());
 					message.setReceiverId(receiver.getUserId());
 					message.setMsgParam(msgParam.toString());
-					message.setPushUser(pushUserName);
+					message.setPushUser(pushObj.getUserRealName());
 					
 					MessageService.getInstance().push(message, pushtype);
 			}

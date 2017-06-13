@@ -213,28 +213,6 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-//	@Test
-	public void autoConvert() throws Exception{
-		String word = "ｗ２４５";
-
-        PinyinConverter py = new PinyinConverter();
-
-        String[] result = py.autoConvert(word);
-        if (result != null) {
-            JSONObject json = new JSONObject();
-
-            json.put("voicefile", result[1]);
-
-            json.put("phonetic", result[0]);
-
-            System.out.println( json );
-        } else {
-            throw new Exception("转拼音失败");
-        }
-        
-	}
-	
-	
 	@Test
 	public void testSearchScPoint()
 	{

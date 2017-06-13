@@ -21,16 +21,16 @@ public class BaiduGeocoding {
 	static String url2 = "&output=json&ak=" + ak;
 
 	public static Geometry geocoder(String str) throws ClientProtocolException, IOException, ParseException {
-		System.out.println("str:" + str);
+//		System.out.println("str:" + str);
 		if ("".equals(str)||str== null) {
 			return null;
 		}
 			// 对于特殊字符进行编码处理
 			str = URLEncoder.encode(str, "utf-8");
 			String geocoderUrl=url + str + url2;
-			System.out.println("geocoderUrl" + geocoderUrl);
+//			System.out.println("geocoderUrl" + geocoderUrl);
 			String return_value = Parser_Tool.do_get(geocoderUrl);
-			System.out.println("return_value:" + return_value);
+//			System.out.println("return_value:" + return_value);
 			JSONObject json = JSONObject.fromObject(return_value);
 			if(json.containsKey("result")){
 				JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");

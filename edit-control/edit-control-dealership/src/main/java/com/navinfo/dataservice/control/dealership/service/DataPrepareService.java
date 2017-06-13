@@ -5,7 +5,6 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,28 +23,24 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * 代理店数据准备类
@@ -81,15 +76,22 @@ public class DataPrepareService {
 		//处理分页数据
 		int begainSize = (pageSize-1) * pageNum+1;
 		int endSize = pageSize * pageNum;
-		
 		Connection con = null;
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT * FROM "
-					+ "(SELECT A.*, ROWNUM RN FROM "
-					+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
-							+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			String selectSql = null;
+			if(chainStatus != -1){
+				selectSql = "SELECT * FROM "
+						+ "(SELECT A.*, ROWNUM RN FROM "
+						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
+								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			}else{
+				selectSql = "SELECT * FROM "
+						+ "(SELECT A.*, ROWNUM RN FROM "
+						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t )"
+								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+			}
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -614,14 +616,12 @@ public class DataPrepareService {
 							log.info("insert object");
 							if(insert!=null&&insert.size()>0){
 								for(IxDealershipResult bean:insert){
-									log.info(bean.getChain());
 									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 								}
 							}
 							log.info("update object");
 							if(update!=null&&update.size()>0){
 								for(IxDealershipResult bean:update){
-									log.info(bean.getChain());
 									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 								}
 							}
@@ -748,5 +748,267 @@ public class DataPrepareService {
 
 	}
 	
+	
+	/**
+	 * 客户/外业确认列表
+	 * @param dataJson
+	 * @return 分页后的结果List
+	 * @author songhe
+	 * 
+	 * */
+	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws SQLException{
+		//处理数据
+		Map<String, Object> cofirmData = convertCofirmData(dataJson);
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			//数据状态
+			String cfmStatus = String.valueOf(cofirmData.get("cfmStatus"));
+			//列表类型
+			int workflowStatus = 0;
+			if("1".equals(cofirmData.get("type").toString())){
+				workflowStatus = 5;
+			}
+			if("2".equals(cofirmData.get("type").toString())){
+				workflowStatus = 4;
+			}
+			//分页信息
+			int begainSize = Integer.parseInt(String.valueOf(cofirmData.get("begainSize")));
+			int endSize = Integer.parseInt(String.valueOf(cofirmData.get("endSize")));
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
+			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
+			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
+				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
+			}
+			if(cofirmData.containsKey("name") && cofirmData.get("name") != null){
+				sb.append(" and r.name like '%" + String.valueOf(cofirmData.get("name")) + "%'");
+			}
+			if(cofirmData.containsKey("address") && cofirmData.get("address") != null){
+				sb.append(" and r.address like '%" + String.valueOf(cofirmData.get("address")) + "%'");
+			}
+			sb.append(")A WHERE ROWNUM <= "+endSize+")WHERE RN >= "+begainSize);
+			
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> cofirmDataList = new ArrayList();
+					while (rs.next()) {
+						Map<String, Object> resultMap = new HashMap<>();
+						resultMap.put("resultId", rs.getInt("result_id"));
+						resultMap.put("name", rs.getString("name"));
+						resultMap.put("address", rs.getString("address"));
+						resultMap.put("kindCode", rs.getString("kind_code"));
+						resultMap.put("city", rs.getString("city"));
+						resultMap.put("toInfoDate ", rs.getString("to_info_date"));
+						resultMap.put("cfmMemo", rs.getString("cfm_memo"));
+						resultMap.put("fbDate", rs.getString("fb_date"));
+						resultMap.put("fbContent", rs.getString("fb_content"));
+						resultMap.put("fbAuditRemark", rs.getString("fb_audit_remark"));
+						int poiNum = calculatePoiNum(rs);
+						resultMap.put("matchPoiNum", poiNum);
+						resultMap.put("toClientDate", rs.getString("kind_code"));
+						cofirmDataList.add(resultMap);
+					}
+					return cofirmDataList;
+				}
+			};
+			log.info("客户/外业确认列表查询sql:"+sb.toString());
+			return run.query(con, sb.toString(), rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+	}
+	
+	/**
+	 * 处理客户/外业确认列表上传的数据
+	 * @param dataJson
+	 * @return 处理后的数据map
+	 * @author songhe
+	 * 
+	 * */
+	public synchronized Map<String, Object> convertCofirmData(JSONObject dataJson){
+		
+		Map<String, Object> cofirmDataMap =  new HashMap<>();
+		//默认的页码和每页数据设置为1，20
+		int pageSize = 1;
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+		}
+		int pageNum = 20;
+		if(dataJson.containsKey("pageNum")){
+			pageNum = dataJson.getInt("pageNum");
+		}
+		//处理分页查询的结束和开始位
+		int begainSize = (pageSize-1) * pageNum+1;
+		int endSize = pageSize * pageNum;
+		cofirmDataMap.put("begainSize", begainSize);
+		cofirmDataMap.put("endSize", endSize);
+		
+		int type = dataJson.getInt("type");
+		int cfmStatus = dataJson.getInt("cfmStatus");
+		cofirmDataMap.put("type", type);
+		cofirmDataMap.put("cfmStatus", cfmStatus);
+		
+		if(dataJson.containsKey("chainCode") && dataJson.get("chainCode") != null && StringUtils.isNotBlank(dataJson.get("chainCode").toString())){
+			cofirmDataMap.put("chainCode", dataJson.getString("chainCode"));
+		}
+		if(dataJson.containsKey("name") && dataJson.get("name") != null && StringUtils.isNotBlank(dataJson.get("name").toString())){
+			cofirmDataMap.put("name", dataJson.getString("name"));
+		}
+		if(dataJson.containsKey("address") && dataJson.get("address") != null && StringUtils.isNotBlank(dataJson.get("address").toString())){
+			cofirmDataMap.put("address", dataJson.getString("address"));
+		}
+		log.info("要查询确认列表属性为："+type+",确认状态为："+cfmStatus+"的数据");
+		return cofirmDataMap;
+	}
+	
+	
+	/**
+	 * 计算推荐POI总数方法
+	 * @param ResultHandler
+	 * @return 计算的推荐POI总数
+	 * */
+	public synchronized int calculatePoiNum(ResultSet rs){
+		int poiNum = 0;
+		try {
+			if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_2") != null && "" != rs.getString("poi_num_2")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_3") != null && "" != rs.getString("poi_num_3")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_4") != null && "" != rs.getString("poi_num_4")){
+				poiNum = poiNum + 1;
+			}
+			if(rs.getString("poi_num_5") != null && "" != rs.getString("poi_num_5")){
+				poiNum = poiNum + 1;
+			}
+		} catch (Exception e) {
+			log.error("计算推荐POI数量出错，原因为：",e);
+			return 0;
+		}
+		return poiNum;
+	}
+	
+	/**
+	 * 重启品牌
+	 * 品牌状态改为“未开启”即chain_status=0，
+	 * 品牌作业类型CHAIN.work_type改为“无”即0，
+	 * 品牌作业状态CHAIN.work_status改为“无”即0。
+	 * @param chainCode
+	 * @throws Exception 
+	 * 
+	 * */
+	public void openChain(String chainCode) throws Exception{
+		Connection con = null;
+		try{
+			
+			con = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = 0, C.WORK_TYPE = 0, C.CHAIN_STATUS = 0 WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			log.info("openChain sql:" + updateSql);
+			run.execute(con, updateSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollback(con);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+	}
+	
+	
+	/**
+	 * 得到客户确认-待发布中品牌数据
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<ExpClientConfirmResult> expClientConfirmResultList(String chainCode) throws Exception{
+		
+		Connection conn = null;
+	
+		//获取代理店数据库连接
+		conn=DBConnector.getInstance().getDealershipConnection();
+		try{
+			List<ExpClientConfirmResult> ClientConfirmResultList = null;
+			if(StringUtils.isNotBlank(chainCode)){
+				ClientConfirmResultList = IxDealershipResultSelector.getClientConfirmResultList(chainCode,conn);
+			}
+			if(ClientConfirmResultList!=null&&!ClientConfirmResultList.isEmpty()){
+				for (ExpClientConfirmResult result : ClientConfirmResultList) {
+					Connection regionConn = null;
+					try {
+						int regionId = getRegionId(result.getResultId(), conn);
+						regionConn = DBConnector.getInstance().getConnectionById(regionId);
+						int pid = IxDealershipResultSelector.setRegionFiledByPoiNum(result,regionConn);//根据poiNum赋值日库中对应POI相关的字段
+						if(pid!=0){
+							IxDealershipResultSelector.setPoiStandrandNameByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiAliasNameByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiAddressByPid(result,regionConn);
+							IxDealershipResultSelector.setPoiContactByPid(result,regionConn);
+						}
+						IxDealershipResultSelector.updateResultCfmStatus(result.getResultId(),2,conn);//将导出对应的记录的RESULT.cfm_status状态改为“待确认”即2
+						IxDealershipResultSelector.updateResultToClientDate(result.getResultId(),conn);//更新TO_CLIENT_DATE为当前时间
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw e;
+					} finally{
+						DbUtils.commitAndCloseQuietly(regionConn);
+					}
+				}
+				
+			}
+			
+			
+			return ClientConfirmResultList;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+			
+	}
+	
+	/**
+	 * 获取reginID
+	 * @throws Exception 
+	 * @author songhe
+	 * 
+	 * */
+	public int getRegionId(int resultId, Connection conn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.region_id from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+				
+					if (rs.next()) {
+						int regionId = rs.getInt("region_id");
+							return regionId;
+					}
+					return -1;
+				}
+			};
+			
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			throw e;
+
+		}
+	}
 	
 }

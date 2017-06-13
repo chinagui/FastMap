@@ -102,10 +102,10 @@ public class DataEditService {
 
 		String queryListSql = String.format(
 				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-				0, 3, 1, chainCode, 50 - count);
+				0, 3, 0, chainCode, 50 - count);
 		List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
-		if(resultID.size()==0)
+		if(resultID.size() == 0)
 			return 0;
 		
 		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1

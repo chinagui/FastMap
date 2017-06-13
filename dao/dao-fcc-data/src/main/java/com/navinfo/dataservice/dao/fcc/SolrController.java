@@ -1033,10 +1033,17 @@ public class SolrController {
      * @throws SolrServerException
      * @throws IOException
      */
-    public List<JSONObject> queryCollectTaskTips(Set<Integer> collectTaskIds) throws SolrServerException, IOException{
+    public List<JSONObject> queryCollectTaskTips(Set<Integer> collectTaskIds, int taskType) throws SolrServerException, IOException{
         StringBuilder builder = new StringBuilder();
+        String solrIndexFiled = null;
+        if(taskType == TaskType.PROGRAM_TYPE_Q) {
+            solrIndexFiled = "s_qTaskId";
+        }else if(taskType == TaskType.PROGRAM_TYPE_M) {
+            solrIndexFiled = "s_mTaskId";
+        }
         if (collectTaskIds.size() > 0) {
-            builder.append("s_qTaskId:(");
+            builder.append(solrIndexFiled);
+            builder.append(":(");
             int index = 0;
             for (int collectTaskId : collectTaskIds) {
                 if(index != 0)

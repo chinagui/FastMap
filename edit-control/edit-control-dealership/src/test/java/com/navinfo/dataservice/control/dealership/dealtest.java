@@ -110,6 +110,13 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	            OutputStream out = new FileOutputStream("f://情报下载.xls");  
 	            excel.exportExcel(confirm.headers, informationList, out);  
 	            out.close();  
+	            System.out.println("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	        } 
+		}
 		
 		@Test
 		public void testExportToClient() throws Exception{

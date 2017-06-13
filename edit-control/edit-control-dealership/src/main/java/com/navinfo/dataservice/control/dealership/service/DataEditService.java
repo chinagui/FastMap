@@ -87,9 +87,11 @@ public class DataEditService {
 		if(resultID.size() == 0)
 			return 0;
 		
-		for(Object resultId:resultID){
-			IxDealershipResultSelector.updateResultDealStatusAndUserId(resultId, 1, conn, userId);
-		}
+		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
+				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
+		run.execute(conn, updateSql);
+		conn.commit();
+		
 		return resultID.size();
 	}
 

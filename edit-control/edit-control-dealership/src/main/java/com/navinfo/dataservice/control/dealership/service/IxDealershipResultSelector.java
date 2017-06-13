@@ -364,27 +364,6 @@ public class IxDealershipResultSelector {
 		}
 	}
 	
-	public static void updateResultDealStatusAndUserId(Object resultId, Integer dealStatus, Connection conn,
-			Long userId) throws Exception {
-		String updateSql = String.format(
-				"UPDATE IX_DEALERSHIP_RESULT SET USER_ID = %d,DEAL_STATUS = %d WHERE RESULT_ID = %d", userId, dealStatus,
-				Integer.valueOf(resultId.toString()));
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(updateSql);
-			pstmt.executeUpdate();
-			conn.commit();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
-	
 	/**
 	 * 根据poiNum赋值日库中对应的字段
 	 * @param poiNum

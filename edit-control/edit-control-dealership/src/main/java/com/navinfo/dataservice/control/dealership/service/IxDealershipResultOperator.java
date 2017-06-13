@@ -370,7 +370,6 @@ public class IxDealershipResultOperator {
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CHAIN")){
 				columns.add(" CHAIN=? ");
 				values.add(bean.getChain());
-				log.info("chain:" + bean.getChain());
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				columns.add(" NAME=? ");

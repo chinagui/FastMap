@@ -15,7 +15,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-//import com.navinfo.nirobot.business.TipsTaskCheckMR;
+import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -29,8 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-//import com.navinfo.nirobot.business.TipsTaskCheckMR;
 
 @Controller
 public class TipsController extends BaseController {
@@ -453,8 +451,8 @@ public class TipsController extends BaseController {
 
 
     @RequestMapping(value = "/tip/getByRowkeys")
-    public void getByRowkeys(HttpServletRequest request,HttpServletResponse response
-    ) throws ServletException, IOException {
+    public void getByRowkeys(HttpServletRequest request,HttpServletResponse response)
+            throws ServletException, IOException {
 
         String parameter = request.getParameter("parameter");
 
@@ -467,13 +465,14 @@ public class TipsController extends BaseController {
 
             JSONArray rowkeyArr = jsonReq.getJSONArray("rowkey");
 
-            if (rowkeyArr==null||rowkeyArr.isEmpty()||rowkeyArr.size()==0) {
+            if (rowkeyArr == null || rowkeyArr.isEmpty() || rowkeyArr.size() == 0) {
                 throw new IllegalArgumentException("参数错误：rowkeys不能为空");
             }
 
+
             TipsSelector selector = new TipsSelector();
 
-            JSONArray data = selector.searchDataByRowkeyArr(rowkeyArr);
+            JSONArray data = selector.searchDataByRowkeyNew(rowkeyArr);
 
             response.getWriter().println(
                     ResponseUtils.assembleRegularResult(data));
@@ -679,10 +678,10 @@ public class TipsController extends BaseController {
             ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
             List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
             Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
-//            TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
-//            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
             JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("total", total);
+            jsonObject.put("total", total);
 
             response.getWriter().println(
                     ResponseUtils.assembleRegularResult(jsonObject));
@@ -834,7 +833,7 @@ public class TipsController extends BaseController {
 
     @RequestMapping(value = "/tip/listInfoTipsByPage")
     public void listInfoTipsByPage(HttpServletRequest request,
-                                    HttpServletResponse response) throws ServletException, IOException {
+                                   HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
 
         try {
@@ -870,7 +869,7 @@ public class TipsController extends BaseController {
 
     @RequestMapping(value = "/tip/noTaskToMidTask")
     public void noTaskToMidTask(HttpServletRequest request,
-                              HttpServletResponse response) throws ServletException, IOException {
+                                HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
 
         try {

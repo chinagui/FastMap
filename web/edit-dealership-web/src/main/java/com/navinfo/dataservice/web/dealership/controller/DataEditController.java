@@ -270,7 +270,7 @@ public class DataEditController extends BaseController {
 	
 	
 	@RequestMapping(value = "/impConfirmData")
-	public ModelAndView impTableDiff(HttpServletRequest request) {
+	public ModelAndView impConfirmData(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token"); 
 			dealerShipEditService.impConfirmData(request,tokenObj.getUserId());
@@ -278,6 +278,22 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/queryChainDetail")
+	public ModelAndView queryChainDetail(HttpServletRequest request) {
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			String chainCode=jsonObj.getString("chainCode");
+			Map<String,Object> result = dealerShipEditService.queryChainDetail(chainCode);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error("转内业失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

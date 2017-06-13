@@ -153,7 +153,7 @@ public class TaskController extends BaseController {
 			}
 			String overdueOtherReason="";
 			if(dataJson.containsKey("overdueOtherReason")){
-				overdueReason=dataJson.getString("overdueOtherReason");
+				overdueOtherReason=dataJson.getString("overdueOtherReason");
 			}
 			String message = TaskService.getInstance().close(taskId,userId,overdueReason,overdueOtherReason);			
 			return new ModelAndView("jsonView", success(message));

@@ -17,7 +17,7 @@ import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
- * 元数据库下载,生成 sqllite并存入下载文件夹
+ * 定时同步元数据库rd_name表数据到大区库
  * @author zhangli5174
  *
  */
@@ -38,8 +38,8 @@ public class IncrementSynchroMetaGdbInterface {
 			String thisDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd HH:mm:ss");
 			String beginDate = DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd HH:mm:ss");
 			
-			
-			Map<Integer,Integer> dmlRdNames = searchDmlRdNamesLast(conn,beginDate,thisDate);
+			Map<Integer,Integer> dmlRdNames = searchDmlRdNamesLast(conn,beginDate,thisDate,2);
+//			Map<Integer,Integer> dmlRdNames = searchDmlRdNamesLast(conn,"2017-06-12","2017-06-13",2);
 			if(dbLinks != null && dbLinks.size() > 0){
 				for(int i=0 ;i < dbLinks.size() ; i++){
 					//增量新增元数据库新增的数据
@@ -54,7 +54,7 @@ public class IncrementSynchroMetaGdbInterface {
 			e.printStackTrace();
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -82,28 +82,31 @@ public class IncrementSynchroMetaGdbInterface {
 		}
 	}
 
-	private static Map<Integer, Integer> searchDmlRdNamesLast(Connection conn, String beginDate, String thisDate) throws Exception {
+	private static Map<Integer, Integer> searchDmlRdNamesLast(Connection conn, String beginDate, String thisDate,int type) throws Exception {
 		System.out.println("Start to search gdb META_DML_LOGS...");
 		
-		String selectSql = " select * from META_DML_LOGS t where t.dml_table = 'RD_NAME'  "
-				+ " and ( t.dml_date "
+		String selectSql = " select DISTINCT t.DML_OBJECT_ID,t.DML_TYPE from META_DML_LOGS t where t.dml_table = 'RD_NAME' ";
+				if(type >= 0){
+					selectSql += "and t.DML_TYPE = "+type+"  ";
+				}
+				selectSql	+= " and ( t.dml_date "
 					+ " between to_date('"+beginDate+"','yyyy-mm-dd hh24:mi:ss') "
 					+ " and to_date('"+thisDate+"','yyyy-mm-dd hh24:mi:ss') "
 					+ " )  ";
 		
 		Statement pstmt = null;
 		ResultSet resultSet = null;
-		Map<Integer, Integer> dbLinks = null;
+		Map<Integer, Integer> rdNameIds = null;
 		try {
 			pstmt = conn.createStatement();
 			resultSet = pstmt.executeQuery(selectSql);
 			resultSet.setFetchSize(5000);
-			dbLinks = new HashMap<Integer, Integer>();
+			rdNameIds = new HashMap<Integer, Integer>();
 			while (resultSet.next()) {
-				dbLinks.put(resultSet.getInt("dml_object_id"),resultSet.getInt("dml_type"));
+				rdNameIds.put(resultSet.getInt("dml_object_id"),resultSet.getInt("dml_type"));
 			}
-			System.out.println("search gdb META_DML_LOGS end");
-			return dbLinks;
+			System.out.println("search gdb META_DML_LOGS end: META_DML_LOGS.size "+rdNameIds.size());
+			return rdNameIds;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -176,6 +179,7 @@ public class IncrementSynchroMetaGdbInterface {
 			}
 			stmt.executeBatch();
 			stmt.clearBatch();
+			conn.commit();
 		}catch(Exception e){
 			throw e;
 		}finally{

@@ -1418,8 +1418,6 @@ public class DataEditService {
 		log.info("文件由本地上传到服务器指定位置"+filePath);
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
-//		String chainCode = "4007";
-		String chainCode = returnParam.getString("chainCode");
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);
@@ -1486,5 +1484,26 @@ public class DataEditService {
 		run.execute(conn, updateSql);
 		
 		return msg;
+
+	/**
+	 * @param chainCode
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryChainDetail(String chainCode) throws ServiceException {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			Map<String,Object> result = IxDealershipChainOperator.getByChainCode(conn, chainCode);
+			return result;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -612,16 +612,16 @@ public class IxDealershipResultOperator {
 				}
 
 				addressMap.put("rowId", address.getRowId() == null ? "" : address.getRowId());
-				addressMap.put("roadName", address.getRoadname() == null ? "" : address.getRoadname());
+				addressMap.put("roadname", address.getRoadname() == null ? "" : address.getRoadname());
 				addressMap.put("langCode", address.getLangCode() == null ? "" : address.getLangCode());
 				addressMap.put("fullNamePinyin",
 						address.getFullnamePhonetic() == null ? "" : address.getFullnamePhonetic());
-				addressMap.put("addrName", address.getAddrname() == null ? "" : address.getAddrname());
+				addressMap.put("addrname", address.getAddrname() == null ? "" : address.getAddrname());
 				addressMap.put("roadNamePinyin",
 						address.getRoadnamePhonetic() == null ? "" : address.getRoadnamePhonetic());
 				addressMap.put("addrNamePinyin",
 						address.getAddrnamePhonetic() == null ? "" : address.getAddrnamePhonetic());
-				addressMap.put("fullName", address.getFullname() == null ? "" : address.getFullname());
+				addressMap.put("fullname", address.getFullname() == null ? "" : address.getFullname());
 
 				JSONObject addressobj = JSONObject.fromObject(addressMap);
 				addresses.add(addressobj);

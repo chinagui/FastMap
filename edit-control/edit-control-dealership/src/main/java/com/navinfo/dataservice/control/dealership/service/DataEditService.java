@@ -90,7 +90,8 @@ public class DataEditService {
 		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
 				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
 		run.execute(conn, updateSql);
-
+		conn.commit();
+		
 		return resultID.size();
 	}
 
@@ -187,8 +188,10 @@ public class DataEditService {
 		List<String> matchPoiNums = getMatchPoiNum(corresDealership);
 		List<IxPoi> matchPois = new ArrayList<>();
 
+		Connection mancon = DBConnector.getInstance().getManConnection();
 		int regionDbId = corresDealership.getRegionId();
-		Connection connPoi = DBConnector.getInstance().getConnectionById(regionDbId);
+		int dbId = getDailyDbId(regionDbId,mancon);
+		Connection connPoi = DBConnector.getInstance().getConnectionById(dbId);
 		IxPoiSelector poiSelector = new IxPoiSelector(connPoi);
 
 		// dealership_source中是否已存在的cfm_poi_num
@@ -216,7 +219,7 @@ public class DataEditService {
 		}
 
 		JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
-		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn);
+		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
 		return result;
 	}
 
@@ -231,7 +234,7 @@ public class DataEditService {
 	 * @throws Exception
 	 */
 	private JSONObject componentJsonData(IxDealershipResult dealership, JSONArray poiJson, List<Integer> adoptedPoiNums,
-			Connection connDealership) throws Exception {
+			Connection connDealership, int dbId) throws Exception {
 		JSONObject result = new JSONObject();
 
 		// dealership部分
@@ -240,6 +243,7 @@ public class DataEditService {
 		dealershipMap.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
 		dealershipMap.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
 		dealershipMap.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
+		dealershipMap.put("chain", dealership.getChain() == null?"":dealership.getChain());
 		dealershipMap.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
 		dealershipMap.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
 		dealershipMap.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());
@@ -248,7 +252,7 @@ public class DataEditService {
 		dealershipMap.put("fbContent", dealership.getFbContent() == null ? "" : dealership.getFbContent());
 		dealershipMap.put("matchMethod", dealership.getMatchMethod());
 		dealershipMap.put("resultId", dealership.getResultId());
-		dealershipMap.put("dbId", dealership.getRegionId());
+		dealershipMap.put("dbId", dbId);
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
@@ -1170,7 +1174,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
             }
             
             //审核意见为转外业、转客户
@@ -1185,8 +1189,8 @@ public class DataEditService {
         		//更新IX_DEALERSHIP_RESULT.deal_status＝2及cfm_Memo
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
-    			//更新IX_DEALERSHIP_RESULT.workflow_status=6，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			//更新IX_DEALERSHIP_RESULT.workflow_status=9，且写履历
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
         	}
  
             return log;
@@ -1252,7 +1256,10 @@ public class DataEditService {
 	 */
 	public void commitDealership(String chainCode, Connection conn,long userId) throws Exception {
 		try {
-			List<IxDealershipResult> resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
+			List<IxDealershipResult> resultList = null;
+			if(StringUtils.isNotBlank(chainCode)){
+				resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
+			}
 			if(resultList!=null&&!resultList.isEmpty()){
 				for (IxDealershipResult result : resultList) {
 					Connection regionConn = null;
@@ -1464,7 +1471,24 @@ public class DataEditService {
 		log.info("end 导入客户确认excel："+upFile);
 		return sources;
 	}
-
+	
+	public void closeChainService(Connection conn,String chainCode) throws Exception{
+		if(chainCode == null||chainCode.isEmpty()) {
+			throw new Exception("品牌为空，无需关闭！");
+		}
+		
+		String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+		int leftChainResult = run.queryForInt(conn, sql);
+		
+		if(leftChainResult != 0){
+			throw new Exception(String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode));
+		}
+		
+		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = '%s'",chainCode);
+		run.execute(conn, updateSql);
+		conn.commit();
+	}
+	
 	/**
 	 * @param chainCode
 	 * @return
@@ -1485,5 +1509,34 @@ public class DataEditService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 关闭作业
+	 * @param userId
+	 * @param resultIds
+	 * @throws Exception 
+	 */
+	public void closeWork(long userId, JSONArray resultIds) throws Exception {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			Map<Integer,IxDealershipResult> ixDealershipResultMap = IxDealershipResultSelector.getByResultIds(conn, JSONArray.toCollection(resultIds));
+			for(IxDealershipResult ixDealershipResult:ixDealershipResultMap.values()){
+				ixDealershipResult.setCfmStatus(3);
+				ixDealershipResult.setWorkflowStatus(9);
+				ixDealershipResult.setDealStatus(3);
+				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
+			}
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
 	}
 }

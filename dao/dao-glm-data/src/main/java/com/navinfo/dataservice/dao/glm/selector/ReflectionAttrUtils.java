@@ -33,7 +33,7 @@ public class ReflectionAttrUtils {
 	/**
 	 * 将一条记录转成一个对象
 	 * 
-	 * @param cls
+	 * @param row
 	 *            泛型类型
 	 * @param rs
 	 *            ResultSet对象
@@ -247,6 +247,8 @@ public class ReflectionAttrUtils {
 			return ObjType.ADNODE;
 		case "ZONE_NODE":
 			return ObjType.ZONENODE;
+		case "LC_NODE":
+			return ObjType.LCNODE;
 		case "LU_NODE":
 			return ObjType.LUNODE;
 		case "RW_NODE":
@@ -257,6 +259,8 @@ public class ReflectionAttrUtils {
 			return ObjType.ADLINK;
 		case "ZONE_LINK":
 			return ObjType.ZONELINK;
+		case "LC_LINK":
+			return ObjType.LCLINK;
 		case "LU_LINK":
 			return ObjType.LULINK;
 		case "RW_LINK":

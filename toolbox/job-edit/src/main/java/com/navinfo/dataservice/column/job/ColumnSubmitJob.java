@@ -41,6 +41,8 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
+import net.sf.json.JSONObject;
+
 public class ColumnSubmitJob extends AbstractJob {
 	
 	public ColumnSubmitJob(JobInfo jobInfo) {
@@ -107,6 +109,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				log.info("当前提交二级项:"+second);
 				// 查询可提交数据
 				allPidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, comSubTaskId,userId,false);
+				qcPidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, comSubTaskId,userId,true);
 				log.info("查询可提交数据pdis:"+allPidList);
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();
@@ -209,9 +212,10 @@ public class ColumnSubmitJob extends AbstractJob {
 					}
 				}
 				
-				
+				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 				if(isQuality==0){
-					qcPidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, comSubTaskId,userId,true);
+					//去除掉有检查错误的数据，留下打了质检标记，且无检查错误的数据；
+					qcPidList.retainAll(allPidList);
 					log.info("查询打了质检标记的数据:"+qcPidList);
 					allPidList.removeAll(qcPidList);
 					
@@ -246,7 +250,7 @@ public class ColumnSubmitJob extends AbstractJob {
 						log.info("常规提交时，对打了质检标记的数据，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=1、SECOND_WORK_STATUS=1、HANDLER=0:"+qcPidList);
 						updateDeepStatus(qcPidList, conn, 1,second,1);
 						log.info("常规提交时，初始化质检问题记录表column_qc_problem");
-						insertColumnQcProblems(qcPidList,conn,comSubTaskId,firstWorkItem,second,userId);
+						columnCoreOperation.insertColumnQcProblems(qcPidList,conn,comSubTaskId,firstWorkItem,second,userId,false);
 					}
 				}else{
 					//质检提交时调用，更新质检问题表状态
@@ -261,16 +265,24 @@ public class ColumnSubmitJob extends AbstractJob {
 				// 重分类
 				if (columnOpConf.getSubmitExeclassify()==1) {
 					log.info("执行重分类");
+					List<Integer> pidList = new ArrayList<Integer>();
+					pidList.addAll(qcPidList);
+					pidList.addAll(allPidList);
 					if (columnOpConf.getSubmitCkrules() != null && columnOpConf.getSubmitClassifyrules() != null) {
 						HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 						classifyMap.put("userId", userId);
 						classifyMap.put("ckRules", columnOpConf.getSubmitCkrules());
 						classifyMap.put("classifyRules", columnOpConf.getSubmitClassifyrules());
+						classifyMap.put("firstWorkItem", firstWorkItem);
+						classifyMap.put("secondWorkItem", second);
+						//增加质检功能后，需要维护重分类后的质检标记
+						Map<Integer,JSONObject> qcFlag = columnCoreOperation.getColumnDataQcFlag(pidList,userId,conn,comSubTaskId,isQuality);
+						classifyMap.put("qcFlag", qcFlag);
 						log.info(columnOpConf.getSubmitClassifyrules());
+
+						classifyMap.put("pids", pidList);
 						
-						classifyMap.put("pids", allPidList);
-						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-						columnCoreOperation.runClassify(classifyMap,conn,comSubTaskId);
+						columnCoreOperation.runClassify(classifyMap,conn,comSubTaskId,true,isQuality);
 					}
 				}
 				
@@ -353,131 +365,7 @@ public class ColumnSubmitJob extends AbstractJob {
 		}
 	}
 	
-	/**
-	 * 常规提交时，对打质检标记的数据，初始化质检问题表
-	 * @param rowIdList
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void insertColumnQcProblems(List<Integer> pidList,Connection conn,int comSubTaskId,String firstWorkItem,String secondWorkItem,int userId) throws Exception {
-		
-		String nameClass= "1";
-		String nameType= "1";
-		String langCode= " 'CHI','CHT'";
-		if(secondWorkItem.equals("aliasName")){
-			nameClass= "3";
-		}else if(secondWorkItem.equals("shortName")){
-			nameClass= "5";
-		}else if(secondWorkItem.equals("namePinyin")){
-			nameClass= "1,3,5";
-		}else if(firstWorkItem.equals("poi_englishname")&&secondWorkItem.equals("officalStandardEngName")){
-			nameType= "1";
-			langCode= "'ENG'";
-		}else if(firstWorkItem.equals("poi_englishname")){
-			nameType= "2";
-			langCode= "'ENG'";
-		}else if(firstWorkItem.equals("poi_englishaddress")){
-			langCode= "'ENG'";
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("                  MERGE INTO");
-		sb.append("                  COLUMN_QC_PROBLEM");
-		sb.append("                  T");
-		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID,0 IS_PROBLEM,");
-		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
-		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
-		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
-		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
-		sb.append("                          ELSE '' ");
-		sb.append("                          END OLDVALUE, ");
-		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN ORNM.name ");
-		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN ORNM.name ");
-		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ORADR.fullname ");
-		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ORADR.fullname ");
-		sb.append("                          ELSE '' ");
-		sb.append("                          END ORNAME ");
-		sb.append("                    FROM (SELECT CASE");
-		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
-		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
-		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
-		sb.append("                                   WHEN 'namePinyin' = '"+secondWorkItem+"' THEN");
-		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.name_phonetic, ");
-		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
-		sb.append("                                   ELSE");
-		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
-		sb.append("                                    GROUP(ORDER BY N.NAME_ID)");
-		sb.append("                                 END NAMENEWVLAUE,");
-		sb.append("                                 N.POI_PID PID");
-		sb.append("                            FROM IX_POI_NAME N, IX_POI_NAME_FLAG F");
-		sb.append("                           WHERE N.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
-		sb.append("                             AND N.NAME_ID = F.NAME_ID(+)");
-		sb.append("                             AND N.LANG_CODE IN ("+langCode+")");
-		sb.append("                             AND N.NAME_TYPE IN ("+nameType+")");
-		sb.append("                             AND N.NAME_CLASS IN ("+nameClass+")");
-		sb.append("                           GROUP BY N.POI_PID) NM,");
-		sb.append("                           (SELECT n.name,N.POI_PID FROM ix_poi_name n WHERE  n.LANG_CODE IN ('CHI','CHT') AND n.NAME_TYPE=2 AND n.NAME_CLASS=1 ");
-		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORNM,");
-		sb.append("                         (SELECT CASE");
-		sb.append("                                   WHEN 'addrSplit' = '"+secondWorkItem+"' THEN");
-		sb.append("                                    A.NAME_ID || ':' || A.PROVINCE || A.CITY || A.COUNTY ||");
-		sb.append("                                    A.TOWN || A.PLACE || A.STREET || A.LANDMARK || A.PREFIX ||");
-		sb.append("                                    A.HOUSENUM || A.TYPE || A.SUBNUM || A.SURFIX || A.ESTAB ||");
-		sb.append("                                    A.BUILDING || A.FLOOR || A.UNIT || A.ROOM || A.ADDONS");
-		sb.append("                                   WHEN 'addrPinyin' = '"+secondWorkItem+"' THEN");
-		sb.append("                                    A.NAME_ID || ':' || A.PROV_PHONETIC || A.CITY_PHONETIC ||");
-		sb.append("                                    A.TOWN_PHONETIC || A.PLACE_PHONETIC || A.STREET_PHONETIC ||");
-		sb.append("                                    A.LANDMARK_PHONETIC || A.PREFIX_PHONETIC ||");
-		sb.append("                                    A.HOUSENUM_PHONETIC || A.TYPE_PHONETIC || A.SUBNUM_PHONETIC ||");
-		sb.append("                                    A.SURFIX_PHONETIC || A.ESTAB_PHONETIC ||");
-		sb.append("                                    A.BUILDING_PHONETIC || A.FLOOR_PHONETIC || A.UNIT_PHONETIC ||");
-		sb.append("                                    A.ROOM_PHONETIC || A.ADDONS_PHONETIC");
-		sb.append("                                   WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN");
-		sb.append("                                    A.NAME_ID || ':' || A.FULLNAME");
-		sb.append("                                   ELSE");
-		sb.append("                                    ''");
-		sb.append("                                 END ADDRNEWVLAUE,");
-		sb.append("                                 A.POI_PID PID");
-		sb.append("                            FROM IX_POI_ADDRESS A");
-		sb.append("                           WHERE A.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
-		sb.append("                             AND A.LANG_CODE IN ("+langCode+")) ADR,");
-		sb.append("                           (SELECT n.fullname,N.POI_PID FROM ix_poi_address n WHERE  n.LANG_CODE IN ('CHI','CHT') ");
-		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORADR,");
-		sb.append("                         (SELECT '[' || LISTAGG(PS.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY PS.PID) || ']' WORK_ITEM_ID,");
-		sb.append("                                 PS.PID");
-		sb.append("                            FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC");
-		sb.append("                           WHERE PS.WORK_ITEM_ID = PC.WORK_ITEM_ID");
-		sb.append("                             AND PC.SECOND_WORK_ITEM = '"+secondWorkItem+"'");
-		sb.append("                             AND PC.CHECK_FLAG IN (1, 3)");
-		sb.append("                             AND PS.PID IN ("+StringUtils.join(pidList, ",")+")");
-		sb.append("                           GROUP BY PS.PID) WK");
-		sb.append("                   WHERE WK.PID = NM.PID(+)");
-		sb.append("                     AND WK.PID = ADR.PID(+)");
-		sb.append("                     AND WK.PID = ORNM.POI_PID(+)");
-		sb.append("                     AND WK.PID = ORADR.POI_PID(+)) TP");
-		sb.append("                  ON (T.PID=TP.pid AND T.SUBTASK_ID ="+comSubTaskId+" AND T.SECOND_WORK_ITEM = '"+secondWorkItem+"'  AND T.IS_VALID = 0  )");
-		sb.append("                  WHEN MATCHED THEN");
-		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.OLDVALUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
-		sb.append("                  WHEN NOT MATCHED THEN ");
-		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
-				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:2,0,"+userId+",TP.ORNAME)");
-		
-		
-		PreparedStatement pstmt = null;
 
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
-			pstmt.setTimestamp(2, new Timestamp(new Date().getTime()));
-			log.info(sb.toString());
-			pstmt.executeUpdate();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-
-		}
-	}
 	
 
 }

@@ -4,6 +4,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -21,6 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SolrController {
+
+    private static final Logger logger = Logger.getLogger(SolrController.class);
 
 	private int fetchNum = Integer.MAX_VALUE;
 
@@ -1053,6 +1056,7 @@ public class SolrController {
             }
             builder.append(")");
         }
+		logger.info("queryCollectTaskTips:" + builder.toString());
         List<JSONObject> snapshots = this.queryTips(builder.toString(), null);
         return snapshots;
     }

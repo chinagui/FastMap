@@ -396,7 +396,7 @@ public class TipsRelateLineUpdate {
 	private String getNearlestLineId() {
 		String id;
 		// tip的引导坐标
-		JSONObject geometryTips = JSONObject.fromObject(this.line1
+		JSONObject geometryTips = JSONObject.fromObject(this.json
 				.getString("geometry"));
 
 		JSONObject g_guide = geometryTips.getJSONObject("g_guide");

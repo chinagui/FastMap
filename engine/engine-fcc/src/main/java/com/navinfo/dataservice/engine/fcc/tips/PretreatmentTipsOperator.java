@@ -540,6 +540,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solr.addTips(solrIndex);
 			solr.addTips(newSolrIndex);
 
+            //TODO 测线打断维护关联Tips
+            //TODO ROWKEY 维护7种要素id
+            if(s_sourceType.equals("2001")) {
+                //rowkey 原rowkey
+                String query = "relate_links:*|" + rowkey + "|*";
+
+
+            }
+
 			htab.put(put);
 			htab.put(newPut);
 			htab.close();
@@ -1101,6 +1110,11 @@ System.out.println(sGeojson2);
 		try {
             JSONObject source = jsonInfo.getJSONObject("source");
             String sourceType = source.getString("s_sourceType");
+
+            if(StringUtils.isEmpty(sourceType)) {
+                logger.error("新增tips出错：原因：sourceType为空");
+                throw new Exception("新增tips出错：原因：sourceType为空");
+            }
 
             if(sourceType.equals("1205") || sourceType.equals("1206")
                     || sourceType.equals("1211")) {//新增或者修改

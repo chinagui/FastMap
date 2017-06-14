@@ -401,6 +401,15 @@ public class LogReader {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param objName
+	 * @param mainTabName
+	 * @param grid
+	 * @param date
+	 * @return key:status,value:pids
+	 * @throws SQLException
+	 */
 	public  Map<Integer,Collection<Long>> getUpdatedObj(String objName,String mainTabName,String grid,String date)throws SQLException{
 		Collection<String> grids = new HashSet<String>();
 		grids.add(grid);

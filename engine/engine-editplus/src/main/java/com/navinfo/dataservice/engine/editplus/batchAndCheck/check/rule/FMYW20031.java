@@ -108,6 +108,8 @@ public class FMYW20031 extends BasicCheckRule {
 			Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 			Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
 			Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
+			List<Map<String, Long>> resultList=new ArrayList<Map<String,Long>>();
+			Set<Long> pidList=new HashSet<Long>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
@@ -116,11 +118,20 @@ public class FMYW20031 extends BasicCheckRule {
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				geoMap.put(pidTmp1, geometry);
 				meshMap.put(pidTmp1, meshId);
-				//查询父子关系
-				Set<Long> pidList=new HashSet<Long>();
+				
+				Map<String, Long> pidMap=new HashMap<String, Long>();
+				pidMap.put("PID1", pidTmp1);
+				pidMap.put("PID2", pidTmp2);
+				resultList.add(pidMap);
 				pidList.add(pidTmp1);
 				pidList.add(pidTmp2);
-				Map<Long, Long> parentMap = IxPoiSelector.getParentPidsByChildrenPids(this.getCheckRuleCommand().getConn(), pidList);
+			}
+			//加载父子关系
+			Map<Long, Long> parentMap = IxPoiSelector.getParentPidsByChildrenPids(this.getCheckRuleCommand().getConn(), pidList);
+			//查询父子关系
+			for(Map<String, Long> pidMap:resultList){
+				Long pidTmp1=pidMap.get("PID1");
+				Long pidTmp2=pidMap.get("PID2");
 				boolean flag = false;
 				//无父子关系
 				if(!(parentMap.containsKey(pidTmp1)&&(parentMap.get(pidTmp1).equals(pidTmp2)))
@@ -139,7 +150,7 @@ public class FMYW20031 extends BasicCheckRule {
 					if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
 					errorList.get(pidTmp1).add(pidTmp2);
 				}
-			}
+			}	
 			//过滤相同pid
 			Set<Long> filterPid = new HashSet<Long>();
 			for(Long pid1:errorList.keySet()){

@@ -370,7 +370,6 @@ public class IxDealershipResultOperator {
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CHAIN")){
 				columns.add(" CHAIN=? ");
 				values.add(bean.getChain());
-				log.info("chain:" + bean.getChain());
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				columns.add(" NAME=? ");
@@ -641,7 +640,7 @@ public class IxDealershipResultOperator {
 				contactMap.put("poiPid", contact.getPoiPid());
 				contactMap.put("priority", contact.getPriority());
 				contactMap.put("rowId", contact.getRowId() == null ? "" : contact.getRowId());
-				contactMap.put("uDate", contact.getuDate());
+				contactMap.put("uDate", contact.getuDate() == null ? "" : contact.getuDate());
 				contactMap.put("uRecord", contact.getuRecord());
 
 				JSONObject contactobj = JSONObject.fromObject(contactMap);

@@ -26,6 +26,8 @@ public class PoiController extends BaseController {
 
 	@RequestMapping(value = "/poi/help")
 	public ModelAndView getDb(HttpServletRequest request){
+		PoiServiceNew.getInstance().logTest();
+		log.info("Hello,Poi Controller...");
 		return new ModelAndView("jsonView", "data", "Hello,Datahub.你好，数据中心！");
 	}
 	

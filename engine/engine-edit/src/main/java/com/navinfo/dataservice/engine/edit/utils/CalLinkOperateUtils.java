@@ -1,28 +1,19 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.AngleCalculator.LngLatPoint;
-
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.vividsolutions.jts.geom.LineSegment;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
 
 public class CalLinkOperateUtils {
 	private Connection conn;
@@ -113,6 +104,16 @@ public class CalLinkOperateUtils {
 	 */
 	public List<Integer> calViaLinks(Connection conn, int inLinkPid,
 			int nodePid, int outLinkPid) throws Exception {
+
+		CalPassLinkUtils p = new CalPassLinkUtils(conn);
+
+		List<Integer> passLinkPids = p.calcPassLinks(inLinkPid,
+				nodePid, outLinkPid);
+
+		if (passLinkPids.size() > 0) {
+
+			return passLinkPids;
+		}
 
 		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
 

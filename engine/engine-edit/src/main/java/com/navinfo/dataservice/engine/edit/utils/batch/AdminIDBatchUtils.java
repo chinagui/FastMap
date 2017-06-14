@@ -162,7 +162,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
         if (geometry.getCoordinates().length > 200)
             return;
-        Map<Integer, RdLink> maps = new HashMap<>();
+        Map<Integer, RdLink> modified = new HashMap<>();
         geometry = shrink(geometry);
 
         Geometry p1 = shrink(faceGeometry.getCentroid());
@@ -179,11 +179,13 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             // RdLink包含在AdFace内
             if (isContainOrCover(linkGeometry, geometry)) {
                 // 修行时修改regionId
-                if (link.getLeftRegionId() != regionId)
+                if (link.getLeftRegionId() != regionId) {
                     link.changedFields().put("leftRegionId", regionId);
-                if (link.getRightRegionId() != regionId)
+                }
+                if (link.getRightRegionId() != regionId) {
                     link.changedFields().put("rightRegionId", regionId);
-                maps.put(link.pid(), link);
+                }
+                modified.put(link.pid(), link);
                 // RdLink处在AdFace组成线上
             } else if (GeoRelationUtils.Boundary(linkGeometry, geometry)) {
                 // RdLink在AdFace的右边
@@ -191,13 +193,13 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
                     // 修改时修改RightRegionId值
                     if (link.getRightRegionId() != regionId) {
                         link.changedFields().put("rightRegionId", regionId);
-                        maps.put(link.pid(), link);
+                        modified.put(link.pid(), link);
                     }
                 } else {
                     // 修改时修改LeftRegionId值
                     if (link.getLeftRegionId() != regionId) {
                         link.changedFields().put("leftRegionId", regionId);
-                        maps.put(link.pid(), link);
+                        modified.put(link.pid(), link);
                     }
                 }
             } else {
@@ -208,14 +210,20 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (null != faceGeometry) {
             links = selector.loadLinkByDiffGeo(faceGeometry, geometry, true);
             for (RdLink link : links) {
-                if (link.getLeftRegionId() != 0)
+                if (link.getLeftRegionId() != 0) {
                     link.changedFields().put("leftRegionId", 0);
-                if (link.getRightRegionId() != 0)
+                }
+                if (link.getRightRegionId() != 0) {
                     link.changedFields().put("rightRegionId", 0);
-                maps.put(link.pid(), link);
+                }
+                modified.put(link.pid(), link);
             }
         }
-        for (RdLink link : maps.values()) {
+        for (RdLink link : modified.values()) {
+            if (isDeleteLink(result, link.pid())) {
+                continue;
+            }
+
             result.insertObject(link, ObjStatus.UPDATE, link.pid());
         }
     }

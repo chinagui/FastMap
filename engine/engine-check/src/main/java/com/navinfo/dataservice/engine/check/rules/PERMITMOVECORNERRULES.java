@@ -45,6 +45,7 @@ public class PERMITMOVECORNERRULES extends baseRule {
 			case RWNODE:
 				RwNode rwLink = (RwNode) row;
 				checkDiffObjIsCornerNode(rwLink,rwLink.getGeometry());
+				break;
 			case LUNODE:
 				LuNode luLink = (LuNode) row;
 				checkDiffObjIsCornerNode(luLink,luLink.getGeometry());

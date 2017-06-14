@@ -35,7 +35,8 @@ public class GLM57022 extends baseRule {
             if (face.changedFields().containsKey("geometry")) {
                 geometry = GeoTranslator.geojson2Jts((JSONObject) row.changedFields().get("geometry"));
             }
-            String wkt = GeoTranslator.jts2Wkt(geometry, GeoTranslator.dPrecisionMap,5);
+            geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
+            String wkt = GeoTranslator.jts2Wkt(geometry);
             List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
             for (CmgBuildface cmgface : list) {
                 if (CheckGeometryUtils.isOnlyEdgeShared(geometry, cmgface.getGeometry())) {

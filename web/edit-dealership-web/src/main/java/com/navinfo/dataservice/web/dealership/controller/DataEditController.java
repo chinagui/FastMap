@@ -332,16 +332,12 @@ public class DataEditController extends BaseController {
 
 			String chainCode = jsonObj.getString("chainCode");
 			conn = DBConnector.getInstance().getDealershipConnection();
-			String msg = dealerShipEditService.closeChainService(conn, chainCode);
+			dealerShipEditService.closeChainService(conn, chainCode);
 
-			if (msg.isEmpty()) {
-				return new ModelAndView("jsonView", success());
-			} else {
-				return new ModelAndView("jsonView", fail(msg));
-			}
+		    return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
-			logger.error("关闭作业，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
+			logger.error("关闭品牌，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

@@ -15,8 +15,8 @@ public class ZoneTest extends InitApplication {
 
     @Test
     public void move() {
-        String paramenter = "{\"command\":\"MOVE\",\"objId\":402000045,\"type\":\"RDNODE\"," +
-                "\"data\":{\"longitude\":117.88847208023073,\"latitude\":39.3721027171239},\"dbId\":84}";
+        String paramenter = "{\"command\":\"MOVE\",\"type\":\"ZONENODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":500000023," +
+                "\"data\":{\"longitude\":116.56564682722092,\"latitude\":39.75000079759563}}";
         //paramenter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":208000047,
         // \"data\":{\"longitude\":116.87521398067473,\"latitude\":40.41819701924083},\"type\":\"ZONENODE\"}";
         TestUtil.run(paramenter);

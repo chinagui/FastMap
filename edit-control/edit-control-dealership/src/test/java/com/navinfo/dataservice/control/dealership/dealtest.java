@@ -32,7 +32,7 @@ import net.sf.json.JSONObject;
 public class dealtest extends ClassPathXmlAppContextInit{
 	@Before
 	public void before(){
-		initContext(new String[]{"dubbo-app-scripts.xml","dubbo-scripts.xml"});
+		initContext(new String[]{"dubbo-consumer-datahub-test.xml"});
 	}
 	
 	@Test
@@ -68,8 +68,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
   	@Test
 	public void testSaveData() throws Exception{
 		DataEditService ds = DataEditService.getInstance();
-		
-		String json = "{\"poiData\":{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"IXPOI\",\"objId\":410000122,\"data\":{\"chain\":\"\",\"contacts\":[{\"rowId\":\"3F378EC170CD44C3A48F8F56BD86126D\",\"objStatus\":\"DELETE\"},{\"rowId\":\"10D4D158DC6F4C4694C31F1173AF60F8\",\"objStatus\":\"DELETE\"}],\"restaurants\":[{\"foodType\":\"3007\",\"rowId\":\"6115657421A2472F987CDAD1624E9A21\",\"pid\":506000040,\"objStatus\":\"UPDATE\"}],\"rowId\":\"B496AD007CB54A6CA8447D51EF73EB58\",\"pid\":410000122,\"objStatus\":\"UPDATE\"},\"subtaskId\":1},dealershipInfo:{\"wkfStatus\":3,\"dbId\":399,\"resultId\":101,\"cfmMemo\":\"宝马采集\"}}";
+				String json = "{\"poiData\":{\"command\":\"INSERT\",\"dbId\":13,\"type\":\"IXPOI\",\"data\":{\"kindCode\":\"888888\",\"chain\":\"4038\",\"level\":\"B1\",\"postCode\":\"123456\",\"names\":[{\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"达世行凯迪拉克授权售后服务中心2\",\"namePhonetic\":\"\",\"rowId\":\"1\",\"objStatus\":\"INSERT\"}],\"objStatus\":\"INSERT\"}},\"dealershipInfo\":{\"dbId\":399,\"wkfStatus\":\"3\",\"resultId\":455366,\"cfmMemo\":\"备注\"}}";
 		JSONObject parameter = JSONObject.fromObject(json);
 		ds.saveDataService(parameter,2);
 	}

@@ -243,6 +243,7 @@ public class DataEditService {
 		dealershipMap.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
 		dealershipMap.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
 		dealershipMap.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
+		dealershipMap.put("chain", dealership.getChain() == null?"":dealership.getChain());
 		dealershipMap.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
 		dealershipMap.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
 		dealershipMap.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());

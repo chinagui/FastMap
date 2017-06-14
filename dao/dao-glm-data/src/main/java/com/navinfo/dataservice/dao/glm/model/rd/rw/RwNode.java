@@ -49,6 +49,11 @@ public class RwNode implements IObj {
 	// rwnode关联的rwlink集合
 	private List<RwLink> topoLinks = new ArrayList<>();
 
+    /**
+     * 数据状态
+     */
+	protected ObjStatus status;
+
 	public int getPid() {
 		return pid;
 	}
@@ -126,11 +131,12 @@ public class RwNode implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

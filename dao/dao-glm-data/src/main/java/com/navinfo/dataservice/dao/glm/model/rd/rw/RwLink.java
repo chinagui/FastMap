@@ -79,6 +79,11 @@ public class RwLink implements IObj {
 
 	public Map<String, RwLinkName> linkNameMap = new HashMap<>();
 
+    /**
+     * 数据状态
+     */
+	protected ObjStatus status;
+
 	public int getPid() {
 		return pid;
 	}
@@ -220,11 +225,12 @@ public class RwLink implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

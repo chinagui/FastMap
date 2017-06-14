@@ -26,6 +26,11 @@ public class TranslateConstant {
     static Integer FULL_TO_HALF = 2;
 
     /**
+     * 最大可连接汉字数
+     */
+    static Integer MAX_CONNECTION_CHARACTER = 3;
+
+    /**
      * 是否处理多音字标识
      * 1：不处理（默认值）
      * 2：处理

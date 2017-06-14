@@ -8,7 +8,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 

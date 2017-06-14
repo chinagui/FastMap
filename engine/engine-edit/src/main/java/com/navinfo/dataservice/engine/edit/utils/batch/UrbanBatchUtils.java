@@ -219,6 +219,10 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         }
         Set<Integer> addPid = addMaps.keySet();
         for (Entry<Integer, RdLink> entry : deleteMaps.entrySet()) {
+            if (isDeleteLink(result, entry.getKey())) {
+                continue;
+            }
+
             if (addPid.contains((Object) entry.getKey())) {
                 continue;
             }
@@ -226,6 +230,10 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         }
 
         for (RdLink link : addMaps.values()) {
+            if (isDeleteLink(result, link.pid())) {
+                continue;
+            }
+
             if (link.getUrban() == IS_URBAN) {
                 continue;
             }

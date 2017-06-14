@@ -1,10 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -14,6 +9,10 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.operation.parameterCheck.DepartCheck;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
+import net.sf.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -82,7 +81,7 @@ public class Process extends AbstractProcess<Command> {
         // 分离节点检查顺行
         check.checkRdDirectRAndLaneC(getConn(), getCommand());
         //修改link，节点不能到已有的立交点处，请先删除立交关系
-        check.permitCheckGscnodeNotMove(getConn(), getCommand().getCatchInfos());
+        // check.permitCheckGscnodeNotMove(getConn(), getCommand().getCatchInfos());
         return super.preCheck();
     }
 

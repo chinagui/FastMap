@@ -35,7 +35,7 @@ public class CheckImportCityBlockJson {
 
 		try {
 			if(args==null||args.length!=3){
-				log.error("ERROR:need args:cityFile blockFile");
+				log.error("ERROR:need args:initBlockFile cityFile blockFile");
 				return;
 			}
 

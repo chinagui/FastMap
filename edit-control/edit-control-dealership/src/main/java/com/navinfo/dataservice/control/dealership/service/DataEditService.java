@@ -1174,7 +1174,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
             }
             
             //审核意见为转外业、转客户
@@ -1189,8 +1189,8 @@ public class DataEditService {
         		//更新IX_DEALERSHIP_RESULT.deal_status＝2及cfm_Memo
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
-    			//更新IX_DEALERSHIP_RESULT.workflow_status=6，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			//更新IX_DEALERSHIP_RESULT.workflow_status=9，且写履历
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
         	}
  
             return log;

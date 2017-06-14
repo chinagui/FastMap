@@ -5,9 +5,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +26,10 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class ColumnCoreOperation {
@@ -39,13 +45,15 @@ public class ColumnCoreOperation {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("rawtypes")
-	public void runClassify(HashMap mapParams, Connection conn, int taskId) throws Exception {
+	public void runClassify(HashMap mapParams, Connection conn, int taskId,boolean isInitQcProblem,int isQuality) throws Exception {
 		try {
 			String[] strCkRules = ((String) mapParams.get("ckRules")).split(",");
 			String[] strClassifyRules = ((String) mapParams.get("classifyRules")).split(",");
 			int userId = (Integer) mapParams.get("userId");
 			List pidList = (List) mapParams.get("pids"); // 每条数据需包含pid
 			Map<Integer,JSONObject> qcFlag =(Map<Integer,JSONObject>) mapParams.get("qcFlag");
+			String firstWorkItem =(String) mapParams.get("firstWorkItem");
+			String secondWorkItem =(String) mapParams.get("secondWorkItem");
 			List ckRules = new ArrayList();
 			for(int i=0;i<strCkRules.length;i++){
 				ckRules.add(strCkRules[i]);
@@ -54,6 +62,7 @@ public class ColumnCoreOperation {
 			for(int i=0;i<strClassifyRules.length;i++){
 				classifyRules.add(strClassifyRules[i]);
 			}
+			List<Integer> qcPidList = new ArrayList<Integer>();
 			for (int i = 0; i < pidList.size(); i++) {
 				int pid = (Integer) pidList.get(i);
 				// 根据数据取检查结果
@@ -71,17 +80,41 @@ public class ColumnCoreOperation {
 					existQcFlag = data.getInt("qc_flag");
 					existComHandler = data.getInt("common_handler");
 				}
+				if(existQcFlag==1){qcPidList.add(pid);}
 				
 				// poi_deep_status不存在的作业项插入,存在的更新
 				checkResultList.retainAll(classifyRules);
 				if (checkResultList.size()>0) {
 					insertWorkItem(checkResultList, conn, pid, userId, taskId,existQcFlag,existComHandler);
+					//质检保存、常规提交、质检提交时，isInitQcProblem为true,对重分类后的数据需要初始化problem表。
+					//常规保存时重分类的qc_flag=1的数据，不需要初始化问题表，等常规提交的时候再初始化
+					if(isInitQcProblem){
+						insertColumnQcProblems(qcPidList,conn,taskId,firstWorkItem,secondWorkItem,userId,true);
+					}
 				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
 				existClassifyList.removeAll(checkResultList);
 				deleteWorkItem(existClassifyList, conn, pid);
 			}
+			
+			//质检保存、常规提交、质检提交时，isInitQcProblem为true,对重分类后的数据需要初始化problem表。
+			//常规保存时重分类的qc_flag=1的数据，不需要初始化问题表，等常规提交的时候再初始化
+			if(isInitQcProblem){
+				Map<Integer,JSONArray> workItemInfo = getWorkItemInfo(qcPidList,userId,conn,taskId,isQuality);
+				for(int pid:workItemInfo.keySet()){
+					Iterator <JSONObject> it = workItemInfo.get(pid).iterator();
+					while (it.hasNext()) {
+						JSONObject data=it.next();
+						List<Integer> dataList = new ArrayList<Integer>();
+						dataList.add(pid);
+						String first = data.getString("firstWorkItem");
+						String second = data.getString("secondWorkItem");
+						insertColumnQcProblems(dataList,conn,taskId,first,second,userId,true);
+					}
+				}
+			}
+			
 
 		} catch (Exception e) {
 			throw e;
@@ -127,7 +160,138 @@ public class ColumnCoreOperation {
 		}
 
 	}
+	/**
+	 * 常规提交时，对打质检标记的数据，初始化质检问题表
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void insertColumnQcProblems(List<Integer> pidList,Connection conn,int comSubTaskId,String firstWorkItem,String secondWorkItem,int userId,boolean isClassify) throws Exception {
+		
+		if(pidList==null||pidList.size()==0){return;}
+		String nameClass= "1";
+		String nameType= "1";
+		String langCode= " 'CHI','CHT'";
+		if(secondWorkItem.equals("aliasName")){
+			nameClass= "3";
+		}else if(secondWorkItem.equals("shortName")){
+			nameClass= "5";
+		}else if(secondWorkItem.equals("namePinyin")){
+			nameClass= "1,3,5";
+		}else if(firstWorkItem.equals("poi_englishname")&&secondWorkItem.equals("officalStandardEngName")){
+			nameType= "1";
+			langCode= "'ENG'";
+		}else if(firstWorkItem.equals("poi_englishname")){
+			nameType= "2";
+			langCode= "'ENG'";
+		}else if(firstWorkItem.equals("poi_englishaddress")){
+			langCode= "'ENG'";
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("                  MERGE INTO");
+		sb.append("                  COLUMN_QC_PROBLEM");
+		sb.append("                  T");
+		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID,0 IS_PROBLEM,");
+		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
+		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
+		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
+		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
+		sb.append("                          ELSE '' ");
+		sb.append("                          END OLDVALUE, ");
+		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN ORNM.name ");
+		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN ORNM.name ");
+		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ORADR.fullname ");
+		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ORADR.fullname ");
+		sb.append("                          ELSE '' ");
+		sb.append("                          END ORNAME ");
+		sb.append("                    FROM (SELECT CASE");
+		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
+		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
+		sb.append("                                   WHEN 'namePinyin' = '"+secondWorkItem+"' THEN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.name_phonetic, ");
+		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
+		sb.append("                                   ELSE");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
+		sb.append("                                    GROUP(ORDER BY N.NAME_ID)");
+		sb.append("                                 END NAMENEWVLAUE,");
+		sb.append("                                 N.POI_PID PID");
+		sb.append("                            FROM IX_POI_NAME N, IX_POI_NAME_FLAG F");
+		sb.append("                           WHERE N.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append("                             AND N.NAME_ID = F.NAME_ID(+)");
+		sb.append("                             AND N.LANG_CODE IN ("+langCode+")");
+		sb.append("                             AND N.NAME_TYPE IN ("+nameType+")");
+		sb.append("                             AND N.NAME_CLASS IN ("+nameClass+")");
+		sb.append("                           GROUP BY N.POI_PID) NM,");
+		sb.append("                           (SELECT n.name,N.POI_PID FROM ix_poi_name n WHERE  n.LANG_CODE IN ('CHI','CHT') AND n.NAME_TYPE=2 AND n.NAME_CLASS=1 ");
+		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORNM,");
+		sb.append("                         (SELECT CASE");
+		sb.append("                                   WHEN 'addrSplit' = '"+secondWorkItem+"' THEN");
+		sb.append("                                    A.NAME_ID || ':' || A.PROVINCE || A.CITY || A.COUNTY ||");
+		sb.append("                                    A.TOWN || A.PLACE || A.STREET || A.LANDMARK || A.PREFIX ||");
+		sb.append("                                    A.HOUSENUM || A.TYPE || A.SUBNUM || A.SURFIX || A.ESTAB ||");
+		sb.append("                                    A.BUILDING || A.FLOOR || A.UNIT || A.ROOM || A.ADDONS");
+		sb.append("                                   WHEN 'addrPinyin' = '"+secondWorkItem+"' THEN");
+		sb.append("                                    A.NAME_ID || ':' || A.PROV_PHONETIC || A.CITY_PHONETIC ||");
+		sb.append("                                    A.TOWN_PHONETIC || A.PLACE_PHONETIC || A.STREET_PHONETIC ||");
+		sb.append("                                    A.LANDMARK_PHONETIC || A.PREFIX_PHONETIC ||");
+		sb.append("                                    A.HOUSENUM_PHONETIC || A.TYPE_PHONETIC || A.SUBNUM_PHONETIC ||");
+		sb.append("                                    A.SURFIX_PHONETIC || A.ESTAB_PHONETIC ||");
+		sb.append("                                    A.BUILDING_PHONETIC || A.FLOOR_PHONETIC || A.UNIT_PHONETIC ||");
+		sb.append("                                    A.ROOM_PHONETIC || A.ADDONS_PHONETIC");
+		sb.append("                                   WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN");
+		sb.append("                                    A.NAME_ID || ':' || A.FULLNAME");
+		sb.append("                                   ELSE");
+		sb.append("                                    ''");
+		sb.append("                                 END ADDRNEWVLAUE,");
+		sb.append("                                 A.POI_PID PID");
+		sb.append("                            FROM IX_POI_ADDRESS A");
+		sb.append("                           WHERE A.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append("                             AND A.LANG_CODE IN ("+langCode+")) ADR,");
+		sb.append("                           (SELECT n.fullname,N.POI_PID FROM ix_poi_address n WHERE  n.LANG_CODE IN ('CHI','CHT') ");
+		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORADR,");
+		sb.append("                         (SELECT '[' || LISTAGG(PS.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY PS.PID) || ']' WORK_ITEM_ID,");
+		sb.append("                                 PS.PID");
+		sb.append("                            FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC");
+		sb.append("                           WHERE PS.WORK_ITEM_ID = PC.WORK_ITEM_ID");
+		sb.append("                             AND PC.SECOND_WORK_ITEM = '"+secondWorkItem+"'");
+		sb.append("                             AND PC.CHECK_FLAG IN (1, 3)");
+		sb.append("                             AND PS.PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append("                           GROUP BY PS.PID) WK");
+		sb.append("                   WHERE WK.PID = NM.PID(+)");
+		sb.append("                     AND WK.PID = ADR.PID(+)");
+		sb.append("                     AND WK.PID = ORNM.POI_PID(+)");
+		sb.append("                     AND WK.PID = ORADR.POI_PID(+)) TP");
+		sb.append("                  ON (T.PID=TP.pid AND T.SUBTASK_ID ="+comSubTaskId+" AND T.SECOND_WORK_ITEM = '"+secondWorkItem+"'  AND T.IS_VALID = 0  )");
+		if(!isClassify){
+			sb.append("                  WHEN MATCHED THEN");
+			sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.OLDVALUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE='',T.work_item_id=TP.WORK_ITEM_ID");
+		}
+		sb.append("                  WHEN NOT MATCHED THEN ");
+		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
+				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:2,0,"+userId+",TP.ORNAME)");
+		
+		
+		PreparedStatement pstmt = null;
 
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			if(!isClassify){
+				pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
+				pstmt.setTimestamp(2, new Timestamp(new Date().getTime()));
+			}else{
+				pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
+			}
+			log.info(sb.toString());
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+
+		}
+	}
 	/**
 	 * 从poi_column_status表删除作业标记信息
 	 * 
@@ -192,6 +356,58 @@ public class ColumnCoreOperation {
 				data.put("qc_flag", resultSet.getInt("qc_flag"));
 				data.put("common_handler", resultSet.getInt("common_handler"));
 				result.put(resultSet.getInt("pid"),data);
+			} 
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
+	
+	/**
+	 * 从poi_column_status表获取重分类后的标记信息
+	 * 
+	 * @param pidList
+	 * @param userId
+	 * @param conn
+	 * @param comSubTaskId
+	 * @throws Exception
+	 */
+	public Map<Integer,JSONArray> getWorkItemInfo(List<Integer> pidList,int userId,Connection conn,int comSubTaskId,int isQuality) throws Exception {
+		Map<Integer,JSONArray> result = new HashMap<Integer,JSONArray>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT DISTINCT ps.pid,pw.first_work_item,pw.second_work_item FROM poi_column_status ps,poi_column_workitem_conf pw ");
+		sql.append(" WHERE ps.work_item_id=pw.work_item_id ");
+		sql.append(" AND PS.PID IN ("+StringUtils.join(pidList, ",")+") ");
+		sql.append("	AND PS.HANDLER = "+userId);
+		if(isQuality==0){
+			sql.append("	AND PS.COMMON_HANDLER = "+userId);
+		}else if(isQuality==1){
+			sql.append("	AND PS.COMMON_HANDLER <> "+userId);
+		}
+		sql.append("	AND PS.task_id = "+comSubTaskId);
+
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				int pid = resultSet.getInt("pid");
+				JSONArray datas = new JSONArray();
+				JSONObject data=new JSONObject();
+				data.put("firstWorkItem", resultSet.getString("first_work_item"));
+				data.put("secondWorkItem", resultSet.getString("second_work_item"));
+				if(result.containsKey(pid)){
+					datas =result.get(pid);
+					datas.add(data);
+				}else{
+					datas.add(data);
+				}
+				result.put(pid,datas);
+				
 			} 
 		} catch (Exception e) {
 			throw e;

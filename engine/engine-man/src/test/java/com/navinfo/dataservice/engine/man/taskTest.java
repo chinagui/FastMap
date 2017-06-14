@@ -130,6 +130,12 @@ public class taskTest extends InitApplication{
 	}
 	
 	@Test
+	public void testClose() throws Exception
+	{
+		TaskService.getInstance().close(489, 10001, "", "");
+	}
+	
+	@Test
 	public void testCreateCmsProgress() throws Exception
 	{
 		Connection conn= DBConnector.getInstance().getManConnection();

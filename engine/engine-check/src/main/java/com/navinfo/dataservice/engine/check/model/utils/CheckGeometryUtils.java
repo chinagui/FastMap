@@ -26,7 +26,6 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 
-import javax.naming.ldap.Rdn;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;

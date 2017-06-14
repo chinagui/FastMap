@@ -555,8 +555,8 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public String convertEng(String word) throws Exception {
-        EnglishConvert convert = new EnglishConvert();
+	public String convertEng(String word, String admin) {
+        EnglishConvert convert = new EnglishConvert(admin);
 		return convert.convert(word);
 	}
 	

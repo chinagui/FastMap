@@ -824,6 +824,9 @@ public class IxDealershipResult implements IObj {
 	public Map<String, Object> getOldValues() {
 		return oldValues;
 	}
+	public void setOldValues(Map<String, Object> oldValues) {
+		this.oldValues = oldValues;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

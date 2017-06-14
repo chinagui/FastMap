@@ -57,6 +57,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getResultId(), tmp);
 				}
 				return sourceIdMap;
@@ -90,6 +91,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getSourceId(), tmp);
 				}
 				return sourceIdMap;
@@ -157,6 +159,7 @@ public class IxDealershipResultSelector {
 		result.setToInfoDate(rs.getString("TO_INFO_DATE"));
 		result.setUserId(rs.getInt("USER_ID"));
 		result.setWorkflowStatus(rs.getInt("WORKFLOW_STATUS"));
+		result.setOldValues(null);
 		return result;
 	}
 	
@@ -189,6 +192,7 @@ public class IxDealershipResultSelector {
 				result.setResultId(resultSet.getInt(1));
 				result.setCfmPoiNum(resultSet.getString(2));
 				result.setRegionId(resultSet.getInt(3));
+				result.setOldValues(null);
 				resultIdList.add(result);
 			}
 
@@ -225,6 +229,7 @@ public class IxDealershipResultSelector {
 			if (resultSet.next()) {
 				ReflectionAttrUtils.executeResultSet(result, resultSet);
 			}
+			result.setOldValues(null);
 
 			return result;
 		} catch (Exception e) {

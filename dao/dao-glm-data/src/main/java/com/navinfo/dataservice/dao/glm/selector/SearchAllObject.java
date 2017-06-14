@@ -115,9 +115,12 @@ public class SearchAllObject {
 
         init(condition);
 
-        List<Integer> mainPids = getMainObjects(condition);
+        List<Integer> mainPids = new ArrayList<>();
+
+        int total =  getMainObjects(condition,mainPids);
 
         searchResult.put("uuid", uuid);
+        searchResult.put("total", total);
 
         if (searchTableName.equals("RD_BRANCH_REALIMAGE")
                 || searchTableName.equals("RD_SERIESBRANCH")) {
@@ -182,15 +185,14 @@ public class SearchAllObject {
 
     /**
      * 根据条件查询主对象Pid
-     *
-     * @param json 条件json
-     * @return
+     * @param json  条件json
+     * @param mainPids 向前端返回的主要素pid
+     * @return 符合查询条件的要素总个数
      * @throws Exception
      */
-    private List<Integer> getMainObjects(JSONObject json) throws Exception {
+    private int getMainObjects(JSONObject json,List<Integer> mainPids) throws Exception {
 
-        List<Integer> mainPids = new ArrayList<>();
-
+        int total = 0;
         //待定主对象Pids
         List<Integer> pendingPids = getPendingPids(json);
 
@@ -199,11 +201,11 @@ public class SearchAllObject {
         //无属性字段查询条件
         if (jsonConditions.size() == 0) {
 
-            return pendingPids;
+            return total;
         }
 
         //按照mainTableName与searchTableName关系组成查询语句
-        String strSql = "SELECT DISTINCT " + mainFlag + " MAIN_PID FROM " + mainTableName;
+        String strSql = "SELECT DISTINCT " + mainFlag + " MAIN_PID , COUNT(1) OVER(PARTITION BY 1) TOTAL FROM " + mainTableName;
 
         if (!mainTableName.equals(searchTableName)) {
 
@@ -263,6 +265,10 @@ public class SearchAllObject {
 
                 int mainPid = resultSet.getInt("MAIN_PID");
 
+                if (total == 0) {
+                    total = resultSet.getInt("TOTAL");
+                }
+
                 mainPids.add(mainPid);
             }
         } catch (Exception e) {
@@ -274,7 +280,7 @@ public class SearchAllObject {
             DBUtils.closeStatement(pstmt);
         }
 
-        return mainPids;
+        return total;
     }
 
     /**
@@ -737,7 +743,7 @@ public class SearchAllObject {
 
         if (operator.equals("IN")) {
 
-            JSONArray valueArray = jsonCondition.getJSONArray("values");
+            JSONArray valueArray = jsonCondition.getJSONArray("value");
 
             if (valueArray.size() > 0) {
 
@@ -767,7 +773,7 @@ public class SearchAllObject {
     //处理一组值
     private void handleValues(JSONObject jsonCondition, String fieldType) throws Exception {
 
-        JSONArray jsonValues = jsonCondition.getJSONArray("values");
+        JSONArray jsonValues = jsonCondition.getJSONArray("value");
 
         for (int i = 0; i < jsonValues.size(); i++) {
 
@@ -836,10 +842,10 @@ public class SearchAllObject {
         strSql += " order by MAIN_PID desc ";
 
         //pageSize
-        String strSqlSize = " Select TMP.MAIN_PID ,ROWNUM ROWNO from ( " + strSql + " ) TMP WHERE ROWNUM <= " + endRow + " ";
+        String strSqlSize = " Select TMP.MAIN_PID ,TMP.TOTAL,ROWNUM ROWNO from ( " + strSql + " ) TMP WHERE ROWNUM <= " + endRow + " ";
 
         //pageNum
-        String StrSqlNum = " Select TABLE_ALIAS.MAIN_PID from ( " + strSqlSize + " ) TABLE_ALIAS WHERE TABLE_ALIAS.ROWNO >= " + startRow;
+        String StrSqlNum = " Select TABLE_ALIAS.MAIN_PID,TABLE_ALIAS.TOTAL from ( " + strSqlSize + " ) TABLE_ALIAS WHERE TABLE_ALIAS.ROWNO >= " + startRow;
 
         return StrSqlNum;
     }

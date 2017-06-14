@@ -954,22 +954,22 @@ public class RdBranchSelector extends AbstractSelector {
 
 			case RDBRANCHREALIMAGE:
 
-				return new AbstractSelector(RdSeriesbranch.class, conn)
+				return new AbstractSelector(RdBranchRealimage.class, conn)
 						.loadRowsByParentIds(branchPids, isLock);
 
 			case RDBRANCHSCHEMATIC:
 
-				return new AbstractSelector(RdSeriesbranch.class, conn)
+				return new AbstractSelector(RdBranchSchematic.class, conn)
 						.loadRowsByParentIds(branchPids, isLock);
 
 			case RDSIGNBOARD:
 
-				return new AbstractSelector(RdSeriesbranch.class, conn)
+				return new AbstractSelector(RdSignboard.class, conn)
 						.loadRowsByParentIds(branchPids, isLock);
 
 			case RDSIGNASREAL:
 
-				return new AbstractSelector(RdSeriesbranch.class, conn)
+				return new AbstractSelector(RdSignasreal.class, conn)
 						.loadRowsByParentIds(branchPids, isLock);
 
 			case RDSERIESBRANCH:

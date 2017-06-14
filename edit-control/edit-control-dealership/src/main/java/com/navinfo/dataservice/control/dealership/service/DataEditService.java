@@ -1472,25 +1472,21 @@ public class DataEditService {
 		return sources;
 	}
 	
-	public String closeChainService(Connection conn,String chainCode) throws Exception{
-		String msg = "";
+	public void closeChainService(Connection conn,String chainCode) throws Exception{
 		if(chainCode == null||chainCode.isEmpty()) {
-			return msg;
+			throw new Exception("品牌为空，无需关闭！");
 		}
 		
 		String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
 		int leftChainResult = run.queryForInt(conn, sql);
 		
 		if(leftChainResult != 0){
-			msg = String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode);
-			return msg;
+			throw new Exception(String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode));
 		}
 		
-		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = %s",chainCode);
+		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = '%s'",chainCode);
 		run.execute(conn, updateSql);
 		conn.commit();
-		
-		return msg;
 	}
 	
 	/**

@@ -243,6 +243,7 @@ public class DataEditService {
 		dealershipMap.put("nameShort", dealership.getNameShort() == null ? "" : dealership.getNameShort());
 		dealershipMap.put("address", dealership.getAddress() == null ? "" : dealership.getAddress());
 		dealershipMap.put("kindCode", dealership.getKindCode() == null ? "" : dealership.getKindCode());
+		dealershipMap.put("chain", dealership.getChain() == null?"":dealership.getChain());
 		dealershipMap.put("telSale", dealership.getTelSale() == null ? "" : dealership.getTelSale());
 		dealershipMap.put("telService", dealership.getTelService() == null ? "" : dealership.getTelService());
 		dealershipMap.put("telOther", dealership.getTelOther() == null ? "" : dealership.getTelOther());
@@ -1173,7 +1174,7 @@ public class DataEditService {
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
             }
             
             //审核意见为转外业、转客户
@@ -1188,8 +1189,8 @@ public class DataEditService {
         		//更新IX_DEALERSHIP_RESULT.deal_status＝2及cfm_Memo
     			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
     			
-    			//更新IX_DEALERSHIP_RESULT.workflow_status=6，且写履历
-    			updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
+    			//更新IX_DEALERSHIP_RESULT.workflow_status=9，且写履历
+    			updateResultWkfStatus(9,resultId,dealershipConn,userId);
         	}
  
             return log;

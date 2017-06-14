@@ -1,1 +1,13 @@
-/target/
+.project
+.settings
+/target
+.classpath
+.#webclasspath
+/logs
+/bin
+/work
+.mvnclasspath
+.tomcatplugin
+.springBeans
+.mymetadata
+/src/main/webapp/WEB-INF/classes

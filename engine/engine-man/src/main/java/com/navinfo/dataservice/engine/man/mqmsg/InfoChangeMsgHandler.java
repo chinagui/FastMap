@@ -163,6 +163,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		} finally {
+			log.info("end infor:"+message);
 			DbUtils.closeQuietly(conn);
 		}
 	}

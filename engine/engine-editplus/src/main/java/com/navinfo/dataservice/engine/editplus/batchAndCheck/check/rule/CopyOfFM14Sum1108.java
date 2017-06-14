@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
@@ -35,7 +36,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CopyOfFM14Sum1108 extends BasicCheckRule {
 	
 	Map<Long, Long> parentIds = new HashMap<Long, Long>();
-	Map<Long, BasicObj> childData=new HashMap<Long, BasicObj>();
 
 	public void run() throws Exception {
 		log.info("CopyOfFM14Sum1108");
@@ -97,6 +97,9 @@ public class CopyOfFM14Sum1108 extends BasicCheckRule {
 				Long pidTmp1=rs.getLong("PID");
 				String kindCode = rs.getString("KIND_MAIN");
 				String kindCode1 = rs.getString("KIND_CODE");
+				if(pidTmp==520000002||pidTmp1==520000002){
+					log.info("");
+				}
 				//查出的同点poi若是检查对象的子，则跳过
 				BasicObj obj=rows.get(pidTmp);
 				IxPoiObj poiObj=(IxPoiObj) obj;
@@ -202,18 +205,10 @@ public class CopyOfFM14Sum1108 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		Set<Long> pidList = new HashSet<Long>();
-		Set<Long> childPidList = new HashSet<Long>();
 		for (BasicObj obj : batchDataList) {
 			pidList.add(obj.objPid());
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			List<IxPoiChildren> cs = poiObj.getIxPoiChildrens();
-			if(cs==null||cs.size()==0){continue;}
-			for(IxPoiChildren c:cs){
-				childPidList.add(c.getChildPoiPid());
-			}
 		}
 		parentIds = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
-		childData = getCheckRuleCommand().loadReferObjs(childPidList, ObjectName.IX_POI, null, false);
 	}
 
 }

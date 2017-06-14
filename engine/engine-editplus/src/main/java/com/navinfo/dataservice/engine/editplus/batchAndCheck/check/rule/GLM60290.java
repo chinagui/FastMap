@@ -23,9 +23,11 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @Description TODO
  * 检查条件：  非删除POI对象
  * 检查原则：
- * 对于同一关系中多分类同属性(多义性)(IX_SAMEPOI.Relation_type=1)，且是同一组数据，
- * 如果分类(只有有一个分类)在（SC_POINT_KIND_NEW表的TYPE=5）记录中的POIKIND或R_KIND列表中不存在，这组数据中不包含180400分类的记录，
- * 报出Log：XXXX与XXXX分类之间不可制作同一关系
+ * ①同一关系中关系类型为“多分类同属性(多义性)”（RELATION_TYPE=1）的一组POI（如：KIND=1或KIND=2），
+ * 如果其中一方分类为‘180400风景名胜’，另外一个分类为‘210304风景名胜售票点’，则报LOG：风景名胜不能与售票点建立同一关系!
+ * ②同一关系中关系类型为“多分类同属性(多义性)”（RELATION_TYPE=1）的一组POI（如：KIND=1或KIND=2），如果任意一方分类不为‘180400风景名胜’则
+ * KIND=1或KIND=2必须存在SC_POINT_KIND_NEW中TYPE=5中任意同一行的一组
+ * POIKIND或R_KIND中,如果不存在，则报Log：XXXX与XXXX分类之间不可制作同一关系!
  */
 public class GLM60290 extends BasicCheckRule {
 	
@@ -38,35 +40,43 @@ public class GLM60290 extends BasicCheckRule {
 			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
 			if(parts==null||parts.size()<2){return;}
 			
-			//180400分类,不判断
 			BasicObj obj1 = myReferDataMap.get(ObjectName.IX_POI).get(parts.get(0).getPoiPid());
 			IxPoi poi1 = (IxPoi) obj1.getMainrow();
 			String kind1=poi1.getKindCode();
-			if(kind1 == null || "180400".equals(kind1)){return;}
 			
 			BasicObj obj2 = myReferDataMap.get(ObjectName.IX_POI).get(parts.get(1).getPoiPid());
 			IxPoi poi2 = (IxPoi) obj2.getMainrow();
 			String kind2=poi2.getKindCode();
-			if(kind2 == null || "180400".equals(kind2)){return;}
 			
-			//判断kind是否满足元数据表配置
+			if("180400".equals(kind1)||"180400".equals(kind2)){
+				//如果其中一方分类为‘180400风景名胜’，另外一个分类为‘210304风景名胜售票点’
+				if("210304".equals(kind1)||"210304".equals(kind2)){
+					String targets = "[IX_POI,"+poi1.getPid()+"];[IX_POI,"+poi2.getPid()+"]";
+					setCheckResult(poi1.getGeometry(), targets,poi1.getMeshId(), "风景名胜不能与售票点建立同一关系");
+					return;
+				}
+				return;
+			}
+			
+			//SC_POINT_KIND_NEW表的TYPE=5
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<Map<String, String>> scPointKindNew5List = metadataApi.scPointKindNewChainKind5Map();
-			List<String> keys = new ArrayList<String>();
-			List<String> values = new ArrayList<String>();
+			boolean check = true;
 			for (Map<String, String> scPointKindNew5Map : scPointKindNew5List) {
 				for(Map.Entry<String, String> entry : scPointKindNew5Map.entrySet()){
 					String key = entry.getKey();
-					keys.add(key);
 					String value = entry.getValue();
-					values.add(value);
+					if((kind1.equals(key)&&kind2.equals(value))||(kind1.equals(value)&&kind2.equals(key))){
+						check = false;
+						break;
+					}
 				}
+				if(!check){break;}
 			}
 			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
-			if((!keys.contains(kind1)&&!values.contains(kind2))
-					||(!keys.contains(kind2)&&!values.contains(kind1))){
+			if(check){
 				String targets = "[IX_POI,"+poi1.getPid()+"];[IX_POI,"+poi2.getPid()+"]";
-				setCheckResult(poi2.getGeometry(), targets,poi2.getMeshId(), kindNameByKindCode.get(kind1)+"与"+kindNameByKindCode.get(kind2)+"分类之间不可制作同一关系");
+				setCheckResult(poi1.getGeometry(), targets,poi1.getMeshId(), kindNameByKindCode.get(kind1)+"与"+kindNameByKindCode.get(kind2)+"分类之间不可制作同一关系");
 				return;
 			}
 		}

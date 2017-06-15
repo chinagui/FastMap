@@ -256,18 +256,17 @@ public class ColumnSubmitJob extends AbstractJob {
 					//质检提交时调用，更新质检问题表状态
 					if(allPidList!=null&&allPidList.size()>0){
 						updateColumnQcProblems(allPidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
-						log.info("常规提交时，对未打质检标记的数据，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=3、SECOND_WORK_STATUS=3、HANDLER=0:"+allPidList);
+						log.info("质检提交时，更新poi_deep_status表作业项状态:FIRST_WORK_STATUS=3、SECOND_WORK_STATUS=3、HANDLER=0:"+allPidList);
 						updateDeepStatus(allPidList, conn, 3,second,1);
 					}
 				}
 				
-				
+				List<Integer> pidList = new ArrayList<Integer>();
+				pidList.addAll(qcPidList);
+				pidList.addAll(allPidList);
 				// 重分类
-				if (columnOpConf.getSubmitExeclassify()==1) {
+				if (columnOpConf.getSubmitExeclassify()==1&&pidList!=null&pidList.size()>0) {
 					log.info("执行重分类");
-					List<Integer> pidList = new ArrayList<Integer>();
-					pidList.addAll(qcPidList);
-					pidList.addAll(allPidList);
 					if (columnOpConf.getSubmitCkrules() != null && columnOpConf.getSubmitClassifyrules() != null) {
 						HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 						classifyMap.put("userId", userId);
@@ -289,7 +288,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				// 清理重分类检查结果
 				log.info("清理重分类检查结果");
 				if (classifyRules.size()>0) {
-					deepControl.cleanExByCkRule(conn, allPidList, classifyRules, "IX_POI");
+					deepControl.cleanExByCkRule(conn, pidList, classifyRules, "IX_POI");
 				}
 				
 			}

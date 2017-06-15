@@ -109,12 +109,12 @@ public class FMBAT20194 extends BasicBatchRule {
 			Long parentPid = childPidParentPid.get(poi.getPid());
 			
 			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (!parentPoi.getKindCode().equals("230215")) {
 				return;
 			}
-			
 
 			boolean flag = false;
 			
@@ -178,6 +178,7 @@ public class FMBAT20194 extends BasicBatchRule {
 			
 			for (Long childPid:childrenList) {
 				BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoi childPoi = (IxPoi) childObj.getMainrow();
 				String kindCode=childPoi.getKindCode();
 				flag = judgeChildKindCode(kindCode);

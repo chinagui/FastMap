@@ -338,6 +338,10 @@ public class DataEditController extends BaseController {
 		} catch (Exception e) {
 			logger.error("关闭品牌，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
+		}finally{
+			if(conn!=null){
+				conn.close();
+			}
+		}//
 	}
 }

@@ -1522,13 +1522,10 @@ public class DataEditService {
 		try{
 			//获取代理店数据库连接
 			conn=DBConnector.getInstance().getDealershipConnection();
-			Map<Integer,IxDealershipResult> ixDealershipResultMap = IxDealershipResultSelector.getByResultIds(conn, JSONArray.toCollection(resultIds));
-			for(IxDealershipResult ixDealershipResult:ixDealershipResultMap.values()){
-				ixDealershipResult.setCfmStatus(3);
-				ixDealershipResult.setWorkflowStatus(9);
-				ixDealershipResult.setDealStatus(3);
-				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
-			}
+			List<Integer> resultIdList = (List<Integer>) JSONArray.toCollection(resultIds);
+			IxDealershipResultSelector.updateResultStatusWhenCloseWork(resultIdList, conn);//当关闭作业时更新result相应的状态
+
+			batchInsertDealershipHistory(3,9,resultIdList,userId);//批量插入履历
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1538,5 +1535,46 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
+	}
+	
+	/**
+	 * 批量生成代理店履历
+	 * @param conn
+	 * @param operRate 1新增2	删除3	修改
+	 * @param newValue 新值
+	 * @param resultIdList
+	 * @throws Exception 
+	 */
+	private void batchInsertDealershipHistory(int operRate,int newValue, List<Integer> resultIdList,long userId) throws Exception {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getDealershipConnection();
+			
+			Date nowTime = new Date(System.currentTimeMillis());
+			String u_date = DateUtils.formatDate(nowTime);
+			String sql = "insert into IX_DEALERSHIP_HISTORY  t (t.history_id,t.result_id,t.field_name,t.u_record,t.old_value,t.new_value,t.u_date,t.user_id) "
+					+ "VALUES (HISTORY_SEQ.NEXTVAL,?,'workflow_status',?,?,?,'"+u_date+"',?)";
+			
+			Object[][] param = new Object[resultIdList.size()][];
+
+			for (int i = 0; i < resultIdList.size(); i++) {
+				Integer resultId = resultIdList.get(i);
+				int oldWorkflowValue= getWorkflowStatus(resultId, conn);
+				Object[] obj = new Object[] {resultId,operRate,oldWorkflowValue,newValue,userId};
+				param[i] = obj;
+			}
+
+			if (param.length!=0) {
+				run.batch(conn, sql, param);
+				log.info("批量插入代理店履历成功！");
+			}
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -123,6 +123,7 @@ public class FMBAT20188 extends BasicBatchRule {
 			Long parentPid = childPidParentPid.get(poi.getPid());
 			
 			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (!parentPoi.getKindCode().equals("230218") || parentPoi.getHisOpType().equals(OperationType.DELETE)) {
@@ -159,6 +160,7 @@ public class FMBAT20188 extends BasicBatchRule {
 			
 			for (Long childPid:childrenList) {
 				BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoiObj child = (IxPoiObj) childObj;
 				IxPoi childPoi = (IxPoi)  child.getMainrow();
 				batchChildOpenType(child, childPoi, serviceProv);

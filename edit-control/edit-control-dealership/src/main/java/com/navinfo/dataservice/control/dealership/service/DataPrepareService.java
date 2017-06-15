@@ -953,7 +953,9 @@ public class DataPrepareService {
 					Connection regionConn = null;
 					try {
 						int regionId = getRegionId(result.getResultId(), conn);
-						regionConn = DBConnector.getInstance().getConnectionById(regionId);
+						Connection mancon = DBConnector.getInstance().getManConnection();
+						int dbId = getDailyDbId(regionId, mancon);
+						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int pid = IxDealershipResultSelector.setRegionFiledByPoiNum(result,regionConn);//根据poiNum赋值日库中对应POI相关的字段
 						if(pid!=0){
 							IxDealershipResultSelector.setPoiStandrandNameByPid(result,regionConn);
@@ -1132,6 +1134,33 @@ public class DataPrepareService {
 			return run.query(conn, sql, rs);
 		}catch(Exception e){
 			log.error(e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * 获取dailyDbId
+	 * @throws Exception 
+	 * @author songhe
+	 * 
+	 * */
+	public int getDailyDbId(int regionId, Connection mancon) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.daily_db_id from REGION t where t.region_id =" + regionId;
+			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						int dailyDbId = rs.getInt("daily_db_id");
+						return dailyDbId;
+					}
+					return -1;
+				}
+			};
+			
+			return run.query(mancon, sql, rs);
+		}catch(Exception e){
 			throw e;
 		}
 	}

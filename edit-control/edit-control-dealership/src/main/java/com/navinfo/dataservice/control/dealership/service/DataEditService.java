@@ -1283,6 +1283,8 @@ public class DataEditService {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
+			System.out.println(sql);
+			System.out.println(dealershipInfo.getInt("cfmIsAdopted"));
 			pstmt = conn.prepareStatement(sql);
 			if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
 				pstmt.setString(1,dealershipInfo.getString("cfmMemo"));
@@ -1306,7 +1308,7 @@ public class DataEditService {
 				pstmt.setString(15,wkt);
 				pstmt.setInt(16, dealershipInfo.getInt("resultId"));
 			}
-			  pstmt.execute();
+			  pstmt.executeUpdate();
 		}catch(Exception e){
 			throw new Exception(e.getMessage(),e);
 		} finally {

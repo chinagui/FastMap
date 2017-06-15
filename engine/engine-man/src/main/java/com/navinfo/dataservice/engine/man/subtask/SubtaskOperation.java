@@ -1263,9 +1263,9 @@ public class SubtaskOperation {
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
-				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
+//				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));
-				stat.put("tipsTotal", tips);	
+				stat.put("tipsTotal", resultRoad.getInt("total"));
 				/*if(0 != tips){
 					percentRoad = resultRoad.getInt("finished")*100/tips;
 				}else{

@@ -1,19 +1,16 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
-/**
- * Created by chaixin on 2017/1/9 0009.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class GLM33004 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -27,9 +24,11 @@ public class GLM33004 extends baseRule {
                 for (IRow via : vias) {
                     viaPids.add(((RdVariableSpeedVia) via).getLinkPid());
                 }
-                String sql = "SELECT 1 FROM RD_VARIABLE_SPEED_VIA RVSV WHERE RVSV.LINK_PID IN (" +
-                        StringUtils.getInteStr(viaPids) + ") AND RVSV.U_RECORD != 2";
-                DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+                String sql = "SELECT RVSV.VSPEED_PID FROM RD_VARIABLE_SPEED_VIA RVSV WHERE RVSV.LINK_PID IN (" +
+                        StringUtils.getInteStr(viaPids) + ") AND RVSV.U_RECORD <> 2 UNION ALL SELECT 1 FROM RD_VARIABLE_SPEED " +
+                        "RVS WHERE RVS.OUT_LINK_PID = " + speed.getOutLinkPid() + "AND RVS.U_RECORD <> 2";
+
+                DatabaseOperator getObj = new DatabaseOperator();
                 List<Object> resultList = getObj.exeSelect(getConn(), sql);
                 if (!resultList.isEmpty())
                     setCheckResult("", "", 0);

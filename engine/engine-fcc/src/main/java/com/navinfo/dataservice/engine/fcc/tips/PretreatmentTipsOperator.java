@@ -1102,6 +1102,11 @@ System.out.println(sGeojson2);
             JSONObject source = jsonInfo.getJSONObject("source");
             String sourceType = source.getString("s_sourceType");
 
+            if(StringUtils.isEmpty(sourceType)) {
+                logger.error("新增tips出错：原因：sourceType为空");
+                throw new Exception("新增tips出错：原因：sourceType为空");
+            }
+
             if(sourceType.equals("1205") || sourceType.equals("1206")
                     || sourceType.equals("1211")) {//新增或者修改
                 JSONObject deepJson = jsonInfo.getJSONObject("deep");
@@ -1505,27 +1510,29 @@ System.out.println(sGeojson2);
 		
 		List<JSONObject> resultArr = breakLine2(rowkey, pointGeo, user);
 		
-		JSONObject line1=resultArr.get(0);
+		JSONObject line1 = resultArr.get(0);
 		
-		JSONObject line2=resultArr.get(1);
+		JSONObject line2 = resultArr.get(1);
 		
 		logger.debug("打断后line1:"+line1.getString("id"));
 		
 		logger.debug("打断后line2:"+line2.getString("id"));
 		
 		// 第二步：更新测线关联的tips
-		TipsSelector selector = new TipsSelector();
-		JSONArray souceTypes = new JSONArray();
+//		TipsSelector selector = new TipsSelector();
+//		JSONArray souceTypes = new JSONArray();
 
-		// 查询tips
-		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
-				souceTypes, subTaskId, jobType);
-		
+		// 查询关联Tips
+		//20170615 查询和原测线关联的所有Tips
+        String query = "relate_links:*|" + line1.getString("id") + "|*";
+//		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
+//				souceTypes, subTaskId, jobType);
+        List<JSONObject> snapotList = solr.queryTips(query, null);
 		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
 		for (JSONObject json : snapotList) {
 
-			JSONObject result=updateRelateMeasuringLine(json, line1, line2);
+			JSONObject result = updateRelateMeasuringLine(json, line1, line2);
 			
 			if(result!=null){
 				
@@ -1547,14 +1554,65 @@ System.out.println(sGeojson2);
 	 */
 	private void saveUpdateData(JSONArray updateArray, int user) throws Exception {
 		try {
-			batchSaveOrUpdate(updateArray, user, COMMAND_UPADATE);
+			batchUpdateRelateTips(updateArray);
 		} catch (Exception e) {
 		logger.error("测线打断，批量修改出错，"+e.getMessage());
 		throw new Exception("测线打断，批量修改出错，"+e.getMessage(), e);
 		}
 	}
 
-	/**
+    public void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
+
+        Connection hbaseConn;
+
+        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+
+        try {
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            Table htab = hbaseConn.getTable(TableName
+                    .valueOf(HBaseConstant.tipTab));
+//            String date = StringUtils.getCurrentTime();
+
+            List<Put> puts = new ArrayList<Put>();
+            for (Object jsonInfo : jsonInfoArr) {
+
+                JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
+
+                String rowkey = tipsInfo.getString("id");
+                //更新hbase
+                Put put = new Put(rowkey.getBytes());
+                JSONObject deep = tipsInfo.getJSONObject("deep");
+                put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString()
+                        .getBytes());
+                puts.add(put);
+
+                //更新solr
+                JSONObject solrIndex = solr.getById(rowkey);
+                solrIndex.put("deep", deep);
+                String sourceType = tipsInfo.getString("s_sourceType");
+                Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
+                solrIndex.put("relate_links", relateMap.get("relate_links"));
+                solr.addTips(solrIndex);
+
+                //需要进行tips差分
+                allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
+            }
+
+            htab.put(puts);
+
+            htab.close();
+
+            TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+
+        } catch (Exception e) {
+            logger.error("批量新增tips出错：" + e.getMessage(), e);
+            throw new Exception("批量新增tips出错：" + e.getMessage(), e);
+        }
+
+    }
+
+
+    /**
 	 * @Description:测线打断:返回打断后的两条tips sorl信息
 	 * @param rowkey
 	 * @param pointGeo
@@ -1689,6 +1747,10 @@ System.out.println(sGeojson2);
 			deep1.put("len", len1);
 			
 			deep2.put("len", len2);
+
+            //更新新deep.id
+            // ROWKEY 维护7种要素id 测线在内
+            deep2.put("id", newRowkey.substring(6, newRowkey.length()));
 			
 			solrIndex.put("deep", deep1.toString());
 

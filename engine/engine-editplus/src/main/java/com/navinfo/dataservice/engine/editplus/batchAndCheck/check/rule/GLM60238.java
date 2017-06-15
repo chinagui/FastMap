@@ -30,7 +30,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * 检查原则：
  * 1、如果原始官方中文名称、地址（fullname）、显示坐标不完全相同(5米范围外)，报LOG：制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同！
  * 屏蔽：分类分别为加油站（230215）和加气站（230216），名称不相同，地址、显示坐标相同，不需要报log
- * 2、制作了此类型的同一关系(满足检查条件)，但是分类+CHAIN相同，报LOG：制作多类别同属性同一关系的POI种别必须不相同！
+ * 2、制作了此类型的同一关系(满足检查条件)，但是分类，报LOG：制作多类别同属性同一关系的POI种别必须不相同！
  */
 public class GLM60238 extends BasicCheckRule {
 	
@@ -42,7 +42,6 @@ public class GLM60238 extends BasicCheckRule {
 			if(poi.getRelationType()!=1){return;}
 			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
 			Set<String> kindSet=new HashSet<String>();
-			String chain=null;
 			Geometry geo=null;
 			String address=null;
 			String name=null;
@@ -56,7 +55,6 @@ public class GLM60238 extends BasicCheckRule {
 				String partKind=partPoi.getKindCode();
 				if(first){
 					pid=partPoi.getPid();
-					chain=partPoi.getChain();
 					geo=partPoi.getGeometry();					
 					kindSet.add(partKind);
 					IxPoiAddress ixPoiAddressP = partPoiObj.getCHAddress();
@@ -97,8 +95,7 @@ public class GLM60238 extends BasicCheckRule {
 					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
 				}
 				
-				String chainP = partPoi.getChain();
-				if(StringUtils.equals(chain, chainP)&&kindSet.contains(partPoi.getKindCode())){
+				if(kindSet.contains(partPoi.getKindCode())){
 					String targets = "[IX_POI,"+pid+"];[IX_POI,"+partPoiObj.objPid()+"]";
 					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(),  "制作多类别同属性同一关系的POI种别必须不相同");
 				}

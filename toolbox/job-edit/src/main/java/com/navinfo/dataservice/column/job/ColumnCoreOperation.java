@@ -86,11 +86,6 @@ public class ColumnCoreOperation {
 				checkResultList.retainAll(classifyRules);
 				if (checkResultList.size()>0) {
 					insertWorkItem(checkResultList, conn, pid, userId, taskId,existQcFlag,existComHandler);
-					//质检保存、常规提交、质检提交时，isInitQcProblem为true,对重分类后的数据需要初始化problem表。
-					//常规保存时重分类的qc_flag=1的数据，不需要初始化问题表，等常规提交的时候再初始化
-					if(isInitQcProblem){
-						insertColumnQcProblems(qcPidList,conn,taskId,firstWorkItem,secondWorkItem,userId,true);
-					}
 				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
@@ -100,7 +95,7 @@ public class ColumnCoreOperation {
 			
 			//质检保存、常规提交、质检提交时，isInitQcProblem为true,对重分类后的数据需要初始化problem表。
 			//常规保存时重分类的qc_flag=1的数据，不需要初始化问题表，等常规提交的时候再初始化
-			if(isInitQcProblem){
+			if(isInitQcProblem&&qcPidList!=null&&qcPidList.size()>0){
 				Map<Integer,JSONArray> workItemInfo = getWorkItemInfo(qcPidList,userId,conn,taskId,isQuality);
 				for(int pid:workItemInfo.keySet()){
 					Iterator <JSONObject> it = workItemInfo.get(pid).iterator();
@@ -192,7 +187,7 @@ public class ColumnCoreOperation {
 		sb.append("                  MERGE INTO");
 		sb.append("                  COLUMN_QC_PROBLEM");
 		sb.append("                  T");
-		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID,0 IS_PROBLEM,");
+		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID,'' IS_PROBLEM,");
 		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
 		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
 		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
@@ -264,27 +259,26 @@ public class ColumnCoreOperation {
 		sb.append("                     AND WK.PID = ORNM.POI_PID(+)");
 		sb.append("                     AND WK.PID = ORADR.POI_PID(+)) TP");
 		sb.append("                  ON (T.PID=TP.pid AND T.SUBTASK_ID ="+comSubTaskId+" AND T.SECOND_WORK_ITEM = '"+secondWorkItem+"'  AND T.IS_VALID = 0  )");
+		//常规提交初始化时，若已存在，则更新为空；质检重分类初始化时，若已存在且该数据的作业状态是待作业，则赋值为空(后面专门更新)，若已存在且该数据的作业状态是待提交，则保留原值
 		if(!isClassify){
 			sb.append("                  WHEN MATCHED THEN");
-			sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.OLDVALUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE='',T.work_item_id=TP.WORK_ITEM_ID");
+			sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.OLDVALUE,T.worker="+userId+",T.NEW_VALUE='',T.work_item_id=TP.WORK_ITEM_ID");
 		}
 		sb.append("                  WHEN NOT MATCHED THEN ");
 		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
-				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:2,0,"+userId+",TP.ORNAME)");
+				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:1,0,"+userId+",TP.ORNAME)");
 		
 		
 		PreparedStatement pstmt = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			if(!isClassify){
-				pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
-				pstmt.setTimestamp(2, new Timestamp(new Date().getTime()));
-			}else{
-				pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
-			}
+
+			pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
 			log.info(sb.toString());
 			pstmt.executeUpdate();
+			//若已存在且该数据的作业状态是待作业，则赋值为空
+			updateProblemStatus(pidList,conn);
 			
 		} catch (Exception e) {
 			throw e;
@@ -292,6 +286,49 @@ public class ColumnCoreOperation {
 
 		}
 	}
+	
+	/**
+	 * 从poi_column_status表删除作业标记信息
+	 * 
+	 * @param classifyRules
+	 * @param conn
+	 * @param pid
+	 * @throws Exception
+	 */
+	public void updateProblemStatus(List<Integer> pidList, Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("MERGE INTO COLUMN_QC_PROBLEM T ");
+		sb.append(" USING (SELECT CP.ID ");
+		sb.append("          FROM POI_COLUMN_STATUS        PS, ");
+		sb.append("               POI_COLUMN_WORKITEM_CONF PC, ");
+		sb.append("               COLUMN_QC_PROBLEM        CP ");
+		sb.append("         WHERE PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
+		sb.append("           AND CP.PID = PS.PID ");
+		sb.append("           AND CP.IS_VALID = 0 ");
+		sb.append("           AND CP.IS_PROBLEM IS NOT NULL ");
+		sb.append("           AND PC.CHECK_FLAG IN (1, 3) ");
+		sb.append("           AND PS.SECOND_WORK_STATUS = 1 ");
+		sb.append("           AND PC.FIRST_WORK_ITEM = CP.FIRST_WORK_ITEM ");
+		sb.append("           AND PC.SECOND_WORK_ITEM = CP.SECOND_WORK_ITEM ");
+		sb.append("           AND CP.PID IN ("+StringUtils.join(pidList, ",")+")) TP ");
+		sb.append(" ON (T.ID = TP.ID AND T.IS_VALID = 0) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append("   UPDATE SET T.IS_PROBLEM = '' ");
+
+		PreparedStatement pstmt = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			log.info(sb.toString());
+			pstmt.executeUpdate();
+
+		} catch (SQLException e) {
+			log.error(e.getMessage(), e);
+			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
+		}
+
+	}
+	
 	/**
 	 * 从poi_column_status表删除作业标记信息
 	 * 
@@ -335,6 +372,7 @@ public class ColumnCoreOperation {
 	 */
 	public Map<Integer,JSONObject> getColumnDataQcFlag(List<Integer> pidList,int userId,Connection conn,int comSubTaskId,int isQuality) throws Exception {
 		Map<Integer,JSONObject> result = new HashMap<Integer,JSONObject>();
+		if(pidList==null||pidList.size()==0){return result;}
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		StringBuilder sql = new StringBuilder();

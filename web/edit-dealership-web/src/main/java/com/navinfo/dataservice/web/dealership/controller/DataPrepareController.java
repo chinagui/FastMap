@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +27,11 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.excelModel.exportWorkResultEntity;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -262,49 +266,47 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/exportToClient")
-	public void exportToClient(HttpServletRequest request,HttpServletResponse response) {
+	//作业成果导出
+	@RequestMapping(value = "/exportWorkResult")
+	public void exportWorkResult(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			String chainCode = dataJson.getString("chainCode");
+			JSONArray chains = dataJson.getJSONArray("chains");
+			if(chains.size() < 1){
+				throw new Exception("chainCode参数不能为空。");
+			}
+			Map<String, Object> resultMap = dealerShipService.exportWorkResulttList(chains);
+			if(resultMap == null){
+				throw new Exception("对应chain查询结果为空");
+			}
 			
-			List<ExpClientConfirmResult> clientConfirmResultList = dealerShipService.expClientConfirmResultList(chainCode);//得到客户确认-待发布中品牌数据
-
-			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
-			
-			String excelName = "客户确认-待发布列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String excelName = resultMap.get("excelName").toString();
+			String [] excelTitle = (String[]) resultMap.get("title");
+			List<exportWorkResultEntity> exportWorkResultList = (List<exportWorkResultEntity>) resultMap.get("exportWorkResultList");
+			ExportExcel<exportWorkResultEntity> ex = new ExportExcel<exportWorkResultEntity>();  
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
-	        
-			String[] headers =  
-		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
-		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
-		        		"厂商提供英文地址", "库中PID","FID","库中POI名称","库中POI别名","库中分类","库中CHAIN","库中POI地址",
-		        		"库中电话","库中邮编","与库差分结果","新旧一览表差分结果","四维确认备注","反馈人ID","负责人反馈结果","审核意见","反馈时间"};  
 			
 			try  
 	        {  
 	            OutputStream out = response.getOutputStream();  
-	            		//new FileOutputStream("f://a.xls");  
-	            ex.exportExcel("客户确认-待发布列表", headers, clientConfirmResultList, out, "yyyy-MM-dd");
-//	            exportExcel(headers, dealerBrandList, out);  
+//	            OutputStream out = new FileOutputStream("f://testWork.xls");  
+	            ex.exportExcel(excelName, excelTitle, exportWorkResultList, out, "yyyy-MM-dd");
 	            out.close();  
-	            logger.error("excel导出成功！");  
+	            logger.error("作业成果导出列表excel导出成功！");  
 	        } catch (FileNotFoundException e) {  
-	            e.printStackTrace();  
 	            logger.error(e.getMessage());
+	            throw e;
 	        } catch (IOException e) {  
-	            e.printStackTrace();  
 	            logger.error(e.getMessage());
+	            throw e;
 	        } 
-			//return new ModelAndView("jsonView", success("excel导出成功！"));
 		} catch (Exception e) {
-			logger.error("查询失败，原因：" + e.getMessage(), e);
-			//return new ModelAndView("jsonView", exception(e));
+			logger.error("导出失败，原因：" + e.getMessage(), e);
 		}
 	}
 }

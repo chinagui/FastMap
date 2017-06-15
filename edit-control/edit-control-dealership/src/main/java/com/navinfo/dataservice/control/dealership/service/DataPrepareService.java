@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,15 +32,18 @@ import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
+import com.navinfo.dataservice.control.dealership.service.excelModel.exportWorkResultEntity;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -61,6 +65,8 @@ public class DataPrepareService {
 	public static DataPrepareService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
+	
+	private int exceId = 1;
 	
 	/**
 	 * 查询代理店品牌
@@ -1009,4 +1015,127 @@ public class DataPrepareService {
 		}
 	}
 	
+	
+	/**
+	 * 作业成果导出导出
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException
+	 */
+	public Map<String, Object> exportWorkResulttList(JSONArray chains) throws Exception{
+		
+		Connection conn = null;
+		try{
+			//获取代理店库连接
+			conn = DBConnector.getInstance().getDealershipConnection();
+			Map<String, Object> resultMap = new HashMap(550);
+			//处理excel表格内的第一行表头和excel文件名
+			editExcelforWorkResult(resultMap);
+			List<exportWorkResultEntity> exportWorkResultList = new ArrayList(500);
+			String chainCode = "";
+			for(int i = 0; i < chains.size(); i++){
+				chainCode += "'"+chains.get(i).toString()+"',";
+			}
+			chainCode = chainCode.substring(0, chainCode.length()-1);
+			if(StringUtils.isNotBlank(chainCode)){
+				exportWorkResultList = exportWorkResultList(chainCode,conn);
+			}
+			resultMap.put("exportWorkResultList", exportWorkResultList);
+			
+			return resultMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+			
+	}
+	
+	/**
+	 * 作业成果导出结果的excel内容
+	 * @param 
+	 * @return
+	 */
+	public void editExcelforWorkResult(Map<String, Object> resultMap){
+		String[] excelHead =  
+	        { "序号","一览表ID", "IDCODE", "品牌", "分类", "CHAIN", "省/直辖市", "市", "县/区", "厂商提供名称" ,
+	        		"四维录入名称", "厂商提供英文名称", "四维录入英文全称", "四维录入英文简称" , "厂商提供地址",
+	        		"四维录入地址", "厂商提供英文地址","四维录入英文地址","厂商提供电话","四维录入电话","厂商提供邮编","四维录入CHAIN","四维录入邮编",
+	        		"厂商提供别名","四维录入别名","四维录入别名原始英文","四维录入别名标准化英文","是否删除记录","项目","反馈人ID","负责人反馈结果","审核意见",
+	        		"反馈时间","一览表确认时间","备注"};  
+		
+		resultMap.put("title", excelHead);
+		resultMap.put("excelName", "作业成果导出列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+	}
+	
+	/**
+	 * 根据chainCode获取对应实体内容
+	 * @param 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<exportWorkResultEntity> exportWorkResultList(String chainCode, Connection conn) throws Exception{
+
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select rownum,s.source_id,s.cfm_poi_num,c.chain_name,s.kind_code,s.chain,"
+					+ "s.province,s.city,s.name,s.poi_name,s.name_eng,s.address,s.poi_address,"
+					+ "s.address_eng,s.tel_sale,s.tel_service,s.tel_other,s.poi_tel,s.post_code,"
+					+ "s.poi_chain,s.poi_post_code,s.poi_name_short,s.name_short,s.is_deleted,s.project,"
+					+ "s.fb_content,s.fb_audit_remark,s.fb_date,s.deal_cfm_date,s.cfm_memo "
+					+ "from IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_RESULT r,IX_DEALERSHIP_CHAIN c where r.chain in("+chainCode+") and s.source_id = r.source_id and r.chain = c.chain_code";
+			ResultSetHandler<List<exportWorkResultEntity>> rs = new ResultSetHandler<List<exportWorkResultEntity>>() {
+				@Override
+				public List<exportWorkResultEntity> handle(ResultSet rs) throws SQLException {
+					List<exportWorkResultEntity> excelBodyList = new ArrayList();
+					while(rs.next()){
+						exportWorkResultEntity entity = new exportWorkResultEntity();
+						entity.setId(rs.getInt("rownum"));
+						entity.setSourceId(rs.getInt("source_id"));
+						entity.setCfmPoiNum(rs.getString("cfm_poi_num"));
+						entity.setChainName(rs.getString("chain_name"));
+						entity.setKindCode(rs.getString("kind_code"));
+						entity.setChain(rs.getString("chain"));
+						entity.setProvince(rs.getString("province"));
+						entity.setCity(rs.getString("city"));
+						entity.setBlock("");
+						entity.setName(rs.getString("name"));
+						entity.setPoiName(rs.getString("poi_name"));
+						entity.setEnglishName(rs.getString("name_eng"));
+						entity.setNavEnglishName("");
+						entity.setNavEnglishShortName("");
+						entity.setAddress(rs.getString("address"));
+						entity.setPoiAddress(rs.getString("poi_address"));
+						entity.setAddressEnglish(rs.getString("address_eng"));
+						entity.setNavAddressEnglish("");
+						entity.setVenderTel(rs.getString("tel_sale"), rs.getString("tel_service"), rs.getString("tel_other"));
+						entity.setPoiTel(rs.getString("tel_other"));
+						entity.setPostCode(rs.getString("post_code"));
+						entity.setPoiChain(rs.getString("poi_chain"));
+						entity.setPoiPostCode(rs.getString("poi_post_code"));
+						entity.setPoiNameShort(rs.getString("poi_name_short"));
+						entity.setNavStantardEngName("");
+						entity.setNavOtherEngName("");
+						entity.setShortName(rs.getString("name_short"));
+						entity.setIsDeleted(rs.getInt("is_deleted"));
+						entity.setProject(rs.getString("project"));
+						entity.setPersonId("");
+						entity.setFbContnt(rs.getString("fb_content"));
+						entity.setAuditRemark(rs.getString("fb_audit_remark"));
+						entity.setFbDate(rs.getString("fb_date"));
+						entity.setDealCfmDate(rs.getString("deal_cfm_date"));
+						entity.setCfmMemo(rs.getString("cfm_memo"));
+						
+						excelBodyList.add(entity);
+					}
+					return excelBodyList;
+				}
+			};
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
+		}
+	}
 }

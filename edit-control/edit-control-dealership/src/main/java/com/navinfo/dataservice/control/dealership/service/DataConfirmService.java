@@ -141,10 +141,10 @@ public class DataConfirmService {
 			int chainWeight = run.queryForInt(conn, sql);
 			switch (chainWeight) {
 			case 0:
-				expInfo.setInfoLevel("1级情报");
+				expInfo.setInfoLevel("1");
 				break;
 			case 1:
-				expInfo.setInfoLevel("2级情报");
+				expInfo.setInfoLevel("2");
 				break;
 			}
 

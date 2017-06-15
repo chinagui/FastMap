@@ -1665,4 +1665,80 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 补充增量数据
+	 * @param request
+	 * @param userId
+	 * @throws Exception 
+	 */
+	//TODO 
+	public void addChainData(HttpServletRequest request, long userId) throws Exception {
+		//excel文件上传到服务器		
+//		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+//					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+		String filePath = "D:\\";
+		log.info("补充增量数据的文件由本地上传到服务器指定位置"+filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile = returnParam.getString("filePath");
+		log.info("文件已上传至"+localFile);
+		//导入补充增量数据excel
+		List<Map<String, Object>> addDataMaps = impAddDataExcel(localFile);
+		//这里校验数据
+		checkImpAddData(addDataMaps);
+		//数据持久化
+		//
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+			//导入到oracle库中
+			for(Map<String, Object> map : addDataMaps){
+				IxDealershipResult ixDealershipResult = new IxDealershipResult();
+				ixDealershipResult.setResultId(Integer.parseInt(map.get("resultId").toString()));
+				ixDealershipResult.setFbAuditRemark(map.get("fbAuditRemark").toString());
+				ixDealershipResult.setFbContent(map.get("fbContent").toString());
+				ixDealershipResult.setFbDate(map.get("fbDate").toString());
+				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
+				if(map.get("fbAuditRemark").toString().equals("舍弃")){
+					ixDealershipResult.setWorkflowStatus(3);
+				}else{
+					ixDealershipResult.setWorkflowStatus(9);
+					ixDealershipResult.setDealStatus(3);
+				}
+				ixDealershipResult.setCfmStatus(3);
+				ixDealershipResult.setFbSource(2);
+				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
+			}
+			log.info("补充增量数据完成");
+		}catch(Exception e){
+			log.error(e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param 增量数据upFile
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impAddDataExcel(String upFile) throws Exception {
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excel = new HashMap<String,String>();
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excel);
+		log.info("导入补充增量数据完成"+upFile);
+		return sources;
+	}
+	
+	/**
+	 * @param 增量数据内容校验
+	 * @return
+	 * @throws Exception 
+	 */
+	public void checkImpAddData(List<Map<String, Object>> addDataMaps) throws Exception{
+		
+	}
 }

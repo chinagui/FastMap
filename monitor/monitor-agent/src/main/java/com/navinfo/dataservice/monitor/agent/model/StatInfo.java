@@ -2,7 +2,7 @@ package com.navinfo.dataservice.monitor.agent.model;
 
 import java.io.Serializable;
 
-public class Monitor implements Serializable {
+public class StatInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	

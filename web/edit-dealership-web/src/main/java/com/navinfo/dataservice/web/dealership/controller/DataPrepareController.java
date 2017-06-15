@@ -359,4 +359,51 @@ public class DataPrepareController extends BaseController {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 		}
 	}
+	
+
+	@RequestMapping(value = "/exportToClient")
+	public void exportToClient(HttpServletRequest request,HttpServletResponse response) {
+		response.setContentType("octets/stream");
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			
+			List<ExpClientConfirmResult> clientConfirmResultList = dealerShipService.expClientConfirmResultList(chainCode);//得到客户确认-待发布中品牌数据
+
+			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
+			
+			String excelName = "客户确认-待发布列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			//转码防止乱码  
+	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
+	        
+			String[] headers =  
+		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+		        		"厂商提供英文地址", "库中PID","FID","库中POI名称","库中POI别名","库中分类","库中CHAIN","库中POI地址",
+		        		"库中电话","库中邮编","与库差分结果","新旧一览表差分结果","四维确认备注","反馈人ID","负责人反馈结果","审核意见","反馈时间"};  
+			
+			try  
+	        {  
+	            OutputStream out = response.getOutputStream();  
+	            		//new FileOutputStream("f://a.xls");  
+	            ex.exportExcel("客户确认-待发布列表", headers, clientConfirmResultList, out, "yyyy-MM-dd");
+//	            exportExcel(headers, dealerBrandList, out);  
+	            out.close();  
+	            logger.error("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } 
+			//return new ModelAndView("jsonView", success("excel导出成功！"));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			//return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

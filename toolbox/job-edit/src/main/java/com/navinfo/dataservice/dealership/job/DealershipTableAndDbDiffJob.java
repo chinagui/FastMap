@@ -127,8 +127,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : delDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
@@ -145,8 +144,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : updateDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
@@ -174,8 +172,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : nochangeDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
@@ -219,8 +216,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : addDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				// GEOCODING 补充

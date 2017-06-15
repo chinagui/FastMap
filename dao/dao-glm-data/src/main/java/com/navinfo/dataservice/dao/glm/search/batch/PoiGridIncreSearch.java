@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
@@ -175,11 +176,17 @@ public class PoiGridIncreSearch {
 			}
 		}else{
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, date);
+
 			//load 
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
 				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status),conn);
 				if(result!=null) pois.putAll(result);
+			}
+			//修正状态为作业季的新增删除修改状态
+			Map<Long,Integer> ps = logReader.getObjectState(pois.keySet(),"IX_POI");
+			for(Entry<Long, IxPoi> entry:pois.entrySet()){
+				entry.getValue().setuRecord(ps.get(entry.getKey()));
 			}
 		}
 		return pois;
@@ -255,9 +262,9 @@ public class PoiGridIncreSearch {
 	 */
 	private Map<Long,IxPoi> loadIxPoi(int status,Collection<Long> pois,Connection conn)throws Exception{
 		
-		if (status == 2) {
-			return new HashMap<Long,IxPoi>();
-		}
+//		if (status == 2) {
+//			return new HashMap<Long,IxPoi>();
+//		}
 		
 		Clob pidClod = null;
 		Map<Long,IxPoi> poisMap = new HashMap<Long,IxPoi>();

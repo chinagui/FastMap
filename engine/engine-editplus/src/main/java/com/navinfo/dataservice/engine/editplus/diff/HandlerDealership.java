@@ -362,11 +362,15 @@ return obj;
 		}
 		Connection regionConn = (Connection) dbConMap.get(dealership.getRegionId());
 		BasicObj obj = queryPoiByPid(dealership, regionConn);
-		IxPoi p = (IxPoi) obj.getMainrow();
-		IxPoiObj poiObj = (IxPoiObj) obj;
+		
 		
 		if(dealership.getWorkflowStatus()==1 || dealership.getWorkflowStatus()==2){
 			dealership.setDealCfmDate(DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT));
+			
+			if (obj!=null)
+			{
+			IxPoi p = (IxPoi) obj.getMainrow();
+			IxPoiObj poiObj = (IxPoiObj) obj;
 			
 			IxPoiName poiName = poiObj.getOfficeStandardCHName();
 			IxPoiName poiAliasName = poiObj.getAliasCHITypeName();
@@ -394,9 +398,14 @@ return obj;
 			JSONArray array =GeoTranslator.jts2JSONArray(p.getGeometry());
 			dealership.setPoiXDisplay(array.getDouble(0));
 			dealership.setPoiXDisplay(array.getDouble(1));
-
-		}	
+			}
+		}
+		if (obj!=null)
+		{
+		IxPoi p = (IxPoi) obj.getMainrow();
 		updateResultGeo(dealership,p);
+		}
+		
         return dealership;
 
 	}

@@ -79,7 +79,7 @@ public class PoiRecommender {
 		fp.setX(array.getDouble(0));
 		fp.setY(array.getDouble(1));
 		if(poiAddr==null || poiAddr.getAddrname()==null){fp.setAddr("");}
-		if(poiName.getName()==null){fp.setName("");}
+		if(poiName==null ||poiName.getName()==null){fp.setName("");}
 		
 		StringBuffer sb = new StringBuffer();
 		String telephone = "";

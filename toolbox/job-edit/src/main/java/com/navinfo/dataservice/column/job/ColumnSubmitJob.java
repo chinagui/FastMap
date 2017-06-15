@@ -264,6 +264,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				List<Integer> pidList = new ArrayList<Integer>();
 				pidList.addAll(qcPidList);
 				pidList.addAll(allPidList);
+				log.info("查询进行重分类的数据:"+pidList);
 				// 重分类
 				if (columnOpConf.getSubmitExeclassify()==1&&pidList!=null&pidList.size()>0) {
 					log.info("执行重分类");

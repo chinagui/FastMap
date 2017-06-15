@@ -1023,7 +1023,6 @@ public class DataPrepareService {
 	 * @throws SQLException
 	 */
 	public Map<String, Object> exportWorkResulttList(JSONArray chains) throws Exception{
-		
 		Connection conn = null;
 		try{
 			//获取代理店库连接

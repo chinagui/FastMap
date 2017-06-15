@@ -291,21 +291,19 @@ public class DataPrepareController extends BaseController {
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
 			
-			try  
-	        {  
+			try{  
 	            OutputStream out = response.getOutputStream();  
-//	            OutputStream out = new FileOutputStream("f://testWork.xls");  
 	            ex.exportExcel(excelName, excelTitle, exportWorkResultList, out, "yyyy-MM-dd");
 	            out.close();  
 	            logger.error("作业成果导出列表excel导出成功！");  
-	        } catch (FileNotFoundException e) {  
+	        }catch(FileNotFoundException e) {  
 	            logger.error(e.getMessage());
 	            throw e;
-	        } catch (IOException e) {  
+	        }catch(IOException e) {  
 	            logger.error(e.getMessage());
 	            throw e;
 	        } 
-		} catch (Exception e) {
+		}catch(Exception e){
 			logger.error("导出失败，原因：" + e.getMessage(), e);
 		}
 	}

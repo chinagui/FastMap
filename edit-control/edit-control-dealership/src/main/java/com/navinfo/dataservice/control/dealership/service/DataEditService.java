@@ -1164,9 +1164,8 @@ public class DataEditService {
         
 		try{
             JSONObject dealershipInfo = JSONObject.fromObject(parameter.getString("dealershipInfo"));
-            int wkfStatus= dealershipInfo.getInt("wkfStatus");
+            int wkfStatus= dealershipInfo.getInt("workflowStatus");
             int resultId = dealershipInfo.getInt("resultId");
-            String cfmMemo = dealershipInfo.getString("cfmMemo");
             dealershipConn = DBConnector.getInstance().getDealershipConnection();
 			
           //审核意见为内业录入
@@ -1217,7 +1216,7 @@ public class DataEditService {
 				//check.operate(checkCommand);
     			
     			//更新IX_DEALERSHIP_RESULT.deal_status＝2及cfm_Memo
-    			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
+    			updateResultDealStatus(dealershipConn,dealershipInfo);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
@@ -1226,14 +1225,14 @@ public class DataEditService {
             //审核意见为转外业、转客户
             if(wkfStatus==4||wkfStatus==5){
             	//更新IX_DEALERSHIP_RESULT.cfm_Memo
-            	updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
+            	updateResultDealStatus(dealershipConn,dealershipInfo);
     			//更新IX_DEALERSHIP_RESULT.workflow_status=4|5，且写履历
             	updateResultWkfStatus(wkfStatus,resultId,dealershipConn,userId);
             }
             //不代理
         	if(wkfStatus==6){
         		//更新IX_DEALERSHIP_RESULT.deal_status＝2及cfm_Memo
-    			updateResultDealStatus(wkfStatus,resultId,cfmMemo,dealershipConn);
+    			updateResultDealStatus(dealershipConn,dealershipInfo);
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=9，且写履历
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
@@ -1273,16 +1272,49 @@ public class DataEditService {
 		return false;
 	}
 	
-	public void updateResultDealStatus(int wkfStatus,int resultId,String cfmMemo,Connection conn) throws Exception {
+	public void updateResultDealStatus(Connection conn,JSONObject dealershipInfo) throws Exception {
 		QueryRunner run = new QueryRunner();
 		String sql="";
-		if(wkfStatus==4||wkfStatus==5){
-			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo='%s' WHERE r.RESULT_ID=%d ",cfmMemo,resultId);
+		if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
+			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1 WHERE r.RESULT_ID=:2 ";
 		}else{
-			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,R.cfm_Memo='%s' WHERE r.RESULT_ID=%d ",cfmMemo,resultId);
+			sql="UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,r.cfm_Memo=:1,r.cfm_poi_num=:2,r.CFM_IS_ADOPTED=:3,r.POI_KIND_CODE=:4,r.POI_CHAIN=:5,r.POI_NAME=:6,r.POI_NAME_SHORT=:7,r.POI_ADDRESS=:8,r.POI_TEL=:9,r.POI_POST_CODE=:10,r.POI_X_DISPLAY=:11,r.POI_Y_DISPLAY=:12,r.POI_X_GUIDE=:13,r.POI_Y_GUIDE=:14,r.GEOMETRY=sdo_geometry(:15  , 8307) WHERE r.RESULT_ID=:16 ";
 		}
-		
-		run.execute(conn, sql);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			System.out.println(sql);
+			System.out.println(dealershipInfo.getInt("cfmIsAdopted"));
+			pstmt = conn.prepareStatement(sql);
+			if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
+				pstmt.setString(1,dealershipInfo.getString("cfmMemo"));
+				pstmt.setInt(2, dealershipInfo.getInt("resultId"));
+			}else{
+				pstmt.setString(1,dealershipInfo.getString("cfmMemo"));
+				pstmt.setString(2, dealershipInfo.getString("cfmPoiNum"));
+				pstmt.setInt(3,dealershipInfo.getInt("cfmIsAdopted"));
+				pstmt.setString(4, dealershipInfo.getString("poiKindCode"));
+				pstmt.setString(5,dealershipInfo.getString("poiChain"));
+				pstmt.setString(6,dealershipInfo.getString("poiName"));
+				pstmt.setString(7,dealershipInfo.getString("poiNameShort"));
+				pstmt.setString(8,dealershipInfo.getString("poiAddress"));
+				pstmt.setString(9,dealershipInfo.getString("poiTel"));
+				pstmt.setString(10,dealershipInfo.getString("poiPostCode"));
+				pstmt.setDouble(11, dealershipInfo.getDouble("poiXDisplay"));
+				pstmt.setDouble(12, dealershipInfo.getDouble("poiYDisplay"));
+				pstmt.setDouble(13, dealershipInfo.getDouble("poiXGuide"));
+				pstmt.setDouble(14, dealershipInfo.getDouble("poiYGuide"));
+				String wkt = "POINT(" +dealershipInfo.getDouble("poiYDisplay") + " " +  dealershipInfo.getDouble("poiXDisplay") + ")";
+				pstmt.setString(15,wkt);
+				pstmt.setInt(16, dealershipInfo.getInt("resultId"));
+			}
+			  pstmt.executeUpdate();
+		}catch(Exception e){
+			throw new Exception(e.getMessage(),e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 	}
 	
 	public void updateResultWkfStatus(int wkfStatus,int resultId,Connection conn,long userId) throws Exception {

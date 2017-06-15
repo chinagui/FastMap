@@ -1033,6 +1033,41 @@ public class DataPrepareService {
 		}
 	}
 
+	
+	/**
+	 * 作业成果导出导出
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException
+	 */
+	public Map<String, Object> exportWorkResulttList(JSONArray chains) throws Exception{
+		Connection conn = null;
+		try{
+			//获取代理店库连接
+			conn = DBConnector.getInstance().getDealershipConnection();
+			Map<String, Object> resultMap = new HashMap(550);
+			//处理excel表格内的第一行表头和excel文件名
+			editExcelforWorkResult(resultMap);
+			List<exportWorkResultEntity> exportWorkResultList = new ArrayList(500);
+			String chainCode = "";
+			for(int i = 0; i < chains.size(); i++){
+				chainCode += "'"+chains.get(i).toString()+"',";
+			}
+			chainCode = chainCode.substring(0, chainCode.length()-1);
+			if(StringUtils.isNotBlank(chainCode)){
+				exportWorkResultList = exportWorkResultList(chainCode,conn);
+			}
+			resultMap.put("exportWorkResultList", exportWorkResultList);
+			
+			return resultMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	
+	}
 	/**
 	 * @param chainCode
 	 * @return
@@ -1146,27 +1181,9 @@ public class DataPrepareService {
 							case 4:
 								result.setDealSrcDiff("更新");
 								break;
-	
-	/**
-	 * 作业成果导出导出
-	 * @param chainCode
-	 * @return
-	 * @throws SQLException
-	 */
-	public Map<String, Object> exportWorkResulttList(JSONArray chains) throws Exception{
-		Connection conn = null;
-		try{
-			//获取代理店库连接
-			conn = DBConnector.getInstance().getDealershipConnection();
-			Map<String, Object> resultMap = new HashMap(550);
-			//处理excel表格内的第一行表头和excel文件名
-			editExcelforWorkResult(resultMap);
-			List<exportWorkResultEntity> exportWorkResultList = new ArrayList(500);
-			String chainCode = "";
-			for(int i = 0; i < chains.size(); i++){
-				chainCode += "'"+chains.get(i).toString()+"',";
 							}
-			}
+	
+
 
 							int workflowStatus = rs.getInt("WORKFLOW_STATUS");
 							switch(workflowStatus){
@@ -1658,22 +1675,7 @@ public class DataPrepareService {
 	}
 	
 	
-}
-			chainCode = chainCode.substring(0, chainCode.length()-1);
-			if(StringUtils.isNotBlank(chainCode)){
-				exportWorkResultList = exportWorkResultList(chainCode,conn);
-			}
-			resultMap.put("exportWorkResultList", exportWorkResultList);
-			
-			return resultMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-			
-	}
+
 	
 	/**
 	 * 作业成果导出结果的excel内容

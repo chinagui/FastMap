@@ -106,6 +106,7 @@ public class IxDealershipResultSelector {
 		result.setCfmMemo(rs.getString("CFM_MEMO"));
 		result.setCfmPoiNum(rs.getString("CFM_POI_NUM"));
 		result.setCfmStatus(rs.getInt("CFM_STATUS"));
+		result.setCfmIsAdopted(rs.getInt("CFM_IS_ADOPTED"));
 		result.setChain(rs.getString("CHAIN"));
 		result.setCity(rs.getString("CITY"));
 		result.setDealCfmDate(rs.getString("DEAL_CFM_DATE"));

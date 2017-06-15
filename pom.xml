@@ -888,7 +888,43 @@
                 <artifactId>edit-control-column</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
-			<!-- dataservice module start -->
+			<!-- dataservice module end -->
+			<!-- navicop -->
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_check</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+			  <groupId>com.navinfo.navicop</groupId>
+			  <artifactId>navicop_dms_entry</artifactId>
+			  <version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_checkcore</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_checkengine</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_common</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_connectivity</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.navicop</groupId>
+				<artifactId>navicop_gdbmodel</artifactId>
+				<version>1.1-SNAPSHOT</version>
+			</dependency>
 			<dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>

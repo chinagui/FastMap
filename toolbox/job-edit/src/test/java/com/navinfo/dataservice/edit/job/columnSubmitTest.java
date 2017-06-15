@@ -193,7 +193,7 @@ public class columnSubmitTest {
 						
 						classifyMap.put("pids", pidList);
 						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-						columnCoreOperation.runClassify(classifyMap,conn,taskId);
+//						columnCoreOperation.runClassify(classifyMap,conn,taskId);
 					}
 				}
 				

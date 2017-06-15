@@ -153,7 +153,7 @@ public class DiffService {
 			String shortName = (null == i.getNameShort()? "":i.getNameShort());
 			t = hash(i.getName().trim() + i.getAddress().trim()
 					+ i.getTelephone().trim() + i.getPostCode().trim()
-					+ i.getKindCode().trim() + shortName.trim());
+					+ i.getKindCode().trim() +  i.getChain().trim() + shortName.trim());
 
 			/**************** 新旧一致逻辑 *******************/
 			if (mapMatchSame.get(t) != null) {
@@ -354,16 +354,17 @@ public class DiffService {
 
 		/***************** 删除逻辑  ****************/
 		for (IxDealershipSource i : dealershipSources) {
-			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-			if(dealershipResultsPreMap.containsKey(i.getSourceId())){
-				resultDpAttrDiff = dealershipResultsPreMap.get(i.getSourceId());
-				updateList.add(resultDpAttrDiff);
-			}else{
-				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
-				insertList.add(resultDpAttrDiff);
-			}
+
 			if ((dkeyMap.get(i.getSourceId()) == null)) {
 				/***************** 删除逻辑 ****************/
+				IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
+				if(dealershipResultsPreMap.containsKey(i.getSourceId())){
+					resultDpAttrDiff = dealershipResultsPreMap.get(i.getSourceId());
+					updateList.add(resultDpAttrDiff);
+				}else{
+					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
+					insertList.add(resultDpAttrDiff);
+				}
 				if (((sourceNameMap.get(i.getName()) == null)
 						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
 						&& (sourcePostCodeMap.get(i.getPostCode()) == null)

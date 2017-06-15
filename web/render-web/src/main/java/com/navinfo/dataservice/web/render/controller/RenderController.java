@@ -43,7 +43,7 @@ public class RenderController extends BaseController {
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			JSONArray array = new JSONArray();
+			JSONArray array = null;
 
 			JSONArray type = jsonReq.getJSONArray("types");
 
@@ -92,7 +92,7 @@ public class RenderController extends BaseController {
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 
 					SearchProcess p = new SearchProcess(conn);
-
+					p.setArray(array);
 					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y,
 							z, gap);
 

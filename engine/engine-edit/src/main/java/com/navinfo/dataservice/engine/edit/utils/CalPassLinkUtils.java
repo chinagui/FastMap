@@ -58,11 +58,18 @@ public class CalPassLinkUtils {
 
         List<RdLink> sourceLinks = selector.loadByPids(pids, true);
 
-        String wktBuffer = getWktBuffer(sourceLinks);
-
         RdLink inLink = sourceLinks.get(0).getPid() == inLinkPid ? sourceLinks.get(0) : sourceLinks.get(1);
 
         RdLink endLink = sourceLinks.get(0).getPid() == outLinkPid ? sourceLinks.get(0) : sourceLinks.get(1);
+
+        if ((endLink.getDirect() == 2 && endLink.getsNodePid() == nodePid)
+                || (endLink.getDirect() == 3 && endLink.geteNodePid() == nodePid)
+                || (endLink.getDirect() == 1 && (endLink.getsNodePid() == nodePid || endLink.geteNodePid() == nodePid))) {
+
+            return new ArrayList<>();
+        }
+
+        String wktBuffer = getWktBuffer(sourceLinks);
 
         searchLinkBySpatial(wktBuffer, inLink.getPid(), endLink.getPid());
 

@@ -1,11 +1,17 @@
 package com.navinfo.dataservice.control.row.crowdTest;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.control.row.crowds.RowCrowdsControl;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
 
@@ -40,5 +46,19 @@ public class TestCrowd {
 		System.out.println(uuid.length());
 		String photoName = "1qaz2wsx3edc4rfvvfr4cde3xsw2zaq1.jpg";
 		System.out.println(photoName.substring(0, photoName.indexOf(".")));
+	}
+	
+	@Test
+	public void testDbId() throws Exception{
+		String polygon = "POLYGON((116.28429651260376 39.9897471840457,116.50264978408813 39.990799335838034,116.50676965713501 39.902362098539705,116.39003992080688 39.825413103424786,116.21013879776001 39.84966661865515,116.28429651260376 39.9897471840457))";
+		Geometry g = JtsGeometryFactory.read(polygon);
+		Set<String> results = CompGeometryUtil.geo2GridsWithoutBreak(g);
+		Iterator it = results.iterator();
+		while(it.hasNext()){
+			String grid = (String) it.next();
+			String dbId = RowCrowdsControl.getDailyDbId(grid);
+			System.out.println(dbId);
+			break;
+		}
 	}
 }

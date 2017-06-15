@@ -7,5 +7,7 @@ package com.navinfo.dataservice.monitor.agent.service;
  * @Description: ServiceStatInfoLoader.java
  */
 public class ServiceStatInfoLoader {
+	
+	
 
 }

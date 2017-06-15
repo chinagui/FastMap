@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.fcc.tips.*;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -278,6 +279,36 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	public void testOther() {
 
 		try {
+            JSONObject paramObj = new JSONObject();
+            paramObj.put("statType", "total");
+            //paramObj.put("wkt", wkt);
+            Set<Integer> collectTaskIds = new HashSet<>();
+            collectTaskIds.add(417);
+            paramObj.put("taskIds", collectTaskIds);
+            TipsRequestParam param = new TipsRequestParam();
+            String parameter = paramObj.toString();
+            String query = param.getTipsDayTotal(parameter);
+            SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
+            long totalNum = sdList.getNumFound();
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println(query);
+            System.out.println(totalNum);
+
+            paramObj = new JSONObject();
+            paramObj.put("statType", "dFinished");
+            //paramObj.put("wkt", wkt);
+            paramObj.put("taskIds", collectTaskIds);
+            parameter = paramObj.toString();
+            query = param.getTipsDayTotal(parameter);
+            sdList = conn.queryTipsSolrDoc(query, null);
+            totalNum = sdList.getNumFound();
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println(query);
+            System.out.println(totalNum);
 //			TipsSelector selector = new TipsSelector();
 //			String parameter = "{\"subTaskId\":188,\"programType\":1}";
 //			System.out.println("**************************************************");
@@ -347,10 +378,15 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	//根据网格获取tips统计
 	@Test
 	public void testGetStats() {
-		String parameter = "{\"grids\":[59567311,59567312],\"subtaskId\":188,\"workStatus\":9}";
+		String parameter = "{\"subtaskId\":517,\"grids\":[60561412,60561413,60561410,60561411,60561420,60561421,60561422,60561423,60561431\n" +
+				",60561430,60561433,60561400,60561432,60561401,60561402,60561403],\"mdFlag\":\"d\",\"workStatus\":0}";
 
+//		String parameter = "{\"grids\":[59567311,59567312],\"subtaskId\":188,\"workStatus\":9}";
+//
 		try {
-			System.out.println(solrSelector.getStats(parameter));
+//			System.out.println(solrSelector.getStats(parameter));
+            TipsRequestParam param = new TipsRequestParam();
+            System.out.println(param.getTipStat(parameter));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -30,7 +30,7 @@ public class FMBAT20185 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poiObj.getIxPoiParents().isEmpty()|| !poi.getKindCode().equals("230218")
+		if (null==poiObj.getIxPoiParents()||poiObj.getIxPoiParents().isEmpty()|| !("230218").equals(poi.getKindCode())
 				||poi.getHisOpType().equals(OperationType.DELETE)) {
 			return;
 		}

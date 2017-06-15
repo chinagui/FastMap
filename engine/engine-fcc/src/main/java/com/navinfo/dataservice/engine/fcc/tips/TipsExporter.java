@@ -105,105 +105,109 @@ public class TipsExporter {
 		exportPhotoAudioAndGetAttachmentInfo(results,photoMap,audioMap);
 
 		//1.循环便利每条数据，并组导出txt的返回值。如果包含照片或者语音，单独挑出来
-		for (Result result : results) {
+        String exceptionRowkey = null;
+        try {
+            for (Result result : results) {
 
-			if (result.isEmpty()) {
-				continue;
-			}
+                if (result.isEmpty()) {
+                    continue;
+                }
 
-			JSONObject json = new JSONObject();
+                JSONObject json = new JSONObject();
 
-			String rowkey = new String(result.getRow());
+                String rowkey = new String(result.getRow());
 
-			json.put("rowkey", rowkey);
+                exceptionRowkey = rowkey;
 
-			String source = new String(result.getValue("data".getBytes(),
-					"source".getBytes()));
-			
+                json.put("rowkey", rowkey);
 
-			json.putAll(JSONObject.fromObject(source));
-			
-			//s_project 需要赋值为空
-			
-			json.put("s_project","");
+                String source = new String(result.getValue("data".getBytes(),
+                        "source".getBytes()));
 
-			String sourceType = json.getString("s_sourceType");
 
-			String deep = new String(result.getValue("data".getBytes(),
-					"deep".getBytes()));
+                json.putAll(JSONObject.fromObject(source));
 
-			JSONObject deepjson = JSONObject.fromObject(deep);
+                //s_project 需要赋值为空
 
-			if (deepjson.containsKey("agl")) {
-				json.put("angle", deepjson.getDouble("agl"));
+                json.put("s_project", "");
 
-			} else {
-				json.put("angle", 0);
-			}
+                String sourceType = json.getString("s_sourceType");
 
-			json.put("deep", deepjson);
+                String deep = new String(result.getValue("data".getBytes(),
+                        "deep".getBytes()));
 
-			if (sourceType.equals("1406") || sourceType.equals("1401")) {
-				// 需要导出关联的模式图
+                JSONObject deepjson = JSONObject.fromObject(deep);
 
-				if (deepjson.containsKey("ptn")) {
-					String ptn = deepjson.getString("ptn");
+                if (deepjson.containsKey("agl")) {
+                    json.put("angle", deepjson.getDouble("agl"));
 
-					if (ptn != null && ptn.length() > 0) {
-						patternImages.add(ptn);
-					}
-				}
-			}
+                } else {
+                    json.put("angle", 0);
+                }
 
-			String geometry = new String(result.getValue("data".getBytes(),
-					"geometry".getBytes()));
+                json.put("deep", deepjson);
 
-			json.putAll(JSONObject.fromObject(geometry));
+                if (sourceType.equals("1406") || sourceType.equals("1401")) {
+                    // 需要导出关联的模式图
 
-			String track = new String(result.getValue("data".getBytes(),
-					"track".getBytes()));
+                    if (deepjson.containsKey("ptn")) {
+                        String ptn = deepjson.getString("ptn");
 
-			JSONObject trackjson = JSONObject.fromObject(track);
+                        if (ptn != null && ptn.length() > 0) {
+                            patternImages.add(ptn);
+                        }
+                    }
+                }
 
-			json.put("t_lifecycle", trackjson.getInt("t_lifecycle"));
+                String geometry = new String(result.getValue("data".getBytes(),
+                        "geometry".getBytes()));
 
-			json.put("t_command", trackjson.getInt("t_command"));
+                json.putAll(JSONObject.fromObject(geometry));
 
-			JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
+                String track = new String(result.getValue("data".getBytes(),
+                        "track".getBytes()));
 
-			JSONObject lastTrackInfo = tTrackInfo.getJSONObject(tTrackInfo
-					.size() - 1);
+                JSONObject trackjson = JSONObject.fromObject(track);
 
-			String lastDate = lastTrackInfo.getString("date");
-            //track.t_trackInfo中最后一条date赋值	
-			json.put("t_operateDate", lastDate);
+                json.put("t_lifecycle", trackjson.getInt("t_lifecycle"));
 
-			json.put("t_handler", 0);
+                json.put("t_command", trackjson.getInt("t_command"));
+
+                JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
+
+                JSONObject lastTrackInfo = tTrackInfo.getJSONObject(tTrackInfo
+                        .size() - 1);
+
+                String lastDate = lastTrackInfo.getString("date");
+                //track.t_trackInfo中最后一条date赋值
+                json.put("t_operateDate", lastDate);
+
+                json.put("t_handler", 0);
 /*			boolean hasPhotoFlag = false;
 			boolean hasAudioFlag = false;*/
-			
-			//附件的转出
-			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
-				JSONObject feedback = JSONObject.fromObject(new String(result
-						.getValue("data".getBytes(), "feedback".getBytes())));
-				
-				JSONArray farray = feedback.getJSONArray("f_array");
 
-				json.put("attachments", farray);
-				
-				//返回的附件信息
-				JSONArray farrayExport = new JSONArray();
+                //附件的转出
+                if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
+                    JSONObject feedback = JSONObject.fromObject(new String(result
+                            .getValue("data".getBytes(), "feedback".getBytes())));
 
-				for (int i = 0; i < farray.size(); i++) {
-					JSONObject jo = farray.getJSONObject(i);
-					int type = jo.getInt("type");
-					JSONObject attachment=new JSONObject();
-					//照片的转出
-					if (type == 1) {
+                    JSONArray farray = feedback.getJSONArray("f_array");
 
-					//hasPhotoFlag = true;
+                    json.put("attachments", farray);
 
-					//String id = jo.getString("content");
+                    //返回的附件信息
+                    JSONArray farrayExport = new JSONArray();
+
+                    for (int i = 0; i < farray.size(); i++) {
+                        JSONObject jo = farray.getJSONObject(i);
+                        int type = jo.getInt("type");
+                        JSONObject attachment = new JSONObject();
+                        //照片的转出
+                        if (type == 1) {
+
+                            //hasPhotoFlag = true;
+
+                            //String id = jo.getString("content");
 				/*	if (photoIdSet.contains(id)) {
 						continue;
 					}
@@ -215,32 +219,32 @@ public class TipsExporter {
 
 					get.addColumn("data".getBytes(), "origin".getBytes());*/
 
-					//photoGets.add(get);
-					
-					String id=jo.getString("content");
-					Photo photo=photoMap.get(id);
-					
-					if(photo==null){
-						continue;
-					}
-					
-					attachment.put("id", id);
-					attachment.put("content", photo.getA_fileName());
-					attachment.put("type", 1);
-					
-					JSONObject  ext=new JSONObject();
-					ext.put("latitude", photo.getA_latitude());
-					ext.put("longitude", photo.getA_longitude());
-					ext.put("direction", photo.getA_direction());
-					ext.put("shootDate", photo.getA_shootDate());
-					ext.put("deviceNum", photo.getA_deviceNum());
-					
-					attachment.put("extContent", ext);
-					farrayExport.add(attachment);
-					
-					}
-					//语音的转出
-					else if (type == 2) {
+                            //photoGets.add(get);
+
+                            String id = jo.getString("content");
+                            Photo photo = photoMap.get(id);
+
+                            if (photo == null) {
+                                continue;
+                            }
+
+                            attachment.put("id", id);
+                            attachment.put("content", photo.getA_fileName());
+                            attachment.put("type", 1);
+
+                            JSONObject ext = new JSONObject();
+                            ext.put("latitude", photo.getA_latitude());
+                            ext.put("longitude", photo.getA_longitude());
+                            ext.put("direction", photo.getA_direction());
+                            ext.put("shootDate", photo.getA_shootDate());
+                            ext.put("deviceNum", photo.getA_deviceNum());
+
+                            attachment.put("extContent", ext);
+                            farrayExport.add(attachment);
+
+                        }
+                        //语音的转出
+                        else if (type == 2) {
 
 					/*	hasAudioFlag = true;
 	
@@ -258,43 +262,43 @@ public class TipsExporter {
 						get.addColumn("data".getBytes(), "origin".getBytes());
 	
 						audioGets.add(get);*/
-						
-						String id=jo.getString("content");
-						Audio audio =audioMap.get(id);
-						if(audio==null){
-							continue;
-						}
-						attachment.put("id", id);
-						attachment.put("content", audio.getA_fileName());
-						attachment.put("type", 2);
-						attachment.put("extContent", JSONNull.getInstance());
-						farrayExport.add(attachment);
-					
-					}
-					
-					//文字转出
-					else if (type == 3) {
-						attachment.put("id", "");
-						attachment.put("content", jo.getString("content"));
-						attachment.put("type", 3);
-						attachment.put("extContent", JSONNull.getInstance());
-						farrayExport.add(attachment);
-					}
-					
-					//草图转出
-					else if (type == 6) {
-						attachment.put("id", "");
-						attachment.put("content", jo.getString("content"));
-						attachment.put("type", 6);
-						attachment.put("extContent", JSONNull.getInstance());
-						farrayExport.add(attachment);
-					}
-					
-				}
-				json.put("attachments", farrayExport);
-			} else {
-				json.put("attachments", new JSONArray());
-			}
+
+                            String id = jo.getString("content");
+                            Audio audio = audioMap.get(id);
+                            if (audio == null) {
+                                continue;
+                            }
+                            attachment.put("id", id);
+                            attachment.put("content", audio.getA_fileName());
+                            attachment.put("type", 2);
+                            attachment.put("extContent", JSONNull.getInstance());
+                            farrayExport.add(attachment);
+
+                        }
+
+                        //文字转出
+                        else if (type == 3) {
+                            attachment.put("id", "");
+                            attachment.put("content", jo.getString("content"));
+                            attachment.put("type", 3);
+                            attachment.put("extContent", JSONNull.getInstance());
+                            farrayExport.add(attachment);
+                        }
+
+                        //草图转出
+                        else if (type == 6) {
+                            attachment.put("id", "");
+                            attachment.put("content", jo.getString("content"));
+                            attachment.put("type", 6);
+                            attachment.put("extContent", JSONNull.getInstance());
+                            farrayExport.add(attachment);
+                        }
+
+                    }
+                    json.put("attachments", farrayExport);
+                } else {
+                    json.put("attachments", new JSONArray());
+                }
 		/*	
 			if (hasPhotoFlag) {
 				hasPhotoDatas.add(json);
@@ -303,14 +307,17 @@ public class TipsExporter {
 			if (hasAudioFlag) {
 				hasAudioDatas.add(json);
 			}*/
-			//不包含照片或者语音的，数据就直接就可以返回了
+                //不包含照片或者语音的，数据就直接就可以返回了
 		/*	if(!hasAudioFlag&&!hasPhotoFlag){
 				ja.add(json);
 			}*/
-			
-			ja.add(json);
-			
-		}
+
+                ja.add(json);
+
+            }
+        }catch (Exception e) {
+            throw new Exception(exceptionRowkey + ": TipsExporter export error", e);
+        }
 			
 		/*//含照片，则照片附件重新赋值，并导出照片文件
 		if (hasPhotoDatas.size() > 0) {

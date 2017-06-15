@@ -1,11 +1,19 @@
 package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,12 +39,24 @@ import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
+import com.navinfo.dataservice.control.dealership.service.model.ExpDbDiffResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -1010,5 +1030,610 @@ public class DataPrepareService {
 
 		}
 	}
+
+	/**
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException 
+	 */
+	public List<ExpDbDiffResult> searchDbDiff(String chainCode) throws SQLException {
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
+			final Map<Integer,Set<String>> regionIdPidSetMap = new HashMap<Integer,Set<String>>();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT R.RESULT_ID,                                     ");
+			sb.append("        R.PROVINCE,                                      ");
+			sb.append("        R.CITY,                                          ");
+			sb.append("        R.PROJECT,                                       ");
+			sb.append("        R.KIND_CODE,                                     ");
+			sb.append("        R.CHAIN,                                         ");
+			sb.append("        R.NAME,                                          ");
+			sb.append("        R.NAME_SHORT,                                    ");
+			sb.append("        R.ADDRESS,                                       ");
+			sb.append("        R.TEL_SALE,                                      ");
+			sb.append("        R.TEL_SERVICE,                                   ");
+			sb.append("        R.TEL_OTHER,                                     ");
+			sb.append("        R.POST_CODE,                                     ");
+			sb.append("        R.NAME_ENG,                                      ");
+			sb.append("        R.ADDRESS_ENG,                                   ");
+			sb.append("        R.DEAL_SRC_DIFF,                                 ");
+			sb.append("        R.WORKFLOW_STATUS,                               ");
+			sb.append("        R.MATCH_METHOD,                                  ");
+			sb.append("        R.POI_NUM_1,                                     ");
+			sb.append("        R.POI_NUM_2,                                     ");
+			sb.append("        R.POI_NUM_3,                                     ");
+			sb.append("        R.POI_NUM_4,                                     ");
+			sb.append("        R.POI_NUM_5,                                     ");
+			sb.append("        R.SIMILARITY,                                    ");
+			sb.append("        R.DEAL_CFM_DATE,                                 ");
+			sb.append("        R.REGION_ID,                                     ");
+			sb.append("        S.SOURCE_ID OLD_SOURCE_ID,                       ");
+			sb.append("        S.PROVINCE OLD_PROVINCE,                         ");
+			sb.append("        S.CITY OLD_CITY,                                 ");
+			sb.append("        S.PROJECT OLD_PROJECT,                           ");
+			sb.append("        S.KIND_CODE OLD_KIND_CODE,                       ");
+			sb.append("        S.CHAIN OLD_CHAIN,                               ");
+			sb.append("        S.NAME OLD_NAME,                                 ");
+			sb.append("        S.NAME_SHORT OLD_NAME_SHORT,                     ");
+			sb.append("        S.ADDRESS OLD_ADDRESS,                           ");
+			sb.append("        S.TEL_SALE OLD_TEL_SALE,                         ");
+			sb.append("        S.TEL_SERVICE OLD_TEL_SERVICE,                   ");
+			sb.append("        S.TEL_OTHER OLD_TEL_OTHER,                       ");
+			sb.append("        S.POST_CODE OLD_POST_CODE,                       ");
+			sb.append("        S.NAME_ENG OLD_NAME_ENG,                         ");
+			sb.append("        S.ADDRESS_ENG OLD_ADDRESS_ENG                    ");
+			sb.append("   FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S   ");
+			sb.append("  WHERE R.SOURCE_ID = S.SOURCE_ID                        ");
+			sb.append("    AND R.CHAIN = '" + chainCode + "'");
+			
+			log.info("searchDbDiff sql: "+sb.toString());
+			ResultSetHandler<List<ExpDbDiffResult>> rs = new ResultSetHandler<List<ExpDbDiffResult>>() {
+				@Override
+				public List<ExpDbDiffResult> handle(ResultSet rs) throws SQLException {
+					
+					List<ExpDbDiffResult> diffList = new ArrayList<ExpDbDiffResult>();
+					while (rs.next()) {
+						ExpDbDiffResult result = new ExpDbDiffResult();
+							result.setResultId(rs.getString("result_id"));
+							result.setProvince( rs.getString("province"));
+							result.setCity( rs.getString("city"));
+							result.setProject( rs.getString("project"));
+							result.setKindCode( rs.getString("kind_code"));
+							result.setChain( rs.getString("chain"));
+							result.setName( rs.getString("name"));
+							result.setNameShort( rs.getString("name_short"));
+							result.setAddress( rs.getString("address"));
+							result.setTelSale( rs.getString("tel_sale"));
+							result.setTelService( rs.getString("tel_service"));
+							result.setTelOther( rs.getString("tel_other"));
+							result.setPostCode( rs.getString("post_code"));
+							result.setNameEng( rs.getString("name_eng"));
+							result.setAddressEng( rs.getString("address_eng"));
+							result.setOldSourceId( rs.getString("old_source_id"));
+							result.setOldProvince( rs.getString("old_province"));
+							result.setOldCity( rs.getString("old_city"));
+							result.setOldProject( rs.getString("old_project"));
+							result.setOldKindCode( rs.getString("old_kind_code"));
+							result.setOldChain( rs.getString("old_chain"));
+							result.setOldName( rs.getString("old_name"));
+							result.setOldNameShort( rs.getString("old_name_short"));
+							result.setOldAddress( rs.getString("old_address"));
+							result.setOldTelSale( rs.getString("old_tel_sale"));
+							result.setOldTelService( rs.getString("old_tel_service"));
+							result.setOldTelOther( rs.getString("old_tel_other"));
+							result.setOldPostCode( rs.getString("old_post_code"));
+							result.setOldNameEng( rs.getString("old_name_eng"));
+							result.setOldAddressEng( rs.getString("old_address_eng"));
+
+							int dealSrcDiff = rs.getInt("deal_src_diff");
+							
+							switch(dealSrcDiff){
+							case 1:
+								result.setDealSrcDiff("一致");
+								break;
+							case 2:
+								result.setDealSrcDiff("删除");
+								break;
+							case 3:
+								result.setDealSrcDiff("新增");
+								break;
+							case 4:
+								result.setDealSrcDiff("更新");
+								break;
+							}
+
+							int workflowStatus = rs.getInt("WORKFLOW_STATUS");
+							switch(workflowStatus){
+							case 0:
+								result.setDbDiff("无");
+								break;
+							case 1:
+								result.setDbDiff("无需处理");
+								break;
+							case 2:
+								result.setDbDiff("需删除");
+								break;
+							case 3:
+								result.setDbDiff("内业录入作业");
+								break;
+							case 4:
+								result.setDbDiff("转外业确认");
+								break;
+							case 5:
+								result.setDbDiff("转客户确认");
+								break;
+							case 6:
+								result.setDbDiff("不代理");
+								break;
+							case 9:
+								result.setDbDiff("处理完成");
+								break;
+							}
+							int matchMethod = rs.getInt("MATCH_METHOD");
+							switch(matchMethod){
+							case 0:
+								result.setDbDiff("不应用");
+								break;
+							case 1:
+								result.setDbDiff("ID匹配");
+								break;
+							case 2:
+								result.setDbDiff("推荐匹配");
+								break;
+							}
+
+							Set<String> poiNum = new HashSet<String>();
+							
+							result.setPoi1Num( rs.getString("POI_NUM_1"));
+							if(rs.getString("POI_NUM_1")!=null&&!rs.getString("POI_NUM_1").equals("")){
+								poiNum.add(rs.getString("POI_NUM_1"));
+							}
+							
+							result.setPoi2Num( rs.getString("POI_NUM_2"));
+							if(rs.getString("POI_NUM_2")!=null&&!rs.getString("POI_NUM_2").equals("")){
+								poiNum.add(rs.getString("POI_NUM_2"));
+							}
+							
+							result.setPoi3Num( rs.getString("POI_NUM_3"));
+							if(rs.getString("POI_NUM_3")!=null&&!rs.getString("POI_NUM_3").equals("")){
+								poiNum.add(rs.getString("POI_NUM_3"));
+							}
+
+							result.setPoi4Num( rs.getString("POI_NUM_4"));
+							if(rs.getString("POI_NUM_4")!=null&&!rs.getString("POI_NUM_4").equals("")){
+								poiNum.add(rs.getString("POI_NUM_4"));
+							}
+
+							result.setPoi5Num( rs.getString("POI_NUM_5"));
+							if(rs.getString("POI_NUM_5")!=null&&!rs.getString("POI_NUM_5").equals("")){
+								poiNum.add(rs.getString("POI_NUM_5"));
+							}
+
+							result.setSimilarity( rs.getString("SIMILARITY"));
+							result.setDealCfmDate( rs.getString("DEAL_CFM_DATE"));
+							result.setRegionId( rs.getInt("region_id"));
+							if(regionIdPidSetMap.containsKey(rs.getInt("region_id"))){
+								regionIdPidSetMap.get(rs.getInt("region_id")).addAll(poiNum);
+							}else{
+								regionIdPidSetMap.put(rs.getInt("region_id"), poiNum);
+							}
+
+						diffList.add(result);
+					}
+					return diffList;
+				}
+			};
+			
+			List<ExpDbDiffResult> result =  run.query(conn, sb.toString(), rs);
+			//处理POI1_NUM,POI2_NUM,POI3_NUM,POI4_NUM,POI5_NUM相关值
+			handleMatchedPois(result,regionIdPidSetMap);
+
+			return result;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndClose(conn);
+		}finally{
+			DbUtils.commitAndClose(conn);
+		}
+		return null;
+	}
+
+	
+	/**
+	 * @param result
+	 * @param regionIdPidSetMap
+	 * @throws SQLException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
+	 * @throws ClassNotFoundException 
+	 */
+	private void handleMatchedPois(List<ExpDbDiffResult> result, Map<Integer, Set<String>> regionIdPidSetMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, SQLException {
+		Map<Integer,Map<String,IxPoiObj>> poi = new HashMap<Integer,Map<String,IxPoiObj>>();
+		List<String> colValues = new ArrayList<String>();
+		Map<Integer, Connection> dbConMap = queryAllRegionConn();
+		Set<String> tabNames = new HashSet<String>();
+		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_ADDRESS");
+		tabNames.add("IX_POI_CONTACT");
+
+		for(Map.Entry<Integer, Set<String>> entry:regionIdPidSetMap.entrySet()){
+			if(!dbConMap.containsKey(entry.getKey())) {
+				continue;
+			}
+			Connection regionConn = (Connection) dbConMap.get(entry.getKey());
+			colValues.addAll(entry.getValue());
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(regionConn, "IX_POI",tabNames, false, "POI_NUM", colValues, false, false);
+			Map<String,IxPoiObj> pois = new HashMap<String,IxPoiObj>();
+			for(Map.Entry<Long,BasicObj> entryInner:objs.entrySet()){
+				IxPoiObj ixPoiObj = (IxPoiObj)entryInner.getValue();
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				pois.put(ixPoi.getPoiNum(), ixPoiObj);
+			}
+			
+			poi.put(entry.getKey(), pois);
+		}
+		
+		for(ExpDbDiffResult expDbDiffResult:result){
+			List<String> telList = new ArrayList<String>();
+			if(expDbDiffResult.getTelOther()!=null){
+				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelOther(), "|")));
+			}
+			if(expDbDiffResult.getTelSale()!=null){
+				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelSale(), "|")));
+			}
+			if(expDbDiffResult.getTelService()!=null){
+				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelService(), "|")));
+			}
+			Collections.sort(telList);
+			String a = expDbDiffResult.getPoi1Num();
+			Map<String,IxPoiObj> c = poi.get(expDbDiffResult.getRegionId());
+			Set<String> d = c.keySet();
+			boolean e = d.contains(a);
+			boolean b = poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num());
+			if(expDbDiffResult.getPoi1Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi1Num());
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				expDbDiffResult.setPoi1KindCode(ixPoi.getKindCode());
+				expDbDiffResult.setPoi1Chain(ixPoi.getChain());
+				expDbDiffResult.setPoi1PostCode(ixPoi.getPostCode());
+				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+				for(IxPoiName ixPoiName:ixPoiNameList){
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+						expDbDiffResult.setPoi1Name(ixPoiName.getName());
+					}
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+						expDbDiffResult.setPoi1AliasName(ixPoiName.getName());
+					}
+				}
+				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+					if(ixPoiAddress.getLangCode().equals("CHI")){
+						expDbDiffResult.setPoi1Name(ixPoiAddress.getFullname());
+					}
+				}
+				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+				List<String> contacts = new ArrayList<String>();
+				for(IxPoiContact ixPoiContact:ixPoiContactList){
+					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				}
+				Collections.sort(contacts);
+				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
+				
+				List<String> diffs = new ArrayList<String>();
+				if(expDbDiffResult.getPoi1Name()==null
+						||
+						(expDbDiffResult.getPoi1Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi1Name()))){
+					diffs.add("名称不同");
+				}
+				if(expDbDiffResult.getPoi1Address()==null
+						||
+						(expDbDiffResult.getPoi1Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi1Address()))){
+					diffs.add("地址不同");
+				}
+				//电话todo
+				
+				if(expDbDiffResult.getPoi1Tel()==null
+						||
+						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
+					diffs.add("电话不同");
+				}
+				if(expDbDiffResult.getPoi1PostCode()==null
+						||
+						(expDbDiffResult.getPoi1PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi1PostCode()))){
+					diffs.add("邮编不同");
+				}
+				if(expDbDiffResult.getPoi1KindCode()==null
+						||
+						(expDbDiffResult.getPoi1KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi1KindCode()))
+						||
+						expDbDiffResult.getPoi1Chain()==null
+						||
+						(expDbDiffResult.getPoi1Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi1Chain()))){
+					diffs.add("项目不同");
+				}
+				expDbDiffResult.setPoi1Diff(StringUtils.join(diffs,"|"));
+			}
+			if(expDbDiffResult.getPoi2Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi2Num())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi2Num());
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				expDbDiffResult.setPoi2KindCode(ixPoi.getKindCode());
+				expDbDiffResult.setPoi2Chain(ixPoi.getChain());
+				expDbDiffResult.setPoi2PostCode(ixPoi.getPostCode());
+				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+				for(IxPoiName ixPoiName:ixPoiNameList){
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+						expDbDiffResult.setPoi2Name(ixPoiName.getName());
+					}
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+						expDbDiffResult.setPoi2AliasName(ixPoiName.getName());
+					}
+				}
+				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+					if(ixPoiAddress.getLangCode().equals("CHI")){
+						expDbDiffResult.setPoi2Name(ixPoiAddress.getFullname());
+					}
+				}
+				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+				List<String> contacts = new ArrayList<String>();
+				for(IxPoiContact ixPoiContact:ixPoiContactList){
+					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				}
+				Collections.sort(contacts);
+				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
+				
+				List<String> diffs = new ArrayList<String>();
+				if(expDbDiffResult.getPoi2Name()==null
+						||
+						(expDbDiffResult.getPoi2Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi2Name()))){
+					diffs.add("名称不同");
+				}
+				if(expDbDiffResult.getPoi2Address()==null
+						||
+						(expDbDiffResult.getPoi2Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi2Address()))){
+					diffs.add("地址不同");
+				}
+				//电话todo
+				if(expDbDiffResult.getPoi1Tel()==null
+						||
+						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
+					diffs.add("电话不同");
+				}
+				if(expDbDiffResult.getPoi2PostCode()==null
+						||
+						(expDbDiffResult.getPoi2PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi2PostCode()))){
+					diffs.add("邮编不同");
+				}
+				if(expDbDiffResult.getPoi2KindCode()==null
+						||
+						(expDbDiffResult.getPoi2KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi2KindCode()))
+						||
+						expDbDiffResult.getPoi2Chain()==null
+						||
+						(expDbDiffResult.getPoi2Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi2Chain()))){
+					diffs.add("项目不同");
+				}
+				expDbDiffResult.setPoi2Diff(StringUtils.join(diffs,"|"));
+			}
+			if(expDbDiffResult.getPoi3Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi3Num())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi3Num());
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				expDbDiffResult.setPoi3KindCode(ixPoi.getKindCode());
+				expDbDiffResult.setPoi3Chain(ixPoi.getChain());
+				expDbDiffResult.setPoi3PostCode(ixPoi.getPostCode());
+				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+				for(IxPoiName ixPoiName:ixPoiNameList){
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+						expDbDiffResult.setPoi3Name(ixPoiName.getName());
+					}
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+						expDbDiffResult.setPoi3AliasName(ixPoiName.getName());
+					}
+				}
+				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+					if(ixPoiAddress.getLangCode().equals("CHI")){
+						expDbDiffResult.setPoi3Name(ixPoiAddress.getFullname());
+					}
+				}
+				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+				List<String> contacts = new ArrayList<String>();
+				for(IxPoiContact ixPoiContact:ixPoiContactList){
+					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				}
+				Collections.sort(contacts);
+				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
+				
+				List<String> diffs = new ArrayList<String>();
+				if(expDbDiffResult.getPoi3Name()==null
+						||
+						(expDbDiffResult.getPoi3Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi3Name()))){
+					diffs.add("名称不同");
+				}
+				if(expDbDiffResult.getPoi3Address()==null
+						||
+						(expDbDiffResult.getPoi3Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi3Address()))){
+					diffs.add("地址不同");
+				}
+				//电话todo
+				if(expDbDiffResult.getPoi1Tel()==null
+						||
+						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
+					diffs.add("电话不同");
+				}
+				if(expDbDiffResult.getPoi3PostCode()==null
+						||
+						(expDbDiffResult.getPoi3PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi3PostCode()))){
+					diffs.add("邮编不同");
+				}
+				if(expDbDiffResult.getPoi3KindCode()==null
+						||
+						(expDbDiffResult.getPoi3KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi3KindCode()))
+						||
+						expDbDiffResult.getPoi3Chain()==null
+						||
+						(expDbDiffResult.getPoi3Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi3Chain()))){
+					diffs.add("项目不同");
+				}
+				expDbDiffResult.setPoi3Diff(StringUtils.join(diffs,"|"));
+			}
+			if(expDbDiffResult.getPoi4Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi4Num())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi4Num());
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				expDbDiffResult.setPoi4KindCode(ixPoi.getKindCode());
+				expDbDiffResult.setPoi4Chain(ixPoi.getChain());
+				expDbDiffResult.setPoi4PostCode(ixPoi.getPostCode());
+				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+				for(IxPoiName ixPoiName:ixPoiNameList){
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+						expDbDiffResult.setPoi4Name(ixPoiName.getName());
+					}
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+						expDbDiffResult.setPoi4AliasName(ixPoiName.getName());
+					}
+				}
+				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+					if(ixPoiAddress.getLangCode().equals("CHI")){
+						expDbDiffResult.setPoi4Name(ixPoiAddress.getFullname());
+					}
+				}
+				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+				List<String> contacts = new ArrayList<String>();
+				for(IxPoiContact ixPoiContact:ixPoiContactList){
+					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				}
+				Collections.sort(contacts);
+				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
+				
+				List<String> diffs = new ArrayList<String>();
+				if(expDbDiffResult.getPoi4Name()==null
+						||
+						(expDbDiffResult.getPoi4Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi4Name()))){
+					diffs.add("名称不同");
+				}
+				if(expDbDiffResult.getPoi4Address()==null
+						||
+						(expDbDiffResult.getPoi4Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi4Address()))){
+					diffs.add("地址不同");
+				}
+				//电话todo
+				if(expDbDiffResult.getPoi1Tel()==null
+						||
+						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
+					diffs.add("电话不同");
+				}
+				if(expDbDiffResult.getPoi4PostCode()==null
+						||
+						(expDbDiffResult.getPoi4PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi4PostCode()))){
+					diffs.add("邮编不同");
+				}
+				if(expDbDiffResult.getPoi4KindCode()==null
+						||
+						(expDbDiffResult.getPoi4KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi4KindCode()))
+						||
+						expDbDiffResult.getPoi4Chain()==null
+						||
+						(expDbDiffResult.getPoi4Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi4Chain()))){
+					diffs.add("项目不同");
+				}
+				expDbDiffResult.setPoi4Diff(StringUtils.join(diffs,"|"));
+			}
+			if(expDbDiffResult.getPoi5Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi5Num())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi5Num());
+				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+				expDbDiffResult.setPoi5KindCode(ixPoi.getKindCode());
+				expDbDiffResult.setPoi5Chain(ixPoi.getChain());
+				expDbDiffResult.setPoi5PostCode(ixPoi.getPostCode());
+				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+				for(IxPoiName ixPoiName:ixPoiNameList){
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+						expDbDiffResult.setPoi5Name(ixPoiName.getName());
+					}
+					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+						expDbDiffResult.setPoi5AliasName(ixPoiName.getName());
+					}
+				}
+				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+					if(ixPoiAddress.getLangCode().equals("CHI")){
+						expDbDiffResult.setPoi5Name(ixPoiAddress.getFullname());
+					}
+				}
+				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+				List<String> contacts = new ArrayList<String>();
+				for(IxPoiContact ixPoiContact:ixPoiContactList){
+					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				}
+				Collections.sort(contacts);
+				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
+				
+				List<String> diffs = new ArrayList<String>();
+				if(expDbDiffResult.getPoi5Name()==null
+						||
+						(expDbDiffResult.getPoi5Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi5Name()))){
+					diffs.add("名称不同");
+				}
+				if(expDbDiffResult.getPoi5Address()==null
+						||
+						(expDbDiffResult.getPoi5Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi5Address()))){
+					diffs.add("地址不同");
+				}
+				//电话todo
+				if(expDbDiffResult.getPoi1Tel()==null
+						||
+						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
+					diffs.add("电话不同");
+				}
+				if(expDbDiffResult.getPoi5PostCode()==null
+						||
+						(expDbDiffResult.getPoi5PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi5PostCode()))){
+					diffs.add("邮编不同");
+				}
+				if(expDbDiffResult.getPoi5KindCode()==null
+						||
+						(expDbDiffResult.getPoi5KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi5KindCode()))
+						||
+						expDbDiffResult.getPoi5Chain()==null
+						||
+						(expDbDiffResult.getPoi5Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi5Chain()))){
+					diffs.add("项目不同");
+				}
+				expDbDiffResult.setPoi5Diff(StringUtils.join(diffs,"|"));
+			}
+		}
+	}
+
+	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
+		Map MapConn = new HashMap();
+		try {
+			String sql = "select t.daily_db_id,region_id from region t";
+
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			Connection conn = null;
+			try {
+				conn = DBConnector.getInstance().getManConnection();
+				pstmt = conn.prepareStatement(sql);
+				rs = pstmt.executeQuery();
+				while (rs.next()) {
+					Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
+					MapConn.put(rs.getInt("region_id"), regionConn);
+				}
+				return MapConn;
+			} finally {
+				DbUtils.closeQuietly(conn, pstmt, rs);
+			}
+		} catch (Exception e) {
+			throw new SQLException("加载region失败：" + e.getMessage(), e);
+		}
+	}
+	
 	
 }

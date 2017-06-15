@@ -26,6 +26,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
+import com.navinfo.dataservice.control.dealership.service.model.ExpDbDiffResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 
 import net.sf.json.JSONObject;
@@ -305,6 +306,57 @@ public class DataPrepareController extends BaseController {
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 			//return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	
+	@RequestMapping(value = "/expDbDiff")
+	public void expDbDiff(HttpServletRequest request,HttpServletResponse response) {
+		response.setContentType("octets/stream");
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			
+			List<ExpDbDiffResult> dealerBrandList = dealerShipService.searchDbDiff(chainCode);
+
+			ExportExcel<ExpDbDiffResult> ex = new ExportExcel<ExpDbDiffResult>();  
+			
+			String excelName = "表库差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			//转码防止乱码  
+	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
+	        
+			String[] headers =  
+		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌",
+		        		"厂商提供名称", "厂商提供简称", "厂商提供地址" ,"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称","厂商提供英文地址",
+		        		"旧一览表ID", "旧一览表省份" ,"旧一览表城市", "旧一览表项目", "旧一览表分类", "旧一览表品牌" , "旧一览表名称", "旧一览表简称", "旧一览表地址",
+		        		"旧一览表电话（其他）" ,"旧一览表电话（销售）", "旧一览表电话（服务）", "旧一览表邮编", "旧一览表英文名称" , "旧一览表英文地址", 
+		        		"新旧一览表差分结果","表库差分结果","与POI的匹配方式",
+		        		"POI1_NUM","POI1_名称" ,"POI1_别名","POI1_分类","POI1_CHAIN","POI1_地址","POI1_电话","POI1_邮编","POI1_差分结果",
+		        		"POI2_NUM","POI2_名称" ,"POI2_别名","POI2_分类","POI2_CHAIN","POI2_地址","POI2_电话","POI2_邮编","POI2_差分结果",
+		        		"POI3_NUM","POI3_名称" ,"POI3_别名","POI3_分类","POI3_CHAIN","POI3_地址","POI3_电话","POI3_邮编","POI3_差分结果",
+		        		"POI4_NUM","POI4_名称" ,"POI4_别名","POI4_分类","POI4_CHAIN","POI4_地址","POI4_电话","POI4_邮编","POI4_差分结果",
+		        		"POI5_NUM","POI5_名称" ,"POI5_别名","POI5_分类","POI5_CHAIN","POI5_地址","POI5_电话","POI5_邮编","POI5_差分结果",
+		        		"匹配度","代理店确认时间","大区ID"};  
+			
+			try  
+	        {  
+	            OutputStream out = response.getOutputStream();  
+	            ex.exportExcel("表库差分结果", headers, dealerBrandList, out, "yyyy-MM-dd");
+	            out.close();  
+	            logger.error("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } 
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
 		}
 	}
 }

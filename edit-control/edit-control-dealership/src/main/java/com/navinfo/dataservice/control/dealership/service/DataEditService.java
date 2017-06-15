@@ -1185,7 +1185,7 @@ public class DataEditService {
                     	throw new Exception("该poi已被外业删除，不可用");
                     }
                     //需判断采纳POI是否被占用
-                    if(isOccupied(poiNum ,dealershipConn)){
+                    if(isOccupied(poiNum ,resultId,dealershipConn)){
                     	throw new Exception("该poi已被占用，不可用");
                     }
                     //需判断采纳POI是否已被使用
@@ -1249,11 +1249,11 @@ public class DataEditService {
 		}
 	}
 	
-	public boolean isOccupied(String poiNum , Connection conn ) throws Exception {
+	public boolean isOccupied(String poiNum ,int resultId, Connection conn ) throws Exception {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num='%s' AND CFM_IS_ADOPTED=2 ",poiNum);
+				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num='%s' AND r.CFM_IS_ADOPTED=2 AND r.result_id<>%d ",poiNum,resultId);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}

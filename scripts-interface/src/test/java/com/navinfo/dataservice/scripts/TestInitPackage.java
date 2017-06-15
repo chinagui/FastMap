@@ -26,6 +26,8 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
+import net.sf.json.JSONArray;
+
 /** 
 * @ClassName: Test 
 * @author Zhang Xiaolong
@@ -237,7 +239,13 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		grids.add("47587632");
 		grids.add("47587620");
 	
-		Set<String> grids1 = new HashSet<String>();
+		System.out.println(grids.toArray().toString());
+		JSONArray jsonarray = JSONArray.fromObject(grids); 
+		
+		System.out.println(jsonarray);
+		
+		
+		/*Set<String> grids1 = new HashSet<String>();
 		grids1.add("47587520");
 		grids1.add("47586531");
 		grids1.add("47586530");
@@ -317,11 +325,12 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		grids1.add("47587512");
 		grids1.add("47586612"); 
 		grids1.add("47587511");
-		grids1.add("47586611");
+		grids1.add("47586611");*/
 	
-		String geo = GridUtils.grids2Wkt(grids1);
+		
+		/*String geo = GridUtils.grids2Wkt(grids1);
 		
 		Geometry blockGeo = CompGridUtil.grids2Jts(grids1);
-		System.out.println(blockGeo);
+		System.out.println(blockGeo);*/
 	}
 }

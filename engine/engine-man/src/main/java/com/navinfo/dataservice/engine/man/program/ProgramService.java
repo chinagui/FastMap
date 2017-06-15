@@ -2018,6 +2018,7 @@ public class ProgramService {
 	 * 2.2.项目包含的所有任务作业组组长
 	 * 项目:XXX(任务名称)内容发生变更，请关注*/
 	public void programPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList,long pushUser) throws Exception {
+		UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, pushUser);
 		//查询所有生管角色
 		String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
 				+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
@@ -2025,12 +2026,12 @@ public class ProgramService {
 				+ "   AND M.USER_ID = I.USER_ID";
 		Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
 		for(Long userId:userIdList.keySet()){
-			String pushUserName =userIdList.get(userId).getUserRealName();
+			//String pushUserName =userIdList.get(userId).getUserRealName();
 			for(Map<String, Object> map:msgContentList){
 				//发送消息到消息队列
 				String msgContent = (String) map.get("msgContent");
 				String msgParam = (String) map.get("msgParam");
-				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushUserName);
+				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushObj.getUserRealName());
 			}
 		}
 		Map<Long, UserInfo> leaderIdByGroupId=null;
@@ -2044,9 +2045,10 @@ public class ProgramService {
 				String msgParam = (String) map.get("msgParam");
 				List<Long> groupIds=(List<Long>) map.get("groupIds");
 				for(Long groupId:groupIds){
+					//if(Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())==0){continue;}
 					try{
 						SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
-								2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+								2, msgParam,pushObj.getUserRealName());
 					}catch (Exception e) {
 						log.warn("项目推送消息错误，groupId="+groupId, e);
 					}
@@ -2084,6 +2086,7 @@ public class ProgramService {
 				//发送消息到消息队列
 				List<Long> groupIds=(List<Long>) map.get("groupIds");
 				for(Long groupId:groupIds){
+					//if(Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())==0){continue;}
 					UserInfo userInfo = leaderIdByGroupId.get(groupId);
 					//判断邮箱格式
 					String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";

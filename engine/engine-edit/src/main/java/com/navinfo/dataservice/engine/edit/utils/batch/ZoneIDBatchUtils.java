@@ -62,6 +62,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         } catch (Exception e) {
         }
 
+        List<RdLinkZone> additional = new ArrayList<>();
+        List<RdLinkZone> modified = new ArrayList<>();
+
         Geometry faceGeometry = shrink(zoneFace.getGeometry());
         // 判断link与zoneFace的关系
         // link在zoneFace内部
@@ -69,24 +72,26 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             // 新增或原link没有linkZone子数据时直接添加新的linkZone
             if (null == geometry || link.getZones().isEmpty()) {
                 linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
-                result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                //result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                additional.add(linkZone);
                 linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
-                result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                //result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                additional.add(linkZone);
             } else {
-                int side = 0;
                 // 修行时如果原有linkZone数据将原有regionId更新
                 for (IRow row : link.getZones()) {
                     linkZone = (RdLinkZone) row;
-                    side = linkZone.getSide();
                     if (faceRegionId != linkZone.getRegionId()) {
                         linkZone.changedFields().put("regionId", faceRegionId);
-                        result.insertObject(linkZone, ObjStatus.UPDATE, linkZone.parentPKValue());
+                        //result.insertObject(linkZone, ObjStatus.UPDATE, linkZone.parentPKValue());
+                        modified.add(linkZone);
                     }
                 }
                 if (link.getZones().size() == 1) {
-                    linkZone = createLinkZoneWithType(link, faceRegionId, 1 - side, type);
-                    linkZone.setType(((RdLinkZone) link.getZones().get(0)).getType());
-                    result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                    int existingSide = ((RdLinkZone) link.getZones()).getSide();
+                    linkZone = createLinkZoneWithType(link, faceRegionId, ~existingSide, type);
+                    //result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                    additional.add(linkZone);
                 }
             }
             // link在zoneFace组成线上
@@ -103,7 +108,8 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                 }
                 if (isCreate) {
                     linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
-                    result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                    //result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                    additional.add(linkZone);
                 }
             } else {
                 // link在zoneFace的左边
@@ -117,11 +123,40 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                 }
                 if (isCreate) {
                     linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
-                    result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                    //result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                    additional.add(linkZone);
                 }
             }
         } else {
 
+        }
+
+        executeResult(result, additional, modified);
+    }
+
+    /**
+     * 将RDLINKZONE操作结果加入结果集
+     * @param result 结果集
+     * @param additional 需要新增的RDLINKZONE
+     * @param modified 需要修改的RDLINKZONE
+     */
+    private static void executeResult(Result result, List<RdLinkZone> additional, List<RdLinkZone> modified) {
+        Iterator<RdLinkZone> additionalIterator = additional.iterator();
+        Iterator<RdLinkZone> modifiedIterator = modified.iterator();
+
+        while (additionalIterator.hasNext()) {
+            RdLinkZone zone = additionalIterator.next();
+            if (isDeleteLink(result, zone.getLinkPid())) {
+                continue;
+            }
+            result.insertObject(zone, ObjStatus.INSERT, zone.getLinkPid());
+        }
+        while (modifiedIterator.hasNext()) {
+            RdLinkZone zone = modifiedIterator.next();
+            if (isDeleteLink(result, zone.getLinkPid())) {
+                continue;
+            }
+            result.insertObject(zone, ObjStatus.UPDATE, zone.getLinkPid());
         }
     }
 
@@ -152,6 +187,10 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
         if (geometry.getCoordinates().length > 200)
             return;
+
+        List<RdLinkZone> additional = new ArrayList<>();
+        List<RdLinkZone> modified = new ArrayList<>();
+
         List<Integer> deleteLinkPids = new ArrayList<>();
         // 修形时对面内新增link赋zone属性
         geometry = shrink(geometry);
@@ -176,23 +215,22 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                 // 新增或原link没有linkZone子数据时直接添加新的linkZone
                 if (link.getZones().isEmpty()) {
                     linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
-                    result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                    additional.add(linkZone);
                     linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
-                    result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                    additional.add(linkZone);
                 } else {
-                    int side = 0;
                     // 修行时如果原有linkZone数据将原有regionId更新
                     for (IRow row : link.getZones()) {
                         linkZone = (RdLinkZone) row;
-                        side = linkZone.getSide();
                         if (faceRegionId != linkZone.getRegionId()) {
                             linkZone.changedFields().put("regionId", faceRegionId);
-                            result.insertObject(linkZone, ObjStatus.UPDATE, linkZone.parentPKValue());
+                            modified.add(linkZone);
                         }
                     }
                     if (link.getZones().size() == 1) {
-                        linkZone = createLinkZoneWithType(link, faceRegionId, 1 - side, type);
-                        result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
+                        int existingSide = ((RdLinkZone) link.getZones()).getSide();
+                        linkZone = createLinkZoneWithType(link, faceRegionId, ~existingSide, type);
+                        additional.add(linkZone);
                     }
                 }
                 // link在zoneFace组成线上
@@ -209,7 +247,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                     if (isCreate) {
                         linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
-                        result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                        additional.add(linkZone);
                     }
                 } else {
                     // link在zoneFace的左边
@@ -223,7 +261,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                     if (isCreate) {
                         linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
-                        result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                        additional.add(linkZone);
                     }
                 }
             } else {
@@ -241,6 +279,8 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                 deleteLinkPids.add(link.pid());
             }
         }
+
+        executeResult(result, additional, modified);
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -600,9 +601,23 @@ public class SearchProcess {
 
 					int outLinkPid = condition.getInt("outLinkPid");
 
-					// 计算经过线
-					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
-							this.conn, inLinkPid, nodePid, outLinkPid);
+					List<Integer> viaList = new ArrayList<>();
+
+					String errInfo="";
+					try {
+						// 计算经过线
+						viaList = calLinkOperateUtils.calViaLinks(
+								this.conn, inLinkPid, nodePid, outLinkPid);
+					} catch (Exception e) {
+
+						if (e.getMessage().equals("未计算出经过线，请手动选择经过线")) {
+
+							errInfo = "未计算出经过线，请手动选择经过线\r\n";
+
+						} else {
+							throw e;
+						}
+					}
 
 					// 计算关系类型
 					int relationShipType = calLinkOperateUtils
@@ -621,7 +636,8 @@ public class SearchProcess {
 					linkpids.add(outLinkPid);
 
 					if (!calLinkOperateUtils.isConnect(linkpids, nodePid)) {
-						obj.put("errInfo", "所选进入线、进入点、退出线不连通");
+
+						errInfo+="所选进入线、进入点、退出线不连通";
 					}
 
 					JSONArray viaArray = new JSONArray();
@@ -633,6 +649,12 @@ public class SearchProcess {
 
 					}
 					obj.put("links", viaArray);
+
+					if (StringUtils.isNotEmpty(errInfo)) {
+
+						obj.put("errInfo", errInfo);
+					}
+
 					array.add(obj);
 
 					return array;

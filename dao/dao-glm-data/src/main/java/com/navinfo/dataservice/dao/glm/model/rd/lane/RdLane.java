@@ -40,8 +40,8 @@ public class RdLane implements IObj {
 	private int laneType = 1;// 车道类型
 	private String arrowDir = "9";// 转向箭头
 	private int laneMark = 0;// 车道标线
-	private int width = 0;// 车道宽度
-	private int restrictHeight = 0;// 车道限高
+	private double width = 0d;// 车道宽度
+	private double restrictHeight = 0d;// 车道限高
 	private int transitionArea = 0;// 交换区域
 	private int fromMaxSpeed = 0;// 顺向最高限速
 	private int toMaxSpeed = 0;// 逆向最高限速
@@ -132,23 +132,43 @@ public class RdLane implements IObj {
 		this.laneMark = laneMark;
 	}
 
-	public int getWidth() {
-		return width;
-	}
+    /**
+     * Getter method for property <tt>width</tt>.
+     *
+     * @return property value of width
+     */
+    public double getWidth() {
+        return width;
+    }
 
-	public void setWidth(int width) {
-		this.width = width;
-	}
+    /**
+     * Setter method for property <tt>width</tt>.
+     *
+     * @param width value to be assigned to property width
+     */
+    public void setWidth(double width) {
+        this.width = width;
+    }
 
-	public int getRestrictHeight() {
-		return restrictHeight;
-	}
+    /**
+     * Getter method for property <tt>restrictHeight</tt>.
+     *
+     * @return property value of restrictHeight
+     */
+    public double getRestrictHeight() {
+        return restrictHeight;
+    }
 
-	public void setRestrictHeight(int restrictHeight) {
-		this.restrictHeight = restrictHeight;
-	}
+    /**
+     * Setter method for property <tt>restrictHeight</tt>.
+     *
+     * @param restrictHeight value to be assigned to property restrictHeight
+     */
+    public void setRestrictHeight(double restrictHeight) {
+        this.restrictHeight = restrictHeight;
+    }
 
-	public int getTransitionArea() {
+    public int getTransitionArea() {
 		return transitionArea;
 	}
 

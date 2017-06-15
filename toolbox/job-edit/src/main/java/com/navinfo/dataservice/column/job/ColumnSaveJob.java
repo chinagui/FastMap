@@ -156,13 +156,14 @@ public class ColumnSaveJob extends AbstractJob {
 					batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 				}
 			}
-			
+			boolean isInitQcProblem=false;
 			//更新质检问题表
 			if(isQuality==1){
 				updateColumnQcProblems(pidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
 				if(secondWorkItem.equals("namePinyin")){
 					updatePYIsProblem(pidList,conn,comSubTaskId);
 				}
+				isInitQcProblem=true;
 			}
 
 			// 检查
@@ -191,14 +192,19 @@ public class ColumnSaveJob extends AbstractJob {
 			log.info("执行重分类");
 			if (columnOpConf.getSaveExeclassify()==1) {
 				if (columnOpConf.getSaveCkrules() != null && columnOpConf.getSaveClassifyrules() != null) {
+					
 					HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 					classifyMap.put("userId", userId);
 					classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
 					classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
-					
+					classifyMap.put("firstWorkItem", firstWorkItem);
+					classifyMap.put("secondWorkItem", secondWorkItem);
 					classifyMap.put("pids", pidList);
 					ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-					columnCoreOperation.runClassify(classifyMap,conn,taskId);
+					//增加质检功能后，需要维护重分类后的质检标记
+					Map<Integer,JSONObject> qcFlag = columnCoreOperation.getColumnDataQcFlag(pidList,userId,conn,comSubTaskId,isQuality);
+					classifyMap.put("qcFlag", qcFlag);
+					columnCoreOperation.runClassify(classifyMap,conn,comSubTaskId,isInitQcProblem,isQuality);
 				}
 			}
 			

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
@@ -172,5 +173,25 @@ public class BaseBatchUtils {
         } catch (Exception e) {
             throw new Exception("PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() + "对象设置RegionId失败");
         }
+    }
+
+    /**
+     * 排除已删除数据
+     * @param result 结果集
+     * @param linkPid 验证LinkPid
+     * @return true: 已删除，false: 未删除
+     */
+    protected static boolean isDeleteLink(Result result, int linkPid) {
+        boolean isDelete = false;
+        for (IRow row : result.getDelObjects()) {
+            if (!(row instanceof RdLink)) {
+                continue;
+            }
+            RdLink link = (RdLink) row;
+            if (linkPid == link.pid()) {
+                isDelete = true;
+            }
+        }
+        return isDelete;
     }
 }

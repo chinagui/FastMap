@@ -7,11 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -22,9 +21,12 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.exception.ServiceException;
+
+import oracle.sql.STRUCT;
 
 public class IxDealershipResultSelector {
 	protected static Logger log = LoggerRepos.getLogger(IxDealershipResultSelector.class);
@@ -55,6 +57,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getResultId(), tmp);
 				}
 				return sourceIdMap;
@@ -88,6 +91,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getSourceId(), tmp);
 				}
 				return sourceIdMap;
@@ -155,6 +159,7 @@ public class IxDealershipResultSelector {
 		result.setToInfoDate(rs.getString("TO_INFO_DATE"));
 		result.setUserId(rs.getInt("USER_ID"));
 		result.setWorkflowStatus(rs.getInt("WORKFLOW_STATUS"));
+		result.setOldValues(null);
 		return result;
 	}
 	
@@ -187,6 +192,7 @@ public class IxDealershipResultSelector {
 				result.setResultId(resultSet.getInt(1));
 				result.setCfmPoiNum(resultSet.getString(2));
 				result.setRegionId(resultSet.getInt(3));
+				result.setOldValues(null);
 				resultIdList.add(result);
 			}
 
@@ -223,6 +229,7 @@ public class IxDealershipResultSelector {
 			if (resultSet.next()) {
 				ReflectionAttrUtils.executeResultSet(result, resultSet);
 			}
+			result.setOldValues(null);
 
 			return result;
 		} catch (Exception e) {
@@ -234,21 +241,22 @@ public class IxDealershipResultSelector {
 	}
 	
 	/**
-	 * 提交时更新deal_status为3
+	 * 更新deal_status
 	 * @param resultId
 	 * @param conn
 	 * @throws Exception
 	 */
-	public static void updateResultDealStatus(Integer resultId,Connection conn) throws Exception {
+	public static void updateResultDealStatus(Integer resultId,Integer dealStatus,Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET DEAL_STATUS = 3 WHERE RESULT_ID = :1");
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET DEAL_STATUS = :1 WHERE RESULT_ID = :2");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setInt(1, resultId);
+			pstmt.setInt(1, dealStatus);
+			pstmt.setInt(2, resultId);
 			pstmt.executeUpdate();
 			
 		} catch (Exception e) {
@@ -269,5 +277,304 @@ public class IxDealershipResultSelector {
 		log.info("getIxDealershipResultMapByChain:" + sql);
 		return new QueryRunner().query(conn,sql,getSourceHander());		
 
+	}
+	
+	/**
+	 * 通过sql
+	 * @param conn
+	 * @param sql
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Integer, IxDealershipResult> getIxDealershipResultsBySql(Connection conn,String sql) throws Exception{
+		return new QueryRunner().query(conn, sql, getSourceHander());
+	}
+	/**
+	 * 得到客户确认-待发布中品牌数据
+	 * @param chainCode
+	 * @param conn
+	 * @return
+	 * @throws SQLException
+	 */
+	public static List<ExpClientConfirmResult> getClientConfirmResultList(String chainCode,Connection conn) throws SQLException {
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<List<ExpClientConfirmResult>> rs = null;
+		String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
+				+ " r.name_short, r.address,r.tel_sale,r.tel_service ,r.tel_other,r.post_code,r.name_eng,r.address_eng,"
+				+ " r.cfm_poi_num , r.workflow_status,r.deal_src_diff,r.cfm_memo,r.region_id"
+				+ " from IX_DEALERSHIP_RESULT r "
+				+ " where r.chain = '"+chainCode+"' and r.workflow_status  = 5 and r.cfm_status = 1";
+		log.info("selectSql: "+selectSql);
+		rs =  new ResultSetHandler<List<ExpClientConfirmResult>>() {
+		@Override
+			public List<ExpClientConfirmResult> handle(ResultSet rs) throws SQLException {
+				
+				List<ExpClientConfirmResult> clientConfirmList = new ArrayList<ExpClientConfirmResult>();
+				while (rs.next()) {
+					ExpClientConfirmResult result = new ExpClientConfirmResult();
+						result.setResultId(rs.getInt("result_id"));
+						result.setProvince( rs.getString("province"));
+						result.setCity( rs.getString("city"));
+						result.setProject( rs.getString("project"));
+						result.setKindCode( rs.getString("kind_code"));
+						result.setChain( rs.getString("chain"));
+						result.setName( rs.getString("name"));
+						result.setNameShort( rs.getString("name_short"));
+						result.setAddress( rs.getString("address"));
+						result.setTelSale( rs.getString("tel_sale"));
+						result.setTelService( rs.getString("tel_service"));
+						result.setTelOther( rs.getString("tel_other"));
+						result.setPostCode( rs.getString("post_code"));
+						result.setNameEng( rs.getString("name_eng"));
+						result.setAddressEng( rs.getString("address_eng"));
+						result.setFid( rs.getString("cfm_poi_num"));
+						result.setWorkFlowStatus(rs.getString("workflow_status"));
+						result.setDealSrcDiff(rs.getString("deal_src_diff"));
+						result.setCfmMemo(rs.getString("cfm_memo"));
+						
+						clientConfirmList.add(result);
+				}
+				return clientConfirmList;
+			}
+		};
+			
+		return run.query(conn, selectSql, rs);
+		
+	}
+	
+	/**
+	 * 更新cfm_status状态改为“待确认”即2
+	 * @param resultId
+	 * @param conn
+	 * @throws Exception
+	 */
+	public static void updateResultCfmStatus(Integer resultId,Integer cfmStatus,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = :1 WHERE RESULT_ID = :2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, cfmStatus);
+			pstmt.setInt(2, resultId);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 根据poiNum赋值日库中对应的字段
+	 * @param poiNum
+	 * @param result
+	 * @param regionConn
+	 * @throws Exception 
+	 */
+	public static int setRegionFiledByPoiNum(ExpClientConfirmResult result,Connection regionConn) throws Exception{
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT P.PID,P.CHAIN,P.KIND_CODE,P.POST_CODE FROM IX_POI P "
+				+ "WHERE P.POI_NUM = :1");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = regionConn.prepareStatement(sb.toString());
+			pstmt.setString(1,result.getFid());
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				result.setPoiPid(resultSet.getInt("PID"));
+				result.setPoiChain(resultSet.getString("CHAIN"));
+				result.setPoiKindCode(resultSet.getString("KIND_CODE"));
+				result.setPoiPostCode(resultSet.getString("POST_CODE"));
+				return resultSet.getInt("PID");
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return 0;
+			
+	}
+	
+	public static void setPoiContactByPid(ExpClientConfirmResult result, Connection regionConn) throws Exception {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select listagg(contact,'|') within GROUP (order by priority DESC)  AS contact");
+		sb.append(" from ix_poi_contact WHERE poi_pid = :1 group by poi_pid");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = regionConn.prepareStatement(sb.toString());
+			pstmt.setInt(1,result.getPoiPid());
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				result.setPoiContact(resultSet.getString("contact"));
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	public static void setPoiAddressByPid(ExpClientConfirmResult result, Connection regionConn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT FULLNAME FROM ix_poi_address "
+				+ "WHERE LANG_CODE = 'CHI' AND poi_pid = :1");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = regionConn.prepareStatement(sb.toString());
+			pstmt.setInt(1,result.getPoiPid());
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				result.setPoiAddress(resultSet.getString("FULLNAME"));
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	public static void setPoiAliasNameByPid(ExpClientConfirmResult result, Connection regionConn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT NAME FROM ix_poi_name "
+				+ "WHERE name_class = 3 AND name_type = 1 AND LANG_CODE = 'CHI' AND poi_pid = :1");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = regionConn.prepareStatement(sb.toString());
+			pstmt.setInt(1,result.getPoiPid());
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				result.setPoiAliasName(resultSet.getString("NAME"));
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+	public static void setPoiStandrandNameByPid(ExpClientConfirmResult result, Connection regionConn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT NAME FROM ix_poi_name "
+				+ "WHERE name_class = 1 AND name_type = 1 AND LANG_CODE = 'CHI' AND poi_pid = :1");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = regionConn.prepareStatement(sb.toString());
+			pstmt.setInt(1,result.getPoiPid());
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				result.setPoiName(resultSet.getString("NAME"));
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+	public static void updateResultToClientDate(Integer resultId, Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET TO_CLIENT_DATE = :1 WHERE RESULT_ID = :2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+			pstmt.setInt(2, resultId);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 更新result相应的状态当关闭作业时
+	 * @param resultId
+	 * @param conn
+	 * @throws Exception
+	 */
+	public static void updateResultStatusWhenCloseWork(List<Integer> resultIds,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE ix_dealership_result r SET r.cfm_status = 3,r.workflow_status = 9,r.deal_status = 3 WHERE ");
+		sb.append(" r.result_id in (");
+		String temp = "";
+		for (int resultId:resultIds) {
+			sb.append(temp);
+			sb.append(resultId);
+			temp = ",";
+		}
+		sb.append(")");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	public static void updateResultFbSource(Integer resultId, Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET FB_SOURCE = :1 WHERE RESULT_ID = :2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, 2);
+			pstmt.setInt(2, resultId);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
 	}
 }

@@ -264,20 +264,20 @@ public class InformationExportResult {
 	}
 
 	//代理店显示坐标X
-	public String getxLocate() {
+	public String getXLocate() {
 		return this.xLocate;
 	}
 
-	public void setxLocate(String xLocate) {
+	public void setXLocate(String xLocate) {
 		this.xLocate = xLocate;
 	}
 
 	//代理店显示坐标Y
-	public String getyLocate() {
-		return yLocate;
+	public String getYLocate() {
+		return this.yLocate;
 	}
 
-	public void setyLocate(String yLocate) {
+	public void setYLocate(String yLocate) {
 		this.yLocate = yLocate;
 	}
 

@@ -23,6 +23,7 @@ import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -41,6 +42,14 @@ public class programTest extends InitApplication{
 		programIds.add(191);
 		//long userId=2;
 		String msg=ProgramService.getInstance().pushMsg(0, programIds);
+		System.out.println(msg);
+	}
+	
+	@Test
+	public void testList() throws Exception
+	{
+		//long userId=2;
+		Page msg=ProgramService.getInstance().list(1, 2, null, null, 1, 15);
 		System.out.println(msg);
 	}
 

@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +11,12 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.IxSamePoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -30,89 +30,76 @@ import com.vividsolutions.jts.geom.Geometry;
  * 检查原则：
  * 1、如果原始官方中文名称、地址（fullname）、显示坐标不完全相同(5米范围外)，报LOG：制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同！
  * 屏蔽：分类分别为加油站（230215）和加气站（230216），名称不相同，地址、显示坐标相同，不需要报log
- * 2、制作了此类型的同一关系(满足检查条件)，但是分类+CHAIN相同，报LOG：制作多类别同属性同一关系的POI种别必须不相同！
+ * 2、制作了此类型的同一关系(满足检查条件)，但是分类，报LOG：制作多类别同属性同一关系的POI种别必须不相同！
  */
 public class GLM60238 extends BasicCheckRule {
-
-	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
-	private Set<String> filterPid1 = new HashSet<String>();
-	private Set<String> filterPid2 = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String kindCode = poi.getKindCode();
-			if(kindCode == null){return;}
-			
-			String name = null;
-			String fullName = null;
-			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
-			if(ixPoiName != null){
-				name = ixPoiName.getName();
-			}
-			IxPoiAddress ixPoiAddress = poiObj.getCHAddress();
-			if(ixPoiAddress!=null){
-				fullName = ixPoiAddress.getFullname();
-			}
-			//是否有同一关系
-			if(!samePoiMap.containsKey(poi.getPid())){return;}
-			//存在同一关系且IX_SAMEPOI.RELATION_TYPE=1
-			List<Long> samePoiGroupIds = CheckUtil.getSamePoiGroupIds(poi.getPid(), 1, this.getCheckRuleCommand().getConn());
-			if(samePoiGroupIds == null ||samePoiGroupIds.isEmpty()){return;}
-			Long parentId=samePoiMap.get(poi.getPid());
-			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
-			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
-			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
-			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null ){return;}
-			
-			String nameP = null;
-			String fullNameP = null;
-			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
-			if(ixPoiNameP != null){
-				nameP = ixPoiNameP.getName();
-			}
-			IxPoiAddress ixPoiAddressP = parentPoiObj.getCHAddress();
-			if(ixPoiAddressP!=null){
-				fullNameP = ixPoiAddressP.getFullname();
-			}
-			
-			Geometry geometry = poi.getGeometry();
-			Geometry geometryP = parentPoi.getGeometry();
-			//显示坐标点位距离
-			Coordinate coordinate = geometry.getCoordinate();
-			Coordinate coordinateP = geometryP.getCoordinate();
-			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
-			boolean flag = true;
-			//屏蔽：分类分别为加油站（230215）和加气站（230216），名称不相同，地址、显示坐标相同，不需要报log
-			if(("230215".equals(kindCode)&&"230216".equals(kindCodeP))
-					||("230216".equals(kindCode)&&"230215".equals(kindCodeP))){
-				if(!StringUtils.equals(name, nameP)&&StringUtils.equals(fullName, fullNameP)&&distance < 5){
-					flag = false;
-				}
-			}
-			if(flag){
-				if(!StringUtils.equals(name, nameP)||!StringUtils.equals(fullName, fullNameP)||distance > 5){
-					String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
-					if(!filterPid1.contains(targets)){
-						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
+		if(obj.objName().equals(ObjectName.IX_SAMEPOI)){
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			IxSamepoi poi=(IxSamepoi) poiObj.getMainrow();
+			if(poi.getRelationType()!=1){return;}
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			Set<String> kindSet=new HashSet<String>();
+			Geometry geo=null;
+			String address=null;
+			String name=null;
+			boolean first=true;
+			boolean firstName=true;
+			Long pid=null;
+			for(IxSamepoiPart tmp:parts){
+				BasicObj partObj = myReferDataMap.get(ObjectName.IX_POI).get(tmp.getPoiPid());
+				IxPoiObj partPoiObj = (IxPoiObj) partObj;
+				IxPoi partPoi = (IxPoi) partPoiObj.getMainrow();
+				String partKind=partPoi.getKindCode();
+				if(first){
+					pid=partPoi.getPid();
+					geo=partPoi.getGeometry();					
+					kindSet.add(partKind);
+					IxPoiAddress ixPoiAddressP = partPoiObj.getCHAddress();
+					if(ixPoiAddressP!=null){
+						address = ixPoiAddressP.getFullname();
 					}
-					filterPid1.add(targets);
-					filterPid1.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
+					first=false;
 				}
-			}
-			//制作了此类型的同一关系(满足检查条件)，但是分类+CHAIN相同，报LOG
-			String chain = poi.getChain();
-			String chainP = parentPoi.getChain();
-			if(StringUtils.equals(chain, chainP)&&StringUtils.equals(kindCode, kindCodeP)){
-				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
-				if(!filterPid2.contains(targets)){
-					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "制作多类别同属性同一关系的POI种别必须不相同");
+				if(firstName&&!("230215".equals(partKind)&&"230216".equals(partKind))){
+				//加油加气不对比名称
+					IxPoiName ixPoiNameP = partPoiObj.getOfficeOriginCHName();
+					if(ixPoiNameP != null){
+						name = ixPoiNameP.getName();
+					}
+					firstName=false;
 				}
-				filterPid2.add(targets);
-				filterPid2.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
+				//第一次循环，仅进行对比字段赋值，不做相同判断。
+				if(pid==partPoi.getPid()){continue;}
+				//对比属性是否相同
+				//显示坐标点位距离
+				Coordinate coordinate = geo.getCoordinate();
+				Coordinate coordinateP = partPoi.getGeometry().getCoordinate();
+				double distance = GeometryUtils.getDistance(coordinate, coordinateP);
+				
+				String nameP = null;
+				String addressP = null;
+				IxPoiName ixPoiNameP = partPoiObj.getOfficeOriginCHName();
+				if(ixPoiNameP != null){
+					nameP = ixPoiNameP.getName();
+				}
+				IxPoiAddress ixPoiAddressP = partPoiObj.getCHAddress();
+				if(ixPoiAddressP!=null){
+					addressP = ixPoiAddressP.getFullname();
+				}
+				
+				if((!("230215".equals(partKind)&&"230216".equals(partKind))&&!StringUtils.equals(name, nameP))||!StringUtils.equals(address, addressP)||distance > 5){
+					String targets = "[IX_POI,"+pid+"];[IX_POI,"+partPoiObj.objPid()+"]";
+					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
+				}
+				
+				if(kindSet.contains(partPoi.getKindCode())){
+					String targets = "[IX_POI,"+pid+"];[IX_POI,"+partPoiObj.objPid()+"]";
+					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(),  "制作多类别同属性同一关系的POI种别必须不相同");
+				}
+				kindSet.add(partPoi.getKindCode());
 			}
 		}
 	}
@@ -121,14 +108,19 @@ public class GLM60238 extends BasicCheckRule {
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
-			pidList.add(obj.objPid());
+			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
+			IxSamepoi poi=(IxSamepoi) poiObj.getMainrow();
+			if(poi.getRelationType()!=1){continue;}
+			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
+			for(IxSamepoiPart tmp:parts){
+				pidList.add(tmp.getPoiPid());
+			}
 		}
-		samePoiMap = IxPoiSelector.getSamePoiPidsByThisPids(getCheckRuleCommand().getConn(), pidList);
 		Set<String> referSubrow=new HashSet<String>();
 		referSubrow.add("IX_POI_NAME");
 		referSubrow.add("IX_POI_ADDRESS");
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(samePoiMap.values(), ObjectName.IX_POI, referSubrow, false);
-		myReferDataMap.put(ObjectName.IX_POI, referObjs);
+		Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(pidList, ObjectName.IX_POI, referSubrow, false);
+		myReferDataMap.put(ObjectName.IX_POI, result);
 	}
 
 }

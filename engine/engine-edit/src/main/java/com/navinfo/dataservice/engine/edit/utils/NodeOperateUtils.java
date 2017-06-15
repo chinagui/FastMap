@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
@@ -23,6 +24,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
+import org.json.JSONException;
 
 public class NodeOperateUtils {
 
@@ -281,5 +285,24 @@ public class NodeOperateUtils {
         }
         node.setMeshes(nodeMeshs);
         return node;
+    }
+
+    /**
+     * 根据修改后几何信息设置点的FROM形态
+     * @param obj
+     * @throws JSONException
+     */
+    public static int calcFormOfChangedFields(IObj obj) throws JSONException {
+        int form = 0;
+        if (obj.changedFields().containsKey("geometry")) {
+            Geometry geometry = GeoTranslator.geojson2Jts((JSONObject) obj.changedFields().get("geometry"));
+            String[] meshes = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
+            if (2 == meshes.length) {
+                form = 1;
+            } else if (4 == meshes.length) {
+                form = 7;
+            }
+        }
+        return form;
     }
 }

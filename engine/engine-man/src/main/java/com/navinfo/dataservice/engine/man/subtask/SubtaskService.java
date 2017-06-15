@@ -161,7 +161,7 @@ public class SubtaskService {
 			createSubtaskWithSubtaskId(conn,bean);
 			
 			//质检子任务继承子任务名称
-			if(dataJson.containsKey("hasQuality") && dataJson.getInt("hasQuality") == 1){
+			if(qualitySubtaskId!=0){
 				updateQualityName(conn,qualitySubtaskId);
 			}
 		} catch (Exception e) {
@@ -330,7 +330,7 @@ public class SubtaskService {
 			}				
 			//正常修改子任务
 			Subtask subtask = createSubtaskBean(userId,dataJson);
-			Integer newQualitySubtaskId=0;
+			Integer newQualitySubtaskId=qualitySubtaskId;
 			//创建或者修改常规任务时，均要调用修改质检任务的代码
 			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 				Subtask qualitySubtask = new Subtask();//生成质检子任务的bean

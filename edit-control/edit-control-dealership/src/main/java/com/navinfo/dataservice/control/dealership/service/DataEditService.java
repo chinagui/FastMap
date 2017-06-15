@@ -1343,7 +1343,10 @@ public class DataEditService {
 					Connection regionConn = null;
 					try {
 						String poiNum = result.getCfmPoiNum();
-						regionConn = DBConnector.getInstance().getConnectionById(result.getRegionId());
+						
+						Connection mancon = DBConnector.getInstance().getManConnection();
+						int dbId = getDailyDbId(result.getRegionId(), mancon);
+						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int count = queryCKLogByPoiNum(poiNum,"IX_POI",regionConn);//查询该pid下有无错误log
 						if(count==0){
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
@@ -1516,6 +1519,13 @@ public class DataEditService {
 				ixDealershipResult.setFbContent(map.get("fbContent").toString());
 				ixDealershipResult.setFbDate(map.get("fbDate").toString());
 				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
+				if(map.get("fbAuditRemark").toString().equals("舍弃")){
+					ixDealershipResult.setWorkflowStatus(3);
+				}else{
+					ixDealershipResult.setWorkflowStatus(9);
+					ixDealershipResult.setDealStatus(3);
+				}
+				ixDealershipResult.setCfmStatus(3);
 				ixDealershipResult.setFbSource(2);
 				IxDealershipResultOperator.updateIxDealershipResult(conn, ixDealershipResult, userId);
 			}

@@ -43,41 +43,33 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>job-framework</artifactId>
 	</dependency>
-	
 	<dependency>
-		<groupId>com.navinfo.navicop.check</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_check</artifactId>
-		<version>1.1</version>
 	</dependency>
 	<dependency>
-	  <groupId>com.navicop.navinfo.check</groupId>
+	  <groupId>com.navinfo.navicop</groupId>
 	  <artifactId>navicop_dms_entry</artifactId>
-	  <version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navicop.navinfo.check</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_checkcore</artifactId>
-		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navicop.navinfo.check</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_checkengine</artifactId>
-		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navinfo.navicop.common</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_common</artifactId>
-		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navicop.navinfo.check</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_connectivity</artifactId>
-		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navicop.navinfo.model</groupId>
+		<groupId>com.navinfo.navicop</groupId>
 		<artifactId>navicop_gdbmodel</artifactId>
-		<version>1.1</version>
 	</dependency>
   </dependencies>
 </project>

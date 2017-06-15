@@ -66,8 +66,6 @@ public class DataPrepareService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	private int exceId = 1;
-	
 	/**
 	 * 查询代理店品牌
 	 * @param chainStatus品牌状态

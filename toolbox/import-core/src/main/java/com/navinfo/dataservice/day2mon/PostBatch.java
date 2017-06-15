@@ -290,7 +290,7 @@ public class PostBatch {
 	
 	// 后批完成，handler置0
 	private void updateHandler() throws Exception {
-		String sql = "UPDATE poi_column_status SET handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		String sql = "UPDATE poi_column_status SET handler=0 WHERE handler in (1,201250,200170,200140,201150) and pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		PreparedStatement pstmt = null;
 		try {
 			Map<String, Map<Long, BasicObj>> ObjMap = opResult.getAllObjsMap();

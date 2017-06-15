@@ -1185,7 +1185,7 @@ public class DataEditService {
                     	throw new Exception("该poi已被外业删除，不可用");
                     }
                     //需判断采纳POI是否被占用
-                    if(isOccupied(poiNum ,dealershipConn)){
+                    if(isOccupied(poiNum ,resultId,dealershipConn)){
                     	throw new Exception("该poi已被占用，不可用");
                     }
                     //需判断采纳POI是否已被使用
@@ -1249,11 +1249,11 @@ public class DataEditService {
 		}
 	}
 	
-	public boolean isOccupied(String poiNum , Connection conn ) throws Exception {
+	public boolean isOccupied(String poiNum ,int resultId, Connection conn ) throws Exception {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num='%s' AND CFM_IS_ADOPTED=2 ",poiNum);
+				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num='%s' AND r.CFM_IS_ADOPTED=2 AND r.result_id<>%d ",poiNum,resultId);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}
@@ -1560,21 +1560,28 @@ public class DataEditService {
 		return sources;
 	}
 	
-	public void closeChainService(Connection conn,String chainCode) throws Exception{
-		if(chainCode == null||chainCode.isEmpty()) {
+	public void closeChainService(Connection conn, String chainCode) throws Exception {
+		if (chainCode == null || chainCode.isEmpty()) {
 			throw new Exception("品牌为空，无需关闭！");
 		}
-		
-		String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
-		int leftChainResult = run.queryForInt(conn, sql);
-		
-		if(leftChainResult != 0){
-			throw new Exception(String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode));
+
+		try {
+			String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+			int leftChainResult = run.queryForInt(conn, sql);
+
+			if (leftChainResult != 0) {
+				throw new Exception(String.format("品牌%s存在未作业数据，无法关闭该品牌！", chainCode));
+			}
+
+			String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = '%s'",
+					chainCode);
+			run.execute(conn, updateSql);
+			conn.commit();
+		} catch (Exception e) {
+			conn.rollback();
+			log.error("关闭品牌：" + e.toString());
+			throw e;
 		}
-		
-		String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = '%s'",chainCode);
-		run.execute(conn, updateSql);
-		conn.commit();
 	}
 	
 	/**

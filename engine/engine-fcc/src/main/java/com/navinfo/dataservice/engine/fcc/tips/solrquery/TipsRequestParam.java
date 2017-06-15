@@ -437,6 +437,9 @@ public class TipsRequestParam {
                     }else{
                         builder.append("t_tipStatus:2");
                     }
+                    //20170615 过滤内业Tips
+                    builder.append(" AND ");
+                    builder.append("-s_sourceType:80*");
                     //20170510 增加中线有无过滤
                     addTaskFilterSql(noQFilter, builder);
                 }else if(pType.equals("fc")) {//FC 预处理 钟小明

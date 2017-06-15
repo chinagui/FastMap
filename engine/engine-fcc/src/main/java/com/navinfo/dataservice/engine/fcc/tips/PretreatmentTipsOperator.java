@@ -875,12 +875,26 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		JSONArray ja2 = new JSONArray();
 		JSONArray jaLink = geojson.getJSONArray("coordinates");
 		boolean hasFound = false;// 打断的点是否和形状点重合或者是否在线段上
-		for (int i = 0; i < jaLink.size() - 1; i++) {
+        if(jaLink.size() < 2) {
+            throw new Exception("打断的点不能在link的端点");
+        }
+        for (int i = 0; i < jaLink.size() - 1; i++) {
 			JSONArray jaPS = jaLink.getJSONArray(i);
-			if (i == 0) {
+          	if (i == 0) {
+                if(point.getCoordinate().x == jaPS.getDouble(0)
+                        && point.getCoordinate().y == jaPS.getDouble(1)) {
+                    throw new Exception("打断的点不能在link的端点");
+                }
 				ja1.add(jaPS);
 			}
 			JSONArray jaPE = jaLink.getJSONArray(i + 1);
+            if (i == jaLink.size() - 2) {
+                if(point.getCoordinate().x == jaPE.getDouble(0)
+                        && point.getCoordinate().y == jaPE.getDouble(1)) {
+                    throw new Exception("打断的点不能在link的端点");
+                }
+            }
+
 			if (!hasFound) {
 				// 打断点和形状点重合(精度修改，web给的point有误差，有时候不在线上，但也需要打断)
 				if (Math.abs(lon - jaPE.getDouble(0)) < 0.0000001
@@ -919,10 +933,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		sGeojson2.put("type", "LineString");
 		sGeojson2.put("coordinates", ja2);
 
+        if(ja1.size() < 2) {
+            throw new Exception("打断的点不能在link的端点");
+        }
+        if(ja2.size() < 2) {
+            throw new Exception("打断的点不能在link的端点");
+        }
+
 		// 缩小0.00001倍
 		sGeojson1 = GeoTranslator.jts2Geojson(GeoTranslator.transform(
 				GeoTranslator.geojson2Jts(sGeojson1), 0.00001, 5));
-System.out.println(sGeojson2);
+
 		sGeojson2 = GeoTranslator.jts2Geojson(GeoTranslator.transform(
 				GeoTranslator.geojson2Jts(sGeojson2), 0.00001, 5));
 
@@ -1662,6 +1683,7 @@ System.out.println(sGeojson2);
 			JSONObject oldGeo = JSONObject.fromObject(solrIndex
 					.get("g_location"));
 
+
 			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
 
 			JSONObject geo1 = new JSONObject();
@@ -1685,18 +1707,22 @@ System.out.println(sGeojson2);
 			
 			JSONObject g_guide2 =null;
 			
-			int pointSize=g_location1.getJSONArray("coordinates").size();
+			int pointSize = g_location1.getJSONArray("coordinates").size();
 			
 			int pointSize2=g_location2.getJSONArray("coordinates").size();
-			
-			if(pointSize==2){
+
+            System.out.println("****************************************pointSize   " + pointSize);
+            if(pointSize <= 1) {
+                throw new Exception("打断的点不能在link的端点");
+            }else if(pointSize > 2){
 				g_guide1 = getMidPointByGeometry(g_location1);
 			}else{
-				
 				g_guide1 = getSencondPoint(g_location1);
 			}
-			
-			if(pointSize2==2){
+            System.out.println("****************************************pointSize2   " + pointSize2);
+            if(pointSize2 <= 1) {
+                throw new Exception("打断的点不能在link的端点");
+            }else if(pointSize2 > 2){
 				g_guide2 = getMidPointByGeometry(g_location2);
 			}else{
 				g_guide2 = getSencondPoint(g_location2);

@@ -378,7 +378,7 @@ public class ColumnCoreOperation {
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT DISTINCT ps.pid,ps.qc_flag,ps.common_handler FROM POI_COLUMN_STATUS PS ");
 		sql.append(" WHERE PS.PID IN ("+StringUtils.join(pidList, ",")+") ");
-		sql.append("	AND PS.HANDLER = "+userId);
+		sql.append("	AND PS.HANDLER in (0, "+userId+") ");
 		if(isQuality==0){
 			sql.append("	AND PS.COMMON_HANDLER = "+userId);
 		}else if(isQuality==1){

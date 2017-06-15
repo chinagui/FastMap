@@ -832,7 +832,7 @@ public class DataPrepareService {
 						resultMap.put("fbAuditRemark", rs.getString("fb_audit_remark"));
 						int poiNum = calculatePoiNum(rs);
 						resultMap.put("matchPoiNum", poiNum);
-						resultMap.put("toClientDate", rs.getString("kind_code"));
+						resultMap.put("toClientDate", rs.getString("to_client_date"));
 						cofirmDataList.add(resultMap);
 					}
 					return cofirmDataList;

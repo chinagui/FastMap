@@ -726,6 +726,12 @@ public class TipsOperator {
         builder.append(")\"");
         builder.append(" AND s_qTaskId:0");
         builder.append(" AND s_mTaskId:0");
+        //20170615 过滤内业Tips
+        builder.append(" AND ");
+        builder.append("-s_sourceType:80*");
+        builder.append(" AND ");
+        builder.append("t_tipStatus:2");
+
         Connection hbaseConn = null;
         Table htab = null;
         List<Put> puts = new ArrayList<>();

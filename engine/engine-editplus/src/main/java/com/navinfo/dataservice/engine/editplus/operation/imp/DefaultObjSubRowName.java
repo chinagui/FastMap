@@ -30,7 +30,8 @@ public class DefaultObjSubRowName {
 					String subRowName = (String)it.next();
 					Object attValue = json.get(subRowName);
 					if((attValue==null && (!(attValue instanceof JSONNull)))
-							||StringUtils.isEmpty(subRowName)||"objStatus".equals(subRowName)){
+							||StringUtils.isEmpty(subRowName)||"objStatus".equals(subRowName)
+							||"geometry".equals(subRowName)){
 						continue;
 					}
 					if(attValue instanceof JSONArray){
@@ -38,13 +39,14 @@ public class DefaultObjSubRowName {
 						JSONArray attArr = (JSONArray)attValue;
 						if(attArr.size()>0){
 							for(int i=0;i<attArr.size();i++){
-								Object subObj = attArr.get(0);
+								Object subObj = attArr.get(i);
 								if(subObj instanceof JSONObject){
 									//为子表
 									JSONObject jo = (JSONObject) subObj;
 									for(Iterator ite = jo.keys();ite.hasNext();){
 										String subRow = (String)ite.next();
 										Object attValue01 = jo.get(subRow);
+										if("geometry".equals(subRow)){continue;}
 										if(attValue01 instanceof JSONArray||attValue01 instanceof JSONObject){
 											subRowNames.add(subRow);
 										}
@@ -61,6 +63,7 @@ public class DefaultObjSubRowName {
 						for(Iterator it02 = subJo.keys();it02.hasNext();){
 							String subRow02 = (String)it02.next();
 							Object attValue02 = subJo.get(subRow02);
+							if("geometry".equals(subRow02)){continue;}
 							if(attValue02 instanceof JSONArray||attValue02 instanceof JSONObject){
 								subRowNames.add(subRow02);
 							}

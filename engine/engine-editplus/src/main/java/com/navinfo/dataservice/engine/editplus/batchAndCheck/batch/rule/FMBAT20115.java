@@ -106,9 +106,9 @@ public class FMBAT20115 extends BasicBatchRule {
 					engOfficialName.setPoiPid(poi.getPid());
 					engOfficialName.setNameGroupid(standarName.getNameGroupid());
 					engOfficialName.setLangCode("ENG");
-					engOfficialName.setName(metadata.convertEng(standarName.getName()));
+					engOfficialName.setName(metadata.convertEng(standarName.getName(),adminCode));
 				} else {
-					engOfficialName.setName(metadata.convertEng(standarName.getName()));
+					engOfficialName.setName(metadata.convertEng(standarName.getName(),adminCode));
 					if (engStandarName != null) {
 						engStandarName.setName("");
 					}

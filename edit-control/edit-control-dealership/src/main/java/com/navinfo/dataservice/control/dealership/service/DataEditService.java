@@ -79,20 +79,26 @@ public class DataEditService {
 		if (count >= 50)
 			return 0;
 
-		String queryListSql = String.format(
-				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-				0, 3, 0, chainCode, 50 - count);
-		List<Object> resultID = ExecuteQuery(queryListSql, conn);
+		try {
+			String queryListSql = String.format(
+					"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
+					0, 3, 0, chainCode, 50 - count);
+			List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
-		if(resultID.size() == 0)
-			return 0;
-		
-		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
-				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
-		run.execute(conn, updateSql);
-		conn.commit();
-		
-		return resultID.size();
+			if (resultID.size() == 0)
+				return 0;
+
+			String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
+					+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
+			run.execute(conn, updateSql);
+			conn.commit();
+
+			return resultID.size();
+		} catch (Exception e) {
+			conn.rollback();
+			log.error("申请数据：" + e.toString());
+			throw new Exception(e);
+		}
 	}
 
 	/**
@@ -113,53 +119,70 @@ public class DataEditService {
 		if (dealStatus == 3 || dealStatus == 2)
 			flowStatus = 9;
 
-		String queryListSql = String.format(
-				"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
-				userId, flowStatus, dealStatus, chainCode);
-		List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
+		Connection manconn = null;
+		Connection poiconn = null;
 
-		JSONArray result = new JSONArray();
+		try {
+			String queryListSql = String.format(
+					"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
+					userId, flowStatus, dealStatus, chainCode);
+			List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
-		if (resultCol.size() == 0) {
-			JSONObject obj = new JSONObject();
-			obj.put("resultId", 0);
-			obj.put("name", "");
-			obj.put("kindCode", "");
-			obj.put("workflowStatus", 0);
-			obj.put("dealSrcDiff", 0);
-			obj.put("checkErrorNum", checkErrorNum);
-			result.add(obj);
-		}
+			JSONArray result = new JSONArray();
 
-		for (Map<String, Object> item : resultCol) {
-			Map<String, Object> objMap = new HashMap<>();
-			objMap.put("resultId", item.get("RESULT_ID"));
-			objMap.put("name", item.get("NAME") == null ? "" : item.get("NAME"));
-			objMap.put("kindCode", item.get("KIND_CODE") == null ? "" : item.get("KIND_CODE"));
-			objMap.put("workflowStatus", item.get("WORKFLOW_STATUS"));
-			objMap.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
-
-			// TODO:checkErrorNum需要计算
-			if (dealStatus == 2) {
-				String queryPoi = String.format(
-						"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_IS_ADOPTED = %d",
-						item.get("RESULT_ID"), 2);
-				String poiNum = run.queryForString(conn, queryPoi);
-				if (poiNum.isEmpty()) {
-					checkErrorNum = 0;
-				} else {
-					Connection conPoi = connector.getConnectionById((Integer) item.get("REGION_ID"));
-					String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
-					int poiPid = run.queryForInt(conPoi, queryPoiPid);
-					checkErrorNum = GetCheckResultCount(poiPid, conPoi);
-				}
+			if (resultCol.size() == 0) {
+				JSONObject obj = new JSONObject();
+				obj.put("resultId", 0);
+				obj.put("name", "");
+				obj.put("kindCode", "");
+				obj.put("workflowStatus", 0);
+				obj.put("dealSrcDiff", 0);
+				obj.put("checkErrorNum", checkErrorNum);
+				result.add(obj);
 			}
-			objMap.put("checkErrorNum", checkErrorNum);
 
-			JSONObject obj = JSONObject.fromObject(objMap);
-			result.add(obj);
+			for (Map<String, Object> item : resultCol) {
+				Map<String, Object> objMap = new HashMap<>();
+				objMap.put("resultId", item.get("RESULT_ID"));
+				objMap.put("name", item.get("NAME") == null ? "" : item.get("NAME"));
+				objMap.put("kindCode", item.get("KIND_CODE") == null ? "" : item.get("KIND_CODE"));
+				objMap.put("workflowStatus", item.get("WORKFLOW_STATUS"));
+				objMap.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
+
+				// TODO:checkErrorNum需要计算
+				if (dealStatus == 2) {
+					String queryPoi = String.format(
+							"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_IS_ADOPTED = %d",
+							item.get("RESULT_ID"), 2);
+					String poiNum = run.queryForString(conn, queryPoi);
+					if (poiNum.isEmpty()) {
+						checkErrorNum = 0;
+					} else {
+						manconn = DBConnector.getInstance().getManConnection();
+						int dbId = getDailyDbId((Integer) item.get("REGION_ID"), manconn);
+						poiconn = DBConnector.getInstance().getConnectionById(dbId);
+						String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
+						int poiPid = run.queryForInt(poiconn, queryPoiPid);
+						checkErrorNum = GetCheckResultCount(poiPid, poiconn);
+					}
+				}
+				objMap.put("checkErrorNum", checkErrorNum);
+
+				JSONObject obj = JSONObject.fromObject(objMap);
+				result.add(obj);
+			}
+			return result;
+		} catch (Exception e) {
+			log.error("开始作业，加载作业数据列表：" + e.toString());
+			throw e;
+		} finally {
+			if (manconn != null) {
+				DBUtils.closeConnection(manconn);
+			}
+			if (poiconn != null) {
+				DBUtils.closeConnection(poiconn);
+			}
 		}
-		return result;
 	}
 
 	private Integer GetCheckResultCount(Integer poiPid, Connection conn) throws Exception {
@@ -174,6 +197,13 @@ public class DataEditService {
 		return count;
 	}
 
+	/**
+	 * 详细数据列表
+	 * @param resultId
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
 	public JSONObject diffDetailService(int resultId, Connection conn) throws Exception {
 		Collection<Integer> resultIds = new ArrayList<>();
 		resultIds.add(resultId);
@@ -187,40 +217,56 @@ public class DataEditService {
 		// dealership_result中最匹配的五个poi
 		List<String> matchPoiNums = getMatchPoiNum(corresDealership);
 		List<IxPoi> matchPois = new ArrayList<>();
+		Connection mancon = null;
+		Connection connPoi = null;
 
-		Connection mancon = DBConnector.getInstance().getManConnection();
-		int regionDbId = corresDealership.getRegionId();
-		int dbId = getDailyDbId(regionDbId,mancon);
-		Connection connPoi = DBConnector.getInstance().getConnectionById(dbId);
-		IxPoiSelector poiSelector = new IxPoiSelector(connPoi);
+		try {
+			mancon = DBConnector.getInstance().getManConnection();
+			int regionDbId = corresDealership.getRegionId();
+			int dbId = getDailyDbId(regionDbId, mancon);
+			connPoi = DBConnector.getInstance().getConnectionById(dbId);
+			IxPoiSelector poiSelector = new IxPoiSelector(connPoi);
 
-		// dealership_source中是否已存在的cfm_poi_num
-		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOURCE WHERE CFM_POI_NUM IN (%s)",
-				StringUtils.join(matchPoiNums, ','));
-		List<Object> adoptedPoiNum = new ArrayList<>();
-		List<Integer> adoptedPoiPid=new ArrayList<>();
-		if (matchPoiNums.size() != 0) {
-			adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
-		}
-
-		for (String poiNum : matchPoiNums) {
-			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2", poiNum);
-			int poiPid = run.queryForInt(connPoi, queryPoiPid);
-
-			if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))) {
-				adoptedPoiPid.add(poiPid);
+			// dealership_source中是否已存在的cfm_poi_num
+			String querySourceSql = String.format(
+					"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOURCE WHERE CFM_POI_NUM IN (%s)",
+					StringUtils.join(matchPoiNums, ','));
+			List<Object> adoptedPoiNum = new ArrayList<>();
+			List<Integer> adoptedPoiPid = new ArrayList<>();
+			if (matchPoiNums.size() != 0) {
+				adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 			}
-			
-			if (poiPid < 0)
-				continue;
 
-			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
-			matchPois.add(poi);
+			for (String poiNum : matchPoiNums) {
+				String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2",
+						poiNum);
+				int poiPid = run.queryForInt(connPoi, queryPoiPid);
+
+				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))) {
+					adoptedPoiPid.add(poiPid);
+				}
+
+				if (poiPid < 0)
+					continue;
+
+				IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
+				matchPois.add(poi);
+			}
+
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
+			JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
+			return result;
+		} catch (Exception e) {
+			log.error("详细数据：" + e.toString());
+			throw e;
+		} finally {
+			if (connPoi != null) {
+				DBUtils.closeConnection(connPoi);
+			}
+			if (mancon != null) {
+				DBUtils.closeConnection(mancon);
+			}
 		}
-
-		JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
-		JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
-		return result;
 	}
 
 

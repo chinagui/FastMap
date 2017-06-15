@@ -273,6 +273,29 @@ public class RowCrowdsControl {
 	}
 	
 	/**
+	 * 根据grid算日库的dbId
+	 * @param grid
+	 * @return
+	 * @throws Exception
+	 */
+	public static String getDailyDbId(String grid) throws Exception {
+		String dbId = "";
+		Connection manConn = null;
+		try{
+			manConn = DBConnector.getInstance().getManConnection();
+			String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
+			QueryRunner qRunner = new QueryRunner();
+			dbId = qRunner.queryForString(manConn, manQuery, grid);
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			throw new Exception("数据未获取到大区库信息，不入库");
+		}finally{
+			DbUtils.commitAndClose(manConn);
+		}
+		return dbId;
+	}
+	
+	/**
 	 * 根据显示坐标算grid
 	 * @param x
 	 * @param y
@@ -287,7 +310,7 @@ public class RowCrowdsControl {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println(getGrid(116.36348, 39.97247));
+		System.out.println(getDailyDbId("59566232"));
 	}
 
 }

@@ -1343,7 +1343,10 @@ public class DataEditService {
 					Connection regionConn = null;
 					try {
 						String poiNum = result.getCfmPoiNum();
-						regionConn = DBConnector.getInstance().getConnectionById(result.getRegionId());
+						
+						Connection mancon = DBConnector.getInstance().getManConnection();
+						int dbId = getDailyDbId(result.getRegionId(), mancon);
+						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int count = queryCKLogByPoiNum(poiNum,"IX_POI",regionConn);//查询该pid下有无错误log
 						if(count==0){
 							IxDealershipResult noLogResult = IxDealershipResultSelector.

@@ -1332,11 +1332,6 @@ public class DataPrepareService {
 				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelService(), "|")));
 			}
 			Collections.sort(telList);
-			String a = expDbDiffResult.getPoi1Num();
-			Map<String,IxPoiObj> c = poi.get(expDbDiffResult.getRegionId());
-			Set<String> d = c.keySet();
-			boolean e = d.contains(a);
-			boolean b = poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num());
 			if(expDbDiffResult.getPoi1Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi1Num());
 				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();

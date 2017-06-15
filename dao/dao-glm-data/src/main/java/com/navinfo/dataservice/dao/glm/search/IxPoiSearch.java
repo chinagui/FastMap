@@ -223,7 +223,7 @@ public class IxPoiSearch implements ISearch {
 				+ "POI_EDIT_STATUS B ON A.PID = B.PID ");
 
 		if (noQFilter != null && noQFilter.size() > 0) {
-			sb.append(" WHERE B.QUICK_TASK_ID = 0 ");
+			sb.append(" WHERE B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
 			if (noQFilter.contains(1) && noQFilter.size() == 1) {
 				sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
 

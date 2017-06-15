@@ -58,7 +58,7 @@ public class FMBAT20177 extends BasicBatchRule {
 				String nameStr= name.getName();
 				if(nameStr.isEmpty()){continue;}
 				IxPoiName originAliasENG= poiObj.getOriginAliasENGName(groupId);
-				String newOriginAliasEngStr=metadataApi.convertEng(nameStr);
+				String newOriginAliasEngStr=metadataApi.convertEng(nameStr,adminId);
 				//将“NO.”，“nO.”，“no.”修改成“No.”
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("NO.", "No.");
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("nO.", "No.");

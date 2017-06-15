@@ -16,7 +16,10 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -137,6 +140,9 @@ public class PoiColumnValidationJob extends AbstractJob {
 		try{
 			List<Long> pids = myRequest.getPids();
 			if(pids!=null&&pids.size()>0){return;}
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(Integer.parseInt(String.valueOf(jobInfo.getTaskId())));
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			String sql="SELECT DISTINCT P.PID"
 					+ "  FROM POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF C"
 					+ " WHERE P.WORK_ITEM_ID = C.WORK_ITEM_ID"
@@ -145,6 +151,12 @@ public class PoiColumnValidationJob extends AbstractJob {
 					+ "   AND P.HANDLER="+jobInfo.getUserId()
 					+ "   AND P.TASK_ID="+jobInfo.getTaskId()
 					+ "   AND P.FIRST_WORK_STATUS IN (1,2)";
+			if(isQuality==0){//常规任务
+				sql += "   AND P.COMMON_HANDLER="+jobInfo.getUserId() + " ";
+			}else if(isQuality==1){//质检任务
+				sql += "   AND P.COMMON_HANDLER<>"+jobInfo.getUserId() + " ";
+				sql += "   AND P.QC_FLAG=1 ";
+			}
 			String secondWorkItem=myRequest.getSecondWorkItem();
 			//若针对二级项进行自定义检查，则检查对象应该是二级项状态为待作业/已作业状态
 			if(secondWorkItem!=null&&!secondWorkItem.isEmpty()){

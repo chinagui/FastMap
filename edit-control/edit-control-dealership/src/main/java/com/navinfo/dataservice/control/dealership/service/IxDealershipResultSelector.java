@@ -57,6 +57,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getResultId(), tmp);
 				}
 				return sourceIdMap;
@@ -90,6 +91,7 @@ public class IxDealershipResultSelector {
 				Map<Integer, IxDealershipResult> sourceIdMap=new HashMap<Integer, IxDealershipResult>();
 				while(rs.next()){
 					IxDealershipResult tmp=getBean(rs);
+					tmp.setOldValues(null);
 					sourceIdMap.put(tmp.getSourceId(), tmp);
 				}
 				return sourceIdMap;
@@ -157,6 +159,7 @@ public class IxDealershipResultSelector {
 		result.setToInfoDate(rs.getString("TO_INFO_DATE"));
 		result.setUserId(rs.getInt("USER_ID"));
 		result.setWorkflowStatus(rs.getInt("WORKFLOW_STATUS"));
+		result.setOldValues(null);
 		return result;
 	}
 	
@@ -189,6 +192,7 @@ public class IxDealershipResultSelector {
 				result.setResultId(resultSet.getInt(1));
 				result.setCfmPoiNum(resultSet.getString(2));
 				result.setRegionId(resultSet.getInt(3));
+				result.setOldValues(null);
 				resultIdList.add(result);
 			}
 
@@ -225,6 +229,7 @@ public class IxDealershipResultSelector {
 			if (resultSet.next()) {
 				ReflectionAttrUtils.executeResultSet(result, resultSet);
 			}
+			result.setOldValues(null);
 
 			return result;
 		} catch (Exception e) {
@@ -516,5 +521,60 @@ public class IxDealershipResultSelector {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	
+	/**
+	 * 更新result相应的状态当关闭作业时
+	 * @param resultId
+	 * @param conn
+	 * @throws Exception
+	 */
+	public static void updateResultStatusWhenCloseWork(List<Integer> resultIds,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE ix_dealership_result r SET r.cfm_status = 3,r.workflow_status = 9,r.deal_status = 3 WHERE ");
+		sb.append(" r.result_id in (");
+		String temp = "";
+		for (int resultId:resultIds) {
+			sb.append(temp);
+			sb.append(resultId);
+			temp = ",";
+		}
+		sb.append(")");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	public static void updateResultFbSource(Integer resultId, Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET FB_SOURCE = :1 WHERE RESULT_ID = :2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, 2);
+			pstmt.setInt(2, resultId);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
 	}
 }

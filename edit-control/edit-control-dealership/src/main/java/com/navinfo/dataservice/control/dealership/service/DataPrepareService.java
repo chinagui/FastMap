@@ -492,7 +492,8 @@ public class DataPrepareService {
 					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
 					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
 					+ " where r.source_id = s.source_id(+) "
-					+ " and r.chain = '"+chainCode+"'";
+					+ " and r.chain = '"+chainCode+"' "
+					+ " and r.workflow_status = 0 ";
 			log.info("selectSql: "+selectSql);
 			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
 				@Override
@@ -961,7 +962,6 @@ public class DataPrepareService {
 						}
 						IxDealershipResultSelector.updateResultCfmStatus(result.getResultId(),2,conn);//将导出对应的记录的RESULT.cfm_status状态改为“待确认”即2
 						IxDealershipResultSelector.updateResultToClientDate(result.getResultId(),conn);//更新TO_CLIENT_DATE为当前时间
-						IxDealershipResultSelector.updateResultFbSource(result.getResultId(),conn);//RESULT.fb_source改为“客户”即2
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;

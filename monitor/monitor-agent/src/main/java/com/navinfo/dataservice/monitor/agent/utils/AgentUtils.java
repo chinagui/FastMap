@@ -1,12 +1,17 @@
 package com.navinfo.dataservice.monitor.agent.utils;
 
+import java.util.List;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.navinfo.dataservice.monitor.agent.model.StatInfo;
+
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class AgentUtils {
 
@@ -38,10 +43,15 @@ public class AgentUtils {
 	 * @param jsa
 	 * @throws Exception 
 	 */
-	public static String pushData(JSONArray jsa) throws Exception{
+	public static String pushData(List<StatInfo> datas) throws Exception{
 		Client client = null;
 		String result = null;
 		try {
+			JSONArray jsa = new JSONArray();
+			for (StatInfo statInfo : datas) {
+				JSONObject jso = JSONObject.fromObject(statInfo);
+				jsa.add(jso);
+			}
 			client = ClientBuilder.newClient();
 			Entity<String> payload = Entity.json(jsa.toString());
 			String url = "http://192.168.4.110:1988/v1/push";

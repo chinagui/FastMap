@@ -544,10 +544,11 @@ public class IxDealershipResultOperator {
 			if(!columns.isEmpty()){
 				String columsStr = StringUtils.join(columns.toArray(),",");
 				updateSql = updateSql + columsStr + "  where RESULT_ID=" + bean.getResultId();
+				run.update(conn, 
+							updateSql, 
+						   values.toArray() );
 			}
-			run.update(conn, 
-						updateSql, 
-					   values.toArray() );
+
 
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

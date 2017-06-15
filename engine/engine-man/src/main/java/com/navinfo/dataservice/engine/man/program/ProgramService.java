@@ -1655,7 +1655,7 @@ public class ProgramService {
 			sb.append("          P.NAME                       PROGRAM_NAME,       ");
 			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
 			sb.append("          P.TYPE,                                          ");
-//			sb.append("          P.LOT,                                           ");
+			sb.append("          P.STATUS,                                           ");
 			sb.append("          C.CITY_NAME,                                     ");
 			sb.append("          C.CITY_ID,                                       ");
 			sb.append("          I.INFOR_ID,                                      ");
@@ -1690,7 +1690,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-//						map.put("lot", rs.getInt("LOT"));
+						map.put("status", rs.getInt("STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));

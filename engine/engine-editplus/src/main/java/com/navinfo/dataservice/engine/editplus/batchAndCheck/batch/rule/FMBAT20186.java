@@ -99,6 +99,7 @@ public class FMBAT20186 extends BasicBatchRule {
 			Long parentPid = childPidParentPid.get(poi.getPid());
 			
 			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			
 			// 地址
@@ -179,6 +180,7 @@ public class FMBAT20186 extends BasicBatchRule {
 			
 			for (Long childPid:childrenList) {
 				BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoiObj child = (IxPoiObj) childObj;
 				IxPoi childPoi = (IxPoi) child.getMainrow();
 			

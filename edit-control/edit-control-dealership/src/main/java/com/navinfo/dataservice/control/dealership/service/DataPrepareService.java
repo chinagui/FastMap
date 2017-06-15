@@ -92,10 +92,7 @@ public class DataPrepareService {
 						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t where t.chain_status  = " + chainStatus + ") "
 								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
 			}else{
-				selectSql = "SELECT * FROM "
-						+ "(SELECT A.*, ROWNUM RN FROM "
-						+ "(SELECT t.* FROM IX_DEALERSHIP_CHAIN t )"
-								+ "A WHERE ROWNUM <= " + endSize + ")WHERE RN >= " + begainSize;
+				selectSql = "SELECT t.* FROM IX_DEALERSHIP_CHAIN t";
 			}
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {

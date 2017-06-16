@@ -1,10 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.adadmingroup.update;
 
-import java.sql.Connection;
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-
 import com.google.gson.Gson;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -13,8 +8,10 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
+import org.apache.commons.collections.CollectionUtils;
 
-import net.sf.json.JSONObject;
+import java.sql.Connection;
+import java.util.List;
 
 public class Operation implements IOperation {
 
@@ -24,23 +21,14 @@ public class Operation implements IOperation {
 
 	public Operation(Command command, Connection conn) {
 		this.command = command;
-
 		this.conn = conn;
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
-
-		JSONObject content = command.getContent();
-
-		Gson gson = new Gson();
-
-		AdAdminTree tree = gson.fromJson(content.get("groupTree").toString(), AdAdminTree.class);
-
-		handleAdAdminTree(tree, result);
-
+		AdAdminTree tree = new Gson().fromJson(command.getContent().get("groupTree").toString(), AdAdminTree.class);
+		this.handleAdAdminTree(tree, result, tree.getGroup().pid());
 		return null;
-
 	}
 
 	/**
@@ -53,73 +41,60 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void handleAdAdminTree(AdAdminTree tree, Result result) throws Exception {
-
+	private void handleAdAdminTree(AdAdminTree tree, Result result, int groupId) throws Exception {
 		AdAdminGroup group = tree.getGroup();
-
 		AdAdminPart part = tree.getPart();
 
-		String groupType = null;
-
-		String partType = null;
-
-		int groupId = 0;
-
-		if (group != null && group.getGroupId() != 0) {
-			groupId = group.getGroupId();
-		} else {
-			groupId = PidUtil.getInstance().applyAdAdminGroupPid();
-		}
-
 		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
-		if (group != null && group.getObjType() != null) {
-			groupType = group.getObjType().toUpperCase();
+		if (group != null) {
+            groupId = group.pid();
 
-			if (ObjStatus.INSERT.toString().equals(groupType)) {
-				group.setRegionIdUp(tree.getRegionId());
-				result.insertObject(group, ObjStatus.INSERT, groupId);
-			}
+		    if (group.getObjType() != null) {
+                String groupType = group.getObjType().toUpperCase();
 
-			if (ObjStatus.UPDATE.toString().equals(groupType)) {
-				group.changedFields().put("regionIdUp", tree.getRegionId());
-				result.insertObject(group, ObjStatus.UPDATE, groupId);
-			}
-			if(ObjStatus.DELETE.toString().equals(groupType))
-			{
-				group.setRegionIdUp(tree.getRegionId());
-				result.insertObject(group, ObjStatus.DELETE, groupId);
-			}
+                if (ObjStatus.INSERT.toString().equals(groupType)) {
+                    groupId = PidUtil.getInstance().applyAdAdminGroupPid();
+                    group.setPid(groupId);
+                    group.setRegionIdUp(tree.getRegionId());
+                    result.insertObject(group, ObjStatus.INSERT, groupId);
+                } else if (ObjStatus.UPDATE.toString().equals(groupType)) {
+                    group.changedFields().put("regionIdUp", tree.getRegionId());
+                    result.insertObject(group, ObjStatus.UPDATE, groupId);
+                } else if (ObjStatus.DELETE.toString().equals(groupType)) {
+                    group.setRegionIdUp(tree.getRegionId());
+                    result.insertObject(group, ObjStatus.DELETE, groupId);
+                }
+            }
 		}
 
 		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
 		if (part != null && part.getObjType() != null) {
-			partType = part.getObjType().toUpperCase();
+			String partType = part.getObjType().toUpperCase();
 
 			if (ObjStatus.INSERT.toString().equals(partType)) {
+			    part.setGroupId(groupId);
 				part.setRegionIdDown(tree.getRegionId());
 				result.insertObject(part, ObjStatus.INSERT, groupId);
 			}
 
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
-				part.changedFields().put("groupId", part.getGroupId());
+				part.changedFields().put("groupId", groupId);
 				part.setGroupId(0);
 				result.insertObject(part, ObjStatus.UPDATE, groupId);
 			}
-			if(ObjStatus.DELETE.toString().equals(partType))
-			{
+
+			if(ObjStatus.DELETE.toString().equals(partType)) {
 				result.insertObject(part, ObjStatus.DELETE, groupId);
 			}
+
 		}
 		//递归查询子节点，递归调用该方法直到子节点为空
 		List<AdAdminTree> treeList = tree.getChildren();
-		if(CollectionUtils.isNotEmpty(treeList))
-		{
+		if(CollectionUtils.isNotEmpty(treeList)) {
 			for (AdAdminTree ad : treeList) {
-				handleAdAdminTree(ad, result);
+				handleAdAdminTree(ad, result, groupId);
 			}
-		}	
-		else
-		{
+		} else {
 			return;
 		}
 	}

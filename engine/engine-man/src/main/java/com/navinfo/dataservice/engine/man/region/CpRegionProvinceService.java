@@ -140,7 +140,8 @@ public class CpRegionProvinceService {
 					JSONArray jsonArray  = new JSONArray();
 					while(rs.next()){
 						JSONObject jsonObject = new JSONObject();
-						jsonObject.put(rs.getString("admincode"), rs.getString("province"));
+						jsonObject.put("admincode", rs.getString("admincode"));
+						jsonObject.put("province", rs.getString("province"));
 						jsonArray.add(jsonObject);
 					}
 					return jsonArray;

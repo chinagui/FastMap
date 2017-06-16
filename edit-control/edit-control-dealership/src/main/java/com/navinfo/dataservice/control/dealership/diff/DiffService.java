@@ -307,7 +307,7 @@ public class DiffService {
 							}
 							insertList.add(resultDpAttrDiff);
 						}
-						resultDpAttrDiff.setDealSrcDiff(4);
+						resultDpAttrDiff.setDealSrcDiff(3);
 
 						if(resultDpAttrDiff.getGeometry()==null){
 							String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();

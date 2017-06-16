@@ -406,4 +406,17 @@ public class DataPrepareController extends BaseController {
 			//return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/chainUpdate")
+	public ModelAndView chainUpdate(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			Integer jobId = dealerShipService.chainUpdate(userId);			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("转内业失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

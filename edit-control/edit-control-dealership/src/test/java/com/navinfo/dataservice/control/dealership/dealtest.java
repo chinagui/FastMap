@@ -13,7 +13,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
@@ -153,6 +155,19 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			de.closeWork(130, resultIds);
 
 		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	
+
+	@Test
+	public void getAdminCodeAndProvince() throws Exception {
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		try {
+			JSONArray data = manApi.getAdminCodeAndProvince();//得到distinct过后的adminCode列表
+			System.out.println(data);
+		}catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}

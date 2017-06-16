@@ -44,7 +44,7 @@ import net.sf.json.JSONObject;
  * 描述：engine-manGridSelectorApiServiceImpl.java
  * GridSelector 对外暴露的api实现类:所有GridSelector需要对外部项目暴露的接口，需要在这里进行包装实现；
  */
-//@Service("manApi")
+@Service("manApi")
 public class ManApiImpl implements ManApi {
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度

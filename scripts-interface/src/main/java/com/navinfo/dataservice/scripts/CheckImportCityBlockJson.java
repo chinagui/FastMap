@@ -119,6 +119,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:59:30 
 	 */
 	public static Map<String,City4Imp> parseCity(Connection conn)throws Exception{
+		System.out.println("start search city  :");
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		try{
@@ -172,6 +173,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:59:55 
 	 */
 	public static Map<String,Block4Imp> parseBlock(Map<String,City4Imp> citys,Connection conn)throws Exception{
+		System.out.println("search block :");
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		try{
@@ -218,7 +220,7 @@ public class CheckImportCityBlockJson {
 				}
 			}
 			blockUpdateMap.put("同一个图幅的grid被分配到了不同的 city;", gridUpdateSet1);
-			
+			System.out.println("search block over. blocks.size():");
 			return blocks;
 		}catch(Exception e){
 			e.printStackTrace();
@@ -246,6 +248,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午3:00:18 
 	 */
 	private static void parseInitBlock(Connection conn,int cityCount,int blockCount) throws Exception {
+		System.out.println("Start search initBlockFile ...");
 		int initCityCount = 0;
 		int initBlockCount = 0;
 		Statement pstmt = null;
@@ -256,7 +259,7 @@ public class CheckImportCityBlockJson {
 			
 			pstmt = conn.createStatement();
 			resultSet = pstmt.executeQuery(selectSql);
-			System.out.println("Starting read initBlockFile file...");
+			
 			
 			while (resultSet.next()){
 				//先判断计算的grid是否超过了城市界定的图幅，如果超过了，忽略
@@ -272,7 +275,7 @@ public class CheckImportCityBlockJson {
 				log.info(conn+" 检查:"+" 导入的block ("+initBlockCount+")和原始文件中的block("+blockCount+") 数量不一致!");
 			}
 			
-			System.out.println("read initBlockFile file over.");
+			System.out.println("search initBlockFile  over.");
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
@@ -297,6 +300,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:57:02 
 	 */
 	public static void updateCity(Connection conn)throws Exception{
+		System.out.println(" start updateCity :");
 		PreparedStatement stmt = null;
 		QueryRunner run = null;
 		try{
@@ -314,7 +318,7 @@ public class CheckImportCityBlockJson {
 					conn.commit();
 				}
 			}
-			
+			System.out.println(" updateCity over.");
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
@@ -334,6 +338,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:57:33 
 	 */
 	public static void updateBlock(Connection conn)throws Exception{
+		System.out.println(" start updateBlock :");
 		PreparedStatement stmt = null;
 		try{
 
@@ -351,6 +356,7 @@ public class CheckImportCityBlockJson {
 					conn.commit();
 				}
 			}
+			System.out.println("  updateBlock over. ");
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
@@ -370,12 +376,14 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:58:09 
 	 */
 	public static void updateBlock2(Connection conn)throws Exception{
+		System.out.println(" start  updateBlock2 over. ");
 		try{
 				QueryRunner run = new QueryRunner();
 				//write citys
 				String updBlockSql = " UPDATE SHD_GRID_BLOCK G SET G.ERR_CODE = 1,G.ERR_MSG=G.ERR_MSG || ? WHERE G.BLOCKCODE IS NULL";
 					run.update(conn, updBlockSql,"grid未分配给任何block;");
 					conn.commit();
+		System.out.println("  updateBlock2 over. ");
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
@@ -392,6 +400,7 @@ public class CheckImportCityBlockJson {
 	 * @date 2017年6月19日 下午2:58:45 
 	 */
 	public static void updateCity2(Connection conn)throws Exception{
+		System.out.println(" start updateCity2  ");
 		PreparedStatement stmt = null;
 		try{
 				QueryRunner run = new QueryRunner();
@@ -401,6 +410,8 @@ public class CheckImportCityBlockJson {
 						+ " exists(select 1 from cp_meshlist@dblink_rms M where  M.MESH = C.MESH_ID and M.PROVINCE != C.PROVINCE ) ";
 					run.update(conn, updCitySql,"city组成的省份图幅和cp_meshlist省份图幅不一致;");
 					conn.commit();
+					
+		System.out.println("  updateCity2 over. ");
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
@@ -411,6 +422,4 @@ public class CheckImportCityBlockJson {
 		}
 	}
 	
-	
-
 }

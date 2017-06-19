@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
 import com.navinfo.dataservice.monitor.agent.utils.AgentUtils;
@@ -18,14 +22,25 @@ import net.sf.json.JSONObject;
  * @Description: TomcatStatInfoLoader.java
  */
 public class TomcatStatInfoLoader {
+	protected static Logger log = LoggerRepos.getLogger(TomcatStatInfoLoader.class);
 	
-	public static void sendTomcatStatInfo() throws Exception{
-//		String url = "http://192.168.4.188:8084/man";
-		String url = "http://192.168.4.188:8081/edit";
-		List<StatInfo> datas = getTomcatInfoList(url,"192.168.4.188");
-		
-		String result = AgentUtils.pushData(datas);
-		System.out.println(result);
+	public static void sendTomcatStatInfo(List<List<String>> monitorTarget){
+		for (List<String> list : monitorTarget) {
+			String ip = list.get(0);
+			String port = list.get(1);
+			String tomcat = list.get(2);
+			//推送数据
+			try {
+				String url = "http://"+ip+":"+port+"/"+tomcat;
+				List<StatInfo> datas = getTomcatInfoList(url,"192.168.4.188");
+				String result = AgentUtils.pushData(datas);
+				log.info(result);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error("推送tomcat数据报错,"+e.getMessage());
+			}
+		}
 	}
 	
 	public static List<StatInfo> getTomcatInfoList(String url,String ip){
@@ -90,9 +105,6 @@ public class TomcatStatInfoLoader {
 				}
 				
 			System.out.println();
-//			JSONArray tomcatInformationsListObj = jsonobj.getJSONArray("tomcatInformationsList");
-			
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -101,35 +113,7 @@ public class TomcatStatInfoLoader {
 
 	//读取monitoring 服务中监控的数据
 	public static void main(String[] args) {
-//		String service_url = "http://192.168.4.188:8084/man/monitoring";
-//		Map<String,String> parMap = new HashMap<String, String>();
-//		parMap.put("part", "currentRequests"); 
-//		parMap.put("format", "json"); 
-//		String json = null; 
-		try {
-//			json = ServiceInvokeUtil.invokeByGet(service_url, parMap);
-//			System.out.println(json);
-//			JSONObject jsonReq = JSONObject.fromObject(json);
-//			JSONObject jsonobj = jsonReq.getJSONArray("map").getJSONArray(0).getJSONObject(0);
-//			
-//			JSONObject memoryInformationsObj = jsonobj.getJSONObject("memoryInformations");
-//			System.out.println();
-//			JSONArray tomcatInformationsListObj = jsonobj.getJSONArray("tomcatInformationsList");
-//			
-//			JSONObject memoryInformationsObj = jsonobj.getJSONObject("memoryInformations");
-//			JSONObject memoryInformationsObj = jsonobj.getJSONObject("memoryInformations");
-//			
-			
-			sendTomcatStatInfo();
-			
-			
-//			writeJsonFile(jsonReq, "f:/monitor.JSON");
-//			System.out.println(jsonReq);
-			System.out.println("over.");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 	
 	public static void writeJsonFile(JSONObject ja,String fileName) throws Exception {

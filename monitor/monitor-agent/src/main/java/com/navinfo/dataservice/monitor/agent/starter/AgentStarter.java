@@ -10,6 +10,7 @@ import com.navinfo.dataservice.monitor.agent.quartz.QuartzManager;
 import com.navinfo.dataservice.monitor.agent.quartz.ServiceJob;
 import com.navinfo.dataservice.monitor.agent.quartz.TomcatJob;
 import com.navinfo.dataservice.monitor.agent.service.ServiceStatInfoLoader;
+import com.navinfo.dataservice.monitor.agent.tomcat.TomcatStatInfoLoader;
 import com.navinfo.dataservice.monitor.agent.utils.AgentUtils;
 
 /** 
@@ -53,6 +54,8 @@ public class AgentStarter {
 	public static void tomcatRun(){
 		List<List<String>> monitorTarget = monitorTarget();
 		if(monitorTarget.size() > 0){
+			TomcatStatInfoLoader tomcatStatInfoLoader =new TomcatStatInfoLoader();
+			tomcatStatInfoLoader.sendTomcatStatInfo(monitorTarget);
 			System.out.println();
 		}
 	}

@@ -37,7 +37,7 @@ public class SendEmailMsgHandler implements MsgHandler {
 			if(toMail != null){
 				log.info("start push mail:"+toMail+","+mailTitle+","+mailContent);
 				//SendEmail.sendEmail(toMail, mailTitle, mailContent);
-				String SEND_USER=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendUser);
+				String SEND_USER=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendEmail);
 				String SEND_PWD=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendPwd);
 				sendMailBySmap(SEND_USER,SEND_PWD,toMail, mailTitle, mailContent);
 				log.info("end push mail:"+toMail+","+mailTitle+","+mailContent);
@@ -60,6 +60,7 @@ public class SendEmailMsgHandler implements MsgHandler {
 		parMap.put("content", content);
 		
 		log.info(parMap);
+		log.info(smapMailUrl);
 		String result = ServiceInvokeUtil.invokeByGet(smapMailUrl,parMap);
 		log.info("发送邮件，调用smap请求返回值："+result);
 	}

@@ -1189,7 +1189,7 @@ public class DataEditService {
                     	throw new Exception("该poi已被占用，不可用");
                     }
                     //需判断采纳POI是否已被使用
-                    if(haveUsed(poiNum ,dealershipConn)){
+                    if(haveUsed(poiNum ,resultId,dealershipConn)){
                     	throw new Exception("该poi已被使用，不可用");
                     }
             	}
@@ -1260,11 +1260,11 @@ public class DataEditService {
 		
 		return false;
 }
-	public boolean haveUsed(String poiNum , Connection conn ) throws Exception {
+	public boolean haveUsed(String poiNum ,int resultId, Connection conn ) throws Exception {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' ",poiNum);
+				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' and  r.result_id<>%d ",poiNum,resultId);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}

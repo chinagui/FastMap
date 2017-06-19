@@ -78,4 +78,23 @@ public class AgentUtils {
 		return result;
 	}
 	
+	/**
+	 * 判断tomcat是否启动
+	 * @author Han Shaoming
+	 * @param host
+	 * @param port
+	 * @return
+	 */
+	public static boolean tomcatRunSuccess(String host,String port){
+		String url = "http://"+host+":"+port+"/";
+		Client client = ClientBuilder.newClient();
+		Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get();
+		int status = response.getStatus();
+		if(status==200){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 }

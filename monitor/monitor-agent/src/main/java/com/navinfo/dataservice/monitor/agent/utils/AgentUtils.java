@@ -50,6 +50,7 @@ public class AgentUtils {
 			JSONArray jsa = new JSONArray();
 			for (StatInfo statInfo : datas) {
 				JSONObject jso = JSONObject.fromObject(statInfo);
+				System.out.println(jso);
 				jsa.add(jso);
 			}
 			client = ClientBuilder.newClient();

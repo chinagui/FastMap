@@ -37,7 +37,7 @@ import net.sf.json.JSONArray;
 public class TestInitPackage extends ClassPathXmlAppContextInit{
 	@Before
 	public void before(){
-		initContext(new String[]{"dubbo-app-scripts.xml","dubbo-scripts.xml"});
+		initContext(new String[]{"dubbo-consumer-datahub-test.xml"});//,"dubbo-scripts.xml"
 	}
 	
 	//@Test
@@ -78,7 +78,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -145,7 +145,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testgdbDonwnloadSp9() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -208,13 +208,15 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testImportSourceExcel() throws Exception{
 		JobScriptsInterface.initContext();
 
 //		String filePath="f:/source3.xlsx";
-		String filePath="f:/source333.xls";
+//		String filePath="f:/source333.xls";
 //		String filePath="f:/source.xlsx";
+		String filePath="f:/init_sourcebeijing.xls";
+		
 		ImportIxDealershipSourceExcle importSource = new ImportIxDealershipSourceExcle();
 		
 		importSource.imp(filePath);

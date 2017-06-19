@@ -239,11 +239,17 @@ public class DataEditService {
 					StringUtils.join(matchPoiNums, ','));
 			List<Object> adoptedPoiNum = new ArrayList<>();
 			List<Integer> adoptedPoiPid = new ArrayList<>();
+			List<String> repeatedPoiNum = new ArrayList<>();
 			if (matchPoiNums.size() != 0) {
 				adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 			}
 
 			for (String poiNum : matchPoiNums) {
+				if(repeatedPoiNum.contains(poiNum.replace("'", ""))){
+					continue;
+				}
+				repeatedPoiNum.add(poiNum);
+				
 				String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2",
 						poiNum);
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
@@ -348,6 +354,9 @@ public class DataEditService {
 		}
 		if (corresDealership.getPoiNum5() != null) {
 			result.add("'" + corresDealership.getPoiNum5() + "'");
+		}
+		if(corresDealership.getCfmPoiNum() != null){
+			result.add("'" + corresDealership.getCfmPoiNum() + "'");
 		}
 
 		return result;

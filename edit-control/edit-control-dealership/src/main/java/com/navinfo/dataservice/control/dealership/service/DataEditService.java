@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,6 +27,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
@@ -37,6 +41,8 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorC
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -233,11 +239,17 @@ public class DataEditService {
 					StringUtils.join(matchPoiNums, ','));
 			List<Object> adoptedPoiNum = new ArrayList<>();
 			List<Integer> adoptedPoiPid = new ArrayList<>();
+			List<String> repeatedPoiNum = new ArrayList<>();
 			if (matchPoiNums.size() != 0) {
 				adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 			}
 
 			for (String poiNum : matchPoiNums) {
+				if(repeatedPoiNum.contains(poiNum.replace("'", ""))){
+					continue;
+				}
+				repeatedPoiNum.add(poiNum);
+				
 				String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2",
 						poiNum);
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
@@ -342,6 +354,9 @@ public class DataEditService {
 		}
 		if (corresDealership.getPoiNum5() != null) {
 			result.add("'" + corresDealership.getPoiNum5() + "'");
+		}
+		if(corresDealership.getCfmPoiNum() != null){
+			result.add("'" + corresDealership.getCfmPoiNum() + "'");
 		}
 
 		return result;
@@ -1193,6 +1208,22 @@ public class DataEditService {
                     	throw new Exception("该poi已被使用，不可用");
                     }
             	}
+            	
+                int mesh=0;
+                JSONObject data = JSONObject.fromObject(poiData.getString("data"));
+                if(data.containsKey("geometry")){
+                	Set<String> meshes = new HashSet<String>();
+                	Geometry geom = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+                	meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+                	Iterator<String> it = meshes.iterator();
+            		if(it.hasNext()){
+            			mesh= Integer.parseInt(it.next()) ;
+            		}
+            		if(mesh!=0){
+            			data.put("meshId", mesh);
+            			poiData.put("data", data);
+            		}
+                }
 
                 //更新POI并且写履历
                 DefaultObjImportor importor = new DefaultObjImportor(poiConn,null);
@@ -1566,7 +1597,9 @@ public class DataEditService {
 		}
 
 		try {
-			String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+			String sql = String.format(
+					"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE (WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3) AND CHAIN = '%s'",
+					chainCode);
 			int leftChainResult = run.queryForInt(conn, sql);
 
 			if (leftChainResult != 0) {

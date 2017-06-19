@@ -412,8 +412,8 @@ public class DataPrepareController extends BaseController {
 		try {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			Integer jobId = dealerShipService.chainUpdate(userId);			
-			return new ModelAndView("jsonView", success());
+			Long jobId = dealerShipService.chainUpdate(userId);			
+			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error("转内业失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

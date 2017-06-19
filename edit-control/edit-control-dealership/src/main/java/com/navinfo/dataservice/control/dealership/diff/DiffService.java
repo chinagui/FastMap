@@ -36,7 +36,7 @@ public class DiffService {
 		return str.toString();
 	}
 
-	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, Map<Integer, IxDealershipResult> dealershipResultsPreMap) throws Exception {
+	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, Map<Integer, IxDealershipResult> dealershipResultsPreMap, String date) throws Exception {
 		log.info("Table Diff Begin");
 		
 		//加载cp_region_province
@@ -167,6 +167,7 @@ public class DiffService {
 				}
 
 				resultDpAttrDiff.setDealSrcDiff(1);
+				resultDpAttrDiff.setProvideDate(date);
 				
 				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
@@ -198,7 +199,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
-						
+						resultDpAttrDiff.setProvideDate(date);
+
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
 						dkeyMap.put(j.getSourceId(), "");
@@ -230,6 +232,7 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
+						resultDpAttrDiff.setProvideDate(date);
 						
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
@@ -264,6 +267,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
+						resultDpAttrDiff.setProvideDate(date);
+
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
 						dkeyMap.put(j.getSourceId(), "");
@@ -308,6 +313,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(3);
+						resultDpAttrDiff.setProvideDate(date);
+
 
 						if(resultDpAttrDiff.getGeometry()==null){
 							String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
@@ -331,6 +338,8 @@ public class DiffService {
 			resultDpAttrDiff = new IxDealershipResult(i);
 			resultDpAttrDiff.setDealSrcDiff(5);
 			resultDpAttrDiff.setChain(chain);
+			resultDpAttrDiff.setProvideDate(date);
+
 			if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
 				resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 			}else{
@@ -365,6 +374,8 @@ public class DiffService {
 					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
 					insertList.add(resultDpAttrDiff);
 				}
+				resultDpAttrDiff.setProvideDate(date);
+
 				if (((sourceNameMap.get(i.getName()) == null)
 						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
 						&& (sourcePostCodeMap.get(i.getPostCode()) == null)

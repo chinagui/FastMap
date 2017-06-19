@@ -1588,7 +1588,9 @@ public class DataEditService {
 		}
 
 		try {
-			String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+			String sql = String.format(
+					"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE (WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3) AND CHAIN = '%s'",
+					chainCode);
 			int leftChainResult = run.queryForInt(conn, sql);
 
 			if (leftChainResult != 0) {

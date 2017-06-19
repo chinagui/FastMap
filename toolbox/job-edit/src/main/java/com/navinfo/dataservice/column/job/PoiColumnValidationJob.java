@@ -143,17 +143,22 @@ public class PoiColumnValidationJob extends AbstractJob {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(Integer.parseInt(String.valueOf(jobInfo.getTaskId())));
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(Integer.parseInt(String.valueOf(jobInfo.getTaskId())), "2", isQuality);
+			}
+			
 			String sql="SELECT DISTINCT P.PID"
 					+ "  FROM POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF C"
 					+ " WHERE P.WORK_ITEM_ID = C.WORK_ITEM_ID"
 					+ "   AND C.CHECK_FLAG IN (1,3)"
 					+ "   AND C.FIRST_WORK_ITEM = '"+myRequest.getFirstWorkItem()+"'"
 					+ "   AND P.HANDLER="+jobInfo.getUserId()
-					+ "   AND P.TASK_ID="+jobInfo.getTaskId()
 					+ "   AND P.FIRST_WORK_STATUS IN (1,2)";
 			if(isQuality==0){//常规任务
+				sql += "   AND P.TASK_ID="+jobInfo.getTaskId() + " ";
 				sql += "   AND P.COMMON_HANDLER="+jobInfo.getUserId() + " ";
 			}else if(isQuality==1){//质检任务
+				sql += "   AND P.TASK_ID="+ subtask.getSubtaskId() + " ";
 				sql += "   AND P.COMMON_HANDLER<>"+jobInfo.getUserId() + " ";
 				sql += "   AND P.QC_FLAG=1 ";
 			}

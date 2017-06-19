@@ -941,33 +941,35 @@ public class GeometryUtils {
 
     public static void main(String[] args) throws Exception {
 
-        WKTReader r = new WKTReader();
-
-        String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162,116.05578 39.87162, 116.05567 39.87190)";
-
-        String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167,116.05580 39.87190)";
-
-        String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426,116.05038 39.86348)";
-        String test4 = "LINESTRING (116.3902 39.9983, 116.3903 39.9984, 116.3905 39.9983, 116.3905 39.9984, 116.3907 39.9983, 116.3907 39.9985, 116.3909 39.9983, 116.3908 39.9985, 116.3911 39.9983, 116.3911 39.9985)";
-        Geometry g1 = r.read(test1);
-
-        Geometry g2 = r.read(test2);
-
-        Geometry g3 = r.read(test3);
-        Geometry g4 = r.read(test4);
-
-        Coordinate c = getPointOnLineStringDistance((LineString) g4,
-                82.89500000000001);
-        System.out.println(c.x);
-        System.out.println(c.y);
-        Geometry geo= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907,39.9985});
-        System.out.println(getLinkLength(geo));
-
-        Geometry geo1= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907, 39.99845460272727});
-        System.out.println(getLinkLength(geo1));
+//        WKTReader r = new WKTReader();
+//
+//        String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162,116.05578 39.87162, 116.05567 39.87190)";
+//
+//        String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167,116.05580 39.87190)";
+//
+//        String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426,116.05038 39.86348)";
+//        String test4 = "LINESTRING (116.3902 39.9983, 116.3903 39.9984, 116.3905 39.9983, 116.3905 39.9984, 116.3907 39.9983, 116.3907 39.9985, 116.3909 39.9983, 116.3908 39.9985, 116.3911 39.9983, 116.3911 39.9985)";
+//        Geometry g1 = r.read(test1);
+//
+//        Geometry g2 = r.read(test2);
+//
+//        Geometry g3 = r.read(test3);
+//        Geometry g4 = r.read(test4);
+//
+//        Coordinate c = getPointOnLineStringDistance((LineString) g4,
+//                82.89500000000001);
+//        System.out.println(c.x);
+//        System.out.println(c.y);
+//        Geometry geo= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907,39.9985});
+//        System.out.println(getLinkLength(geo));
+//
+//        Geometry geo1= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907, 39.99845460272727});
+//        System.out.println(getLinkLength(geo1));
         //116.3907, 39.9983
         //116.3907, 39.9985
         //17.00630000000001
         //116.3907, 39.998470063
+    	
+    	System.out.println(getDistance(23,112.00001,23,112.00002));
     }
 }

@@ -89,12 +89,18 @@ public class TipsOperator {
             if (oldEStatus == 0 && editStatus != 0) {
                 jsonTrackInfo.put("stage", 2);
             }
+            if(oldEStatus != 0 && editStatus == 0) {
+                jsonTrackInfo.put("stage", -1);
+            }
             track.put("t_dEditStatus", editStatus);
             track.put("t_dEditMeth", editMeth);
         }else if(mdFlag.equals("m")) {//月编
             int oldEStatus = track.getInt("t_mEditStatus");
             if (oldEStatus == 0 && editStatus != 0) {
                 jsonTrackInfo.put("stage", 3);
+            }
+            if(oldEStatus != 0 && editStatus == 0) {
+                jsonTrackInfo.put("stage", -1);
             }
             track.put("t_mEditStatus", editStatus);
             track.put("t_mEditMeth", editMeth);
@@ -106,7 +112,9 @@ public class TipsOperator {
             int curStage = jsonTrackInfo.getInt("stage");
             if(trackInfoArr.size() == 0) {
                 // 更新hbase 增一个trackInfo
-                trackInfoArr.add(jsonTrackInfo);
+                if(curStage != -1) {
+                    trackInfoArr.add(jsonTrackInfo);
+                }
             }else {
                 int lastStage = lastTrack.getInt("stage");
                 if(lastStage == curStage) {//更新
@@ -115,6 +123,11 @@ public class TipsOperator {
                     trackInfoArr.remove(trackInfoArr.size()-1);
                     trackInfoArr.add(lastTrack);
                 }else{//新增
+                    if(curStage == -1 && trackInfoArr.size() >= 2) {
+                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
+                        int lastSecondStage = lastSecondTrack.getInt("stage");
+                        jsonTrackInfo.put("stage", lastSecondStage);
+                    }
                     trackInfoArr.add(jsonTrackInfo);
                 }
             }
@@ -153,7 +166,6 @@ public class TipsOperator {
         if(jsonTrackInfo.containsKey("stage")) {
             solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
         }
-
 
 		solrIndex.put("t_date", date);
 
@@ -245,12 +257,18 @@ public class TipsOperator {
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 2);
                     }
+                    if(oldEStatus !=0 && editStatus == 0) {
+                        jsonTrackInfo.put("stage", -1);
+                    }
                 } else if (mdFlag.equals("m")) {//月编
                     value.put("t_mEditStatus", editStatus);
                     value.put("t_mEditMeth", editMeth);
                     int oldEStatus = track.getInt("t_mEditStatus");
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 3);
+                    }
+                    if(oldEStatus !=0 && editStatus == 0) {
+                        jsonTrackInfo.put("stage", -1);
                     }
                 }
                 jsonTrackInfo.put("date", date);
@@ -329,7 +347,9 @@ public class TipsOperator {
                             int curStage = jsonTrackInfo.getInt("stage");
                             if(trackInfoArr.size() == 0) {
                                 // 更新hbase 增一个trackInfo
-                                trackInfoArr.add(jsonTrackInfo);
+                                if(curStage != -1) {
+                                    trackInfoArr.add(jsonTrackInfo);
+                                }
                             }else {
                                 int lastStage = lastTrack.getInt("stage");
                                 if(lastStage == curStage) {//更新
@@ -338,7 +358,14 @@ public class TipsOperator {
                                     trackInfoArr.remove(trackInfoArr.size()-1);
                                     trackInfoArr.add(lastTrack);
                                 }else{//新增
-                                    trackInfoArr.add(jsonTrackInfo);
+                                    if(curStage == -1 && trackInfoArr.size() >= 2) {
+                                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
+                                        int lastSecondStage = lastSecondTrack.getInt("stage");
+                                        jsonTrackInfo.put("stage", lastSecondStage);
+                                    }
+                                    if(curStage != -1) {
+                                        trackInfoArr.add(jsonTrackInfo);
+                                    }
                                 }
                             }
                         } else {
@@ -699,6 +726,12 @@ public class TipsOperator {
         builder.append(")\"");
         builder.append(" AND s_qTaskId:0");
         builder.append(" AND s_mTaskId:0");
+        //20170615 过滤内业Tips
+        builder.append(" AND ");
+        builder.append("-s_sourceType:80*");
+        builder.append(" AND ");
+        builder.append("t_tipStatus:2");
+
         Connection hbaseConn = null;
         Table htab = null;
         List<Put> puts = new ArrayList<>();

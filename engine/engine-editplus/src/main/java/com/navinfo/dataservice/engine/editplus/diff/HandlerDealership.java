@@ -1,12 +1,18 @@
 package com.navinfo.dataservice.engine.editplus.diff;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
@@ -15,6 +21,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -24,6 +31,10 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+
+import net.sf.json.JSONArray;
 
 /**
  * 代理店与Poi属性比较类
@@ -238,7 +249,7 @@ public class HandlerDealership {
 		return false;
 	}
 	
-	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain)
+	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain,Map dbMap)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -258,6 +269,9 @@ public class HandlerDealership {
 
 			for (int i = 0; i < diffFinishResultList.size(); i++) {
 				IxDealershipResult dealResult = diffFinishResultList.get(i);
+			
+				updateResultObj(dealResult, dbMap);
+				
 				Object[] obj = new Object[] { dealResult.getWorkflowStatus(), dealResult.getIsDeleted(),
 						dealResult.getMatchMethod(), dealResult.getPoiNum1(), dealResult.getPoiNum2(),
 						dealResult.getPoiNum3(), dealResult.getPoiNum4(), dealResult.getPoiNum5(),
@@ -299,5 +313,141 @@ public class HandlerDealership {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public static int queryPidByPoiNum(String poiNum, Connection conn) throws Exception {	
+		String sql = "select pid from ix_poi t where t.poi_num =?";
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int pid=0;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, poiNum);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				pid=rs.getInt("pid");
+			}
+			return pid;
+		
+	} catch (Exception e) {
+		throw new SQLException("加载ix_poi失败：" + e.getMessage(), e);
+	} finally {
+		DbUtils.closeQuietly(rs);
+		DbUtils.closeQuietly(pstmt);
+	}
+}
+
+public static BasicObj queryPoiByPid(IxDealershipResult dealResult, Connection conn) throws Exception {
+int pid = queryPidByPoiNum(dealResult.getCfmPoiNum(), conn);
+BasicObj obj = ObjSelector.selectByPid(conn, "IX_POI", null, false, pid, false);
+return obj;
+}
+	/**
+	 * 
+	 * @param dealershipMR
+	 * @param obj
+	 * @return
+	 * @throws Exception 
+	 */
+	public static IxDealershipResult updateResultObj(IxDealershipResult dealership, Map dbConMap) throws Exception {
+		
+		
+		if(dealership.getDealSrcDiff()==2){dealership.setIsDeleted(1);}
+		if(dealership.getMatchMethod()==0){dealership.setMatchMethod(2);}
+		if(dealership.getCfmPoiNum()!=null&&!"".equals(dealership.getCfmPoiNum())){dealership.setCfmIsAdopted(1);}
+		
+		if(!dbConMap.containsKey(dealership.getRegionId())) {
+//			throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
+			return dealership;
+		}
+		Connection regionConn = (Connection) dbConMap.get(dealership.getRegionId());
+		BasicObj obj = queryPoiByPid(dealership, regionConn);
+		
+		
+		if(dealership.getWorkflowStatus()==1 || dealership.getWorkflowStatus()==2){
+			dealership.setDealCfmDate(DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT));
+			
+			if (obj!=null)
+			{
+			IxPoi p = (IxPoi) obj.getMainrow();
+			IxPoiObj poiObj = (IxPoiObj) obj;
+			
+			IxPoiName poiName = poiObj.getOfficeStandardCHName();
+			IxPoiName poiAliasName = poiObj.getAliasCHITypeName();
+			IxPoiAddress poiAddr = poiObj.getChiAddress();
+			
+			dealership.setPoiKindCode(p.getKindCode());
+			dealership.setPoiChain(p.getChain());
+			dealership.setPoiChain(p.getChain());
+			dealership.setPoiName(poiName.getName());
+			dealership.setPoiNameShort(poiAliasName.getName());
+			dealership.setAddress(poiAddr.getAddrname());
+			
+			StringBuffer sb = new StringBuffer();
+			String telephone = "";
+			for (IxPoiContact c : poiObj.getIxPoiContacts()) {
+				sb.append(c.getContact()).append(";");
+			}
+			if (sb.length() > 0)
+				telephone = sb.toString().substring(0, sb.toString().length() - 1);
+			dealership.setPoiTel(telephone);
+			dealership.setPoiPostCode(p.getPostCode());
+			dealership.setPoiXGuide(p.getXGuide());
+			dealership.setPoiYGuide(p.getYGuide());
+
+			JSONArray array =GeoTranslator.jts2JSONArray(p.getGeometry());
+			dealership.setPoiXDisplay(array.getDouble(0));
+			dealership.setPoiXDisplay(array.getDouble(1));
+			}
+		}
+		if (obj!=null)
+		{
+		IxPoi p = (IxPoi) obj.getMainrow();
+		updateResultGeo(dealership,p);
+		}
+		
+        return dealership;
+
+	}
+	
+	
+	/**
+	 * 
+	 * @param dealershipMR
+	 * @param obj
+	 * @return
+	 * @throws Exception 
+	 * @throws ParseException 
+	 * @throws IOException 
+	 * @throws ClientProtocolException 
+	 */
+	public static IxDealershipResult updateResultGeo(IxDealershipResult dealership, IxPoi obj) throws ClientProtocolException, IOException, ParseException, Exception {
+		if(obj==null) {return dealership;}
+		
+		if (dealership.getMatchMethod()==1){
+			dealership.setGeometry(obj.getGeometry());
+		}else
+		{
+			try{
+					StringBuffer sb = new StringBuffer();
+					if(dealership.getProvince()!=null&&!"".equals(dealership.getProvince())){
+						sb.append(dealership.getProvince());
+					}
+					if(dealership.getCity()!=null&&!"".equals(dealership.getCity())){
+						sb.append(dealership.getCity());
+					}
+					if(dealership.getAddress()!=null&&!"".equals(dealership.getAddress())){
+						sb.append(dealership.getAddress());
+					}
+					dealership.setGeometry(BaiduGeocoding.geocoder(sb.toString()));
+			}catch(Exception e) {
+				throw new Exception("无法获取geometry");
+			}
+		}
+        return dealership;
+
+	}
+	
+	
 
 }

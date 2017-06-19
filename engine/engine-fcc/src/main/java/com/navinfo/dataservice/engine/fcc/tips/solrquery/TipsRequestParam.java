@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import java.util.Set;
  * Created by zhangjunfang on 2017/5/20.
  */
 public class TipsRequestParam {
+    private static final Logger logger = Logger.getLogger(TipsRequestParam.class);
 
     //获取Tips个数列表 tip/getStats 接口参数
     public String getTipStat(String parameter) throws Exception{
@@ -91,7 +93,7 @@ public class TipsRequestParam {
           }
         
         
-
+        logger.info("getTipStat:" + builder.toString());
         return builder.toString();
     }
 
@@ -133,7 +135,7 @@ public class TipsRequestParam {
         	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
         }
 
-
+        logger.info("assambleSqlForCheckQuery:" + builder.toString());
         return builder.toString();
     }
     
@@ -171,8 +173,8 @@ public class TipsRequestParam {
         
         //4.状态过滤（状态显示隐藏）
         this.getWokerStatusFilterQuery(woker, cheker, workStatus, builder,rowkeyList);
-        
 
+        logger.info("getQueryFilterSqlForCheck:" + builder.toString());
         return builder.toString();
     }
 
@@ -273,7 +275,8 @@ public class TipsRequestParam {
       	 
      	  builder.append(" AND stage:7  ");
        }
-        
+
+        logger.info("getSnapShot:" + builder.toString());
         return builder.toString();
     }
 
@@ -331,6 +334,7 @@ public class TipsRequestParam {
             builder.append("stage:2 AND t_dEditStatus:2");
         }
 
+        logger.info("getTipsDayTotal:" + builder.toString());
         return builder.toString();
     }
 
@@ -433,6 +437,9 @@ public class TipsRequestParam {
                     }else{
                         builder.append("t_tipStatus:2");
                     }
+                    //20170615 过滤内业Tips
+                    builder.append(" AND ");
+                    builder.append("-s_sourceType:80*");
                     //20170510 增加中线有无过滤
                     addTaskFilterSql(noQFilter, builder);
                 }else if(pType.equals("fc")) {//FC 预处理 钟小明
@@ -501,9 +508,8 @@ public class TipsRequestParam {
         System.out.println(builder.toString());
         // 过滤315 web不显示的tips 20170118
         this.getFilter315(builder);
-        
-        System.out.println(builder.toString());
 
+        logger.info("getByTileWithGap:" + builder.toString());
         return builder.toString();
     }
 
@@ -535,6 +541,7 @@ public class TipsRequestParam {
             builder.append(" t_lifecycle:3 ");
         }
 
+        logger.info("getTipsCheck:" + builder.toString());
         return builder.toString();
     }
 
@@ -662,7 +669,7 @@ public class TipsRequestParam {
             builder.append("s_mSubTaskId:");
             builder.append(subtaskId);
         }
-
+        logger.info("getTipsCheckUnCommit:" + builder.toString());
         return builder.toString();
     }
 
@@ -688,13 +695,14 @@ public class TipsRequestParam {
             builder.append("s_mSubTaskId:");
             builder.append(subtaskId);
         }
-
+        logger.info("getTipsCheckTotal:" + builder.toString());
         return builder.toString();
     }
 
     public static void main(String[] args) throws Exception {
-        String parameter = "{\"grids\":[59567201],\"stage\":[1,5,6],\"subtaskId\":123,\"tipStatus\":2,\"type\":\"8001\"}";
+        String parameter = "{\"subtaskId\":517,\"grids\":[60561412,60561413,60561410,60561411,60561420,60561421,60561422,60561423,60561431\n" +
+                ",60561430,60561433,60561400,60561432,60561401,60561402,60561403],\"mdFlag\":\"d\",\"workStatus\":0}";
         TipsRequestParam param = new TipsRequestParam();
-        System.out.println(param.getSnapShot(parameter));
+        System.out.println(param.getTipStat(parameter));
     }
 }

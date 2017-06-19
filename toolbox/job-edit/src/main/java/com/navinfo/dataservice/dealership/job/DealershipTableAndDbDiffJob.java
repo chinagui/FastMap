@@ -127,8 +127,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : delDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
@@ -143,15 +142,13 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 			log.info("开始处理deal_src_diff=4更新的数据");
 			for (IxDealershipResult dealResult : updateDealResultList) {
-				 if (dealResult.getResultId()!=21223){continue;}
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
-					BasicObj poiObj = queryPoiByPid(dealResult, regionConn);
+					BasicObj poiObj = HandlerDealership.queryPoiByPid(dealResult, regionConn);
 					// 有pid
 					// 一览表与库是否相同
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
@@ -165,6 +162,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 推荐
 					PoiRecommender.conn = regionConn;
 					PoiRecommender.recommenderPoi(dealResult);
+					dealResult.setMatchMethod(2);
 					dealResult.setWorkflowStatus(3); // 需内业录入
 				}
 				diffFinishResultList.add(dealResult);
@@ -174,12 +172,11 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : nochangeDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
-					BasicObj poiObj = queryPoiByPid(dealResult, regionConn);
+					BasicObj poiObj = HandlerDealership.queryPoiByPid(dealResult, regionConn);
 					// 有pid
 					// 一览表与库是否相同
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
@@ -209,6 +206,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 推荐补充
 					PoiRecommender.conn = regionConn;
 					PoiRecommender.recommenderPoi(dealResult);
+					dealResult.setMatchMethod(2);
 					dealResult.setWorkflowStatus(3); // 需内业录入
 				}
 				diffFinishResultList.add(dealResult);
@@ -218,21 +216,21 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			for (IxDealershipResult dealResult : addDealResultList) {
 				log.info("resultId:" + dealResult.getResultId());
 				if(!dbConMap.containsKey(dealResult.getRegionId())) {
-//					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
-					continue;
+					throw new JobException("resultId:"+dealResult.getResultId()+"赋值的region_id对应的大区库不存在");
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				// GEOCODING 补充
 				// 推荐补充
 				PoiRecommender.conn = regionConn;
 				PoiRecommender.recommenderPoi(dealResult);
+				dealResult.setMatchMethod(2);
 				dealResult.setWorkflowStatus(3); // 需内业录入
 				diffFinishResultList.add(dealResult);
 			}
 
 			log.info("差分完成，开始更新result、source、chain表");
 			HandlerDealership handler = new HandlerDealership();
-			handler.updateDealershipDb(diffFinishResultList, chainCode);
+			handler.updateDealershipDb(diffFinishResultList, chainCode,dbConMap);
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -262,7 +260,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
-					+ "from IX_DEALERSHIP_RESULT r where r.workflow_status!=9 and r.chain= '" + chainCode
+					+ "from IX_DEALERSHIP_RESULT r where r.workflow_status=0 and r.chain= '" + chainCode
 					+ "' and r.deal_src_diff=" + dealSrcDiff;
 
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
@@ -312,7 +310,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 	public boolean hasValidPoi(IxDealershipResult dealResult, Connection conn) throws Exception {
 		LogReader logRead = new LogReader(conn);
-		int poiState = logRead.getObjectState(queryPidByPoiNum(dealResult.getCfmPoiNum(), conn), "IX_POI");
+		int poiState = logRead.getObjectState(HandlerDealership.queryPidByPoiNum(dealResult.getCfmPoiNum(), conn), "IX_POI");
 		if (1 == dealResult.getMatchMethod() && 2 != poiState) {
 			return true;
 		} else {
@@ -341,34 +339,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 		}
 	}
 
-	public static int queryPidByPoiNum(String poiNum, Connection conn) throws Exception {	
-				String sql = "select pid from ix_poi t where t.poi_num =?";
 
-				PreparedStatement pstmt = null;
-				ResultSet rs = null;
-				int pid=0;
-				try {
-					pstmt = conn.prepareStatement(sql);
-					pstmt.setString(1, poiNum);
-					rs = pstmt.executeQuery();
-					while (rs.next()) {
-						pid=rs.getInt("pid");
-					}
-					return pid;
-				
-			} catch (Exception e) {
-				throw new SQLException("加载ix_poi失败：" + e.getMessage(), e);
-			} finally {
-				DbUtils.closeQuietly(rs);
-				DbUtils.closeQuietly(pstmt);
-			}
-	}
-
-	public BasicObj queryPoiByPid(IxDealershipResult dealResult, Connection conn) throws Exception {
-		int pid = queryPidByPoiNum(dealResult.getCfmPoiNum(), conn);
-		BasicObj obj = ObjSelector.selectByPid(conn, "IX_POI", null, false, pid, false);
-		return obj;
-	}
 
 	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
 		Map MapConn = new HashMap();
@@ -419,7 +390,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 		diffFinishResultList.add(dealResult1);
 
 		HandlerDealership job = new HandlerDealership();
-		job.updateDealershipDb(diffFinishResultList, "4007");
+//		job.updateDealershipDb(diffFinishResultList, "4007");
 		// System.out.println(queryPidByPoiNum("0010061024HYX00212",con));
 
 		// int status = new LogReader(con).getObjectState(objPid, objTable);

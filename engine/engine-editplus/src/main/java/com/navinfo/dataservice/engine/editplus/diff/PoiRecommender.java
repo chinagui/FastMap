@@ -78,8 +78,8 @@ public class PoiRecommender {
 		 
 		fp.setX(array.getDouble(0));
 		fp.setY(array.getDouble(1));
-		if(poiAddr.getAddrname()==null){fp.setAddr("");}
-		if(poiName.getName()==null){fp.setName("");}
+		if(poiAddr==null || poiAddr.getAddrname()==null){fp.setAddr("");}
+		if(poiName==null ||poiName.getName()==null){fp.setName("");}
 		
 		StringBuffer sb = new StringBuffer();
 		String telephone = "";
@@ -139,7 +139,6 @@ public class PoiRecommender {
 			if(i==0){
 				dealResult.setPoiNum1(mapping.getKey());
 				dealResult.setCfmPoiNum(mapping.getKey());;
-				dealResult.setCfmIsAdopted(1);
 			}
 			else if(i==1){
 				dealResult.setPoiNum2(mapping.getKey());

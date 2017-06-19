@@ -871,7 +871,7 @@ public class TipsController extends BaseController {
     public void noTaskToMidTask(HttpServletRequest request,
                                 HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
-
+        logger.info("noTaskToMidTask:" + parameter);
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -894,7 +894,7 @@ public class TipsController extends BaseController {
 
             response.getWriter().println(
                     ResponseUtils.assembleRegularResult(jsonObject));
-
+            logger.info("noTaskToMidTask:" + totalNum);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             response.getWriter().println(

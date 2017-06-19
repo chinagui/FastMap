@@ -4,21 +4,34 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.model.InformationExportResult;
+import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
+import com.navinfo.dataservice.engine.editplus.diff.Parser_Tool;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class DataConfirmService {
 	private Logger log = LoggerRepos.getLogger(DataPrepareService.class);
@@ -33,6 +46,8 @@ public class DataConfirmService {
 	public static DataConfirmService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
+
+	private QueryRunner run = new QueryRunner();
 
 	public String[] headers = { "UUID", "情报ID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址",
 			"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编", "厂商提供英文名称", "厂商提供英文地址", "旧一览表ID", "新旧一览表差分结果",
@@ -154,4 +169,149 @@ public class DataConfirmService {
 		return arrayResult;
 	}
 
+	/**
+	 * 情报下发，（文件是否满足上传规则，更新result库)
+	 * 
+	 * @param request
+	 * @param userId
+	 * @throws Exception
+	 */
+	public JSONObject releaseInfoService(HttpServletRequest request, Long userId) throws Exception {
+		JSONObject data = new JSONObject();
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
+				+ "/dealership/information";
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath, "info");
+		String localFile = returnParam.getString("filePath");
+		
+		log.info("情报文件已上传至：" + localFile);
+		log.info("开始读取情报文件数据");
+
+		try {
+			List<Map<String, Object>> importResult = importInfoExcel(localFile);
+			List<String> uniqueKeys = new ArrayList<>();
+			for (Map<String, Object> result : importResult) {
+
+				// 若文件中“情报类型”为空，则整个文件不可以上传；
+				if (result.get("infoType") == null || result.get("infoType").toString().isEmpty()) {
+					log.error("“情报类型”为空，文件不可以上传");
+					throw new Exception("“情报类型”为空，文件不可以上传");
+				}
+
+				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
+				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
+				if (uniqueKeys.contains(uniqueKey)) {
+					log.error("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
+					throw new Exception("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
+				} else {
+					uniqueKeys.add(uniqueKey);
+				}
+			}
+
+			data = updateResultTable(localFile, userId);
+			log.info("情报下发：成功");
+		} catch (Exception e) {
+			log.error("情报下发，失败：" + e.getMessage());
+			throw e;
+		}
+		return data;
+	}
+
+	/**
+	 * 上传成功后，连接情报库，按要求更新RESULT数据库
+	 * 
+	 * @param filePath
+	 * @param userId
+	 * @throws Exception
+	 */
+	private JSONObject updateResultTable(String filePath, Long userId) throws Exception {
+		Connection conn = null;
+		JSONObject data = new JSONObject();
+		try {
+			conn = DBConnector.getInstance().getDealershipConnection();
+			String accessToken = AccessTokenFactory.generate(userId).getTokenString();
+			String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("csvname", fileName);
+
+			StringBuilder urlStr = new StringBuilder();
+			urlStr.append(
+					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/info/agent/import/?access_token=");
+			urlStr.append(accessToken);
+			urlStr.append("&parameter=");
+			urlStr.append(jsonObj);
+
+			String return_value = Parser_Tool.do_get(urlStr.toString());
+			JSONObject resultObj = JSONObject.fromObject(return_value);
+
+			log.info("输入的URL：" + urlStr);
+			log.info("接口返回结果：" + resultObj);
+
+			String successList = resultObj.getString("successList");
+			String[] successLists = successList.replace("[", "").replace("]", "").split(",");
+
+			for (String success : successLists) {
+				String sql = String.format(
+						"UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = 2,TO_INFO_DATE = %s WHERE RUSULT_ID = %s",
+						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success);
+				run.execute(conn, sql);
+				conn.commit();
+			}
+			
+			data.put("successCount", successLists.length);
+			data.put("failCount", 0 );
+
+		} catch (Exception e) {
+			conn.rollback();
+			log.error("");
+			throw e;
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		return data;
+	}
+
+	private List<Map<String, Object>> importInfoExcel(String uploadFile) throws Exception {
+		ExcelReader excleReader = new ExcelReader(uploadFile);
+		Map<String, String> excelHeader = new HashMap<String, String>();
+
+		excelHeader.put("UUID", "resultId");
+		excelHeader.put("情报ID", "infoId");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");
+		excelHeader.put("厂商提供邮编", "postcode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		excelHeader.put("旧一览表ID", "sourceId");
+		excelHeader.put("新旧一览表差分结果", "dealSrcDiff");
+		excelHeader.put("与POI的匹配方式", "matchMethod");
+		excelHeader.put("POI1_NUM", "poiNum1");
+		excelHeader.put("POI2_NUM", "poiNum2");
+		excelHeader.put("POI3_NUM", "poiNum3");
+		excelHeader.put("POI4_NUM", "poiNum4");
+		excelHeader.put("POI5_NUM", "poiNum5");
+		excelHeader.put("匹配度", "similarity");
+		excelHeader.put("代理店显示坐标X", "xLocate");
+		excelHeader.put("代理店显示坐标Y", "yLocate");
+		excelHeader.put("待采纳POI外业采集号码", "cfmPoiNum");
+		excelHeader.put("四维确认备注", "cfmMemo");
+		excelHeader.put("期望时间", "expectTime");
+		excelHeader.put("情报类型", "infoType");
+		excelHeader.put("情报等级", "infoLevel");
+		excelHeader.put("大区ID", "regionId");
+
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入客户确认excel：" + uploadFile);
+		return sources;
+	}
 }

@@ -171,5 +171,27 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	@Test
+	 	public void queryPidListByCon() throws Exception {
+	 		DataEditService de = DataEditService.getInstance();
+	 		try {
+	 			JSONObject jsonObj = new JSONObject();
+	 			jsonObj.put("poiNum", "");
+	 			jsonObj.put("name", "华都");
+	 			jsonObj.put("address", "");
+	 			jsonObj.put("telephone", "");
+	 			jsonObj.put("location", "");//116.47199,40.14608
+	 			jsonObj.put("proCode", "");
+	 			jsonObj.put("resultId", 33022);
+	 			jsonObj.put("dbId", 13);
+	 
+	 			JSONArray data = de.queryByCon(jsonObj);
+	 			
+	 			System.out.println(data);
+	 		}catch (Exception e) {
+	 			System.out.println(e.getMessage());
+	 		}
+	 	}
 
 }

@@ -18,6 +18,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 /**
  * @ClassName: RegionService
  * @author code generator
@@ -118,6 +121,34 @@ public class CpRegionProvinceService {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+
+	public JSONArray getAdminCodeAndProvince() throws Exception{
+		
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "select DISTINCT (Substr(admincode,0,2)) admincode,province from cp_region_province t ORDER BY admincode";
+			return run.query(conn, selectSql, new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray  handle(ResultSet rs) throws SQLException {
+					JSONArray jsonArray  = new JSONArray();
+					while(rs.next()){
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("admincode", rs.getString("admincode"));
+						jsonObject.put("province", rs.getString("province"));
+						jsonArray.add(jsonObject);
+					}
+					return jsonArray;
+				}});
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}

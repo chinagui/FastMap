@@ -772,17 +772,17 @@ public class SubtaskService {
 							subtask.put("dbId",rs.getInt("DAILY_DB_ID"));
 						}	
 						
-						if(1 == rs.getInt("STATUS")){
-							subtask.put("percent",100);
-							SubtaskStatInfo stat = new SubtaskStatInfo();
-							try{	
-								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-							} catch (Exception e) {
-								log.warn("subtask query error",e);
-							}
-							subtask.put("percent",stat.getPercent());
-						}
+//						if(1 == rs.getInt("STATUS")){
+//							subtask.put("percent",100);
+//							SubtaskStatInfo stat = new SubtaskStatInfo();
+//							try{	
+//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//							} catch (Exception e) {
+//								log.warn("subtask query error",e);
+//							}
+//							subtask.put("percent",stat.getPercent());
+//						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
@@ -2244,7 +2244,7 @@ public class SubtaskService {
 					+ "where i.INFOR_ID = p.INFOR_ID "
 					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
 					+ "AND ST.STATUS IN (1,2) "
-					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0 "
+					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0  AND st.is_quality=0 "
 					+ "AND i.ADMIN_NAME like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){

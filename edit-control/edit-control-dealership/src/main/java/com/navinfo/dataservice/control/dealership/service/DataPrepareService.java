@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -73,7 +75,7 @@ import net.sf.json.JSONObject;
  *
  */
 public class DataPrepareService {
-	private Logger log = LoggerRepos.getLogger(DataPrepareService.class);
+	private static Logger log = LoggerRepos.getLogger(DataPrepareService.class);
 
 	private DataPrepareService() {
 	}
@@ -601,6 +603,9 @@ public class DataPrepareService {
 			//获取个品牌状态
 			Map<String,Integer> chainStatus = getChainStatus(conn);
 			
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
+		    String date = df.format(new Date());
+			
 			File file = new File(localUnzipDir);
 			if (file.exists()) {
 				List<String> pathList = new ArrayList<String>();
@@ -631,7 +636,7 @@ public class DataPrepareService {
 							//加载已有的result
 							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
 							//执行差分
-							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap,date);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
 							List<IxDealershipResult> update = resultMap.get(3);
@@ -1748,18 +1753,46 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Integer chainUpdate(long userId) throws ServiceException {
+	public Long chainUpdate(long userId) throws ServiceException {
 		Connection conn = null;
 		try{
-
+			conn=DBConnector.getInstance().getDealershipConnection();
+		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
+		    String date = df.format(new Date());
 			//获取一览表品牌
 			List<String> chainList = getChainListByStatus(conn,0);
+			
+//			chainList.clear();
+//			chainList.add("4007");
+			
 			//获取source数据
 			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainList);
-			//转result
-			
-			//更新result表
+			//获取省份大区信息
+			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+			Map<String,Integer> provinceRegionIdMap = manApi.getProvinceRegionIdMap();
+			//转result,更新result表
+			List<String> chainList2 = new ArrayList<String>();
+			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
+				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
+				List<IxDealershipResult> ixDealershipResultList = createIxDealershipResultByIxDealershipSource(ixDealershipSourceList,provinceRegionIdMap,date);
+				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
+					for(IxDealershipResult bean:ixDealershipResultList){
+						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+					}
+				}
+				chainList2.add(entry.getKey());
+			}
+			//更新chain表
+			int workType = 1;
+			int workStatus = 1;
+			int chain_status = 1;
+			updateIxDealershipChain(conn,chainList2,workStatus,workType,chain_status);
 			//启动表库差分
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject dataJson = new JSONObject();
+			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			return jobId;
+			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1767,9 +1800,102 @@ public class DataPrepareService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return null;
-
 	}
+	
+	/**
+	 * @param conn
+	 * @param chainList
+	 * @param workStatus
+	 * @param workType
+	 * @param chainStatus
+	 * @throws ServiceException 
+	 */
+	private void updateIxDealershipChain(Connection conn, List<String> chainList, int workStatus, int workType,
+			int chainStatus) throws ServiceException {
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus 
+					+ ",C.WORK_TYPE = " + workType + ",C.CHAIN_STATUS = " + chainStatus 
+					+ " WHERE C.CHAIN_CODE in ('" + StringUtils.join(chainList,"','") + "')";			
+			log.info("updateIxDealershipChain sql:" + updateSql);
+			run.update(conn, updateSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	private static List<IxDealershipResult> createIxDealershipResultByIxDealershipSource(List<IxDealershipSource> ixDealershipSourceList, Map<String, Integer> provinceRegionIdMap, String date) {
+		List<IxDealershipResult> ixDealershipResultList = new ArrayList<IxDealershipResult>();
+		for(IxDealershipSource ixDealershipSource:ixDealershipSourceList){
+			IxDealershipResult ixDealershipResult = new IxDealershipResult();
+			
+			ixDealershipResult.setProvince(ixDealershipSource.getProvince());
+			ixDealershipResult.setCity(ixDealershipSource.getCity());
+			ixDealershipResult.setProject(ixDealershipSource.getProject());
+			ixDealershipResult.setKindCode(ixDealershipSource.getKindCode());
+			ixDealershipResult.setChain(ixDealershipSource.getChain());
+			ixDealershipResult.setName(ixDealershipSource.getName());
+			ixDealershipResult.setNameShort(ixDealershipSource.getNameShort());
+			ixDealershipResult.setAddress(ixDealershipSource.getAddress());
+			ixDealershipResult.setTelSale(ixDealershipSource.getTelSale());
+			ixDealershipResult.setTelService(ixDealershipSource.getTelService());
+			ixDealershipResult.setTelOther(ixDealershipSource.getTelOther());
+			ixDealershipResult.setPoiKindCode(ixDealershipSource.getPoiKindCode());
+			ixDealershipResult.setNameEng(ixDealershipSource.getNameEng());
+			//时间
+			ixDealershipResult.setProvideDate(date);
+			
+			ixDealershipResultList.add(ixDealershipResult);
+			//MATCH_METHOD:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值1，否则赋值0
+			ixDealershipResult.setMatchMethod(null == ixDealershipSource.getCfmPoiNum()? 0:1);
+			//POI_NUM_1:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值IX_DEALERSHIP_SOURCE.cfm_poi_num
+			ixDealershipResult.setPoiNum1(ixDealershipSource.getCfmPoiNum());
+			//cfm_poi_num赋值IX_DEALERSHIP_SOURCE.cfm_poi_num
+			ixDealershipResult.setCfmPoiNum(ixDealershipSource.getCfmPoiNum());
+			//SOURCE_ID赋值IX_POIDEALERSHIP_SOURCE.source_id
+			ixDealershipResult.setSourceId(ixDealershipSource.getSourceId());
+			//DEAL_CFM_DATE:赋值IX_POIDEALERSHIP_SOURCE.deal_cfm_date
+			ixDealershipResult.setDealCfmDate(ixDealershipSource.getDealCfmDate());
+			//POI_KIND_CODE:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_KIND_CODE
+			//POI_CHAIN:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_CHAIN
+			//POI_NAME:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_NAME
+			//POI_NAME_SHORT:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_NAME_SHORT
+			//POI_ADDRESS:X_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_ADDRESS
+			//POI_TEL	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_TEL
+			//POI_POST_CODE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_POST_CODE
+			//POI_X_DISPLAY	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_X_DISPLAY
+			//POI_Y_DISPLAY	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_Y_DISPLAY
+			//POI_X_GUIDE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_X_GUIDE
+			//POI_Y_GUIDE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_Y_GUIDE
+			if(ixDealershipSource.getCfmPoiNum()!=null){
+				ixDealershipResult.setPoiKindCode(ixDealershipSource.getPoiKindCode());
+				ixDealershipResult.setPoiChain(ixDealershipSource.getPoiChain());
+				ixDealershipResult.setPoiName(ixDealershipSource.getPoiName());
+				ixDealershipResult.setPoiNameShort(ixDealershipSource.getPoiNameShort());
+				ixDealershipResult.setPoiAddress(ixDealershipSource.getPoiAddress());
+				ixDealershipResult.setPoiTel(ixDealershipSource.getPoiTel());
+				ixDealershipResult.setPostCode(ixDealershipSource.getPostCode());
+				ixDealershipResult.setPoiXDisplay(ixDealershipSource.getPoiXDisplay());
+				ixDealershipResult.setPoiYDisplay(ixDealershipSource.getPoiYDisplay());
+				ixDealershipResult.setPoiXGuide(ixDealershipSource.getPoiXGuide());
+				ixDealershipResult.setPoiYGuide(ixDealershipSource.getPoiYGuide());
+			}
+			//GEOMETRY	赋值IX_DEALERSHIP_SOURCE.GEOMETRY
+			ixDealershipResult.setGeometry(ixDealershipSource.getGeometry());
+			//REGION_ID	根据IX_DEALERSHIP_RESULT.PROVINCE关联cp_region_province.province,查找对应的region_id赋值；如果无值，则取source.province关联
+			if(ixDealershipSource.getProvince()!=null&&provinceRegionIdMap.get(ixDealershipSource.getProvince())!=null){
+				ixDealershipResult.setRegionId(provinceRegionIdMap.get(ixDealershipSource.getProvince()));
+			}else{
+				log.info("sourceId:" + ixDealershipResult.getSourceId() + "无法获取大区信息");
+			}
+
+		}
+		return ixDealershipResultList;	
+	}
+
 
 	/**
 	 * @param conn

@@ -201,11 +201,12 @@ public class DataPrepareController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(parameter);
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			
+			JSONObject jobReq=new JSONObject();
+			jobReq.put("chainCodeList", (new ArrayList<String>()).add(dataJson.getString("chainCode")));
+			jobReq.put("sourceType", dataJson.getInt("sourceType"));
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
-			
-			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", jobReq, userId,0, "代理店库差分");
 			
 			
 			return new ModelAndView("jsonView", success(jobId));

@@ -416,7 +416,7 @@ public class DataPrepareController extends BaseController {
 			long jobId = dealerShipService.chainUpdate(userId);			
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
-			logger.error("转内业失败，原因：" + e.getMessage(), e);
+			logger.error("品牌更新失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
 
@@ -248,7 +249,7 @@ public class HandlerDealership {
 		return false;
 	}
 	
-	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain,Map dbMap,Logger log)
+	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList,List<String> chainList,Map dbMap,Logger log)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -300,10 +301,12 @@ public class HandlerDealership {
 //					+ chain;
 //
 //			run.update(conn, updateSourceSql);
+			String chains = "(";
+			chains += StringUtils.join(chainList.toArray(), ",") + ")";
 
 			// 更新chain表
 			run.update(conn,
-					"update ix_dealership_chain set work_status=2 where  chain_code='" + chain+"'");
+					"update ix_dealership_chain set work_status=2 where  chain_code in '" + chains+"'");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -453,6 +456,7 @@ return obj;
         return dealership;
 
 	}
+
 	
 	
 

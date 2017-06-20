@@ -36,7 +36,7 @@ public class DiffService {
 		return str.toString();
 	}
 
-	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, Map<Integer, IxDealershipResult> dealershipResultsPreMap) throws Exception {
+	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, Map<Integer, IxDealershipResult> dealershipResultsPreMap, String date) throws Exception {
 		log.info("Table Diff Begin");
 		
 		//加载cp_region_province
@@ -135,7 +135,7 @@ public class DiffService {
 			}
 			
 			//删除逻辑：分类和品牌均相同
-			t = hash(i.getKindCode().trim() + i.getChain().trim());
+			t = hash(i.getChain().trim());
 			if (editPart4.get(t) == null) {
 				List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
 				dsList.add(i);
@@ -167,6 +167,7 @@ public class DiffService {
 				}
 
 				resultDpAttrDiff.setDealSrcDiff(1);
+				resultDpAttrDiff.setProvideDate(date);
 				
 				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
@@ -198,7 +199,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
-						
+						resultDpAttrDiff.setProvideDate(date);
+
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
 						dkeyMap.put(j.getSourceId(), "");
@@ -230,6 +232,7 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
+						resultDpAttrDiff.setProvideDate(date);
 						
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
@@ -264,6 +267,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(4);
+						resultDpAttrDiff.setProvideDate(date);
+
 						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
 						dkeyMap.put(j.getSourceId(), "");
@@ -278,8 +283,8 @@ public class DiffService {
 			/**************** 新版较旧版有变更逻辑 *******************/
 
 			/**************** 新增逻辑 *******************/
-			boolean temp = true;
-			t = hash(i.getKindCode().trim() + i.getChain().trim());
+			//上传一览表与全国一览表中品牌相同，且上传一览表中存在，但地址、邮编和电话均不相同
+			t = hash(i.getChain().trim());
 			if (editPart4.get(t) != null&&editPart4.get(t).size()!=0) {
 				for (IxDealershipSource j : editPart4.get(t)) {
 					boolean sameAddress = (i.getAddress().equals(j.getAddress()));
@@ -308,6 +313,8 @@ public class DiffService {
 							insertList.add(resultDpAttrDiff);
 						}
 						resultDpAttrDiff.setDealSrcDiff(3);
+						resultDpAttrDiff.setProvideDate(date);
+
 
 						if(resultDpAttrDiff.getGeometry()==null){
 							String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
@@ -331,6 +338,8 @@ public class DiffService {
 			resultDpAttrDiff = new IxDealershipResult(i);
 			resultDpAttrDiff.setDealSrcDiff(5);
 			resultDpAttrDiff.setChain(chain);
+			resultDpAttrDiff.setProvideDate(date);
+
 			if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
 				resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 			}else{
@@ -365,11 +374,14 @@ public class DiffService {
 					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
 					insertList.add(resultDpAttrDiff);
 				}
+				resultDpAttrDiff.setProvideDate(date);
+
+				//上传一览表与全国一览表中品牌相同，且全国一览表中存在，但是名称、地址、电话、邮编均不相同
 				if (((sourceNameMap.get(i.getName()) == null)
+						&&(sourceChainMap.get(i.getChain()) != null)
 						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
 						&& (sourcePostCodeMap.get(i.getPostCode()) == null)
-						&& (sourceTelMap.get(i.getTelephone().trim()) == null))
-						&& (sourceKindMap.get(i.getKindCode().trim()) == null)) {
+						&& (sourceTelMap.get(i.getTelephone().trim()) == null))) {
 					resultDpAttrDiff.setDealSrcDiff(2);
 				} else
 				/***************** 其他逻辑 ****************/

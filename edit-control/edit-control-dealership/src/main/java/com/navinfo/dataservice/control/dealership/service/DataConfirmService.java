@@ -1,5 +1,12 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -179,7 +186,7 @@ public class DataConfirmService {
 	public JSONObject releaseInfoService(HttpServletRequest request, Long userId) throws Exception {
 		JSONObject data = new JSONObject();
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
-				+ "/dealership/information";
+				+ "/dealership/infoImport";
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath, "info");
 		String localFile = returnParam.getString("filePath");
 		
@@ -187,7 +194,7 @@ public class DataConfirmService {
 		log.info("开始读取情报文件数据");
 
 		try {
-			List<Map<String, Object>> importResult = importInfoExcel(localFile);
+			List<Map<String, Object>> importResult = readCsvFile(localFile);
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
@@ -223,7 +230,7 @@ public class DataConfirmService {
 	 * @param userId
 	 * @throws Exception
 	 */
-	private JSONObject updateResultTable(String filePath, Long userId) throws Exception {
+	public JSONObject updateResultTable(String filePath, Long userId) throws Exception {
 		Connection conn = null;
 		JSONObject data = new JSONObject();
 		try {
@@ -235,10 +242,10 @@ public class DataConfirmService {
 
 			StringBuilder urlStr = new StringBuilder();
 			urlStr.append(
-					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/info/agent/import/?access_token=");
+					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?access_token=");
 			urlStr.append(accessToken);
 			urlStr.append("&parameter=");
-			urlStr.append(jsonObj);
+			urlStr.append(URLEncoder.encode(jsonObj.toString(), "utf-8"));
 
 			String return_value = Parser_Tool.do_get(urlStr.toString());
 			JSONObject resultObj = JSONObject.fromObject(return_value);
@@ -251,18 +258,23 @@ public class DataConfirmService {
 
 			for (String success : successLists) {
 				String sql = String.format(
-						"UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = 2,TO_INFO_DATE = %s WHERE RUSULT_ID = %s",
-						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success);
+						"UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = 2,TO_INFO_DATE = %s WHERE RESULT_ID = '%s'",
+						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success.replace("\"", ""));
 				run.execute(conn, sql);
 				conn.commit();
 			}
-			
+
+			String[] generateFail = resultObj.getString("generateFailedList").replace("[", "").replace("]", "")
+					.split(",");
+			String[] insertFail = resultObj.getString("insertFailedList").replace("[", "").replace("]", "").split(",");
+			String[] sendFail = resultObj.getString("sendFailedList").replace("[", "").replace("]", "").split(",");
+
 			data.put("successCount", successLists.length);
-			data.put("failCount", 0 );
+			data.put("failCount", generateFail.length + insertFail.length + sendFail.length);
 
 		} catch (Exception e) {
 			conn.rollback();
-			log.error("");
+			log.error(e.getMessage());
 			throw e;
 		} finally {
 			if (conn != null) {
@@ -272,8 +284,7 @@ public class DataConfirmService {
 		return data;
 	}
 
-	private List<Map<String, Object>> importInfoExcel(String uploadFile) throws Exception {
-		ExcelReader excleReader = new ExcelReader(uploadFile);
+	public Map<String, String> importInfoExcel() throws Exception {
 		Map<String, String> excelHeader = new HashMap<String, String>();
 
 		excelHeader.put("UUID", "resultId");
@@ -310,8 +321,33 @@ public class DataConfirmService {
 		excelHeader.put("情报等级", "infoLevel");
 		excelHeader.put("大区ID", "regionId");
 
-		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
-		log.info("end 导入客户确认excel：" + uploadFile);
-		return sources;
+		return excelHeader;
+	}
+	
+	public List<Map<String, Object>> readCsvFile(String uploadFile) throws Exception {
+		DataInputStream in = new DataInputStream(new FileInputStream(new File(uploadFile))); 
+		BufferedReader br= new BufferedReader(new InputStreamReader(in,"GBK"));
+		
+		List<Map<String, Object>> sourceResult = new ArrayList<>();
+		Map<String, String> excelHeader = importInfoExcel();
+
+		String line = "";
+		int n = 0;
+
+		while ((line = br.readLine()) != null) {
+			n++;
+			if (n == 1)
+				continue;
+			Map<String, Object> cell = new HashMap<>();
+
+			String[] cellsValue = line.split(",");
+			for (int i = 0; i < cellsValue.length; i++) {
+				if (excelHeader.containsKey(headers[i])) {
+					cell.put(excelHeader.get(headers[i]), cellsValue[i]);
+				}
+			}
+			sourceResult.add(cell);
+		}
+		return sourceResult;
 	}
 }

@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -25,6 +26,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
 
@@ -577,5 +579,18 @@ public class IxDealershipResultSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 		
+	}
+	
+	
+	/**
+	 * 根据resultId取得Geometry
+	 * @param resultId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Geometry getGeometryByResultId(Integer resultId) throws Exception{
+		Connection dealerConn = DBConnector.getInstance().getDealershipConnection();
+		IxDealershipResult result = getIxDealershipResultById(resultId, dealerConn);
+		return result.getGeometry();
 	}
 }

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -42,7 +44,9 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -1705,4 +1709,150 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * 编辑查询
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryByCon(JSONObject jsonObj) throws Exception {
+		Connection conn = null;
+		try {
+			String poiNum = jsonObj.getString("poiNum");
+			String name = jsonObj.getString("name");
+			String address = jsonObj.getString("address");
+			String telephone = jsonObj.getString("telephone");
+			String location = jsonObj.getString("location");
+			String proCode = jsonObj.getString("proCode");
+			Integer resultId = jsonObj.getInt("resultId");
+			Integer dbId = jsonObj.getInt("dbId");
+			
+			conn =  DBConnector.getInstance().getConnectionById(dbId);
+			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList);
+			return poiArray;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 根据查询条件过滤pidList
+	 * @param conn
+	 * @param poiNum
+	 * @param name
+	 * @param address
+	 * @param telephone
+	 * @param location
+	 * @param proCode
+	 * @param resultId
+	 * @return
+	 * @throws Exception
+	 */
+	private List<IxPoi> queryPidListByCon(Connection conn,String poiNum, String name, String address, String telephone,
+			String location, String proCode, Integer resultId) throws Exception {
+		try {
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			StringBuilder sb = new StringBuilder();
+			boolean flag = false;
+			Geometry point = null;
+			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
+				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
+				flag = true;
+			}else {
+				if(StringUtils.isNotBlank(location)){//②输入条件不包含POI_NUM且包含poi(x,y)显示坐标时，则根据POI显示坐标关联2公里和输入名称、地址、或者电话进行查询(接口参数中坐标为POI显示坐标)；
+					String xLocation = location.substring(0,location.indexOf(","));
+					String yLocation = location.substring(location.indexOf(",")+1,location.length());
+					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
+					point = new WKTReader().read(wkt);
+					sb.append("SELECT p.pid FROM ix_poi p ");
+					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+					point = point.buffer(GeometryUtils.convert2Degree(2000));
+				}else{
+					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
+						sb.append("SELECT p.pid FROM ix_poi p,ad_admin ad ");
+						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
+						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
+					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
+						sb.append("SELECT p.pid FROM ix_poi p ");
+						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
+						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+						point = new WKTReader().read(wkt);
+						point = point.buffer(GeometryUtils.convert2Degree(2000));//2公里扩圈
+					}
+				}
+				
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			if(flag){
+				pstmt.setString(1, poiNum);
+			}else{
+			    String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+				Clob geom = ConnectionUtil.createClob(conn);			
+				geom.setString(1, wkt);
+			    pstmt.setClob(1,geom);
+			}
+			rs = pstmt.executeQuery();
+
+			List<IxPoi> poiList = new ArrayList<>();
+			while(rs.next()){
+				try {
+					IxPoi poi = (IxPoi) poiSelector.loadById(rs.getInt("pid"), false);
+					poiList.add(poi);
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+			return poiList;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 针对高级查询组装条件
+	 * @param sb
+	 * @param name
+	 * @param address
+	 * @param telephone
+	 */
+	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone){
+		if(StringUtils.isNotBlank(name)){
+			sb.append(", ix_poi_name pn ");
+		}
+		if(StringUtils.isNotBlank(address)){
+			sb.append(", ix_poi_address pa ");
+		}
+		if(StringUtils.isNotBlank(telephone)){
+			sb.append(", ix_poi_contact pc ");
+		}
+		sb.append("WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		if(StringUtils.isNotBlank(name)){
+			sb.append("AND p.pid = pn.poi_pid AND pn.name_class = 1 AND pn.name_type  = 2 AND pn.lang_code = 'CHI'"
+					+ " AND pn.name LIKE '%"+name+"%' ");
+		}
+		if(StringUtils.isNotBlank(address)){
+			sb.append("AND p.pid = pa.poi_pid AND pa.lang_code = 'CHI' AND pa.fullname LIKE '%"+address+"%' ");
+		}
+		if(StringUtils.isNotBlank(telephone)){
+			sb.append("AND p.pid = pc.poi_pid AND pc.contact LIKE '%"+telephone+"%' ");
+		}
+	};
+	
+	
 }

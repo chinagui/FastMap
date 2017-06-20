@@ -33,8 +33,6 @@ public class AgentStarter {
             QuartzManager.addJob(service_name, ServiceJob.class, "0 0/5 * * * ?");
             QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/10 * * * * ?");
             QuartzManager.startJobs();
-            Thread.sleep(50000);
-            QuartzManager.removeJob(tomcat_name);
         } catch (Exception e) {  
             e.printStackTrace(); 
             log.error(e.getMessage());
@@ -56,9 +54,7 @@ public class AgentStarter {
 	public static void tomcatRun(){
 		List<List<String>> monitorTarget = monitorTarget();
 		if(monitorTarget.size() > 0){
-			TomcatStatInfoLoader tomcatStatInfoLoader =new TomcatStatInfoLoader();
-			tomcatStatInfoLoader.sendTomcatStatInfo(monitorTarget);
-			System.out.println();
+			TomcatStatInfoLoader.sendTomcatStatInfo(monitorTarget);
 		}
 	}
 	/**
@@ -81,7 +77,9 @@ public class AgentStarter {
 					{"192.168.4.188","8091","mapspotter"},{"192.168.4.110","8091","mapspotter"},
 					{"192.168.4.188","8092","column"},{"192.168.4.110","8092","column"},
 					{"192.168.4.188","8093","row"},{"192.168.4.110","8093","row"},
-					{"192.168.4.188","8094","sys"},{"192.168.4.110","8094","sys"}};
+					{"192.168.4.188","8094","sys"},{"192.168.4.110","8094","sys"},
+					{"192.168.4.188","8095","collector"},{"192.168.4.110","8095","collector"},
+					{"192.168.4.188","8095","dealership"},{"192.168.4.110","8095","dealership"}};
 			for(int i=0;i<datas.length;i++){
 				String[] data = datas[i];
 				String host = data[0];
@@ -98,9 +96,8 @@ public class AgentStarter {
 						monitor.add(result);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					System.out.println("host="+host+",port="+port+",tomcat="+tomcat);
-					log.error("host="+host+",port="+port+",tomcat="+tomcat+e.getMessage());
+					log.error("服务未启动,host="+host+",port="+port+",tomcat="+tomcat+e.getMessage());
 				}
 			}
 		} catch (Exception e) {

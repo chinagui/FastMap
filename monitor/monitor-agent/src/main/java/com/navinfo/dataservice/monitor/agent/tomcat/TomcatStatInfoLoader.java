@@ -32,7 +32,7 @@ public class TomcatStatInfoLoader {
 			//推送数据
 			try {
 				String url = "http://"+ip+":"+port+"/"+tomcat;
-				List<StatInfo> datas = getTomcatInfoList(url,"192.168.4.188");
+				List<StatInfo> datas = getTomcatInfoList(url,ip);
 				String result = AgentUtils.pushData(datas);
 				log.info(result);
 				
@@ -50,7 +50,8 @@ public class TomcatStatInfoLoader {
 		parMap.put("format", "json"); 
 		
 		String service_url_druid = url+"/druid/datasource.json";
-		
+		log.info("tomcat访问地址:"+service_url);
+		log.info("tomcat_jdbc访问地址:"+service_url_druid);
 		String json = null; 
 		String json_druid = null;
 		List<StatInfo> datas =null;

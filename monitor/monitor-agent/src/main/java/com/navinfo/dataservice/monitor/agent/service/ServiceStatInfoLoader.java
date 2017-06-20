@@ -57,7 +57,7 @@ public class ServiceStatInfoLoader {
 	 */
 	public List<StatInfo> handleStatInfo(String host, String port, String tomcat){
 		String url = "http://"+host+":"+port+"/"+tomcat+"/monitoring?part=counterSummaryPerClass&counter=http&format=json&period=jour";
-		log.info("访问地址:"+url);
+		log.info("service访问地址:"+url);
 		List<StatInfo> resultList = new ArrayList<StatInfo>();
 		try {
 			String data = ServiceInvokeUtil.invokeByGet(url);

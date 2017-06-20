@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
@@ -57,6 +60,23 @@ public class ManApiImpl implements ManApi {
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
 		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status,message);
 	}	
+	/**
+	 * 修改task_progress中的执行状态，主要用于任务相关的耗时job，例如，无任务转中
+	 * @param phaseId
+	 * @param status 2成功3失败
+	 * @param message 其他描述信息
+	 * @throws Exception
+	 */
+	@Override
+	public void endTaskProgress(int phaseId,int status,String message) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			TaskProgressOperation.endProgress(conn, phaseId, status, message);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}		
+	}
 	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {

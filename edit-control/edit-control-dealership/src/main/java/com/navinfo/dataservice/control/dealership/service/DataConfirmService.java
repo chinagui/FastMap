@@ -61,6 +61,10 @@ public class DataConfirmService {
 			"与POI的匹配方式", "POI1_NUM", "POI2_NUM", "POI3_NUM", "POI4_NUM", "POI5_NUM", "匹配度", "代理店显示坐标X", "代理店显示坐标Y",
 			"待采纳POI外业采集号码", "四维确认备注", "期望时间", "情报类型", "情报等级", "大区ID" };
 
+	public String[] feedbackHeaders = { "UUID", "情报ID", "省份", "城市", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供地址", "厂商提供电话",
+			"四维确认备注", "代理店显示坐标X", "代理店显示坐标Y", "情报对应的要素外业采集ID", "情报是否被采纳", "情报未采纳原因", "情报未采纳或部分采纳备注", "任务号", "情报类型",
+			"情报等级", "反馈时间" };
+
 	/**
 	 * 根据品牌代码得到输出到excel的数据
 	 * 
@@ -189,12 +193,12 @@ public class DataConfirmService {
 				+ "/dealership/infoImport";
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath, "info");
 		String localFile = returnParam.getString("filePath");
-		
+
 		log.info("情报文件已上传至：" + localFile);
 		log.info("开始读取情报文件数据");
 
 		try {
-			List<Map<String, Object>> importResult = readCsvFile(localFile);
+			List<Map<String, Object>> importResult = readCsvFile(localFile, headers, importInfoHeader());
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
@@ -224,7 +228,7 @@ public class DataConfirmService {
 	}
 
 	/**
-	 * 上传成功后，连接情报库，按要求更新RESULT数据库
+	 * 情报下发：上传成功后，连接情报库，按要求更新RESULT数据库
 	 * 
 	 * @param filePath
 	 * @param userId
@@ -284,7 +288,13 @@ public class DataConfirmService {
 		return data;
 	}
 
-	public Map<String, String> importInfoExcel() throws Exception {
+	/**
+	 * 情报下发：excel头文件对应的标识组合
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> importInfoHeader() {
 		Map<String, String> excelHeader = new HashMap<String, String>();
 
 		excelHeader.put("UUID", "resultId");
@@ -323,13 +333,114 @@ public class DataConfirmService {
 
 		return excelHeader;
 	}
-	
-	public List<Map<String, Object>> readCsvFile(String uploadFile) throws Exception {
-		DataInputStream in = new DataInputStream(new FileInputStream(new File(uploadFile))); 
-		BufferedReader br= new BufferedReader(new InputStreamReader(in,"GBK"));
-		
+
+	/**
+	 * 反馈数据导出服务
+	 * @param userId
+	 * @param timeObj
+	 * @throws Exception
+	 */
+	public String expInfoFeedbackService(long userId, JSONObject timeObj, HttpServletRequest request) throws Exception {
+		String fileName = getFeedbackFileName(timeObj, userId);
+		log.info("调用情报接口，反馈文件名称：" + fileName);
+
+		String refilePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
+				+ "/dealership/information/" + fileName;
+		JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
+		String filePath = returnParam.getString("filePath");
+
+		log.info("反馈情报路径：" + filePath);
+		Connection conn = null;
+
+		try {
+			conn = DBConnector.getInstance().getDealershipConnection();
+			List<Map<String, Object>> feedbackResult = readCsvFile(filePath, feedbackHeaders, infoFeedbackHeader());
+
+			for (Map<String, Object> result : feedbackResult) {
+
+				// 文件中字段“情报是否被采纳”+“：”+“情报未采纳原因”+“，”+“情报未采纳或部分采纳备注”+“。”+“关联POI为”+“情报对应的要素外业采集ID”
+				String fbContent = result.get("isAdopted") + "：" + result.get("notAdoptedReason") + "，"
+						+ result.get("memo") + "。关联POI为" + result.get("cfmPoiNum");
+				String sql = String.format(
+						"UPDATE IX_DEALERSHIP_RESULT SET WORKFLOW_STATUS = 3, CFM_STATUS = 3, FB_DATE = '%s', FB_CONTENT = '%s', FB_SOURCE = 1 WHERE RESULT_ID = %d",
+						result.get("feedbackTime") == null ? "" : result.get("feedbackTime"), fbContent,
+						Integer.valueOf(result.get("resultId").toString()));
+				run.execute(conn, sql);
+			}
+			conn.commit();
+		} catch (Exception e) {
+			conn.rollback();
+			log.error(e.getMessage());
+			throw e;
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}//
+		return filePath;
+	}
+
+	/**
+	 * 情报反馈：头文件对应map
+	 * 
+	 * @return
+	 */
+	public Map<String, String> infoFeedbackHeader() {
+		Map<String, String> excelHeader = new HashMap<String, String>();
+
+		excelHeader.put("UUID", "resultId");
+		excelHeader.put("情报ID", "infoId");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话", "telSale");
+		excelHeader.put("四维确认备注", "cfmMemo");
+		excelHeader.put("代理店显示坐标X", "xLocate");
+		excelHeader.put("代理店显示坐标Y", "yLocate");
+		excelHeader.put("情报对应的要素外业采集ID", "cfmPoiNum");
+		excelHeader.put("情报是否被采纳", "isAdopted");
+		excelHeader.put("情报未采纳原因", "notAdoptedReason");
+		excelHeader.put("情报未采纳或部分采纳备注", "memo");
+		excelHeader.put("情报类型", "infoType");
+		excelHeader.put("情报等级", "infoLevel");
+		excelHeader.put("反馈时间", "feedbackTime");
+
+		return excelHeader;
+	}
+
+	/**
+	 * 调用情报接口，得到反馈文件名称
+	 * 
+	 * @param timeObj
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public String getFeedbackFileName(JSONObject timeObj, long userId) throws Exception {
+		String accessToken = AccessTokenFactory.generate(userId).getTokenString();
+
+		StringBuilder urlStr = new StringBuilder();
+		urlStr.append("http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/export/?access_token=");
+		urlStr.append(accessToken);
+		urlStr.append("&parameter=");
+		urlStr.append(URLEncoder.encode(timeObj.toString(), "utf-8"));
+
+		String return_value = Parser_Tool.do_get(urlStr.toString());
+		JSONObject resultObj = JSONObject.fromObject(return_value);
+		String fileName = resultObj.getString("filename");
+		return fileName;
+	}
+
+	public List<Map<String, Object>> readCsvFile(String uploadFile, String[] headers, Map<String, String> excelHeader)
+			throws Exception {
+		DataInputStream in = new DataInputStream(new FileInputStream(new File(uploadFile)));
+		BufferedReader br = new BufferedReader(new InputStreamReader(in, "GBK"));
+
 		List<Map<String, Object>> sourceResult = new ArrayList<>();
-		Map<String, String> excelHeader = importInfoExcel();
 
 		String line = "";
 		int n = 0;

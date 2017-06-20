@@ -1,25 +1,17 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.IVia;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.*;
 
 public class Operation implements IOperation {
 
@@ -155,12 +147,11 @@ public class Operation implements IOperation {
 	/**
 	 * 打断link维护
 	 * 
-	 * @param oldLinkPid
+	 * @param oldLink
 	 *            被打断的link
 	 * @param newLinks
 	 *            新生成的link组
 	 * @param result
-	 * @param conn
 	 * @throws Exception
 	 */
 	public void breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result)
@@ -232,14 +223,25 @@ public class Operation implements IOperation {
 	private void breakOutLink(RdDirectroute directroute, RdLink oldLink,
 			List<RdLink> newLinks, Result result) throws Exception {
 
-		int connectionNodePid = 0;
+		Set<Integer> connectionNodePids = new HashSet<>();
 
-		// 无经过线进入点为连接点；有经过线最后一个经过线与退出线的连接点为连接点
-		if (directroute.getVias().size() == 0) {
+		if (directroute.getRelationshipType() == 1) {
 
-			connectionNodePid = directroute.getNodePid();
+			connectionNodePids.add(directroute.getNodePid());
 
-		} else {
+			RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
+					this.conn);
+
+			List<Integer> nodePids = crossNodeSelector
+					.getCrossNodePidByNode(directroute.getNodePid());
+
+			if (nodePids.size()>1) {
+
+				connectionNodePids.addAll(nodePids);
+			}
+
+		}
+		else {
 
 			// 任意经过线组的最后一个经过线
 			RdDirectrouteVia lastVia = (RdDirectrouteVia) directroute.getVias()
@@ -258,26 +260,31 @@ public class Operation implements IOperation {
 
 			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-					oldLink.getsNodePid(), false);
+			if (oldLink.getsNodePid() != directroute.getNodePid()) {
 
-			if (linkPids.contains(lastVia.getLinkPid())) {
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						oldLink.getsNodePid(), false);
 
-				connectionNodePid = oldLink.getsNodePid();
+				int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? oldLink
+						.getsNodePid() : oldLink.geteNodePid();
 
-			} else {
+				connectionNodePids.add(connectionNodePid);
 
-				connectionNodePid = oldLink.geteNodePid();
+			} else if (oldLink.geteNodePid() != directroute.getNodePid()) {
+
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						oldLink.geteNodePid(), false);
+
+				int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? oldLink
+						.geteNodePid() : oldLink.getsNodePid();
+
+				connectionNodePids.add(connectionNodePid);
 			}
 		}
 
-		if (connectionNodePid == 0) {
-			return;
-		}
-
 		for (RdLink link : newLinks) {
-			if (connectionNodePid == link.getsNodePid()
-					|| connectionNodePid == link.geteNodePid()) {
+			if (connectionNodePids.contains(link.getsNodePid())
+					|| connectionNodePids.contains(link.geteNodePid()))  {
 
 				directroute.changedFields().put("outLinkPid", link.getPid());
 

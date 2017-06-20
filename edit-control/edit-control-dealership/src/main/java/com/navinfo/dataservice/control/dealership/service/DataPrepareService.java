@@ -1843,12 +1843,13 @@ public class DataPrepareService {
 			ixDealershipResult.setTelSale(ixDealershipSource.getTelSale());
 			ixDealershipResult.setTelService(ixDealershipSource.getTelService());
 			ixDealershipResult.setTelOther(ixDealershipSource.getTelOther());
-			ixDealershipResult.setPoiKindCode(ixDealershipSource.getPoiKindCode());
+			ixDealershipResult.setPostCode(ixDealershipSource.getPostCode());
 			ixDealershipResult.setNameEng(ixDealershipSource.getNameEng());
+			ixDealershipResult.setAddressEng(ixDealershipSource.getAddressEng());
+
 			//时间
 			ixDealershipResult.setProvideDate(date);
 			
-			ixDealershipResultList.add(ixDealershipResult);
 			//MATCH_METHOD:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值1，否则赋值0
 			ixDealershipResult.setMatchMethod(null == ixDealershipSource.getCfmPoiNum()? 0:1);
 			//POI_NUM_1:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值IX_DEALERSHIP_SOURCE.cfm_poi_num
@@ -1885,13 +1886,13 @@ public class DataPrepareService {
 			}
 			//GEOMETRY	赋值IX_DEALERSHIP_SOURCE.GEOMETRY
 			ixDealershipResult.setGeometry(ixDealershipSource.getGeometry());
-			//REGION_ID	根据IX_DEALERSHIP_RESULT.PROVINCE关联cp_region_province.province,查找对应的region_id赋值；如果无值，则取source.province关联
+			//REGION_ID	根据IX_DEALERSHIP_RESULT.PROVINCE关联cp_region_province.province,查找对应的region_id赋值
 			if(ixDealershipSource.getProvince()!=null&&provinceRegionIdMap.get(ixDealershipSource.getProvince())!=null){
 				ixDealershipResult.setRegionId(provinceRegionIdMap.get(ixDealershipSource.getProvince()));
 			}else{
 				log.info("sourceId:" + ixDealershipResult.getSourceId() + "无法获取大区信息");
 			}
-
+			ixDealershipResultList.add(ixDealershipResult);
 		}
 		return ixDealershipResultList;	
 	}

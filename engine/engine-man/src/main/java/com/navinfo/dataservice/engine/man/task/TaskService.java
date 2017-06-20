@@ -1611,9 +1611,14 @@ public class TaskService {
 			try {
 				List<Object[]> msgContentList=new ArrayList<Object[]>();
 				String msgTitle="task发布";
-				if(task.getGroupLeader()!=0){
+				JSONArray taskIds=new JSONArray();
+				taskIds.add(task.getTaskId());
+				List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
+				Task taskLeader=new Task();
+				if(pushtask!=null&&pushtask.size()>0){taskLeader=pushtask.get(0);}
+				if(taskLeader.getGroupLeader()!=0){
 					Object[] msgTmp=new Object[4];
-					msgTmp[0]=task.getGroupLeader();//收信人
+					msgTmp[0]=taskLeader.getGroupLeader();//收信人
 					msgTmp[1]=msgTitle;//消息头
 					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
 					//关联要素

@@ -15,7 +15,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 	
 
-	protected List<String> chainCodeList;
+	protected List<String> chainCodeList;//库差分，重新库差分、补充数据、实时更新、品牌更新传入
 	
 	protected int sourceType;//1库差分，2重新库差分、3补充数据、4实时更新、5品牌更新
 	
@@ -27,7 +27,7 @@ public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 		this.sourceType = sourceType;
 	}
 
-	protected List<Integer> resultIdList;    
+	protected List<Integer> resultIdList;//补充数据传入   
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {

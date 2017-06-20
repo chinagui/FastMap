@@ -372,6 +372,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			if(taskIds==null||taskIds.size()==0){return "没有要发布的任务";}
 			//查询task数据，包含作业组leaderId
 			List<Task> taskList = getTaskListWithLeader(conn,taskIds);
 			

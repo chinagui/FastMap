@@ -29,9 +29,11 @@ public class AgentStarter {
 		try {  
             String service_name = "动态任务调度service"; 
             String tomcat_name = "动态任务调度tomcat";
-            QuartzManager.addJob(service_name, ServiceJob.class, "0/5 * * * * ?");
+            QuartzManager.addJob(service_name, ServiceJob.class, "0 0/5 * * * ?");
             QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/10 * * * * ?");
             QuartzManager.startJobs();
+            Thread.sleep(50000);
+            QuartzManager.removeJob(tomcat_name);
         } catch (Exception e) {  
             e.printStackTrace(); 
             log.error(e.getMessage());
@@ -74,8 +76,8 @@ public class AgentStarter {
 					{"192.168.4.188","8089","datahub"},{"192.168.4.110","8089","datahub"},
 					{"192.168.4.188","8090","statics"},{"192.168.4.110","8090","statics"},
 					{"192.168.4.188","8091","mapspotter"},{"192.168.4.110","8091","mapspotter"},
-					{"192.168.4.188","8092","editcolumn"},{"192.168.4.110","8092","editcolumn"},
-					{"192.168.4.188","8093","editrow"},{"192.168.4.110","8093","editrow"},
+					{"192.168.4.188","8092","column"},{"192.168.4.110","8092","column"},
+					{"192.168.4.188","8093","row"},{"192.168.4.110","8093","row"},
 					{"192.168.4.188","8094","sys"},{"192.168.4.110","8094","sys"}};
 			for(int i=0;i<datas.length;i++){
 				String[] data = datas[i];
@@ -94,7 +96,8 @@ public class AgentStarter {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					log.error("host="+host+"port="+port+"tomcat="+tomcat+e.getMessage());
+					System.out.println("host="+host+",port="+port+",tomcat="+tomcat);
+					log.error("host="+host+",port="+port+",tomcat="+tomcat+e.getMessage());
 				}
 			}
 		} catch (Exception e) {

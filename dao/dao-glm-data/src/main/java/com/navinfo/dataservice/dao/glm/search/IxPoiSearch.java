@@ -7,10 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -41,7 +45,7 @@ import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
-
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	private Map<String, String> CHAINMAP;
@@ -219,19 +223,27 @@ public class IxPoiSearch implements ISearch {
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
-				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_TASK_ID,0) QUICK_TASK_ID ,nvl(B.MEDIUM_TASK_ID,0) MEDIUM_TASK_ID  FROM TMP1 A LEFT JOIN "
-				+ "POI_EDIT_STATUS B ON A.PID = B.PID ");
+				+ "SELECT TMP.*, T . NAME FROM (");
 
-		if (noQFilter != null && noQFilter.size() > 0) {
-			sb.append(" WHERE B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
-			if (noQFilter.contains(1) && noQFilter.size() == 1) {
-				sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
-
+		if (noQFilter != null) {
+			if(noQFilter.size() > 0){
+				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
+					+ "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
+					+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
+				if (noQFilter.contains(1) && noQFilter.size() == 1) {
+					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
+	
+				}
+				if (noQFilter.contains(2) && noQFilter.size() == 1) {
+					sb.append(" AND B.MEDIUM_TASK_ID = 0 ");
+	
+				}
+			}else{
+				return null;
 			}
-			if (noQFilter.contains(2) && noQFilter.size() == 1) {
-				sb.append(" AND B.MEDIUM_TASK_ID = 0 ");
-
-			}
+		}else{
+			sb.append("SELECT A.*, 0 STATUS,0 QUICK_TASK_ID ,"
+				+ "0 MEDIUM_TASK_ID  FROM TMP1 A");
 		}
 		sb.append(" ) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
@@ -239,7 +251,7 @@ public class IxPoiSearch implements ISearch {
 		ResultSet resultSet = null;
 
 		try {
-
+			log.info(sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);

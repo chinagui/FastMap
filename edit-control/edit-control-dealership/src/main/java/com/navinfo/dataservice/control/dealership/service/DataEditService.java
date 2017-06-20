@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -31,7 +32,9 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -1855,4 +1858,249 @@ public class DataEditService {
 	};
 	
 	
+	/**
+	 * 补充增量数据
+	 * @param request
+	 * @param userId
+	 * @throws Exception 
+	 */
+	//TODO 
+	public long addChainData(HttpServletRequest request, long userId) throws Exception {
+		//excel文件上传到服务器		
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
+
+		log.info("补充增量数据的文件上传到服务器指定位置"+filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile = returnParam.getString("filePath");
+		
+//		String localFile = "F:/1.xlsx";
+		
+		log.info("文件已上传至" + localFile);
+		//导入补充增量数据excel
+		List<Map<String, Object>> addDataMaps = new ArrayList<>();
+		try{
+			addDataMaps = impAddDataExcel(localFile);
+		}catch(Exception e){
+			log.error("解析excel表格出现错误。原因为："+e);
+			throw new Exception("解析excel表格出错，请检查表格内是否有空行");
+		}
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getDealershipConnection();
+			//这里校验并处理数据
+			checkImpAddData(conn, addDataMaps);
+			log.info("文件内容符合要求，已经成功上传");
+			AddChainDataEntity addChainDataEntity = new AddChainDataEntity();
+			String chainCode = null;
+			int resultId = 0;
+			List<Integer> resultIdList = new ArrayList<>();
+			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
+			for(Map<String, Object> map : addDataMaps){
+				if(StringUtils.isBlank(map.get("number").toString())){
+					log.info("开始新增无序号的数据");
+					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					continue;
+				}
+				resultId = Integer.parseInt(map.get("number").toString());
+				resultIdList.add(resultId);
+				String history = map.get("history").toString();
+				addChainDataEntity.setResultId(resultId);
+				//新增
+				if("3".equals(history)){
+					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					log.info("补充增量数据新增完成");
+				}
+				//判断后执行新增或者更新
+				if("1".equals(history) || "2".equals(history) || "4".equals(history)){
+					if("3".equals(map.get("dealStatus").toString()) && "9".equals(map.get("workFlowStatus").toString())){
+						editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+						log.info("补充增量数据新增完成");
+					}else{
+						editIxDealershipResult.editIxDealershipResult(conn ,addChainDataEntity, "update", map, userId);
+						log.info("补充增量数据更新完成");
+					}
+				}
+				
+				chainCode = map.get("chain").toString();
+			}
+			//由于增量数据都是单一品牌的，暂时拿出循环之外
+			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
+			updateStatusByChain(conn, chainCode);
+			updateReulteData(conn, resultIdList);
+			log.info("调用库查分");
+			//TODO 待处理
+			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject dataJson = new JSONObject();
+			dataJson.put("resultIdList", resultIdList);
+			//这里的job传递resulIdList
+			long jobId = jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			conn.commit();
+			log.info("调用启动录入作业");
+			startWork(chainCode, userId);
+			return jobId;
+		}catch(Exception e){
+			DbUtils.rollback(conn);
+			throw new ServiceException(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param 增量数据upFile
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impAddDataExcel(String upFile) throws Exception {
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		excelHeader.put("序号", "number");
+		excelHeader.put("FID", "fid");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（维修）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		excelHeader.put("一览表提供时间", "provideOldSourceTime");
+		excelHeader.put("一览表确认时间", "confirmOldSourceTime");
+		excelHeader.put("四维确认备注", "NAVConfirmRemark");
+		excelHeader.put("负责人反馈结果", "feedbackResult");
+		excelHeader.put("解决人", "resolvePerson");
+		excelHeader.put("解决时间", "resolveTime");
+		excelHeader.put("四维差分结果", "NAVResult");
+		excelHeader.put("一览表作业状态", "sourceWorkStatus");
+		excelHeader.put("变更履历", "history");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("导入补充增量数据完成" + upFile);
+		return sources;
+	}
+	
+	/**
+	 * @param 增量数据内容校验工厂
+	 * @return
+	 * @throws Exception 
+	 */
+	public void checkImpAddData(Connection conn, List<Map<String, Object>> addDataMaps) throws Exception{
+		for(Map<String, Object> addDataMap : addDataMaps){
+			try{
+				String resultId = addDataMap.get("number").toString();
+				String history = addDataMap.get("history").toString();
+				log.info("上传的增量数据序号即resultID为：" + resultId+"上传的变更履历为：" + history);
+				//若补充数据上传文件中“序号”没有值且文件中“变更履历”的值必须为3(新增)，可以上传，否则不可上传文件
+				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
+					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
+				}
+				
+				if(StringUtils.isBlank(resultId)){
+					continue;
+				}
+				Map<String, Object> statusMap = getStatusByResultId(conn, resultId);
+				//对应的resultId在result表中没有数据，可以上传
+				if(statusMap == null){
+					continue;
+				}
+				String workFlowStatus = null;
+				String dealStatus = null;
+				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值不为3(非新增)，
+				//且上传文件中“序号”在RESULT表result_id中存在,且(workflow_status=9 and deal_status<>3),则该文件不可以上传
+				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
+					workFlowStatus = statusMap.get("workFlowStatus").toString();
+					dealStatus = statusMap.get("dealStatus").toString();
+					if("9".equals(workFlowStatus) && !"3".equals(dealStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
+					}
+				}
+				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值为2(删除)，
+				//且传文件中“序号”在RESULT表result_id中存在，且RESULT表中工艺状态为“外业处理完成，出品”即9，则该文件不可以上传
+				if(StringUtils.isNotBlank(resultId) && "2".equals(history)){
+					workFlowStatus = statusMap.get("workFlowStatus").toString();
+					if("9".equals(workFlowStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+					}
+				}
+				addDataMap.put("workFlowStatus", workFlowStatus);
+				addDataMap.put("dealStatus", dealStatus);
+			}catch(Exception e){
+				log.error(e);
+				throw e;
+			}
+		}
+	}
+	
+	/**
+	 * @param 根据resultID获取工艺状态和代理店状态
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Object> getStatusByResultId(Connection conn, String resultId) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.WORKFLOW_STATUS,t.DEAL_STATUS from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						Map<String, Object> result = new HashMap<>();
+						result.put("workFlowStatus", rs.getInt("WORKFLOW_STATUS"));
+						result.put("dealStatus", rs.getInt("DEAL_STATUS"));
+						return result;
+					}
+					return null;
+				}
+			};
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * 更新代理店状态
+	 * @param conn
+	 * @param chain
+	 * @param resultId
+	 * 
+	 * */
+	public void updateStatusByChain(Connection conn, String chain) throws SQLException{
+		QueryRunner run = new QueryRunner();
+		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code = '"+chain+"'";
+		log.info("updateChain:"+updateChain);
+		run.execute(conn, updateChain);
+	}
+	
+	/**
+	 * 更新代理店查分结果
+	 * @param conn
+	 * @param chain
+	 * @param resultId
+	 * 
+	 * */
+	public void updateReulteData(Connection conn, List<Integer> resultId) throws SQLException{
+		QueryRunner run = new QueryRunner();
+		if(resultId.size() > 0){
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i < resultId.size(); i++){
+				sb.append(resultId.get(i));
+				sb.append(",");
+			}
+			String resultIds = sb.toString().substring(0, sb.length() -1);
+			String updateResult = "update IX_DEALERSHIP_RESULT r set r.deal_src_diff = 2 where r.result_id in("+resultIds+")";
+			log.info("updateResult:"+updateResult);
+			run.execute(conn, updateResult);
+		}
+	}
 }

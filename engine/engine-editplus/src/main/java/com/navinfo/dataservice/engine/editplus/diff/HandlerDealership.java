@@ -248,7 +248,7 @@ public class HandlerDealership {
 		return false;
 	}
 	
-	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain,Map dbMap)
+	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain,Map dbMap,Logger log)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -268,7 +268,7 @@ public class HandlerDealership {
 
 			for (int i = 0; i < diffFinishResultList.size(); i++) {
 				IxDealershipResult dealResult = diffFinishResultList.get(i);
-			
+				log.info("resultId:"+dealResult.getResultId()+",sim:"+dealResult.getSimilarity());
 				updateResultObj(dealResult, dbMap);
 				
 				Object[] obj = new Object[] { dealResult.getWorkflowStatus(), dealResult.getIsDeleted(),

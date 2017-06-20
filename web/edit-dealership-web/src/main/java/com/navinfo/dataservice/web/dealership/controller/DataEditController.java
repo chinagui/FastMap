@@ -339,11 +339,42 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 下拉省市列表
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value="/getAdminCodeAndProvince")
 	public ModelAndView getAdminCodeAndProvince(HttpServletRequest request) throws Exception {
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try {
 			JSONArray data = manApi.getAdminCodeAndProvince();//得到distinct过后的adminCode列表
+
+		    return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally{
+		}
+	}
+	
+	
+	/**
+	 * 编辑查询接口
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/queryByCon")
+	public ModelAndView queryByCon(HttpServletRequest request) throws Exception {
+		
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			JSONArray data = dealerShipEditService.queryByCon(jsonObj);
 
 		    return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

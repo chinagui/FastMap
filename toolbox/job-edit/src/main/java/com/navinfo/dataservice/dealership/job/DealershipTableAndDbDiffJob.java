@@ -230,7 +230,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 			log.info("差分完成，开始更新result、source、chain表");
 			HandlerDealership handler = new HandlerDealership();
-			handler.updateDealershipDb(diffFinishResultList, chainCode,dbConMap);
+			handler.updateDealershipDb(diffFinishResultList, chainCode,dbConMap,log);
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -261,7 +261,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
 					+ "from IX_DEALERSHIP_RESULT r where r.workflow_status=0 and r.chain= '" + chainCode
-					+ "' and r.deal_src_diff=" + dealSrcDiff;
+					+ "' and r.deal_src_diff=" + dealSrcDiff +"and r.result_id=33012" ;
 
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override

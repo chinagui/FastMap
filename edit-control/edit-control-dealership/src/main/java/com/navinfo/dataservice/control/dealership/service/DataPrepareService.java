@@ -1790,6 +1790,8 @@ public class DataPrepareService {
 			//启动表库差分
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			JSONObject dataJson = new JSONObject();
+			dataJson.put("chainCodeList", chainList2);
+			dataJson.put("sourceType", 5);
 			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
 			return jobId;
 			

@@ -345,7 +345,7 @@ public class SubtaskService {
 				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 			}else{
 				if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
-					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
+					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
 					if(!StringUtils.isEmpty(subtask.getName())){
 						qualitySubtask.setName(subtask.getName()+"_质检");}
 					qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
@@ -375,25 +375,25 @@ public class SubtaskService {
 		}
 	}
 
-	/*
-	 * 批量修改子任务详细信息。 参数：Subtask对象列表
-	 */
-	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
-		Connection conn = null;
-		try {
-			// 持久化
-			conn = DBConnector.getInstance().getManConnection();
-			
-			return updateSubtask(conn,subtaskList,userId);
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	/*
+//	 * 批量修改子任务详细信息。 参数：Subtask对象列表
+//	 */
+//	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			// 持久化
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+//			return updateSubtask(conn,subtaskList,userId);
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表

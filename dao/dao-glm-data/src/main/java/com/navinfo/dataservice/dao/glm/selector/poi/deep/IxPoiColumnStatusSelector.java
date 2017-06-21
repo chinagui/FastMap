@@ -162,6 +162,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			if(!commenUserId.isEmpty()){
 				sb.append(" and s.COMMON_HANDLER in ("+commenUserId+") ");
 			}
+			sb.append(" and s.pid not exists ");
+			sb.append("(SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
+			sb.append("WHERE PS.PID = S.PID ");
+			sb.append("AND PS.HANDLER <> 0 ");
+			sb.append("AND PC.TYPE = 1 ");
+			sb.append("AND PC.CHECK_FLAG IN (1, 3) ");
+			sb.append("AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
+			sb.append("AND PC.FIRST_WORK_ITEM ="+firstWorkItem+") ");
 		}
 
 		PreparedStatement pstmt = null;

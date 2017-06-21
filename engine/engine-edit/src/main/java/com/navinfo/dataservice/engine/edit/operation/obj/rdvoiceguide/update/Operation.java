@@ -1,27 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.IVia;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.*;
 
 public class Operation implements IOperation {
 
@@ -167,7 +159,7 @@ public class Operation implements IOperation {
 	 * 更新经过线
 	 * 
 	 * @param result
-	 * @param json
+	 * @param
 	 * @param detail
 	 * @throws Exception
 	 */
@@ -307,16 +299,24 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			int connectionNodePid = 0;
+			Set<Integer> connectionNodePids = new HashSet<>();
 
-			if (detail.getVias().size() == 0) {
+			if (detail.getRelationshipType() == 1) {
 
-				connectionNodePid = voiceguide.getNodePid();
+				connectionNodePids.add(voiceguide.getNodePid());
 
+				RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
+						this.conn);
+
+				List<Integer> nodePids = crossNodeSelector
+						.getCrossNodePidByNode(voiceguide.getNodePid());
+
+				if (nodePids.size() > 1) {
+					connectionNodePids.addAll(nodePids);
+				}
 			} else {
 
-				RdVoiceguideVia lastVia = (RdVoiceguideVia) detail.getVias()
-						.get(0);
+				RdVoiceguideVia lastVia = (RdVoiceguideVia) detail.getVias().get(0);
 
 				for (IRow rowVia : detail.getVias()) {
 
@@ -331,22 +331,33 @@ public class Operation implements IOperation {
 
 				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-						deleteLink.getsNodePid(), false);
+				if (deleteLink.getsNodePid() != voiceguide.getNodePid()) {
 
-				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
-						.getsNodePid() : deleteLink.geteNodePid();
-			}
+					List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+							deleteLink.getsNodePid(), false);
 
-			if (connectionNodePid == 0) {
+					int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+							.getsNodePid() : deleteLink.geteNodePid();
 
-				continue;
+					connectionNodePids.add(connectionNodePid);
+
+				} else if (deleteLink.geteNodePid() != voiceguide.getNodePid()) {
+
+					List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+							deleteLink.geteNodePid(), false);
+
+					int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+							.geteNodePid() : deleteLink.getsNodePid();
+
+					connectionNodePids.add(connectionNodePid);
+				}
+
 			}
 
 			for (RdLink link : newLinks) {
 
-				if (link.getsNodePid() == connectionNodePid
-						|| link.geteNodePid() == connectionNodePid) {
+				if (connectionNodePids.contains(link.getsNodePid())
+						|| (connectionNodePids.contains(link.geteNodePid()))) {
 
 					detail.changedFields().put("outLinkPid", link.getPid());
 
@@ -533,7 +544,7 @@ public class Operation implements IOperation {
 	/**
 	 * 分离节点
 	 * @param link 
-	 * @param nodePid
+	 * @param
 	 * @param rdlinks 
 	 * @param result
 	 * @throws Exception

@@ -201,11 +201,14 @@ public class DataPrepareController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(parameter);
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			
+			JSONObject jobReq=new JSONObject();
+			List<String> chainCodeList=new ArrayList<String>();
+			chainCodeList.add(dataJson.getString("chainCode"));
+			jobReq.put("chainCodeList", chainCodeList);
+			jobReq.put("sourceType", dataJson.getInt("sourceType"));
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
-			
-			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", jobReq, userId,0, "代理店库差分");
 			
 			
 			return new ModelAndView("jsonView", success(jobId));
@@ -412,10 +415,24 @@ public class DataPrepareController extends BaseController {
 		try {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			Long jobId = dealerShipService.chainUpdate(userId);			
+			long jobId = dealerShipService.chainUpdate(userId);			
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
-			logger.error("转内业失败，原因：" + e.getMessage(), e);
+			logger.error("品牌更新失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/liveUpdate")
+	public ModelAndView liveUpdate(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			long jobId = dealerShipService.liveUpdate(userId);			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error("实时更新失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

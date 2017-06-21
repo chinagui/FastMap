@@ -372,6 +372,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			if(taskIds==null||taskIds.size()==0){return "没有要发布的任务";}
 			//查询task数据，包含作业组leaderId
 			List<Task> taskList = getTaskListWithLeader(conn,taskIds);
 			
@@ -509,7 +510,7 @@ public class TaskService {
 					Object[] msgTmp=new Object[4];
 					msgTmp[0]=task.getGroupLeader();//收信人
 					msgTmp[1]=msgTitle;//消息头
-					msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+					msgTmp[2]="发布task:"+task.getName()+",请关注";//消息内容
 					//关联要素
 					JSONObject msgParam = new JSONObject();
 					msgParam.put("relateObject", "TASK");
@@ -1609,10 +1610,15 @@ public class TaskService {
 			//发送消息
 			try {
 				List<Object[]> msgContentList=new ArrayList<Object[]>();
-				String msgTitle="task发布";
-				if(task.getGroupLeader()!=0){
+				String msgTitle="task关闭";
+				JSONArray taskIds=new JSONArray();
+				taskIds.add(task.getTaskId());
+				List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
+				Task taskLeader=new Task();
+				if(pushtask!=null&&pushtask.size()>0){taskLeader=pushtask.get(0);}
+				if(taskLeader.getGroupLeader()!=0){
 					Object[] msgTmp=new Object[4];
-					msgTmp[0]=task.getGroupLeader();//收信人
+					msgTmp[0]=taskLeader.getGroupLeader();//收信人
 					msgTmp[1]=msgTitle;//消息头
 					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
 					//关联要素

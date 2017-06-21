@@ -295,20 +295,27 @@ public class DataConfirmService {
 			String[] successLists = successList.replace("[", "").replace("]", "").split(",");
 
 			for (String success : successLists) {
+				if(success.isEmpty()){
+					continue;
+				}
+				
 				String sql = String.format(
 						"UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = 2,TO_INFO_DATE = %s WHERE RESULT_ID = '%s'",
 						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success.replace("\"", ""));
 				run.execute(conn, sql);
-				conn.commit();
 			}
-
-			String[] generateFail = resultObj.getString("generateFailedList").replace("[", "").replace("]", "")
-					.split(",");
-			String[] insertFail = resultObj.getString("insertFailedList").replace("[", "").replace("]", "").split(",");
-			String[] sendFail = resultObj.getString("sendFailedList").replace("[", "").replace("]", "").split(",");
+			conn.commit();
+			int generateFail = resultObj.getString("generateFailedList").equals("[]") ? 0
+					: (resultObj.getString("generateFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int insertFail = resultObj.getString("insertFailedList").equals("[]") ? 0
+					: (resultObj.getString("insertFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int sendFail = resultObj.getString("sendFailedList").equals("[]") ? 0
+					: (resultObj.getString("sendFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int updateFail = resultObj.getString("updateFailedList").equals("[]") ? 0
+					: (resultObj.getString("updateFailedList").replace("[", "").replace("]", "")).split(",").length;
 
 			data.put("successCount", successLists.length);
-			data.put("failCount", generateFail.length + insertFail.length + sendFail.length);
+			data.put("failCount", generateFail + insertFail + sendFail + updateFail);
 
 		} catch (Exception e) {
 			conn.rollback();

@@ -387,6 +387,7 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
+
 	
 	/**
 	 * 补充数据接口
@@ -412,6 +413,30 @@ public class DataEditController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+      }}
+
+	/**
+	 * 加载poi属性，用于代理店保存冲突检测
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/loadPoiForCnflict")
+	public ModelAndView loadPoiForCnflict(HttpServletRequest request) throws Exception {
+		
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			JSONObject data = dealerShipEditService.loadPoiForCnflict(jsonObj);
+
+		    return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally{
+
 		}
 	}
 }

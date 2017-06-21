@@ -301,12 +301,12 @@ public class HandlerDealership {
 //					+ chain;
 //
 //			run.update(conn, updateSourceSql);
-			String chains = "(";
-			chains += StringUtils.join(chainList.toArray(), ",") + ")";
+			String chains = "('";
+			chains += StringUtils.join(chainList.toArray(), "','") + "')";
 
 			// 更新chain表
 			run.update(conn,
-					"update ix_dealership_chain set work_status=2 where  chain_code in '" + chains+"'");
+					"update ix_dealership_chain set work_status=2 where  chain_code in " + chains);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

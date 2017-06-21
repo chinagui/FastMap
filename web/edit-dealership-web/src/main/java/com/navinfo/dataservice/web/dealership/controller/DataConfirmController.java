@@ -88,7 +88,7 @@ public class DataConfirmController extends BaseController {
 			}
 			long userId = tokenObj.getUserId();
 			
-			JSONObject data =  confirmService.releaseInfoService(request, userId);
+			JSONObject data = confirmService.releaseInfoService(request, userId);
 			return new ModelAndView("jsonView",success(data));
 		}
 		catch(Exception e){
@@ -108,7 +108,7 @@ public class DataConfirmController extends BaseController {
 			long userId = tokenObj.getUserId();
 			JSONObject obj = JSONObject.fromObject(request.getParameter("Parameter"));
 			
-			String filePath =confirmService.expInfoFeedbackService(userId,obj,request);
+			String filePath = confirmService.expInfoFeedbackService(userId,obj,request);
 			return new ModelAndView("jsonView",success(filePath));
 		}
 		catch(Exception e){

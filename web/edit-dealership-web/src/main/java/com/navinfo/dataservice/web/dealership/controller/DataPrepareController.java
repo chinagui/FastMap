@@ -422,4 +422,18 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	
+	@RequestMapping(value = "/liveUpdate")
+	public ModelAndView liveUpdate(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			long jobId = dealerShipService.liveUpdate(userId);			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error("实时更新失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

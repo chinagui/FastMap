@@ -121,10 +121,10 @@ public class IxDealershipSourceSelector {
 		result.setPoiNameShort(rs.getString("POI_NAME_SHORT"));
 		result.setPoiAddress(rs.getString("POI_ADDRESS"));
 		result.setPoiPostCode(rs.getString("POI_POST_CODE"));
-		result.setPoiXDisplay(rs.getInt("POI_X_DISPLAY"));
-		result.setPoiYDisplay(rs.getInt("POI_Y_DISPLAY"));
-		result.setPoiXGuide(rs.getInt("POI_X_GUIDE"));
-		result.setPoiYGuide(rs.getInt("POI_Y_GUIDE"));
+		result.setPoiXDisplay(rs.getDouble("POI_X_DISPLAY"));
+		result.setPoiYDisplay(rs.getDouble("POI_Y_DISPLAY"));
+		result.setPoiXGuide(rs.getDouble("POI_X_GUIDE"));
+		result.setPoiYGuide(rs.getDouble("POI_Y_GUIDE"));
 		STRUCT geoStruct=(STRUCT) rs.getObject("GEOMETRY");
 		try {
 			result.setGeometry(GeoTranslator.struct2Jts(geoStruct));
@@ -246,6 +246,20 @@ public class IxDealershipSourceSelector {
 	 */
 	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn,List<String> chainList) throws Exception {
 		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE S WHERE S.IS_DELETED <> 1 AND S.CHAIN IN ('" + StringUtils.join(chainList,"','") + "') ORDER BY S.CHAIN";
+		log.info("getAllIxDealershipSourceByChain sql:" + sql);
+		return new QueryRunner().query(conn,sql,getSourcesByChainHander());
+	}
+	
+	/**
+	 * 查询CHAIN.work_type为“一览表”状态(work_type=2)的品牌，根据品牌关联SOURCE表，且SOUCE.is_delete为“非总表删除记录”
+	 * @param conn
+	 * @param chainList
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChainWorkType(Connection conn) throws Exception {
+		String sql= "SELECT ds.* FROM ix_dealership_source ds,ix_dealership_chain dc WHERE ds.chain = dc.chain_code AND dc.work_type = 2 AND ds.is_deleted <> 1"
+				+ " ORDER BY ds.chain,ds.source_id ";
 		log.info("getAllIxDealershipSourceByChain sql:" + sql);
 		return new QueryRunner().query(conn,sql,getSourcesByChainHander());
 	}

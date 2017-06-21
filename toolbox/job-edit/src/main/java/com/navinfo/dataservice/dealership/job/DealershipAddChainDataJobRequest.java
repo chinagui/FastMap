@@ -8,8 +8,6 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
-import net.sf.json.JSONObject;
-
 public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 
 	protected List<Integer> resultIdList;
@@ -20,6 +18,7 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 		if(resultIdList != null && resultIdList.size() > 0){
 			AbstractJobRequest Dealershipdiff = JobCreateStrategy.createJobRequest("DealershipTableAndDbDiffJob", null);
 			Dealershipdiff.setAttrValue("resultIdList", resultIdList);
+			//增加数据sourceType=3
 			Dealershipdiff.setAttrValue("sourceType", 3);
 			subJobRequests.put("DealershipTableAndDbDiffJob", Dealershipdiff);
 		}
@@ -27,7 +26,6 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 
 	@Override
 	public String getJobType() {
-		// TODO Auto-generated method stub
 		return "dealershipAddChainDataJob";
 	}
 

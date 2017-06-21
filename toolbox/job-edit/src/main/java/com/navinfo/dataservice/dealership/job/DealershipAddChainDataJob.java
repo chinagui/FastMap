@@ -8,10 +8,8 @@ import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import net.sf.json.JSONObject;
 
 /**
- * @ClassName: GdbBatchJob
- * @author Xiao Xiaowen
- * @date 2016年6月17日 下午6:01:43
- * @Description: TODO
+ * @ClassName: DealershipAddChainDataJob
+ * @author 宋鹤
  * 
  */
 public class DealershipAddChainDataJob extends AbstractJob {
@@ -20,11 +18,6 @@ public class DealershipAddChainDataJob extends AbstractJob {
 		super(jobInfo);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJob#execute()
-	 */
 	@Override
 	public void execute() throws JobException {
 		DealershipAddChainDataJobRequest req = (DealershipAddChainDataJobRequest) this.request;

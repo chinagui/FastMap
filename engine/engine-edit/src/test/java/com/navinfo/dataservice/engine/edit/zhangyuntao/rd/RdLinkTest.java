@@ -47,22 +47,17 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void repair() {
-        String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083]," +
-                "[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]}," +
-                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":500000044,\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52417,39.74599]," +
-                "[116.52445882558823,39.745980432174434]]},\"catchInfos\":[{\"nodePid\":509000031,\"catchNodePid\":503000039}]}}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":404000297,\"dbId\":13,\"subtaskId\":1," +
+                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.54062,39.74981]," +
+                "[116.54075324535368,39.74999770430387],[116.541,39.74987]]},\"catchInfos\":[]}}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.53550684452057,39.74860674002989]," +
-                "[116.53572851550969,39.74841257305713]]},\"catchLinks\":[{\"linkPid\":503000288,\"lon\":116.53572851550969," +
-                "\"lat\":39.74841257305713}]}}";
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.54057890176773,39.74988840790541]," +
+                "[116.54075726866722,39.74999873540115],[116.54089137911797,39.74990902988064]]},\"catchLinks\":[]}}";
         TestUtil.run(parameter);
     }
 
@@ -76,8 +71,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search() {
-        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17," +
-                "\"gap\":80,\"types\":[\"RDHGWGLIMIT\"],\"z\":18,\"x\":215889,\"y\":99231}";
+        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDLINK\"],\"x\":53983,\"y\":24870,\"z\":16}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {

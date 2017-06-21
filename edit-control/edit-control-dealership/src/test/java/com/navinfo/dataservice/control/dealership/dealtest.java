@@ -119,6 +119,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	        } 
 		}
 		
+
 		@Test
 		public void test03() throws Exception{
 			//String localFile = "f://情报下载.xls";
@@ -233,25 +234,34 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	}
 	
 	@Test
-	 	public void queryPidListByCon() throws Exception {
-	 		DataEditService de = DataEditService.getInstance();
-	 		try {
-	 			JSONObject jsonObj = new JSONObject();
-	 			jsonObj.put("poiNum", "");
-	 			jsonObj.put("name", "华都");
-	 			jsonObj.put("address", "");
-	 			jsonObj.put("telephone", "");
-	 			jsonObj.put("location", "");//116.47199,40.14608
-	 			jsonObj.put("proCode", "");
-	 			jsonObj.put("resultId", 33022);
-	 			jsonObj.put("dbId", 13);
-	 
-	 			JSONArray data = de.queryByCon(jsonObj);
-	 			
-	 			System.out.println(data);
-	 		}catch (Exception e) {
-	 			System.out.println(e.getMessage());
-	 		}
-	 	}
+ 	public void queryPidListByCon() throws Exception {
+ 		DataEditService de = DataEditService.getInstance();
+ 		try {
+ 			JSONObject jsonObj = new JSONObject();
+ 			jsonObj.put("poiNum", "48903364");
+ 			jsonObj.put("name", "腾迪");
+ 			jsonObj.put("address", "紫竹院");
+ 			jsonObj.put("telephone", "6871");
+ 			jsonObj.put("location", "116.31946,39.93757");//116.31946,39.93757
+ 			jsonObj.put("proCode", "11");
+ 			jsonObj.put("resultId", 33006);
+ 			jsonObj.put("dbId", 13);
+ 
+ 			JSONArray data = de.queryByCon(jsonObj);
+ 			
+ 			System.out.println(data);
+ 		}catch (Exception e) {
+ 			System.out.println(e.getMessage());
+ 		}
+ 	}
 
+	@Test
+ 	public void testGetChainCodeByLiveUpdate() throws Exception {
+ 		DataPrepareService dp = DataPrepareService.getInstance();
+ 		try {
+ 			System.out.println(dp.getChainCodeByLiveUpdate());
+ 		}catch (Exception e) {
+ 			System.out.println(e.getMessage());
+ 		}
+ 	}
 }

@@ -1864,8 +1864,7 @@ public class DataEditService {
 	 * @param userId
 	 * @throws Exception 
 	 */
-	//TODO 
-	public long addChainData(HttpServletRequest request, long userId) throws Exception {
+	public List<Integer> addChainData(HttpServletRequest request, long userId) throws Exception {
 		//excel文件上传到服务器		
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
@@ -1875,7 +1874,6 @@ public class DataEditService {
 		String localFile = returnParam.getString("filePath");
 		
 //		String localFile = "F:/1.xlsx";
-		
 		log.info("文件已上传至" + localFile);
 		//导入补充增量数据excel
 		List<Map<String, Object>> addDataMaps = new ArrayList<>();
@@ -1929,17 +1927,10 @@ public class DataEditService {
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
 			updateStatusByChain(conn, chainCode);
 			updateReulteData(conn, resultIdList);
-			log.info("调用库查分");
-			//TODO 待处理
-			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
-			JSONObject dataJson = new JSONObject();
-			dataJson.put("resultIdList", resultIdList);
-			//这里的job传递resulIdList
-			long jobId = jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
 			conn.commit();
 			log.info("调用启动录入作业");
 			startWork(chainCode, userId);
-			return jobId;
+			return resultIdList;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
@@ -2102,5 +2093,46 @@ public class DataEditService {
 			log.info("updateResult:"+updateResult);
 			run.execute(conn, updateResult);
 		}
+	}
+	
+	
+	/**
+	 * 查询该pid下有无错误log
+	 * @param pid
+	 * @param regionConn
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject loadPoiForCnflict(JSONObject data) throws Exception {
+		JSONObject jsonObj=new JSONObject();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT COUNT(1)");
+		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
+		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
+		sb.append(" AND CO.TABLE_NAME = :1");
+		sb.append(" AND CO.PID = P.PID");
+		sb.append(" AND P.POI_NUM = :2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+//			pstmt = conn.prepareStatement(sb.toString());
+//			pstmt.setString(1, tbNm);
+//			pstmt.setString(2,poiNum);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				return jsonObj;
+			}
+
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return jsonObj;
 	}
 }

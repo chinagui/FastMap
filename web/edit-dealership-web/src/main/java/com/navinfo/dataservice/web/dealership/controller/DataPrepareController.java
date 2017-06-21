@@ -202,7 +202,9 @@ public class DataPrepareController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			JSONObject jobReq=new JSONObject();
-			jobReq.put("chainCodeList", (new ArrayList<String>()).add(dataJson.getString("chainCode")));
+			List<String> chainCodeList=new ArrayList<String>();
+			chainCodeList.add(dataJson.getString("chainCode"));
+			jobReq.put("chainCodeList", chainCodeList);
 			jobReq.put("sourceType", dataJson.getInt("sourceType"));
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
@@ -417,6 +419,20 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error("品牌更新失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/liveUpdate")
+	public ModelAndView liveUpdate(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			long jobId = dealerShipService.liveUpdate(userId);			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error("实时更新失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

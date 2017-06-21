@@ -64,8 +64,8 @@ public class Operation implements IOperation {
 		int groupId = 0;
 
 		// 当在没有子节点的节点添加层级的时候，需要新增ad_admin_group,pid前台传递的是默认值0，后台需要申请重新赋值
-		if (group != null && group.getGroupId() != 0) {
-			groupId = group.getGroupId();
+		if (group != null && group.pid() != 0) {
+			groupId = group.pid();
 		} else {
 			groupId = PidUtil.getInstance().applyAdAdminGroupPid();
 		}

@@ -117,31 +117,31 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	        } 
 		}
 		
-		@Test
-		public void test03() throws Exception{
-			//String localFile = "f://情报下载.xls";
-			String localFile = "e://release20170613152630.csv";
-			DataConfirmService confirm = DataConfirmService.getInstance();
-			
-			List<Map<String, Object>> importResult = confirm.readCsvFile(localFile);
-			List<String> uniqueKeys = new ArrayList<>();
-			for (Map<String, Object> result : importResult) {
-
-				// 若文件中“情报类型”为空，则整个文件不可以上传；
-				//if (result.get("infoType") == null || result.get("infoType").toString().isEmpty()) {
-				//	throw new Exception("“情报类型”为空，文件不可以上传");
-				//}
-
-				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
-				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
-				if (uniqueKeys.contains(uniqueKey)) {
-					throw new Exception("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
-				} else {
-					uniqueKeys.add(uniqueKey);
-				}
-			}
-			JSONObject data = confirm.updateResultTable(localFile, (long)1674);
-		}
+//		@Test
+//		public void test03() throws Exception{
+//			//String localFile = "f://情报下载.xls";
+//			String localFile = "e://release20170613152630.csv";
+//			DataConfirmService confirm = DataConfirmService.getInstance();
+//			
+//			List<Map<String, Object>> importResult = confirm.readCsvFile(localFile);
+//			List<String> uniqueKeys = new ArrayList<>();
+//			for (Map<String, Object> result : importResult) {
+//
+//				// 若文件中“情报类型”为空，则整个文件不可以上传；
+//				//if (result.get("infoType") == null || result.get("infoType").toString().isEmpty()) {
+//				//	throw new Exception("“情报类型”为空，文件不可以上传");
+//				//}
+//
+//				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
+//				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
+//				if (uniqueKeys.contains(uniqueKey)) {
+//					throw new Exception("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
+//				} else {
+//					uniqueKeys.add(uniqueKey);
+//				}
+//			}
+//			JSONObject data = confirm.updateResultTable(localFile, (long)1674);
+//		}
 		
 		@Test
 		public void testExportToClient() throws Exception{

@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -11,7 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -381,6 +384,35 @@ public class DataEditController extends BaseController {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}finally{
+		}
+	}
+	
+	
+	/**
+	 * 精编保存接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/addChainData")
+	public ModelAndView addChainData(HttpServletRequest request)throws ServletException, IOException {
+		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			
+			List<Integer> resultIdList = dealerShipEditService.addChainData(request, userId);	
+			
+			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject jobReq = new JSONObject();
+			jobReq.put("resultIdList", resultIdList);
+			
+			long jobId = jobApi.createJob("dealershipAddChainDataJob", jobReq, userId,0, "代理补充数据job");
+			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

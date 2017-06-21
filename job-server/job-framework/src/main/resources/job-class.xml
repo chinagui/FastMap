@@ -93,4 +93,7 @@
 		class="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJob"
 		request="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJobRequest" >
 	</type>
+	<type name="dealershipAddChainDataJob"
+		class="com.navinfo.dataservice.dealership.job.DealershipAddChainDataJob"
+		request="com.navinfo.dataservice.dealership.job.DealershipAddChainDataJobRequest" /> 
 	</mapping>

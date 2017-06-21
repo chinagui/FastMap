@@ -1864,8 +1864,7 @@ public class DataEditService {
 	 * @param userId
 	 * @throws Exception 
 	 */
-	//TODO 
-	public long addChainData(HttpServletRequest request, long userId) throws Exception {
+	public List<Integer> addChainData(HttpServletRequest request, long userId) throws Exception {
 		//excel文件上传到服务器		
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
@@ -1929,17 +1928,10 @@ public class DataEditService {
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
 			updateStatusByChain(conn, chainCode);
 			updateReulteData(conn, resultIdList);
-			log.info("调用库查分");
-			//TODO 待处理
-			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
-			JSONObject dataJson = new JSONObject();
-			dataJson.put("resultIdList", resultIdList);
-			//这里的job传递resulIdList
-			long jobId = jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
 			conn.commit();
 			log.info("调用启动录入作业");
 			startWork(chainCode, userId);
-			return jobId;
+			return resultIdList;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);

@@ -3444,8 +3444,9 @@ public class TaskService {
 	 * 根据中线任务，批无任务数据中线任务号
 	 * @param conn 
 	 * @param task
+	 * @return 
 	 */
-	private void batchNoTaskMidData(Connection conn, Task task) throws Exception{
+	private int batchNoTaskMidData(Connection conn, Task task) throws Exception{
 		Connection dailyConn=null;
 		try{
 			Region region = RegionService.getInstance().query(conn,task.getRegionId());
@@ -3453,9 +3454,9 @@ public class TaskService {
 			//无任务tips批中线任务号
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
-			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
-			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
+//			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
+//			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
 			
 			//自动创建采集子任务，范围=采集任务范围
 			Subtask subtask=new Subtask();
@@ -3480,6 +3481,7 @@ public class TaskService {
 			}
 			//修改无任务转中操作状态为 1已转
 			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
+			return updateNum;
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
@@ -3538,13 +3540,14 @@ public class TaskService {
 	 * 根据taskId批处理对应该任务的无任务POI和TIPS
 	 * @param userId 
 	 * @param taskId
+	 * @return 
 	 */
-	public void batchMidTaskByTaskId(int taskId) throws ServiceException{
+	public int batchMidTaskByTaskId(int taskId) throws ServiceException{
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			Task task = queryByTaskId(conn, taskId);
-			batchNoTaskMidData(conn, task);
+			return batchNoTaskMidData(conn, task);
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

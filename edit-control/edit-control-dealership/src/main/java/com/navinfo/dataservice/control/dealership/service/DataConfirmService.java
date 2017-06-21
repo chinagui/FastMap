@@ -3,12 +3,15 @@ package com.navinfo.dataservice.control.dealership.service;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -204,7 +207,7 @@ public class DataConfirmService {
 
 		try {
 			//List<Map<String, Object>> importResult = readCsvFile(localFile, headers, importInfoHeader());
-			List<Map<String, Object>> importResult = reader.readExcelContent();
+			List<Map<String, Object>> importResult = reader.readExcelContent(importInfoHeader());
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
@@ -234,32 +237,62 @@ public class DataConfirmService {
 		}
 		return data;
 	}
-
-	public String xls2csv(List<Map<String, Object>> cellValue,String localPath) throws Exception{
+	
+	public String xls2csv(List<Map<String, Object>> cellValue, String localPath) throws Exception {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(StringUtils.join(headers,",")+"\n");
-		
-		for(Map<String,Object> cell:cellValue){
-			StringBuilder row = new StringBuilder();
-			for(Map.Entry<String, Object> entry:cell.entrySet()){
-				row.append(entry.getValue()+",");
-			}
-			buffer.append(row.substring(0, buffer.lastIndexOf(","))+"\n");
+		buffer.append(StringUtils.join(headers, ",") + "\n");
+
+		for (Map<String, Object> cell : cellValue) {
+			buffer.append(cell.get("resultId") + ",");
+			buffer.append(cell.get("infoId") + ",");
+			buffer.append(cell.get("province") + ",");
+			buffer.append(cell.get("city") + ",");
+			buffer.append(cell.get("project") + ",");
+			buffer.append(cell.get("kindCode") + ",");
+			buffer.append(cell.get("chain") + ",");
+			buffer.append(cell.get("name") + ",");
+			buffer.append(cell.get("nameShort") + ",");
+			buffer.append(cell.get("address") + ",");
+			buffer.append(cell.get("telSale") + ",");
+			buffer.append(cell.get("telService") + ",");
+			buffer.append(cell.get("telOther") + ",");
+			buffer.append(cell.get("postcode") + ",");
+			buffer.append(cell.get("nameEng") + ",");
+			buffer.append(cell.get("addressEng") + ",");
+			buffer.append(cell.get("sourceId") + ",");
+			buffer.append(cell.get("dealSrcDiff") + ",");
+			buffer.append(cell.get("matchMethod") + ",");
+			buffer.append(cell.get("poiNum1") + ",");
+			buffer.append(cell.get("poiNum2") + ",");
+			buffer.append(cell.get("poiNum3") + ",");
+			buffer.append(cell.get("poiNum4") + ",");
+			buffer.append(cell.get("poiNum5") + ",");
+			buffer.append(cell.get("similarity") + ",");
+			buffer.append(cell.get("xLocate") + ",");
+			buffer.append(cell.get("yLocate") + ",");
+			buffer.append(cell.get("cfmPoiNum") + ",");
+			buffer.append(cell.get("expectTime") + ",");
+			buffer.append(cell.get("infoType") + ",");
+			buffer.append(cell.get("infoLevel") + ",");
+			buffer.append(cell.get("regionId") + "\n");
 		}
-		
-		 String savePath =String.format("release%s.csv",DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
-		 File saveCSV = new File(savePath);
-		    try {   
-		        if(!saveCSV.exists())
-		            saveCSV.createNewFile();
-		        BufferedWriter writer = new BufferedWriter(new FileWriter(saveCSV));
-		        writer.write(buffer.toString());
-		        writer.close();
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    }        
-		return savePath;
+
+		String savePath = String.format("release%s.csv", DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+		File saveCSV = new File(localPath.substring(0, localPath.lastIndexOf("/")), savePath);
+		try {
+			if (!saveCSV.exists())
+				saveCSV.createNewFile();
+
+			DataOutputStream in = new DataOutputStream(new FileOutputStream(saveCSV));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(in, "GBK"));
+			writer.write(buffer.toString());
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return localPath.substring(0, localPath.lastIndexOf("/")) + savePath;
 	}
+	
 	
 	/**
 	 * 情报下发：上传成功后，连接情报库，按要求更新RESULT数据库

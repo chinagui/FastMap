@@ -202,7 +202,9 @@ public class DataPrepareController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			JSONObject jobReq=new JSONObject();
-			jobReq.put("chainCodeList", (new ArrayList<String>()).add(dataJson.getString("chainCode")));
+			List<String> chainCodeList=new ArrayList<String>();
+			chainCodeList.add(dataJson.getString("chainCode"));
+			jobReq.put("chainCodeList", chainCodeList);
 			jobReq.put("sourceType", dataJson.getInt("sourceType"));
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			

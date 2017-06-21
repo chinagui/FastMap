@@ -1,40 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.update;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.IVia;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
+import com.navinfo.dataservice.dao.glm.iface.*;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.*;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+
+import java.sql.Connection;
+import java.util.*;
 
 public class Operation implements IOperation {
 
@@ -741,7 +720,7 @@ public class Operation implements IOperation {
 	 * 分离节点
 	 * 
 	 * @param link
-	 * @param nodePid
+	 * @param
 	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
@@ -871,12 +850,12 @@ public class Operation implements IOperation {
 	/**
 	 * 打断link维护
 	 * 
-	 * @param oldLinkPid
-	 *            被打断的link
+	 * @param
+	 *
 	 * @param newLinks
 	 *            新生成的link组
 	 * @param result
-	 * @param conn
+	 * @param
 	 * @throws Exception
 	 */
 	public void breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
@@ -952,11 +931,11 @@ public class Operation implements IOperation {
 	 */
 	private void breakOutLink(RdBranch branch, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
-		Set<Integer> connectionNodePids = new HashSet<Integer>();
-		
-		connectionNodePids.add(branch.getNodePid());
+		Set<Integer> connectionNodePids = new HashSet<>();
 
 		if (branch.getRelationshipType() == 1) {
+
+			connectionNodePids.add(branch.getNodePid());
 
 			RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
 					this.conn);
@@ -964,31 +943,46 @@ public class Operation implements IOperation {
 			List<Integer> nodePids = crossNodeSelector
 					.getCrossNodePidByNode(branch.getNodePid());
 
-			connectionNodePids.addAll(nodePids);
+			if (nodePids.size()>1) {
+
+				connectionNodePids.addAll(nodePids);
+			}
 
 		} else {
-
-			List<Integer> linkPids = new ArrayList<Integer>();
+			RdBranchVia lastVia = (RdBranchVia) branch.getVias().get(0);
 
 			for (IRow rowVia : branch.getVias()) {
 
 				RdBranchVia via = (RdBranchVia) rowVia;
 
-				linkPids.add(via.getLinkPid());
+				if (lastVia.getGroupId() == via.getGroupId()
+						&& lastVia.getSeqNum() < via.getSeqNum()) {
+
+					lastVia = via;
+				}
 			}
 
 			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-			List<IRow> linkRows = rdLinkSelector.loadByIds(linkPids, true,
-					false);
+			if (oldLink.getsNodePid() != branch.getNodePid()) {
 
-			for (IRow linkRow : linkRows) {
-				
-				RdLink link = (RdLink) linkRow;
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						oldLink.getsNodePid(), false);
 
-				connectionNodePids.add(link.getsNodePid());
+				int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? oldLink
+						.getsNodePid() : oldLink.geteNodePid();
 
-				connectionNodePids.add(link.geteNodePid());
+				connectionNodePids.add(connectionNodePid);
+
+			} else if (oldLink.geteNodePid() != branch.getNodePid()) {
+
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						oldLink.geteNodePid(), false);
+
+				int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? oldLink
+						.geteNodePid() : oldLink.getsNodePid();
+
+				connectionNodePids.add(connectionNodePid);
 			}
 		}
 		

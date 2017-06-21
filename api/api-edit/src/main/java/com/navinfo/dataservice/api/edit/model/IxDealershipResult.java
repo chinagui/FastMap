@@ -751,7 +751,6 @@ public class IxDealershipResult implements IObj {
 		return poiAddress;
 	}
 	public void setPoiAddress(String poiAddress) {
-		this.poiAddress = poiAddress;
 		if(this.checkValue("POI_ADDRESS",this.poiAddress,poiAddress)){
 			this.poiAddress = poiAddress;
 		}

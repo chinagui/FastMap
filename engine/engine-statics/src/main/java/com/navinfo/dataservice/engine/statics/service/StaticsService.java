@@ -371,143 +371,143 @@ public class StaticsService {
 
 	}
 	
-	/**
-	 * 
-	 * 查询subtask数量及完成情况
-	 * 
-	 * @param subtaskId
-	 * @return
-	 * @throws Exception 
-	 */
-	public SubtaskStatInfo getStatBySubtask(int subtaskId){
-		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
-		subtaskStatInfo.setSubtaskId(subtaskId);
-		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
-	
-		Subtask subtask = null;
-		try {
-			subtask = api.queryBySubtaskId(subtaskId);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		//POI采集,道路采集，一体化采集
-		if((subtask.getType()==0&&subtask.getStage()==0)
-				||(subtask.getType()==1&&subtask.getStage()==0)
-				||(subtask.getType()==2&&subtask.getStage()==0)){
-			String poiColName = PoiCollectMain.col_name_grid;
-			String roadColName = RoadCollectMain.col_name_grid;
-			List<Integer> gridIds = null;
-			try {
-				gridIds = api.getGridIdsBySubtaskId(subtaskId);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
-			//POI采集
-			if(subtask.getType()==0){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
-			}
-			//道路采集
-			else if(subtask.getType()==1){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
-			}
-			//一体化采集
-			else if(subtask.getType()==2){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
-			}
-		}
-		//POI日编，一体化GRID粗编
-		else if((subtask.getType()==0&&subtask.getStage()==1)
-				||(subtask.getType()==3&&subtask.getStage()==1)){
-			String poiColName = PoiDailyMain.col_name_grid;
-			String roadColName = RoadDailyMain.col_name_grid;
-			List<Integer> gridIds = null;
-			try {
-				gridIds = api.getGridIdsBySubtaskId(subtaskId);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
-			//POI日编
-			if(subtask.getType()==0){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
-			}
-			//一体化GRID粗编
-			else if(subtask.getType()==3){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
-			}
-		}
-		//道路grid精编，道路grid粗编
-		else if((subtask.getType()==8&&subtask.getStage()==2)
-				||(subtask.getType()==9&&subtask.getStage()==2)){
-			String poiColName = PoiMonthlyMain.col_name_grid;
-			String roadColName = RoadMonthlyMain.col_name_grid;
-			List<Integer> gridIds = null;
-			try {
-				gridIds = api.getGridIdsBySubtaskId(subtaskId);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
-
-			subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
-		}
-		//多源POI，一体化区域粗编
-		//根据block
-		else if((subtask.getType()==4&&subtask.getStage()==1)
-				||(subtask.getType()==5&&subtask.getStage()==1)){
-			String poiColName = PoiDailyMain.col_name_block;
-			String roadColName = RoadDailyMain.col_name_block;
-//			int blockId = subtask.getBlockId();
-			int blockId = 1;
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId,poiColName,roadColName);
-			//一体化区域粗编
-			if(subtask.getType()==4){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
-			}
-			//多源POI
-			else if(subtask.getType()==5){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
-			}
-		}
-		//代理店，POI专项，道路区域专项
-		//根据city
-		else if((subtask.getType()==6&&subtask.getStage()==2)
-				||(subtask.getType()==7&&subtask.getStage()==2)
-				||(subtask.getType()==10&&subtask.getStage()==2)){
-			String poiColName = PoiMonthlyMain.col_name_city;
-			String roadColName = RoadMonthlyMain.col_name_city;
-			int taskId = subtask.getTaskId();
-			int cityId = 0;
-			try {
-				//cityId = api.queryCityIdByTaskId(taskId);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByCity(cityId,poiColName,roadColName);
-			//代理店,POI专项
-			if(subtask.getType()==6||subtask.getType()==7){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
-			}
-			//道路区域专项
-			else if(subtask.getType()==10){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
-			}
-		}
-	
-		return subtaskStatInfo;
-	}
+//	/**
+//	 * 
+//	 * 查询subtask数量及完成情况
+//	 * 
+//	 * @param subtaskId
+//	 * @return
+//	 * @throws Exception 
+//	 */
+//	public SubtaskStatInfo getStatBySubtask(int subtaskId){
+//		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
+//		subtaskStatInfo.setSubtaskId(subtaskId);
+//		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+//	
+//		Subtask subtask = null;
+//		try {
+//			subtask = api.queryBySubtaskId(subtaskId);
+//		} catch (Exception e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//
+//		//POI采集,道路采集，一体化采集
+//		if((subtask.getType()==0&&subtask.getStage()==0)
+//				||(subtask.getType()==1&&subtask.getStage()==0)
+//				||(subtask.getType()==2&&subtask.getStage()==0)){
+//			String poiColName = PoiCollectMain.col_name_grid;
+//			String roadColName = RoadCollectMain.col_name_grid;
+//			List<Integer> gridIds = null;
+//			try {
+//				gridIds = api.getGridIdsBySubtaskId(subtaskId);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+//			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+//			//POI采集
+//			if(subtask.getType()==0){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+//			}
+//			//道路采集
+//			else if(subtask.getType()==1){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+//			}
+//			//一体化采集
+//			else if(subtask.getType()==2){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+//			}
+//		}
+//		//POI日编，一体化GRID粗编
+//		else if((subtask.getType()==0&&subtask.getStage()==1)
+//				||(subtask.getType()==3&&subtask.getStage()==1)){
+//			String poiColName = PoiDailyMain.col_name_grid;
+//			String roadColName = RoadDailyMain.col_name_grid;
+//			List<Integer> gridIds = null;
+//			try {
+//				gridIds = api.getGridIdsBySubtaskId(subtaskId);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//					
+//			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+//			//POI日编
+//			if(subtask.getType()==0){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+//			}
+//			//一体化GRID粗编
+//			else if(subtask.getType()==3){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+//			}
+//		}
+//		//道路grid精编，道路grid粗编
+//		else if((subtask.getType()==8&&subtask.getStage()==2)
+//				||(subtask.getType()==9&&subtask.getStage()==2)){
+//			String poiColName = PoiMonthlyMain.col_name_grid;
+//			String roadColName = RoadMonthlyMain.col_name_grid;
+//			List<Integer> gridIds = null;
+//			try {
+//				gridIds = api.getGridIdsBySubtaskId(subtaskId);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//					
+//			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+//
+//			subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+//		}
+//		//多源POI，一体化区域粗编
+//		//根据block
+//		else if((subtask.getType()==4&&subtask.getStage()==1)
+//				||(subtask.getType()==5&&subtask.getStage()==1)){
+//			String poiColName = PoiDailyMain.col_name_block;
+//			String roadColName = RoadDailyMain.col_name_block;
+////			int blockId = subtask.getBlockId();
+//			int blockId = 1;
+//					
+//			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId,poiColName,roadColName);
+//			//一体化区域粗编
+//			if(subtask.getType()==4){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+//			}
+//			//多源POI
+//			else if(subtask.getType()==5){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+//			}
+//		}
+//		//代理店，POI专项，道路区域专项
+//		//根据city
+//		else if((subtask.getType()==6&&subtask.getStage()==2)
+//				||(subtask.getType()==7&&subtask.getStage()==2)
+//				||(subtask.getType()==10&&subtask.getStage()==2)){
+//			String poiColName = PoiMonthlyMain.col_name_city;
+//			String roadColName = RoadMonthlyMain.col_name_city;
+//			int taskId = subtask.getTaskId();
+//			int cityId = 0;
+//			try {
+//				//cityId = api.queryCityIdByTaskId(taskId);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//					
+//			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByCity(cityId,poiColName,roadColName);
+//			//代理店,POI专项
+//			if(subtask.getType()==6||subtask.getType()==7){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+//			}
+//			//道路区域专项
+//			else if(subtask.getType()==10){
+//				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+//			}
+//		}
+//	
+//		return subtaskStatInfo;
+//	}
 	
 //	public List<Integer> getOpen100TaskIdList() {
 //		// TODO Auto-generated method stub

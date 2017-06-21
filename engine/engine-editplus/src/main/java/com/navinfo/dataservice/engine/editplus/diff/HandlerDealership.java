@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
 
@@ -82,16 +83,15 @@ public class HandlerDealership {
 		IxPoiName poiAliasName = poiObj.getAliasCHITypeName();
 
 		IxPoiAddress poiAddr = poiObj.getChiAddress();
-		System.out.println(dealershipMR.getName());
-		System.out.println(poiName.getName());
+
 		// 判断官方标准名称是否相等
-		if (dealershipMR.getName() != null && poiName.getName() != null
+		if (dealershipMR.getName() != null && poiName!=null && poiName.getName() != null
 				&& (!dealershipMR.getName().equals(poiName.getName()))) {
 			str.append("官方标准名称不同；");
 			nameFlag = false;
 		}
 		// 判断别名是否相等
-		if (dealershipMR.getNameShort() != null && poiAliasName.getName() != null
+		if (dealershipMR.getNameShort() != null && poiAliasName!=null && poiAliasName.getName() != null
 				&& (!dealershipMR.getNameShort().equals(poiAliasName.getName()))) {
 			str.append("别名不同；");
 			nameShortFlag = false;
@@ -107,7 +107,7 @@ public class HandlerDealership {
 			chainFlag = false;
 		}
 		// 判断地址是否相等
-		if (dealershipMR.getAddress() != null && !("".equals(dealershipMR.getAddress())) && poiAddr.getAddrname() != null
+		if (dealershipMR.getAddress() != null && !("".equals(dealershipMR.getAddress())) && poiAddr!=null && poiAddr.getAddrname() != null
 				&& (!dealershipMR.getAddress().equals(poiAddr.getAddrname()))) {
 			str.append("地址不同；");
 			kindFlag = false;
@@ -173,7 +173,7 @@ public class HandlerDealership {
 
 		IxPoiAddress poiAddr = poiObj.getChiAddress();
 		// 判断官方标准名称是否相等
-		if (dealershipMR.getPoiName() != null && !("".equals(dealershipMR.getPoiName())) && poiName.getName() != null
+		if (dealershipMR.getPoiName() != null && !("".equals(dealershipMR.getPoiName())) && poiName!=null && poiName.getName() != null
 				&& (!dealershipMR.getPoiName().equals(poiName.getName()))) {
 			str.append("官方标准名称不同；");
 			nameFlag = false;
@@ -191,7 +191,7 @@ public class HandlerDealership {
 			chainFlag = false;
 		}
 		// 判断地址是否相等
-		if (dealershipMR.getPoiAddress() != null && !("".equals(dealershipMR.getPoiAddress())) && poiAddr.getAddrname() != null
+		if (dealershipMR.getPoiAddress() != null && !("".equals(dealershipMR.getPoiAddress())) && poiAddr!=null && poiAddr.getAddrname() != null
 				&& (!dealershipMR.getPoiAddress().equals(poiAddr.getAddrname()))) {
 			str.append("地址不同；");
 			kindFlag = false;
@@ -249,7 +249,7 @@ public class HandlerDealership {
 		return false;
 	}
 	
-	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList, String chain,Map dbMap)
+	public void updateDealershipDb(List<IxDealershipResult> diffFinishResultList,List<String> chainList,Map dbMap,Logger log)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -269,7 +269,7 @@ public class HandlerDealership {
 
 			for (int i = 0; i < diffFinishResultList.size(); i++) {
 				IxDealershipResult dealResult = diffFinishResultList.get(i);
-			
+				log.info("resultId:"+dealResult.getResultId()+",sim:"+dealResult.getSimilarity());
 				updateResultObj(dealResult, dbMap);
 				
 				Object[] obj = new Object[] { dealResult.getWorkflowStatus(), dealResult.getIsDeleted(),
@@ -301,10 +301,12 @@ public class HandlerDealership {
 //					+ chain;
 //
 //			run.update(conn, updateSourceSql);
+			String chains = "('";
+			chains += StringUtils.join(chainList.toArray(), "','") + "')";
 
 			// 更新chain表
 			run.update(conn,
-					"update ix_dealership_chain set work_status=2 where  chain_code='" + chain+"'");
+					"update ix_dealership_chain set work_status=2 where  chain_code in " + chains);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -379,9 +381,16 @@ return obj;
 			dealership.setPoiKindCode(p.getKindCode());
 			dealership.setPoiChain(p.getChain());
 			dealership.setPoiChain(p.getChain());
-			dealership.setPoiName(poiName.getName());
-			dealership.setPoiNameShort(poiAliasName.getName());
-			dealership.setAddress(poiAddr.getAddrname());
+			if(poiName!=null){
+				dealership.setPoiName(poiName.getName());
+			}
+			if(poiAliasName!=null){
+				dealership.setPoiNameShort(poiAliasName.getName());
+			}
+			if(poiAddr!=null){
+				dealership.setAddress(poiAddr.getAddrname());
+			}
+			
 			
 			StringBuffer sb = new StringBuffer();
 			String telephone = "";
@@ -447,6 +456,7 @@ return obj;
         return dealership;
 
 	}
+
 	
 	
 

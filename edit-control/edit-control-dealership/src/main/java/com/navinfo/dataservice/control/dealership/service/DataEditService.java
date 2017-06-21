@@ -2103,4 +2103,45 @@ public class DataEditService {
 			run.execute(conn, updateResult);
 		}
 	}
+	
+	
+	/**
+	 * 查询该pid下有无错误log
+	 * @param pid
+	 * @param regionConn
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject loadPoiForCnflict(JSONObject data) throws Exception {
+		JSONObject jsonObj=new JSONObject();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT COUNT(1)");
+		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
+		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
+		sb.append(" AND CO.TABLE_NAME = :1");
+		sb.append(" AND CO.PID = P.PID");
+		sb.append(" AND P.POI_NUM = :2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+//			pstmt = conn.prepareStatement(sb.toString());
+//			pstmt.setString(1, tbNm);
+//			pstmt.setString(2,poiNum);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				return jsonObj;
+			}
+
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return jsonObj;
+	}
 }

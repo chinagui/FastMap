@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.sql.Connection;
@@ -20,6 +23,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
@@ -192,13 +196,15 @@ public class DataConfirmService {
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/infoImport";
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath, "info");
-		String localFile = returnParam.getString("filePath");
+		String xlslocalFile = returnParam.getString("filePath");
+		ExcelReader reader = new ExcelReader(xlslocalFile);
 
-		log.info("情报文件已上传至：" + localFile);
+		log.info("情报文件已上传至：" + xlslocalFile);
 		log.info("开始读取情报文件数据");
 
 		try {
-			List<Map<String, Object>> importResult = readCsvFile(localFile, headers, importInfoHeader());
+			//List<Map<String, Object>> importResult = readCsvFile(localFile, headers, importInfoHeader());
+			List<Map<String, Object>> importResult = reader.readExcelContent();
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
@@ -217,7 +223,9 @@ public class DataConfirmService {
 					uniqueKeys.add(uniqueKey);
 				}
 			}
-
+			
+			//根据excel生成csv文件
+			String localFile = xls2csv(importResult,xlslocalFile);
 			data = updateResultTable(localFile, userId);
 			log.info("情报下发：成功");
 		} catch (Exception e) {
@@ -227,6 +235,32 @@ public class DataConfirmService {
 		return data;
 	}
 
+	public String xls2csv(List<Map<String, Object>> cellValue,String localPath) throws Exception{
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(StringUtils.join(headers,",")+"\n");
+		
+		for(Map<String,Object> cell:cellValue){
+			StringBuilder row = new StringBuilder();
+			for(Map.Entry<String, Object> entry:cell.entrySet()){
+				row.append(entry.getValue()+",");
+			}
+			buffer.append(row.substring(0, buffer.lastIndexOf(","))+"\n");
+		}
+		
+		 String savePath =String.format("release%s.csv",DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+		 File saveCSV = new File(savePath);
+		    try {   
+		        if(!saveCSV.exists())
+		            saveCSV.createNewFile();
+		        BufferedWriter writer = new BufferedWriter(new FileWriter(saveCSV));
+		        writer.write(buffer.toString());
+		        writer.close();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }        
+		return savePath;
+	}
+	
 	/**
 	 * 情报下发：上传成功后，连接情报库，按要求更新RESULT数据库
 	 * 

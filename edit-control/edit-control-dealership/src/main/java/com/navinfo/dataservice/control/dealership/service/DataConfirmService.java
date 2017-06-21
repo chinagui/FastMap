@@ -290,7 +290,7 @@ public class DataConfirmService {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return localPath.substring(0, localPath.lastIndexOf("/")) + savePath;
+		return localPath.substring(0, localPath.lastIndexOf("/") + 1) + savePath;
 	}
 	
 	

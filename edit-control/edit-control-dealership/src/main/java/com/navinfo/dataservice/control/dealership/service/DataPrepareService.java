@@ -1803,6 +1803,9 @@ public class DataPrepareService {
 				message = "全国一览表不存在部分代理店品牌！";
 			}
 
+			if(jobId==0){
+				throw new Exception("全国一览表不存在部分代理店品牌！");
+			}
 			result.put("jobId", jobId);
 			result.put("message", message);
 			return result;

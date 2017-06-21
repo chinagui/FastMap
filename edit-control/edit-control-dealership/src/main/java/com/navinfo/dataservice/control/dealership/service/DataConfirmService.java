@@ -346,8 +346,8 @@ public class DataConfirmService {
 
 		String refilePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/information/" + fileName;
-		JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
-		String filePath = returnParam.getString("filePath");
+		//JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
+		String filePath = request.getSession().getServletContext().getRealPath(refilePath);
 
 		log.info("反馈情报路径：" + filePath);
 		Connection conn = null;

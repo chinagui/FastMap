@@ -18,8 +18,8 @@ public class IxPoiHotel extends BasicRow implements ISerializable{
 	protected long poiPid ;
 	protected String creditCard ;
 	protected int rating ;
-	protected String checkinTime ;
-	protected String checkoutTime ;
+	protected String checkinTime = "14:00";
+	protected String checkoutTime = "12:00";
 	protected int roomCount ;
 	protected String roomType ;
 	protected String roomPrice ;

@@ -244,7 +244,7 @@ public class IxDealershipSourceSelector {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn,List<String> chainList) throws Exception {
+	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn,Set<String> chainList) throws Exception {
 		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE S WHERE S.IS_DELETED <> 1 AND S.CHAIN IN ('" + StringUtils.join(chainList,"','") + "') ORDER BY S.CHAIN";
 		log.info("getAllIxDealershipSourceByChain sql:" + sql);
 		return new QueryRunner().query(conn,sql,getSourcesByChainHander());

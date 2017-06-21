@@ -85,7 +85,7 @@ public class ColumnCoreOperation {
 				// poi_deep_status不存在的作业项插入,存在的更新
 				checkResultList.retainAll(classifyRules);
 				if (checkResultList.size()>0) {
-					insertWorkItem(checkResultList, conn, pid, userId, taskId,existQcFlag,existComHandler);
+					insertWorkItem(checkResultList, conn, pid, userId, taskId,existQcFlag,existComHandler,firstWorkItem);
 				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
@@ -124,7 +124,7 @@ public class ColumnCoreOperation {
 	 * @param pid
 	 * @throws Exception
 	 */
-	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid,int userId,int taskId,int existQcFlag,int existComHandler) throws Exception {
+	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid,int userId,int taskId,int existQcFlag,int existComHandler,String firstWorkItem) throws Exception {
 		PreparedStatement pstmt = null;
 
 		try {
@@ -133,15 +133,20 @@ public class ColumnCoreOperation {
 				
 				StringBuilder sb = new StringBuilder();
 				sb.append("MERGE INTO poi_column_status T1 ");
-				sb.append(" USING (SELECT "+userId+" as b," + taskId + " as c,'" + workItem
-						+ "' as d," + " sysdate as e," + pid + " as f " + "  FROM dual) T2 ");
+				sb.append(" USING (SELECT '" + workItem+ "' as d," + " sysdate as e," + pid + " as f ,"
+						+ " CASE WHEN  pc.first_work_item='"+firstWorkItem+"' THEN "+existQcFlag+" ELSE 0 END existQcFlag,"
+						+ " CASE WHEN  pc.first_work_item='"+firstWorkItem+"' THEN "+existComHandler+" ELSE 0 END existComHandler,"
+						+ " CASE WHEN  pc.first_work_item='"+firstWorkItem+"' THEN "+userId+" ELSE 0 END b,"
+						+ " CASE WHEN  pc.first_work_item='"+firstWorkItem+"' THEN "+taskId+" ELSE 0 END C"
+						+ " FROM poi_column_workitem_conf pc WHERE pc.type=1 "
+						+ " AND pc.check_flag IN (1,3) AND pc.work_item_id='" + workItem+ "') T2 ");
 				sb.append(" ON ( T1.pid=T2.f and T1.work_item_id = T2.d) ");
 				sb.append(" WHEN MATCHED THEN ");
-				sb.append(" UPDATE SET T1.handler = T2.b,T1.task_id= T2.c,T1.first_work_status = 1,T1.second_work_status = 1,T1.apply_date = T2.e,T1.qc_flag="+existQcFlag+",T1.common_handler="+existComHandler+" ");
+				sb.append(" UPDATE SET T1.handler = T2.b,T1.task_id= T2.c,T1.first_work_status = 1,T1.second_work_status = 1,T1.apply_date = T2.e,T1.qc_flag=T2.existQcFlag,T1.common_handler=T2.existComHandler ");
 				sb.append(" WHEN NOT MATCHED THEN ");
 				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler,T1.task_id,T1.apply_date,T1.qc_flag,T1.common_handler) VALUES"
-						+ " (T2.f,T2.d,1,1,T2.b,T2.c,T2.e,"+existQcFlag+","+existComHandler+")");
-				
+						+ " (T2.f,T2.d,1,1,T2.b,T2.c,T2.e,T2.existQcFlag,T2.existComHandler)");
+				log.info(sb.toString());
 				pstmt = conn.prepareStatement(sb.toString());
 				pstmt.addBatch();
 			}

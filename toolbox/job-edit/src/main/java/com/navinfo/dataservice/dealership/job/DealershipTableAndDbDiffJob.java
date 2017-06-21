@@ -270,8 +270,8 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			String chains = null;
 			String resultIds=null;
 			if(sourceType!=3){
-				chains = "(";
-				chains += StringUtils.join(chainCodeList.toArray(), ",") + ")";
+				chains = "('";
+				chains += StringUtils.join(chainCodeList.toArray(), "','") + "')";
 			}else{
 				resultIds = "(";
 				resultIds += StringUtils.join(resultIdList.toArray(), ",") + ")";

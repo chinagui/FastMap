@@ -80,7 +80,7 @@ public class TaskProgressOperation {
 			if(message!=null&&message.length()>500){message=message.substring(0, 500);}
 			QueryRunner run = new QueryRunner();
 			String selectSql ="";
-			if(status==0){
+			if(status==0||status==1){
 				selectSql = "UPDATE TASK_PROGRESS SET message=substr(message||?,0,1000) WHERE PHASE_ID = "+phaseId ;
 			}else{
 				String updateMsg="";

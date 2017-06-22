@@ -238,15 +238,6 @@ public interface ManApi{
 	public Map<Integer, Integer> getsubtaskUserMap() throws Exception;
 
     public JSONArray getGridIdsByTaskId(int taskId) throws Exception;
-    /**
-	 * 修改task_progress中的执行状态，主要用于任务相关的耗时job，例如，无任务转中
-	 * @param phaseId
-	 * @param status 2成功3失败
-	 * @param message 其他描述信息
-	 * @throws Exception
-	 */
-	void endTaskProgress(int phaseId, int status, String message)
-			throws Exception;
     
     public JSONArray getAdminCodeAndProvince() throws Exception;
 }

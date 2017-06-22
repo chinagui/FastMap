@@ -1080,7 +1080,8 @@ public class DataEditService {
 	public void clearRelevancePoi(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.POI_NUM_1 = '', t.POI_NUM_2 = '',t.POI_NUM_3 = '',t.POI_NUM_4 = '',t.POI_NUM_5 = '',"
+					+ "t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
 			run.execute(con, sql);
 		}catch(Exception e){
 			throw e;

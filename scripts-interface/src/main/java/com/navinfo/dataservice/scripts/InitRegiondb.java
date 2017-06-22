@@ -36,6 +36,7 @@ import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.ExportConfig;
+import com.navinfo.dataservice.integrated.DeleteNotIntegratedData;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -71,7 +72,7 @@ public class InitRegiondb {
 				specSvrId = request.getInt("specSvrId");
 			}
 			
-			int meshExtendCount = 1;
+			int meshExtendCount = 0;
 			if(request.containsKey("meshExtendCount")){
 				meshExtendCount = request.getInt("meshExtendCount");
 			}
@@ -120,7 +121,7 @@ public class InitRegiondb {
 				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
 				req2.put("conditionParams", JSONArray.fromObject(extendMeshes));
 				req2.put("featureType", GlmTable.FEATURE_TYPE_ALL);
-				req2.put("dataIntegrity", false);
+				req2.put("dataIntegrity", true);
 				req2.put("targetDbId", dbDay);
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
@@ -130,6 +131,9 @@ public class InitRegiondb {
 					throw new Exception("日库导数据过程中job内部发生"+msg);
 				}
 				response.put("region_"+key+"_day_exp", "success");
+				//删除不完整记录
+				DeleteNotIntegratedData deleteNotIntegratedData= new DeleteNotIntegratedData();
+				deleteNotIntegratedData.execute(dbDay);
 				//给日库和月库安装包
 				installPckUtils(dbDay,1);
 				response.put("region_"+key+"_day_utils", "success");
@@ -168,6 +172,7 @@ public class InitRegiondb {
 //					throw new Exception("月库导数据过程中job内部发生"+msg);
 //				}
 //				response.put("region_"+key+"_month_exp", "success");
+				
 				//过渡期母库作为全部月库
 				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
 //				installPckUtils(dbMonth,2);

@@ -106,7 +106,7 @@ public class DataConfirmController extends BaseController {
 			}
 			
 			long userId = tokenObj.getUserId();
-			JSONObject obj = JSONObject.fromObject(request.getParameter("Parameter"));
+			JSONObject obj = JSONObject.fromObject(request.getParameter("parameter"));
 			
 			String filePath = confirmService.expInfoFeedbackService(userId,obj,request);
 			return new ModelAndView("jsonView",success(filePath));

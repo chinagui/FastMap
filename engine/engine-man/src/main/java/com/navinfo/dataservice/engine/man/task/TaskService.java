@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.task;
 
-import java.security.interfaces.RSAKey;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -46,7 +45,6 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -3531,7 +3529,9 @@ public class TaskService {
 			JSONObject request=new JSONObject();
 			request.put("phaseId", phaseId);
 			request.put("taskId", taskId);
-			api.createJob("taskOther2MediumJob", request, userId, taskId, "无任务采集成果入中");
+			long jobId=api.createJob("taskOther2MediumJob", request, userId, taskId, "无任务采集成果入中");
+			TaskProgressOperation.updateProgress(conn, phaseId, 0, "jobid:"+jobId);
+			TaskProgressOperation.startProgress(conn, userId, phaseId);			
 			return phaseId;
 		}catch(Exception e){
 			log.error("", e);

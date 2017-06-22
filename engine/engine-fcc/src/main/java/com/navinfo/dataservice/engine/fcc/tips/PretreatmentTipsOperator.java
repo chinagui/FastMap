@@ -14,7 +14,9 @@ import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -1132,6 +1134,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 throw new Exception("新增tips出错：原因：sourceType为空");
             }
 
+            JSONObject geoJson = jsonInfo.getJSONObject("geometry");
+            JSONObject locationJson = geoJson.getJSONObject("g_location");
+            Geometry locationGeo = null;
+            try {
+                locationGeo = GeoTranslator.geojson2Jts(locationJson);
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(locationGeo == null) {
+                logger.error("新增tips出错：原因：显示坐标非法");
+                throw new Exception("新增tips出错：原因：显示坐标非法");
+            }
+
             if(sourceType.equals("1205") || sourceType.equals("1206")
                     || sourceType.equals("1211")) {//新增或者修改
                 JSONObject deepJson = jsonInfo.getJSONObject("deep");
@@ -1180,9 +1195,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 }
                 
                 rowkey=insertOneTips(command,jsonInfo, user, htab, date);
-                
-			
-
 			}
 			// 修改
 			else {

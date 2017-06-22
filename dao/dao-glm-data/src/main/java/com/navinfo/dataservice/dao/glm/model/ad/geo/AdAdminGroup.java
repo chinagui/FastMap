@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.annotations.SerializedName;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -20,23 +21,24 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class AdAdminGroup implements IObj {
-	protected int groupId;
-	private int regionIdUp;
+
+    private int regionIdUp;
+
+    @SerializedName("groupId")
 	private int pid;
+
     private String rowId;
+
     protected String objType;
-    private Map<String, Object> changedFields = new HashMap<String, Object>();
-    private List<IRow> parts = new ArrayList<IRow>();
-    public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
+
+    private Map<String, Object> changedFields = new HashMap<>();
+
+    private List<IRow> parts = new ArrayList<>();
+
+    public Map<String, AdAdminPart> adAdminPartMap = new HashMap<>();
+
+    protected ObjStatus status;
     
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
-
 	@Override
 	public String rowId() {
 		return rowId;
@@ -55,7 +57,7 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	public String getObjType() {
@@ -72,7 +74,7 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		
+		this.status = os;
 	}
 
 	@Override

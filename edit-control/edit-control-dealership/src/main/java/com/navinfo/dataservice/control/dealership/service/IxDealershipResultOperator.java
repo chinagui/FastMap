@@ -276,7 +276,7 @@ public class IxDealershipResultOperator {
 				placeHolder.add("?");
 				values.add(bean.getPoiYDisplay());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORKFLOW_STATUS")){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_X_GUIDE")){
 				columns.add(" POI_X_GUIDE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiXGuide());

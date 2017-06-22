@@ -130,7 +130,7 @@ public class Operation implements IOperation {
 		
 		if(tree.getGroup() != null)
 		{
-			result.insertObject(tree.getGroup(), ObjStatus.DELETE, tree.getGroup().getGroupId());
+			result.insertObject(tree.getGroup(), ObjStatus.DELETE, tree.getGroup().pid());
 		}
 		
 		//判断该regionId的父下是否还有其他子，没有的删除regionId的父记录，有的不删除
@@ -138,7 +138,7 @@ public class Operation implements IOperation {
 		
 		if(group.getParts().size() == 1)
 		{
-			result.insertObject(group, ObjStatus.DELETE, group.getGroupId());
+			result.insertObject(group, ObjStatus.DELETE, group.pid());
 		}
 		
 		List<AdAdminTree> treeList = tree.getChildren();

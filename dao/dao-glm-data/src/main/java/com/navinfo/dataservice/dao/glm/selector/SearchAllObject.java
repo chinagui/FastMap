@@ -193,19 +193,24 @@ public class SearchAllObject {
     private int getMainObjects(JSONObject json,List<Integer> mainPids) throws Exception {
 
         int total = 0;
-        //待定主对象Pids
-        List<Integer> pendingPids = getPendingPids(json);
 
-        JSONArray jsonConditions = json.getJSONArray("conditions");
+        List<Integer> meshIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("meshIds")));
 
-        //无属性字段查询条件
-        if (jsonConditions.size() == 0) {
+        List<Integer> gridIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("gridIds")));
+
+        //按范围查询待定主对象Pids
+        List<Integer> pendingPids = getPendingPids(meshIds, gridIds);
+
+        //按范围未查到数据，直接返回
+        if (pendingPids.size() < 1 && (meshIds.size() > 0 || gridIds.size() > 0)) {
 
             return total;
         }
 
+        JSONArray jsonConditions = json.getJSONArray("conditions");
+
         //按照mainTableName与searchTableName关系组成查询语句
-        String strSql = "SELECT DISTINCT " + mainFlag + " MAIN_PID , COUNT(1) OVER(PARTITION BY 1) TOTAL FROM " + mainTableName;
+        String strSql = "SELECT DISTINCT " + mainFlag + " MAIN_PID , COUNT(DISTINCT "+mainFlag+" ) OVER(PARTITION BY 1) TOTAL FROM " + mainTableName;
 
         if (!mainTableName.equals(searchTableName)) {
 
@@ -285,33 +290,14 @@ public class SearchAllObject {
 
     /**
      * 根据meshId、gridId按范围查找待定主对象Pid
-     *
-     * @param json
+     * @param meshIds
+     * @param gridIds
      * @return
      * @throws Exception
      */
-    private List<Integer> getPendingPids(JSONObject json) throws Exception {
+    private List<Integer> getPendingPids(List<Integer> meshIds,List<Integer> gridIds) throws Exception {
 
         Set<Integer> pendingPids = new HashSet<>();
-
-        List<Integer> meshIds = new ArrayList<>();
-
-        List<Integer> gridIds = new ArrayList<>();
-
-        if (json.containsKey("meshIds")) {
-
-            meshIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("meshIds")));
-        }
-
-        if (json.containsKey("gridIds")) {
-            gridIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("gridIds")));
-        }
-
-        //无 meshId、gridId按范围查询条件
-        if (meshIds.size() < 1 && gridIds.size() < 1) {
-
-            return new ArrayList<>();
-        }
 
         List<String> meshWktStr = new ArrayList<>();
 
@@ -514,7 +500,7 @@ public class SearchAllObject {
         //多表关联时，处理中间关联表
         for (int i = 0; i < refInfos.size() - 1; i++) {
 
-            strQuerySql += " , " + refInfos.get(i)[0] + "." + refInfos.get(i)[1] + " " + refInfos.get(i)[0] + "." + refInfos.get(i)[2] + " = ";
+            strQuerySql += refInfos.get(i)[0] + "." + refInfos.get(i)[1] + " and " + refInfos.get(i)[0] + "." + refInfos.get(i)[2] + " = ";
         }
 
         strQuerySql += " TMP1." + geoKey + " ";
@@ -608,7 +594,7 @@ public class SearchAllObject {
         //多表关联时，处理中间关联表
         for (int i = 0; i < refInfos.size() - 1; i++) {
 
-            strQuerySql += " , " + refInfos.get(i)[0] + "." + refInfos.get(i)[1] + " " + refInfos.get(i)[0] + "." + refInfos.get(i)[2] + " = ";
+            strQuerySql += refInfos.get(i)[0] + "." + refInfos.get(i)[1] + " and " + refInfos.get(i)[0] + "." + refInfos.get(i)[2] + " = ";
         }
 
         strQuerySql += " TMP1." + geoKey + " ";

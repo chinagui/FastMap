@@ -61,8 +61,8 @@ public class Operation implements IOperation {
 
 		int groupId = 0;
 
-		if (group != null && group.getGroupId() != 0) {
-			groupId = group.getGroupId();
+		if (group != null && group.pid() != 0) {
+			groupId = group.pid();
 		} else {
 			groupId = PidUtil.getInstance().applyAdAdminGroupPid();
 		}

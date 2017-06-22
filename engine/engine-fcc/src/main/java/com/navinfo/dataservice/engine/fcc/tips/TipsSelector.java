@@ -496,6 +496,19 @@ public class TipsSelector {
 				// 路口名称
 				else if (type == 1704) {
 					m.put("c", deep.getString("name"));
+				}else if(type == 1116) {
+                    JSONArray fArray = deep.getJSONArray("f_array");
+                    JSONArray cArray = new JSONArray();
+                    if (fArray != null) {
+                        for (int i = 0; i < fArray.size(); i++) {
+                            JSONObject jsonObject = new JSONObject();
+                            JSONObject f = fArray.getJSONObject(i);
+                            jsonObject.put("z", f.getInt("z"));
+                            jsonObject.put("geo", f.getJSONObject("geo"));
+                            cArray.add(jsonObject);
+                        }
+                    }
+                    m.put("c", cArray);
 				}
 
 				// 20170217修改，变更输入：王屯 赵航

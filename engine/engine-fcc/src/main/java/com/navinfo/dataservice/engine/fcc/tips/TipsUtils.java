@@ -2,12 +2,14 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @ClassName: TipsUtils.java
@@ -27,70 +29,7 @@ public class TipsUtils {
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
-	
-	
-//	/**
-//	 * 组装Track(上传、接边、预处理都调用)
-//	 *
-//	 * @param lifecycle
-//	 * @param handler
-//	 * @param oldTrackInfo
-//	 * @param currentDate
-//	 * @param t_cStatus
-//	 * @param t_dStatus
-//	 * @param t_mStatus
-//	 * @param t_fStatus
-//	 * @return
-//	 */
-//	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
-//			int command, JSONArray oldTrackInfo, String t_operateDate,
-//			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus,
-//			int t_inMeth, int t_pStatus, int t_dInProc, int t_mInProc, int t_fStatus) {
-//
-//		JSONObject jsonTrack = new JSONObject();
-//
-//		jsonTrack.put("t_lifecycle", lifecycle);
-//
-//		jsonTrack.put("t_command", command);
-//
-//		jsonTrack.put("t_date", currentDate);//数据入库时服务器时间
-//
-//		jsonTrack.put("t_cStatus", t_cStatus);
-//
-//		jsonTrack.put("t_dStatus", t_dStatus);
-//
-//		jsonTrack.put("t_mStatus", t_mStatus);
-//
-//		//jsonTrack.put("t_inStatus", t_inStatus);
-//
-//		jsonTrack.put("t_inMeth", t_inMeth);
-//
-//		jsonTrack.put("t_pStatus", t_pStatus);
-//
-//		jsonTrack.put("t_dInProc", t_dInProc);
-//
-//		jsonTrack.put("t_mInProc", t_mInProc);
-//
-//		JSONObject jsonTrackInfo = new JSONObject();
-//
-//		jsonTrackInfo.put("stage", stage);
-//
-//		jsonTrackInfo.put("date", t_operateDate); //t_operateDate 原值导入
-//
-//		jsonTrackInfo.put("handler", handler);
-//
-//		if (null == oldTrackInfo) {
-//
-//			oldTrackInfo = new JSONArray();
-//		}
-//
-//		oldTrackInfo.add(jsonTrackInfo);
-//
-//		jsonTrack.put("t_trackInfo", oldTrackInfo);
-//
-//
-//		return jsonTrack;
-//	}
+
 
 	/**
 	 * @Description:生成tip索引信息(目前上传用)
@@ -187,10 +126,15 @@ public class TipsUtils {
         tipsIndexModel.setHandler(handler);
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
         tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
-        tipsIndexModel.setG_guide(geomJson.getString("g_guide"));
+        if(StringUtils.isNotEmpty(sourceJson.getString("s_project"))) {
+            tipsIndexModel.setS_project(sourceJson.getString("s_project"));
+        }
+        com.alibaba.fastjson.JSONObject fastGuide = TipsUtils.netJson2fastJson(geomJson.getJSONObject("g_guide"));
+        tipsIndexModel.setG_guide(fastGuide.toString());
 
+        com.alibaba.fastjson.JSONObject fastLocation = TipsUtils.netJson2fastJson(geomJson.getJSONObject("g_location"));
         JSONObject g_location = geomJson.getJSONObject("g_location");
-        tipsIndexModel.setG_location(g_location.toString());
+        tipsIndexModel.setG_location(fastLocation.toString());
 
         tipsIndexModel.setDeep(deepJson.toString());
 
@@ -245,12 +189,18 @@ public class TipsUtils {
         tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
         tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
-        tipsIndexModel.setG_guide(geomJson.getString("g_guide"));
 
+        com.alibaba.fastjson.JSONObject fastGuide = TipsUtils.netJson2fastJson(geomJson
+                .getJSONObject("g_guide"));
+        tipsIndexModel.setG_guide(fastGuide.toString());
+
+        com.alibaba.fastjson.JSONObject fastLocation = TipsUtils.netJson2fastJson(geomJson
+                .getJSONObject("g_location"));
         JSONObject g_location = geomJson.getJSONObject("g_location");
-        tipsIndexModel.setG_location(g_location.toString());
+        tipsIndexModel.setG_location(fastLocation.toString());
 
-        tipsIndexModel.setDeep(deepJson.toString());
+        com.alibaba.fastjson.JSONObject fastDeep = TipsUtils.netJson2fastJson(deepJson);
+        tipsIndexModel.setDeep(fastDeep.toString());
 
         tipsIndexModel.setFeedback(feedbackJson.toString());
 
@@ -387,92 +337,24 @@ public class TipsUtils {
 
 	}
 
-//	/**
-//	 * @Description:通过tips的json生成Solr索引
-//	 * @param jsonInfo：和规格完全一直的json数据
-//	 * @param currentDate
-//	 * @return
-//	 * @author: y
-//	 * @param user
-//	 * @throws Exception
-//	 * @time:2017-3-13 下午5:03:43
-//	 */
-//	public static JSONObject generateSolrIndexFromTipsJson(JSONObject jsonInfo,
-//			String currentDate) throws Exception {
-//		JSONObject index = new JSONObject();
-//		JSONObject track=jsonInfo.getJSONObject("track");
-//		JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
-//		int size=trackInfoArr.size();
-//		JSONObject lastTrackInfo=trackInfoArr.getJSONObject(size-1);
-//
-//		String sourceType=jsonInfo.getJSONObject("source").getString("s_sourceType");
-//		JSONObject g_location=jsonInfo.getJSONObject("geometry").getJSONObject("g_location");
-//		JSONObject deep=jsonInfo.getJSONObject("deep");
-//		JSONObject feedback=null;
-//	    if(jsonInfo.containsKey("feedback")){
-//	    	feedback=jsonInfo.getJSONObject("feedback");
-//	    }
-//
-//		index.put("id", jsonInfo.getString("rowkey"));
-//		index.put("stage", lastTrackInfo.getInt("stage"));
-//		index.put("t_date", currentDate);
-//		index.put("t_operateDate", currentDate);
-//		index.put("t_lifecycle", track.getInt("t_lifecycle"));
-//		index.put("t_command", track.getInt("t_command"));
-//		index.put("handler",lastTrackInfo.getInt("handler"));
-//		index.put("s_sourceType",sourceType);
-//		index.put("s_sourceCode",jsonInfo.getJSONObject("source").getInt("s_sourceCode"));
-//		index.put("g_location",g_location);
-//		index.put("g_guide",jsonInfo.getJSONObject("geometry").getJSONObject("g_guide").toString());
-//
-//		//这个主要是g_location:目前只用于tips的下载和渲染
-//		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
-//				g_location, feedback));
-//
-//		//统计坐标，用于其他的：tips的查询、统计等
-//		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
-//				g_location, feedback));
-//
-//	   index.put("deep",jsonInfo.getJSONObject("deep").toString());
-//
-//	   if(feedback!=null){
-//		   index.put("feedback",feedback);
-//	   }else{
-//		   JSONArray  infoArr=new JSONArray();
-//		   feedback=new JSONObject();
-//		   feedback.put("f_array", infoArr);
-//		   index.put("feedback",feedback);
-//	   }
-//
-//	   index.put("s_reliability",jsonInfo.getJSONObject("source").getInt("s_reliability"));
-//	   index.put("t_cStatus", track.getInt("t_cStatus"));
-//	   index.put("t_dStatus", track.getInt("t_dStatus"));
-//	   index.put("t_mStatus", track.getInt("t_mStatus"));
-//	   index.put("t_inMeth", track.getInt("t_inMeth"));
-//	   index.put("t_pStatus", track.getInt("t_pStatus"));
-//	   index.put("t_dInProc", track.getInt("t_dInProc"));
-//	   index.put("t_mInProc", track.getInt("t_mInProc"));
-//	   index.put("s_qTaskId", jsonInfo.getJSONObject("source").getInt("s_qTaskId"));
-//	   index.put("s_mTaskId", jsonInfo.getJSONObject("source").getInt("s_mTaskId"));
-//	   index.put("t_fStatus", track.getInt("t_fStatus"));
-//
-//	   if(jsonInfo.containsKey("tipdiff")){
-//		   index.put("tipdiff", jsonInfo.getJSONObject("tipdiff").toString());
-//	   }else{
-//		   index.put("tipdiff", "{}");
-//	   }
-//
-//	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
-//	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
-//
-//		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(sourceType, deep);
-//
-//		index.put("relate_links", relateMap.get("relate_links"));
-//
-//		index.put("relate_nodes", relateMap.get("relate_nodes"));
-//
-//
-//	   return index;
-//	}
+    public static JSONObject stringToSFJson(String text) {
+        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(text);
+        JSONObject jsonObject = JsonUtils.fastJson2netJson(fastJson);
+        return jsonObject;
+    }
+
+    public static com.alibaba.fastjson.JSONObject netJson2fastJson(JSONObject json)
+    {
+        com.alibaba.fastjson.JSONObject obj = new com.alibaba.fastjson.JSONObject();
+
+        for(Object key :json.keySet())
+        {
+
+
+            obj.put((String)key, json.get(key));
+        }
+
+        return obj;
+    }
 
 }

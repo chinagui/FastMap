@@ -6,10 +6,9 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.engine.fcc.track.AdasTrackPointUpload;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -33,9 +32,9 @@ public class TrackLineController extends BaseController {
 
 		try {
 
-			JSONObject json = JSONObject.fromObject(parameter);
+			JSONObject json = JSONObject.parseObject(parameter);
 
-			int jobId = json.getInt("jobId");
+			int jobId = json.getInteger("jobId");
 
 			UploadService upload = UploadService.getInstance();
 

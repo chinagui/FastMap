@@ -1,24 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -27,10 +8,15 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.vividsolutions.jts.geom.Geometry;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+
+import java.util.*;
 
 public class TipsOperator {
 
@@ -257,7 +243,7 @@ public class TipsOperator {
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 2);
                     }
-                    if(oldEStatus !=0 && editStatus == 0) {
+                    if(oldEStatus != 0 && editStatus == 0) {
                         jsonTrackInfo.put("stage", -1);
                     }
                 } else if (mdFlag.equals("m")) {//月编

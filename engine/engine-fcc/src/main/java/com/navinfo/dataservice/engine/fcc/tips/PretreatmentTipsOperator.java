@@ -72,7 +72,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-15 上午11:03:20
 	 */
-	public void create(String sourceType, JSONObject lineGeometry, int user,
+	public String create(String sourceType, JSONObject lineGeometry, int user,
 			JSONObject deep, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn = null;
@@ -114,7 +114,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             int s_sourceCode = 14;
             TipsSource source = new TipsSource();
             source.setS_sourceCode(s_sourceCode);
-            source.setS_qSubTaskId(qSubTaskId);//快线子任务ID
+            source.setS_project(String.valueOf(qSubTaskId));//快线子任务ID
             source.setS_sourceType(sourceType);
             JSONObject sourceJson = JSONObject.fromObject(source);
 
@@ -138,13 +138,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			Put put = new Put(rowkey.getBytes());
 			put.addColumn("data".getBytes(), "track".getBytes(), trackJson
 					.toString().getBytes());
-			put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+            com.alibaba.fastjson.JSONObject fastGeom = TipsUtils.netJson2fastJson(jsonGeom);
+			put.addColumn("data".getBytes(), "geometry".getBytes(), fastGeom
 					.toString().getBytes());
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedbackObj
 					.toString().getBytes());
 			put.addColumn("data".getBytes(), "source".getBytes(), sourceJson
 					.toString().getBytes());
-			put.addColumn("data".getBytes(), "deep".getBytes(), deepNew
+            com.alibaba.fastjson.JSONObject fastDeep = TipsUtils.netJson2fastJson(deepNew);
+			put.addColumn("data".getBytes(), "deep".getBytes(), fastDeep
 					.toString().getBytes());
 
 			// solr index json
@@ -156,6 +158,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			puts.add(put);
 			htab.put(puts);
 			htab.close();
+            return rowkey;
 		} catch (IOException e) {
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
@@ -294,9 +297,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			deep.put("geo", guideNew);
 
             //source 快线子任务
-            JSONObject source = JSONObject.fromObject(new String(result.getValue(
-                    "data".getBytes(), "source".getBytes())));
-//            source.put("s_qSubTaskId", qSubTaskId);
+//            JSONObject source = JSONObject.fromObject(new String(result.getValue(
+//                    "data".getBytes(), "source".getBytes())));
+////            source.put("s_qSubTaskId", qSubTaskId);
 
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
@@ -702,12 +705,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		try {
 
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-
-			Subtask subtask = apiService.queryBySubtaskId(subTaskId);
+//			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+//
+//			Subtask subtask = apiService.queryBySubtaskId(subTaskId);
 
 			List<JSONObject> snapshots = solr
-					.queryHasNotSubmitPreTipsByWktAndUser(user, subtask.getGeometry());
+					.queryHasNotSubmitPreTips(user, subTaskId);
 
 			String currentDate = StringUtils.getCurrentTime();
 
@@ -758,7 +761,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				jsonTrackInfo.put("handler", user);
 
-				jsonTrackInfo.put("stage", 5);
+				jsonTrackInfo.put("stage", PretreatmentTipsOperator.PRE_TIPS_STAGE);
 
 				trackInfoArr.add(jsonTrackInfo);
 
@@ -1339,16 +1342,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		put.addColumn("data".getBytes(), "source".getBytes(), jsonInfo
 				.getJSONObject("source").toString().getBytes());
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), jsonInfo
-				.getJSONObject("geometry").toString().getBytes());
+        com.alibaba.fastjson.JSONObject fastGeo = TipsUtils.netJson2fastJson(jsonInfo
+                .getJSONObject("geometry"));
+		put.addColumn("data".getBytes(), "geometry".getBytes(), fastGeo.toString().getBytes());
 
 		if (jsonInfo.containsKey("information")) {
 			put.addColumn("data".getBytes(), "information".getBytes(), jsonInfo
 					.getJSONObject("information").toString().getBytes());
 		}
 
-		put.addColumn("data".getBytes(), "deep".getBytes(), jsonInfo
-				.getJSONObject("deep").toString().getBytes());
+        com.alibaba.fastjson.JSONObject fastDeep = TipsUtils.netJson2fastJson(jsonInfo
+                .getJSONObject("deep"));
+		put.addColumn("data".getBytes(), "deep".getBytes(), fastDeep.toString().getBytes());
 
 		// track信息需要重新组织，需要修改date时间
 
@@ -1386,8 +1391,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             feedback.put("f_array", infoArr);
             jsonInfo.put("feedback",feedback);
         }
-        put.addColumn("data".getBytes(), "feedback".getBytes(), jsonInfo
-                .getJSONObject("feedback").toString().getBytes());
+        com.alibaba.fastjson.JSONObject fastFeedback = TipsUtils.netJson2fastJson(jsonInfo
+                .getJSONObject("feedback"));
+        put.addColumn("data".getBytes(), "feedback".getBytes(), fastFeedback.toString().getBytes());
 
 		if (jsonInfo.containsKey("confirm")) {
 

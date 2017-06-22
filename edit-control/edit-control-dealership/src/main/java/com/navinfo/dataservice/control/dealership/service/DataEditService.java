@@ -1865,7 +1865,7 @@ public class DataEditService {
 	 * @param userId
 	 * @throws Exception 
 	 */
-	public List<Integer> addChainData(HttpServletRequest request, long userId) throws Exception {
+	public Map<String, Object> addChainData(HttpServletRequest request, long userId) throws Exception {
 		//excel文件上传到服务器		
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
@@ -1894,7 +1894,9 @@ public class DataEditService {
 			AddChainDataEntity addChainDataEntity = new AddChainDataEntity();
 			String chainCode = null;
 			int resultId = 0;
+			Map<String, Object> resultMap = new HashMap<>();
 			List<Integer> resultIdList = new ArrayList<>();
+			List<String> chainCodeList = new ArrayList<>();
 			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
 			for(Map<String, Object> map : addDataMaps){
 				if(StringUtils.isBlank(map.get("number").toString())){
@@ -1921,17 +1923,17 @@ public class DataEditService {
 						log.info("补充增量数据更新完成");
 					}
 				}
-				
 				chainCode = map.get("chain").toString();
+				
+				chainCodeList.add(chainCode);
 			}
-			//由于增量数据都是单一品牌的，暂时拿出循环之外
+			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			updateStatusByChain(conn, chainCode);
+			updateStatusByChain(conn, chainCodeList);
 			updateReulteData(conn, resultIdList);
-			conn.commit();
-			log.info("调用启动录入作业");
-			startWork(chainCode, userId);
-			return resultIdList;
+			resultMap.put("resultIdList", resultIdList);
+			resultMap.put("chainCodeList", chainCodeList);
+			return resultMap;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
@@ -1939,6 +1941,22 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 去除重复的chain
+	 * 
+	 * 
+	 * */
+    public static List<String> removeDuplicate(List list){       
+        for(int i = 0; i < list.size() - 1; i ++) {       
+            for(int j = list.size() - 1; j > i; j --) {       
+                 if (list.get(j).equals(list.get(i))) {       
+                    list.remove(j);       
+                  }        
+              }        
+          }        
+          return list;       
+      }  
 	
 	/**
 	 * @param 增量数据upFile
@@ -2067,9 +2085,15 @@ public class DataEditService {
 	 * @param resultId
 	 * 
 	 * */
-	public void updateStatusByChain(Connection conn, String chain) throws SQLException{
+	public void updateStatusByChain(Connection conn, List<String> chains) throws SQLException{
 		QueryRunner run = new QueryRunner();
-		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code = '"+chain+"'";
+		StringBuffer sb = new StringBuffer();
+		for(String chainCode : chains){
+			sb.append(chainCode+",");
+		}
+		String chain = sb.toString();
+		chain = chain.substring(0, chain.length() - 1);
+		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code in ('"+chain+"')";
 		log.info("updateChain:"+updateChain);
 		run.execute(conn, updateChain);
 	}

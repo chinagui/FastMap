@@ -460,7 +460,7 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
-	 * @Description:fc预处理（情报矢量化）tip新增或者修改
+	 * @Description:（情报矢量化+FCC??）tip新增或者修改
 	 * @param request
 	 * @return
 	 * @throws ServletException

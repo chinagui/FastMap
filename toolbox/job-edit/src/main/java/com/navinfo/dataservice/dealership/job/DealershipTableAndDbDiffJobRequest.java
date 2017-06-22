@@ -27,7 +27,7 @@ public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 		this.sourceType = sourceType;
 	}
 
-	protected List<Integer> resultIdList;//补充数据传入   
+	protected List<Integer> resultIdList;//补充数据 ,实时更新传入
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {

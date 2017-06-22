@@ -1167,6 +1167,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
 				jsonInfo.put("rowkey", rowkey);
+				
+				System.out.println("原始rowkey:"+rowkey);
 
 				logger.info("apply new rowkey:" + rowkey);
 
@@ -1177,7 +1179,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     jsonInfo.put("deep", deepJson);
                 }
                 
-                insertOneTips(command,jsonInfo, user, htab, date);
+                rowkey=insertOneTips(command,jsonInfo, user, htab, date);
                 
 			
 
@@ -1185,8 +1187,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			// 修改
 			else {
 				rowkey = jsonInfo.getString("rowkey");
+				
+				System.out.println("原始rowkey:"+rowkey);
 
-				updateOneTips(jsonInfo, user, htab, date); // 同时修改hbase和solr
+				rowkey=updateOneTips(jsonInfo, user, htab, date); // 同时修改hbase和solr
 			}
 			
 			htab.close();
@@ -1217,8 +1221,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param command 
 	 * @time:2017-6-21 下午9:22:54
 	 */
-	private void cutByMesh(int command, JSONObject jsonInfo, int user, String sourceType,
+	private String cutByMesh(int command, JSONObject jsonInfo, int user, String sourceType,
 			Table htab, String date) throws Exception {
+		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
+		
 		JSONObject gLocation = jsonInfo.getJSONObject("geometry").getJSONObject("g_location");
 		Geometry geo= GeoTranslator.geojson2Jts(gLocation);
 		List<Geometry> geoList=TipsOperatorUtils.cutGeoByMeshes(geo); //按照图幅打断成多个几何
@@ -1226,16 +1232,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		//打断后的测线tips
 		List<JSONObject> allTips=new ArrayList<JSONObject>();
 		
-		for (Geometry loctionNew : geoList) {
+		//跨图幅不需要打断，直接保存
+		if(geoList==null||geoList.size()==0){
+			
+			doInsert(jsonInfo, htab, date); 
+			
+			returnRowkey=jsonInfo.getString("rowkey");
+			
+			return returnRowkey;
+		    
+		}
+		
+		for (Geometry loctionGeometry : geoList) {
 			
 			JSONObject jsonInfoNew = JSONObject.fromObject(jsonInfo); 
 			String newRowkey = TipsUtils.getNewRowkey(sourceType);
 			//1.更新rowkey
 			jsonInfoNew.put("rowkey", newRowkey); 
+			System.out.println("new rowkey-----:"+newRowkey);
 			//2.更新geometry
 			JSONObject geometry=new JSONObject();
-			geometry.put("g_location", loctionNew);//更新geometry.g_location坐标
-			JSONObject g_guide = GeoTranslator.jts2Geojson( GeometryUtils.getMidPointByLine(loctionNew));
+			JSONObject  g_location=GeoTranslator.jts2Geojson(loctionGeometry);
+			geometry.put("g_location", g_location);//更新geometry.g_location坐标
+			JSONObject g_guide = GeoTranslator.jts2Geojson( GeometryUtils.getMidPointByLine(loctionGeometry));
 			geometry.put("g_guide", g_guide);//更新geometry.g_guide坐标
 			jsonInfoNew.put("geometry", geometry);
 			
@@ -1245,7 +1264,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			// 几何中心点
 			newDeep.put("geo",g_guide);
 			//更新deep.len
-		    double len = GeometryUtils.getLinkLength(loctionNew);
+		    double len = GeometryUtils.getLinkLength(loctionGeometry);
 		    newDeep.put("len", len);
 		    //更新新deep.id
 		    // ROWKEY 维护7种要素id 测线在内
@@ -1253,12 +1272,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		    jsonInfoNew.put("deep", newDeep);
 		    
 		    //4.保存数据
-		    doInsert(jsonInfoNew, htab, date);
+		    doInsert(jsonInfoNew, htab, date); 
 		    
 		    JSONObject  obj=new JSONObject();
 		    obj.put("id", newRowkey);
-		    obj.put("g_location", loctionNew);
+		    obj.put("g_location", g_location);
 		    allTips.add(obj);
+		    
+		    //返回任意一条rowkey
+		    if(StringUtils.isEmpty(returnRowkey)){
+		    	returnRowkey=newRowkey;
+		    }
 		    
 		}
 		
@@ -1266,7 +1290,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		String rowkey=jsonInfo.getString("rowkey"); //打断前的rowkey
 		if(command==COMMAND_UPADATE){
 			maintainHookTips(rowkey,user, allTips);
+			deleteByRowkey( rowkey,  1,  user); //将旧的rowkey删除（物理删除）
 		}
+		
+		return returnRowkey;
 		
 	}
 
@@ -1305,7 +1332,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-13 下午6:09:23
 	 */
-	private void updateOneTips(JSONObject jsonInfo, int user, Table htab,
+	private String  updateOneTips(JSONObject jsonInfo, int user, Table htab,
 			String date) throws Exception {
 
 		String rowkey = jsonInfo.getString("rowkey");
@@ -1323,7 +1350,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			dataTrack.put("t_lifecycle", newlifeCycle);
 			jsonInfo.put("track", dataTrack);
 
-			insertOneTips(COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			return insertOneTips(COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());
@@ -1374,21 +1401,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-13 下午4:47:54
 	 */
-	private void insertOneTips(int command, JSONObject jsonInfo, int user, Table htab,
+	private String insertOneTips(int command, JSONObject jsonInfo, int user, Table htab,
 			String date) throws Exception {
-
+		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
 		try {
 			JSONObject source = jsonInfo.getJSONObject("source");
             String sourceType = source.getString("s_sourceType");
 
 		     //如果是2001 测线，则需要判断按图幅打断
-            if(sourceType=="2001"){
+            if(sourceType.equals("2001")){
             	
-            	cutByMesh(command,jsonInfo, user, sourceType, htab, date);
+            	returnRowkey=cutByMesh(command,jsonInfo, user, sourceType, htab, date);
             	
             }else{
             	
             	doInsert(jsonInfo, htab, date);
+            	
+            	returnRowkey=jsonInfo.getString("rowkey");
             }
 
 		} catch (Exception e) {
@@ -1396,6 +1425,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("新增tips出错：" + e.getMessage() + "\n" + jsonInfo,
 					e);
 		}
+		
+		return returnRowkey;
 
 	}
 

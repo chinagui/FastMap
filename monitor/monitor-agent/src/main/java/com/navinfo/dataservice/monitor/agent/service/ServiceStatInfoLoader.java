@@ -98,10 +98,10 @@ public class ServiceStatInfoLoader {
 					if(valueVisitCount > 0){
 						valueResTime = (durationsSum - durationsSumLast)/valueVisitCount;
 					}
-					float valueInterfaceStatus = 0;
-					//0-正常,1-异常
+					float valueInterfaceStatus = 1;
+					//1-正常,0-异常
 					if(systemErrors > 0 &&(systemErrors > systemErrorsLast)){
-						valueInterfaceStatus = 1;
+						valueInterfaceStatus = 0;
 					}
 					log.info("访问次数:"+valueVisitCount+"响应时间:"+valueResTime+"接口状态:"+valueInterfaceStatus);
 					//保存数据

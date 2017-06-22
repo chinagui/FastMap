@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -77,5 +76,23 @@ public class PushTest {
 	public void test05() throws Exception{
 		boolean flag = AgentUtils.tomcatRunSuccess("192.168.4.188", "8084");
 		System.out.println(flag);
+	}
+	
+	@Test
+	public void test06() throws Exception{
+		String url1 = PushTest.class.getClassLoader().getResource(".").getPath();
+		System.out.println(url1);
+		String url2 = PushTest.class.getClassLoader().getResource("").getPath();
+		System.out.println(url2);
+		String url3 = PushTest.class.getResource("/").getPath();
+		System.out.println(url3);
+		String url4 = PushTest.class.getResource("").getPath();
+		System.out.println(url4);
+		double usedMemory = 23;
+		double maxMemory = 88;
+		double usedPercent = (double)Math.round((usedMemory/maxMemory)*10000)/100;
+		System.out.println(usedMemory/maxMemory);
+		System.out.println(Math.round((usedMemory/maxMemory)*10000));
+		System.out.println(usedPercent);
 	}
 }

@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -73,7 +75,7 @@ import net.sf.json.JSONObject;
  *
  */
 public class DataPrepareService {
-	private Logger log = LoggerRepos.getLogger(DataPrepareService.class);
+	private static Logger log = LoggerRepos.getLogger(DataPrepareService.class);
 
 	private DataPrepareService() {
 	}
@@ -601,6 +603,9 @@ public class DataPrepareService {
 			//获取个品牌状态
 			Map<String,Integer> chainStatus = getChainStatus(conn);
 			
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
+		    String date = df.format(new Date());
+			
 			File file = new File(localUnzipDir);
 			if (file.exists()) {
 				List<String> pathList = new ArrayList<String>();
@@ -631,7 +636,7 @@ public class DataPrepareService {
 							//加载已有的result
 							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
 							//执行差分
-							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap,date);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
 							List<IxDealershipResult> update = resultMap.get(3);
@@ -1184,8 +1189,6 @@ public class DataPrepareService {
 								result.setDealSrcDiff("更新");
 								break;
 							}
-	
-
 
 							int workflowStatus = rs.getInt("WORKFLOW_STATUS");
 							switch(workflowStatus){
@@ -1332,318 +1335,275 @@ public class DataPrepareService {
 				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelService(), "|")));
 			}
 			Collections.sort(telList);
+			
 			if(expDbDiffResult.getPoi1Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi1Num());
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				expDbDiffResult.setPoi1KindCode(ixPoi.getKindCode());
-				expDbDiffResult.setPoi1Chain(ixPoi.getChain());
-				expDbDiffResult.setPoi1PostCode(ixPoi.getPostCode());
-				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
-				for(IxPoiName ixPoiName:ixPoiNameList){
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
-						expDbDiffResult.setPoi1Name(ixPoiName.getName());
-					}
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
-						expDbDiffResult.setPoi1AliasName(ixPoiName.getName());
-					}
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setPoi1Name(poiInfo.get("poiName"));
 				}
-				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
-				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
-					if(ixPoiAddress.getLangCode().equals("CHI")){
-						expDbDiffResult.setPoi1Name(ixPoiAddress.getFullname());
-					}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setPoi1AliasName(poiInfo.get("poiAliasName"));
 				}
-				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
-				List<String> contacts = new ArrayList<String>();
-				for(IxPoiContact ixPoiContact:ixPoiContactList){
-					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setPoi1Address(poiInfo.get("poiAddress"));
 				}
-				Collections.sort(contacts);
-				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
-				
-				List<String> diffs = new ArrayList<String>();
-				if(expDbDiffResult.getPoi1Name()==null
-						||
-						(expDbDiffResult.getPoi1Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi1Name()))){
-					diffs.add("名称不同");
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setPoi1Tel(poiInfo.get("poiTel"));
 				}
-				if(expDbDiffResult.getPoi1Address()==null
-						||
-						(expDbDiffResult.getPoi1Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi1Address()))){
-					diffs.add("地址不同");
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setPoi1Diff(poiInfo.get("poiDiff"));
 				}
-				//电话todo
-				
-				if(expDbDiffResult.getPoi1Tel()==null
-						||
-						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
-					diffs.add("电话不同");
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setPoi1PostCode(poiInfo.get("poiPostCode"));
 				}
-				if(expDbDiffResult.getPoi1PostCode()==null
-						||
-						(expDbDiffResult.getPoi1PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi1PostCode()))){
-					diffs.add("邮编不同");
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setPoi1KindCode(poiInfo.get("poiKindCode"));
 				}
-				if(expDbDiffResult.getPoi1KindCode()==null
-						||
-						(expDbDiffResult.getPoi1KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi1KindCode()))
-						||
-						expDbDiffResult.getPoi1Chain()==null
-						||
-						(expDbDiffResult.getPoi1Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi1Chain()))){
-					diffs.add("项目不同");
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setPoi1Chain(poiInfo.get("poiChain"));
 				}
-				expDbDiffResult.setPoi1Diff(StringUtils.join(diffs,"|"));
 			}
 			if(expDbDiffResult.getPoi2Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi2Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi2Num());
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				expDbDiffResult.setPoi2KindCode(ixPoi.getKindCode());
-				expDbDiffResult.setPoi2Chain(ixPoi.getChain());
-				expDbDiffResult.setPoi2PostCode(ixPoi.getPostCode());
-				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
-				for(IxPoiName ixPoiName:ixPoiNameList){
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
-						expDbDiffResult.setPoi2Name(ixPoiName.getName());
-					}
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
-						expDbDiffResult.setPoi2AliasName(ixPoiName.getName());
-					}
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setPoi2Name(poiInfo.get("poiName"));
 				}
-				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
-				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
-					if(ixPoiAddress.getLangCode().equals("CHI")){
-						expDbDiffResult.setPoi2Name(ixPoiAddress.getFullname());
-					}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setPoi2AliasName(poiInfo.get("poiAliasName"));
 				}
-				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
-				List<String> contacts = new ArrayList<String>();
-				for(IxPoiContact ixPoiContact:ixPoiContactList){
-					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setPoi2Address(poiInfo.get("poiAddress"));
 				}
-				Collections.sort(contacts);
-				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
-				
-				List<String> diffs = new ArrayList<String>();
-				if(expDbDiffResult.getPoi2Name()==null
-						||
-						(expDbDiffResult.getPoi2Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi2Name()))){
-					diffs.add("名称不同");
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setPoi2Tel(poiInfo.get("poiTel"));
 				}
-				if(expDbDiffResult.getPoi2Address()==null
-						||
-						(expDbDiffResult.getPoi2Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi2Address()))){
-					diffs.add("地址不同");
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setPoi2Diff(poiInfo.get("poiDiff"));
 				}
-				//电话todo
-				if(expDbDiffResult.getPoi1Tel()==null
-						||
-						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
-					diffs.add("电话不同");
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setPoi2PostCode(poiInfo.get("poiPostCode"));
 				}
-				if(expDbDiffResult.getPoi2PostCode()==null
-						||
-						(expDbDiffResult.getPoi2PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi2PostCode()))){
-					diffs.add("邮编不同");
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setPoi2KindCode(poiInfo.get("poiKindCode"));
 				}
-				if(expDbDiffResult.getPoi2KindCode()==null
-						||
-						(expDbDiffResult.getPoi2KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi2KindCode()))
-						||
-						expDbDiffResult.getPoi2Chain()==null
-						||
-						(expDbDiffResult.getPoi2Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi2Chain()))){
-					diffs.add("项目不同");
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setPoi2Chain(poiInfo.get("poiChain"));
 				}
-				expDbDiffResult.setPoi2Diff(StringUtils.join(diffs,"|"));
+
 			}
 			if(expDbDiffResult.getPoi3Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi3Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi3Num());
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				expDbDiffResult.setPoi3KindCode(ixPoi.getKindCode());
-				expDbDiffResult.setPoi3Chain(ixPoi.getChain());
-				expDbDiffResult.setPoi3PostCode(ixPoi.getPostCode());
-				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
-				for(IxPoiName ixPoiName:ixPoiNameList){
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
-						expDbDiffResult.setPoi3Name(ixPoiName.getName());
-					}
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
-						expDbDiffResult.setPoi3AliasName(ixPoiName.getName());
-					}
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setPoi3Name(poiInfo.get("poiName"));
 				}
-				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
-				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
-					if(ixPoiAddress.getLangCode().equals("CHI")){
-						expDbDiffResult.setPoi3Name(ixPoiAddress.getFullname());
-					}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setPoi3AliasName(poiInfo.get("poiAliasName"));
 				}
-				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
-				List<String> contacts = new ArrayList<String>();
-				for(IxPoiContact ixPoiContact:ixPoiContactList){
-					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setPoi3Address(poiInfo.get("poiAddress"));
 				}
-				Collections.sort(contacts);
-				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
-				
-				List<String> diffs = new ArrayList<String>();
-				if(expDbDiffResult.getPoi3Name()==null
-						||
-						(expDbDiffResult.getPoi3Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi3Name()))){
-					diffs.add("名称不同");
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setPoi3Tel(poiInfo.get("poiTel"));
 				}
-				if(expDbDiffResult.getPoi3Address()==null
-						||
-						(expDbDiffResult.getPoi3Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi3Address()))){
-					diffs.add("地址不同");
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setPoi3Diff(poiInfo.get("poiDiff"));
 				}
-				//电话todo
-				if(expDbDiffResult.getPoi1Tel()==null
-						||
-						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
-					diffs.add("电话不同");
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setPoi3PostCode(poiInfo.get("poiPostCode"));
 				}
-				if(expDbDiffResult.getPoi3PostCode()==null
-						||
-						(expDbDiffResult.getPoi3PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi3PostCode()))){
-					diffs.add("邮编不同");
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setPoi3KindCode(poiInfo.get("poiKindCode"));
 				}
-				if(expDbDiffResult.getPoi3KindCode()==null
-						||
-						(expDbDiffResult.getPoi3KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi3KindCode()))
-						||
-						expDbDiffResult.getPoi3Chain()==null
-						||
-						(expDbDiffResult.getPoi3Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi3Chain()))){
-					diffs.add("项目不同");
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setPoi3Chain(poiInfo.get("poiChain"));
 				}
-				expDbDiffResult.setPoi3Diff(StringUtils.join(diffs,"|"));
 			}
 			if(expDbDiffResult.getPoi4Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi4Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi4Num());
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				expDbDiffResult.setPoi4KindCode(ixPoi.getKindCode());
-				expDbDiffResult.setPoi4Chain(ixPoi.getChain());
-				expDbDiffResult.setPoi4PostCode(ixPoi.getPostCode());
-				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
-				for(IxPoiName ixPoiName:ixPoiNameList){
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
-						expDbDiffResult.setPoi4Name(ixPoiName.getName());
-					}
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
-						expDbDiffResult.setPoi4AliasName(ixPoiName.getName());
-					}
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setPoi4Name(poiInfo.get("poiName"));
 				}
-				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
-				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
-					if(ixPoiAddress.getLangCode().equals("CHI")){
-						expDbDiffResult.setPoi4Name(ixPoiAddress.getFullname());
-					}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setPoi4AliasName(poiInfo.get("poiAliasName"));
 				}
-				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
-				List<String> contacts = new ArrayList<String>();
-				for(IxPoiContact ixPoiContact:ixPoiContactList){
-					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setPoi4Address(poiInfo.get("poiAddress"));
 				}
-				Collections.sort(contacts);
-				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
-				
-				List<String> diffs = new ArrayList<String>();
-				if(expDbDiffResult.getPoi4Name()==null
-						||
-						(expDbDiffResult.getPoi4Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi4Name()))){
-					diffs.add("名称不同");
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setPoi4Tel(poiInfo.get("poiTel"));
 				}
-				if(expDbDiffResult.getPoi4Address()==null
-						||
-						(expDbDiffResult.getPoi4Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi4Address()))){
-					diffs.add("地址不同");
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setPoi4Diff(poiInfo.get("poiDiff"));
 				}
-				//电话todo
-				if(expDbDiffResult.getPoi1Tel()==null
-						||
-						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
-					diffs.add("电话不同");
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setPoi4PostCode(poiInfo.get("poiPostCode"));
 				}
-				if(expDbDiffResult.getPoi4PostCode()==null
-						||
-						(expDbDiffResult.getPoi4PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi4PostCode()))){
-					diffs.add("邮编不同");
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setPoi4KindCode(poiInfo.get("poiKindCode"));
 				}
-				if(expDbDiffResult.getPoi4KindCode()==null
-						||
-						(expDbDiffResult.getPoi4KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi4KindCode()))
-						||
-						expDbDiffResult.getPoi4Chain()==null
-						||
-						(expDbDiffResult.getPoi4Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi4Chain()))){
-					diffs.add("项目不同");
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setPoi4Chain(poiInfo.get("poiChain"));
 				}
-				expDbDiffResult.setPoi4Diff(StringUtils.join(diffs,"|"));
 			}
 			if(expDbDiffResult.getPoi5Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi5Num())){
 				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi5Num());
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				expDbDiffResult.setPoi5KindCode(ixPoi.getKindCode());
-				expDbDiffResult.setPoi5Chain(ixPoi.getChain());
-				expDbDiffResult.setPoi5PostCode(ixPoi.getPostCode());
-				List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
-				for(IxPoiName ixPoiName:ixPoiNameList){
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
-						expDbDiffResult.setPoi5Name(ixPoiName.getName());
-					}
-					if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
-						expDbDiffResult.setPoi5AliasName(ixPoiName.getName());
-					}
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setPoi5Name(poiInfo.get("poiName"));
 				}
-				List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
-				for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
-					if(ixPoiAddress.getLangCode().equals("CHI")){
-						expDbDiffResult.setPoi5Name(ixPoiAddress.getFullname());
-					}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setPoi5AliasName(poiInfo.get("poiAliasName"));
 				}
-				List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
-				List<String> contacts = new ArrayList<String>();
-				for(IxPoiContact ixPoiContact:ixPoiContactList){
-					contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setPoi5Address(poiInfo.get("poiAddress"));
 				}
-				Collections.sort(contacts);
-				expDbDiffResult.setPoi1Tel(StringUtils.join(contacts.toArray(),"|"));
-				
-				List<String> diffs = new ArrayList<String>();
-				if(expDbDiffResult.getPoi5Name()==null
-						||
-						(expDbDiffResult.getPoi5Name()!=null&&!expDbDiffResult.getName().equals(expDbDiffResult.getPoi5Name()))){
-					diffs.add("名称不同");
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setPoi5Tel(poiInfo.get("poiTel"));
 				}
-				if(expDbDiffResult.getPoi5Address()==null
-						||
-						(expDbDiffResult.getPoi5Address()!=null&&!expDbDiffResult.getAddress().equals(expDbDiffResult.getPoi5Address()))){
-					diffs.add("地址不同");
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setPoi5Diff(poiInfo.get("poiDiff"));
 				}
-				//电话todo
-				if(expDbDiffResult.getPoi1Tel()==null
-						||
-						(expDbDiffResult.getPoi1Tel()!=null&&!expDbDiffResult.getPoi1Tel().equals(StringUtils.join(telList.toArray(),"|")))){
-					diffs.add("电话不同");
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setPoi5PostCode(poiInfo.get("poiPostCode"));
 				}
-				if(expDbDiffResult.getPoi5PostCode()==null
-						||
-						(expDbDiffResult.getPoi5PostCode()!=null&&!expDbDiffResult.getPostCode().equals(expDbDiffResult.getPoi5PostCode()))){
-					diffs.add("邮编不同");
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setPoi5KindCode(poiInfo.get("poiKindCode"));
 				}
-				if(expDbDiffResult.getPoi5KindCode()==null
-						||
-						(expDbDiffResult.getPoi5KindCode()!=null&&!expDbDiffResult.getKindCode().equals(expDbDiffResult.getPoi5KindCode()))
-						||
-						expDbDiffResult.getPoi5Chain()==null
-						||
-						(expDbDiffResult.getPoi5Chain()!=null&&!expDbDiffResult.getChain().equals(expDbDiffResult.getPoi5Chain()))){
-					diffs.add("项目不同");
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setPoi5Chain(poiInfo.get("poiChain"));
 				}
-				expDbDiffResult.setPoi5Diff(StringUtils.join(diffs,"|"));
 			}
 		}
+	}
+
+	/**
+	 * @param expDbDiffResult
+	 * @param ixPoiObj
+	 * @param telList 
+	 * @return
+	 */
+	private Map<String, String> getPoiInfo(ExpDbDiffResult expDbDiffResult, IxPoiObj ixPoiObj, List<String> telList) {
+		IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+		Map<String, String> result = new HashMap<String,String>();
+		String poiName = null;
+		String poiAddress = null;
+		String poiTel = null;
+		String poiPostCode = ixPoi.getPostCode();
+		String poiKindCode = ixPoi.getKindCode();
+		String poiChain = ixPoi.getChain();
+		
+		result.put("poiPostCode", poiPostCode);
+		result.put("poiKindCode", poiKindCode);
+		result.put("poiChain", poiChain);
+		
+		List<IxPoiName> ixPoiNameList = ixPoiObj.getIxPoiNames();
+		for(IxPoiName ixPoiName:ixPoiNameList){
+			if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==1&&ixPoiName.getNameType()==1){
+				poiName = ixPoiName.getName();
+				result.put("poiName", poiName);
+			}
+			if(ixPoiName.getLangCode().equals("CHI")&&ixPoiName.getNameClass()==3){
+				result.put("poiAliasName", ixPoiName.getName());
+			}
+		}
+		List<IxPoiAddress> ixPoiAddressList = ixPoiObj.getIxPoiAddresses();
+		for(IxPoiAddress ixPoiAddress:ixPoiAddressList){
+			if(ixPoiAddress.getLangCode().equals("CHI")){
+				poiAddress = ixPoiAddress.getFullname();
+				result.put("poiAddress", poiAddress);
+			}
+		}
+		List<IxPoiContact> ixPoiContactList = ixPoiObj.getIxPoiContacts();
+		List<String> contacts = new ArrayList<String>();
+		for(IxPoiContact ixPoiContact:ixPoiContactList){
+			contacts.addAll(Arrays.asList(StringUtils.split(ixPoiContact.getContact(), "|")));
+		}
+		Collections.sort(contacts);
+		poiTel = StringUtils.join(contacts.toArray(),"|");
+		result.put("poiTel", poiTel);
+		
+				
+		List<String> diffs = new ArrayList<String>();
+		if(expDbDiffResult.getName()==null){
+			if(poiName!=null){
+				diffs.add("名称不同");
+			}
+		}else{
+			if(poiName==null
+					||
+					(poiName!=null&&!expDbDiffResult.getName().equals(poiName))){
+				diffs.add("名称不同");
+			}
+		}
+
+		if(expDbDiffResult.getAddress()==null){
+			if(poiAddress!=null){
+				diffs.add("地址不同");
+			}
+		}else{
+			if(poiAddress==null
+					||
+					(poiAddress!=null&&!expDbDiffResult.getAddress().equals(poiAddress))){
+				diffs.add("地址不同");
+			}
+		}
+		
+		if(poiTel==null
+				||
+				(poiTel!=null&&!poiTel.equals(StringUtils.join(telList.toArray(),"|")))){
+			diffs.add("电话不同");
+		}
+		
+		if(expDbDiffResult.getPostCode()==null){
+			if(poiPostCode!=null){
+				diffs.add("邮编不同");
+			}
+		}else{
+			if(poiPostCode==null
+					||
+					(poiPostCode!=null&&!expDbDiffResult.getPostCode().equals(poiPostCode))){
+				diffs.add("邮编不同");
+			}
+		}
+
+		if(expDbDiffResult.getKindCode()==null){
+			if(poiKindCode!=null){
+				diffs.add("项目不同");
+			}
+		}else{
+			if(poiKindCode==null
+					||
+					(poiKindCode!=null&&!expDbDiffResult.getKindCode().equals(poiKindCode))){
+				diffs.add("项目不同");
+			}
+		}
+		
+		
+		if(!diffs.contains("项目不同")){
+			if(expDbDiffResult.getChain()==null){
+				if(poiChain!=null){
+					diffs.add("项目不同");
+				}
+			}else{
+				if(poiChain==null
+						||
+						(poiChain!=null&&!expDbDiffResult.getChain().equals(poiChain))){
+					diffs.add("项目不同");
+				}
+			}
+		}
+		
+		result.put("poiDiff", StringUtils.join(diffs,"|"));
+		return result;
 	}
 
 	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
@@ -1786,5 +1746,300 @@ public class DataPrepareService {
 		}catch(Exception e){
 			throw e;
 		}
+	}
+
+	/**
+	 * @param userId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> chainUpdate(long userId) throws ServiceException {
+		Connection conn = null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
+		    String date = df.format(new Date());
+			//获取一览表品牌
+		    Map<String,String> chainMap = getChainListByStatus(conn,0);
+			if(chainMap.size()==0){
+				throw new Exception("不存在关闭的品牌，不能做品牌更新！");
+			}
+			
+			//获取source数据
+			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainMap.keySet());
+			//获取省份大区信息
+			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+			Map<String,Integer> provinceRegionIdMap = manApi.getProvinceRegionIdMap();
+			//转result,更新result表
+			List<String> chainList2 = new ArrayList<String>();
+			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
+				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
+				List<IxDealershipResult> ixDealershipResultList = createIxDealershipResultByIxDealershipSource(ixDealershipSourceList,provinceRegionIdMap,date);
+				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
+					for(IxDealershipResult bean:ixDealershipResultList){
+						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+					}
+				}
+				chainList2.add(entry.getKey());
+				chainMap.remove(entry.getKey());
+			}
+			//更新chain表
+			int workType = 1;
+			int workStatus = 1;
+			int chain_status = 1;
+			updateIxDealershipChain(conn,chainList2,workStatus,workType,chain_status);
+			//启动表库差分
+			long jobId = 0;
+			Map<String,Object> result = new HashMap<String,Object>();
+			String message = "";
+			if(chainList2.size()!=0){
+				JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				JSONObject dataJson = new JSONObject();
+				dataJson.put("chainCodeList", chainList2);
+				dataJson.put("sourceType", 5);
+				jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			}
+			if(chainMap.size()>0){		
+				message = "全国一览表不存在部分代理店品牌！";
+			}
+
+			if(jobId==0){
+				throw new Exception("全国一览表不存在部分代理店品牌！");
+			}
+			result.put("jobId", jobId);
+			result.put("message", message);
+			return result;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param conn
+	 * @param chainList
+	 * @param workStatus
+	 * @param workType
+	 * @param chainStatus
+	 * @throws ServiceException 
+	 */
+	private void updateIxDealershipChain(Connection conn, List<String> chainList, int workStatus, int workType,
+			int chainStatus) throws ServiceException {
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus 
+					+ ",C.WORK_TYPE = " + workType + ",C.CHAIN_STATUS = " + chainStatus 
+					+ " WHERE C.CHAIN_CODE in ('" + StringUtils.join(chainList,"','") + "')";			
+			log.info("updateIxDealershipChain sql:" + updateSql);
+			run.update(conn, updateSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	private static List<IxDealershipResult> createIxDealershipResultByIxDealershipSource(List<IxDealershipSource> ixDealershipSourceList, Map<String, Integer> provinceRegionIdMap, String date) {
+		List<IxDealershipResult> ixDealershipResultList = new ArrayList<IxDealershipResult>();
+		for(IxDealershipSource ixDealershipSource:ixDealershipSourceList){
+			IxDealershipResult ixDealershipResult = assembleResultBySource(ixDealershipSource, date, provinceRegionIdMap);
+			ixDealershipResultList.add(ixDealershipResult);
+		}
+		return ixDealershipResultList;	
+	}
+
+
+	/**
+	 * @param conn
+	 * @param status
+	 * @return
+	 * @throws ServiceException 
+	 */
+	private Map<String, String> getChainListByStatus(Connection conn, int status) throws ServiceException {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql= "select * from IX_DEALERSHIP_CHAIN c where c.CHAIN_STATUS = " + status;
+
+			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
+				public Map<String, String> handle(ResultSet rs) throws SQLException {
+					Map<String, String> result = new HashMap<String, String>();
+					while (rs.next()) {
+						result.put(rs.getString("CHAIN_CODE"),rs.getString("CHAIN_NAME"));
+					}
+					return result;
+				}	
+			};
+			log.info("getChainStatus sql:" + sql);
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * 实时更新
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public long liveUpdate(long userId) throws Exception {
+		List<String> chainCodeList = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
+		return 0;
+	}
+
+	public List<String> getChainCodeByLiveUpdate() throws Exception {
+		Connection conn = null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+			//获取source数据
+			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChainWorkType(conn);
+			//获取省份大区信息
+			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+			Map<String,Integer> provinceRegionIdMap = manApi.getProvinceRegionIdMap();
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
+		    String date = df.format(new Date());
+			//转result,更新result表
+			List<String> chainList = new ArrayList<String>();
+			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
+				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
+				List<IxDealershipResult> ixDealershipResultList = createResultBySourceWhenLiveUpdate(ixDealershipSourceList,provinceRegionIdMap,date,conn);
+				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
+					for(IxDealershipResult bean:ixDealershipResultList){
+						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+					}
+					chainList.add(entry.getKey());
+				}
+			}
+			if(chainList!=null&&chainList.size()>0){
+				//更新chain表
+				int workType = 2;
+				int workStatus = 1;
+				int chain_status = 1;
+				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
+			}
+			
+			return chainList;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+
+	private List<IxDealershipResult> createResultBySourceWhenLiveUpdate(List<IxDealershipSource> ixDealershipSourceList,Map<String, Integer> provinceRegionIdMap, String date,
+			Connection conn) throws Exception{
+	    List<IxDealershipResult> ixDealershipResultList = new ArrayList<IxDealershipResult>();
+		for(IxDealershipSource ixDealershipSource:ixDealershipSourceList){
+			boolean flag = searchResultIsAllCompleteBySource(ixDealershipSource.getSourceId(),conn);
+			if(!flag){continue;}
+			IxDealershipResult ixDealershipResult = assembleResultBySource(ixDealershipSource, date, provinceRegionIdMap);
+			ixDealershipResultList.add(ixDealershipResult);
+		}
+		return ixDealershipResultList;	
+	}
+
+
+	private boolean searchResultIsAllCompleteBySource(int sourceId,Connection conn) throws ServiceException {
+		try{
+			
+			QueryRunner run = new QueryRunner();
+			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where r.workflow_status = 9 and "
+					+ "r.deal_status = 3 and r.source_id = " + sourceId ;
+
+			ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
+				public Boolean handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						if(rs.getInt(1)>0){
+							return true;
+						}else{
+							return false;
+						}
+					}
+					return false;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	
+	public static IxDealershipResult assembleResultBySource(IxDealershipSource ixDealershipSource,String date,Map<String,Integer> provinceRegionIdMap){
+		IxDealershipResult ixDealershipResult = new IxDealershipResult();
+		
+		ixDealershipResult.setProvince(ixDealershipSource.getProvince());
+		ixDealershipResult.setCity(ixDealershipSource.getCity());
+		ixDealershipResult.setProject(ixDealershipSource.getProject());
+		ixDealershipResult.setKindCode(ixDealershipSource.getKindCode());
+		ixDealershipResult.setChain(ixDealershipSource.getChain());
+		ixDealershipResult.setName(ixDealershipSource.getName());
+		ixDealershipResult.setNameShort(ixDealershipSource.getNameShort());
+		ixDealershipResult.setAddress(ixDealershipSource.getAddress());
+		ixDealershipResult.setTelSale(ixDealershipSource.getTelSale());
+		ixDealershipResult.setTelService(ixDealershipSource.getTelService());
+		ixDealershipResult.setTelOther(ixDealershipSource.getTelOther());
+		ixDealershipResult.setPostCode(ixDealershipSource.getPostCode());
+		ixDealershipResult.setNameEng(ixDealershipSource.getNameEng());
+		ixDealershipResult.setAddressEng(ixDealershipSource.getAddressEng());
+
+		//时间
+		ixDealershipResult.setProvideDate(date);
+		
+		//MATCH_METHOD:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值1，否则赋值0
+		ixDealershipResult.setMatchMethod(null == ixDealershipSource.getCfmPoiNum()? 0:1);
+		//POI_NUM_1:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，则赋值IX_DEALERSHIP_SOURCE.cfm_poi_num
+		ixDealershipResult.setPoiNum1(ixDealershipSource.getCfmPoiNum());
+		//cfm_poi_num赋值IX_DEALERSHIP_SOURCE.cfm_poi_num
+		ixDealershipResult.setCfmPoiNum(ixDealershipSource.getCfmPoiNum());
+		//SOURCE_ID赋值IX_POIDEALERSHIP_SOURCE.source_id
+		ixDealershipResult.setSourceId(ixDealershipSource.getSourceId());
+		//DEAL_CFM_DATE:赋值IX_POIDEALERSHIP_SOURCE.deal_cfm_date
+		ixDealershipResult.setDealCfmDate(ixDealershipSource.getDealCfmDate());
+		//POI_KIND_CODE:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_KIND_CODE
+		//POI_CHAIN:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_CHAIN
+		//POI_NAME:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_NAME
+		//POI_NAME_SHORT:IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_NAME_SHORT
+		//POI_ADDRESS:X_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_ADDRESS
+		//POI_TEL	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_TEL
+		//POI_POST_CODE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_POST_CODE
+		//POI_X_DISPLAY	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_X_DISPLAY
+		//POI_Y_DISPLAY	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_Y_DISPLAY
+		//POI_X_GUIDE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_X_GUIDE
+		//POI_Y_GUIDE	IX_DEALERSHIP_SOURCE表中cfm_poi_num有值，赋值IX_DEALERSHIP_SOURCE.POI_Y_GUIDE
+		if(ixDealershipSource.getCfmPoiNum()!=null){
+			ixDealershipResult.setPoiKindCode(ixDealershipSource.getPoiKindCode());
+			ixDealershipResult.setPoiChain(ixDealershipSource.getPoiChain());
+			ixDealershipResult.setPoiName(ixDealershipSource.getPoiName());
+			ixDealershipResult.setPoiNameShort(ixDealershipSource.getPoiNameShort());
+			ixDealershipResult.setPoiAddress(ixDealershipSource.getPoiAddress());
+			ixDealershipResult.setPoiTel(ixDealershipSource.getPoiTel());
+			ixDealershipResult.setPoiPostCode(ixDealershipSource.getPoiPostCode());
+			ixDealershipResult.setPoiXDisplay(ixDealershipSource.getPoiXDisplay());
+			ixDealershipResult.setPoiYDisplay(ixDealershipSource.getPoiYDisplay());
+			ixDealershipResult.setPoiXGuide(ixDealershipSource.getPoiXGuide());
+			ixDealershipResult.setPoiYGuide(ixDealershipSource.getPoiYGuide());
+		}
+		//GEOMETRY	赋值IX_DEALERSHIP_SOURCE.GEOMETRY
+		ixDealershipResult.setGeometry(ixDealershipSource.getGeometry());
+		//REGION_ID	根据IX_DEALERSHIP_RESULT.PROVINCE关联cp_region_province.province,查找对应的region_id赋值
+		if(ixDealershipSource.getProvince()!=null&&provinceRegionIdMap.get(ixDealershipSource.getProvince())!=null){
+			ixDealershipResult.setRegionId(provinceRegionIdMap.get(ixDealershipSource.getProvince()));
+		}else{
+			log.info("sourceId:" + ixDealershipResult.getSourceId() + "无法获取大区信息");
+		}
+		return ixDealershipResult;
+		
 	}
 }

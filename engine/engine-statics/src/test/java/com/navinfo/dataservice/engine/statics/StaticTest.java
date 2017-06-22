@@ -40,23 +40,23 @@ public class StaticTest {
 	}
 	
 	
-	@Test
-	public void getStatBySubtask() throws Exception{
-		StaticsService staticsService = StaticsService.getInstance();
-		SubtaskStatInfo data = staticsService.getStatBySubtask(38);
-		SubtaskStatInfo temp = data;
-//		List<Integer> gridIds = new ArrayList<Integer>();
-//		gridIds.add(60560303);
-//		gridIds.add(123456);
-//		String poiColName = PoiCollectMain.col_name_grid;
-//		String roadColName = RoadCollectMain.col_name_grid;
-//		SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
-//		SubtaskStatInfo temp = result;
-//		System.out.println("ok");
-//		
-//		result = StaticsOperation.getSubtaskStatByBlock(1, poiColName, roadColName);
-//		temp = result;
-	}
+//	@Test
+//	public void getStatBySubtask() throws Exception{
+//		StaticsService staticsService = StaticsService.getInstance();
+//		SubtaskStatInfo data = staticsService.getStatBySubtask(38);
+//		SubtaskStatInfo temp = data;
+////		List<Integer> gridIds = new ArrayList<Integer>();
+////		gridIds.add(60560303);
+////		gridIds.add(123456);
+////		String poiColName = PoiCollectMain.col_name_grid;
+////		String roadColName = RoadCollectMain.col_name_grid;
+////		SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
+////		SubtaskStatInfo temp = result;
+////		System.out.println("ok");
+////		
+////		result = StaticsOperation.getSubtaskStatByBlock(1, poiColName, roadColName);
+////		temp = result;
+//	}
 	
 //	@Test
 //	public void getOpen100TaskIdList() throws Exception{

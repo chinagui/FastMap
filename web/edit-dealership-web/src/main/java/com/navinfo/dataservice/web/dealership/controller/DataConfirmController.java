@@ -6,7 +6,9 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataConfirmService;
@@ -73,6 +76,43 @@ public class DataConfirmController extends BaseController {
 			if (conn != null) {
 				conn.close();
 			}
+		}
+	}
+	
+	@RequestMapping(value="/releaseInfo")
+	public ModelAndView releaseInfoController(HttpServletRequest request) throws Exception{
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
+			long userId = tokenObj.getUserId();
+			
+			JSONObject data = confirmService.releaseInfoService(request, userId);
+			return new ModelAndView("jsonView",success(data));
+		}
+		catch(Exception e){
+			return new ModelAndView("jsonView",fail(e.toString()));
+		}
+		//return null;
+	}
+	
+	@RequestMapping(value="/expInfoFeedback")
+	public ModelAndView expInfoFeedbackController(HttpServletRequest request) throws Exception{
+		try{
+			AccessToken tokenObj = (AccessToken)request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView",exception("tocken无效"));
+			}
+			
+			long userId = tokenObj.getUserId();
+			JSONObject obj = JSONObject.fromObject(request.getParameter("Parameter"));
+			
+			String filePath = confirmService.expInfoFeedbackService(userId,obj,request);
+			return new ModelAndView("jsonView",success(filePath));
+		}
+		catch(Exception e){
+			return new ModelAndView("jsonView",fail(e.toString()));
 		}
 	}
 }

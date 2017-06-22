@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.diff;
 
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,71 +34,76 @@ import net.sf.json.JSONObject;
 
 public class PoiRecommender {
 
-	public static  Connection conn = null;
+	public static Connection conn = null;
 
 	public static List<BasicObj> loadPoi(Geometry geometry) throws Exception {
 		List<BasicObj> poiList = new ArrayList<BasicObj>();
 		String sql = "SELECT pid FROM ix_poi p WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'";
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
 			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(2000));
-		
-		    String wkt = GeoTranslator.jts2Wkt(buffer);
-			Clob geom = ConnectionUtil.createClob(conn);			
+
+			String wkt = GeoTranslator.jts2Wkt(buffer);
+			Clob geom = ConnectionUtil.createClob(conn);
 			geom.setString(1, wkt);
-		    pstmt.setClob(1,geom);
-			
-//			pstmt.setString(1, wkt);
+			pstmt.setClob(1, geom);
+
+			// pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,resultSet.getInt("pid"), false);
+				BasicObj obj = ObjSelector.selectByPid(conn, "IX_POI", null, false, resultSet.getInt("pid"), false);
 				poiList.add(obj);
 			}
-		}catch(Exception e){
-			throw new Exception(e.getMessage(),e);
+		} catch (Exception e) {
+			throw new Exception(e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
 		return poiList;
 	}
-	
-	public static FastPoi buildFastPoi(BasicObj obj){
-		
-		IxPoi p=(IxPoi) obj.getMainrow();
-		IxPoiObj poiObj=(IxPoiObj) obj;
-		
-		IxPoiName poiName=poiObj.getOfficeStandardCHName();
-		IxPoiAddress poiAddr=poiObj.getChiAddress();
-		
-		FastPoi fp=new FastPoi();
-		JSONArray array =GeoTranslator.jts2JSONArray(p.getGeometry());
-		 
+
+	public static FastPoi buildFastPoi(BasicObj obj) {
+
+		IxPoi p = (IxPoi) obj.getMainrow();
+		IxPoiObj poiObj = (IxPoiObj) obj;
+
+		IxPoiName poiName = poiObj.getOfficeStandardCHName();
+		IxPoiAddress poiAddr = poiObj.getChiAddress();
+
+		FastPoi fp = new FastPoi();
+		JSONArray array = GeoTranslator.jts2JSONArray(p.getGeometry());
+
 		fp.setX(array.getDouble(0));
 		fp.setY(array.getDouble(1));
-		if(poiAddr==null || poiAddr.getAddrname()==null){fp.setAddr("");}
-		if(poiName==null ||poiName.getName()==null){fp.setName("");}
-		
+		if (poiAddr == null || poiAddr.getAddrname() == null) {
+			fp.setAddr("");
+		}
+		if (poiName == null || poiName.getName() == null) {
+			fp.setName("");
+		}
+
 		StringBuffer sb = new StringBuffer();
 		String telephone = "";
-		for(IxPoiContact c:poiObj.getIxPoiContacts()){
+		for (IxPoiContact c : poiObj.getIxPoiContacts()) {
 			sb.append(c.getContact()).append(";");
 		}
-		if(sb.length() > 0) telephone = sb.toString().substring(0, sb.toString().length()-1);
+		if (sb.length() > 0)
+			telephone = sb.toString().substring(0, sb.toString().length() - 1);
 		telephone = StringUtil.sortPhone(telephone);
-		
+
 		fp.setTel(telephone);
 		fp.setPostCode(p.getPostCode());
 		fp.setPoiNum(p.getPoiNum());
 		return fp;
 	}
-	
-	public static FastResult buildFastResult(IxDealershipResult dealResult){
-		FastResult fr=new FastResult();
-		JSONArray array =GeoTranslator.jts2JSONArray(dealResult.getGeometry());
+
+	public static FastResult buildFastResult(IxDealershipResult dealResult) {
+		FastResult fr = new FastResult();
+		JSONArray array = GeoTranslator.jts2JSONArray(dealResult.getGeometry());
 		fr.setX(array.getDouble(0));
 		fr.setY(array.getDouble(1));
 		fr.setAddr(dealResult.getAddress());
@@ -107,73 +113,74 @@ public class PoiRecommender {
 		return fr;
 	}
 
-	//推荐匹配poi
-	public static void recommenderPoi(IxDealershipResult dealResult) throws Exception{
-//		JSONObject loc=new JSONObject();
-//		if (dealResult.getAddress()!=null){
-//			loc=BaiduGeocoding.geocoder(dealResult.getAddress());
-//		}else{
-//			loc=BaiduGeocoding.geocoder(dealResult.getName());
-//		}
-//		if(loc==null){
-//			throw new Exception("result数据名称和地址都为空，无法Geocoding");
-//		}
-//		Geometry pointWkt = GeoTranslator.point2Jts(loc.getDouble("lng"),loc.getDouble("lat"));
-//		dealResult.setGeometry(pointWkt);
-		FastResult fr=buildFastResult(dealResult);
-		//外扩两公里查询poi
+	// 推荐匹配poi
+	public static void recommenderPoi(IxDealershipResult dealResult) throws Exception {
+		// JSONObject loc=new JSONObject();
+		// if (dealResult.getAddress()!=null){
+		// loc=BaiduGeocoding.geocoder(dealResult.getAddress());
+		// }else{
+		// loc=BaiduGeocoding.geocoder(dealResult.getName());
+		// }
+		// if(loc==null){
+		// throw new Exception("result数据名称和地址都为空，无法Geocoding");
+		// }
+		// Geometry pointWkt =
+		// GeoTranslator.point2Jts(loc.getDouble("lng"),loc.getDouble("lat"));
+		// dealResult.setGeometry(pointWkt);
+		FastResult fr = buildFastResult(dealResult);
+		// 外扩两公里查询poi
 		List<BasicObj> poiList = loadPoi(dealResult.getGeometry());
-		Map<String, Double> matchPoi=new HashMap<String, Double>();
-		for(BasicObj obj:poiList){
-		   FastPoi fp=buildFastPoi(obj);
-		   double sim=similarity(fr,fp);
-		   if(sim>0.3){
-			   matchPoi.put(fp.getPoiNum(), sim);
-		   }
+		Map<String, Double> matchPoi = new HashMap<String, Double>();
+		for (BasicObj obj : poiList) {
+			FastPoi fp = buildFastPoi(obj);
+			double sim = similarity(fr, fp);
+			if (sim > 0) {
+				BigDecimal b = new BigDecimal(sim);
+				double f1 = b.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue();
+				matchPoi.put(fp.getPoiNum(), f1);
+			}
 		}
-		List<Entry<String, String>> matchPoiList=sortMap(matchPoi);
+		List<Entry<String, Double>> matchPoiList = sortMap(matchPoi);
 		StringBuffer sb = new StringBuffer();
-		for(int i=0;i<matchPoiList.size();i++){ 
-			Map.Entry<String,String> mapping=(Entry<String, String>) matchPoiList.get(i);
-			sb.append(mapping.getValue()).append(";");
-			if(i==0){
+		for (int i = 0; i < matchPoiList.size(); i++) {
+			Entry<String, Double> mapping = (Entry<String, Double>) matchPoiList.get(i);
+			if (i != 4) {
+				sb.append(mapping.getValue()).append("|");
+			}
+			if (i == 0) {
 				dealResult.setPoiNum1(mapping.getKey());
-				dealResult.setCfmPoiNum(mapping.getKey());;
-			}
-			else if(i==1){
+				dealResult.setCfmPoiNum(mapping.getKey());
+			} else if (i == 1) {
 				dealResult.setPoiNum2(mapping.getKey());
-			}
-			else if(i==2){
+			} else if (i == 2) {
 				dealResult.setPoiNum3(mapping.getKey());
-			}
-			else if(i==3){
+			} else if (i == 3) {
 				dealResult.setPoiNum4(mapping.getKey());
-			}
-			else if(i==4){
+			} else if (i == 4) {
 				dealResult.setPoiNum5(mapping.getKey());
+				sb.append(mapping.getValue());
 				break;
-			} 
-       } 
+			}
+		}
+
 		dealResult.setSimilarity(sb.toString());
-		
+
 	}
-	
-	public static List<Entry<String, String>> sortMap(Map matchPoi){
-		 //这里将map.entrySet()转换成list
-        List<Map.Entry<String,String>> list = new ArrayList<Map.Entry<String,String>>(matchPoi.entrySet());
-        //然后通过比较器来实现排序
-        Collections.sort(list,new Comparator<Map.Entry<String,String>>() {
-            //升序排序
-            public int compare(Entry<String, String> o1,
-                    Entry<String, String> o2) {
-                return o1.getValue().compareTo(o2.getValue());
-            }
 
-        });
-        return list;
-    }
+	public static List<Entry<String, Double>> sortMap(Map matchPoi) {
+		// 这里将map.entrySet()转换成list
+		List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(matchPoi.entrySet());
+		// 然后通过比较器来实现排序
+		Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+			// 升序排序
+			public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
+				return o2.getValue().compareTo(o1.getValue());
+			}
 
-	
+		});
+		return list;
+	}
+
 	public static double similarity(FastResult s1, FastPoi s2) {
 
 		if (s1 == null || s2 == null)
@@ -191,26 +198,21 @@ public class PoiRecommender {
 
 		r1 = 1 / (1 + d);
 
-		if (s1.getName() == null || s2.getName() == null
-				|| s1.getName().equals("") || s2.getName().equals(""))
+		if (s1.getName() == null || s2.getName() == null || s1.getName().equals("") || s2.getName().equals(""))
 			r2 = 0;
 		else
-			r2 = LevenshteinExtend.getSimilarityRatio(s1.getName(),
-					s2.getName());
+			r2 = LevenshteinExtend.getSimilarityRatio(s1.getName(), s2.getName());
 
-		if (s1.getAddr() == null || s2.getAddr() == null
-				|| s1.getAddr().equals("") || s2.getAddr().equals(""))
+		if (s1.getAddr() == null || s2.getAddr() == null || s1.getAddr().equals("") || s2.getAddr().equals(""))
 			r3 = 0;
 		else
-			r3 = LevenshteinExtend.getSimilarityRatio(s1.getAddr(),
-					s2.getAddr());
+			r3 = LevenshteinExtend.getSimilarityRatio(s1.getAddr(), s2.getAddr());
 
-		if (s1.getPostCode() == null || s2.getPostCode() == null
-				|| s1.getPostCode().equals("") || s2.getPostCode().equals(""))
+		if (s1.getPostCode() == null || s2.getPostCode() == null || s1.getPostCode().equals("")
+				|| s2.getPostCode().equals(""))
 			r4 = 0;
 		else
-			r4 = LevenshteinExtend.getSimilarityRatio(s1.getPostCode(),
-					s2.getPostCode());
+			r4 = LevenshteinExtend.getSimilarityRatio(s1.getPostCode(), s2.getPostCode());
 		String[] tels1 = s1.getTel().split(";");
 		String[] tels2 = s2.getTel().split(";");
 		boolean flag = false;
@@ -226,11 +228,9 @@ public class PoiRecommender {
 						tel1 = tel1.replaceAll("\\D", "");
 						tel2 = tel2.replace("+86", "");
 						tel2 = tel2.replaceAll("\\D", "");
-						double t = LevenshteinExtend.getSimilarityRatio(tel1,
-								tel2);
+						double t = LevenshteinExtend.getSimilarityRatio(tel1, tel2);
 
-						if (!(tels1[i] == null || tels2[j] == null
-								|| tels1[i].equals("") || tels2[j].equals(""))) {
+						if (!(tels1[i] == null || tels2[j] == null || tels1[i].equals("") || tels2[j].equals(""))) {
 							if (t > tempR)
 								tempR = t;
 							flag = true;
@@ -262,9 +262,8 @@ public class PoiRecommender {
 
 		if (s1 == null || s2 == null)
 			return 0;
-		if (s1.getProvnm() != null && s2.getProvnm() != null
-				&& (!s1.getProvnm().equals("")) && (!s2.getProvnm().equals(""))
-				&& (!s1.getProvnm().equals(s2.getProvnm())))
+		if (s1.getProvnm() != null && s2.getProvnm() != null && (!s1.getProvnm().equals(""))
+				&& (!s2.getProvnm().equals("")) && (!s1.getProvnm().equals(s2.getProvnm())))
 			return 0;
 		double r1, r2, r3, r4, r5, sim1, sim2, q = 0;
 		double x1, y1, x2, y2;
@@ -278,26 +277,21 @@ public class PoiRecommender {
 
 		r1 = 1 / (1 + d);
 
-		if (s1.getName() == null || s2.getName() == null
-				|| s1.getName().equals("") || s2.getName().equals(""))
+		if (s1.getName() == null || s2.getName() == null || s1.getName().equals("") || s2.getName().equals(""))
 			r2 = 0;
 		else
-			r2 = LevenshteinExtend.getSimilarityRatio(s1.getName(),
-					s2.getName());
+			r2 = LevenshteinExtend.getSimilarityRatio(s1.getName(), s2.getName());
 
-		if (s1.getAddr() == null || s2.getAddr() == null
-				|| s1.getAddr().equals("") || s2.getAddr().equals(""))
+		if (s1.getAddr() == null || s2.getAddr() == null || s1.getAddr().equals("") || s2.getAddr().equals(""))
 			r3 = 0;
 		else
-			r3 = LevenshteinExtend.getSimilarityRatio(s1.getAddr(),
-					s2.getAddr());
+			r3 = LevenshteinExtend.getSimilarityRatio(s1.getAddr(), s2.getAddr());
 
-		if (s1.getPostCode() == null || s2.getPostCode() == null
-				|| s1.getPostCode().equals("") || s2.getPostCode().equals(""))
+		if (s1.getPostCode() == null || s2.getPostCode() == null || s1.getPostCode().equals("")
+				|| s2.getPostCode().equals(""))
 			r4 = 0;
 		else
-			r4 = LevenshteinExtend.getSimilarityRatio(s1.getPostCode(),
-					s2.getPostCode());
+			r4 = LevenshteinExtend.getSimilarityRatio(s1.getPostCode(), s2.getPostCode());
 		String[] tels1 = s1.getTel().split(";");
 		String[] tels2 = s2.getTel().split(";");
 
@@ -314,11 +308,9 @@ public class PoiRecommender {
 						tel1 = tel1.replaceAll("\\D", "");
 						tel2 = tel2.replace("+86", "");
 						tel2 = tel2.replaceAll("\\D", "");
-						double t = LevenshteinExtend.getSimilarityRatio(tel1,
-								tel2);
+						double t = LevenshteinExtend.getSimilarityRatio(tel1, tel2);
 
-						if (!(tels1[i] == null || tels2[j] == null
-								|| tels1[i].equals("") || tels2[j].equals(""))) {
+						if (!(tels1[i] == null || tels2[j] == null || tels1[i].equals("") || tels2[j].equals(""))) {
 							if (t > tempR)
 								tempR = t;
 							flag = true;
@@ -348,5 +340,5 @@ public class PoiRecommender {
 			sim2 /= q;
 		return (sim1 + sim2) / 2;
 	}
-	
+
 }

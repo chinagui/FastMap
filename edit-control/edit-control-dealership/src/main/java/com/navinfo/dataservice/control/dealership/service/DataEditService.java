@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,8 +9,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,12 +24,17 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -37,6 +46,10 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorC
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -233,11 +246,17 @@ public class DataEditService {
 					StringUtils.join(matchPoiNums, ','));
 			List<Object> adoptedPoiNum = new ArrayList<>();
 			List<Integer> adoptedPoiPid = new ArrayList<>();
+			List<String> repeatedPoiNum = new ArrayList<>();
 			if (matchPoiNums.size() != 0) {
 				adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 			}
 
 			for (String poiNum : matchPoiNums) {
+				if(repeatedPoiNum.contains(poiNum.replace("'", ""))){
+					continue;
+				}
+				repeatedPoiNum.add(poiNum);
+				
 				String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s AND U_RECORD <> 2",
 						poiNum);
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
@@ -342,6 +361,9 @@ public class DataEditService {
 		}
 		if (corresDealership.getPoiNum5() != null) {
 			result.add("'" + corresDealership.getPoiNum5() + "'");
+		}
+		if(corresDealership.getCfmPoiNum() != null){
+			result.add("'" + corresDealership.getCfmPoiNum() + "'");
 		}
 
 		return result;
@@ -1189,10 +1211,26 @@ public class DataEditService {
                     	throw new Exception("该poi已被占用，不可用");
                     }
                     //需判断采纳POI是否已被使用
-                    if(haveUsed(poiNum ,dealershipConn)){
+                    if(haveUsed(poiNum ,resultId,dealershipConn)){
                     	throw new Exception("该poi已被使用，不可用");
                     }
             	}
+            	
+                int mesh=0;
+                JSONObject data = JSONObject.fromObject(poiData.getString("data"));
+                if(data.containsKey("geometry")){
+                	Set<String> meshes = new HashSet<String>();
+                	Geometry geom = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+                	meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+                	Iterator<String> it = meshes.iterator();
+            		if(it.hasNext()){
+            			mesh= Integer.parseInt(it.next()) ;
+            		}
+            		if(mesh!=0){
+            			data.put("meshId", mesh);
+            			poiData.put("data", data);
+            		}
+                }
 
                 //更新POI并且写履历
                 DefaultObjImportor importor = new DefaultObjImportor(poiConn,null);
@@ -1260,11 +1298,11 @@ public class DataEditService {
 		
 		return false;
 }
-	public boolean haveUsed(String poiNum , Connection conn ) throws Exception {
+	public boolean haveUsed(String poiNum ,int resultId, Connection conn ) throws Exception {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' ",poiNum);
+				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' and  r.result_id<>%d ",poiNum,resultId);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}
@@ -1566,7 +1604,9 @@ public class DataEditService {
 		}
 
 		try {
-			String sql = "SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3";
+			String sql = String.format(
+					"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE (WORKFLOW_STATUS <> 9 OR DEAL_STATUS <>3) AND CHAIN = '%s'",
+					chainCode);
 			int leftChainResult = run.queryForInt(conn, sql);
 
 			if (leftChainResult != 0) {
@@ -1671,5 +1711,428 @@ public class DataEditService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+
+	/**
+	 * 编辑查询
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryByCon(JSONObject jsonObj) throws Exception {
+		Connection conn = null;
+		try {
+			String poiNum = jsonObj.getString("poiNum");
+			String name = jsonObj.getString("name");
+			String address = jsonObj.getString("address");
+			String telephone = jsonObj.getString("telephone");
+			String location = jsonObj.getString("location");
+			String proCode = jsonObj.getString("proCode");
+			Integer resultId = jsonObj.getInt("resultId");
+			Integer dbId = jsonObj.getInt("dbId");
+			
+			conn =  DBConnector.getInstance().getConnectionById(dbId);
+			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList);
+			return poiArray;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 根据查询条件过滤pidList
+	 * @param conn
+	 * @param poiNum
+	 * @param name
+	 * @param address
+	 * @param telephone
+	 * @param location
+	 * @param proCode
+	 * @param resultId
+	 * @return
+	 * @throws Exception
+	 */
+	private List<IxPoi> queryPidListByCon(Connection conn,String poiNum, String name, String address, String telephone,
+			String location, String proCode, Integer resultId) throws Exception {
+		try {
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			StringBuilder sb = new StringBuilder();
+			boolean flag = false;
+			Geometry point = null;
+			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
+				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
+				flag = true;
+			}else {
+				if(StringUtils.isNotBlank(location)){//②输入条件不包含POI_NUM且包含poi(x,y)显示坐标时，则根据POI显示坐标关联2公里和输入名称、地址、或者电话进行查询(接口参数中坐标为POI显示坐标)；
+					String xLocation = location.substring(0,location.indexOf(","));
+					String yLocation = location.substring(location.indexOf(",")+1,location.length());
+					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
+					point = new WKTReader().read(wkt);
+					sb.append("SELECT p.pid FROM ix_poi p ");
+					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+					point = point.buffer(GeometryUtils.convert2Degree(2000));
+				}else{
+					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
+						sb.append("SELECT p.pid FROM ix_poi p,ad_admin ad ");
+						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
+						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
+					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
+						sb.append("SELECT p.pid FROM ix_poi p ");
+						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
+						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+						point = new WKTReader().read(wkt);
+						point = point.buffer(GeometryUtils.convert2Degree(2000));//2公里扩圈
+					}
+				}
+				
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			if(flag){
+				pstmt.setString(1, poiNum);
+			}else{
+			    String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+				Clob geom = ConnectionUtil.createClob(conn);			
+				geom.setString(1, wkt);
+			    pstmt.setClob(1,geom);
+			}
+			rs = pstmt.executeQuery();
+
+			List<IxPoi> poiList = new ArrayList<>();
+			while(rs.next()){
+				try {
+					IxPoi poi = (IxPoi) poiSelector.loadById(rs.getInt("pid"), false);
+					poiList.add(poi);
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+			return poiList;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 针对高级查询组装条件
+	 * @param sb
+	 * @param name
+	 * @param address
+	 * @param telephone
+	 */
+	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone){
+		if(StringUtils.isNotBlank(name)){
+			sb.append(", ix_poi_name pn ");
+		}
+		if(StringUtils.isNotBlank(address)){
+			sb.append(", ix_poi_address pa ");
+		}
+		if(StringUtils.isNotBlank(telephone)){
+			sb.append(", ix_poi_contact pc ");
+		}
+		sb.append("WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		if(StringUtils.isNotBlank(name)){
+			sb.append("AND p.pid = pn.poi_pid AND pn.name_class = 1 AND pn.name_type  = 2 AND pn.lang_code = 'CHI'"
+					+ " AND pn.name LIKE '%"+name+"%' ");
+		}
+		if(StringUtils.isNotBlank(address)){
+			sb.append("AND p.pid = pa.poi_pid AND pa.lang_code = 'CHI' AND pa.fullname LIKE '%"+address+"%' ");
+		}
+		if(StringUtils.isNotBlank(telephone)){
+			sb.append("AND p.pid = pc.poi_pid AND pc.contact LIKE '%"+telephone+"%' ");
+		}
+	};
+	
+	
+	/**
+	 * 补充增量数据
+	 * @param request
+	 * @param userId
+	 * @throws Exception 
+	 */
+	public List<Integer> addChainData(HttpServletRequest request, long userId) throws Exception {
+		//excel文件上传到服务器		
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
+
+		log.info("补充增量数据的文件上传到服务器指定位置"+filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile = returnParam.getString("filePath");
+		
+//		String localFile = "F:/1.xlsx";
+		log.info("文件已上传至" + localFile);
+		//导入补充增量数据excel
+		List<Map<String, Object>> addDataMaps = new ArrayList<>();
+		try{
+			addDataMaps = impAddDataExcel(localFile);
+		}catch(Exception e){
+			log.error("解析excel表格出现错误。原因为："+e);
+			throw new Exception("解析excel表格出错，请检查表格内是否有空行");
+		}
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getDealershipConnection();
+			//这里校验并处理数据
+			checkImpAddData(conn, addDataMaps);
+			log.info("文件内容符合要求，已经成功上传");
+			AddChainDataEntity addChainDataEntity = new AddChainDataEntity();
+			String chainCode = null;
+			int resultId = 0;
+			List<Integer> resultIdList = new ArrayList<>();
+			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
+			for(Map<String, Object> map : addDataMaps){
+				if(StringUtils.isBlank(map.get("number").toString())){
+					log.info("开始新增无序号的数据");
+					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					continue;
+				}
+				resultId = Integer.parseInt(map.get("number").toString());
+				resultIdList.add(resultId);
+				String history = map.get("history").toString();
+				addChainDataEntity.setResultId(resultId);
+				//新增
+				if("3".equals(history)){
+					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					log.info("补充增量数据新增完成");
+				}
+				//判断后执行新增或者更新
+				if("1".equals(history) || "2".equals(history) || "4".equals(history)){
+					if("3".equals(map.get("dealStatus").toString()) && "9".equals(map.get("workFlowStatus").toString())){
+						editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+						log.info("补充增量数据新增完成");
+					}else{
+						editIxDealershipResult.editIxDealershipResult(conn ,addChainDataEntity, "update", map, userId);
+						log.info("补充增量数据更新完成");
+					}
+				}
+				
+				chainCode = map.get("chain").toString();
+			}
+			//由于增量数据都是单一品牌的，暂时拿出循环之外
+			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
+			updateStatusByChain(conn, chainCode);
+			updateReulteData(conn, resultIdList);
+			conn.commit();
+			log.info("调用启动录入作业");
+			startWork(chainCode, userId);
+			return resultIdList;
+		}catch(Exception e){
+			DbUtils.rollback(conn);
+			throw new ServiceException(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param 增量数据upFile
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impAddDataExcel(String upFile) throws Exception {
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		excelHeader.put("序号", "number");
+		excelHeader.put("FID", "fid");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（维修）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		excelHeader.put("一览表提供时间", "provideOldSourceTime");
+		excelHeader.put("一览表确认时间", "confirmOldSourceTime");
+		excelHeader.put("四维确认备注", "NAVConfirmRemark");
+		excelHeader.put("负责人反馈结果", "feedbackResult");
+		excelHeader.put("解决人", "resolvePerson");
+		excelHeader.put("解决时间", "resolveTime");
+		excelHeader.put("四维差分结果", "NAVResult");
+		excelHeader.put("一览表作业状态", "sourceWorkStatus");
+		excelHeader.put("变更履历", "history");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("导入补充增量数据完成" + upFile);
+		return sources;
+	}
+	
+	/**
+	 * @param 增量数据内容校验工厂
+	 * @return
+	 * @throws Exception 
+	 */
+	public void checkImpAddData(Connection conn, List<Map<String, Object>> addDataMaps) throws Exception{
+		for(Map<String, Object> addDataMap : addDataMaps){
+			try{
+				String resultId = addDataMap.get("number").toString();
+				String history = addDataMap.get("history").toString();
+				log.info("上传的增量数据序号即resultID为：" + resultId+"上传的变更履历为：" + history);
+				//若补充数据上传文件中“序号”没有值且文件中“变更履历”的值必须为3(新增)，可以上传，否则不可上传文件
+				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
+					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
+				}
+				
+				if(StringUtils.isBlank(resultId)){
+					continue;
+				}
+				Map<String, Object> statusMap = getStatusByResultId(conn, resultId);
+				//对应的resultId在result表中没有数据，可以上传
+				if(statusMap == null){
+					continue;
+				}
+				String workFlowStatus = null;
+				String dealStatus = null;
+				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值不为3(非新增)，
+				//且上传文件中“序号”在RESULT表result_id中存在,且(workflow_status=9 and deal_status<>3),则该文件不可以上传
+				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
+					workFlowStatus = statusMap.get("workFlowStatus").toString();
+					dealStatus = statusMap.get("dealStatus").toString();
+					if("9".equals(workFlowStatus) && !"3".equals(dealStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
+					}
+				}
+				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值为2(删除)，
+				//且传文件中“序号”在RESULT表result_id中存在，且RESULT表中工艺状态为“外业处理完成，出品”即9，则该文件不可以上传
+				if(StringUtils.isNotBlank(resultId) && "2".equals(history)){
+					workFlowStatus = statusMap.get("workFlowStatus").toString();
+					if("9".equals(workFlowStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+					}
+				}
+				addDataMap.put("workFlowStatus", workFlowStatus);
+				addDataMap.put("dealStatus", dealStatus);
+			}catch(Exception e){
+				log.error(e);
+				throw e;
+			}
+		}
+	}
+	
+	/**
+	 * @param 根据resultID获取工艺状态和代理店状态
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Object> getStatusByResultId(Connection conn, String resultId) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.WORKFLOW_STATUS,t.DEAL_STATUS from IX_DEALERSHIP_RESULT t where t.RESULT_ID ="+resultId;
+			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						Map<String, Object> result = new HashMap<>();
+						result.put("workFlowStatus", rs.getInt("WORKFLOW_STATUS"));
+						result.put("dealStatus", rs.getInt("DEAL_STATUS"));
+						return result;
+					}
+					return null;
+				}
+			};
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * 更新代理店状态
+	 * @param conn
+	 * @param chain
+	 * @param resultId
+	 * 
+	 * */
+	public void updateStatusByChain(Connection conn, String chain) throws SQLException{
+		QueryRunner run = new QueryRunner();
+		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code = '"+chain+"'";
+		log.info("updateChain:"+updateChain);
+		run.execute(conn, updateChain);
+	}
+	
+	/**
+	 * 更新代理店查分结果
+	 * @param conn
+	 * @param chain
+	 * @param resultId
+	 * 
+	 * */
+	public void updateReulteData(Connection conn, List<Integer> resultId) throws SQLException{
+		QueryRunner run = new QueryRunner();
+		if(resultId.size() > 0){
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i < resultId.size(); i++){
+				sb.append(resultId.get(i));
+				sb.append(",");
+			}
+			String resultIds = sb.toString().substring(0, sb.length() -1);
+			String updateResult = "update IX_DEALERSHIP_RESULT r set r.deal_src_diff = 2 where r.result_id in("+resultIds+")";
+			log.info("updateResult:"+updateResult);
+			run.execute(conn, updateResult);
+		}
+	}
+	
+	
+	/**
+	 * 查询该pid下有无错误log
+	 * @param pid
+	 * @param regionConn
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject loadPoiForCnflict(JSONObject data) throws Exception {
+		JSONObject jsonObj=new JSONObject();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT COUNT(1)");
+		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
+		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
+		sb.append(" AND CO.TABLE_NAME = :1");
+		sb.append(" AND CO.PID = P.PID");
+		sb.append(" AND P.POI_NUM = :2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+//			pstmt = conn.prepareStatement(sb.toString());
+//			pstmt.setString(1, tbNm);
+//			pstmt.setString(2,poiNum);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				return jsonObj;
+			}
+
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return jsonObj;
 	}
 }

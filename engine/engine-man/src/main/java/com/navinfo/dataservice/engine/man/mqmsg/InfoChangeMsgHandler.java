@@ -193,7 +193,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		program.setDayEditPlanStartDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),1));
 		program.setDayEditPlanEndDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),2));
 		program.setProducePlanStartDate(program.getDayEditPlanEndDate());
-		program.setProducePlanEndDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),2));
+		program.setProducePlanEndDate((Timestamp)getCalculatedDate(program.getDayEditPlanEndDate(),1));
 		program.setPlanStartDate(program.getCollectPlanStartDate());
 		program.setPlanEndDate(program.getProducePlanEndDate());
 		program.setInforId(infor.getInforId());
@@ -259,7 +259,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 	private Timestamp getCalculatedDate(Date publishDate, int i) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(publishDate);
-		cal.add(Calendar.DATE, 1);
+		cal.add(Calendar.DATE, i);
 		Date d = cal.getTime();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 //        yyyy-MM-dd HH24:MI:ss

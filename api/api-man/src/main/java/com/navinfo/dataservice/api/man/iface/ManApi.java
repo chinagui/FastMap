@@ -13,6 +13,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -246,5 +247,7 @@ public interface ManApi{
 	 */
 	void endTaskProgress(int phaseId, int status, String message)
 			throws Exception;
+    
+    public JSONArray getAdminCodeAndProvince() throws Exception;
 }
 

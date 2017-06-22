@@ -403,5 +403,10 @@ public class ManApiImpl implements ManApi {
             DbUtils.commitAndCloseQuietly(conn);
         }
     }
+
+	@Override
+	public JSONArray getAdminCodeAndProvince() throws Exception {
+		return CpRegionProvinceService.getInstance().getAdminCodeAndProvince();
+	}
 }
 

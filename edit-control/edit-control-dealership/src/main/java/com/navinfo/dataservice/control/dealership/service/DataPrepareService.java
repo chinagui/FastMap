@@ -1943,7 +1943,7 @@ public class DataPrepareService {
 				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
 			}
 			
-			map.put("chainList", chainList);
+			map.put("chainCodeList", chainList);
 			map.put("resultIdList", resultIdList);
 			
 			return map;

@@ -157,7 +157,7 @@ public class DataPrepareService {
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+			String selectSql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
 					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
 			
@@ -177,7 +177,7 @@ public class DataPrepareService {
 						result.put("resultName", rs.getString("result_name"));
 						result.put("sourceName", rs.getString("source_name"));
 						result.put("workType", rs.getInt("work_type"));
-						result.put("dealSrcDiff", rs.getInt("work_status"));
+						result.put("dealSrcDiff", rs.getInt("deal_src_diff"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
 						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
 							poiNum = poiNum + 1;

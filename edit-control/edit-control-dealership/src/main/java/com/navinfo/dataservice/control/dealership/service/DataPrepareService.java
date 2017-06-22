@@ -1891,11 +1891,22 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	public long liveUpdate(long userId) throws Exception {
-		List<String> chainCodeList = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
-		return 0;
+		Map<String, List> map = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
+		List<String> chainCodeList = map.get("chainCodeList");
+		List<Integer> resultIdList = map.get("resultIdList");
+		//启动表库差分
+		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		JSONObject dataJson = new JSONObject();
+		dataJson.put("chainCodeList", chainCodeList);
+		dataJson.put("resultIdList", resultIdList);
+		dataJson.put("sourceType", 4);
+		dataJson.put("userId", userId);
+		long jobId=jobApi.createJob("dealershipLiveUpdateJob", dataJson, userId,0, "实时更新job");
+		
+		return jobId;
 	}
 
-	public List<String> getChainCodeByLiveUpdate() throws Exception {
+	public Map<String,List> getChainCodeByLiveUpdate() throws Exception {
 		Connection conn = null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
@@ -1908,12 +1919,18 @@ public class DataPrepareService {
 		    String date = df.format(new Date());
 			//转result,更新result表
 			List<String> chainList = new ArrayList<String>();
+			List<Integer> resultIdList = new ArrayList<Integer>();
+			Map<String,List> map = new HashMap<>();
+			
 			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
 				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
 				List<IxDealershipResult> ixDealershipResultList = createResultBySourceWhenLiveUpdate(ixDealershipSourceList,provinceRegionIdMap,date,conn);
 				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
 					for(IxDealershipResult bean:ixDealershipResultList){
-						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+						int resultId = IxDealershipResultOperator.getResultBySequence(conn);
+						resultIdList.add(resultId);
+						bean.setResultId(resultId);
+						IxDealershipResultOperator.createIxDealershipResultWithId(conn,bean);
 					}
 					chainList.add(entry.getKey());
 				}
@@ -1926,7 +1943,10 @@ public class DataPrepareService {
 				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
 			}
 			
-			return chainList;
+			map.put("chainList", chainList);
+			map.put("resultIdList", resultIdList);
+			
+			return map;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1950,21 +1970,28 @@ public class DataPrepareService {
 		return ixDealershipResultList;	
 	}
 
-
+	/**
+	 * 根据source_id查询代理店RESULT表已全部作业完成的数据(可能存在多条记录)，
+	 * 即代理店工艺状态为“外业处理完成，出品”(RESULT.workflow_status=9)且代理店状态为“已提交”（RESULT.deal_status=3）。
+	 * @param sourceId
+	 * @param conn
+	 * @return
+	 * @throws ServiceException
+	 */
 	private boolean searchResultIsAllCompleteBySource(int sourceId,Connection conn) throws ServiceException {
 		try{
 			
 			QueryRunner run = new QueryRunner();
-			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where r.workflow_status = 9 and "
-					+ "r.deal_status = 3 and r.source_id = " + sourceId ;
+			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where (r.workflow_status <> 9 OR "
+					+ "r.deal_status <> 3) and r.source_id = " + sourceId ;
 
 			ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
 				public Boolean handle(ResultSet rs) throws SQLException {
 					if(rs.next()){
 						if(rs.getInt(1)>0){
-							return true;
-						}else{
 							return false;
+						}else{
+							return true;
 						}
 					}
 					return false;

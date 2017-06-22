@@ -52,6 +52,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
+import com.navinfo.dataservice.api.man.model.TaskProgress;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -1222,7 +1223,11 @@ public class TaskService {
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
+			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                      (select tpt.status"
+					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "         where tpt.task_id = t.task_id"
+					+ "           and rownum = 1) other2medium_Status");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1254,7 +1259,7 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
-			sb.append("	                          0             SUBTASK_NUM_CLOSED");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED,0 other2medium_Status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1290,7 +1295,11 @@ public class TaskService {
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
+			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                      (select tpt.status"
+					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "         where tpt.task_id = t.task_id"
+					+ "           and rownum = 1) other2medium_Status");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -1337,15 +1346,23 @@ public class TaskService {
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
 						
-						int convertFlag=rs.getInt("CONVERT_FLAG");
-						if(convertFlag==1){task.put("hasNoTaskData", 0);}
-						else{						
-							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-								task.put("hasNoTaskData", 0);
-							}else{
-								task.put("hasNoTaskData", 1);
-							}
+						//统计无用，后续有了再加						
+//						int convertFlag=rs.getInt("CONVERT_FLAG");
+//						if(convertFlag==1){task.put("hasNoTaskData", 0);}
+//						else{						
+//							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+//							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+//								task.put("hasNoTaskData", 0);
+//							}else{
+//								task.put("hasNoTaskData", 1);
+//							}
+//						}
+						//hasNoTaskData 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
+						int other2mediumStatus=rs.getInt("other2medium_Status");
+						if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
+							task.put("hasNoTaskData", 2);
+						}else{
+							task.put("hasNoTaskData", 1);
 						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -3433,8 +3450,9 @@ public class TaskService {
 	 * 根据中线任务，批无任务数据中线任务号
 	 * @param conn 
 	 * @param task
+	 * @return 
 	 */
-	private void batchNoTaskMidData(Connection conn, Task task) throws Exception{
+	private int batchNoTaskMidData(Connection conn, Task task) throws Exception{
 		Connection dailyConn=null;
 		try{
 			Region region = RegionService.getInstance().query(conn,task.getRegionId());
@@ -3442,9 +3460,9 @@ public class TaskService {
 			//无任务tips批中线任务号
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
-			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
-			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
+//			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
+//			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
 			
 			//自动创建采集子任务，范围=采集任务范围
 			Subtask subtask=new Subtask();
@@ -3469,6 +3487,7 @@ public class TaskService {
 			}
 			//修改无任务转中操作状态为 1已转
 			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
+			return updateNum;
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
@@ -3477,20 +3496,68 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(dailyConn);
 		}	
 	}
+	/**
+	 * 应用场景：中线采集任务--无任务转中按钮
+		功能：
+		1.判断task_progress表中是否有该任务记录
+		a.有，创建/进行中时，不做处理
+		b.其他，进行第2步
+		2.增加新记录，状态创建
+		3.创建taskOther2MediumJob的job
+		4.记录修改状态为进行中
+	 * @param task
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public int createTaskOther2MediumJob(Long userId,int taskId) throws ServiceException{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			int phaseId=0;
+			//获取最新的记录
+			TaskProgress latestProgress = TaskProgressOperation.queryLatestByTaskId(conn, taskId, TaskProgressOperation.taskOther2MediumJob);
+			//无记录/成功/失败时，增加新的记录
+			if(latestProgress==null||latestProgress.getStatus()==TaskProgressOperation.taskSuccess||latestProgress.getStatus()==TaskProgressOperation.taskFail){
+				phaseId=TaskProgressOperation.getNewPhaseId(conn);
+				latestProgress=new TaskProgress();
+				latestProgress.setPhaseId(phaseId);
+				latestProgress.setTaskId(taskId);
+				latestProgress.setPhase(TaskProgressOperation.taskOther2MediumJob);
+				TaskProgressOperation.create(conn, latestProgress);
+				conn.commit();
+			}
+			phaseId=latestProgress.getPhaseId();
+			JobApi api=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject request=new JSONObject();
+			request.put("phaseId", phaseId);
+			request.put("taskId", taskId);
+			api.createJob("taskOther2MediumJob", request, userId, taskId, "无任务采集成果入中");
+			return phaseId;
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException(e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/**
 	 * 根据taskId批处理对应该任务的无任务POI和TIPS
 	 * @param userId 
 	 * @param taskId
+	 * @return 
 	 */
-	public void batchMidTaskByTaskId(int taskId){
+	public int batchMidTaskByTaskId(int taskId) throws ServiceException{
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			Task task = queryByTaskId(conn, taskId);
-			batchNoTaskMidData(conn, task);
+			return batchNoTaskMidData(conn, task);
 		}catch(Exception e){
+			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException(e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

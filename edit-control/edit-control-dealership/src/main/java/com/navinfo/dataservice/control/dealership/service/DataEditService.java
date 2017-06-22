@@ -1389,8 +1389,10 @@ public class DataEditService {
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
 									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							Integer resultId = result.getResultId();
+							IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();

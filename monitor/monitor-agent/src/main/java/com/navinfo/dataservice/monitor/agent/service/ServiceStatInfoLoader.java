@@ -105,12 +105,13 @@ public class ServiceStatInfoLoader {
 					}
 					log.info("访问次数:"+valueVisitCount+"响应时间:"+valueResTime+"接口状态:"+valueInterfaceStatus);
 					//保存数据
+					int step = 300;
 					//访问次数
 					StatInfo statInfoVisitCount = new StatInfo();
 					statInfoVisitCount.setEndpoint(host);
 					statInfoVisitCount.setMetric(metricVisitCount);
 					statInfoVisitCount.setTimestemp(time);
-					statInfoVisitCount.setStep(60);
+					statInfoVisitCount.setStep(step);
 					statInfoVisitCount.setValue(valueVisitCount);
 					statInfoVisitCount.setCounterType("GAUGE");
 					statInfoVisitCount.setTags(tags);
@@ -120,7 +121,7 @@ public class ServiceStatInfoLoader {
 					statInfoResTime.setEndpoint(host);
 					statInfoResTime.setMetric(metricResTime);
 					statInfoResTime.setTimestemp(time);
-					statInfoResTime.setStep(60);
+					statInfoResTime.setStep(step);
 					statInfoResTime.setValue(valueResTime);
 					statInfoResTime.setCounterType("GAUGE");
 					statInfoResTime.setTags(tags);
@@ -130,7 +131,7 @@ public class ServiceStatInfoLoader {
 					statInfoInterfaceStatus.setEndpoint(host);
 					statInfoInterfaceStatus.setMetric(metricInterfaceStatus);
 					statInfoInterfaceStatus.setTimestemp(time);
-					statInfoInterfaceStatus.setStep(60);
+					statInfoInterfaceStatus.setStep(step);
 					statInfoInterfaceStatus.setValue(valueInterfaceStatus);
 					statInfoInterfaceStatus.setCounterType("GAUGE");
 					statInfoInterfaceStatus.setTags(tags);

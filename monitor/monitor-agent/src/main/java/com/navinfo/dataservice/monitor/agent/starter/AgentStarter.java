@@ -31,7 +31,7 @@ public class AgentStarter {
             String service_name = "动态任务调度service"; 
             String tomcat_name = "动态任务调度tomcat";
             QuartzManager.addJob(service_name, ServiceJob.class, "0 0/5 * * * ?");
-            QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/10 * * * * ?");
+            QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/30 * * * * ?");
             QuartzManager.startJobs();
         } catch (Exception e) {  
             e.printStackTrace(); 
@@ -97,7 +97,7 @@ public class AgentStarter {
 					}
 				} catch (Exception e) {
 					System.out.println("host="+host+",port="+port+",tomcat="+tomcat);
-					log.error("服务未启动,host="+host+",port="+port+",tomcat="+tomcat+e.getMessage());
+					log.error("服务未启动,host="+host+",port="+port+",tomcat="+tomcat+",错误信息:"+e.getMessage());
 				}
 			}
 		} catch (Exception e) {

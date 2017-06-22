@@ -274,7 +274,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
  			JSONObject jsonObj=new JSONObject();
  			jsonObj.put("poiNum","0010061024HYX00212");
  			jsonObj.put("dbId",13);
- 			System.out.println(dp.loadPoiForCnflict(jsonObj));
+ 			System.out.println(dp.loadPoiForConflict(jsonObj));
  		}catch (Exception e) {
  			System.out.println(e.getMessage());
  		}

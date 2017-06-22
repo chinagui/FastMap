@@ -157,7 +157,7 @@ public class DataPrepareService {
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+			String selectSql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
 					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
 			
@@ -171,12 +171,13 @@ public class DataPrepareService {
 						Map<String, Object> result = new HashMap<>();
 						result.put("resultId", rs.getString("result_id"));
 						result.put("sourceId", rs.getString("source_id"));
+						result.put("province", rs.getString("province"));
 						result.put("city", rs.getString("city"));
 						result.put("kindCode", rs.getString("kind_code"));
 						result.put("resultName", rs.getString("result_name"));
 						result.put("sourceName", rs.getString("source_name"));
 						result.put("workType", rs.getInt("work_type"));
-						result.put("dealSrcDiff", rs.getInt("work_status"));
+						result.put("dealSrcDiff", rs.getInt("deal_src_diff"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
 						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
 							poiNum = poiNum + 1;
@@ -806,7 +807,7 @@ public class DataPrepareService {
 			
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
-			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.province,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
 			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
 			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
 				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
@@ -829,6 +830,7 @@ public class DataPrepareService {
 						resultMap.put("name", rs.getString("name"));
 						resultMap.put("address", rs.getString("address"));
 						resultMap.put("kindCode", rs.getString("kind_code"));
+						resultMap.put("province", rs.getString("province"));
 						resultMap.put("city", rs.getString("city"));
 						resultMap.put("toInfoDate ", rs.getString("to_info_date"));
 						resultMap.put("cfmMemo", rs.getString("cfm_memo"));
@@ -1889,11 +1891,22 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	public long liveUpdate(long userId) throws Exception {
-		List<String> chainCodeList = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
-		return 0;
+		Map<String, List> map = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
+		List<String> chainCodeList = map.get("chainCodeList");
+		List<Integer> resultIdList = map.get("resultIdList");
+		//启动表库差分
+		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		JSONObject dataJson = new JSONObject();
+		dataJson.put("chainCodeList", chainCodeList);
+		dataJson.put("resultIdList", resultIdList);
+		dataJson.put("sourceType", 4);
+		dataJson.put("userId", userId);
+		long jobId=jobApi.createJob("dealershipLiveUpdateJob", dataJson, userId,0, "实时更新job");
+		
+		return jobId;
 	}
 
-	public List<String> getChainCodeByLiveUpdate() throws Exception {
+	public Map<String,List> getChainCodeByLiveUpdate() throws Exception {
 		Connection conn = null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
@@ -1906,12 +1919,18 @@ public class DataPrepareService {
 		    String date = df.format(new Date());
 			//转result,更新result表
 			List<String> chainList = new ArrayList<String>();
+			List<Integer> resultIdList = new ArrayList<Integer>();
+			Map<String,List> map = new HashMap<>();
+			
 			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
 				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
 				List<IxDealershipResult> ixDealershipResultList = createResultBySourceWhenLiveUpdate(ixDealershipSourceList,provinceRegionIdMap,date,conn);
 				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
 					for(IxDealershipResult bean:ixDealershipResultList){
-						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+						int resultId = IxDealershipResultOperator.getResultBySequence(conn);
+						resultIdList.add(resultId);
+						bean.setResultId(resultId);
+						IxDealershipResultOperator.createIxDealershipResultWithId(conn,bean);
 					}
 					chainList.add(entry.getKey());
 				}
@@ -1924,7 +1943,10 @@ public class DataPrepareService {
 				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
 			}
 			
-			return chainList;
+			map.put("chainList", chainList);
+			map.put("resultIdList", resultIdList);
+			
+			return map;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1948,21 +1970,28 @@ public class DataPrepareService {
 		return ixDealershipResultList;	
 	}
 
-
+	/**
+	 * 根据source_id查询代理店RESULT表已全部作业完成的数据(可能存在多条记录)，
+	 * 即代理店工艺状态为“外业处理完成，出品”(RESULT.workflow_status=9)且代理店状态为“已提交”（RESULT.deal_status=3）。
+	 * @param sourceId
+	 * @param conn
+	 * @return
+	 * @throws ServiceException
+	 */
 	private boolean searchResultIsAllCompleteBySource(int sourceId,Connection conn) throws ServiceException {
 		try{
 			
 			QueryRunner run = new QueryRunner();
-			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where r.workflow_status = 9 and "
-					+ "r.deal_status = 3 and r.source_id = " + sourceId ;
+			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where (r.workflow_status <> 9 OR "
+					+ "r.deal_status <> 3) and r.source_id = " + sourceId ;
 
 			ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
 				public Boolean handle(ResultSet rs) throws SQLException {
 					if(rs.next()){
 						if(rs.getInt(1)>0){
-							return true;
-						}else{
 							return false;
+						}else{
+							return true;
 						}
 					}
 					return false;

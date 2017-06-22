@@ -1080,7 +1080,8 @@ public class DataEditService {
 	public void clearRelevancePoi(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.POI_NUM_1 = '', t.POI_NUM_2 = '',t.POI_NUM_3 = '',t.POI_NUM_4 = '',t.POI_NUM_5 = '',"
+					+ "t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
 			run.execute(con, sql);
 		}catch(Exception e){
 			throw e;
@@ -1388,8 +1389,10 @@ public class DataEditService {
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
 									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							Integer resultId = result.getResultId();
+							IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -2102,7 +2105,7 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPoiForCnflict(JSONObject jsonIn) throws Exception {
+	public JSONObject loadPoiForConflict(JSONObject jsonIn) throws Exception {
 		String poiNum=jsonIn.getString("poiNum");
 		int dbId=jsonIn.getInt("dbId");
 		Connection conn =null;	

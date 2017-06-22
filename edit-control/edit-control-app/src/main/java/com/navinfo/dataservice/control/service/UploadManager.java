@@ -200,7 +200,7 @@ public class UploadManager {
 				}
 				meshPoiMap.get(mesh).put(fid, jo);
 			}catch(Exception e){
-				result.addFail(new ErrorLog(fid,"几何错误"));
+				result.addFail(new ErrorLog(fid,0,"几何错误"));
 				log.error(e.getMessage(),e);
 			}
 		}
@@ -228,7 +228,7 @@ public class UploadManager {
 				poiMap.get(dbId).addJsonPois(entry.getValue());
 			}else{
 				for(String f:entry.getValue().keySet()){
-					result.addFail(new ErrorLog(f,"所属图幅未找到大区库ID"));
+					result.addFail(new ErrorLog(f,0,"所属图幅未找到大区库ID"));
 				}
 				log.warn("图幅（"+meshId+"）未找到大区库ID，涉及的poi有："+StringUtils.join(entry.getValue().keySet(),","));
 			}

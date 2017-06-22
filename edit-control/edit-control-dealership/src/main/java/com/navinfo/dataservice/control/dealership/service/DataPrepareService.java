@@ -157,7 +157,7 @@ public class DataPrepareService {
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+			String selectSql = "select r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
 					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
 			
@@ -171,6 +171,7 @@ public class DataPrepareService {
 						Map<String, Object> result = new HashMap<>();
 						result.put("resultId", rs.getString("result_id"));
 						result.put("sourceId", rs.getString("source_id"));
+						result.put("province", rs.getString("province"));
 						result.put("city", rs.getString("city"));
 						result.put("kindCode", rs.getString("kind_code"));
 						result.put("resultName", rs.getString("result_name"));
@@ -806,7 +807,7 @@ public class DataPrepareService {
 			
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
-			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.province,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
 			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
 			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
 				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
@@ -829,6 +830,7 @@ public class DataPrepareService {
 						resultMap.put("name", rs.getString("name"));
 						resultMap.put("address", rs.getString("address"));
 						resultMap.put("kindCode", rs.getString("kind_code"));
+						resultMap.put("province", rs.getString("province"));
 						resultMap.put("city", rs.getString("city"));
 						resultMap.put("toInfoDate ", rs.getString("to_info_date"));
 						resultMap.put("cfmMemo", rs.getString("cfm_memo"));

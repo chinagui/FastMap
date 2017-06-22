@@ -1753,20 +1753,20 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Long chainUpdate(long userId) throws ServiceException {
+	public Map<String, Object> chainUpdate(long userId) throws ServiceException {
 		Connection conn = null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
 		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
 		    String date = df.format(new Date());
 			//获取一览表品牌
-			List<String> chainList = getChainListByStatus(conn,0);
-			
-//			chainList.clear();
-//			chainList.add("4007");
+		    Map<String,String> chainMap = getChainListByStatus(conn,0);
+			if(chainMap.size()==0){
+				throw new Exception("不存在关闭的品牌，不能做品牌更新！");
+			}
 			
 			//获取source数据
-			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainList);
+			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainMap.keySet());
 			//获取省份大区信息
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			Map<String,Integer> provinceRegionIdMap = manApi.getProvinceRegionIdMap();
@@ -1781,6 +1781,7 @@ public class DataPrepareService {
 					}
 				}
 				chainList2.add(entry.getKey());
+				chainMap.remove(entry.getKey());
 			}
 			//更新chain表
 			int workType = 1;
@@ -1788,12 +1789,26 @@ public class DataPrepareService {
 			int chain_status = 1;
 			updateIxDealershipChain(conn,chainList2,workStatus,workType,chain_status);
 			//启动表库差分
-			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			JSONObject dataJson = new JSONObject();
-			dataJson.put("chainCodeList", chainList2);
-			dataJson.put("sourceType", 5);
-			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
-			return jobId;
+			long jobId = 0;
+			Map<String,Object> result = new HashMap<String,Object>();
+			String message = "";
+			if(chainList2.size()!=0){
+				JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				JSONObject dataJson = new JSONObject();
+				dataJson.put("chainCodeList", chainList2);
+				dataJson.put("sourceType", 5);
+				jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			}
+			if(chainMap.size()>0){		
+				message = "全国一览表不存在部分代理店品牌！";
+			}
+
+			if(jobId==0){
+				throw new Exception("全国一览表不存在部分代理店品牌！");
+			}
+			result.put("jobId", jobId);
+			result.put("message", message);
+			return result;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1845,16 +1860,16 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	private List<String> getChainListByStatus(Connection conn, int status) throws ServiceException {
+	private Map<String, String> getChainListByStatus(Connection conn, int status) throws ServiceException {
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql= "select * from IX_DEALERSHIP_CHAIN c where c.CHAIN_STATUS = " + status;
 
-			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
-				public List<String> handle(ResultSet rs) throws SQLException {
-					List<String> result = new ArrayList<String>();
+			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
+				public Map<String, String> handle(ResultSet rs) throws SQLException {
+					Map<String, String> result = new HashMap<String, String>();
 					while (rs.next()) {
-						result.add(rs.getString("CHAIN_CODE"));
+						result.put(rs.getString("CHAIN_CODE"),rs.getString("CHAIN_NAME"));
 					}
 					return result;
 				}	

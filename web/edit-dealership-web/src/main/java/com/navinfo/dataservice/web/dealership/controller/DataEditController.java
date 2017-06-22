@@ -421,15 +421,15 @@ public class DataEditController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value="/loadPoiForCnflict")
-	public ModelAndView loadPoiForCnflict(HttpServletRequest request) throws Exception {
+	@RequestMapping(value="/loadPoiForConflict")
+	public ModelAndView loadPoiForConflict(HttpServletRequest request) throws Exception {
 		
 		try {
 			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
 			if(jsonObj==null){
 				throw new IllegalArgumentException("parameter参数不能为空。"); 
 			}
-			JSONObject data = dealerShipEditService.loadPoiForCnflict(jsonObj);
+			JSONObject data = dealerShipEditService.loadPoiForConflict(jsonObj);
 
 		    return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

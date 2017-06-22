@@ -2103,7 +2103,7 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPoiForCnflict(JSONObject jsonIn) throws Exception {
+	public JSONObject loadPoiForConflict(JSONObject jsonIn) throws Exception {
 		String poiNum=jsonIn.getString("poiNum");
 		int dbId=jsonIn.getInt("dbId");
 		Connection conn =null;	

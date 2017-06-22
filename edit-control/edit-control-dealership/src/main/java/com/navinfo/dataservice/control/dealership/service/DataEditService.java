@@ -488,6 +488,8 @@ public class DataEditService {
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
 						clearRelevancePoi(resultId, con);
+						//为了启动录入作业中赋值9单独写一个方法！！！！！！
+						updateWorkFlowStatus(resultId, con);
 						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
@@ -523,7 +525,6 @@ public class DataEditService {
 	/**
 	 * 获取reginID
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public int getRegionId(int resultId, Connection con) throws Exception{
@@ -550,7 +551,6 @@ public class DataEditService {
 	/**
 	 * 获取dailyDbId
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public int getDailyDbId(int regionId, Connection mancon) throws Exception{
@@ -579,7 +579,6 @@ public class DataEditService {
 	 * IX_DEALERSHIP_CHAIN.WORK_STATUS赋值为3
 	 * @param con
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public void editChainStatus(String chainCode, Connection con) throws Exception{
@@ -597,7 +596,6 @@ public class DataEditService {
 	 * @param con
 	 * @return workflow_status
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public int getWorkflowStatus(int resultId, Connection con) throws Exception{
@@ -627,7 +625,6 @@ public class DataEditService {
 	 * @param con
 	 * @return workflow_status
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public List<Integer> getResultId(String chainCode, Connection con) throws Exception{
@@ -657,7 +654,6 @@ public class DataEditService {
 	 * @param con
 	 * @param chainCode
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public void editResultCaseStatusSame(int resultId, Connection con) throws Exception{
@@ -676,7 +672,6 @@ public class DataEditService {
 	 * @param chainCode
 	 * @param con
 	 * @param dailycon
-	 * @author songhe
 	 * 
 	 * */
 	public void insideEditOutside(int resultId, String chainCode, Connection con, Connection dailycon, long userId, int dailyDbId) throws Exception{
@@ -793,7 +788,6 @@ public class DataEditService {
 	 * @param  con
 	 * @return result
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public int getMatchMethodFromResult(int resultId, Connection con) throws Exception{
@@ -821,7 +815,6 @@ public class DataEditService {
 	 * @param  pid
 	 * @param  dailycon
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public void updatePoiStatus(String pid, Connection dailycon) throws Exception{
@@ -839,7 +832,6 @@ public class DataEditService {
 	 * @param poiNumber
 	 * @param dailycon
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public Map<String, Object> getResultKindCode(String poiNumber, Connection dailycon) throws Exception{
@@ -871,7 +863,6 @@ public class DataEditService {
 	 * @param chainCode
 	 * @throws SQLException 
 	 * @throws Exception 
-	 * @author songhe
 	 * 
 	 * */
 	public Map<String, Object> getMetaKindCode(String chainCode) throws SQLException{
@@ -907,7 +898,6 @@ public class DataEditService {
 	 * @param MetaKindChain
 	 * @param MetaKind
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public void editResultTableBrands(int resultId, String brand, String kindCode, Connection con) throws Exception{
 		try{
@@ -926,7 +916,6 @@ public class DataEditService {
 	 * @param con
 	 * @return poiStatus
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public int getPoiStatus(String pid, Connection dailycon) throws Exception{
 		try{
@@ -954,7 +943,6 @@ public class DataEditService {
 	 * @param con
 	 * @return poiStatus
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public String getResultPoiNumber(int resultId, Connection con) throws Exception{
 		try{
@@ -980,7 +968,6 @@ public class DataEditService {
 	 * result维护source表
 	 * @param con
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public void resultMaintainSource(int resultId, Connection con) throws Exception{
 		try{
@@ -1001,7 +988,6 @@ public class DataEditService {
 	 * 获取result表数据
 	 * @param con
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public Map<String, Object> getResultTable(int resultId, Connection con) throws Exception{
 		try{
@@ -1032,7 +1018,6 @@ public class DataEditService {
 	 * @param sourceId
 	 * @param dealSrcDiff 更新策略标识
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public void updateSource(Connection con, int resulId, int sourceId, int dealSrcDiff) throws Exception{
 		try{
@@ -1072,15 +1057,29 @@ public class DataEditService {
 	}
 	
 	/**
+	 * @param con
+	 * @param 
+	 * */
+	public void updateWorkFlowStatus(int resultId, Connection con) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "update IX_DEALERSHIP_RESULT t set t.WORKFLOW_STATUS = 9 where t.RESULT_ID = "+ resultId;
+			log.info("清空关联poiSQL："+sql);
+			run.execute(con, sql);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
 	 * 清空关联poi作业属性
 	 * @param con
 	 * @param 
-	 * @author songhe
 	 * */
 	public void clearRelevancePoi(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
 			log.info("清空关联poiSQL："+sql);
 			run.execute(con, sql);
 		}catch(Exception e){
@@ -1092,7 +1091,6 @@ public class DataEditService {
 	 * 清空关联POI接口
 	 * @param resultId
 	 * @return 执行结果msg
-	 * @author songhe
 	 * 
 	 * */
 	public void clearRelatedPoi(int resultId, long userId) throws Exception{
@@ -1146,7 +1144,6 @@ public class DataEditService {
 	 * 根据resultId获取chain表数据
 	 * @param con
 	 * @throws Exception 
-	 * @author songhe
 	 * */
 	public String getChainCodeByResultId(int resultId, Connection con) throws Exception{
 		try{

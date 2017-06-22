@@ -660,7 +660,7 @@ public class TipsRelateLineUpdate {
                 	
                 	 for (JSONObject json : cutLines) {
             			 JSONObject newGeo = json.getJSONObject("g_location");
-            			 String idNew=json.getString("is");
+            			 String idNew=json.getString("id");
             			 JSONObject newFInfo =JSONObject.fromObject(fInfo);//创建一个新的
             			 newFInfo.put("id", idNew);
             			 newFInfo.put("geo", newGeo);

@@ -465,7 +465,26 @@ public class SearchAllObject {
                 return null;
             }
 
-            return "SELECT DISTINCT " + primaryKey + " pendingPid  FROM " + mainTableName + " WHERE U_RECORD != 2 " + strSubSql;
+            if (mainTableName.toUpperCase().equals("RW_NODE")
+                    || mainTableName.toUpperCase().equals("AD_NODE")
+                    || mainTableName.toUpperCase().equals("ZONE_NODE")
+                    || mainTableName.toUpperCase().equals("LC_NODE")
+                    || mainTableName.toUpperCase().equals("LU_NODE")
+                    || mainTableName.toUpperCase().equals("CMG_BUILDNODE")
+                    || mainTableName.toUpperCase().equals("AD_LINK")
+                    || mainTableName.toUpperCase().equals("ZONE_LINK")
+                    || mainTableName.toUpperCase().equals("LC_LINK")
+                    || mainTableName.toUpperCase().equals("LU_LINK")
+                    || mainTableName.toUpperCase().equals("CMG_BUILDLINK")
+                    ) {
+
+                String meshTableName = mainTableName + "_MESH";
+
+                return "SELECT DISTINCT " + mainFlag + " pendingPid  FROM " + mainTableName + " , " + meshTableName + " WHERE " + mainTableName + ".U_RECORD <>2 and " + meshTableName + ".U_RECORD <>2 " + strSubSql;
+            } else {
+
+                return "SELECT DISTINCT " + mainFlag + " pendingPid  FROM " + mainTableName + " WHERE U_RECORD <>2 " + strSubSql;
+            }
         }
 
         //获取与主对象关联且包含GEOMETRY字段的对象信息
@@ -481,7 +500,28 @@ public class SearchAllObject {
         }
 
         //关联几何要素查询sql
-        String strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE U_RECORD != 2 " + strSubSql + " ) ";
+        String strQuerySql="";
+        if (mainTableName.toUpperCase().equals("RW_NODE")
+                || mainTableName.toUpperCase().equals("AD_NODE")
+                || mainTableName.toUpperCase().equals("ZONE_NODE")
+                || mainTableName.toUpperCase().equals("LC_NODE")
+                || mainTableName.toUpperCase().equals("LU_NODE")
+                || mainTableName.toUpperCase().equals("CMG_BUILDNODE")
+                || mainTableName.toUpperCase().equals("AD_LINK")
+                || mainTableName.toUpperCase().equals("ZONE_LINK")
+                || mainTableName.toUpperCase().equals("LC_LINK")
+                || mainTableName.toUpperCase().equals("LU_LINK")
+                || mainTableName.toUpperCase().equals("CMG_BUILDLINK")
+                )
+        {
+            String meshTableName = mainTableName + "_MESH";
+
+            strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoTableName + "." + geoKey + " FROM " + geoTableName + " , " + meshTableName + " WHERE" + geoTableName + ".U_RECORD <>2 and " + meshTableName + ".U_RECORD <>2 " + strSubSql + " ) ";
+        }
+        else
+        {
+            strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE U_RECORD <>2 " + strSubSql + " ) ";
+        }
 
         strQuerySql += " SELECT DISTINCT " + mainFlag + " pendingPid FROM " + mainTableName;
         //from 添加关联表TableName，包含GEOMETRY字段的表以TMP1替换
@@ -564,7 +604,28 @@ public class SearchAllObject {
         //refInfos为空的对象有GEOMETRY字段，返回查询sql语句
         if (CollectionUtils.isEmpty(refInfos)) {
 
-            return "SELECT DISTINCT " + primaryKey + " pendingPid  FROM " + mainTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2 " + strSubSql;
+            if (mainTableName.toUpperCase().equals("RW_NODE")
+                    || mainTableName.toUpperCase().equals("AD_NODE")
+                    || mainTableName.toUpperCase().equals("ZONE_NODE")
+                    || mainTableName.toUpperCase().equals("LC_NODE")
+                    || mainTableName.toUpperCase().equals("LU_NODE")
+                    || mainTableName.toUpperCase().equals("CMG_BUILDNODE")
+                    || mainTableName.toUpperCase().equals("AD_LINK")
+                    || mainTableName.toUpperCase().equals("ZONE_LINK")
+                    || mainTableName.toUpperCase().equals("LC_LINK")
+                    || mainTableName.toUpperCase().equals("LU_LINK")
+                    || mainTableName.toUpperCase().equals("CMG_BUILDLINK")
+                    ) {
+
+                String meshTableName=mainTableName+"_MESH";
+
+                return "SELECT DISTINCT " + mainFlag + " pendingPid  FROM " + mainTableName + " , " + meshTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND  " + mainTableName + ".U_RECORD <>2 and " + meshTableName + ".U_RECORD <>2 " + strSubSql;
+
+            } else {
+
+                return "SELECT DISTINCT " + mainFlag + " pendingPid  FROM " + mainTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD <>2 " + strSubSql;
+            }
+
         }
 
         //获取与主对象关联且包含GEOMETRY字段的对象信息
@@ -575,7 +636,28 @@ public class SearchAllObject {
         strSubSql = getMeshIdSql(geoTableName, meshIds);
 
         //关联几何要素查询sql
-        String strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2 " + strSubSql + " )  ";
+        String strQuerySql ="";
+        if (mainTableName.toUpperCase().equals("RW_NODE")
+                || mainTableName.toUpperCase().equals("AD_NODE")
+                || mainTableName.toUpperCase().equals("ZONE_NODE")
+                || mainTableName.toUpperCase().equals("LC_NODE")
+                || mainTableName.toUpperCase().equals("LU_NODE")
+                || mainTableName.toUpperCase().equals("CMG_BUILDNODE")
+                || mainTableName.toUpperCase().equals("AD_LINK")
+                || mainTableName.toUpperCase().equals("ZONE_LINK")
+                || mainTableName.toUpperCase().equals("LC_LINK")
+                || mainTableName.toUpperCase().equals("LU_LINK")
+                || mainTableName.toUpperCase().equals("CMG_BUILDLINK")
+                ) {
+
+            String meshTableName=mainTableName+"_MESH";
+
+            strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoTableName + "." + geoKey + " FROM " + geoTableName + " , " + meshTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND " + geoTableName + ".U_RECORD <>2 and " + meshTableName + ".U_RECORD <>2 " + strSubSql + " ) ";
+
+        } else {
+
+            strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoTableName + "." + geoKey + " FROM " + geoTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD <>2 " + strSubSql + " )  ";
+        }
 
         strQuerySql += " SELECT DISTINCT " + mainFlag + " pendingPid FROM " + mainTableName;
         //from 添加关联表TableName，包含GEOMETRY字段的表以TMP1替换
@@ -643,14 +725,14 @@ public class SearchAllObject {
                 || tableName.toUpperCase().equals("LU_NODE")
                 || tableName.toUpperCase().equals("CMG_BUILDNODE")
                 ) {
-            strSql = " and " + tableName + ".NODE_PID=" + tableName + "_MESH.NODE_PID " + tableName + "_MESH.MESH_ID IN ";
+            strSql = " and " + tableName + ".NODE_PID=" + tableName + "_MESH.NODE_PID  and " + tableName + "_MESH.MESH_ID IN ";
         } else if (tableName.toUpperCase().equals("AD_LINK")
                 || tableName.toUpperCase().equals("ZONE_LINK")
                 || tableName.toUpperCase().equals("LC_LINK")
                 || tableName.toUpperCase().equals("LU_LINK")
                 || tableName.toUpperCase().equals("CMG_BUILDLINK")
                 ) {
-            strSql = " and " + tableName + ".LINK_PID=" + tableName + "_MESH.LINK_PID " + tableName + "_MESH.MESH_ID IN ";
+            strSql = " and " + tableName + ".LINK_PID=" + tableName + "_MESH.LINK_PID and " + tableName + "_MESH.MESH_ID IN ";
         }
 
         if (StringUtils.isNotEmpty(strSql)) {

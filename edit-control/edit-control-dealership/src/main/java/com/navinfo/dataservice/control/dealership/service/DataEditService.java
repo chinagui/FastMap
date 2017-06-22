@@ -1081,6 +1081,7 @@ public class DataEditService {
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
+			log.info("清空关联poiSQL："+sql);
 			run.execute(con, sql);
 		}catch(Exception e){
 			throw e;

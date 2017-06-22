@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -32,7 +31,6 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
@@ -2097,35 +2095,94 @@ public class DataEditService {
 	
 	
 	/**
-	 * 查询该pid下有无错误log
-	 * @param pid
-	 * @param regionConn
+	 * 返回poi信息，用于保存编辑时比对，外业是否修改过库中poi信息
+	 * 返回属性：官方原始中文名称，中文别名，中文地址，邮编，分类，品牌，等级，特殊电话，维修电话，销售电话，其它电话
+	 * 注：每种电话可能有多个，以逗号分隔返回
+	 * @param poiNum
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public JSONObject loadPoiForCnflict(JSONObject data) throws Exception {
-		JSONObject jsonObj=new JSONObject();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT COUNT(1)");
-		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
-		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
-		sb.append(" AND CO.TABLE_NAME = :1");
-		sb.append(" AND CO.PID = P.PID");
-		sb.append(" AND P.POI_NUM = :2");
-		
+	public JSONObject loadPoiForCnflict(JSONObject jsonIn) throws Exception {
+		String poiNum=jsonIn.getString("poiNum");
+		int dbId=jsonIn.getInt("dbId");
+		Connection conn =null;	
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
+		JSONObject jsonObj=new JSONObject();
 
 		try {
-//			pstmt = conn.prepareStatement(sb.toString());
-//			pstmt.setString(1, tbNm);
-//			pstmt.setString(2,poiNum);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, P2.NAME SHORT_NAME, A.ADDRNAME");
+			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_NAME P2, IX_POI_ADDRESS A");
+			sb.append(" WHERE I.POI_NUM =:1");
+			sb.append(" AND I.PID = P1.POI_PID");
+			sb.append(" AND P1.U_RECORD <> 2");
+			sb.append(" AND P1.NAME_CLASS = 1");
+			sb.append(" AND P1.NAME_TYPE = 1");
+			sb.append(" AND P1.LANG_CODE IN ('CHI', 'CHT')");
+			sb.append(" AND I.PID = P2.POI_PID");
+			sb.append(" AND P2.U_RECORD <> 2");
+			sb.append(" AND P2.NAME_CLASS = 3");
+			sb.append(" AND P2.NAME_TYPE = 1");
+			sb.append(" AND P2.LANG_CODE IN ('CHI', 'CHT')");
+			sb.append(" AND I.PID = A.POI_PID");		
+			sb.append(" AND A.U_RECORD <> 2");
+			sb.append(" AND A.LANG_CODE IN ('CHI', 'CHT')");
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, poiNum);
+		    
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
-				return jsonObj;
+				jsonObj.put("postCode", resultSet.getString("POST_CODE"));
+				jsonObj.put("kindCode", resultSet.getString("KIND_CODE"));
+				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME"));
+				jsonObj.put("address", resultSet.getString("ADDRNAME"));
+				jsonObj.put("chain", resultSet.getString("CHAIN"));
+				jsonObj.put("name", resultSet.getString("NAME"));
+				jsonObj.put("level", resultSet.getString("LEVEL"));
 			}
-
+			
+			StringBuilder sbTel = new StringBuilder();
+			sbTel.append(" SELECT C.CONTACT, C.CONTACT_DEPART, C.CONTACT_TYPE");
+			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
+			sbTel.append(" WHERE I.POI_NUM =:1");
+			sbTel.append(" AND I.PID = C.POI_PID");
+			sbTel.append(" AND ((C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0) OR");
+			sbTel.append(" C.CONTACT_DEPART IN (32, 16, 8))");
+			sbTel.append(" AND C.U_RECORD <> 2");
+			
+			pstmt = conn.prepareStatement(sbTel.toString());
+			pstmt.setString(1, poiNum);
+			resultSet = pstmt.executeQuery();
+			
+			String telOther="";
+			String telSale="";
+			String telService="";
+			String telSpecial="";
+			while(resultSet.next()) {
+				if (resultSet.getInt("CONTACT_DEPART")==32){
+					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
+					else{telOther+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_DEPART")==16){
+					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
+					else{telService+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_DEPART")==8){
+					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
+					else{telSale+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
+					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
+					else{telSpecial+=","+resultSet.getString("CONTACT");}
+				}
+			}
+			jsonObj.put("telOther", telOther);
+			jsonObj.put("telSale", telSale);
+			jsonObj.put("telService", telService);
+			jsonObj.put("telSpecial", telSpecial);
+			return jsonObj;
 			
 		} catch (Exception e) {
 			throw e;
@@ -2133,6 +2190,5 @@ public class DataEditService {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
-		return jsonObj;
 	}
 }

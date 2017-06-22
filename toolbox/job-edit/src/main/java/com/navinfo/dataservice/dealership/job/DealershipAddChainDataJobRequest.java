@@ -20,6 +20,7 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 		if(resultIdList != null && resultIdList.size() > 0){
 			AbstractJobRequest Dealershipdiff = JobCreateStrategy.createJobRequest("DealershipTableAndDbDiffJob", null);
 			Dealershipdiff.setAttrValue("resultIdList", resultIdList);
+			Dealershipdiff.setAttrValue("chainCodeList", chainCodeList);
 			//增加数据sourceType=3
 			Dealershipdiff.setAttrValue("sourceType", 3);
 			subJobRequests.put("DealershipTableAndDbDiffJob", Dealershipdiff);

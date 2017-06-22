@@ -16,7 +16,7 @@ public class TaskOther2MediumJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "TaskOther2Medium";
+		return "taskOther2MediumJob";
 	}
 
 	@Override

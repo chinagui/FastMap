@@ -11,8 +11,10 @@ import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -22,6 +24,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
@@ -49,6 +52,7 @@ import net.sf.json.JSONObject;
  */
 @Service("manApi")
 public class ManApiImpl implements ManApi {
+	private Logger log = LoggerRepos.getLogger(ManApiImpl.class);
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
@@ -60,23 +64,6 @@ public class ManApiImpl implements ManApi {
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
 		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status,message);
 	}	
-	/**
-	 * 修改task_progress中的执行状态，主要用于任务相关的耗时job，例如，无任务转中
-	 * @param phaseId
-	 * @param status 2成功3失败
-	 * @param message 其他描述信息
-	 * @throws Exception
-	 */
-	@Override
-	public void endTaskProgress(int phaseId,int status,String message) throws Exception {
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			TaskProgressOperation.endProgress(conn, phaseId, status, message);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}		
-	}
 	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {

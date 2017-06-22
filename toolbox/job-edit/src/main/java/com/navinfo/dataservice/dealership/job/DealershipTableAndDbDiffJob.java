@@ -100,7 +100,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			List<Integer> resultIdList=new ArrayList<Integer>();
 			int sourceType=jobRequest.getSourceType();
 			chainCodeList=jobRequest.getChainCodeList();
-			if(sourceType==3){
+			if(sourceType==3||sourceType==4){
 				resultIdList=jobRequest.getResultIdList();
 			}
 			

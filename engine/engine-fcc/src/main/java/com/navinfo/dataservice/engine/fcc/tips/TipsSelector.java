@@ -504,7 +504,9 @@ public class TipsSelector {
                             JSONObject jsonObject = new JSONObject();
                             JSONObject f = fArray.getJSONObject(i);
                             jsonObject.put("z", f.getInt("z"));
-                            jsonObject.put("geo", f.getJSONObject("geo"));
+							JSONObject geoJson = f.getJSONObject("geo");
+                            Geojson.coord2Pixel(geoJson, z, px, py);
+                            jsonObject.put("geo", geoJson.getJSONArray("coordinates"));
                             cArray.add(jsonObject);
                         }
                     }

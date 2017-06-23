@@ -232,7 +232,7 @@ public class HandlerDealership {
 		IxPoi p = (IxPoi) obj.getMainrow();
 		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String, String> mapKindChain = metadataApi.scPointSpecKindCodeType15();
-		if (p.getChain().equals(mapKindChain.get(p.getKindCode()))) {
+		if (p.getChain()!=null&&(p.getChain().equals(mapKindChain.get(p.getKindCode())))) {
 			return true;
 		}
 		return false;

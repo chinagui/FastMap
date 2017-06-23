@@ -312,8 +312,10 @@ public class DataConfirmService {
 			jsonObj.put("csvname", fileName);
 
 			StringBuilder urlStr = new StringBuilder();
-			urlStr.append(
-					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?access_token=");
+            
+			//调用情报下发接口：http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?
+			String infoPassUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoPass);
+			urlStr.append(infoPassUrl+"access_token=");
 			urlStr.append(accessToken);
 			urlStr.append("&parameter=");
 			urlStr.append(URLEncoder.encode(jsonObj.toString(), "utf-8"));
@@ -499,7 +501,8 @@ public class DataConfirmService {
 		String accessToken = AccessTokenFactory.generate(userId).getTokenString();
 
 		StringBuilder urlStr = new StringBuilder();
-		urlStr.append("http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/export/?access_token=");
+		String feedBackUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoFeedBack);
+		urlStr.append(feedBackUrl+"access_token=");
 		urlStr.append(accessToken);
 		urlStr.append("&parameter=");
 		urlStr.append(URLEncoder.encode(timeObj.toString(), "utf-8"));

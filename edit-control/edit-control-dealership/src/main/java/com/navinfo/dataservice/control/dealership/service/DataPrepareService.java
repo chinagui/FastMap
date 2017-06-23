@@ -1764,7 +1764,7 @@ public class DataPrepareService {
 			//获取一览表品牌
 		    Map<String,String> chainMap = getChainListByStatus(conn,0);
 			if(chainMap.size()==0){
-				throw new Exception("不存在关闭的品牌，不能做品牌更新！");
+				throw new Exception("不存在未开启的品牌，不能做品牌更新！");
 			}
 			
 			//获取source数据
@@ -1802,11 +1802,11 @@ public class DataPrepareService {
 				jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
 			}
 			if(chainMap.size()>0){		
-				message = "全国一览表不存在部分代理店品牌！";
+				message = "部分代理店品牌数据在全国一览表中不存在，无法执行品牌更新！";
 			}
 
 			if(jobId==0){
-				throw new Exception("全国一览表不存在部分代理店品牌！");
+				throw new Exception("未开启的品牌数据在全国一览表中不存在，无法执行品牌更新！");
 			}
 			result.put("jobId", jobId);
 			result.put("message", message);

@@ -573,6 +573,7 @@ public class IxDealershipResultOperator {
 			poiObj.put("poiNum", poi.getPoiNum() == null ? "" : poi.getPoiNum());
 			poiObj.put("pid", poi.getPid());
 			poiObj.put("kindCode", poi.getKindCode() == null ? "" : poi.getKindCode());
+			poiObj.put("postCode", poi.getPostCode() == null ? "" : poi.getPostCode());
 			poiObj.put("chain", poi.getChain() == null ? "" : poi.getChain());
 			poiObj.put("rowId", poi.getRowId() == null ? "" : poi.getRowId());
 			poiObj.put("level", poi.getLevel());

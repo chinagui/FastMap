@@ -1343,7 +1343,7 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 		String sql="";
 		if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
-			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1 WHERE r.RESULT_ID=:2 ";
+			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1,R.cfm_status=1 WHERE r.RESULT_ID=:2 ";
 		}else{
 			sql="UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,r.cfm_Memo=:1,r.cfm_poi_num=:2,r.CFM_IS_ADOPTED=:3,r.POI_KIND_CODE=:4,r.POI_CHAIN=:5,r.POI_NAME=:6,r.POI_NAME_SHORT=:7,r.POI_ADDRESS=:8,r.POI_TEL=:9,r.POI_POST_CODE=:10,r.POI_X_DISPLAY=:11,r.POI_Y_DISPLAY=:12,r.POI_X_GUIDE=:13,r.POI_Y_GUIDE=:14,r.GEOMETRY=sdo_geometry(:15  , 8307) WHERE r.RESULT_ID=:16 ";
 		}
@@ -2174,19 +2174,15 @@ public class DataEditService {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			StringBuilder sb = new StringBuilder();
-			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, P2.NAME SHORT_NAME, A.ADDRNAME");
-			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_NAME P2, IX_POI_ADDRESS A");
+			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, (SELECT NAME FROM IX_POI_NAME WHERE POI_PID = I.PID ");
+			sb.append(" AND NAME_CLASS = 3 AND NAME_TYPE = 1 AND U_RECORD <> 2 AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,A.FULLNAME");
+			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
 			sb.append(" WHERE I.POI_NUM =:1");
 			sb.append(" AND I.PID = P1.POI_PID");
 			sb.append(" AND P1.U_RECORD <> 2");
 			sb.append(" AND P1.NAME_CLASS = 1");
 			sb.append(" AND P1.NAME_TYPE = 1");
 			sb.append(" AND P1.LANG_CODE IN ('CHI', 'CHT')");
-			sb.append(" AND I.PID = P2.POI_PID");
-			sb.append(" AND P2.U_RECORD <> 2");
-			sb.append(" AND P2.NAME_CLASS = 3");
-			sb.append(" AND P2.NAME_TYPE = 1");
-			sb.append(" AND P2.LANG_CODE IN ('CHI', 'CHT')");
 			sb.append(" AND I.PID = A.POI_PID");		
 			sb.append(" AND A.U_RECORD <> 2");
 			sb.append(" AND A.LANG_CODE IN ('CHI', 'CHT')");
@@ -2195,13 +2191,13 @@ public class DataEditService {
 		    
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
-				jsonObj.put("postCode", resultSet.getString("POST_CODE"));
-				jsonObj.put("kindCode", resultSet.getString("KIND_CODE"));
-				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME"));
-				jsonObj.put("address", resultSet.getString("ADDRNAME"));
-				jsonObj.put("chain", resultSet.getString("CHAIN"));
-				jsonObj.put("name", resultSet.getString("NAME"));
-				jsonObj.put("level", resultSet.getString("LEVEL"));
+				jsonObj.put("postCode", resultSet.getString("POST_CODE")!=null?resultSet.getString("POST_CODE"):"");
+				jsonObj.put("kindCode", resultSet.getString("KIND_CODE")!=null?resultSet.getString("KIND_CODE"):"");
+				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME")!=null?resultSet.getString("SHORT_NAME"):"");
+				jsonObj.put("address",resultSet.getString("FULLNAME")!=null?resultSet.getString("FULLNAME"):"");
+				jsonObj.put("chain", resultSet.getString("CHAIN")!=null?resultSet.getString("CHAIN"):"");
+				jsonObj.put("name", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
+				jsonObj.put("level", resultSet.getString("LEVEL")!=null?resultSet.getString("LEVEL"):"");
 			}
 			
 			StringBuilder sbTel = new StringBuilder();
@@ -2221,22 +2217,23 @@ public class DataEditService {
 			String telSale="";
 			String telService="";
 			String telSpecial="";
+			String splitChar=";";
 			while(resultSet.next()) {
 				if (resultSet.getInt("CONTACT_DEPART")==32){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=","+resultSet.getString("CONTACT");}
+					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
-					else{telService+=","+resultSet.getString("CONTACT");}
+					else{telService+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
-					else{telSale+=","+resultSet.getString("CONTACT");}
+					else{telSale+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
-					else{telSpecial+=","+resultSet.getString("CONTACT");}
+					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
 				}
 			}
 			jsonObj.put("telOther", telOther);

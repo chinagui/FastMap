@@ -1764,7 +1764,7 @@ public class DataPrepareService {
 			//获取一览表品牌
 		    Map<String,String> chainMap = getChainListByStatus(conn,0);
 			if(chainMap.size()==0){
-				throw new Exception("不存在关闭的品牌，不能做品牌更新！");
+				throw new Exception("不存在未开启的品牌，不能做品牌更新！");
 			}
 			
 			//获取source数据
@@ -1802,11 +1802,11 @@ public class DataPrepareService {
 				jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
 			}
 			if(chainMap.size()>0){		
-				message = "全国一览表不存在部分代理店品牌！";
+				message = "部分代理店品牌数据在全国一览表中不存在，无法执行品牌更新！";
 			}
 
 			if(jobId==0){
-				throw new Exception("全国一览表不存在部分代理店品牌！");
+				throw new Exception("未开启的品牌数据在全国一览表中不存在，无法执行品牌更新！");
 			}
 			result.put("jobId", jobId);
 			result.put("message", message);
@@ -1894,6 +1894,10 @@ public class DataPrepareService {
 		Map<String, List> map = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
 		List<String> chainCodeList = map.get("chainCodeList");
 		List<Integer> resultIdList = map.get("resultIdList");
+		if(null == chainCodeList || chainCodeList.isEmpty()){
+			throw new Exception("不存在作业完成的数据，无法更新");
+		}
+		
 		//启动表库差分
 		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 		JSONObject dataJson = new JSONObject();
@@ -1943,7 +1947,7 @@ public class DataPrepareService {
 				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
 			}
 			
-			map.put("chainList", chainList);
+			map.put("chainCodeList", chainList);
 			map.put("resultIdList", resultIdList);
 			
 			return map;

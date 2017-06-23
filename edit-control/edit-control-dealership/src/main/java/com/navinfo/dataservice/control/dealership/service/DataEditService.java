@@ -973,11 +973,16 @@ public class DataEditService {
 		try{
 			//查询对应resultID数据
 			Map<String, Object> dataMap =  getResultTable(resultId, con);
+			if(dataMap == null){
+				return;
+			}
 			int sourceId = Integer.parseInt(String.valueOf(dataMap.get("sourceId")));
 			log.info("sourceId:"+sourceId);
-			if(dataMap != null && sourceId != 0){
+			if(sourceId != 0){
 				int dealSrcDiff = Integer.parseInt(String.valueOf(dataMap.get("dealSrcDiff")));
 				updateSource(con, resultId, sourceId, dealSrcDiff);
+			}else{
+				insertSource(con, resultId);
 			}
 		}catch(Exception e){
 			throw e;
@@ -997,7 +1002,7 @@ public class DataEditService {
 				@Override
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> map = new HashMap();
-					if (rs.next() && rs.getInt("SOURCE_ID") != 0) {
+					if (rs.next()) {
 						map.put("sourceId", rs.getInt("SOURCE_ID"));
 						map.put("dealSrcDiff", rs.getInt("DEAL_SRC_DIFF"));
 						return map;
@@ -1012,7 +1017,35 @@ public class DataEditService {
 	}
 	
 	/**
-	 * 给source表赋值
+	 * 根据result维护sorce表，插入数据
+	 * @param con
+	 * @param resulId
+	 * @throws Exception 
+	 * 
+	 * */
+	public void insertSource(Connection con, int resulId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "insert into IX_DEALERSHIP_SOURCE s  "
+					+ "(s.SOURCE_ID,s.PROVINCE,s.POI_TEL,s.CITY,s.PROJECT,s.KIND_CODE,s.CHAIN,s.NAME,s.NAME_SHORT,s.ADDRESS,"
+					+ "s.TEL_SALE, s.TEL_SERVICE,s.TEL_OTHER,s.POST_CODE,s.NAME_ENG,s.ADDRESS_ENG,s.PROVIDE_DATE,s.FB_SOURCE,s.FB_CONTENT,s.FB_AUDIT_REMARK,"
+					+ "s.FB_DATE,s.CFM_POI_NUM,s.CFM_MEMO,s.DEAL_CFM_DATE,s.POI_KIND_CODE,s.POI_CHAIN,s.POI_NAME,s.POI_NAME_SHORT,s.POI_ADDRESS,s.POI_POST_CODE,"
+					+ "s.POI_X_DISPLAY,s.POI_Y_DISPLAY,s.POI_X_GUIDE,s.POI_Y_GUIDE,s.GEOMETRY) "
+					+ "(select (SOURCE_SEQ.NEXTVAL),t.PROVINCE,t.POI_TEL,t.CITY,t.PROJECT,t.KIND_CODE,t.CHAIN,t.NAME,t.NAME_SHORT,t.ADDRESS,"
+					+ "t.TEL_SALE, t.TEL_SERVICE,t.TEL_OTHER,t.POST_CODE,t.NAME_ENG,t.ADDRESS_ENG,t.PROVIDE_DATE,t.FB_SOURCE,t.FB_CONTENT,t.FB_AUDIT_REMARK,"
+					+ "t.FB_DATE,t.CFM_POI_NUM,t.CFM_MEMO,t.DEAL_CFM_DATE,t.POI_KIND_CODE,t.POI_CHAIN,t.POI_NAME,t.POI_NAME_SHORT,t.POI_ADDRESS,t.POI_POST_CODE,"
+					+ "t.POI_X_DISPLAY,t.POI_Y_DISPLAY,t.POI_X_GUIDE,t.POI_Y_GUIDE,t.GEOMETRY from IX_DEALERSHIP_RESULT t where t.RESULT_ID = "+resulId+")";
+			
+			log.info("根据result插入source的sql："+sql);
+			run.execute(con, sql);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 根据result维护sorce--更新
 	 * @param con
 	 * @param resulId
 	 * @param sourceId
@@ -1910,6 +1943,10 @@ public class DataEditService {
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
 					log.info("补充增量数据新增完成");
 				}
+				//上传的resultID在库中不存在，异常
+				if(!map.containsKey("dealStatus") && !map.containsKey("workFlowStatus")){
+					throw new Exception("resultId:"+resultId+"在数据库中不存在");
+				}
 				//判断后执行新增或者更新
 				if("1".equals(history) || "2".equals(history) || "4".equals(history)){
 					if("3".equals(map.get("dealStatus").toString()) && "9".equals(map.get("workFlowStatus").toString())){
@@ -2015,7 +2052,7 @@ public class DataEditService {
 					continue;
 				}
 				Map<String, Object> statusMap = getStatusByResultId(conn, resultId);
-				//对应的resultId在result表中没有数据，可以上传
+				//对应的resultId在result表中没有数据
 				if(statusMap == null){
 					continue;
 				}

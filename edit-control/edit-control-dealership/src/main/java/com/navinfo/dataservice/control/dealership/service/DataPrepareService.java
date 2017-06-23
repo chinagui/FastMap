@@ -1894,6 +1894,10 @@ public class DataPrepareService {
 		Map<String, List> map = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
 		List<String> chainCodeList = map.get("chainCodeList");
 		List<Integer> resultIdList = map.get("resultIdList");
+		if(null == chainCodeList || chainCodeList.isEmpty()){
+			throw new Exception("不存在作业完成的数据，无法更新");
+		}
+		
 		//启动表库差分
 		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 		JSONObject dataJson = new JSONObject();

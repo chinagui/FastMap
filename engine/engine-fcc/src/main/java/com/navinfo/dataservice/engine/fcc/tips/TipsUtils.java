@@ -1,9 +1,14 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -337,9 +342,23 @@ public class TipsUtils {
 
 	}
 
+//    public static JSONObject stringToSFJson(String text) {
+//        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(text);
+//        JSONObject jsonObject = JsonUtils.fastJson2netJson(fastJson);
+//        return jsonObject;
+//    }
+
     public static JSONObject stringToSFJson(String text) {
-        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(text);
-        JSONObject jsonObject = JsonUtils.fastJson2netJson(fastJson);
+        Map<String,Object> fastJson = com.alibaba.fastjson.JSONObject.parseObject(text,new TypeReference<Map<String,Object>>(){});
+        JSONObject jsonObject = new JSONObject();
+        for(String key : fastJson.keySet()) {
+            if(fastJson.get(key) == null) {
+                jsonObject.put(key, net.sf.json.JSONNull.getInstance());
+            }else {
+                jsonObject.put(key, fastJson.get(key));
+            }
+
+        }
         return jsonObject;
     }
 
@@ -357,4 +376,13 @@ public class TipsUtils {
         return obj;
     }
 
+    public static void main(String[] args) throws Exception {
+        String parameter = "{\"subtaskId\":108,\"grids\":[46597623,47590731,47590700,47590730,47591701,46597711,47591700,46597730,46597633,46597720,50600122,46597603,46597613,47591603,47590603],\"mdFlag\":\"d\",\"workStatus\":5}";
+        JSONObject jsonObject = TipsUtils.stringToSFJson(parameter);
+        JSONArray girdArray = jsonObject.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(girdArray);
+        System.out.println(wkt);
+
+
+    }
 }

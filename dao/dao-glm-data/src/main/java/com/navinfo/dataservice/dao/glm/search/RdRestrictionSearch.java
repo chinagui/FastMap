@@ -21,7 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -155,11 +157,13 @@ public class RdRestrictionSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT A.NODE_PID, A.IN_LINK_PID, A.PID, A.RESTRIC_INFO FROM RD_RESTRICTION A WHERE EXISTS (SELECT NULL FROM TMP1 B WHERE A.IN_LINK_PID = B.LINK_PID) AND A.U_RECORD != 2), TMP3 AS (SELECT A.RESTRIC_PID,LISTAGG(B.VEHICLE, ',') WITHIN GROUP(ORDER BY A.RESTRIC_PID) VEHICLES FROM RD_RESTRICTION_DETAIL A, RD_RESTRICTION_CONDITION B WHERE EXISTS (SELECT NULL FROM TMP2 C WHERE A.RESTRIC_PID = C.PID) AND A.DETAIL_ID = B.DETAIL_ID AND A.U_RECORD != 2 AND B.U_RECORD != 2 group by A.RESTRIC_PID) select tmp.*,tmp3.VEHICLES from ( SELECT /*+ index(d) */ A.PID, A.RESTRIC_INFO, C.GEOMETRY     LINK_GEOM, D.GEOMETRY     POINT_GEOM FROM TMP2 A, TMP1 C, RD_NODE D WHERE A.IN_LINK_PID = C.LINK_PID AND A.NODE_PID = D.NODE_PID AND D.U_RECORD != 2) tmp left join tmp3 on tmp.pid = tmp3.RESTRIC_PID ";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT A.NODE_PID, A.IN_LINK_PID, A.PID, A.RESTRIC_INFO FROM RD_RESTRICTION A WHERE EXISTS (SELECT NULL FROM TMP1 B WHERE A.IN_LINK_PID = B.LINK_PID) AND A.U_RECORD != 2), TMP3 AS (SELECT A.RESTRIC_PID,LISTAGG(B.VEHICLE, ',') WITHIN GROUP(ORDER BY A.RESTRIC_PID) VEHICLES FROM RD_RESTRICTION_DETAIL A, RD_RESTRICTION_CONDITION B WHERE EXISTS (SELECT NULL FROM TMP2 C WHERE A.RESTRIC_PID = C.PID) AND A.DETAIL_ID = B.DETAIL_ID AND A.U_RECORD != 2 AND B.U_RECORD != 2 group by A.RESTRIC_PID) select tmp.*,tmp3.VEHICLES from ( SELECT /*+ index(d) */ A.PID, A.RESTRIC_INFO, C.GEOMETRY     LINK_GEOM, D.GEOMETRY     POINT_GEOM ,A.IN_LINK_PID FROM TMP2 A, TMP1 C, RD_NODE D WHERE A.IN_LINK_PID = C.LINK_PID AND A.NODE_PID = D.NODE_PID AND D.U_RECORD != 2) tmp left join tmp3 on tmp.pid = tmp3.RESTRIC_PID ORDER BY TMP.PID";
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
+
+		Map<Integer, Integer> indexs = new HashMap<>();
 
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -174,7 +178,6 @@ public class RdRestrictionSearch implements ISearch {
 			
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			int index = 1;
 			while (resultSet.next()) {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
@@ -256,7 +259,18 @@ public class RdRestrictionSearch implements ISearch {
 					offset = 0; break;
 				}
 
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, index++, (21 - z)*6+offset, 4);
+				int inLinkPid = resultSet.getInt("IN_LINK_PID");
+
+				if (!indexs.containsKey(inLinkPid)) {
+
+					indexs.put(inLinkPid, 1);
+				}
+
+				int index = indexs.get(inLinkPid);
+
+				indexs.put(inLinkPid, index + 1);
+
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, index, (21 - z) * 6 + offset, 4);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z, px, py));
 

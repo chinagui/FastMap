@@ -163,6 +163,7 @@ public class RdRestrictionSearch implements ISearch {
 
 		ResultSet resultSet = null;
 
+		//进入linkPid，交限所在进入link的序号
 		Map<Integer, Integer> indexs = new HashMap<>();
 
 		try {

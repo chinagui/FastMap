@@ -29,7 +29,7 @@
         </constructor-arg>
     </bean>
     
-    <bean id="taskOther2MediumWebSocketHandler" class="com.navinfo.dataservice.engine.man.websocket.TaskOther2MediumWebSocketHandler"/>
+    <bean id="taskOther2MediumSocketHandler" class="com.navinfo.dataservice.engine.man.websocket.TaskOther2MediumWebSocketHandler"/>
     
 	<websocket:handlers	allowed-origins="*">
 		<websocket:mapping 	path="/taskOther2Medium/webSocketServer" handler="taskOther2MediumSocketHandler"/>

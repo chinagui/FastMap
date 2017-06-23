@@ -46,12 +46,13 @@ public class TaskOther2MediumJob extends AbstractJob {
             long tipsNum = tipsOperator.batchNoTaskDataByMidTask(wkt, myJobRequest.getTaskId());
             log.info("taskId="+taskId+"批poi无任务数据，并修改统计信息");
 			int poiNum=TaskService.getInstance().batchMidTaskByTaskId(myJobRequest.getTaskId());
-			TaskProgressOperation.endProgress(conn, myJobRequest.getPhaseId(), 2, "tips数量:"+tipsNum+";poi数量:"+poiNum);
+			TaskProgressOperation.endProgressAndSocket(conn, myJobRequest.getPhaseId(), 2, "tips数量:"+tipsNum+";poi数量:"+poiNum);
+			//TaskProgressOperation.updateProgress(conn, myJobRequest.getPhaseId(), 2, "poi数量:"+poiNum);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);	
 			try {
 				conn=DBConnector.getInstance().getManConnection();
-				TaskProgressOperation.endProgress(conn, myJobRequest.getPhaseId(), 3, e.getMessage());
+				TaskProgressOperation.endProgressAndSocket(conn, myJobRequest.getPhaseId(), 3, e.getMessage());
 			} catch (Exception e1) {
 				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error("", e);

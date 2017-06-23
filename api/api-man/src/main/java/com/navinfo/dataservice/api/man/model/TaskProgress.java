@@ -37,10 +37,17 @@ public class TaskProgress {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+	public Long getOperator() {
+		return operator;
+	}
+	public void setOperator(Long operator) {
+		this.operator = operator;
+	}
 	private int taskId;
 	private int phase;
 	private int status;
 	private int phaseId;
 	private int createUserId;
 	private String message;
+	private Long operator;
 }

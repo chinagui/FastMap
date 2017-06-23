@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.task;
 
-import java.security.interfaces.RSAKey;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -46,7 +45,6 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -1224,10 +1222,10 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
-			sb.append("                      (select tpt.status"
+			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1259,7 +1257,7 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
-			sb.append("	                          0             SUBTASK_NUM_CLOSED,0 other2medium_Status");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1296,10 +1294,10 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
-			sb.append("                      (select tpt.status"
+			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -3531,7 +3529,9 @@ public class TaskService {
 			JSONObject request=new JSONObject();
 			request.put("phaseId", phaseId);
 			request.put("taskId", taskId);
-			api.createJob("taskOther2MediumJob", request, userId, taskId, "无任务采集成果入中");
+			long jobId=api.createJob("taskOther2MediumJob", request, userId, taskId, "无任务采集成果入中");
+			TaskProgressOperation.updateProgress(conn, phaseId, 0, "jobid:"+jobId);
+			TaskProgressOperation.startProgress(conn, userId, phaseId);			
 			return phaseId;
 		}catch(Exception e){
 			log.error("", e);

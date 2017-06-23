@@ -2157,13 +2157,13 @@ public class DataEditService {
 		    
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
-				jsonObj.put("postCode", resultSet.getString("POST_CODE"));
-				jsonObj.put("kindCode", resultSet.getString("KIND_CODE"));
-				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME"));
-				jsonObj.put("address", resultSet.getString("ADDRNAME"));
-				jsonObj.put("chain", resultSet.getString("CHAIN"));
-				jsonObj.put("name", resultSet.getString("NAME"));
-				jsonObj.put("level", resultSet.getString("LEVEL"));
+				jsonObj.put("postCode", resultSet.getString("POST_CODE")!=null?resultSet.getString("POST_CODE"):"");
+				jsonObj.put("kindCode", resultSet.getString("KIND_CODE")!=null?resultSet.getString("POST_CODE"):"");
+				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME")!=null?resultSet.getString("SHORT_NAME"):"");
+				jsonObj.put("address",resultSet.getString("ADDRNAME")!=null?resultSet.getString("ADDRNAME"):"");
+				jsonObj.put("chain", resultSet.getString("CHAIN")!=null?resultSet.getString("CHAIN"):"");
+				jsonObj.put("name", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
+				jsonObj.put("level", resultSet.getString("LEVEL")!=null?resultSet.getString("LEVEL"):"");
 			}
 			
 			StringBuilder sbTel = new StringBuilder();

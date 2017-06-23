@@ -1310,7 +1310,7 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 		String sql="";
 		if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
-			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1 WHERE r.RESULT_ID=:2 ";
+			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1,R.cfm_status=1 WHERE r.RESULT_ID=:2 ";
 		}else{
 			sql="UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,r.cfm_Memo=:1,r.cfm_poi_num=:2,r.CFM_IS_ADOPTED=:3,r.POI_KIND_CODE=:4,r.POI_CHAIN=:5,r.POI_NAME=:6,r.POI_NAME_SHORT=:7,r.POI_ADDRESS=:8,r.POI_TEL=:9,r.POI_POST_CODE=:10,r.POI_X_DISPLAY=:11,r.POI_Y_DISPLAY=:12,r.POI_X_GUIDE=:13,r.POI_Y_GUIDE=:14,r.GEOMETRY=sdo_geometry(:15  , 8307) WHERE r.RESULT_ID=:16 ";
 		}

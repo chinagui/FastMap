@@ -583,8 +583,8 @@ public class TaskController extends BaseController {
 			long userId=tokenObj.getUserId();
 			int taskId = dataJson.getInt("taskId");
 			//TaskService.getInstance().batchMidTaskByTaskId(taskId);
-			int jobid=TaskService.getInstance().createTaskOther2MediumJob(userId,taskId);
-			return new ModelAndView("jsonView", success(jobid));
+			int phaseId=TaskService.getInstance().createTaskOther2MediumJob(userId,taskId);
+			return new ModelAndView("jsonView", success(phaseId));
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
 		}

@@ -46,7 +46,7 @@ public class GLM60238 extends BasicCheckRule {
 			String address=null;
 			String name=null;
 			boolean first=true;
-			boolean firstName=true;
+			String kind=null;
 			Long pid=null;
 			for(IxSamepoiPart tmp:parts){
 				BasicObj partObj = myReferDataMap.get(ObjectName.IX_POI).get(tmp.getPoiPid());
@@ -56,20 +56,16 @@ public class GLM60238 extends BasicCheckRule {
 				if(first){
 					pid=partPoi.getPid();
 					geo=partPoi.getGeometry();					
-					kindSet.add(partKind);
+					kind=partKind;
 					IxPoiAddress ixPoiAddressP = partPoiObj.getCHAddress();
 					if(ixPoiAddressP!=null){
 						address = ixPoiAddressP.getFullname();
 					}
-					first=false;
-				}
-				if(firstName&&!("230215".equals(partKind)&&"230216".equals(partKind))){
-				//加油加气不对比名称
 					IxPoiName ixPoiNameP = partPoiObj.getOfficeOriginCHName();
 					if(ixPoiNameP != null){
 						name = ixPoiNameP.getName();
 					}
-					firstName=false;
+					first=false;
 				}
 				//第一次循环，仅进行对比字段赋值，不做相同判断。
 				if(pid==partPoi.getPid()){continue;}
@@ -90,12 +86,12 @@ public class GLM60238 extends BasicCheckRule {
 					addressP = ixPoiAddressP.getFullname();
 				}
 				
-				if((!("230215".equals(partKind)&&"230216".equals(partKind))&&!StringUtils.equals(name, nameP))||!StringUtils.equals(address, addressP)||distance > 5){
+				if((!(("230215".equals(partKind)&&"230216".equals(kind))||("230216".equals(partKind)&&"230215".equals(kind)))&&!StringUtils.equals(name, nameP))||!StringUtils.equals(address, addressP)||distance > 5){
 					String targets = "[IX_POI,"+pid+"];[IX_POI,"+partPoiObj.objPid()+"]";
 					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
 				}
 				
-				if(kindSet.contains(partPoi.getKindCode())){
+				if(partKind.equals(kind)){
 					String targets = "[IX_POI,"+pid+"];[IX_POI,"+partPoiObj.objPid()+"]";
 					setCheckResult(partPoi.getGeometry(), targets,partPoi.getMeshId(),  "制作多类别同属性同一关系的POI种别必须不相同");
 				}

@@ -39,9 +39,6 @@ public class GLM60238 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_SAMEPOI)){
 			IxSamePoiObj poiObj=(IxSamePoiObj) obj;
 			IxSamepoi poi=(IxSamepoi) poiObj.getMainrow();
-			if(poi.getGroupId()==9996021){
-				log.info("");
-			}
 			if(poi.getRelationType()!=1){return;}
 			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
 			Set<String> kindSet=new HashSet<String>();

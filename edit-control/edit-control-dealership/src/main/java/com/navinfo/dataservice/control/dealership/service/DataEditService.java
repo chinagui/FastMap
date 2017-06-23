@@ -2138,7 +2138,7 @@ public class DataEditService {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			StringBuilder sb = new StringBuilder();
 			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, (SELECT NAME FROM IX_POI_NAME WHERE POI_PID = I.PID ");
-			sb.append(" AND NAME_CLASS = 3 AND NAME_TYPE = 1 AND U_RECORD <> 2 AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,A.ADDRNAME");
+			sb.append(" AND NAME_CLASS = 3 AND NAME_TYPE = 1 AND U_RECORD <> 2 AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,A.FULLNAME");
 			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
 			sb.append(" WHERE I.POI_NUM =:1");
 			sb.append(" AND I.PID = P1.POI_PID");
@@ -2154,13 +2154,13 @@ public class DataEditService {
 		    
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
-				jsonObj.put("postCode", resultSet.getString("POST_CODE"));
-				jsonObj.put("kindCode", resultSet.getString("KIND_CODE"));
-				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME"));
-				jsonObj.put("address", resultSet.getString("ADDRNAME"));
-				jsonObj.put("chain", resultSet.getString("CHAIN"));
-				jsonObj.put("name", resultSet.getString("NAME"));
-				jsonObj.put("level", resultSet.getString("LEVEL"));
+				jsonObj.put("postCode", resultSet.getString("POST_CODE")!=null?resultSet.getString("POST_CODE"):"");
+				jsonObj.put("kindCode", resultSet.getString("KIND_CODE")!=null?resultSet.getString("KIND_CODE"):"");
+				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME")!=null?resultSet.getString("SHORT_NAME"):"");
+				jsonObj.put("address",resultSet.getString("FULLNAME")!=null?resultSet.getString("FULLNAME"):"");
+				jsonObj.put("chain", resultSet.getString("CHAIN")!=null?resultSet.getString("CHAIN"):"");
+				jsonObj.put("name", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
+				jsonObj.put("level", resultSet.getString("LEVEL")!=null?resultSet.getString("LEVEL"):"");
 			}
 			
 			StringBuilder sbTel = new StringBuilder();
@@ -2180,22 +2180,23 @@ public class DataEditService {
 			String telSale="";
 			String telService="";
 			String telSpecial="";
+			String splitChar=";";
 			while(resultSet.next()) {
 				if (resultSet.getInt("CONTACT_DEPART")==32){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=","+resultSet.getString("CONTACT");}
+					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
-					else{telService+=","+resultSet.getString("CONTACT");}
+					else{telService+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
-					else{telSale+=","+resultSet.getString("CONTACT");}
+					else{telSale+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
-					else{telSpecial+=","+resultSet.getString("CONTACT");}
+					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
 				}
 			}
 			jsonObj.put("telOther", telOther);

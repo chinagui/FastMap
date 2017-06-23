@@ -2183,22 +2183,23 @@ public class DataEditService {
 			String telSale="";
 			String telService="";
 			String telSpecial="";
+			String splitChar=";";
 			while(resultSet.next()) {
 				if (resultSet.getInt("CONTACT_DEPART")==32){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=","+resultSet.getString("CONTACT");}
+					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
-					else{telService+=","+resultSet.getString("CONTACT");}
+					else{telService+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
-					else{telSale+=","+resultSet.getString("CONTACT");}
+					else{telSale+=splitChar+resultSet.getString("CONTACT");}
 				}
 				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
-					else{telSpecial+=","+resultSet.getString("CONTACT");}
+					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
 				}
 			}
 			jsonObj.put("telOther", telOther);

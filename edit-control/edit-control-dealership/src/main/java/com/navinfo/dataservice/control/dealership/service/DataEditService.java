@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -32,7 +31,6 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
@@ -1082,7 +1080,8 @@ public class DataEditService {
 	public void clearRelevancePoi(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.POI_NUM_1 = '', t.POI_NUM_2 = '',t.POI_NUM_3 = '',t.POI_NUM_4 = '',t.POI_NUM_5 = '',"
+					+ "t.CFM_POI_NUM = '', t.WORKFLOW_STATUS = 9, t.CFM_IS_ADOPTED = 0 where t.RESULT_ID = "+ resultId;
 			run.execute(con, sql);
 		}catch(Exception e){
 			throw e;
@@ -1390,8 +1389,10 @@ public class DataEditService {
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
 									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							Integer resultId = result.getResultId();
+							IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -1864,7 +1865,7 @@ public class DataEditService {
 	 * @param userId
 	 * @throws Exception 
 	 */
-	public List<Integer> addChainData(HttpServletRequest request, long userId) throws Exception {
+	public Map<String, Object> addChainData(HttpServletRequest request, long userId) throws Exception {
 		//excel文件上传到服务器		
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/addChainData";  //服务器部署路径 /data/resources/upload
@@ -1893,7 +1894,9 @@ public class DataEditService {
 			AddChainDataEntity addChainDataEntity = new AddChainDataEntity();
 			String chainCode = null;
 			int resultId = 0;
+			Map<String, Object> resultMap = new HashMap<>();
 			List<Integer> resultIdList = new ArrayList<>();
+			List<String> chainCodeList = new ArrayList<>();
 			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
 			for(Map<String, Object> map : addDataMaps){
 				if(StringUtils.isBlank(map.get("number").toString())){
@@ -1920,17 +1923,17 @@ public class DataEditService {
 						log.info("补充增量数据更新完成");
 					}
 				}
-				
 				chainCode = map.get("chain").toString();
+				
+				chainCodeList.add(chainCode);
 			}
-			//由于增量数据都是单一品牌的，暂时拿出循环之外
+			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			updateStatusByChain(conn, chainCode);
+			updateStatusByChain(conn, chainCodeList);
 			updateReulteData(conn, resultIdList);
-			conn.commit();
-			log.info("调用启动录入作业");
-			startWork(chainCode, userId);
-			return resultIdList;
+			resultMap.put("resultIdList", resultIdList);
+			resultMap.put("chainCodeList", chainCodeList);
+			return resultMap;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
@@ -1938,6 +1941,22 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 去除重复的chain
+	 * 
+	 * 
+	 * */
+    public static List<String> removeDuplicate(List list){       
+        for(int i = 0; i < list.size() - 1; i ++) {       
+            for(int j = list.size() - 1; j > i; j --) {       
+                 if (list.get(j).equals(list.get(i))) {       
+                    list.remove(j);       
+                  }        
+              }        
+          }        
+          return list;       
+      }  
 	
 	/**
 	 * @param 增量数据upFile
@@ -2066,9 +2085,15 @@ public class DataEditService {
 	 * @param resultId
 	 * 
 	 * */
-	public void updateStatusByChain(Connection conn, String chain) throws SQLException{
+	public void updateStatusByChain(Connection conn, List<String> chains) throws SQLException{
 		QueryRunner run = new QueryRunner();
-		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code = '"+chain+"'";
+		StringBuffer sb = new StringBuffer();
+		for(String chainCode : chains){
+			sb.append(chainCode+",");
+		}
+		String chain = sb.toString();
+		chain = chain.substring(0, chain.length() - 1);
+		String updateChain = "update IX_DEALERSHIP_CHAIN t set t.chain_status = 1, t.chain_weight = 1 where t.chain_code in ('"+chain+"')";
 		log.info("updateChain:"+updateChain);
 		run.execute(conn, updateChain);
 	}
@@ -2097,35 +2122,90 @@ public class DataEditService {
 	
 	
 	/**
-	 * 查询该pid下有无错误log
-	 * @param pid
-	 * @param regionConn
+	 * 返回poi信息，用于保存编辑时比对，外业是否修改过库中poi信息
+	 * 返回属性：官方原始中文名称，中文别名，中文地址，邮编，分类，品牌，等级，特殊电话，维修电话，销售电话，其它电话
+	 * 注：每种电话可能有多个，以逗号分隔返回
+	 * @param poiNum
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public JSONObject loadPoiForCnflict(JSONObject data) throws Exception {
-		JSONObject jsonObj=new JSONObject();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT COUNT(1)");
-		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
-		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
-		sb.append(" AND CO.TABLE_NAME = :1");
-		sb.append(" AND CO.PID = P.PID");
-		sb.append(" AND P.POI_NUM = :2");
-		
+	public JSONObject loadPoiForConflict(JSONObject jsonIn) throws Exception {
+		String poiNum=jsonIn.getString("poiNum");
+		int dbId=jsonIn.getInt("dbId");
+		Connection conn =null;	
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
+		JSONObject jsonObj=new JSONObject();
 
 		try {
-//			pstmt = conn.prepareStatement(sb.toString());
-//			pstmt.setString(1, tbNm);
-//			pstmt.setString(2,poiNum);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, (SELECT NAME FROM IX_POI_NAME WHERE POI_PID = I.PID ");
+			sb.append(" AND NAME_CLASS = 3 AND NAME_TYPE = 1 AND U_RECORD <> 2 AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,A.ADDRNAME");
+			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
+			sb.append(" WHERE I.POI_NUM =:1");
+			sb.append(" AND I.PID = P1.POI_PID");
+			sb.append(" AND P1.U_RECORD <> 2");
+			sb.append(" AND P1.NAME_CLASS = 1");
+			sb.append(" AND P1.NAME_TYPE = 1");
+			sb.append(" AND P1.LANG_CODE IN ('CHI', 'CHT')");
+			sb.append(" AND I.PID = A.POI_PID");		
+			sb.append(" AND A.U_RECORD <> 2");
+			sb.append(" AND A.LANG_CODE IN ('CHI', 'CHT')");
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, poiNum);
+		    
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
-				return jsonObj;
+				jsonObj.put("postCode", resultSet.getString("POST_CODE"));
+				jsonObj.put("kindCode", resultSet.getString("KIND_CODE"));
+				jsonObj.put("nameShort", resultSet.getString("SHORT_NAME"));
+				jsonObj.put("address", resultSet.getString("ADDRNAME"));
+				jsonObj.put("chain", resultSet.getString("CHAIN"));
+				jsonObj.put("name", resultSet.getString("NAME"));
+				jsonObj.put("level", resultSet.getString("LEVEL"));
 			}
-
+			
+			StringBuilder sbTel = new StringBuilder();
+			sbTel.append(" SELECT C.CONTACT, C.CONTACT_DEPART, C.CONTACT_TYPE");
+			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
+			sbTel.append(" WHERE I.POI_NUM =:1");
+			sbTel.append(" AND I.PID = C.POI_PID");
+			sbTel.append(" AND ((C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0) OR");
+			sbTel.append(" C.CONTACT_DEPART IN (32, 16, 8))");
+			sbTel.append(" AND C.U_RECORD <> 2");
+			
+			pstmt = conn.prepareStatement(sbTel.toString());
+			pstmt.setString(1, poiNum);
+			resultSet = pstmt.executeQuery();
+			
+			String telOther="";
+			String telSale="";
+			String telService="";
+			String telSpecial="";
+			while(resultSet.next()) {
+				if (resultSet.getInt("CONTACT_DEPART")==32){
+					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
+					else{telOther+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_DEPART")==16){
+					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
+					else{telService+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_DEPART")==8){
+					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
+					else{telSale+=","+resultSet.getString("CONTACT");}
+				}
+				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
+					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
+					else{telSpecial+=","+resultSet.getString("CONTACT");}
+				}
+			}
+			jsonObj.put("telOther", telOther);
+			jsonObj.put("telSale", telSale);
+			jsonObj.put("telService", telService);
+			jsonObj.put("telSpecial", telSpecial);
+			return jsonObj;
 			
 		} catch (Exception e) {
 			throw e;
@@ -2133,6 +2213,5 @@ public class DataEditService {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
-		return jsonObj;
 	}
 }

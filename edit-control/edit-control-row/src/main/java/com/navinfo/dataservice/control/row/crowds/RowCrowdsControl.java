@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
@@ -306,6 +307,29 @@ public class RowCrowdsControl {
 		CompGridUtil gridUtil = new CompGridUtil();
 		grid = gridUtil.point2Grids(x, y)[0];
 		return grid;
+	}
+	
+	
+	/**
+	 * 根据点位坐标算出区划号和电话号，电话长度
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public JSONObject getTelephone(double x, double y){
+		JSONObject result = new JSONObject();
+		try{
+			MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			int adminCode = metadataApi.queryAdminIdByLocation(x, y);
+			String adminCodeStr = String.valueOf(adminCode);
+			JSONObject phoneJson = metadataApi.searchByAdminCode(adminCodeStr);
+			if (phoneJson != null && phoneJson.containsKey(adminCodeStr)){
+				result = phoneJson.getJSONObject(adminCodeStr);
+			}
+		}catch(Exception e){
+			result = null;
+		}
+		return result;
 	}
 
 	public static void main(String[] args) throws Exception {

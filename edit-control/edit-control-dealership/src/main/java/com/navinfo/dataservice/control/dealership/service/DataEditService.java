@@ -2114,19 +2114,15 @@ public class DataEditService {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			StringBuilder sb = new StringBuilder();
-			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, P2.NAME SHORT_NAME, A.ADDRNAME");
-			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_NAME P2, IX_POI_ADDRESS A");
+			sb.append(" SELECT I.KIND_CODE, I.CHAIN, I.POST_CODE,I.\"LEVEL\", P1.NAME, (SELECT NAME FROM IX_POI_NAME WHERE POI_PID = I.PID ");
+			sb.append(" AND NAME_CLASS = 3 AND NAME_TYPE = 1 AND U_RECORD <> 2 AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,A.ADDRNAME");
+			sb.append(" FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
 			sb.append(" WHERE I.POI_NUM =:1");
 			sb.append(" AND I.PID = P1.POI_PID");
 			sb.append(" AND P1.U_RECORD <> 2");
 			sb.append(" AND P1.NAME_CLASS = 1");
 			sb.append(" AND P1.NAME_TYPE = 1");
 			sb.append(" AND P1.LANG_CODE IN ('CHI', 'CHT')");
-			sb.append(" AND I.PID = P2.POI_PID");
-			sb.append(" AND P2.U_RECORD <> 2");
-			sb.append(" AND P2.NAME_CLASS = 3");
-			sb.append(" AND P2.NAME_TYPE = 1");
-			sb.append(" AND P2.LANG_CODE IN ('CHI', 'CHT')");
 			sb.append(" AND I.PID = A.POI_PID");		
 			sb.append(" AND A.U_RECORD <> 2");
 			sb.append(" AND A.LANG_CODE IN ('CHI', 'CHT')");

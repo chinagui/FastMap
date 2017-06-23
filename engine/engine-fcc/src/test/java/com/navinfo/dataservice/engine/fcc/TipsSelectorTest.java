@@ -974,7 +974,7 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 
 			TipsUpload tipsUploader = new TipsUpload(subtaskid);
 
-			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
 
 			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 

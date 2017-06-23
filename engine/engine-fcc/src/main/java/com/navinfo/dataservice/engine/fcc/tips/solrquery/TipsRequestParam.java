@@ -41,11 +41,11 @@ public class TipsRequestParam {
         int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
         StringBuilder taskTypeBuilder = new StringBuilder();
         if(subTaskType == 3) {//3 grid粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:2 AND t_tipStatus:2)");//接边Tips
+            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
         }else if(subTaskType == 4) {//4 区域粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:2 AND t_tipStatus:2)");//接边Tips
+            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
             taskTypeBuilder.append(" OR ");
-            taskTypeBuilder.append("(s_sourceType:8001 AND stage:5 AND t_tipStatus:2)");//预处理提交
+            taskTypeBuilder.append("(s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2)");//预处理提交
         }
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
@@ -58,7 +58,9 @@ public class TipsRequestParam {
         builder.append("(");
         builder.append(taskTypeBuilder);
         if(taskBuilder != null) {
-            builder.append(" OR ");
+            if(taskTypeBuilder.length() > 0) {
+                builder.append(" OR ");
+            }
             builder.append("(");
             builder.append(taskBuilder);
             builder.append(")");
@@ -262,11 +264,11 @@ public class TipsRequestParam {
         int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
         StringBuilder taskTypeBuilder = new StringBuilder();
         if(subTaskType == 3) {//3 grid粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:2 AND t_tipStatus:2)");//接边Tips
+            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
         }else if(subTaskType == 4) {//4 区域粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:2 AND t_tipStatus:2)");//接边Tips
+            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
             taskTypeBuilder.append(" OR ");
-            taskTypeBuilder.append("(s_sourceType:8001 AND stage:5 AND t_tipStatus:2)");//预处理提交
+            taskTypeBuilder.append("(s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2)");//预处理提交
         }
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
@@ -279,7 +281,9 @@ public class TipsRequestParam {
         builder.append("(");
         builder.append(taskTypeBuilder);
         if(taskBuilder != null) {
-            builder.append(" OR ");
+            if(taskTypeBuilder.length() > 0) {
+                builder.append(" OR ");
+            }
             builder.append("(");
             builder.append(taskBuilder);
             builder.append(")");

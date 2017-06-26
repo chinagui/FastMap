@@ -145,21 +145,76 @@ public class DataPrepareService {
 	}
 	
 	/**
+	 * 判断品牌状态
+	 * @throws Exception 
+	 * 
+	 * 
+	 * */
+	public Map<String, Integer> getPrepareData(String chainCode, Connection con) throws Exception{
+		QueryRunner run = new QueryRunner();
+		try{
+			String sql = "select t.work_status from IX_DEALERSHIP_CHAIN t where t.chain_code = '"+chainCode+"'";
+			ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>() {
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> result = new HashMap<>();
+					if(rs.next()){
+						result.put("workStatus", rs.getInt("WORK_STATUS"));
+//						result.put("dealSrcDiff", rs.getInt("deal_src_diff"));
+						return result;
+					}
+					return null;
+				}
+			};
+			return run.query(con, sql, rs);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
 	 * 差分结果列表
 	 * @param chainCode品牌代码
 	 * @return 
 	 * @author songhe
+	 * @throws Exception 
 	 * 
 	 * */
-	public List<Map<String, Object>> loadDiffList(String chainCode) throws SQLException{
+	public List<Map<String, Object>> loadDiffList(String chainCode) throws Exception{
 		
 		Connection con = null;
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
-					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
-					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
+			
+			Map<String, Integer> prepareResult = getPrepareData(chainCode, con);
+			if(prepareResult == null){
+				throw new Exception("chainCode不存在");
+			}
+			int workStatus = prepareResult.get("workStatus");
+			//这个为3的时候，没有sorce表的数据
+//			int dealSrcDiff = prepareResult.get("dealSrcDiff");
+			String sql = "";
+			if(workStatus == 0 || workStatus == 1){
+				//表表查分查询sql
+//				sql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+//						+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
+//						+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'" +"and r.workflow_status = 0";
+				sql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,"
+						+ "r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status from "
+						+ "(IX_DEALERSHIP_RESULT r left join IX_DEALERSHIP_SOURCE s on r.source_id = s.source_id) left join IX_DEALERSHIP_CHAIN c on "
+						+ "r.chain = c.chain_code where c.chain_code = '"+chainCode+"'" +"and r.workflow_status = 0";
+			}else if(workStatus == 2 || workStatus == 3){
+				//表库查分查询sql
+//				sql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+//						+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
+//						+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
+				sql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,"
+						+ "r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status from "
+						+ "(IX_DEALERSHIP_RESULT r left join IX_DEALERSHIP_SOURCE s on r.source_id = s.source_id) left join IX_DEALERSHIP_CHAIN c on "
+						+ "r.chain = c.chain_code where c.chain_code = '"+chainCode+"'";
+			}else{
+				throw new Exception("品牌对应状态码异常为："+workStatus);
+			}
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -167,10 +222,9 @@ public class DataPrepareService {
 					
 					List<Map<String, Object>> diffList = new ArrayList();
 					while (rs.next()) {
-						int poiNum = 0;
 						Map<String, Object> result = new HashMap<>();
-						result.put("resultId", rs.getString("result_id"));
-						result.put("sourceId", rs.getString("source_id"));
+						result.put("resultId", rs.getInt("result_id"));
+						result.put("sourceId", rs.getInt("source_id"));
 						result.put("province", rs.getString("province"));
 						result.put("city", rs.getString("city"));
 						result.put("kindCode", rs.getString("kind_code"));
@@ -179,36 +233,22 @@ public class DataPrepareService {
 						result.put("workType", rs.getInt("work_type"));
 						result.put("dealSrcDiff", rs.getInt("deal_src_diff"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
-						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
-							poiNum = poiNum + 1;
-						}
-						if(rs.getString("poi_num_2") != null && "" != rs.getString("poi_num_2")){
-							poiNum = poiNum + 1;
-						}
-						if(rs.getString("poi_num_3") != null && "" != rs.getString("poi_num_3")){
-							poiNum = poiNum + 1;
-						}
-						if(rs.getString("poi_num_4") != null && "" != rs.getString("poi_num_4")){
-							poiNum = poiNum + 1;
-						}
-						if(rs.getString("poi_num_5") != null && "" != rs.getString("poi_num_5")){
-							poiNum = poiNum + 1;
-						}
+						int poiNum = calculatePoiNum(rs);
 						result.put("poiNum", poiNum);
 						diffList.add(result);
 					}
 					return diffList;
 				}
 			};
-			
-			return run.query(con, selectSql, rs);
+			log.info("loadDiffList-->sql:"+sql);
+			return run.query(con, sql, rs);
 		}catch(Exception e){
 			e.printStackTrace();
 			DbUtils.rollbackAndClose(con);
+			throw e;
 		}finally{
 			DbUtils.commitAndClose(con);
 		}
-		return null;
 	}
 
 	/**

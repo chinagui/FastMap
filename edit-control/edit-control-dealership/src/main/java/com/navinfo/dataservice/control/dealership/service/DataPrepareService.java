@@ -652,6 +652,9 @@ public class DataPrepareService {
 				List<String> pathList = new ArrayList<String>();
 				getDirectory(file,pathList);
 
+				//获取IxDealershipSource
+				Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
+
 				for(String fileStr:pathList){
 					File file2 = new File(fileStr);
 					if (file2.isDirectory()) {
@@ -662,8 +665,6 @@ public class DataPrepareService {
 						String chain = null;
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
-						//获取IxDealershipSource
-						Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
 
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
@@ -674,23 +675,14 @@ public class DataPrepareService {
 						}
 						if(chainStatus.containsKey(chain)&&chainStatus.get(chain)==0){
 							List<IxDealershipSource> dealershipSources =  dealershipSourceMap.get(chain);
-							//加载已有的result
-							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
 							//执行差分
-							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap,date);
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,date);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
-							List<IxDealershipResult> update = resultMap.get(3);
 							log.info("insert object");
 							if(insert!=null&&insert.size()>0){
 								for(IxDealershipResult bean:insert){
 									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
-								}
-							}
-							log.info("update object");
-							if(update!=null&&update.size()>0){
-								for(IxDealershipResult bean:update){
-									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 								}
 							}
 							
@@ -704,7 +696,15 @@ public class DataPrepareService {
 				}
 
 			}
-		}catch(Exception e){
+		}catch(IllegalArgumentException e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			if(e.getMessage().equals("MALFORMED")){
+				throw new ServiceException("更新失败，原因为:上传文件名有中文");
+			}
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}
+		catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);

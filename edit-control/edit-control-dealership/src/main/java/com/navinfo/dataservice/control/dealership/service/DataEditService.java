@@ -126,34 +126,23 @@ public class DataEditService {
 		DBConnector connector = DBConnector.getInstance();
 		// 待作业→内页录入作业3；已提交，待提交→出品9
 		int flowStatus = 3;
-		int checkErrorNum = 0;
 		if (dealStatus == 3 || dealStatus == 2)
 			flowStatus = 9;
 
 		Connection manconn = null;
-		Connection poiconn = null;
+		JSONArray result = new JSONArray();
 
 		try {
+			manconn = DBConnector.getInstance().getManConnection();
 			String queryListSql = String.format(
 					"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 					userId, flowStatus, dealStatus, chainCode);
 			List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
-			JSONArray result = new JSONArray();
-
-			if (resultCol.size() == 0) {
-				JSONObject obj = new JSONObject();
-				obj.put("resultId", 0);
-				obj.put("name", "");
-				obj.put("kindCode", "");
-				obj.put("workflowStatus", 0);
-				obj.put("dealSrcDiff", 0);
-				obj.put("checkErrorNum", checkErrorNum);
-				result.add(obj);
-			}
-
 			for (Map<String, Object> item : resultCol) {
+				int checkErrorNum = 0;
 				Map<String, Object> objMap = new HashMap<>();
+				
 				objMap.put("resultId", item.get("RESULT_ID"));
 				objMap.put("name", item.get("NAME") == null ? "" : item.get("NAME"));
 				objMap.put("kindCode", item.get("KIND_CODE") == null ? "" : item.get("KIND_CODE"));
@@ -169,20 +158,15 @@ public class DataEditService {
 					if (poiNum.isEmpty()) {
 						checkErrorNum = 0;
 					} else {
-						manconn = DBConnector.getInstance().getManConnection();
 						int dbId = getDailyDbId((Integer) item.get("REGION_ID"), manconn);
-						poiconn = DBConnector.getInstance().getConnectionById(dbId);
-						String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
-						int poiPid = run.queryForInt(poiconn, queryPoiPid);
-						checkErrorNum = GetCheckResultCount(poiPid, poiconn);
+						checkErrorNum = GetCheckErrorNum(dbId,poiNum);
 					}
 				}
+				
 				objMap.put("checkErrorNum", checkErrorNum);
-
 				JSONObject obj = JSONObject.fromObject(objMap);
 				result.add(obj);
-			}
-			return result;
+			}//for
 		} catch (Exception e) {
 			log.error("开始作业，加载作业数据列表：" + e.toString());
 			throw e;
@@ -190,12 +174,28 @@ public class DataEditService {
 			if (manconn != null) {
 				DBUtils.closeConnection(manconn);
 			}
+		}
+		return result;
+	}
+
+	private int GetCheckErrorNum(int dbId, String poiNum) throws Exception {
+		Connection poiconn = null;
+		int checkErrorNum = 0;
+		try {
+			poiconn = DBConnector.getInstance().getConnectionById(dbId);
+			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
+			int poiPid = run.queryForInt(poiconn, queryPoiPid);
+			checkErrorNum = GetCheckResultCount(poiPid, poiconn);
+		} catch (Exception e) {
+			throw e;
+		} finally {
 			if (poiconn != null) {
 				DBUtils.closeConnection(poiconn);
 			}
 		}
+		return checkErrorNum;
 	}
-
+	
 	private Integer GetCheckResultCount(Integer poiPid, Connection conn) throws Exception {
 		if (poiPid == 0)
 			return 0;
@@ -259,7 +259,8 @@ public class DataEditService {
 						poiNum);
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
 
-				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))) {
+				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))
+						&& !corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))) {
 					adoptedPoiPid.add(poiPid);
 				}
 
@@ -1807,17 +1808,17 @@ public class DataEditService {
 					String yLocation = location.substring(location.indexOf(",")+1,location.length());
 					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
 					point = new WKTReader().read(wkt);
-					sb.append("SELECT p.pid FROM ix_poi p ");
+					sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
 					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 					point = point.buffer(GeometryUtils.convert2Degree(2000));
 				}else{
 					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
-						sb.append("SELECT p.pid FROM ix_poi p,ad_admin ad ");
+						sb.append("SELECT DISTINCT p.pid FROM ix_poi p,ad_admin ad ");
 						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
-						sb.append("SELECT p.pid FROM ix_poi p ");
+						sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
 						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);

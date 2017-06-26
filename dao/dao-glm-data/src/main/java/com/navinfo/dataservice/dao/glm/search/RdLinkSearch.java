@@ -128,7 +128,7 @@ public class RdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid,direct, kind,special_traffic,function_class, s_node_pid, e_node_pid,length,imi_code, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits     from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid), tmp3 as  (select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid) select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */            b.link_pid, c.name             from rd_link_name b, rd_name c            where b.name_groupid = c.name_groupid              and b.name_class = 1              and b.seq_num = 1              and c.lang_code = 'CHI'              and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
+		String sql = "with tmp1 as  (select LANE_NUM , link_pid,direct, kind,special_traffic,function_class, s_node_pid, e_node_pid,length,imi_code, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits     from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid), tmp3 as  (select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid) select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */            b.link_pid, c.name             from rd_link_name b, rd_name c            where b.name_groupid = c.name_groupid              and b.name_class = 1              and b.seq_num = 1              and c.lang_code = 'CHI'              and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
 
 		PreparedStatement pstmt = null;
 
@@ -172,6 +172,8 @@ public class RdLinkSearch implements ISearch {
 				m.put("k", resultSet.getDouble("length"));
 				
 				m.put("l", resultSet.getInt("special_traffic"));
+
+				m.put("m", resultSet.getInt("LANE_NUM"));
 
 				snapshot.setM(m);
 
@@ -252,6 +254,8 @@ public class RdLinkSearch implements ISearch {
 
 				m.put("l", resultSet.getInt("special_traffic"));
 
+				m.put("m", resultSet.getInt("LANE_NUM"));
+
 				snapshot.setM(m);
 
 				snapshot.setT(4);
@@ -289,7 +293,7 @@ public class RdLinkSearch implements ISearch {
 
 		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE LINK_PID  IN ( " + ids + ")  AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
+		String sql = "WITH TMP1 AS (SELECT LANE_NUM , LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE LINK_PID  IN ( " + ids + ")  AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
 
 		PreparedStatement pstmt = null;
 
@@ -318,7 +322,7 @@ public class RdLinkSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByNodePid(int nodePid)
 			throws Exception {
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE (S_NODE_PID = :1 OR E_NODE_PID = :2) AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
+		String sql = "WITH TMP1 AS (SELECT LANE_NUM ,LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE (S_NODE_PID = :1 OR E_NODE_PID = :2) AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 

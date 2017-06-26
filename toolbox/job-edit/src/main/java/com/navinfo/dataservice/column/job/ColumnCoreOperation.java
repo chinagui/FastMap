@@ -293,7 +293,7 @@ public class ColumnCoreOperation {
 	}
 	
 	/**
-	 * 从poi_column_status表删除作业标记信息
+	 * 更新COLUMN_QC_PROBLEM
 	 * 
 	 * @param classifyRules
 	 * @param conn
@@ -329,7 +329,7 @@ public class ColumnCoreOperation {
 
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
-			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
+			throw new SQLException("更新COLUMN_QC_PROBLEM表信息出错，原因：" + e.getMessage(), e);
 		}
 
 	}
@@ -374,25 +374,18 @@ public class ColumnCoreOperation {
 	 * @param pid
 	 * @throws Exception
 	 */
-	public void noAddrPoiDeleteWorkItem(List<String> classifyRules, Connection conn, List<Integer> pidList) throws Exception {
+	public void noAddrPoiDeleteWorkItem(String classifyRules, Connection conn, List<Integer> pidList) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from poi_column_status PS where PS.pid in (?) and PS.work_item_id=? and  NOT EXISTS (SELECT 1 FROM IX_POI_ADDRESS AD  WHERE PS.PID=AD.POI_PID)");
+		sb.append("delete from poi_column_status PS where PS.pid in ("+StringUtils.join(pidList, ",")+") and PS.work_item_id='"+classifyRules+"' and  NOT EXISTS (SELECT 1 FROM IX_POI_ADDRESS AD  WHERE PS.PID=AD.POI_PID ) ");
 
 		PreparedStatement pstmt = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			for (String workItem : classifyRules) {
-				pstmt.setString(1, StringUtils.join(pidList, ","));
-				pstmt.setString(2, workItem);
-				pstmt.addBatch();
-			}
-
-			pstmt.executeBatch();
-			pstmt.clearBatch();
+			log.info(sb.toString());
+			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
 		}

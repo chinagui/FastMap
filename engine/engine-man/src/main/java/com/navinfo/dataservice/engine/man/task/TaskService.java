@@ -538,7 +538,7 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,"
+			sb.append("SELECT t.program_id,T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,"
 					+ "UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
@@ -551,6 +551,7 @@ public class TaskService {
 					List<Task> taskList = new ArrayList<Task>();
 					while (rs.next()) {
 						Task task = new Task();
+						task.setProgramId(rs.getInt("PROGRAM_ID"));
 						task.setTaskId(rs.getInt("TASK_ID"));
 						task.setName(rs.getString("NAME"));
 						task.setStatus(rs.getInt("STATUS"));
@@ -774,7 +775,7 @@ public class TaskService {
 					}//任务名称+_作业组
 				}
 			}
-			subtask.setExeGroupId(task.getGroupId());
+			//subtask.setExeGroupId(task.getGroupId());
 			subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 			subtask.setPlanStartDate(task.getPlanStartDate());
 			subtask.setPlanEndDate(task.getPlanEndDate());

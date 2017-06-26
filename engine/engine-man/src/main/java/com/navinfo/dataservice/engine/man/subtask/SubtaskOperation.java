@@ -958,7 +958,7 @@ public class SubtaskOperation {
 						}
 
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((0==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -979,7 +979,7 @@ public class SubtaskOperation {
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
 								if(subtaskStat != null){
 //									if(subtaskStat.containsKey("poiCommit")){
-									if(subtaskObj.getType() == 0 ||  subtaskObj.getType() == 2){
+									if(rs.getInt("TYPE") == 0 || rs.getInt("TYPE") == 2){
 										subtask.put("poiCommit",subtaskStat.get("poiCommit"));
 										subtask.put("poiWorked",subtaskStat.get("poiWorked"));
 										subtask.put("poiWaitWork",subtaskStat.get("poiWaitWork"));
@@ -1001,18 +1001,18 @@ public class SubtaskOperation {
 								e.printStackTrace();
 							}
 						}
-//						//日编道路子任务的质检任务需要获取质检量的统计
-//						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
-//							try {
-//								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
-//								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
-//								subtask.put("checkCount",checkMap.get("checkCount"));
-//								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
-//							} catch (Exception e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							}
-//						}
+						//日编道路子任务的质检任务需要获取质检量的统计
+						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
+							try {
+								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
+								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
+								subtask.put("checkCount",checkMap.get("checkCount"));
+								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						
 						list.add(subtask);
 						log.debug("end subtask");

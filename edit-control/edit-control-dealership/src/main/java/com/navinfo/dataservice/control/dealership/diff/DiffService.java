@@ -36,7 +36,7 @@ public class DiffService {
 		return str.toString();
 	}
 
-	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, Map<Integer, IxDealershipResult> dealershipResultsPreMap, String date) throws Exception {
+	public static Map<Integer,List<IxDealershipResult>> diff(List<IxDealershipSource> dealershipSources,List<IxDealershipResult> dealershipResult, String chain, String date) throws Exception {
 		log.info("Table Diff Begin");
 		
 		//加载cp_region_province
@@ -45,7 +45,6 @@ public class DiffService {
 		
 		Map<Integer,List<IxDealershipResult>> resultMap = new HashMap<Integer,List<IxDealershipResult>>();
 		List<IxDealershipResult> insertList = new ArrayList<IxDealershipResult>();
-		List<IxDealershipResult> updateList = new ArrayList<IxDealershipResult>();
 
 		Map<String, Integer> dealershipNameMap = new HashMap<String, Integer>();
 		Map<String, Integer> dealershipAddrMap = new HashMap<String, Integer>();
@@ -158,13 +157,8 @@ public class DiffService {
 			/**************** 新旧一致逻辑 *******************/
 			if (mapMatchSame.get(t) != null) {
 				IxDealershipSource j = mapMatchSame.get(t);
-				if(dealershipResultsPreMap.containsKey(j.getSourceId())){
-					resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-					updateList.add(resultDpAttrDiff);
-				}else{
-					resultDpAttrDiff = new IxDealershipResult(i);
-					insertList.add(resultDpAttrDiff);
-				}
+				resultDpAttrDiff = new IxDealershipResult(i);
+				insertList.add(resultDpAttrDiff);
 
 				resultDpAttrDiff.setDealSrcDiff(1);
 				resultDpAttrDiff.setProvideDate(date);
@@ -191,13 +185,9 @@ public class DiffService {
 						samePostCode = true;
 					
 					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
-						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
-							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							updateList.add(resultDpAttrDiff);
-						}else{
-							resultDpAttrDiff = new IxDealershipResult(i);
-							insertList.add(resultDpAttrDiff);
-						}
+						resultDpAttrDiff = new IxDealershipResult(i);
+						insertList.add(resultDpAttrDiff);
+						
 						resultDpAttrDiff.setDealSrcDiff(4);
 						resultDpAttrDiff.setProvideDate(date);
 
@@ -224,13 +214,9 @@ public class DiffService {
 						samePostCode = true;
 					
 					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
-						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
-							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							updateList.add(resultDpAttrDiff);
-						}else{
-							resultDpAttrDiff = new IxDealershipResult(i);
-							insertList.add(resultDpAttrDiff);
-						}
+						resultDpAttrDiff = new IxDealershipResult(i);
+						insertList.add(resultDpAttrDiff);
+						
 						resultDpAttrDiff.setDealSrcDiff(4);
 						resultDpAttrDiff.setProvideDate(date);
 						
@@ -259,13 +245,10 @@ public class DiffService {
 						samePostCode = true;
 
 					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
-						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
-							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							updateList.add(resultDpAttrDiff);
-						}else{
-							resultDpAttrDiff = new IxDealershipResult(i);
-							insertList.add(resultDpAttrDiff);
-						}
+						
+						resultDpAttrDiff = new IxDealershipResult(i);
+						insertList.add(resultDpAttrDiff);
+
 						resultDpAttrDiff.setDealSrcDiff(4);
 						resultDpAttrDiff.setProvideDate(date);
 
@@ -298,26 +281,30 @@ public class DiffService {
 						samePostCode = true;
 					
 					if ((!sameAddress&&!sameTel&&!samePostCode)) {
-						
-						if(dealershipResultsPreMap.containsKey(j.getSourceId())){
-							resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-							updateList.add(resultDpAttrDiff);
-						}else{
-							resultDpAttrDiff = new IxDealershipResult(i);
-							if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
-								resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
-							}
-							else{
-								log.info("can not get regionId");
-							}
-							insertList.add(resultDpAttrDiff);
+
+						resultDpAttrDiff = new IxDealershipResult(i);
+						if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+							resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 						}
+						else{
+							log.info("can not get regionId");
+						}
+						insertList.add(resultDpAttrDiff);
+							
 						resultDpAttrDiff.setDealSrcDiff(3);
 						resultDpAttrDiff.setProvideDate(date);
 
 
 						if(resultDpAttrDiff.getGeometry()==null){
-							String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
+							String addr = "";
+							if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getProvince())){
+								addr += resultDpAttrDiff.getProvince();
+							}
+							if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getCity())){
+								addr += resultDpAttrDiff.getCity();
+							}
+							addr += resultDpAttrDiff.getAddress();
+							
 							if(BaiduGeocoding.geocoder(addr)!=null){
 								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
 							}else{
@@ -367,13 +354,9 @@ public class DiffService {
 			if ((dkeyMap.get(i.getSourceId()) == null)) {
 				/***************** 删除逻辑 ****************/
 				IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-				if(dealershipResultsPreMap.containsKey(i.getSourceId())){
-					resultDpAttrDiff = dealershipResultsPreMap.get(i.getSourceId());
-					updateList.add(resultDpAttrDiff);
-				}else{
-					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
-					insertList.add(resultDpAttrDiff);
-				}
+				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
+				insertList.add(resultDpAttrDiff);
+				
 				resultDpAttrDiff.setProvideDate(date);
 
 				//上传一览表与全国一览表中品牌相同，且全国一览表中存在，但是名称、地址、电话、邮编均不相同
@@ -392,9 +375,7 @@ public class DiffService {
 		}
 		log.info("Table Diff End");
 
-		resultMap.put(1, insertList);
-		resultMap.put(3, updateList);
-		
+		resultMap.put(1, insertList);		
 
 		return resultMap;
 

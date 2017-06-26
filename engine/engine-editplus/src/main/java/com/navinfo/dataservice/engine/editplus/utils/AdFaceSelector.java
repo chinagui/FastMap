@@ -74,4 +74,34 @@ public class AdFaceSelector {
         return faceMap;
     }
     
+    /**
+     * 根据坐标算出adminId
+     * @param geometry
+     * @return
+     */
+    public int getAminIdByGeometry(Geometry geometry) {
+    	int adminId = 0;
+        String sql = "select t2.admin_id from ad_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 0 or t2.admin_type = 1 or t2.admin_type = 2 or t2.admin_type = 2.5 or t2.admin_type = 3 or t2.admin_type = 3.5 or t2.admin_type = 4 or t2.admin_type = 4.5 or t2.admin_type = 4.8 or t2.admin_type = 5 or t2.admin_type = 6 or t2.admin_type = 7) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            String wkt = GeoTranslator.jts2Wkt(geometry);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+            	if(resultSet.getInt("admin_id") != 0){
+            		adminId = resultSet.getInt("admin_id");
+            		break;
+            	}
+            }
+        } catch (Exception e) {
+        	System.out.println(e.getMessage());
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return adminId;
+    }
+    
 }

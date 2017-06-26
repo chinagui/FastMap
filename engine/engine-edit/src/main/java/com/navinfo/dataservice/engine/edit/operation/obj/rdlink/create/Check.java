@@ -158,9 +158,7 @@ public class Check {
 		throw new Exception(msg);
 	}
 
-	public void postCheck(Connection conn, Result result, int projectId)
-			throws Exception {
-
+	public void postCheck(Connection conn, Result result, int projectId) throws Exception {
 	}
 
 	

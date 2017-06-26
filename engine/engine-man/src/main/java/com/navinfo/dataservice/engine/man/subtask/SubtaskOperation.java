@@ -131,7 +131,7 @@ public class SubtaskOperation {
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
-			if(bean.getGridIds() != null){
+			if(bean.getGridIds() != null&&bean.getGridIds().size()>0){
 				//前端传入grids修改，需要重新更新子任务的grid
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
@@ -412,6 +412,7 @@ public class SubtaskOperation {
 					+ "           AND SM.GRID_ID = TM.GRID_ID"
 					+ "           AND SS.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.STATUS != 0"
+					+ "           AND SS.is_quality=0"
 					+ "           AND S.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.TYPE = 3)))";
 			log.info("关闭SQL："+updateSql);

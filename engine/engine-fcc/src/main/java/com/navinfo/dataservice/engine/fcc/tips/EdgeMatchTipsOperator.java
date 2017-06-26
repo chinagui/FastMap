@@ -32,6 +32,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			.getLogger(EdgeMatchTipsOperator.class);
 
 	public EdgeMatchTipsOperator() {
+		
 
 	}
 
@@ -122,7 +123,8 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			Put put = new Put(rowkey.getBytes());
 			put.addColumn("data".getBytes(), "track".getBytes(), trackJson
 					.toString().getBytes());
-			put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+			com.alibaba.fastjson.JSONObject fastGeom = TipsUtils.netJson2fastJson(jsonGeom);
+			put.addColumn("data".getBytes(), "geometry".getBytes(), fastGeom
 					.toString().getBytes());
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedbackObj
 					.toString().getBytes());

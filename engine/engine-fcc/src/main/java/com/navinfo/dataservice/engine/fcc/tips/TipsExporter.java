@@ -78,7 +78,7 @@ public class TipsExporter {
 		return gets;
 	}
 
-	private JSONArray exportByGets(List<Get> gets, Set<String> patternImages)
+	private JSONArray exportByGets(List<Get> gets,  Map<String, Set<String>> patternImages)
 			throws Exception {
 
 		JSONArray ja = new JSONArray();
@@ -147,14 +147,21 @@ public class TipsExporter {
 
                 json.put("deep", deepjson);
 
-                if (sourceType.equals("1406") || sourceType.equals("1401")) {
+                if (sourceType.equals("1406") || sourceType.equals("1401") || sourceType.equals("1402")) {
                     // 需要导出关联的模式图
 
                     if (deepjson.containsKey("ptn")) {
                         String ptn = deepjson.getString("ptn");
 
                         if (ptn != null && ptn.length() > 0) {
-                            patternImages.add(ptn);
+							if(patternImages.containsKey(sourceType)) {
+                                Set<String> ptnSet = patternImages.get(sourceType);
+                                ptnSet.add(ptn);
+                            }else {
+                                Set<String> ptnSet = new HashSet<>();
+                                ptnSet.add(ptn);
+                                patternImages.put(sourceType, ptnSet);
+                            }
                         }
                     }
                 }
@@ -681,7 +688,7 @@ public class TipsExporter {
 	 * @throws Exception
 	 */
 	public int export(JSONArray condition, String folderName,
-			String fileName, Set<String> patternImages) throws Exception {
+			String fileName, Map<String, Set<String>> patternImages) throws Exception {
 
 		int count = 0;
 
@@ -746,7 +753,7 @@ public class TipsExporter {
 
 		TipsExporter exporter = new TipsExporter();
 		System.out.println(exporter.export(condition,
-				"F:\\FCC\\track", "1.txt", images));
+				"F:\\FCC\\track", "1.txt", null));
 		System.out.println(images);
 		System.out.println("done");
 //		Integer a=TipsExportUtils.downloadOriginalPhotoTips.get("122");

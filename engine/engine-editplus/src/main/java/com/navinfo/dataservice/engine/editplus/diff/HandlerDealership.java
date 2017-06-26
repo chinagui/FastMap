@@ -243,7 +243,7 @@ public class HandlerDealership {
 	public static boolean isSameKindChain(IxDealershipResult dealershipMR, BasicObj obj) {
 		if(obj==null) {return false;}
 		IxPoi p = (IxPoi) obj.getMainrow();
-		if (p.getChain().equals(dealershipMR.getPoiChain()) && p.getKindCode().equals(dealershipMR.getPoiKindCode())) {
+		if (p.getChain()!=null&&(p.getChain().equals(dealershipMR.getPoiChain())) && p.getKindCode().equals(dealershipMR.getPoiKindCode())) {
 			return true;
 		}
 		return false;

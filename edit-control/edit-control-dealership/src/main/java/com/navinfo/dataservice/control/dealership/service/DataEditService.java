@@ -259,7 +259,8 @@ public class DataEditService {
 						poiNum);
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
 
-				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))) {
+				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))
+						&& !corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))) {
 					adoptedPoiPid.add(poiPid);
 				}
 

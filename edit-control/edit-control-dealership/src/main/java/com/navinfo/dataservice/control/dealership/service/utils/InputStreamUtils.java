@@ -65,10 +65,10 @@ public class InputStreamUtils {
 		File file = new File(filePath,tempFile.getName());
 		
 		//情报重命名
-		if(info!=null){
+		/*if(info!=null){
 			File newFile = new File(filePath,String.format("release%s.csv",DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")));
 			file.renameTo(newFile);
-		}
+		}*/
 		
 		File fileParent = file.getParentFile();
 		if(!fileParent.exists()){

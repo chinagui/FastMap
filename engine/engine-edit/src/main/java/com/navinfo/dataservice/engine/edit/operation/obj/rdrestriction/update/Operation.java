@@ -1,23 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.update;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.IVia;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
@@ -26,6 +10,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.*;
 
 public class Operation implements IOperation {
 
@@ -194,7 +183,7 @@ public class Operation implements IOperation {
 	 * 更新 交限时间段和车辆限制表
 	 * 
 	 * @param result
-	 * @param json
+	 * @param
 	 * @param detail
 	 * @throws Exception
 	 */
@@ -270,7 +259,7 @@ public class Operation implements IOperation {
 	 * 更新经过线
 	 * 
 	 * @param result
-	 * @param json
+	 * @param
 	 * @param detail
 	 * @throws Exception
 	 */
@@ -362,7 +351,7 @@ public class Operation implements IOperation {
 	 * 分离节点
 	 * 
 	 * @param link
-	 * @param nodePid
+	 * @param
 	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
@@ -651,44 +640,58 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			Set<Integer> connectionNodePids = new HashSet<Integer>();			
-
-			connectionNodePids.add(restriction.getNodePid());
+			Set<Integer> connectionNodePids = new HashSet<>();
 
 			if (detail.getRelationshipType() == 1) {
 
-				RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
-						this.conn);
+				connectionNodePids.add(restriction.getNodePid());
 
-				List<Integer> nodePids = crossNodeSelector
-						.getCrossNodePidByNode(restriction.getNodePid());
+				RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(this.conn);
 
-				connectionNodePids.addAll(nodePids);
+				List<Integer> nodePids = crossNodeSelector.getCrossNodePidByNode(restriction.getNodePid());
+
+				if (nodePids.size() > 1) {
+
+					connectionNodePids.addAll(nodePids);
+				}
 
 			} else {
 
-				List<Integer> linkPids = new ArrayList<Integer>();
+				RdRestrictionVia lastVia = (RdRestrictionVia) detail.getVias().get(0);
 
 				for (IRow rowVia : detail.getVias()) {
 
 					RdRestrictionVia via = (RdRestrictionVia) rowVia;
 
-					linkPids.add(via.getLinkPid());
+					if (lastVia.getGroupId() == via.getGroupId() && lastVia.getSeqNum() < via.getSeqNum()) {
+
+						lastVia = via;
+					}
 				}
 
 				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-				List<IRow> linkRows = rdLinkSelector.loadByIds(linkPids, true,
-						false);
+				if (deleteLink.getsNodePid() != restriction.getNodePid()) {
 
-				for (IRow linkRow : linkRows) {
+					List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+							deleteLink.getsNodePid(), false);
 
-					RdLink link = (RdLink) linkRow;
+					int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+							.getsNodePid() : deleteLink.geteNodePid();
 
-					connectionNodePids.add(link.getsNodePid());
+					connectionNodePids.add(connectionNodePid);
 
-					connectionNodePids.add(link.geteNodePid());
+				} else if (deleteLink.geteNodePid() != restriction.getNodePid()) {
+
+					List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+							deleteLink.geteNodePid(), false);
+
+					int connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+							.geteNodePid() : deleteLink.getsNodePid();
+
+					connectionNodePids.add(connectionNodePid);
 				}
+
 			}
 			for (RdLink link : newLinks) {
 

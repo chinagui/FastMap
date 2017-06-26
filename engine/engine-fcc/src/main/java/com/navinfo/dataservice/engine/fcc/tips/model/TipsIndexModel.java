@@ -34,6 +34,7 @@ public class TipsIndexModel {
     private String wktLocation;
     private String relate_links = "";
     private String relate_nodes = "";
+    private String s_project = "";
 
 
     public String getId() {
@@ -274,6 +275,14 @@ public class TipsIndexModel {
 
     public void setT_mEditMeth(int t_mEditMeth) {
         this.t_mEditMeth = t_mEditMeth;
+    }
+
+    public String getS_project() {
+        return s_project;
+    }
+
+    public void setS_project(String s_project) {
+        this.s_project = s_project;
     }
 
     public void setSource(TipsSource source) {

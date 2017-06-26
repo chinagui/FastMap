@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -15,6 +16,7 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.nirobot.common.utils.JsonUtil;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -234,7 +236,7 @@ public class TipsUpload {
 			String rowkey = en.getKey();
 			// 坐标
 			JSONObject nameTipJson = en.getValue();
-			JSONObject gLocation = JSONObject.fromObject(nameTipJson.get("g_location"));
+			JSONObject gLocation = nameTipJson.getJSONObject("g_location");
             String sourceType = nameTipJson.getString("s_sourceType");
 
 			// 名称,调用元数据库接口入库
@@ -282,7 +284,7 @@ public class TipsUpload {
 
 				String line = scanner.nextLine();
 
-				JSONObject json = JSONObject.fromObject(line);
+				JSONObject json = TipsUtils.stringToSFJson(line);
 
 				rowkey = json.getString("rowkey");
 
@@ -368,8 +370,7 @@ public class TipsUpload {
 
 				String sourceType = json.getString("s_sourceType");
                 JSONObject gLocation = json.getJSONObject("g_location");
-                JSONObject deep = JSONObject.fromObject(json
-                        .getString("deep"));
+                JSONObject deep = json.getJSONObject("deep");
 				if (sourceType.equals("2001")) {
 
 					double length = GeometryUtils.getLinkLength(GeoTranslator
@@ -544,9 +545,9 @@ public class TipsUpload {
 
 				if (result.containsColumn("data".getBytes(),
 						"feedback".getBytes())) {
-					JSONObject feedback = JSONObject.fromObject(new String(
-							result.getValue("data".getBytes(),
-									"feedback".getBytes())));
+                    String fastFeedback = new String(result.getValue("data".getBytes(),
+                                    "feedback".getBytes()));
+					JSONObject feedback = TipsUtils.stringToSFJson(fastFeedback);
 
 					jo.put("feedback", feedback);
 				} else {
@@ -744,7 +745,7 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
 				.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "deep".getBytes(),
@@ -752,7 +753,7 @@ public class TipsUpload {
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
+		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
 				.toString().getBytes());
 
 		return put;
@@ -883,7 +884,7 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
 				.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "deep".getBytes(),
@@ -891,7 +892,7 @@ public class TipsUpload {
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
+		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
 				.toString().getBytes());
 
 		return put;
@@ -1051,10 +1052,20 @@ public class TipsUpload {
 		 * 
 		 * System.out.println("成功");
 		 */
-//		JSONObject json = new JSONObject();
-//		json.put("g_guide",
-//				"{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
-		TipsUpload l = new TipsUpload(0);
-		l.run("F:\\FCC\\11151449646061.txt", null, null);
+//		TipsUpload l = new TipsUpload(0);
+//		l.run("F:\\FCC\\11151449646061.txt", null, null);
+
+        String str = "{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.000,40.01351567]}}";
+        //System.out.println(str.toString());
+        JSONObject strJson = TipsUtils.stringToSFJson(str);
+//
+//        com.alibaba.fastjson.JSONObject fj = TipsUtils.netJson2fastJson(strJson);
+//        System.out.println(fj.toString());
+//        System.out.println(strJson.toString());
+        JSONObject locJson1 = strJson.getJSONObject("g_location");
+        JSONArray jsonArray1  = locJson1.getJSONArray("coordinates");
+        System.out.println(jsonArray1.get(0));
+        System.out.println(jsonArray1.get(1));
+        System.out.println(GeoTranslator.transform(GeoTranslator.geojson2Jts(locJson1), 0.00001, 5));
 	}
 }

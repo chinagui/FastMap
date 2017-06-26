@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -28,6 +30,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -128,7 +131,7 @@ public class SubtaskOperation {
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
-			if(bean.getGridIds() != null){
+			if(bean.getGridIds() != null&&bean.getGridIds().size()>0){
 				//前端传入grids修改，需要重新更新子任务的grid
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
@@ -409,6 +412,7 @@ public class SubtaskOperation {
 					+ "           AND SM.GRID_ID = TM.GRID_ID"
 					+ "           AND SS.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.STATUS != 0"
+					+ "           AND SS.is_quality=0"
 					+ "           AND S.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.TYPE = 3)))";
 			log.info("关闭SQL："+updateSql);
@@ -3002,6 +3006,14 @@ public class SubtaskOperation {
 			//获取到与不规则子任务圈有交叉/接边的所有grid，然后查询所有非该子任务的所有子任务信息
 			String gridIdsStr = StringUtils.join(geoWithNeighbor.toArray(), ",");
 			
+			List<Clob> values=new ArrayList<Clob>();
+			if(geoWithNeighbor.size()>1000){
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, geoWithNeighbor.toString().replace("[", "").replace("]", ""));
+				gridIdsStr="select to_number(column_value) from table(clob_to_table(?))";
+				values.add(clob);
+			}
+			
 			String selectSql = "select distinct sgm.grid_id,"
 					+ " u.user_real_name"
 					+ " from subtask s,"
@@ -3013,38 +3025,41 @@ public class SubtaskOperation {
 					+ " and s.status=1"
 					+ " and s.subtask_id <> " + subtaskId
 					+ " order by sgm.grid_id";
-			
-			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
-				public JSONArray handle(ResultSet rs) throws SQLException {
-					JSONArray referSubtasks = new JSONArray(); 
-					int gridId=0;
-					JSONArray gridUserName = new JSONArray();
-					while (rs.next()) {
-						int temp = rs.getInt("grid_id");
-						if(gridId==0){
-							gridId=temp;
-							gridUserName.add(rs.getString("user_real_name"));
-							continue;}
-						if(gridId!=temp){
-							JSONObject tempGridRefer=new JSONObject();
-							tempGridRefer.put("gridId", gridId);
-							tempGridRefer.put("userNameList", gridUserName);
-							referSubtasks.add(tempGridRefer);
-							gridUserName=new JSONArray();
-						}
-						gridId=temp;
-						gridUserName.add(rs.getString("user_real_name"));
-					}
-					if(gridId!=0){
-						JSONObject tempGridRefer=new JSONObject();
-						tempGridRefer.put("gridId", gridId);
-						tempGridRefer.put("userNameList", gridUserName);
-						referSubtasks.add(tempGridRefer);}
-					return referSubtasks;
+			PreparedStatement pstmt=conn.prepareStatement(selectSql);;
+			if(values!=null&&values.size()>0){
+				for(int i=0;i<values.size();i++){
+					pstmt.setClob(i+1,values.get(i));
 				}
-			};
+			}			
+			ResultSet rs = pstmt.executeQuery();
+			
+			JSONArray referSubtasks = new JSONArray(); 
+			int gridId=0;
+			JSONArray gridUserName = new JSONArray();
+			while (rs.next()) {
+				int temp = rs.getInt("grid_id");
+				if(gridId==0){
+					gridId=temp;
+					gridUserName.add(rs.getString("user_real_name"));
+					continue;}
+				if(gridId!=temp){
+					JSONObject tempGridRefer=new JSONObject();
+					tempGridRefer.put("gridId", gridId);
+					tempGridRefer.put("userNameList", gridUserName);
+					referSubtasks.add(tempGridRefer);
+					gridUserName=new JSONArray();
+				}
+				gridId=temp;
+				gridUserName.add(rs.getString("user_real_name"));
+			}
+			if(gridId!=0){
+				JSONObject tempGridRefer=new JSONObject();
+				tempGridRefer.put("gridId", gridId);
+				tempGridRefer.put("userNameList", gridUserName);
+				referSubtasks.add(tempGridRefer);}
+					
 			log.info("getReferSubtasksByGridIds sql:" + selectSql);
-			return run.query(conn, selectSql, rsHandler);
+			return referSubtasks;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

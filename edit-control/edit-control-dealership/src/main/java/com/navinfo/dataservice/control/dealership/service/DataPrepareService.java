@@ -243,7 +243,6 @@ public class DataPrepareService {
 			log.info("loadDiffList-->sql:"+sql);
 			return run.query(con, sql, rs);
 		}catch(Exception e){
-			e.printStackTrace();
 			DbUtils.rollbackAndClose(con);
 			throw e;
 		}finally{

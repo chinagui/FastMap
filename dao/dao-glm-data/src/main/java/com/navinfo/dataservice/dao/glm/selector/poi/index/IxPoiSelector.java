@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.index;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -64,8 +66,8 @@ public class IxPoiSelector extends AbstractSelector {
 		JSONObject result = new JSONObject();
 
 		JSONArray array = new JSONArray();
-		
-		Map<Long,JSONObject> objs = new HashMap<Long,JSONObject>();
+
+		Map<Long, JSONObject> objs = new HashMap<Long, JSONObject>();
 
 		int total = 0;
 		int startRow = (pageNum - 1) * pageSize + 1;
@@ -97,7 +99,6 @@ public class IxPoiSelector extends AbstractSelector {
 				}
 			}
 		}
-
 
 		buffer.append(" ) c");
 		buffer.append(" WHERE ROWNUM <= :1) ");
@@ -149,17 +150,18 @@ public class IxPoiSelector extends AbstractSelector {
 				json.put("auditProblem", "");
 				json.put("auditStatus", "");
 
-				objs.put(pid,json);
+				objs.put(pid, json);
 			}
 			result.put("total", total);
-			//get status
-			if(objs.size()>0){
+			// get status
+			if (objs.size() > 0) {
 				LogReader logRead = new LogReader(conn);
-				Map<Long,Integer> objStatus = logRead.getObjectState(objs.keySet(), ObjectName.IX_POI);
-				for(Entry<Long,JSONObject> entry:objs.entrySet()){
+				Map<Long, Integer> objStatus = logRead.getObjectState(
+						objs.keySet(), ObjectName.IX_POI);
+				for (Entry<Long, JSONObject> entry : objs.entrySet()) {
 					Integer status = objStatus.get(entry.getKey());
-					JSONObject jo =entry.getValue();
-					jo.put("status", status==null?0:status);
+					JSONObject jo = entry.getValue();
+					jo.put("status", status == null ? 0 : status);
 					array.add(jo);
 				}
 			}
@@ -637,4 +639,73 @@ public class IxPoiSelector extends AbstractSelector {
 		return poiList;
 	}
 
+	/**
+	 * 根据引导POI pids 查询官方原始名称
+	 * zhakk
+	 * @param POI
+	 * @param isLock
+	 *            是否加锁
+	 * @return Map
+	 * @throws Exception
+	 */
+	public Map<Integer, String> loadNamesByPids(List<Integer> poiPids,
+			boolean isLock) throws Exception {
+
+		Map<Integer, String> map = new HashMap<Integer, String>();
+
+		if (poiPids.size() < 1) {
+
+			return map;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(poiPids, ",");
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(" SELECT ip.pid, im.name ");
+		buffer.append(" FROM ix_poi_name im, ix_poi ip ");
+		buffer.append(" WHERE     im.u_record(+) <> 2 AND ip.u_record <> 2 ");
+		buffer.append(" AND im.lang_code(+) = 'CHI'  AND name_class(+) = 1  AND name_type(+) = 2  ");
+		buffer.append(" AND ip.pid = im.poi_pid(+) ");
+		Clob pidClod = null;
+		if (poiPids.size() > 1000) {
+			pidClod = ConnectionUtil.createClob(conn);
+			pidClod.setString(1, ids);
+			buffer.append(" ip.pid IN (select to_number(column_value) from table(clob_to_table(?))) ");
+		} else {
+			buffer.append(" ip.pid IN (" + ids + ") ");
+		}
+
+		if (isLock) {
+			buffer.append(" for update nowait ");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(buffer.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int pid = resultSet.getInt("pid");
+				String name = resultSet.getString("name");
+
+				map.put(pid, name);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return map;
+	}
 }

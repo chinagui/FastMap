@@ -38,6 +38,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -262,6 +263,24 @@ public class SearchProcess {
 			JSONArray array = new JSONArray();
 
 			switch (type) {
+
+			case IXPOI:
+
+				if (condition.containsKey("pids")) {
+					@SuppressWarnings({ "unchecked" })
+					List<Integer> pids = (List<Integer>) JSONArray
+							.toCollection(condition.getJSONArray("pids"),
+									Integer.class);
+
+					IxPoiSelector selector = new IxPoiSelector(this.conn);
+
+					Map<Integer, String> map = selector.loadNamesByPids(pids,
+							false);
+
+					array = JSONArray.fromObject(map);
+
+				}
+				break;
 
 			case RDCROSS:
 
@@ -603,11 +622,11 @@ public class SearchProcess {
 
 					List<Integer> viaList = new ArrayList<>();
 
-					String errInfo="";
+					String errInfo = "";
 					try {
 						// 计算经过线
-						viaList = calLinkOperateUtils.calViaLinks(
-								this.conn, inLinkPid, nodePid, outLinkPid);
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
 					} catch (Exception e) {
 
 						if (e.getMessage().equals("未计算出经过线，请手动选择经过线")) {
@@ -637,7 +656,7 @@ public class SearchProcess {
 
 					if (!calLinkOperateUtils.isConnect(linkpids, nodePid)) {
 
-						errInfo+="所选进入线、进入点、退出线不连通";
+						errInfo += "所选进入线、进入点、退出线不连通";
 					}
 
 					JSONArray viaArray = new JSONArray();

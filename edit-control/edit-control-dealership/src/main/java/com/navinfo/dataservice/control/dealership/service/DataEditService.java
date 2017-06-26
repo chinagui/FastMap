@@ -250,7 +250,7 @@ public class DataEditService {
 			}
 
 			for (String poiNum : matchPoiNums) {
-				if(repeatedPoiNum.contains(poiNum.replace("'", ""))){
+				if(repeatedPoiNum.contains(poiNum)){
 					continue;
 				}
 				repeatedPoiNum.add(poiNum);

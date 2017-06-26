@@ -3,15 +3,12 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import net.sf.json.JSONArray;
-
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.web.socket.TextMessage;
-
-import com.alibaba.dubbo.common.json.JSONObject;
 import com.navinfo.dataservice.api.man.model.TaskProgress;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.websocket.TaskOther2MediumWebSocketHandler;

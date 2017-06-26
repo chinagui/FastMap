@@ -782,9 +782,10 @@ public class DataPrepareService {
 	 * @param dataJson
 	 * @return 分页后的结果List
 	 * @author songhe
+	 * @throws Exception 
 	 * 
 	 * */
-	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws SQLException{
+	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws Exception{
 		//处理数据
 		Map<String, Object> cofirmData = convertCofirmData(dataJson);
 		Connection con = null;
@@ -801,14 +802,27 @@ public class DataPrepareService {
 			if("2".equals(cofirmData.get("type").toString())){
 				workflowStatus = 4;
 			}
+			
 			//分页信息
 			int begainSize = Integer.parseInt(String.valueOf(cofirmData.get("begainSize")));
 			int endSize = Integer.parseInt(String.valueOf(cofirmData.get("endSize")));
 			
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
-			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.province,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
-			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.province,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where ");
+			
+			if("3".equals(cfmStatus)){
+				if(workflowStatus == 4){
+					sb.append("r.fb_source = 1 and r.cfm_status = 3");
+				}else if(workflowStatus == 5){
+					sb.append("r.fb_source = 2 and r.cfm_status = 3");
+				}else{
+					throw new Exception("已反馈类型的数据type请求参数错误：type应该为1或2");
+				}
+			}else{
+				sb.append("r.workflow_status = "+workflowStatus+" and r.cfm_status = "+cfmStatus);
+			}
+			
 			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
 				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
 			}

@@ -516,7 +516,7 @@ public class DataConfirmService {
 		
 		int exportCount = resultObj.getInt("exportCount");
 		if(exportCount == 0){
-			throw new Exception("输入时间段返回情报数为0!");
+			throw new Exception("未查到符合条件的情报信息!");
 		}
 		
 		String fileName = resultObj.getString("filename");

@@ -514,6 +514,11 @@ public class DataConfirmService {
 		log.info("情报反馈返回值："+return_value);
 		log.info("情报反馈："+resultObj);
 		
+		int exportCount = resultObj.getInt("exportCount");
+		if(exportCount == 0){
+			throw new Exception("输入时间段返回情报数为0!");
+		}
+		
 		String fileName = resultObj.getString("filename");
 		return fileName;
 	}

@@ -977,38 +977,41 @@ public class SubtaskOperation {
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
 								if(subtaskStat != null){
-									if(subtaskStat.containsKey("poiFinish")){
-										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
-										subtask.put("poiTotal",subtaskStat.get("poiTotal"));
+//									if(subtaskStat.containsKey("poiCommit")){
+									if(subtaskObj.getType() == 0 ||  subtaskObj.getType() == 2){
+										subtask.put("poiCommit",subtaskStat.get("poiCommit"));
+										subtask.put("poiWorked",subtaskStat.get("poiWorked"));
+										subtask.put("poiWaitWork",subtaskStat.get("poiWaitWork"));
 									}
+//									}
 									if(subtaskStat.containsKey("tipsFinish")){
 										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
 										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
 								}else{
-									subtask.put("poiFinish",0);
-									subtask.put("poiTotal",0);
+									subtask.put("poiWaitWork",0);
+									subtask.put("poiWorked",0);
+									subtask.put("poiCommit",0);
 									subtask.put("tipsFinish",0);
 									subtask.put("tipsTotal",0);
 								}
 								log.info("end stat");
 							} catch (Exception e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
-						//日编道路子任务的指尖任务需要获取质检量的统计
-						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
-							try {
-								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
-								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
-								subtask.put("checkCount",checkMap.get("checkCount"));
-								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
+//						//日编道路子任务的质检任务需要获取质检量的统计
+//						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
+//							try {
+//								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
+//								subtask.put("checkCount",checkMap.get("checkCount"));
+//								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
+//							} catch (Exception e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
 						
 						list.add(subtask);
 						log.debug("end subtask");
@@ -1247,15 +1250,24 @@ public class SubtaskOperation {
 				@Override
 				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 					Map<String, Integer> stat = new HashMap<String, Integer>();
-					int finish = 0;
-					int total=0;
+//					int finish = 0;
+//					int total=0;
+					int poiCommit = 0;
+					int poiWorked = 0;
+					int poiWaitWork = 0;
 					while(rs.next()){
-						int status=rs.getInt("status");
-						if(status==3){finish = rs.getInt("finishNum");}
-						total+=rs.getInt("finishNum");
+						int status = rs.getInt("status");
+						if(status == 1){poiWaitWork += 1;};
+						if(status == 2){poiWorked += 1;};
+						if(status == 3){poiCommit += 1;};
+//						if(status==3){finish = rs.getInt("finishNum");}
+//						total+=rs.getInt("finishNum");
 					}
-					stat.put("poiFinish", finish);
-					stat.put("poiTotal", total);
+//					stat.put("poiFinish", finish);
+//					stat.put("poiTotal", total);
+					stat.put("poiCommit", poiCommit);
+					stat.put("poiWorked", poiWorked);
+					stat.put("poiWaitWork", poiWaitWork);
 					return stat;
 				}
 			}

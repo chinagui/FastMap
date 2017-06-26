@@ -1808,17 +1808,17 @@ public class DataEditService {
 					String yLocation = location.substring(location.indexOf(",")+1,location.length());
 					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
 					point = new WKTReader().read(wkt);
-					sb.append("SELECT p.pid FROM ix_poi p ");
+					sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
 					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 					point = point.buffer(GeometryUtils.convert2Degree(2000));
 				}else{
 					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
-						sb.append("SELECT p.pid FROM ix_poi p,ad_admin ad ");
+						sb.append("SELECT DISTINCT p.pid FROM ix_poi p,ad_admin ad ");
 						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
-						sb.append("SELECT p.pid FROM ix_poi p ");
+						sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
 						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);

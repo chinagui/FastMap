@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -50,9 +51,9 @@ public class EdgeMatchTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
-			String validataMsg  =validatePars(jsonReq,"g_location","content","user","qSubTaskId");
+			String validataMsg  = validatePars(jsonReq,"g_location","content","user","qSubTaskId");
 			
 			if(validataMsg!=null){
 				

@@ -107,7 +107,7 @@ public class TipsExportTest extends InitApplication{
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);
 
-			String filePath = "e:/testE/" + uuid + "/";
+			String filePath = "f:/fcc/" + uuid + "/";
 
 			File file = new File(filePath);
 
@@ -119,17 +119,26 @@ public class TipsExportTest extends InitApplication{
 
 			TipsExporter op = new TipsExporter();
 			
-			Set<String> images = new HashSet<String>();
+			Map<String, Set<String>> images = new HashMap<>();
 
 			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			
 			//2.模式图下载： 1406和1401需要导出模式图
-			if(images.size()>0){
-			
-				PatternImageExporter exporter = new PatternImageExporter();
-				
-				exporter.export2SqliteByNames(filePath, images);
+			if(images.size() > 0) {
+				Set<String> modelPtn = new HashSet<>();
+				Set<String> vectorPtn = new HashSet<>();
+				for(String key : images.keySet()) {
+					if(key.equals("1401") || key.equals("1406")) {
+						modelPtn.addAll(images.get(key));
+					}else if(key.equals("1402")) {
+						vectorPtn.addAll(images.get(key));
+					}
+				}
+				if(modelPtn.size() > 0 || vectorPtn.size() > 0) {
+					PatternImageExporter exporter = new PatternImageExporter();
+					exporter.export2SqliteByNames(filePath, modelPtn, vectorPtn);
+				}
 			}
 
 			String zipFileName = uuid + ".zip";

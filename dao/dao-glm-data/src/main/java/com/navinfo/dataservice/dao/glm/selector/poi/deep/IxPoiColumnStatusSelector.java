@@ -162,14 +162,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			if(!commenUserId.isEmpty()){
 				sb.append(" and s.COMMON_HANDLER in ("+commenUserId+") ");
 			}
-			sb.append(" and s.pid not exists ");
-			sb.append("(SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
-			sb.append("WHERE PS.PID = S.PID ");
-			sb.append("AND PS.HANDLER <> 0 ");
-			sb.append("AND PC.TYPE = 1 ");
-			sb.append("AND PC.CHECK_FLAG IN (1, 3) ");
-			sb.append("AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
-			sb.append("AND PC.FIRST_WORK_ITEM ="+firstWorkItem+") ");
+			sb.append(" and NOT EXISTS ");
+			sb.append(" (SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
+			sb.append(" WHERE PS.PID = S.PID ");
+			sb.append(" AND PS.HANDLER <> 0 ");
+			sb.append(" AND PC.TYPE = 1 ");
+			sb.append(" AND PC.CHECK_FLAG IN (1, 3) ");
+			sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
+			sb.append(" AND PC.FIRST_WORK_ITEM ='"+firstWorkItem+"') ");
 		}
 
 		PreparedStatement pstmt = null;
@@ -289,7 +289,12 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" AND s.handler = :1");
 		sb.append(" AND w.type = :2");
 		sb.append(" AND s.TASK_ID = :3 ");
-		sb.append(" AND s.QC_FLAG = :4 ");
+		if(qcFlag==1){
+			sb.append(" AND s.common_handler <> :4 ");
+			sb.append(" AND s.QC_FLAG = 1 ");
+		}else{
+			sb.append(" AND s.common_handler = :4");
+		}
 
 		if (StringUtils.isNotEmpty(firstWorkItem)) {
 			sb.append(" AND w.FIRST_WORK_ITEM='" + firstWorkItem + "'");
@@ -313,7 +318,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			
 			pstmt.setInt(3, subtaskId);
 			
-			pstmt.setInt(4, qcFlag);
+			pstmt.setLong(4, userId);
 
 			resultSet = pstmt.executeQuery();
 

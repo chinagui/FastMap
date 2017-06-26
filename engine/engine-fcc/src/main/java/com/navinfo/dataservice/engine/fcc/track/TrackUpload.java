@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import net.sf.json.JSON;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -78,7 +79,7 @@ public abstract class TrackUpload {
 			String rowkey = null;
 			try{
 				String line = scanner.nextLine();
-				JSONObject json = JSONObject.fromObject(line);
+                JSONObject json = JSONObject.parseObject(line);
                 //获取rowkey
                 rowkey = this.getSourceRowkey(json);
 				//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
@@ -135,8 +136,13 @@ public abstract class TrackUpload {
 	}
 
 	public static void main(String[] args) throws Exception {
-		TrackLinesUpload trackUploader = new TrackLinesUpload();
-		trackUploader.run("F:\\FCC\\track\\new\\track_collection.json","trackpoints_trunk");
-        System.out.println(trackUploader.getFailed());
+//		AdasTrackPointUpload trackUploader = new AdasTrackPointUpload();
+//		trackUploader.run("F:\\FCC\\adas_track_collect.json","trackpoints_trunk");
+//        System.out.println(trackUploader.getFailed());
+        net.sf.json.JSONObject nameTipsJson = new net.sf.json.JSONObject();
+        nameTipsJson.put("g_location", "{\"coordinates\":[116.79561,39.93595],\"type\":\"Point\"}");
+        net.sf.json.JSONObject gLocation = net.sf.json.JSONObject.fromObject(nameTipsJson.get("g_location"));
+        net.sf.json.JSONArray jsonArray = gLocation.getJSONArray("coordinates");
+        System.out.println(jsonArray.get(0));
 	}
 }

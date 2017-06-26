@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.city;
 
-import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -276,14 +275,15 @@ public class CityService {
 			conn = DBConnector.getInstance().getManConnection();
 			String extentSql="";
 			if(dataJson.containsKey("planStatus")){
-				extentSql="   AND PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
+				extentSql="   AND T.PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
 						.replace("[", "(").replace("]", ")");
 			}
-			String querySql = "SELECT CITY_ID, ADMIN_GEO, PLAN_STATUS"
-					+ "  FROM CITY"
+			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
+					+ "  FROM CITY T"
 					+ " WHERE 1 = 1"
 					+ extentSql ;
-			return run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
+			log.info(querySql);
+			List<Map<String, Object>> result= run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
 
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs)
@@ -305,6 +305,7 @@ public class CityService {
 					}
 					return res;
 				}});
+			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

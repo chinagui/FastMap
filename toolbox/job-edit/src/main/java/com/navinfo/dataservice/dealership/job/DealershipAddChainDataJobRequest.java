@@ -11,6 +11,8 @@ import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 
 	protected List<Integer> resultIdList;
+	protected List<String> chainCodeList;
+	protected long userId;
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -18,10 +20,19 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 		if(resultIdList != null && resultIdList.size() > 0){
 			AbstractJobRequest Dealershipdiff = JobCreateStrategy.createJobRequest("DealershipTableAndDbDiffJob", null);
 			Dealershipdiff.setAttrValue("resultIdList", resultIdList);
+			Dealershipdiff.setAttrValue("chainCodeList", chainCodeList);
 			//增加数据sourceType=3
 			Dealershipdiff.setAttrValue("sourceType", 3);
 			subJobRequests.put("DealershipTableAndDbDiffJob", Dealershipdiff);
 		}
+	}
+
+	public long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 
 	@Override
@@ -42,7 +53,8 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 		try{
-			if(resultIdList==null){throw new JobException("传入resultIdList不能为空");}
+			if(resultIdList == null || resultIdList.size() < 1){throw new JobException("传入resultIdList不能为空");}
+			if(chainCodeList == null || chainCodeList.size() < 1){throw new JobException("传入chainCode不能为空");}
 		}catch(JobException e){
 			throw e;
 		}catch(Exception ex){
@@ -53,6 +65,14 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 
 	public List<Integer> getResultIdList() {
 		return resultIdList;
+	}
+
+	public List<String> getChainCodeList() {
+		return chainCodeList;
+	}
+
+	public void setChainCodeList(List<String> chainCodeList) {
+		this.chainCodeList = chainCodeList;
 	}
 
 	public void setResultIdList(List<Integer> resultIdList) {

@@ -790,6 +790,12 @@
 			
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>job-man</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>scripts-interface</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>

@@ -312,8 +312,10 @@ public class DataConfirmService {
 			jsonObj.put("csvname", fileName);
 
 			StringBuilder urlStr = new StringBuilder();
-			urlStr.append(
-					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?access_token=");
+            
+			//调用情报下发接口：http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?
+			String infoPassUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoPass);
+			urlStr.append(infoPassUrl+"access_token=");
 			urlStr.append(accessToken);
 			urlStr.append("&parameter=");
 			urlStr.append(URLEncoder.encode(jsonObj.toString(), "utf-8"));
@@ -418,10 +420,10 @@ public class DataConfirmService {
 		String fileName = getFeedbackFileName(timeObj, userId);
 		log.info("调用情报接口，反馈文件名称：" + fileName);
 
-		String refilePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/information/" + fileName;
 		//JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
-		String filePath = request.getSession().getServletContext().getRealPath(refilePath);
+		//String filePath = request.getSession().getServletContext().getRealPath(refilePath);
 
 		log.info("反馈情报路径：" + filePath);
 		Connection conn = null;
@@ -439,6 +441,7 @@ public class DataConfirmService {
 						"UPDATE IX_DEALERSHIP_RESULT SET WORKFLOW_STATUS = 3, CFM_STATUS = 3, FB_DATE = '%s', FB_CONTENT = '%s', FB_SOURCE = 1 WHERE RESULT_ID = %d",
 						result.get("feedbackTime") == null ? "" : result.get("feedbackTime"), fbContent,
 						Integer.valueOf(result.get("resultId").toString()));
+				
 				run.execute(conn, sql);
 			}
 			conn.commit();
@@ -498,13 +501,19 @@ public class DataConfirmService {
 		String accessToken = AccessTokenFactory.generate(userId).getTokenString();
 
 		StringBuilder urlStr = new StringBuilder();
-		urlStr.append("http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/export/?access_token=");
+		String feedBackUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoFeedBack);
+		urlStr.append(feedBackUrl+"access_token=");
 		urlStr.append(accessToken);
 		urlStr.append("&parameter=");
 		urlStr.append(URLEncoder.encode(timeObj.toString(), "utf-8"));
+		log.info("情报反馈URL:" + urlStr);
 
 		String return_value = Parser_Tool.do_get(urlStr.toString());
 		JSONObject resultObj = JSONObject.fromObject(return_value);
+		
+		log.info("情报反馈返回值："+return_value);
+		log.info("情报反馈："+resultObj);
+		
 		String fileName = resultObj.getString("filename");
 		return fileName;
 	}
@@ -519,19 +528,26 @@ public class DataConfirmService {
 		String line = "";
 		int n = 0;
 
-		while ((line = br.readLine()) != null) {
-			n++;
-			if (n == 1)
-				continue;
-			Map<String, Object> cell = new HashMap<>();
+		try {
+			while ((line = br.readLine()) != null) {
+				n++;
+				if (n == 1)
+					continue;
+				Map<String, Object> cell = new HashMap<>();
 
-			String[] cellsValue = line.split(",");
-			for (int i = 0; i < cellsValue.length; i++) {
-				if (excelHeader.containsKey(headers[i])) {
-					cell.put(excelHeader.get(headers[i]), cellsValue[i]);
+				String[] cellsValue = line.split(",");
+				for (int i = 0; i < cellsValue.length; i++) {
+					if (excelHeader.containsKey(headers[i])) {
+						cell.put(excelHeader.get(headers[i]), cellsValue[i]);
+					}
 				}
+				sourceResult.add(cell);
 			}
-			sourceResult.add(cell);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			br.close();
+			in.close();
 		}
 		return sourceResult;
 	}

@@ -61,5 +61,9 @@
 			<groupId>org.apache.uima</groupId>
 			<artifactId>uimaj-core</artifactId>
 		</dependency>
+		      <dependency>
+    	<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>datahub</artifactId>
+    </dependency>
 	</dependencies>
 </project>

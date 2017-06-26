@@ -61,4 +61,13 @@ public class TestCrowd {
 			break;
 		}
 	}
+	
+	@Test
+	public void testGetTelephone(){
+		double x = 117.224547643668;
+		double y = 40.1994523717156;
+		RowCrowdsControl control = new RowCrowdsControl();
+		JSONObject result = control.getTelephone(x, y);
+		System.out.println(result);
+	}
 }

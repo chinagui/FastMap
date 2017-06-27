@@ -640,22 +640,22 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 根据引导POI pids 查询官方原始名称
-	 * zhakk
+	 * 根据引导POI pids 查询官方原始名称 zhakk
+	 * 
 	 * @param POI
 	 * @param isLock
 	 *            是否加锁
 	 * @return Map
 	 * @throws Exception
 	 */
-	public Map<Integer, String> loadNamesByPids(List<Integer> poiPids,
-			boolean isLock) throws Exception {
+	public JSONArray loadNamesByPids(List<Integer> poiPids, boolean isLock)
+			throws Exception {
 
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		JSONArray array = new JSONArray();
 
 		if (poiPids.size() < 1) {
 
-			return map;
+			return array;
 		}
 
 		String ids = org.apache.commons.lang.StringUtils.join(poiPids, ",");
@@ -669,9 +669,9 @@ public class IxPoiSelector extends AbstractSelector {
 		if (poiPids.size() > 1000) {
 			pidClod = ConnectionUtil.createClob(conn);
 			pidClod.setString(1, ids);
-			buffer.append(" ip.pid IN (select to_number(column_value) from table(clob_to_table(?))) ");
+			buffer.append(" AND ip.pid IN (select to_number(column_value) from table(clob_to_table(?))) ");
 		} else {
-			buffer.append(" ip.pid IN (" + ids + ") ");
+			buffer.append("　AND ip.pid IN (" + ids + ") ");
 		}
 
 		if (isLock) {
@@ -688,11 +688,13 @@ public class IxPoiSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-
+				JSONObject object = new JSONObject();
 				int pid = resultSet.getInt("pid");
 				String name = resultSet.getString("name");
+				object.put("pid", pid);
+				object.put("name", name);
 
-				map.put(pid, name);
+				array.add(object);
 			}
 
 		} catch (Exception e) {
@@ -706,6 +708,6 @@ public class IxPoiSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 
-		return map;
+		return array;
 	}
 }

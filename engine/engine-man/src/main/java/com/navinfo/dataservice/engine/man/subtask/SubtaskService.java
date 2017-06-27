@@ -345,7 +345,7 @@ public class SubtaskService {
 				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 			}else{
 				if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
-					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
+					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
 					if(!StringUtils.isEmpty(subtask.getName())){
 						qualitySubtask.setName(subtask.getName()+"_质检");}
 					qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
@@ -375,25 +375,25 @@ public class SubtaskService {
 		}
 	}
 
-	/*
-	 * 批量修改子任务详细信息。 参数：Subtask对象列表
-	 */
-	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
-		Connection conn = null;
-		try {
-			// 持久化
-			conn = DBConnector.getInstance().getManConnection();
-			
-			return updateSubtask(conn,subtaskList,userId);
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	/*
+//	 * 批量修改子任务详细信息。 参数：Subtask对象列表
+//	 */
+//	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			// 持久化
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+//			return updateSubtask(conn,subtaskList,userId);
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
@@ -772,17 +772,17 @@ public class SubtaskService {
 							subtask.put("dbId",rs.getInt("DAILY_DB_ID"));
 						}	
 						
-						if(1 == rs.getInt("STATUS")){
-							subtask.put("percent",100);
-							SubtaskStatInfo stat = new SubtaskStatInfo();
-							try{	
-								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-							} catch (Exception e) {
-								log.warn("subtask query error",e);
-							}
-							subtask.put("percent",stat.getPercent());
-						}
+//						if(1 == rs.getInt("STATUS")){
+//							subtask.put("percent",100);
+//							SubtaskStatInfo stat = new SubtaskStatInfo();
+//							try{	
+//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//							} catch (Exception e) {
+//								log.warn("subtask query error",e);
+//							}
+//							subtask.put("percent",stat.getPercent());
+//						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
@@ -2244,7 +2244,7 @@ public class SubtaskService {
 					+ "where i.INFOR_ID = p.INFOR_ID "
 					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
 					+ "AND ST.STATUS IN (1,2) "
-					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0 "
+					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0  AND st.is_quality=0 "
 					+ "AND i.ADMIN_NAME like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){

@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
-import net.sf.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 /**
@@ -27,7 +26,7 @@ public class AdasTrackPointUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_id".getBytes(),
                 json.getString("id").getBytes());
         put.addColumn("attribute".getBytes(), "a_week".getBytes(),
-                Bytes.toBytes(json.getInt("week")));
+                Bytes.toBytes(json.getInteger("week")));
         put.addColumn("attribute".getBytes(), "a_weekSeconds".getBytes(),
                 Bytes.toBytes(json.getDouble("weekSeconds")));
         put.addColumn("attribute".getBytes(), "a_height".getBytes(),
@@ -45,16 +44,16 @@ public class AdasTrackPointUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_azimuth".getBytes(),
                 Bytes.toBytes(json.getDouble("azimuth")));
         put.addColumn("attribute".getBytes(), "a_status".getBytes(),
-                Bytes.toBytes(json.getInt("status")));
+                Bytes.toBytes(json.getInteger("status")));
 //        20170513 取消linkId
 //        put.addColumn("attribute".getBytes(), "a_linkId".getBytes(),
 //                Bytes.toBytes(json.getInt("linkId")));
         put.addColumn("attribute".getBytes(), "a_satNum".getBytes(),
-                Bytes.toBytes(json.getInt("satNum")));
+                Bytes.toBytes(json.getInteger("satNum")));
         put.addColumn("attribute".getBytes(), "a_prjName".getBytes(),
                 json.getString("prjName").getBytes());
         put.addColumn("attribute".getBytes(), "a_user".getBytes(),
-                Bytes.toBytes(json.getInt("userId")));
+                Bytes.toBytes(json.getInteger("userId")));
         put.addColumn("attribute".getBytes(), "a_processed".getBytes(),
                 Bytes.toBytes(0));
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),

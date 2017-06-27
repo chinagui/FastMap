@@ -44,6 +44,7 @@ public class TipsStatConstant {
 		gLocationTipsType.add("1114");
 		gLocationTipsType.add("1115");
 		gLocationTipsType.add("1116");
+        gLocationTipsType.add("1117");
 		gLocationTipsType.add("1201");
 		gLocationTipsType.add("1202");
 		gLocationTipsType.add("1203");
@@ -54,6 +55,10 @@ public class TipsStatConstant {
 		gLocationTipsType.add("1208");
 		gLocationTipsType.add("1209");
 		gLocationTipsType.add("1210");
+        gLocationTipsType.add("1211");
+        gLocationTipsType.add("1212");
+        gLocationTipsType.add("1213");
+        gLocationTipsType.add("1214");
 		gLocationTipsType.add("1301");
 		gLocationTipsType.add("1302");
 		gLocationTipsType.add("1303");
@@ -82,6 +87,8 @@ public class TipsStatConstant {
 		gLocationTipsType.add("1705");
 		gLocationTipsType.add("1706");
 		gLocationTipsType.add("1707");
+        gLocationTipsType.add("1708");
+        gLocationTipsType.add("1709");
 		gLocationTipsType.add("1801");
 		gLocationTipsType.add("1802");
 		gLocationTipsType.add("1803");
@@ -93,6 +100,8 @@ public class TipsStatConstant {
 		gLocationTipsType.add("9901");
 		gLocationTipsType.add("8001");
 		gLocationTipsType.add("8002");
+        gLocationTipsType.add("2203");
+        gLocationTipsType.add("2204");
 
 		//统计坐标为gSLoc的tips类型
 		gSLocTipsType.add("1501");
@@ -112,6 +121,9 @@ public class TipsStatConstant {
 		gSLocTipsType.add("1515");
 		gSLocTipsType.add("1516");
 		gSLocTipsType.add("1517");
+        gSLocTipsType.add("1518");
+        gSLocTipsType.add("1519");
+        gSLocTipsType.add("1520");
 
 		//统计坐标为gGeo的tips类型
 		gGeoTipsType.add("1601");
@@ -123,8 +135,17 @@ public class TipsStatConstant {
 		gGeoTipsType.add("1607");
 		gGeoTipsType.add("1901");
 		gGeoTipsType.add("2001");
+        gGeoTipsType.add("2002");
 		gGeoTipsType.add("8003");
 		gGeoTipsType.add("8004");
+        gGeoTipsType.add("8005");
+        gGeoTipsType.add("8006");
+        gGeoTipsType.add("8007");
+        gGeoTipsType.add("8008");
+        gGeoTipsType.add("8009");
+        gGeoTipsType.add("8010");
+		gGeoTipsType.add("2201");
+        gGeoTipsType.add("2202");
 
 		//315web编辑平台屏蔽Tips
 		filterTipsType.add("1108");

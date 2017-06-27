@@ -153,6 +153,20 @@ public class ExcelReader {
 		for (int i = 1; i <= rowNum; i++) {
 			row = sheet.getRow(i);
 			
+			//--------------空行不解析----------------
+			boolean flg = false;
+			for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+				Cell cell = row.getCell(c);
+				if (cell != null && cell.getCellType() != Cell.CELL_TYPE_BLANK){
+					flg = true;
+					break;
+				}
+			}
+			if(!flg){
+				continue;
+			}
+			//--------------空行不解析----------------
+			
 //			int j = 0;
 			Map<String, Object> cellValue = new HashMap<String, Object>();
 			

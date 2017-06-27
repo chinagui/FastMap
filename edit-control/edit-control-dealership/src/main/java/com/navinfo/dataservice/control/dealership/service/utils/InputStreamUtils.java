@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +23,9 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.mysql.fabric.xmlrpc.base.Data;
+import com.navinfo.dataservice.commons.util.DateUtils;
+
 
 /** 
  * @ClassName: InputStream
@@ -29,7 +35,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  */
 public class InputStreamUtils {
 
-	public static JSONObject request2File(HttpServletRequest request,String filePath) throws Exception{
+	public static JSONObject request2File(HttpServletRequest request,String filePath,String... info) throws Exception{
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		List<FileItem> items = upload.parseRequest(request);
@@ -57,6 +63,13 @@ public class InputStreamUtils {
 
 		File tempFile = new File(uploadItem.getName());
 		File file = new File(filePath,tempFile.getName());
+		
+		//情报重命名
+		/*if(info!=null){
+			File newFile = new File(filePath,String.format("release%s.csv",DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")));
+			file.renameTo(newFile);
+		}*/
+		
 		File fileParent = file.getParentFile();
 		if(!fileParent.exists()){
 			fileParent.mkdirs();

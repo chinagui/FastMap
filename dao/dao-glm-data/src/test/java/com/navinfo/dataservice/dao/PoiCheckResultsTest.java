@@ -22,12 +22,12 @@ import net.sf.json.JSONObject;
  */
 public class PoiCheckResultsTest {
 	
-	@Test
+//	@Test
 	public void checkResultList(){
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_315_d_1", "fm_regiondb_315_d_1").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
 			Set<String> grids = new HashSet<String>();
@@ -52,6 +52,37 @@ public class PoiCheckResultsTest {
 						data.put("total", checkResultsArr.size());
 					//page =a.list(2, grids, 5, 1);
 					 System.out.println(data);
+					
+					/*JSONArray results = a.queryRefFeatures(1810842);
+					System.out.println(results);*/
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@Test
+	public void checkListPoiResults(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+
+			NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':78,'dbId':17,'sortby':'-ruleid'}");	
+			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
+			
+				//List<JSONObject> page =null;
+				try {
+					 Page page = a.listPoiCheckResultList(jsonReq,78);
+						
+					 System.out.println(page.getResult());
 					
 					/*JSONArray results = a.queryRefFeatures(1810842);
 					System.out.println(results);*/

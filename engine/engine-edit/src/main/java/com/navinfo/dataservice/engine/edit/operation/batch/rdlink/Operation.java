@@ -120,11 +120,6 @@ public class Operation implements IOperation {
 
 		for (RdLink link : links) {
 
-			if (CollectionUtils.isNotEmpty(link.getZones())) {
-
-				continue;
-			}
-
 			ZoneIDBatchUtils.setZoneID(link, zoneFace, conn, result);
 		}
 	}

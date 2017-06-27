@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -19,7 +20,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.diff.HandlerDealership;
 import com.navinfo.dataservice.engine.editplus.diff.PoiRecommender;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -95,31 +95,38 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 		Map<Integer, Connection> dbConMap = new HashMap<Integer, Connection>();
 		try {
 			DealershipTableAndDbDiffJobRequest jobRequest = (DealershipTableAndDbDiffJobRequest) this.request;
-			String chainCode = jobRequest.getChainCode();
-
-			log.info("chainCode:" + chainCode);
+			
+			List<String> chainCodeList =new ArrayList<String>();
+			List<Integer> resultIdList=new ArrayList<Integer>();
+			int sourceType=jobRequest.getSourceType();
+			chainCodeList=jobRequest.getChainCodeList();
+			if(sourceType==3||sourceType==4){
+				resultIdList=jobRequest.getResultIdList();
+			}
+			
+			log.info("sourceType:" + sourceType);
 
 			// 从result表查询品牌数据
 			// 表差分状态为删除deal_src_diff=2的数据
-			List<IxDealershipResult> delDealResultList = new ArrayList();
-			delDealResultList = (ArrayList) getResultByChain(chainCode, 2);
+			List<IxDealershipResult> delDealResultList = new ArrayList<IxDealershipResult>();
+			delDealResultList = (ArrayList) getResultByChain(2,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为更新deal_src_diff=4的数据
-			List<IxDealershipResult> updateDealResultList = new ArrayList();
-			updateDealResultList = (ArrayList) getResultByChain(chainCode, 4);
+			List<IxDealershipResult> updateDealResultList = new ArrayList<IxDealershipResult>();
+			updateDealResultList = (ArrayList<IxDealershipResult>) getResultByChain(4,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为无变更deal_src_diff=1的数据
-			List<IxDealershipResult> nochangeDealResultList = new ArrayList();
-			nochangeDealResultList = (ArrayList) getResultByChain(chainCode, 1);
+			List<IxDealershipResult> nochangeDealResultList = new ArrayList<IxDealershipResult>();
+			nochangeDealResultList = (ArrayList<IxDealershipResult>) getResultByChain(1,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为新增deal_src_diff=3的数据
-			List<IxDealershipResult> addDealResultList = new ArrayList();
-			addDealResultList = (ArrayList) getResultByChain(chainCode, 3);
+			List<IxDealershipResult> addDealResultList = new ArrayList<IxDealershipResult>();
+			addDealResultList = (ArrayList) getResultByChain(3,sourceType,chainCodeList,resultIdList);
 
 			dbConMap = queryAllRegionConn();
 
 			// 差分完成的结果list
-			List<IxDealershipResult> diffFinishResultList = new ArrayList();
+			List<IxDealershipResult> diffFinishResultList = new ArrayList<IxDealershipResult>();
 
 			// 对各种状态的resultList，分别处理
 
@@ -230,7 +237,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 			log.info("差分完成，开始更新result、source、chain表");
 			HandlerDealership handler = new HandlerDealership();
-			handler.updateDealershipDb(diffFinishResultList, chainCode,dbConMap);
+			handler.updateDealershipDb(diffFinishResultList,chainCodeList,dbConMap,log);
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -252,16 +259,33 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 	 * @throws Exception
 	 * 
 	 */
-	public List getResultByChain(String chainCode, int dealSrcDiff) throws SQLException {
+	public List getResultByChain(int dealSrcDiff,int sourceType,List chainCodeList,List resultIdList) throws SQLException {
 
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getDealershipConnection();
 
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
-					+ "from IX_DEALERSHIP_RESULT r where r.workflow_status=0 and r.chain= '" + chainCode
-					+ "' and r.deal_src_diff=" + dealSrcDiff;
+            //sourceType1库差分，2重新库差分、3补充数据、4实时更新、5品牌更新
+			String chains = null;
+			String resultIds=null;
+			if(sourceType!=3&&sourceType!=4){
+				chains = "('";
+				chains += StringUtils.join(chainCodeList.toArray(), "','") + "')";
+			}else{
+				resultIds = "(";
+				resultIds += StringUtils.join(resultIdList.toArray(), ",") + ")";
+			}
+			StringBuffer sb = new StringBuffer();
+			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
+					+ "from IX_DEALERSHIP_RESULT r where r.deal_src_diff= " + dealSrcDiff);
+			if (sourceType==1||sourceType==5){
+				sb.append(" and r.workflow_status=0 and r.chain in "+chains);
+			}else if (sourceType==2){
+				sb.append(" and r.workflow_status in (0,1,2,3) and r.chain in "+chains);
+			}else{
+				sb.append(" and r.result_id in "+resultIds);
+			}
 
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -299,7 +323,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				}
 			};
 
-			return run.query(conn, selectSql, rs);
+			return run.query(conn, sb.toString(), rs);
 		} catch (Exception e) {
 			DbUtils.rollbackAndClose(conn);
 		} finally {

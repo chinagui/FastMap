@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
-import net.sf.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -33,7 +33,7 @@ public class TrackLinesUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_recordTime".getBytes(),
                 json.getString("recordTime").getBytes());
         put.addColumn("attribute".getBytes(), "a_user".getBytes(),
-                Bytes.toBytes(json.getInt("userId")));
+                Bytes.toBytes(json.getInteger("userId")));
         put.addColumn("attribute".getBytes(), "a_deviceNum".getBytes(),
                 json.getString("deviceNum").getBytes());
         put.addColumn("attribute".getBytes(), "a_hdop".getBytes(),
@@ -41,13 +41,13 @@ public class TrackLinesUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_height".getBytes(),
                 Bytes.toBytes(json.getDouble("altitude")));
         put.addColumn("attribute".getBytes(), "a_posType".getBytes(),
-                Bytes.toBytes(json.getInt("posType")));
+                Bytes.toBytes(json.getInteger("posType")));
         put.addColumn("attribute".getBytes(), "a_satNum".getBytes(),
-                Bytes.toBytes(json.getInt("satNum")));
+                Bytes.toBytes(json.getInteger("satNum")));
         put.addColumn("attribute".getBytes(), "a_mediaFlag".getBytes(),
-                Bytes.toBytes(json.getInt("mediaFlag")));
+                Bytes.toBytes(json.getInteger("mediaFlag")));
         put.addColumn("attribute".getBytes(), "a_linkId".getBytes(),
-                Bytes.toBytes(json.getInt("linkId")));
+                Bytes.toBytes(json.getInteger("linkId")));
         put.addColumn("attribute".getBytes(), "a_prjName".getBytes(),
                 json.getString("prjName").getBytes());
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),

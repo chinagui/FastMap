@@ -104,6 +104,7 @@ public class CheckTest {
 		else{System.out.println("null");}
 		//DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end check test");
+		//==========suchenguang git test==========
 	}
 
 }

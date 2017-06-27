@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.monitor.agent.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,23 +20,25 @@ import net.sf.json.JSONObject;
  * @date 2017年6月13日
  * @Description: ServiceStatInfoLoader.java
  */
-public class ServiceStatInfoLoader {
+public class ServiceStatInfoLoader{
 	
-	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	protected static Logger log = LoggerRepos.getLogger(ServiceStatInfoLoader.class);
 	
-	private Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
+	private static Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
+	
 	
 	/**
 	 * 推送数据
+	 * @param time 
 	 */
-	public void pushStatInfo(List<List<String>> monitorTarget){
+	public static void pushStatInfo(List<List<String>> monitorTarget, long time){
 		for (List<String> list : monitorTarget) {
 			String host = list.get(0);
 			String port = list.get(1);
 			String tomcat = list.get(2);
 			//推送数据
 			try {
-				List<StatInfo> resultList = this.handleStatInfo(host,port,tomcat);
+				List<StatInfo> resultList = handleStatInfo(host,port,tomcat,time);
 				String msg = AgentUtils.pushData(resultList);
 				log.info(msg);
 				
@@ -54,8 +55,9 @@ public class ServiceStatInfoLoader {
 	 * @param tomcat 
 	 * @param port 
 	 * @param host 
+	 * @param time 
 	 */
-	public List<StatInfo> handleStatInfo(String host, String port, String tomcat){
+	private static List<StatInfo> handleStatInfo(String host, String port, String tomcat, long time){
 		String url = "http://"+host+":"+port+"/"+tomcat+"/monitoring?part=counterSummaryPerClass&counter=http&format=json&period=jour";
 		log.info("service访问地址:"+url);
 		List<StatInfo> resultList = new ArrayList<StatInfo>();
@@ -71,9 +73,6 @@ public class ServiceStatInfoLoader {
 					int	hits = obj.getInt("hits");
 					int durationsSum = obj.getInt("durationsSum");
 					int systemErrors = obj.getInt("systemErrors");
-					
-					Date date = new Date();
-					int time = (int) date.getTime();
 					
 					String metricVisitCount = "fos.service.visitCount";
 					String metricResTime = "fos.service.responseTime";
@@ -103,7 +102,7 @@ public class ServiceStatInfoLoader {
 					if(systemErrors > 0 &&(systemErrors > systemErrorsLast)){
 						valueInterfaceStatus = 0;
 					}
-					log.info("访问次数:"+valueVisitCount+"响应时间:"+valueResTime+"接口状态:"+valueInterfaceStatus);
+					log.info("本次数据,访问次数:"+hits+"响应时间:"+durationsSum+"接口状态:"+systemErrors);
 					//保存数据
 					int step = 300;
 					//访问次数

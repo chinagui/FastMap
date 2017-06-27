@@ -57,7 +57,7 @@ public class AgentUtils {
 				JSONObject jso = JSONObject.fromObject(statInfo);
 				jsa.add(jso);
 			}
-//			log.info("监控系统推送的数据:"+jsa.toString());
+			log.debug("监控系统推送的数据:"+jsa.toString());
 			client = ClientBuilder.newClient();
 			Entity<String> payload = Entity.json(jsa.toString());
 			String url = "http://192.168.4.110:1988/v1/push";

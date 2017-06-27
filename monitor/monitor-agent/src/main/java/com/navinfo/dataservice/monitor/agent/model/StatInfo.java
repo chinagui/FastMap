@@ -8,7 +8,7 @@ public class StatInfo implements Serializable {
 	
 	private String metric;
 	private String endpoint;
-	private int timestemp;
+	private long timestemp;
 	private int step = 60;
 	private double value;
 	private String counterType = "GAUGE";
@@ -26,10 +26,10 @@ public class StatInfo implements Serializable {
 	public void setEndpoint(String endpoint) {
 		this.endpoint = endpoint;
 	}
-	public int getTimestemp() {
+	public long getTimestemp() {
 		return timestemp;
 	}
-	public void setTimestemp(int timestemp) {
+	public void setTimestemp(long timestemp) {
 		this.timestemp = timestemp;
 	}
 	public int getStep() {

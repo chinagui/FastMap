@@ -2,13 +2,11 @@ package com.navinfo.dataservice.monitor.agent.tomcat;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
@@ -25,7 +23,7 @@ import net.sf.json.JSONObject;
 public class TomcatStatInfoLoader {
 	protected static Logger log = LoggerRepos.getLogger(TomcatStatInfoLoader.class);
 	
-	public static void sendTomcatStatInfo(List<List<String>> monitorTarget){
+	public static void sendTomcatStatInfo(List<List<String>> monitorTarget, long time){
 		for (List<String> list : monitorTarget) {
 			String ip = list.get(0);
 			String port = list.get(1);
@@ -33,7 +31,7 @@ public class TomcatStatInfoLoader {
 			//推送数据
 			try {
 				String url = "http://"+ip+":"+port+"/"+tomcat;
-				List<StatInfo> datas = getTomcatInfoList(url,ip,tomcat);
+				List<StatInfo> datas = getTomcatInfoList(url,ip,tomcat,time);
 				String result = AgentUtils.pushData(datas);
 				log.info(result);
 				
@@ -44,7 +42,7 @@ public class TomcatStatInfoLoader {
 		}
 	}
 	
-	public static List<StatInfo> getTomcatInfoList(String url,String ip,String tomcat){
+	public static List<StatInfo> getTomcatInfoList(String url,String ip,String tomcat, long time){
 		String service_url = url+"/monitoring";
 		Map<String,String> parMap = new HashMap<String, String>();
 		parMap.put("part", "currentRequests"); 
@@ -59,8 +57,6 @@ public class TomcatStatInfoLoader {
 		try {
 			
 			datas = new ArrayList<StatInfo>();
-			Date date = new Date();
-			int time = (int) date.getTime();
 			int step = 30;
 			
 			json = ServiceInvokeUtil.invokeByGet(service_url, parMap);
@@ -153,6 +149,6 @@ public class TomcatStatInfoLoader {
 
 		}
 	}
-	
+
 	
 }

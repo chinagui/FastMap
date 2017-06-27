@@ -46,12 +46,12 @@ public class DiffService {
 		Map<Integer,List<IxDealershipResult>> resultMap = new HashMap<Integer,List<IxDealershipResult>>();
 		List<IxDealershipResult> insertList = new ArrayList<IxDealershipResult>();
 
-		Map<String, Integer> dealershipNameMap = new HashMap<String, Integer>();
-		Map<String, Integer> dealershipAddrMap = new HashMap<String, Integer>();
-		Map<String, Integer> dealershipTelMap = new HashMap<String, Integer>();
-		Map<String, Integer> dealershipPostCodeMap = new HashMap<String, Integer>();
-		Map<String, Integer> dealershipKindMap = new HashMap<String, Integer>();
-		Map<String, Integer> dealershipChainMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipNameMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipAddrMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipTelMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipPostCodeMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipKindMap = new HashMap<String, Integer>();
+//		Map<String, Integer> dealershipChainMap = new HashMap<String, Integer>();
 
 		Map<String, Integer> sourceNameMap = new HashMap<String, Integer>();
 		Map<String, Integer> sourceAddrMap = new HashMap<String, Integer>();
@@ -83,17 +83,17 @@ public class DiffService {
 
 		for (IxDealershipSource i : dealershipSources) {
 
-			if (i.getName() != null)
-				dealershipNameMap.put(i.getName().trim(), 1);
-			if (i.getAddress() != null)
-				dealershipAddrMap.put(i.getAddress().trim(), 1);
-			if (i.getTelephone() != null)
-				dealershipTelMap.put(i.getTelephone(), 1);
-			if (i.getPostCode() != null)
-				dealershipPostCodeMap.put(i.getPostCode(), 1);
-			
-			dealershipKindMap.put(i.getKindCode(), 1);
-			dealershipChainMap.put(i.getChain(), 1);
+//			if (i.getName() != null)
+//				dealershipNameMap.put(i.getName().trim(), 1);
+//			if (i.getAddress() != null)
+//				dealershipAddrMap.put(i.getAddress().trim(), 1);
+//			if (i.getTelephone() != null)
+//				dealershipTelMap.put(i.getTelephone(), 1);
+//			if (i.getPostCode() != null)
+//				dealershipPostCodeMap.put(i.getPostCode(), 1);
+//			
+//			dealershipKindMap.put(i.getKindCode(), 1);
+//			dealershipChainMap.put(i.getChain(), 1);
 			
 			//名称、地址、电话、邮编、分类、品牌
 			String shortName = (null == i.getNameShort()? "":i.getNameShort());

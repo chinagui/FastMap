@@ -2,10 +2,13 @@ package com.navinfo.dataservice.engine.edit.search;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
+
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -274,10 +277,7 @@ public class SearchProcess {
 
 					IxPoiSelector selector = new IxPoiSelector(this.conn);
 
-					Map<Integer, String> map = selector.loadNamesByPids(pids,
-							false);
-
-					array = JSONArray.fromObject(map);
+					array = selector.loadNamesByPids(pids, false);
 
 				}
 				break;
@@ -836,6 +836,22 @@ public class SearchProcess {
 		JSONObject json = objectSearchUtils.searchLinkByNode(condition);
 
 		return json;
+
+	}
+
+	public static void main(String[] args) {
+		Map<String, String> map = new HashMap<String, String>();
+		JSONObject object = new JSONObject();
+		object.put(11, "121");
+		System.out.println(object);
+		map.put("111", "aaa");
+		map.put("222", "bbb");
+		map.put("333", "ccc");
+		/*
+		 * System.out.println(map.toString());
+		 * System.out.println(JSONObject.fromObject(map));
+		 */
+		System.out.println(JSONArray.fromObject(map));
 
 	}
 }

@@ -626,4 +626,31 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 获取待数据规划任务列表
+	 * 中线项目下，同时满足草稿状态+未进行数据规划的采集任务列表
+	 * 
+	 * @param request
+	 * @return Map
+	 */
+	@RequestMapping(value = "/task/unPlanlist")
+	public ModelAndView unPlanlist(HttpServletRequest request){
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("programId") || dataJson.getString("programId").length() < 1){
+				throw new Exception("缺少programId");
+			}
+			List<Map<String, Object>> data =  TaskService.getInstance().unPlanlist(dataJson);
+			Map<String, Object> result = new HashMap<String, Object>();
+			result.put("totalCount", data.size());
+			result.put("result", data);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

@@ -11,7 +11,6 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -1688,6 +1687,11 @@ public class Transaction {
 
             Result result = process.getResult();
 
+            // 处理提示信息
+            if (infect == 1) {
+                return delPrompt(result);
+            }
+
             // 初始化新增数据RowId，保证接边库数据一致
             initRowid(result.getAddObjects());
 
@@ -1746,6 +1750,11 @@ public class Transaction {
             msg = process.innerRun();
 
             Result result = process.getResult();
+
+            // 处理提示信息
+            if (infect == 1) {
+                return delPrompt(result);
+            }
 
             // 初始化新增数据RowId，保证接边库数据一致
             initRowid(result.getAddObjects());
@@ -1840,6 +1849,62 @@ public class Transaction {
             command.setHasConn(true);
         }
         return command;
+    }
+
+    private String delPrompt(Result result) {
+        Map<String, List<AlertObject>> infects = new HashMap();
+        List<IRow> addList = result.getAddObjects();
+        List<IRow> delList = result.getDelObjects();
+        List<IRow> updateList = result.getUpdateObjects();
+        List<IObj> addObj = new ArrayList<>();
+        List<IObj> delObj = new ArrayList<>();
+        List<IObj> updateObj = new ArrayList<>();
+        // 添加对新增要素的影响
+        this.convertObj(addList, addObj);
+        this.convertObj(updateList, updateObj);
+        this.convertObj(delList, delObj);
+        infects.putAll(this.sort(addObj, ObjStatus.INSERT));
+        infects.putAll(this.sort(updateObj, ObjStatus.UPDATE));
+        infects.putAll(this.sort(delObj, ObjStatus.DELETE));
+        logger.info("删除影响：" + JSONObject.fromObject(infects).toString());
+        return JSONObject.fromObject(infects).toString();
+    }
+
+    private void convertObj(List<IRow> rows, List<IObj> objs) {
+        for (IRow row : rows) {
+            if (row instanceof IObj) {
+                IObj obj = (IObj) row;
+                objs.add(obj);
+            }
+        }
+    }
+
+    /**
+     * 操作結果排序
+     *
+     * @param objs
+     * @param status
+     * @return
+     */
+    private Map<String, List<AlertObject>> sort(List<IObj> objs, ObjStatus status) {
+        Map<String, List<AlertObject>> tm = new HashMap();
+        for (IObj obj : objs) {
+
+            if (tm.containsKey(ObjStatus.getCHIName(status).concat(obj.objType().toString()))) {
+
+                AlertObject object = new AlertObject(obj.objType(), obj.pid(), status);
+
+                List<AlertObject> list = tm.get(ObjStatus.getCHIName(status).concat(obj.objType().toString()));
+                list.add(object);
+            } else {
+                AlertObject object = new AlertObject(obj.objType(), obj.pid(), status);
+                List<AlertObject> tem = new ArrayList<>();
+                tem.add(object);
+                tm.put(ObjStatus.getCHIName(status).concat(obj.objType().toString()), tem);
+            }
+
+        }
+        return tm;
     }
 
     /**

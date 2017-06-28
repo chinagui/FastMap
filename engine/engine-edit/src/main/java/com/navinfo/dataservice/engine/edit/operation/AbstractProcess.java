@@ -196,10 +196,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
         log.info("END  PRECHECK ");
         // 维护车道信息
         this.updateRdLane();
-        // 处理提示信息
-        if (this.command.getInfect() == 1) {
-            return this.delPrompt(this.getResult(), this.getCommand());
-        }
 
         startPostCheckTime = System.currentTimeMillis();
 
@@ -227,74 +223,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
         return msg;
     }
 
-    /**
-     * 操作結果排序
-     *
-     * @param objs
-     * @param status
-     * @return
-     */
-    private Map<String, List<AlertObject>> sort(List<IObj> objs, ObjStatus status) {
-        Map<String, List<AlertObject>> tm = new HashMap<String, List<AlertObject>>();
-        for (IObj obj : objs) {
-
-            if (tm.containsKey(ObjStatus.getCHIName(status).concat(obj.objType().toString()))) {
-
-                AlertObject object = new AlertObject(obj.objType(), obj.pid(), status);
-
-                List<AlertObject> list = tm.get(ObjStatus.getCHIName(status).concat(obj.objType().toString()));
-                list.add(object);
-            } else {
-                AlertObject object = new AlertObject(obj.objType(), obj.pid(), status);
-                List<AlertObject> tem = new ArrayList<AlertObject>();
-                tem.add(object);
-                tm.put(ObjStatus.getCHIName(status).concat(obj.objType().toString()), tem);
-            }
-
-        }
-        return tm;
-    }
-
-    /**
-     * 对象转化
-     *
-     * @param rows
-     * @param objs
-     */
-    private void convertObj(List<IRow> rows, List<IObj> objs) {
-        for (IRow row : rows) {
-            if (row instanceof IObj) {
-                IObj obj = (IObj) row;
-                objs.add(obj);
-            }
-        }
-    }
-
-    /**
-     * 删除要素提示 zhaokk
-     *
-     * @param result
-     * @param command
-     */
-    private String delPrompt(Result result, T command) {
-        Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-        List<IRow> addList = result.getAddObjects();
-        List<IRow> delList = result.getDelObjects();
-        List<IRow> updateList = result.getUpdateObjects();
-        List<IObj> addObj = new ArrayList<IObj>();
-        List<IObj> delObj = new ArrayList<IObj>();
-        List<IObj> updateObj = new ArrayList<IObj>();
-        // 添加对新增要素的影响
-        this.convertObj(addList, addObj);
-        this.convertObj(updateList, updateObj);
-        this.convertObj(delList, delObj);
-        infects.putAll(this.sort(addObj, ObjStatus.INSERT));
-        infects.putAll(this.sort(updateObj, ObjStatus.UPDATE));
-        infects.putAll(this.sort(delObj, ObjStatus.DELETE));
-        log.info("删除影响：" + JSONObject.fromObject(infects).toString());
-        return JSONObject.fromObject(infects).toString();
-    }
-
     public String innerRun() throws Exception {
 
         this.prepareData();
@@ -315,10 +243,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
             throw new Exception(preCheckMsg);
         }
         this.updateRdLane();
-        // 处理提示信息
-        if (this.command.getInfect() == 1) {
-            return this.delPrompt(this.getResult(), this.getCommand());
-        }
+        //// 处理提示信息
+        //if (this.command.getInfect() == 1) {
+        //    return this.delPrompt(this.getResult(), this.getCommand());
+        //}
         //this.recordData();
 
         this.postCheck();

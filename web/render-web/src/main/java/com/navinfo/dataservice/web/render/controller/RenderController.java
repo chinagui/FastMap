@@ -325,4 +325,80 @@ public class RenderController extends BaseController {
 		}
 	}
 
+	/**
+	 * @Title: getinfoByTile
+	 * @Description: 情报图层的render 服务
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月28日 下午4:10:00 
+	 */
+	@RequestMapping(value = "/info/getByTileWithGap")
+	public void getinfoByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+//			JSONArray array = null;
+
+			JSONArray type = jsonReq.getJSONArray("types");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			List<ObjType> types = new ArrayList<ObjType>();
+
+			for (int i = 0; i < type.size(); i++) {
+				types.add(ObjType.valueOf(type.getString(i)));
+			}
+
+			JSONObject data = null;
+
+			if (z >= 13) {
+
+//				conn = DBConnector.getInstance().getConnectionById(dbId);
+				conn = DBConnector.getInstance().getRenderConnection();
+
+				SearchProcess p = new SearchProcess(conn);
+//				p.setArray(array);
+				data = p.searchInfoByTileWithGap(types, x, y, z, gap);
+
+			}
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }

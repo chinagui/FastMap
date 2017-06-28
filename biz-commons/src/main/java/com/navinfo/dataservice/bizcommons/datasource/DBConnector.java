@@ -31,6 +31,7 @@ public class DBConnector {
 	private DataSource pidDataSource;
 	private MongoClient statClient;
 	private DataSource checkDataSource;
+	private DataSource renderDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -239,5 +240,28 @@ public class DBConnector {
 			}
 		}
 		return dealshipDataSource.getConnection();
+	}
+	public Connection getRenderConnection() throws SQLException {
+		if (renderDataSource == null) {
+			synchronized (this) {
+				if (renderDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo manDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						manDb = datahub.getOnlyDbByType("fmRender");
+						connConfig = DbConnectConfig
+								.createConnectConfig(manDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取代理店信息失败："
+								+ e.getMessage(), e);
+					}
+					renderDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return renderDataSource.getConnection();
 	}
 }

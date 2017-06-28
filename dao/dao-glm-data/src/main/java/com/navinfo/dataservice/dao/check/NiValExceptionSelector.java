@@ -961,6 +961,10 @@ public class NiValExceptionSelector {
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
 		List<Long> pids = getCheckPidList(conn,subtaskId);
+//		List<Long> pids = new ArrayList<Long>();
+//		pids.add((long) 408000118);
+//		pids.add((long) 508000006);
+		
 		log.info("pids :"+pids.size());
 				
 		if(pids !=  null && pids.size() > 0){
@@ -1156,6 +1160,8 @@ public class NiValExceptionSelector {
 					+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
 					+ "                           'mask=anyinteract') = 'TRUE'";
+			
+			log.info("getCheckPidList sql: "+sql);
 			QueryRunner run=new QueryRunner();
 			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
 

@@ -838,8 +838,7 @@ public class SearchProcess {
 		return json;
 
 	}
-<<<<<<< HEAD
-	
+
 	public JSONObject searchInfoByTileWithGap(List<ObjType> types, int x,
 			int y, int z, int gap) throws Exception {
 
@@ -870,7 +869,7 @@ public class SearchProcess {
 		} finally {
 		}
 		return json;
-=======
+	}
 
 	public static void main(String[] args) {
 		Map<String, String> map = new HashMap<String, String>();
@@ -885,7 +884,5 @@ public class SearchProcess {
 		 * System.out.println(JSONObject.fromObject(map));
 		 */
 		System.out.println(JSONArray.fromObject(map));
-
->>>>>>> refs/remotes/origin/master
 	}
 }

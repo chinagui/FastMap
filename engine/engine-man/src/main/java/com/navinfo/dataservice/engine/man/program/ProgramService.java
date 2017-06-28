@@ -2477,4 +2477,51 @@ public class ProgramService {
 				return null;
 			}});
 	}
+	
+	/**
+	 * 获取待数据规划项目列表
+	 * 应用场景：中线项目下，具有同时满足草稿状态+未进行数据规划的采集任务的项目列表
+	 * @author songhe
+	 * @return List
+	 * @throws SQLException 
+	 */
+	public List<Map<String, Object>> unPlanlist(JSONObject json) throws SQLException{
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer sb = new StringBuffer();
+			//未规划草稿状态
+			sb.append("select p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
+			//中线采集任务
+			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and t.program_id = p.program_id");
+			if(json.containsKey("name") && json.getString("name").length() > 0){
+				String name = json.getString("name");
+				sb.append(" and p.name like '%"+name+"%'");
+			}
+			String sql = sb.toString();
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>(){
+			@Override
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<>();
+					map.put("programId", rs.getInt("program_id"));
+					map.put("name", rs.getString("name"));
+					result.add(map);
+				}
+				return result;
+			}
+		};
+		log.info("获取待数据规划项目列表SQL:"+ sql);
+		return run.query(con, sql, rs);
+		}catch(Exception e){
+			DbUtils.rollback(con);
+			throw e;
+		}finally{
+			DbUtils.close(con);
+		}
+	}
 }

@@ -23,6 +23,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Program;
@@ -44,6 +45,7 @@ import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -56,7 +58,9 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @ClassName: SubtaskService
@@ -345,7 +349,7 @@ public class SubtaskService {
 				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 			}else{
 				if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
-					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
+					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
 					if(!StringUtils.isEmpty(subtask.getName())){
 						qualitySubtask.setName(subtask.getName()+"_质检");}
 					qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
@@ -375,25 +379,25 @@ public class SubtaskService {
 		}
 	}
 
-	/*
-	 * 批量修改子任务详细信息。 参数：Subtask对象列表
-	 */
-	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
-		Connection conn = null;
-		try {
-			// 持久化
-			conn = DBConnector.getInstance().getManConnection();
-			
-			return updateSubtask(conn,subtaskList,userId);
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	/*
+//	 * 批量修改子任务详细信息。 参数：Subtask对象列表
+//	 */
+//	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			// 持久化
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+//			return updateSubtask(conn,subtaskList,userId);
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
@@ -772,17 +776,17 @@ public class SubtaskService {
 							subtask.put("dbId",rs.getInt("DAILY_DB_ID"));
 						}	
 						
-						if(1 == rs.getInt("STATUS")){
-							subtask.put("percent",100);
-							SubtaskStatInfo stat = new SubtaskStatInfo();
-							try{	
-								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-							} catch (Exception e) {
-								log.warn("subtask query error",e);
-							}
-							subtask.put("percent",stat.getPercent());
-						}
+//						if(1 == rs.getInt("STATUS")){
+//							subtask.put("percent",100);
+//							SubtaskStatInfo stat = new SubtaskStatInfo();
+//							try{	
+//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//							} catch (Exception e) {
+//								log.warn("subtask query error",e);
+//							}
+//							subtask.put("percent",stat.getPercent());
+//						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
@@ -2244,7 +2248,7 @@ public class SubtaskService {
 					+ "where i.INFOR_ID = p.INFOR_ID "
 					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
 					+ "AND ST.STATUS IN (1,2) "
-					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0 "
+					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0  AND st.is_quality=0 "
 					+ "AND i.ADMIN_NAME like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){
@@ -2715,5 +2719,219 @@ public class SubtaskService {
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	/**
+	 * 编辑子任务圈接口
+	 * 原则：如果S圈对应的采集子任务已经开启，则不能进行任何操作；草稿状态子任务的S圈如果修改，则删除与采集子任务的关联
+	 * 应用场景：独立工具--外业规划--绘制子任务圈—合并/切分等操作
+	 * @param blockId
+	 * @param condition
+	 * @throws Exception
+	 */
+	public void paintRefer(int taskId, JSONObject condition)  throws Exception {
+		Connection conn = null;
+		try {
+			String lineWkt="";
+			int id1=0;
+			int id2=0;
+			if(condition.containsKey("lineWkt")){
+				lineWkt=condition.getString("lineWkt");
+			}else{
+				id1=condition.getInt("id1");
+				id2=condition.getInt("id2");
+			}
+			
+			conn=DBConnector.getInstance().getManConnection();
+			
+			//1.nowait方式锁与blockId下的子任务圈以及对应的采集子任务，并获取范围
+			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
+			JSONObject conditionQuery2=new JSONObject();
+			conditionQuery2.put("blockId", task.getBlockId());
+			if(StringUtils.isEmpty(lineWkt)){
+				JSONArray ids=new JSONArray();
+				ids.add(id1);
+				ids.add(id2);
+				conditionQuery2.put("ids", ids);
+			}
+			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
+
+			JSONObject conditionQuery=new JSONObject();
+			conditionQuery.put("taskId", taskId);
+			conditionQuery.put("stage", 0);				
+			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
+			
+			if(!StringUtils.isEmpty(lineWkt)){
+				/*
+				 * //wkt,判断要拆分的子任务圈是否已开启，未开启则锁表，并获取geo；已开启则返回
+			//若没有子任务，则直接拆分block；否则拆分子任务圈，并删除采集子任务与不规则圈的关联
+				 */
+				Geometry lineGeo=GeoTranslator.wkt2Geometry(lineWkt);
+				if(refers==null||refers.size()==0){//切分block
+					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
+				}else{
+					for(SubtaskRefer refer:refers){
+						Geometry referGeo = refer.getGeometry();
+						//线是否穿过面
+						//是，则进行切割
+						//if()
+					}
+				}
+				
+				//2.进行范围切割
+				Geometry geometry=null;
+				//3.需要切割的不规则圈对应的子任务的状态为开启，直接返回
+				//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
+				//5.保存信息
+			}else{
+				/*
+				 * //若为id1，id2；则判断id对应的子任务是否开启，未开启则锁表，并获取geo；已开启则返回
+			//未开启，则删除id1，id2,合并不规则圈生成id3，
+				 */
+				//1.nowait方式锁id1,id2对应的不规则圈，子任务
+				//2.是否开启，开启返回
+				List<Subtask> subtaskRefers=new ArrayList<>();
+				for(Subtask s: subtasks){
+					if(s.getReferId()==id1||s.getReferId()==id2){
+						if(s.getStatus()==1){
+							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+						}
+						s.setReferId(0);
+						subtaskRefers.add(s);
+					}
+				}
+				//3.合并范围，去除关系
+				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
+				//4.保存
+			}			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param subtaskId
+	 * @param isLock true 锁表 false 不锁表
+	 * @return
+	 * @throws ServiceException
+	 */
+	public List<Subtask> querySubtask(Connection conn,JSONObject condition,boolean isLock) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String sql="SELECT S.SUBTASK_ID,"
+					+ "       S.TASK_ID,"
+					+ "       S.GEOMETRY,"
+					+ "       S.STAGE,"
+					+ "       S.TYPE,"
+					+ "       S.STATUS,"
+					+ "       S.IS_QUALITY,"
+					+ "       S.REFER_ID"
+					+ "  FROM SUBTASK S"
+					+ " WHERE 1=1";
+			if(condition!=null&&condition.size()>0){
+				Iterator<?> keyIter = condition.keys();
+				while (keyIter.hasNext()) {
+					String key=(String) keyIter.next();
+					if(key.equals("taskId")){
+						sql=sql+" AND S.TASK_ID="+condition.getInt(key);
+					}
+					if(key.equals("stage")){
+						sql=sql+" AND S.STAGE="+condition.getInt(key);
+					}
+				}
+			}
+			if(isLock){sql=sql+ "   FOR UPDATE NOWAIT";}
+			log.info("请求子任务详情SQL："+sql);
+			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> subtasks=new ArrayList<Subtask>();
+					if (rs.next()) {
+						Subtask subtask = new Subtask();						
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}		
+						subtasks.add(subtask);
+					}
+					return subtasks;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} 
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param subtaskId
+	 * @param isLock true 锁表 false 不锁表
+	 * @return
+	 * @throws ServiceException
+	 */
+	public List<SubtaskRefer> queryReferByTaskId(Connection conn,JSONObject condition,boolean isLock) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String sql="SELECT R.ID, R.GEOMETRY, R.BLOCK_ID"
+					+ "  FROM SUBTASK_REFER R"
+					+ " WHERE 1=1";
+			if(condition!=null&&condition.size()>0){
+				Iterator<?> keyIter = condition.keys();
+				while (keyIter.hasNext()) {
+					String key=(String) keyIter.next();
+					if(key.equals("blockId")){
+						sql=sql+" AND R.BLOCK_ID="+condition.getInt(key);
+					}
+				}
+			}
+			if(isLock){sql=sql+ "   FOR UPDATE NOWAIT";}
+			log.info("queryReferByTaskId SQL："+sql);
+			ResultSetHandler<List<SubtaskRefer>> rsHandler = new ResultSetHandler<List<SubtaskRefer>>() {
+				public List<SubtaskRefer> handle(ResultSet rs) throws SQLException {
+					List<SubtaskRefer> subtasks=new ArrayList<SubtaskRefer>();
+					if (rs.next()) {
+						SubtaskRefer refer = new SubtaskRefer();						
+						refer.setId(rs.getInt("ID"));						
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							refer.setGeometry(GeoTranslator.struct2Jts(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}		
+						subtasks.add(refer);
+					}
+					return subtasks;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} 
 	}
 }

@@ -108,17 +108,15 @@ public class FMBAT20186 extends BasicBatchRule {
 			boolean addressListNull = (addressList==null || addressList.isEmpty());//子地址为空
 			boolean parentAddressListNull = (parentAddressList==null || parentAddressList.isEmpty());//父地址为空
 			
-			if(!(parentAddressListNull&&addressListNull)){
-					boolean childCHIAddressEqualsParent = false;//判断父的中文地址和子的是否一致
-					boolean childENGAddressEqualsParent = false;//判断父的英文地址和子的是否一致
-					if(!parentAddressListNull&&!addressListNull){
+			if(!(parentAddressListNull&&addressListNull)){//父子只要有一个不为空
+					boolean childAddressEqualsParent = false;//判断父的地址和子的是否一致
+					if(!parentAddressListNull&&!addressListNull){//父子都不为空
 						if(parentAddressList.size()==addressList.size()){
-							childCHIAddressEqualsParent = judgeChildCHIAddressEqualsParent(poiObj, parentPoiObj);
-							childENGAddressEqualsParent = judgeChildENGAddressEqualsParent(poiObj, parentPoiObj);
+							childAddressEqualsParent = judgeChildCHIAddressEqualsParent(poiObj, parentPoiObj);
 						}
 					}
 					
-					if(!(childCHIAddressEqualsParent&&childENGAddressEqualsParent)){
+					if(!childAddressEqualsParent){
 						if(!addressListNull){
 							for(int i=addressList.size()-1;i>=0;i--){
 								poiObj.deleteSubrow(addressList.get(i));
@@ -190,15 +188,13 @@ public class FMBAT20186 extends BasicBatchRule {
 				
 				if(!(parentAddressListNull&&childAddressListNull)){
 					boolean childCHIAddressEqualsParent = false;//判断父的中文地址和子的是否一致
-					boolean childENGAddressEqualsParent = false;//判断父的英文地址和子的是否一致
 					if(!parentAddressListNull&&!childAddressListNull){
 						if(parentAddressList.size()==childAddressList.size()){
 							childCHIAddressEqualsParent = judgeChildCHIAddressEqualsParent(child, poiObj);
-							childENGAddressEqualsParent = judgeChildENGAddressEqualsParent(child, poiObj);
 						}
 					}
 				
-					if(!(childCHIAddressEqualsParent&&childENGAddressEqualsParent)){
+					if(!(childCHIAddressEqualsParent)){
 						if(!childAddressListNull){
 							// 地址
 							for(int i=childAddressList.size()-1;i>=0;i--){
@@ -252,36 +248,26 @@ public class FMBAT20186 extends BasicBatchRule {
 	
 	
 	public boolean judgeChildCHIAddressEqualsParent(IxPoiObj childPoiObj,IxPoiObj parentPoiObj){
-		boolean childCHIAddressEqualsParent = false;
 		
 		IxPoiAddress parentCHAddress = parentPoiObj.getCHAddress();
 		IxPoiAddress poiCHAddress = childPoiObj.getCHAddress();
 
+		boolean childCHIAddressEqualsParent = false;
+		
+		if(parentCHAddress==null&&poiCHAddress==null){childCHIAddressEqualsParent = true;}
 		if(parentCHAddress!=null&&poiCHAddress!=null){
 			String parentCHAddressStr =  parentCHAddress.getLangCode()+parentCHAddress.getFullname();
 			String poiCHAddressStr =  poiCHAddress.getLangCode()+poiCHAddress.getFullname();
 			if(parentCHAddressStr.equals(poiCHAddressStr)){childCHIAddressEqualsParent = true;}//判断父的中文地址和子的是否一致
 		}
+		
 		return childCHIAddressEqualsParent;
-	}
-	
-	public boolean judgeChildENGAddressEqualsParent(IxPoiObj childPoiObj,IxPoiObj parentPoiObj){
-		boolean childENGAddressEqualsParent = false;
-		
-		IxPoiAddress parentENGAddress = parentPoiObj.getENGAddress(parentPoiObj.getCHAddress().getNameGroupid());
-		IxPoiAddress poiENGAddress = childPoiObj.getENGAddress(parentPoiObj.getCHAddress().getNameGroupid());
-		
-		if(parentENGAddress!=null&&poiENGAddress!=null){
-			String parentENGAddressStr =  parentENGAddress.getLangCode()+parentENGAddress.getFullname();
-			String poiENGAddressStr =  poiENGAddress.getLangCode()+poiENGAddress.getFullname();
-			if(parentENGAddressStr.equals(poiENGAddressStr)){childENGAddressEqualsParent = true;}//判断父的英文地址和子的是否一致
-		}
-		
-		return childENGAddressEqualsParent;
 	}
 	
 	public boolean judgeChildContactEqualsParent(List<IxPoiContact> parentContactList,List<IxPoiContact> childContactList){
 		boolean childContactEqualsParent = false;  
+		if((parentContactList==null ||parentContactList.isEmpty())&&
+				(childContactList==null ||childContactList.isEmpty())){childContactEqualsParent = true; }//父子电话都为空
 		for (IxPoiContact parentIxPoiContact : parentContactList) {
 			for (IxPoiContact ixPoiContact : childContactList) {
 				if(parentIxPoiContact.getContact().equals(ixPoiContact.getContact())

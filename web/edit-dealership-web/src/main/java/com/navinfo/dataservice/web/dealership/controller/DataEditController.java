@@ -1,29 +1,26 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Connection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
-import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -342,6 +339,110 @@ public class DataEditController extends BaseController {
 			if(conn!=null){
 				conn.close();
 			}
-		}//
+		}
+	}
+	
+	/**
+	 * 下拉省市列表
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getAdminCodeAndProvince")
+	public ModelAndView getAdminCodeAndProvince(HttpServletRequest request) throws Exception {
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		try {
+			JSONArray data = manApi.getAdminCodeAndProvince();//得到distinct过后的adminCode列表
+
+		    return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally{
+		}
+	}
+	
+	
+	/**
+	 * 编辑查询接口
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/queryByCon")
+	public ModelAndView queryByCon(HttpServletRequest request) throws Exception {
+		
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			JSONArray data = dealerShipEditService.queryByCon(jsonObj);
+
+		    return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally{
+		}
+	}
+	
+
+	
+	/**
+	 * 补充数据接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/addChainData")
+	public ModelAndView addChainData(HttpServletRequest request)throws ServletException, IOException {
+		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			Map<String, Object> result = dealerShipEditService.addChainData(request, userId);	
+			
+			List<Integer> resultIdList = (List<Integer>) result.get("resultIdList");
+			List<String> chainCodeList = (List<String>)result.get("chainCodeList");
+			
+			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject jobReq = new JSONObject();
+			jobReq.put("resultIdList", resultIdList);
+			jobReq.put("chainCodeList", chainCodeList);
+			jobReq.put("userId", userId);
+			
+			long jobId = jobApi.createJob("dealershipAddChainDataJob", jobReq, userId,0, "代理补充数据job");
+			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+      }}
+
+	/**
+	 * 加载poi属性，用于代理店保存冲突检测
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/loadPoiForConflict")
+	public ModelAndView loadPoiForConflict(HttpServletRequest request) throws Exception {
+		
+		try {
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			JSONObject data = dealerShipEditService.loadPoiForConflict(jsonObj);
+
+		    return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally{
+
+		}
 	}
 }

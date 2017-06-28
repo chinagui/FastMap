@@ -286,6 +286,11 @@ public class ColumnSubmitJob extends AbstractJob {
 					}
 				}
 				
+				//从没有地址的数据从poi_column_status表删除FM-YW-20-018作业标记信息
+				if(second.equals("addrSplit")&&pidList!=null&&pidList.size()>0){
+					columnCoreOperation.noAddrPoiDeleteWorkItem("FM-YW-20-018", conn, pidList);
+				}
+				
 				// 清理重分类检查结果
 				log.info("清理重分类检查结果");
 				if (classifyRules.size()>0) {

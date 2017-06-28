@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.control.row.crowdTest;
 
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -60,5 +61,14 @@ public class TestCrowd {
 			System.out.println(dbId);
 			break;
 		}
+	}
+	
+	@Test
+	public void testGetTelephone() throws SQLException{
+		double x = 116.4300328;
+		double y = 39.85880944;
+		RowCrowdsControl control = new RowCrowdsControl();
+		JSONObject result = control.getTelephone(x, y);
+		System.out.println(result);
 	}
 }

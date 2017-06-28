@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.dealership.job;
 
-import java.util.Date;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
@@ -17,12 +15,19 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 	
 
-	protected String chainCode;
+	protected List<String> chainCodeList;//库差分，重新库差分、补充数据、实时更新、品牌更新传入
 	
-	private int specRegionId;//需要日落月的大区id,为空表示全部大区都要落
-	private List<Integer> specMeshes;//需要日落月的大区id,为空表示全部大区都要落
-	int phaseId;
-    
+	protected int sourceType;//1库差分，2重新库差分、3补充数据、4实时更新、5品牌更新
+	
+	public int getSourceType() {
+		return sourceType;
+	}
+
+	public void setSourceType(int sourceType) {
+		this.sourceType = sourceType;
+	}
+
+	protected List<Integer> resultIdList;//补充数据 ,实时更新传入
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -48,7 +53,12 @@ public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 		try{
-			if(chainCode==null||chainCode.isEmpty())throw new JobException("传入品牌代码不能为空");
+			if(sourceType==0){throw new JobException("传入sourceType不能为空");}
+			if(sourceType!=3){
+				if(chainCodeList==null){throw new JobException("传入chainCodeList不能为空");}
+			}else{
+				if(resultIdList==null){throw new JobException("传入resultIdList不能为空");}
+			}
 		}catch(JobException e){
 			throw e;
 		}catch(Exception ex){
@@ -57,36 +67,21 @@ public class DealershipTableAndDbDiffJobRequest extends AbstractJobRequest {
 		}
 	}
 	
-	public String getChainCode() {
-		return chainCode;
+	public List<String> getChainCodeList() {
+		return chainCodeList;
 	}
 
-	public void setChainCode(String chainCode) {
-		this.chainCode = chainCode;
+	public void setChainCodeList(List<String> chainCodeList) {
+		this.chainCodeList = chainCodeList;
 	}
 
-	public int getSpecRegionId() {
-		return specRegionId;
+
+	public List<Integer> getResultIdList() {
+		return resultIdList;
 	}
 
-	public void setSpecRegionId(int specRegionId) {
-		this.specRegionId = specRegionId;
-	}
-
-	public List<Integer> getSpecMeshes() {
-		return specMeshes;
-	}
-
-	public void setSpecMeshes(List<Integer> specMeshes) {
-		this.specMeshes = specMeshes;
+	public void setResultIdList(List<Integer> resultIdList) {
+		this.resultIdList = resultIdList;
 	}
 	
-	public int getPhaseId() {
-		return phaseId;
-	}
-
-	public void setPhaseId(int phaseId) {
-		this.phaseId = phaseId;
-	}
-
 }

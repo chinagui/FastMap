@@ -24,7 +24,7 @@
         <RD_SIGNASREAL PK="SIGNBOARD_ID"/>
         <RD_LANE_CONNEXITY PK="PID"/>
         <RD_LANE_TOPOLOGY PK="TOPOLOGY_ID"/>
-        <RD_LANE PK="PID"/>
+        <RD_LANE PK="LANE_PID"/>
         <RD_LANE_TOPO_DETAIL PK="TOPO_ID"/>
         <RD_TOLLGATE PK="PID"/>
         <RD_TOLLGATE_NAME PK="NAME_ID"/>
@@ -32,7 +32,7 @@
         <RD_VOICEGUIDE_DETAIL PK="DETAIL_ID"/>
         <RD_SE PK="PID"/>
         <RD_VARIABLE_SPEED PK="VSPEED_PID"/>
-        <RD_GSC PK="DETAIL_ID"/>
+        <RD_GSC PK="PID"/>
         <RD_SAMELINK PK="GROUP_ID"/>
         <RD_SAMENODE PK="GROUP_ID"/>
         <RD_HGWG_LIMIT PK="PID"/>
@@ -42,7 +42,6 @@
         <RD_INTER PK="PID"/>
         <RD_ROAD PK="PID"/>
         <RD_OBJECT PK="PID"/>
-        <RW_FEATURE PK="FEATURE_PID"/>
         <RW_LINK PK="LINK_PID"/>
         <RW_NODE PK="NODE_PID"/>
         <IX_POI PK="PID"/>

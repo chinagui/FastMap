@@ -132,7 +132,7 @@ public class taskTest extends InitApplication{
 	@Test
 	public void testClose() throws Exception
 	{
-		TaskService.getInstance().close(489, 10001, "", "");
+		TaskService.getInstance().close(2190, 10001, "", "");
 	}
 	
 	@Test
@@ -149,7 +149,7 @@ public class taskTest extends InitApplication{
 	public void testPushMsg() throws Exception
 	{
 		JSONArray taskIds=new JSONArray();
-		taskIds.add(344);
+		taskIds.add(809);
 		String message = TaskService.getInstance().taskPushMsg(0, taskIds);
 		System.out.println(message);
 	}

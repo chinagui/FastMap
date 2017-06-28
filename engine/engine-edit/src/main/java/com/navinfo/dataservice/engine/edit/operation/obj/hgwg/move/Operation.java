@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -18,7 +19,11 @@ import java.sql.Connection;
 import java.util.List;
 
 /**
- * Created by chaixin on 2016/11/8 0008.
+ * @author zhangyt
+ * @Title: Operation.java
+ * @Description: TODO
+ * @date: 2016年7月29日 下午3:48:28
+ * @version: v1.0
  */
 public class Operation implements IOperation {
 
@@ -40,7 +45,9 @@ public class Operation implements IOperation {
         RdHgwgLimit hgwgLimit = command.getHgwgLimit();
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
-        geoPoint.put("coordinates", new double[]{content.getDouble("longitude"), content.getDouble("latitude")});
+        geoPoint.put("coordinates", new double[]{
+                DoubleUtil.keepSpecDecimal(content.getDouble("longitude")),
+                DoubleUtil.keepSpecDecimal(content.getDouble("latitude"))});
         hgwgLimit.changedFields.put("geometry", geoPoint);
         String[] meshes = MeshUtils.point2Meshes(content.getDouble("longitude"), content.getDouble("latitude"));
         hgwgLimit.changedFields.put("meshId", Integer.valueOf(meshes[0]));

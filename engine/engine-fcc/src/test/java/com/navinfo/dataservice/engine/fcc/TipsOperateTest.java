@@ -221,11 +221,11 @@ public class TipsOperateTest {
 				
 				EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 				
-				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
-				
-				delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
-
-				op.deleteByRowkey(rowkey,delType,user);
+//				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
+//
+//				delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
+				//rowkey = "";
+				op.deleteByRowkey(rowkey,1,user);
 
 			} catch (Exception e) {
 				e.printStackTrace();

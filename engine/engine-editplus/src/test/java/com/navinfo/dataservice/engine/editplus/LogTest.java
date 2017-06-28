@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.plus.log.LogGenerator;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
@@ -213,6 +214,44 @@ public class LogTest {
 
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			obj.deleteObj();
+			
+			List<BasicObj> basicObjs = new ArrayList<BasicObj>();
+			basicObjs.add(obj);
+
+			for(BasicObj basicObj:basicObjs){
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql(true);
+				for(RunnableSQL runnableSql:runnableSqlList){
+					runnableSql.run(conn);
+				}
+			}
+			
+			String opCmd = "TEST";
+			int opSg = 1; 
+			long userId = 1;
+			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId,0);
+
+			conn.commit();
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@Test
+	public void test4(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(13);;
+			String objType = "IX_POI";
+			long pid = 862;
+			boolean isLock = true;
+			
+			Set<String> tabNames = new HashSet<String>();
+
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
+			IxPoiHotel ixPoiHotel = (IxPoiHotel) obj.createSubRowByName("hotels");
 			
 			List<BasicObj> basicObjs = new ArrayList<BasicObj>();
 			basicObjs.add(obj);

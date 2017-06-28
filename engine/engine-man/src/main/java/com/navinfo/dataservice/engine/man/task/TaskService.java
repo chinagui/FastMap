@@ -1362,10 +1362,15 @@ public class TaskService {
 //						}
 						//hasNoTaskData 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
 						int other2mediumStatus=rs.getInt("other2medium_Status");
-						if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
-							task.put("hasNoTaskData", 2);
-						}else{
-							task.put("hasNoTaskData", 1);
+						
+						task.put("hasNoTaskData", 0);
+						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
+						if(rs.getInt("STATUS")==1&&rs.getInt("BLOCK_ID")!=0&&rs.getInt("TYPE")==0){
+							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
+								task.put("hasNoTaskData", 2);
+							}else{
+								task.put("hasNoTaskData", 1);
+							}
 						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));

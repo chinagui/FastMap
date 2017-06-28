@@ -125,18 +125,18 @@ public class DataEditService {
 			throws Exception {
 		DBConnector connector = DBConnector.getInstance();
 		// 待作业→内页录入作业3；已提交，待提交→出品9
-		int flowStatus = 3;
+		/*int flowStatus = 3;
 		if (dealStatus == 3 || dealStatus == 2)
 			flowStatus = 9;
-
+*/
 		Connection manconn = null;
 		JSONArray result = new JSONArray();
 
 		try {
 			manconn = DBConnector.getInstance().getManConnection();
 			String queryListSql = String.format(
-					"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
-					userId, flowStatus, dealStatus, chainCode);
+					"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
+					userId, dealStatus, chainCode);
 			List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
 			for (Map<String, Object> item : resultCol) {

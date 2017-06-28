@@ -2492,10 +2492,14 @@ public class ProgramService {
 			QueryRunner run = new QueryRunner();
 			
 			StringBuffer sb = new StringBuffer();
-			sb.append("select t.name,t.program_id from PROGRAM t, CITY c where t.type = 1 and t.status = 2 and c.plan_status = 0 and t.city_id = c.city_id");
+			//未规划草稿状态
+			sb.append("select p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
+			//中线采集任务
+			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and t.program_id = p.program_id");
 			if(json.containsKey("name") && json.getString("name").length() > 0){
 				String name = json.getString("name");
-				sb.append(" and t.name like '%"+name+"%'");
+				sb.append(" and p.name like '%"+name+"%'");
 			}
 			String sql = sb.toString();
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>(){

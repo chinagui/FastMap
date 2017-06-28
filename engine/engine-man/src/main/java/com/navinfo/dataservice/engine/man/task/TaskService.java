@@ -2,9 +2,11 @@ package com.navinfo.dataservice.engine.man.task;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,6 +25,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
@@ -65,6 +68,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.rabbitmq.client.impl.recovery.QueueRecoveryListener;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -3736,4 +3740,182 @@ public class TaskService {
 			DbUtils.close(con);
 		}
 	}
+	
+	/**
+	 * 初始化规划数据列表
+	 * 1.范围：采集任务对应的block的不规则范围
+	 * 2.提取范围内的所有link/poi存入data_plan表中。默认全是作业数据
+	 * 
+	 * */
+	@SuppressWarnings("unchecked")
+	public Map<String, Integer> initPlanData(int taskId) throws Exception{
+		Connection con = null;
+		Connection dailyConn = null;
+		try{
+			con = DBConnector.getInstance().getManConnection();	
+			Task task = queryByTaskId(con, taskId);
+			Region region = RegionService.getInstance().query(con,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			
+			//获取block对应的范围
+			String wkt = getBlockRange(taskId);
+			if(StringUtils.isBlank(wkt)){
+				throw new Exception("获取block的范围信息为空");
+			}
+			
+			Map<String, Object> linkAndPoiData = getPoiAndLinkData(wkt, dailyConn);
+			
+			List<Map<String, Integer>> poiList = (List<Map<String, Integer>>)linkAndPoiData.get("poi");
+			List<Integer> linkList = (List<Integer>)linkAndPoiData.get("link");
+			//这里执行保存数据
+			log.info("开始保存数据到dataplan表");
+			insertData(dailyConn, poiList, linkList, taskId);
+			log.info("保存数据到dataplan表成功");
+			
+			Map<String, Integer> result = new HashMap<>();
+			result.put("poi", poiList.size());
+			result.put("link", linkList.size());
+			return result;
+		}catch(Exception e){
+			log.error("初始化规划数据列表失败,原因为：" + e);
+			DbUtils.rollback(con);
+			DbUtils.rollback(dailyConn);
+			throw new Exception("初始化规划数据列表失败");
+		}finally{
+			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(dailyConn);
+		}
+	}
+	
+	/**
+	 * 保存poi和link数据到dataPlan表
+	 * @param 
+	 * @param
+	 * @throws Exception 
+	 * 
+	 * */
+	public void insertData(Connection dailyConn, List<Map<String, Integer>> pois, List<Integer> links, int taskId) throws Exception{
+		try{
+			String insertSql = "insert into DATA_PLAN t (t.pid, t.data_type, t.task_id, t.is_plan_selected) values(?,?,?,?)";
+			QueryRunner run = new QueryRunner();
+			//POI
+			int i = 0;
+			Object[][] poiParams = new Object[pois.size()][4] ;
+			for(Map<String, Integer> poi : pois){
+				Object[] map = new Object[4];
+				map[0] = poi.get("pid");
+				map[1] = 1;
+				map[2] = taskId;
+				map[3] = poi.get("important");
+				poiParams[i] = map;
+				i++;
+			}
+			//LINK
+			int j = 0;
+			Object[][] linkParams = new Object[links.size()][4] ;
+			for(Integer link : links){
+				Object[] map = new Object[4];
+				map[0] = link;
+				map[1] = 2;
+				map[2] = taskId;
+				map[3] = 0;
+				linkParams[j] = map;
+				j++;
+			}
+			
+			run.batch(dailyConn, insertSql, poiParams);
+			run.batch(dailyConn, insertSql, linkParams);
+		}catch(Exception e){
+			log.error("保存poi和link数据到dataPlan表异常："+e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * 根据taskId获取对应block的范围
+	 * 
+	 * */
+	public String getBlockRange(int taskId) throws Exception{
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			//获取block对应的范围
+			String sql = "select b.origin_geo from BLOCK b, TASK t where t.block_id = b.block_id and t.task_id = " + taskId;
+			ResultSetHandler<String> rs = new ResultSetHandler<String>(){
+				public String handle(ResultSet rs) throws SQLException {
+				String wkt = "";
+				if(rs.next()){
+					STRUCT struct = (STRUCT) rs.getObject("origin_geo");
+					try {
+						wkt = GeoTranslator.struct2Wkt(struct);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				return wkt;
+			}
+		};
+			return run.query(con, sql, rs);
+		}catch(Exception e){
+			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e);
+			throw e;
+		}finally{
+			DbUtils.close(con);
+		}
+	}
+	
+	/**
+	 * 获取block范围内poi和link的数据
+	 * 
+	 * */
+	public Map<String, Object> getPoiAndLinkData(String wkt, Connection dailyConn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			
+//			String sql = "select COUNT(t.link_pid) link_pid, COUNT(p.pid) pid from RD_LINK t, IX_POI p where "
+//					+ "sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE' "
+//					+ "or sdo_within_distance(p.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			
+			String linkSql = "select t.link_pid from RD_LINK t where "
+					+ "sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";
+			String poiSql = "select p.* from IX_POI p where "
+					+ "sdo_within_distance(p.GEOMETRY,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			
+			ResultSetHandler<List<Integer>> linkRs = new ResultSetHandler<List<Integer>>(){
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> link = new ArrayList<>(20000);
+					while(rs.next()){
+						link.add(rs.getInt("link_pid"));
+					}
+					return link;
+				}
+			};
+			List<Integer> links =  run.query(dailyConn, linkSql, linkRs, wkt);
+			
+			ResultSetHandler<List<Map<String, Integer>>> poiRs = new ResultSetHandler<List<Map<String, Integer>>>(){
+				public List<Map<String, Integer>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Integer>> poi = new ArrayList<>(20000);
+					while(rs.next()){
+						Map<String, Integer> poiMap = new HashMap<>();
+						poiMap.put("pid", rs.getInt("pid"));
+						poiMap.put("important", "A".equals(rs.getString("level")) ? 1:0);
+						poi.add(poiMap);
+					}
+					return poi;
+				}
+			};
+			List<Map<String, Integer>> pois =  run.query(dailyConn, poiSql, poiRs, wkt);
+			
+			Map<String, Object> result = new HashMap<>();
+			result.put("poi", pois);
+			result.put("link", links);
+			
+			return result;
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
 }

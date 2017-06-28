@@ -653,4 +653,30 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 初始化规划数据列表
+	 * 1.范围：采集任务对应的block的不规则范围
+	 * 2.提取范围内的所有link/poi存入data_plan表中。默认全是作业数据
+	 * 
+	 * */
+	@RequestMapping(value = "/task/initPlanData")
+	public ModelAndView initPlanData(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId") || dataJson.getString("taskId").length() < 1){
+				throw new Exception("缺少taskId");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			Map<String, Integer> result = TaskService.getInstance().initPlanData(taskId);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

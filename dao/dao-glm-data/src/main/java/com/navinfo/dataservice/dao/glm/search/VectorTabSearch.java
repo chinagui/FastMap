@@ -90,13 +90,10 @@ public class VectorTabSearch  implements ISearch{
 	        
 	    	String sql = "SELECT A.PID,A.NAME, A.GEOMETRY,A.KIND,A.WIDTH,A.MULTI,A.DERECT,A.FORM  " 
 	    					+" FROM vector_tab A "
-	    					+"    WHERE A.PID IN "
-	    					+"          (SELECT DISTINCT PID "
-							+"             FROM vector_tab "
-							+"            WHERE 1=1 "
-							+"              AND SDO_WITHIN_DISTANCE(A.GEOMETRY, "
-							+"                                      SDO_GEOMETRY(:1, 8307), "
-							+"                                      'DISTANCE=0') = 'TRUE')";
+	    					+"    WHERE  "
+							+"  sdo_relate(A.GEOMETRY, "
+							+"            SDO_GEOMETRY(:1, 8307), "
+							+"            'mask=anyinteract') = 'TRUE'";
 	
 	        PreparedStatement pstmt = null;
 	

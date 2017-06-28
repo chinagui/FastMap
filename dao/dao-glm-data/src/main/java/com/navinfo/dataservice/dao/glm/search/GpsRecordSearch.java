@@ -90,13 +90,10 @@ public class GpsRecordSearch  implements ISearch{
         
     	String sql = "SELECT A.GPSRECORD_ID, A.GEOMETRY,A.SOURCE,A.NAME,A.TABLE_NAME,A.LANE_NUM,A.KIND,A.MESH_ID,A.FIELD_SOURCE " 
     					+" FROM GPS_RECORD A "
-    					+"    WHERE A.GPSRECORD_ID IN "
-    					+"          (SELECT DISTINCT GPSRECORD_ID "
-						+"             FROM GPS_RECORD "
-						+"            WHERE 1=1 "
-						+"              AND SDO_WITHIN_DISTANCE(GEOMETRY, "
-						+"                                      SDO_GEOMETRY(:1, 8307), "
-						+"                                      'DISTANCE=0') = 'TRUE')";
+    					+"    WHERE  "
+						+"  sdo_relate(A.GEOMETRY, "
+						+"            SDO_GEOMETRY(:1, 8307), "
+						+"            'mask=anyinteract') = 'TRUE'";
 
         PreparedStatement pstmt = null;
 

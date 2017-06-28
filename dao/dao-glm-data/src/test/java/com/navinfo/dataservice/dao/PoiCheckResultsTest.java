@@ -80,10 +80,9 @@ public class PoiCheckResultsTest {
 			
 				//List<JSONObject> page =null;
 				try {
-					 Page page = a.listPoiCheckResultList(jsonReq,306);
+					 Page page1 = a.listPoiCheckResultList(jsonReq,306);
+					 System.out.println(page1.getResult());
 						
-					 System.out.println(page.getResult());
-					
 					/*JSONArray results = a.queryRefFeatures(1810842);
 					System.out.println(results);*/
 				} catch (Exception e) {

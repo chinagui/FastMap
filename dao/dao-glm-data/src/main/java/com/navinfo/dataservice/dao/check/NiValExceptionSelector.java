@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -950,7 +952,9 @@ public class NiValExceptionSelector {
 	 * @date 2017年6月23日 下午4:07:22 
 	 */
 	public Page listPoiCheckResultList(JSONObject params,int subtaskId) throws Exception {
+		log.info(" begin time"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 		Page p = null ;
+		QueryRunner run = null;
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
 		
@@ -960,13 +964,10 @@ public class NiValExceptionSelector {
 		}
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
-		List<Long> pids = getCheckPidList(conn,subtaskId);
-//		List<Long> pids = new ArrayList<Long>();
-//		pids.add((long) 408000118);
-//		pids.add((long) 508000006);
+		List<Integer> pids = getCheckPidList(conn,subtaskId);
 		
 		log.info("pids :"+pids.size());
-				
+		try {		
 		if(pids !=  null && pids.size() > 0){
 			String orderSql ="";
 			com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
@@ -994,23 +995,23 @@ public class NiValExceptionSelector {
 						+ "from "
 							+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
 						+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+							+ " and O.pid in (select column_value from table(clob_to_table(?)) "
 							+ ") "
 						+ " union all "
 						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status,O.PID "
 						+ "from "
 						+ "ck_exception c , CK_RESULT_OBJECT O "
 							+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+							+ " and O.pid in (select column_value from table(clob_to_table(?)) "
 							+ " )  "
 					+ " )  b  "+ orderSql
 					+ " ) T  WHERE ROWNUM <= ? ) q  WHERE q.ROWNO >= ? ");
 		
-		Clob clob = conn.createClob();
+		Clob clob = ConnectionUtil.createClob(conn);
 		clob.setString(1, StringUtils.join(pids, ","));
 		
 		log.info("poiCheckResultList:  " + sql);
-		QueryRunner run = new QueryRunner();
+		run = new QueryRunner();
 
 		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
 			public Page handle(ResultSet rs) throws SQLException {
@@ -1053,29 +1054,35 @@ public class NiValExceptionSelector {
 					json.put("qa_status", rs.getString("qa_status"));
 
 					JSONArray refFeaturesArr = new JSONArray();
-//					int refPoiCount = 0;
 					
 					if(targets != null && StringUtils.isNotEmpty(targets)){
 						
 						String pids =targets.replaceAll("[\\[\\]]","").replaceAll("IX_POI,", "").replaceAll(";", ","); 
+						System.out.println(pids +" "+rs.getInt("pid"));
 						refFeaturesArr= queryRefFeatures(pids,rs.getInt("pid"));
 					}
 					// 查询关联poi根据pid
 					json.put("refFeatures", refFeaturesArr);
 					json.put("refCount", refFeaturesArr.size());
 					results.add(json);
+					System.out.println("json: "+ json);
 				}
 				page.setTotalCount(total);
 				page.setResult(results);
+				
 				return page;
 			}
 		};
-
 		p = run.query(conn, sql.toString(),new Object[]{clob,clob,pageEndNum,pageStartNum}, rsHandler3);
 		
 		}
-			return p;
-		
+		log.info(" end time"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+		return p;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			
+		}
 	}
 	
 	/**
@@ -1091,7 +1098,7 @@ public class NiValExceptionSelector {
 	 */
 	private int getListPoiResultCount(Connection conn,int subtaskId) throws Exception {
 		
-		List<Long> pids = getCheckPidList(conn,subtaskId);
+		List<Integer> pids = getCheckPidList(conn,subtaskId);
 		int poiResCount = 0;
 		if(pids != null && pids.size() > 0){
 			try{
@@ -1126,7 +1133,7 @@ public class NiValExceptionSelector {
 				
 			}catch(Exception e){
 				log.error("行编获取检查数据报错", e);
-				DbUtils.rollbackAndCloseQuietly(conn);
+//				DbUtils.rollbackAndCloseQuietly(conn);
 				throw new Exception(e);
 			}
 		}
@@ -1145,8 +1152,8 @@ public class NiValExceptionSelector {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年6月23日 下午4:14:11 
 	 */
-	private List<Long> getCheckPidList(Connection conn,int subtaskId) throws Exception {
-		List<Long> pids = null;
+	private List<Integer> getCheckPidList(Connection conn,int subtaskId) throws Exception {
+		List<Integer> pids = null;
 		try{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
@@ -1163,13 +1170,13 @@ public class NiValExceptionSelector {
 			
 			log.info("getCheckPidList sql: "+sql);
 			QueryRunner run=new QueryRunner();
-			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
+			pids=run.query(conn, sql,new ResultSetHandler<List<Integer>>(){
 
 				@Override
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					List<Long> pids =new ArrayList<Long>();
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> pids =new ArrayList<Integer>();
 					while (rs.next()) {
-						pids.add(rs.getLong("PID"));						
+						pids.add(rs.getInt("PID"));						
 					}
 					return pids;
 				}});

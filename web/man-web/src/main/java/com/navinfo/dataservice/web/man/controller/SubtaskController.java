@@ -597,4 +597,34 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 编辑子任务圈接口
+	 * 原则：如果S圈对应的采集子任务已经开启，则不能进行任何操作；草稿状态子任务的S圈如果修改，则删除与采集子任务的关联
+	 * 应用场景：独立工具--外业规划--绘制子任务圈—合并/切分等操作
+	 * @author songhe
+	 * @param  cityName
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/paintRefer")
+	public ModelAndView paintRefer(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONObject condition = new JSONObject();			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			SubtaskService.getInstance().paintRefer(taskId, condition);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("子任务查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

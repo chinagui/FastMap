@@ -36,7 +36,9 @@ public class TaskOther2MediumWebSocketHandler extends TextWebSocketHandler {
 		log.info("connect to the websocket success......");
 		users.add(session);
 		//日志
-		log.info("管理消息集合中WebSocketSession的保存个数:"+users.size());
+		log.info("系统消息集合中WebSocketSession的保存个数:"+users.size());
+		
+		String userId = (String) session.getAttributes().get("userId");
 	}
 
 	

@@ -31,6 +31,10 @@
 		<classifier>jdk15</classifier>
 	</dependency>
 	<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+		</dependency>
+	<dependency>
 		<groupId>net.sf.ezmorph</groupId>
 		<artifactId>ezmorph</artifactId>
 	</dependency>

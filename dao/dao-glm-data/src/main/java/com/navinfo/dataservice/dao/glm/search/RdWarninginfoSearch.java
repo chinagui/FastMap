@@ -141,6 +141,27 @@ public class RdWarninginfoSearch implements ISearch {
 
 			}
 
+			for (SearchSnapshot searchSnapshot : list) {
+
+				JSONArray arrayInfo = searchSnapshot.getM().getJSONArray("info");
+
+				if (arrayInfo.size() > 1) {
+
+					double angle = arrayInfo.getJSONObject(0).getDouble("angle");
+
+					for (int i = 1; i < arrayInfo.size(); i++) {
+
+						JSONObject info = arrayInfo.getJSONObject(i);
+
+						if (!info.containsKey("angle")) {
+
+							info.put("angle", String.valueOf((int) angle));
+						}
+					}
+
+				}
+			}
+
 		} catch (Exception e) {
 
 			throw new Exception(e);

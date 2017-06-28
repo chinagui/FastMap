@@ -1045,7 +1045,6 @@ public abstract class MeshUtils {
     	
     	for(Integer mesh : meshes){
     		String meshStr = mesh.toString();
-    		meshStr = StringUtils.leftPad(meshStr, 6, '0');
     		if(meshStr.length() != 6){
     			log.info("不能识别图幅号: "+mesh);
     			continue;

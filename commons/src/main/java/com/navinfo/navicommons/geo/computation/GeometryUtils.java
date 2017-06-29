@@ -46,6 +46,18 @@ public class GeometryUtils {
     public static double getDistance(Coordinate coord1, Coordinate coord2) {
         return getDistance(coord1.y, coord1.x, coord2.y, coord2.x);
     }
+    
+	/**
+	 * link包含在ring内，两个端点在ring组成线上</br>
+	 * 对应业务规则B
+	 * 
+	 * @param link
+	 * @param ring
+	 * @return
+	 */
+	public static boolean InteriorAnd2Intersection(Geometry link, Geometry ring) {
+		return link.relate(ring, "1FFF0F212");
+	}
 
     /**
      * 通过两个点生成一个线段

@@ -5,13 +5,11 @@ import java.sql.Connection;
 import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.springframework.aop.ThrowsAdvice;
-
-import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
-import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -35,6 +33,7 @@ public class TaskOther2MediumJob extends AbstractJob {
 	public void execute() throws JobException {
 		Connection conn=null;
 		TaskOther2MediumJobRequest myJobRequest=(TaskOther2MediumJobRequest)request;
+		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 		try {
 			conn=DBConnector.getInstance().getManConnection();
 			int taskId=myJobRequest.getTaskId();
@@ -46,13 +45,13 @@ public class TaskOther2MediumJob extends AbstractJob {
             long tipsNum = tipsOperator.batchNoTaskDataByMidTask(wkt, myJobRequest.getTaskId());
             log.info("taskId="+taskId+"批poi无任务数据，并修改统计信息");
 			int poiNum=TaskService.getInstance().batchMidTaskByTaskId(myJobRequest.getTaskId());
-			TaskProgressOperation.endProgressAndSocket(conn, myJobRequest.getPhaseId(), 2, "tips数量:"+tipsNum+";poi数量:"+poiNum);
+			
+			api.endProgressAndSocket(myJobRequest.getPhaseId(), 2, "tips数量:"+tipsNum+";poi数量:"+poiNum);
 			//TaskProgressOperation.updateProgress(conn, myJobRequest.getPhaseId(), 2, "poi数量:"+poiNum);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);	
 			try {
-				conn=DBConnector.getInstance().getManConnection();
-				TaskProgressOperation.endProgressAndSocket(conn, myJobRequest.getPhaseId(), 3, e.getMessage());
+				api.endProgressAndSocket(myJobRequest.getPhaseId(), 3, e.getMessage());
 			} catch (Exception e1) {
 				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error("", e);

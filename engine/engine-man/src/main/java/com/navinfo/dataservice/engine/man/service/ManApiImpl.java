@@ -1,20 +1,14 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
-
-import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -394,6 +388,24 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public JSONArray getAdminCodeAndProvince() throws Exception {
 		return CpRegionProvinceService.getInstance().getAdminCodeAndProvince();
+	}
+
+	/**
+	 * 修改task_progress的值，并发送socket
+	 */
+	@Override
+	public void endProgressAndSocket(int phaseId, int status, String message) throws Exception {
+		Connection conn=null;
+		try {
+			conn=DBConnector.getInstance().getManConnection();
+			TaskProgressOperation.endProgressAndSocket(conn, phaseId, status,message);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("", e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }
 

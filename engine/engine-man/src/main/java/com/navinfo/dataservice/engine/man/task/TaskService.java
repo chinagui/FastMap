@@ -3996,7 +3996,7 @@ public class TaskService {
 			int poiNum = run.update(dailyConn, poiSql, wkt);
 			
 			Map<String, Integer> result = new HashMap<>();
-			result.put("poi", poiNum);
+			result.put("poiNum", poiNum);
 			result.put("linkNum", linkNum);
 			
 			return result;

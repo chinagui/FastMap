@@ -143,7 +143,7 @@ public class IxDealershipSourceSelector {
 	 * @param conn
 	 * @throws Exception 
 	 */
-	public static int saveOrUpdateSourceByResult(IxDealershipResult result, Connection conn) throws Exception {
+	public static void saveOrUpdateSourceByResult(IxDealershipResult result, Connection conn) throws Exception {
 		if(result.getSourceId()!=0){//更新操作
 			if(result.getDealSrcDiff()==2){//旧版有新版没有，需删除
 				StringBuilder sb = new StringBuilder();
@@ -201,24 +201,15 @@ public class IxDealershipSourceSelector {
 				}
 				
 			}
-			return result.getSourceId();
+			
 		}else{//插入操作
 			QueryRunner run = new QueryRunner();
-			Integer nextVal = run.query(conn, "SELECT SOURCE_SEQ.NEXTVAL FROM dual",new ResultSetHandler<Integer>() {
-				@Override
-				public Integer handle(ResultSet rs)
-						throws SQLException {
-					if(rs.next()){
-						return rs.getInt(1);
-					}
-					return 0;
-				}
-			});
-			String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+			
+			String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(SOURCE_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
 					+ "?,?)";	
 			try {
 			run.update(conn, 
-						   createSql,nextVal,result.getProvince(), result.getCity(), result.getProject(), 
+						   createSql,result.getProvince(), result.getCity(), result.getProject(), 
 						   result.getKindCode(), result.getChain(), result.getName(), result.getNameShort(), 
 						   result.getAddress(), result.getTelSale(), result.getTelService(), result.getTelOther(), 
 						   result.getPostCode(), result.getNameEng(), result.getAddressEng(), result.getProvideDate(), 
@@ -232,7 +223,6 @@ public class IxDealershipSourceSelector {
 			} catch (Exception e) {
 				throw e;
 			}
-			return nextVal;
 		}
 		
 	}
@@ -254,7 +244,7 @@ public class IxDealershipSourceSelector {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn,Set<String> chainList) throws Exception {
+	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn,List<String> chainList) throws Exception {
 		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE S WHERE S.IS_DELETED <> 1 AND S.CHAIN IN ('" + StringUtils.join(chainList,"','") + "') ORDER BY S.CHAIN";
 		log.info("getAllIxDealershipSourceByChain sql:" + sql);
 		return new QueryRunner().query(conn,sql,getSourcesByChainHander());

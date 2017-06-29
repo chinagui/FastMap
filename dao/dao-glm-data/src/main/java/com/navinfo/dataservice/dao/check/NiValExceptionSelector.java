@@ -7,23 +7,22 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -939,245 +938,6 @@ public class NiValExceptionSelector {
 	}
 	
 	/**
-	 * @Title: listPoiCheckResultList
-	 * @Description: 子任务范围内poi检查结果列表查询接口
-	 * @param params
-	 * @param subtaskId
-	 * @return
-	 * @throws Exception  Page
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年6月23日 下午4:07:22 
-	 */
-	public Page listPoiCheckResultList(JSONObject params,int subtaskId) throws Exception {
-		Page p = null ;
-		final int pageSize = params.getInt("pageSize");
-		final int pageNum = params.getInt("pageNum");
-		
-		String sortby = "";
-		if(params.containsKey("sortby")){
-			sortby = params.getString("sortby");
-		}
-		long pageStartNum = (pageNum - 1) * pageSize + 1;
-		long pageEndNum = pageNum * pageSize;
-		List<Long> pids = getCheckPidList(conn,subtaskId);
-		log.info("pids :"+pids.size());
-				
-		if(pids !=  null && pids.size() > 0){
-			String orderSql ="";
-			com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
-			// 添加排序条件
-			if (sortby.length()>0) {
-				int index = sortby.indexOf("-");
-				if (index != -1) {
-					orderSql+=" ORDER BY ";
-					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					orderSql+="  ";
-					orderSql+=sortbyName;
-					orderSql+=" DESC";
-				} else {
-					orderSql+=" ORDER BY ";
-					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					orderSql+="  ";
-					orderSql+=sortbyName;
-				}
-			}
-			
-			StringBuilder sql = new StringBuilder(
-					"SELECT q.* FROM ( SELECT T.*, ROWNUM AS ROWNO FROM ("
-					+"select b.*,count(1) over () total from ( "
-						+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status,O.PID "
-						+ "from "
-							+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
-						+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-							+ ") "
-						+ " union all "
-						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status,O.PID "
-						+ "from "
-						+ "ck_exception c , CK_RESULT_OBJECT O "
-							+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-							+ " )  "
-					+ " )  b  "+ orderSql
-					+ " ) T  WHERE ROWNUM <= ? ) q  WHERE q.ROWNO >= ? ");
-		
-		Clob clob = conn.createClob();
-		clob.setString(1, StringUtils.join(pids, ","));
-		
-		log.info("poiCheckResultList:  " + sql);
-		QueryRunner run = new QueryRunner();
-
-		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
-			public Page handle(ResultSet rs) throws SQLException {
-				Page page = new Page();
-				int total = 0;
-				JSONArray results = new JSONArray();
-				while (rs.next()) {
-					if (total == 0) {
-						total = rs.getInt("total");
-					}
-
-					JSONObject json = new JSONObject();
-					json.put("id", rs.getString("md5_code"));
-
-					json.put("ruleid", rs.getString("ruleid"));
-
-					// json.put("situation", rs.getString("situation"));
-
-					json.put("rank", rs.getInt("level_"));
-
-					String targets = "";
-					if(rs.getString("targets") != null && StringUtils.isNotEmpty(rs.getString("targets"))){
-						targets = rs.getString("targets");
-					}
-					json.put("targets", targets);
-
-					json.put("information", rs.getString("information"));
-
-					json.put("geometry", "(" + rs.getDouble("x") + ","
-							+ rs.getDouble("y") + ")");
-
-					json.put("create_date", rs.getString("created"));
-					json.put("update_date", rs.getString("updated"));
-
-					json.put("worker", rs.getString("worker"));
-					json.put(
-							"qa_worker",
-							rs.getString("qa_worker") == null ? "" : rs
-									.getString("qa_worker"));
-					json.put("qa_status", rs.getString("qa_status"));
-
-					JSONArray refFeaturesArr = new JSONArray();
-//					int refPoiCount = 0;
-					
-					if(targets != null && StringUtils.isNotEmpty(targets)){
-						
-						String pids =targets.replaceAll("[\\[\\]]","").replaceAll("IX_POI,", "").replaceAll(";", ","); 
-						refFeaturesArr= queryRefFeatures(pids,rs.getInt("pid"));
-					}
-					// 查询关联poi根据pid
-					json.put("refFeatures", refFeaturesArr);
-					json.put("refCount", refFeaturesArr.size());
-					results.add(json);
-				}
-				page.setTotalCount(total);
-				page.setResult(results);
-				return page;
-			}
-		};
-
-		p = run.query(conn, sql.toString(),new Object[]{clob,clob,pageEndNum,pageStartNum}, rsHandler3);
-		
-		}
-			return p;
-		
-	}
-	
-	/**
-	 * @Title: getListPoiResultCount
-	 * @Description: 获取去子任务范围内所有poi 检查结果的总条数
-	 * @param conn
-	 * @param subtaskId
-	 * @return
-	 * @throws Exception  int
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年6月23日 下午4:30:51 
-	 */
-	private int getListPoiResultCount(Connection conn,int subtaskId) throws Exception {
-		
-		List<Long> pids = getCheckPidList(conn,subtaskId);
-		int poiResCount = 0;
-		if(pids != null && pids.size() > 0){
-			try{
-				//行编有针对删除数据进行的检查，此处要把删除数据也加载出来
-				StringBuilder sql = new StringBuilder(
-						"select count(1) total from ( "
-							+ "select O.PID "
-							+ "from "
-								+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
-							+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-								+ ") "
-							+ " union all "
-							+ "select O.PID "
-							+ "from "
-							+ "ck_exception c , CK_RESULT_OBJECT O "
-								+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-								+ " )  "
-						+ " )  b ");
-				QueryRunner run=new QueryRunner();
-				poiResCount=run.query(conn, sql.toString(),new ResultSetHandler<Integer>(){
-
-					@Override
-					public Integer handle(ResultSet rs) throws SQLException {
-						Integer resCount = 0;
-						if (rs.next()) {
-							resCount = rs.getInt("total");						
-						}
-						return resCount;
-					}});
-				
-			}catch(Exception e){
-				log.error("行编获取检查数据报错", e);
-				DbUtils.rollbackAndCloseQuietly(conn);
-				throw new Exception(e);
-			}
-		}
-		log.info("poiResCount: "+poiResCount);
-		return poiResCount;
-	}
-	
-	/**
-	 * @Title: getCheckPidList
-	 * @Description: 查询子任务范围内的poi.pid
-	 * @param conn
-	 * @param subtaskId
-	 * @return
-	 * @throws Exception  List<Long>
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年6月23日 下午4:14:11 
-	 */
-	private List<Long> getCheckPidList(Connection conn,int subtaskId) throws Exception {
-		List<Long> pids = null;
-		try{
-			ManApi apiService = (ManApi) ApplicationContextUtil
-					.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			//行编有针对删除数据进行的检查，此处要把删除数据也加载出来
-			String sql="SELECT ip.pid"
-					+ "  FROM ix_poi ip, poi_edit_status ps"
-					+ " WHERE ip.pid = ps.pid"
-					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
-					//+ "   and ip.u_record!=2"
-					+ "   AND sdo_within_distance(ip.geometry,"
-					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
-					+ "                           'mask=anyinteract') = 'TRUE'";
-			QueryRunner run=new QueryRunner();
-			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
-
-				@Override
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					List<Long> pids =new ArrayList<Long>();
-					while (rs.next()) {
-						pids.add(rs.getLong("PID"));						
-					}
-					return pids;
-				}});
-			
-		}catch(Exception e){
-			log.error("行编获取检查数据报错", e);
-			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new Exception(e);
-		}
-		
-		return pids;
-	}
-	
-	/**
 	 * @Title: queryRefFeatures
 	 * @Description: 根据pid 获取关联poi的数据
 	 * @param pid
@@ -1262,56 +1022,51 @@ public class NiValExceptionSelector {
 		}
 	}
 
-	
-	
-	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid) throws SQLException {
+	/*public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
+			JSONArray tips) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
 		
-		String sortby = "";
-		if(params.containsKey("sortby")){
-			sortby = params.getString("sortby");
-		}
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
-		
-		String orderSpl = "";
-		com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
-		// 添加排序条件
-		if (sortby.length()>0) {
-			int index = sortby.indexOf("-");
-			if (index != -1) {
-				orderSpl+=" ORDER BY ";
-				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				orderSpl+="  ";
-				orderSpl+=sortbyName;
-				orderSpl+=" DESC";
-			} else {
-				orderSpl+=" ORDER BY ";
-				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				orderSpl+="  ";
-				orderSpl+=sortbyName;
-			}
+		StringBuilder sql = new StringBuilder();
+		// 获取ids
+		String ids = "";
+		String tmep = "";
+		for (int i = 0; i < tips.size(); i++) {
+			JSONObject tipsObj = tips.getJSONObject(i);
+			ids += tmep;
+			tmep = ",";
+			ids += tipsObj.getString("id");
 		}
 		
-		
-		
-		StringBuilder sql = new StringBuilder();
-		
 		sql.append("with ");
-		
-		sql.append("q3 as ( ");
-		sql.append(" select val_exception_id id,NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" rank,"
-//				+ "NVL(to_char(d.addition_info),'') targets,"
-				+ "substr(to_char(d.ADDITION_INFO),1,instr(to_char(d.ADDITION_INFO),']')) targets,"
+		// **********************
+		// 获取子任务范围内的所有 rdName 的nameId
+		sql.append("q1 as ( ");
+		sql.append("select '[NAME_ID,'||rd.name_id||']' nameId from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"
+				+ subtaskId + "' ");
+		sql.append(" union all ");
+		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
+		sql.append(" where 1=1 ");
+		// ********zl 2016.12.12 新增判断tips 是否有值****************
+		if (ids != null && StringUtils.isNotEmpty(ids)) {
+			sql.append(" and tt.tipid in (select column_value from table(clob_to_table('"
+					+ ids + "'))) ");
+		}
+		sql.append(" ) rd ),");
+		// **********************
+		sql.append("q2 as ( ");
+		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
 				+ "NVL(d.information,'') information, "
 				+ "NVL(d.location.sdo_point.x,0) x, "
 				+ "NVL(d.location.sdo_point.y,0) y,"
 				+ "d.created,NVL(d.worker,'') worker  "
-				+ "from ni_val_exception d  where 1=1 "
-				+ " and d.addition_info like '[NAME_ID,%' "
-				+ " and d.task_name = '"+jobUuid+"' "
-						+ orderSpl );
+				+ "from ni_val_exception d  where d.task_name = '"+jobUuid+"' ");
+		sql.append("), ");
+		sql.append("q3 as ( ");
+		sql.append(" select e.* from q1 n ,q2 e where   e.targets like '%'||n.nameId||'%'  ");
 		sql.append(") ");
 		
 		// ************************
@@ -1319,11 +1074,86 @@ public class NiValExceptionSelector {
 				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
 		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
 				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		//sql.append(" order by created desc,md5_code desc ");
+		log.info("listCheckResultsByJobId sql:  " + sql.toString());
+
+		QueryRunner run = new QueryRunner();
+
+		// ****************************************
+		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while (rs.next()) {
+					if (total == 0) {
+						total = rs.getInt("TOTAL_RECORD_NUM_");
+					}
+
+					JSONObject json = new JSONObject();
+
+					json.put("jobId", rs.getInt("jobId"));
+					
+					json.put("id", rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
+									+ ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		};
+
+		Page p = run.query(conn, sql.toString(), rsHandler3);
+		return p;
+	}*/
+	
+	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid) throws SQLException {
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
 		
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		StringBuilder sql = new StringBuilder();
 		
+		sql.append("with ");
 		
+		sql.append("q3 as ( ");
+		sql.append(" select val_exception_id id,NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+//				+ "NVL(to_char(d.addition_info),'') targets,"
++ "substr(to_char(d.ADDITION_INFO),1,instr(to_char(d.ADDITION_INFO),']')) targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d  where 1=1 "
+				+ " and d.addition_info like '[NAME_ID,%' "
+				+ " and d.task_name = '"+jobUuid+"' ");
+		sql.append(") ");
 		
-//		sql.append(" order by level_ desc ");
+		// ************************
+		sql.append(" SELECT "+jobId+" jobId,A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
+		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
+				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		//sql.append(" order by created desc,md5_code desc ");
 		log.info("listCheckResultsByJobId sql:  " + sql.toString());
 
 		QueryRunner run = new QueryRunner();
@@ -1351,7 +1181,7 @@ public class NiValExceptionSelector {
 
 					json.put("situation", rs.getString("situation"));
 
-					json.put("rank", rs.getInt("rank"));
+					json.put("rank", rs.getInt("level_"));
 
 					json.put("targets", rs.getString("targets"));
 

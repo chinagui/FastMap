@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -262,19 +260,6 @@ public class dealtest extends ClassPathXmlAppContextInit{
  		DataPrepareService dp = DataPrepareService.getInstance();
  		try {
  			System.out.println(dp.getChainCodeByLiveUpdate());
- 		}catch (Exception e) {
- 			System.out.println(e.getMessage());
- 		}
- 	}
-	
-	@Test
- 	public void testLoadPoiForConflict() throws Exception {
- 		DataEditService dp = DataEditService.getInstance();
- 		try {
- 			JSONObject jsonObj=new JSONObject();
- 			jsonObj.put("poiNum","0010061024HYX00212");
- 			jsonObj.put("dbId",13);
- 			System.out.println(dp.loadPoiForConflict(jsonObj));
  		}catch (Exception e) {
  			System.out.println(e.getMessage());
  		}

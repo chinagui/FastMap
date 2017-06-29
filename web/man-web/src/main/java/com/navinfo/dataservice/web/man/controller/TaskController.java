@@ -579,12 +579,10 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			long userId=tokenObj.getUserId();
+			
 			int taskId = dataJson.getInt("taskId");
-			//TaskService.getInstance().batchMidTaskByTaskId(taskId);
-			int phaseId=TaskService.getInstance().createTaskOther2MediumJob(userId,taskId);
-			return new ModelAndView("jsonView", success(phaseId));
+			TaskService.getInstance().batchMidTaskByTaskId(taskId);
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
 		}

@@ -157,7 +157,7 @@ public class DataPrepareService {
 		try{
 			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select r.deal_src_diff, r.province,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
+			String selectSql = "select r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
 					+ "where r.source_id = s.source_id and c.chain_code = r.chain and r.chain =  '"+chainCode+"'";
 			
@@ -171,13 +171,12 @@ public class DataPrepareService {
 						Map<String, Object> result = new HashMap<>();
 						result.put("resultId", rs.getString("result_id"));
 						result.put("sourceId", rs.getString("source_id"));
-						result.put("province", rs.getString("province"));
 						result.put("city", rs.getString("city"));
 						result.put("kindCode", rs.getString("kind_code"));
 						result.put("resultName", rs.getString("result_name"));
 						result.put("sourceName", rs.getString("source_name"));
 						result.put("workType", rs.getInt("work_type"));
-						result.put("dealSrcDiff", rs.getInt("deal_src_diff"));
+						result.put("dealSrcDiff", rs.getInt("work_status"));
 						result.put("workflowStatus", rs.getInt("workflow_status"));
 						if(rs.getString("poi_num_1") != null && "" != rs.getString("poi_num_1")){
 							poiNum = poiNum + 1;
@@ -612,9 +611,6 @@ public class DataPrepareService {
 				List<String> pathList = new ArrayList<String>();
 				getDirectory(file,pathList);
 
-				//获取IxDealershipSource
-				Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
-
 				for(String fileStr:pathList){
 					File file2 = new File(fileStr);
 					if (file2.isDirectory()) {
@@ -625,6 +621,8 @@ public class DataPrepareService {
 						String chain = null;
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
+						//获取IxDealershipSource
+						Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
 
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
@@ -635,14 +633,23 @@ public class DataPrepareService {
 						}
 						if(chainStatus.containsKey(chain)&&chainStatus.get(chain)==0){
 							List<IxDealershipSource> dealershipSources =  dealershipSourceMap.get(chain);
+							//加载已有的result
+							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
 							//执行差分
-							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,date);
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap,date);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
+							List<IxDealershipResult> update = resultMap.get(3);
 							log.info("insert object");
 							if(insert!=null&&insert.size()>0){
 								for(IxDealershipResult bean:insert){
 									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+								}
+							}
+							log.info("update object");
+							if(update!=null&&update.size()>0){
+								for(IxDealershipResult bean:update){
+									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 								}
 							}
 							
@@ -656,15 +663,7 @@ public class DataPrepareService {
 				}
 
 			}
-		}catch(IllegalArgumentException e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			if(e.getMessage().equals("MALFORMED")){
-				throw new ServiceException("更新失败，原因为:上传文件名有中文");
-			}
-			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
-		}
-		catch(Exception e){
+		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
@@ -782,10 +781,9 @@ public class DataPrepareService {
 	 * @param dataJson
 	 * @return 分页后的结果List
 	 * @author songhe
-	 * @throws Exception 
 	 * 
 	 * */
-	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws Exception{
+	public List<Map<String, Object>> cofirmDataList(JSONObject dataJson) throws SQLException{
 		//处理数据
 		Map<String, Object> cofirmData = convertCofirmData(dataJson);
 		Connection con = null;
@@ -802,27 +800,14 @@ public class DataPrepareService {
 			if("2".equals(cofirmData.get("type").toString())){
 				workflowStatus = 4;
 			}
-			
 			//分页信息
 			int begainSize = Integer.parseInt(String.valueOf(cofirmData.get("begainSize")));
 			int endSize = Integer.parseInt(String.valueOf(cofirmData.get("endSize")));
 			
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT * FROM (SELECT A.*, ROWNUM RN FROM (");
-			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.province,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where ");
-			
-			if("3".equals(cfmStatus)){
-				if(workflowStatus == 4){
-					sb.append("r.fb_source = 1 and r.cfm_status = 3");
-				}else if(workflowStatus == 5){
-					sb.append("r.fb_source = 2 and r.cfm_status = 3");
-				}else{
-					throw new Exception("已反馈类型的数据type请求参数错误：type应该为1或2");
-				}
-			}else{
-				sb.append("r.workflow_status = "+workflowStatus+" and r.cfm_status = "+cfmStatus);
-			}
-			
+			sb.append("select r.poi_num_1, r.poi_num_2, r.poi_num_3, r.poi_num_4, r.poi_num_5,r.result_id, r.name,r.address,r.kind_code,r.city,r.to_info_date,r.cfm_memo,r.fb_date,r.fb_content,r.fb_audit_remark,r.to_client_date from IX_DEALERSHIP_RESULT r where r.workflow_status = ");
+			sb.append(workflowStatus+" and r.cfm_status = "+cfmStatus);
 			if(cofirmData.containsKey("chainCode") && cofirmData.get("chainCode") != null){
 				sb.append(" and r.chain = '" + String.valueOf(cofirmData.get("chainCode")) + "'");
 			}
@@ -844,7 +829,6 @@ public class DataPrepareService {
 						resultMap.put("name", rs.getString("name"));
 						resultMap.put("address", rs.getString("address"));
 						resultMap.put("kindCode", rs.getString("kind_code"));
-						resultMap.put("province", rs.getString("province"));
 						resultMap.put("city", rs.getString("city"));
 						resultMap.put("toInfoDate ", rs.getString("to_info_date"));
 						resultMap.put("cfmMemo", rs.getString("cfm_memo"));
@@ -1769,20 +1753,20 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> chainUpdate(long userId) throws ServiceException {
+	public Long chainUpdate(long userId) throws ServiceException {
 		Connection conn = null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
 		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
 		    String date = df.format(new Date());
 			//获取一览表品牌
-		    Map<String,String> chainMap = getChainListByStatus(conn,0);
-			if(chainMap.size()==0){
-				throw new Exception("不存在未开启的品牌，不能做品牌更新！");
-			}
+			List<String> chainList = getChainListByStatus(conn,0);
+			
+//			chainList.clear();
+//			chainList.add("4007");
 			
 			//获取source数据
-			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainMap.keySet());
+			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn,chainList);
 			//获取省份大区信息
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			Map<String,Integer> provinceRegionIdMap = manApi.getProvinceRegionIdMap();
@@ -1797,7 +1781,6 @@ public class DataPrepareService {
 					}
 				}
 				chainList2.add(entry.getKey());
-				chainMap.remove(entry.getKey());
 			}
 			//更新chain表
 			int workType = 1;
@@ -1805,26 +1788,12 @@ public class DataPrepareService {
 			int chain_status = 1;
 			updateIxDealershipChain(conn,chainList2,workStatus,workType,chain_status);
 			//启动表库差分
-			long jobId = 0;
-			Map<String,Object> result = new HashMap<String,Object>();
-			String message = "";
-			if(chainList2.size()!=0){
-				JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
-				JSONObject dataJson = new JSONObject();
-				dataJson.put("chainCodeList", chainList2);
-				dataJson.put("sourceType", 5);
-				jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
-			}
-			if(chainMap.size()>0){		
-				message = "部分代理店品牌数据在全国一览表中不存在，无法执行品牌更新！";
-			}
-
-			if(jobId==0){
-				throw new Exception("未开启的品牌数据在全国一览表中不存在，无法执行品牌更新！");
-			}
-			result.put("jobId", jobId);
-			result.put("message", message);
-			return result;
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JSONObject dataJson = new JSONObject();
+			dataJson.put("chainCodeList", chainList2);
+			dataJson.put("sourceType", 5);
+			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			return jobId;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1876,16 +1845,16 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	private Map<String, String> getChainListByStatus(Connection conn, int status) throws ServiceException {
+	private List<String> getChainListByStatus(Connection conn, int status) throws ServiceException {
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql= "select * from IX_DEALERSHIP_CHAIN c where c.CHAIN_STATUS = " + status;
 
-			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
-				public Map<String, String> handle(ResultSet rs) throws SQLException {
-					Map<String, String> result = new HashMap<String, String>();
+			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> result = new ArrayList<String>();
 					while (rs.next()) {
-						result.put(rs.getString("CHAIN_CODE"),rs.getString("CHAIN_NAME"));
+						result.add(rs.getString("CHAIN_CODE"));
 					}
 					return result;
 				}	
@@ -1905,26 +1874,11 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	public long liveUpdate(long userId) throws Exception {
-		Map<String, List> map = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
-		List<String> chainCodeList = map.get("chainCodeList");
-		List<Integer> resultIdList = map.get("resultIdList");
-		if(null == chainCodeList || chainCodeList.isEmpty()){
-			throw new Exception("不存在作业完成的数据，无法更新");
-		}
-		
-		//启动表库差分
-		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		JSONObject dataJson = new JSONObject();
-		dataJson.put("chainCodeList", chainCodeList);
-		dataJson.put("resultIdList", resultIdList);
-		dataJson.put("sourceType", 4);
-		dataJson.put("userId", userId);
-		long jobId=jobApi.createJob("dealershipLiveUpdateJob", dataJson, userId,0, "实时更新job");
-		
-		return jobId;
+		List<String> chainCodeList = getChainCodeByLiveUpdate();//获取实时更新所需的chainCodeList
+		return 0;
 	}
 
-	public Map<String,List> getChainCodeByLiveUpdate() throws Exception {
+	public List<String> getChainCodeByLiveUpdate() throws Exception {
 		Connection conn = null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
@@ -1937,18 +1891,12 @@ public class DataPrepareService {
 		    String date = df.format(new Date());
 			//转result,更新result表
 			List<String> chainList = new ArrayList<String>();
-			List<Integer> resultIdList = new ArrayList<Integer>();
-			Map<String,List> map = new HashMap<>();
-			
 			for(Map.Entry<String, List<IxDealershipSource>> entry:dealershipSourceMap.entrySet()){
 				List<IxDealershipSource> ixDealershipSourceList = entry.getValue();
 				List<IxDealershipResult> ixDealershipResultList = createResultBySourceWhenLiveUpdate(ixDealershipSourceList,provinceRegionIdMap,date,conn);
 				if(ixDealershipResultList!=null&&ixDealershipResultList.size()>0){
 					for(IxDealershipResult bean:ixDealershipResultList){
-						int resultId = IxDealershipResultOperator.getResultBySequence(conn);
-						resultIdList.add(resultId);
-						bean.setResultId(resultId);
-						IxDealershipResultOperator.createIxDealershipResultWithId(conn,bean);
+						IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 					}
 					chainList.add(entry.getKey());
 				}
@@ -1961,10 +1909,7 @@ public class DataPrepareService {
 				updateIxDealershipChain(conn,chainList,workStatus,workType,chain_status);
 			}
 			
-			map.put("chainCodeList", chainList);
-			map.put("resultIdList", resultIdList);
-			
-			return map;
+			return chainList;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1988,28 +1933,21 @@ public class DataPrepareService {
 		return ixDealershipResultList;	
 	}
 
-	/**
-	 * 根据source_id查询代理店RESULT表已全部作业完成的数据(可能存在多条记录)，
-	 * 即代理店工艺状态为“外业处理完成，出品”(RESULT.workflow_status=9)且代理店状态为“已提交”（RESULT.deal_status=3）。
-	 * @param sourceId
-	 * @param conn
-	 * @return
-	 * @throws ServiceException
-	 */
+
 	private boolean searchResultIsAllCompleteBySource(int sourceId,Connection conn) throws ServiceException {
 		try{
 			
 			QueryRunner run = new QueryRunner();
-			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where (r.workflow_status <> 9 OR "
-					+ "r.deal_status <> 3) and r.source_id = " + sourceId ;
+			String sql= "select count(1) from IX_DEALERSHIP_RESULT r where r.workflow_status = 9 and "
+					+ "r.deal_status = 3 and r.source_id = " + sourceId ;
 
 			ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
 				public Boolean handle(ResultSet rs) throws SQLException {
 					if(rs.next()){
 						if(rs.getInt(1)>0){
-							return false;
-						}else{
 							return true;
+						}else{
+							return false;
 						}
 					}
 					return false;

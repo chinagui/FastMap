@@ -38,6 +38,18 @@
 			<bean class="com.navinfo.dataservice.web.man.websocket.TaskOther2MediumSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
+	
+	<!-- stomp and message broker config start -->
+	<!-- /app 为cotroller 处理的前缀-->
+	<websocket:message-broker application-destination-prefix="/app" >
+		<!-- websocket 底层连接地址 -->
+		<!-- websocket 底层连接地址 使用stomp是使用该路径"/man"" -->
+		<websocket:stomp-endpoint path="/man">
+			<websocket:sockjs />
+		</websocket:stomp-endpoint>
+		<websocket:simple-broker prefix="/topic,/queue" />
+	</websocket:message-broker>
+	<!-- stomp and message broker config end -->
     
     <bean id="applicationContextUtil" class="com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil"/>
     <bean id="startupListener" class="com.navinfo.dataservice.web.man.listener.StartupListener"/>

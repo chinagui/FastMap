@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -595,6 +597,58 @@ public class SubtaskController extends BaseController {
 		} catch (Exception e) {
 			log.error("子任务查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 编辑子任务圈接口
+	 * 原则：如果S圈对应的采集子任务已经开启，则不能进行任何操作；草稿状态子任务的S圈如果修改，则删除与采集子任务的关联
+	 * 应用场景：独立工具--外业规划--绘制子任务圈—合并/切分等操作
+	 * @author songhe
+	 * @param  cityName
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/paintRefer")
+	public ModelAndView paintRefer(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONObject condition = new JSONObject();			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			SubtaskService.getInstance().paintRefer(taskId, condition);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("子任务查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 获取所有质检子任务列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualitylist")
+	public ModelAndView qualitylist(HttpServletRequest request) {
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			Integer taskId = dataJson.getInt("taskId");
+			JSONObject data = SubtaskService.getInstance().qualitylist(taskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

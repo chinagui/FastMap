@@ -626,4 +626,54 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 获取待数据规划任务列表
+	 * 中线项目下，同时满足草稿状态+未进行数据规划的采集任务列表
+	 * 
+	 * @param request
+	 * @return Map
+	 */
+	@RequestMapping(value = "/task/unPlanlist")
+	public ModelAndView unPlanlist(HttpServletRequest request){
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("programId") || dataJson.getString("programId").length() < 1){
+				throw new Exception("缺少programId");
+			}
+			List<Map<String, Object>> data =  TaskService.getInstance().unPlanlist(dataJson);
+			Map<String, Object> result = new HashMap<String, Object>();
+			result.put("totalCount", data.size());
+			result.put("result", data);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	/**
+	 * 获取质检子任务的任务列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/unPlanQualitylist")
+	public ModelAndView unPlanQualitylist(HttpServletRequest request) {
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			Integer programId = dataJson.getInt("programId");
+			JSONObject data = TaskService.getInstance().unPlanQualitylist(programId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 }

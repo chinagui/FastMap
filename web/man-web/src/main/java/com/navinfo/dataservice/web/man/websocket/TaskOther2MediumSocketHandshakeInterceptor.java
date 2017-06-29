@@ -16,6 +16,15 @@ public class TaskOther2MediumSocketHandshakeInterceptor  extends HttpSessionHand
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
 			Map<String, Object> attributes) throws Exception {
+		if (request instanceof ServletServerHttpRequest) {
+			ServletServerHttpRequest serverRequest = (ServletServerHttpRequest) request;
+			HttpServletRequest httpServletRequest = serverRequest.getServletRequest();
+			AccessToken tokenObj = (AccessToken) httpServletRequest.getAttribute("token");
+			String userId = Long.toString(tokenObj.getUserId());
+			System.out.println("========================userId==================================="+userId);
+			// 使用userId区分WebSocketHandler，以便定向发送消息
+			attributes.put("userId", userId);
+			}
 		return super.beforeHandshake(request, response, wsHandler, attributes);
 	}
 

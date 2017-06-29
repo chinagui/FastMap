@@ -66,4 +66,12 @@ public class programTest extends InitApplication{
 		initContext();
 	}
 	
+	//获取待规划子任务的项目列表（测试）
+	@Test
+	public void testUnPlanSubtasklist() throws Exception
+	{
+		JSONObject data = ProgramService.getInstance().unPlanSubtasklist();
+		System.out.println(data);
+	}
+	
 }

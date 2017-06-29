@@ -55,7 +55,7 @@ public abstract class AbstractJob {
 					{"192.168.4.188","8093","row"},{"192.168.4.110","8093","row"},
 					{"192.168.4.188","8094","sys"},{"192.168.4.110","8094","sys"},
 					{"192.168.4.188","8095","collector"},{"192.168.4.110","8095","collector"},
-					{"192.168.4.188","8095","dealership"},{"192.168.4.110","8095","dealership"}};
+					{"192.168.4.188","8096","dealership"},{"192.168.4.110","8096","dealership"}};
 			for(int i=0;i<datas.length;i++){
 				String[] data = datas[i];
 				String host = data[0];

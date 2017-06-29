@@ -24,7 +24,6 @@ public class AgentStarter {
 			JobServer.run();
 
         } catch (Exception e) {  
-            e.printStackTrace(); 
             log.error(e.getMessage(),e);
         }
 

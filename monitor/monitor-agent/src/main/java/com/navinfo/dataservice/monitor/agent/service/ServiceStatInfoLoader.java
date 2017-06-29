@@ -26,7 +26,6 @@ public class ServiceStatInfoLoader{
 	
 	private static Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
 	
-	
 	/**
 	 * 推送数据
 	 * @param time 
@@ -65,6 +64,9 @@ public class ServiceStatInfoLoader{
 			String data = ServiceInvokeUtil.invokeByGet(url);
 			JSONObject jso = JSONObject.fromObject(data);
 			JSONArray jsa = jso.getJSONArray("list");
+			//tomcat总访问次数
+			int totalVisitCount = 0;
+			String tomcatKey = host+"/"+tomcat+"/visitCount";
 			if(jsa != null){
 				for (int i=0;i<jsa.size();i++) {
 					JSONObject obj = jsa.getJSONObject(i);
@@ -73,6 +75,8 @@ public class ServiceStatInfoLoader{
 					int	hits = obj.getInt("hits");
 					int durationsSum = obj.getInt("durationsSum");
 					int systemErrors = obj.getInt("systemErrors");
+					//处理总访问次数
+					totalVisitCount += hits;
 					
 					String metricVisitCount = "fos.service.visitCount";
 					String metricResTime = "fos.service.responseTime";
@@ -143,6 +147,36 @@ public class ServiceStatInfoLoader{
 					mapLast.put("systemErrors", systemErrors);
 					statInfoPre.put(mapKey, mapLast);
 				}
+				//处理tomcat总访问次数
+				String metricTotalVisitCount = "fos.service.totalVisitCount";
+				String tags = "biz="+tomcat;
+				//上一次数据
+				int	totalVisitCountLast = 0;
+				if(statInfoPre.size() > 0){
+					if(statInfoPre.containsKey(tomcatKey)){
+						Map<String, Object> map = statInfoPre.get(tomcatKey);
+						totalVisitCountLast = (int) map.get("totalVisitCount");
+						log.info("上一次数据,总访问次数:"+totalVisitCountLast);
+					}
+				}
+				log.info("本次数据,总访问次数:"+totalVisitCount);
+				int valueTotalVisitCount = totalVisitCount - totalVisitCountLast;
+				//保存数据
+				int step = 300;
+				//访问次数
+				StatInfo statInfoVisitCount = new StatInfo();
+				statInfoVisitCount.setEndpoint(host);
+				statInfoVisitCount.setMetric(metricTotalVisitCount);
+				statInfoVisitCount.setTimestemp(time);
+				statInfoVisitCount.setStep(step);
+				statInfoVisitCount.setValue(valueTotalVisitCount);
+				statInfoVisitCount.setCounterType("GAUGE");
+				statInfoVisitCount.setTags(tags);
+				resultList.add(statInfoVisitCount);
+				//保存数据下次使用
+				Map<String, Object> mapLast = new HashMap<String, Object>();
+				mapLast.put("totalVisitCount", totalVisitCount);
+				statInfoPre.put(tomcatKey, mapLast);
 			}
 			
 		} catch (Exception e) {

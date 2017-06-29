@@ -95,4 +95,10 @@ public class PushTest {
 		System.out.println(Math.round((usedMemory/maxMemory)*10000));
 		System.out.println(usedPercent);
 	}
+	
+	
+	@Test
+	public void test07() throws Exception{
+		
+	}
 }

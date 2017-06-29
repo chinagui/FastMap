@@ -234,4 +234,22 @@ public class ProgramController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	
+	/**
+	 * 获取质检子任务的项目列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/program/unPlanQualitylist")
+	public ModelAndView unPlanQualitylist(HttpServletRequest request) {
+		try{	
+			JSONObject data = service.unPlanQualitylist();
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 }

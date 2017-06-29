@@ -112,4 +112,14 @@ public class SubtaskTest extends InitApplication{
 	public void init() {
 		initContext();
 	}	
+		
+	@Test
+	public void testQualitylist() throws Exception
+	{
+		try {
+			System.out.println(SubtaskService.getInstance().qualitylist(208));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

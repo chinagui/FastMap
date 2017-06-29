@@ -52,6 +52,13 @@ public class programTest extends InitApplication{
 		Page msg=ProgramService.getInstance().list(1, 2, null, null, 1, 15);
 		System.out.println(msg);
 	}
+	
+	@Test
+	public void testUnPlanQualitylist() throws Exception
+	{
+		JSONObject data = ProgramService.getInstance().unPlanQualitylist();
+		System.out.println(data);
+	}
 
 	@Override
 	@Before

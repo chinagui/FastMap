@@ -151,8 +151,10 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Command(
 						json, requester);
 			case BATCHDELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Command(
-						json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Command(json,
+						requester);
+			case TOPOBREAK:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Command(json, requester);
 
 			}
 		case FACE:
@@ -992,6 +994,8 @@ public class Transaction {
 			case BATCHDELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(
 						command);
+			case TOPOBREAK:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
 			}
 		case FACE:
 			switch (operType) {

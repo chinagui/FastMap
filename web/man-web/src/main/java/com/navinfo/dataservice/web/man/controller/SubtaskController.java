@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 import com.wordnik.swagger.annotations.ApiParam;
 
@@ -627,4 +630,54 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 获取所有质检子任务列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/unPlanQualitylist")
+	public ModelAndView unPlanQualitylist(HttpServletRequest request) {
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));		
+			Integer taskId = dataJson.getInt("taskId");
+			JSONObject data = SubtaskService.getInstance().unPlanQualitylist(taskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 删除质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityDelete")
+	public ModelAndView qualityDelete(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int qualityId = dataJson.getInt("qualityId");
+
+			SubtaskService.getInstance().qualityDelete(qualityId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("删除质检圈失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
 }

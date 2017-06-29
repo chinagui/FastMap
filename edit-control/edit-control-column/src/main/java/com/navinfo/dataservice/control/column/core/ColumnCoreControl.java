@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -39,6 +40,7 @@ import net.sf.json.JSONObject;
  *
  */
 public class ColumnCoreControl {
+	private static final Logger logger = Logger.getLogger(ColumnCoreControl.class);
 
 	public int applyData(JSONObject jsonReq, long userId) throws Exception {
 		// TODO
@@ -124,11 +126,26 @@ public class ColumnCoreControl {
 					//常规申请需要打质检标记
 					if(isQuality==0){
 						double sampleLevel =((double )apiService.queryQualityLevel((int) userId, firstWorkItem))/100.0;
-						List<Integer> sampDataPids = new ArrayList<Integer>();
-						int ct=(int) Math.ceil(applyDataPids.size()*sampleLevel);
-						if(ct!=0){
-							sampDataPids = applyDataPids.subList(0, ct);
-							updateQCFlag(sampDataPids,conn,comSubTaskId,userId);
+						//别名打标机数据
+						List<Integer> hasAliasItemPids = new ArrayList<Integer>();
+						//补充打标记数据
+						List<Integer> suppSampDataPids = new ArrayList<Integer>();
+						
+						hasAliasItemPids=columnSelector.getHasAliasItemPids(applyDataPids,"FM-M01-01",userId);
+						logger.info("hasAliasItemPids:"+hasAliasItemPids);
+						if(hasAliasItemPids.size()>0){
+							updateQCFlag(hasAliasItemPids,conn,comSubTaskId,userId);
+						}
+						double hasSampleLevel=((double) hasAliasItemPids.size())/applyDataPids.size();
+						logger.info("hasSampleLevel:"+hasSampleLevel+" sampleLevel:"+sampleLevel);
+						if (Math.ceil(hasSampleLevel*100)<Math.ceil(sampleLevel*100)){
+							int ct=(int) Math.ceil(applyDataPids.size()*sampleLevel);
+							if(ct!=0){
+								applyDataPids.removeAll(hasAliasItemPids);
+								int supplementCt=ct-hasAliasItemPids.size();
+								suppSampDataPids = applyDataPids.subList(0, supplementCt);
+								if(suppSampDataPids.size()>0){updateQCFlag(suppSampDataPids,conn,comSubTaskId,userId);}
+							}
 						}
 					}
 				}
@@ -534,10 +551,10 @@ public class ColumnCoreControl {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
 			}
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
 			
 			if(isQuality==1){

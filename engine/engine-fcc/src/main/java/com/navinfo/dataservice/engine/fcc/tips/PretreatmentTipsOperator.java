@@ -1251,7 +1251,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			returnRowkey=jsonInfo.getString("rowkey");
 			
-			return returnRowkey;
+			//这个地方需要加 维护测线上关联tips的角度和引导link ????????
+			//2.维护角度的时候，判断一一下测线的显示坐标是否改了，没有改不维护（提高效率）
+			
+			return returnRowkey;  
 		    
 		}
 		
@@ -1679,9 +1682,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:维护测线上挂接的tips
 	 * @param user
-	 * @param resultArr
+	 * @param linesAfterCut:打断后的测线(只有id和显示坐标)
 	 * @throws SolrServerException
 	 * @throws IOException
 	 * @throws Exception
@@ -1689,31 +1692,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param oldRowkey 
 	 * @time:2017-6-21 下午9:37:44
 	 */
-	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> resultArr)
+	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> linesAfterCut)
 			throws SolrServerException, IOException, Exception {
-	/*	JSONObject line1 = resultArr.get(0);
-		
-		JSONObject line2 = resultArr.get(1);
-		
-		logger.debug("打断后line1:"+line1.getString("id"));
-		
-		logger.debug("打断后line2:"+line2.getString("id"));*/
-		
-		// 第二步：更新测线关联的tips
-//		TipsSelector selector = new TipsSelector();
-//		JSONArray souceTypes = new JSONArray();
 
 		// 查询关联Tips
 		//20170615 查询和原测线关联的所有Tips
         String query = "relate_links:*|" + oldRowkey + "|*";
-//		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
-//				souceTypes, subTaskId, jobType);
+        
         List<JSONObject> snapotList = solr.queryTips(query, null);
 		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
 		for (JSONObject json : snapotList) {
 
-			JSONObject result = updateRelateMeasuringLine(oldRowkey,json, resultArr);
+			//1.维护关联的测线
+			JSONObject result = updateRelateMeasuringLine(oldRowkey,json, linesAfterCut);
+			
+			//2.维护角度和引导坐标
+			//result=updateGuiderAndAgl(result,linesAfterCut);
 			
 			if(result!=null){
 				
@@ -1721,11 +1716,26 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 		}
-		//更新后的数据进行更新
+		//更新后的数据进行更新（只更新了deep+relate_links）
 		saveUpdateData(updateArray,user);
 	}
 
 	
+	/**
+	 * @Description:维护tips的引导坐标和角度
+	 * @param result
+	 * @return
+	 * @author: y
+	 * @param linesAfterCut 
+	 * @time:2017-6-26 下午7:00:07
+	 */
+	private JSONObject updateGuiderAndAgl(JSONObject result, List<JSONObject> linesAfterCut) {
+		
+		return null;
+	}
+	
+	
+
 	/**
 	 * 保存测线打断后维护的数据结果
 	 * @param updateArray

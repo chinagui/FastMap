@@ -102,9 +102,9 @@ public class NiValExceptionTest extends InitApplication {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			Page page = selector.list(9, grids, 5, 1, 0);
-			System.out.println(page.getResult()
-					+ "-----------------------------------------------");
+//			Page page = selector.list(9, grids, 5, 1, 0);
+//			System.out.println(page.getResult()
+//					+ "-----------------------------------------------");
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}

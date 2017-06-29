@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -427,5 +428,8 @@ public interface MetadataApi {
 	public String engConvert(String word,String adminId) throws Exception ;
 	public int getCrowdTruck(String kindCode) throws Exception;
 	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
+	
+	 //获取元数据库中重要POI的数据
+	public List<Integer> queryImportantPid() throws SQLException;
 
 }

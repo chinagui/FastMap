@@ -56,6 +56,7 @@ import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
 import com.navinfo.dataservice.api.man.model.TaskProgress;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -3807,7 +3808,11 @@ public class TaskService {
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 			//获取block对应的范围
-			String wkt = getBlockRange(taskId);
+//			String wkt = getBlockRange(taskId);
+			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
+			String wktJson = wktMap.get("geometry").toString();
+			String wkt = Geojson.geojson2Wkt(wktJson);
+			
 			if(StringUtils.isBlank(wkt)){
 				throw new Exception("获取block的范围信息为空");
 			}
@@ -3867,20 +3872,10 @@ public class TaskService {
 	public List<Integer> queryImportantPid() throws SQLException{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getMetaConnection();
-			QueryRunner run = new QueryRunner();
-			
-			String selectSql = "select t.poi_num from SC_POINT_FIELD_ATTENTIONPOI t";
-			ResultSetHandler<List<Integer>> rs = new ResultSetHandler<List<Integer>>(){
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-				List<Integer> pids = new ArrayList<>();
-				while(rs.next()){
-					pids.add(rs.getInt("poi_num"));
-				}
-				return pids;
-			}
-		};
-		return run.query(conn, selectSql, rs);
+			//通过api调用
+			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			List<Integer> pids = api.queryImportantPid();
+			return pids;
 		}catch(Exception e){
 			DbUtils.close(conn);
 			log.error("从元数据库中获取重要POI异常："+e.getMessage());
@@ -3934,40 +3929,40 @@ public class TaskService {
 //		}
 //	}
 	
-	/**
-	 * 根据taskId获取对应block的范围
-	 * 
-	 * */
-	public String getBlockRange(int taskId) throws Exception{
-		Connection con = null;
-		try{
-			con = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			
-			//获取block对应的范围
-			String sql = "select b.origin_geo from BLOCK b, TASK t where t.block_id = b.block_id and t.task_id = " + taskId;
-			ResultSetHandler<String> rs = new ResultSetHandler<String>(){
-				public String handle(ResultSet rs) throws SQLException {
-				String wkt = "";
-				if(rs.next()){
-					STRUCT struct = (STRUCT) rs.getObject("origin_geo");
-					try {
-						wkt = GeoTranslator.struct2Wkt(struct);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				return wkt;
-			}
-		};
-			return run.query(con, sql, rs);
-		}catch(Exception e){
-			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e.getMessage());
-			throw e;
-		}finally{
-			DbUtils.close(con);
-		}
-	}
+//	/**
+//	 * 根据taskId获取对应block的范围
+//	 * 
+//	 * */
+//	public String getBlockRange(int taskId) throws Exception{
+//		Connection con = null;
+//		try{
+//			con = DBConnector.getInstance().getManConnection();
+//			QueryRunner run = new QueryRunner();
+//			
+//			//获取block对应的范围
+//			String sql = "select b.origin_geo from BLOCK b, TASK t where t.block_id = b.block_id and t.task_id = " + taskId;
+//			ResultSetHandler<String> rs = new ResultSetHandler<String>(){
+//				public String handle(ResultSet rs) throws SQLException {
+//				String wkt = "";
+//				if(rs.next()){
+//					STRUCT struct = (STRUCT) rs.getObject("origin_geo");
+//					try {
+//						wkt = GeoTranslator.struct2Wkt(struct);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//				return wkt;
+//			}
+//		};
+//			return run.query(con, sql, rs);
+//		}catch(Exception e){
+//			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e.getMessage());
+//			throw e;
+//		}finally{
+//			DbUtils.close(con);
+//		}
+//	}
 	
 	/**
 	 * 获取block范围内poi和link的数据保存到dataPlan表

@@ -178,7 +178,7 @@ public class DiffService {
 				for (IxDealershipSource j : editPart1.get(t)) {
 					boolean sameTel = i.getTelephone().equals(j.getTelephone());
 					boolean samePostCode = false;	
-					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+					if(i.getPostCode()!=null&&j.getPostCode()!=null){
 						samePostCode = i.getPostCode().equals(j.getPostCode());	
 					}
 					if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
@@ -281,42 +281,46 @@ public class DiffService {
 						samePostCode = true;
 					
 					if ((!sameAddress&&!sameTel&&!samePostCode)) {
-
-						resultDpAttrDiff = new IxDealershipResult(i);
-						if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
-							resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
-						}
-						else{
-							log.info("can not get regionId");
-						}
-						insertList.add(resultDpAttrDiff);
-							
-						resultDpAttrDiff.setDealSrcDiff(3);
-						resultDpAttrDiff.setProvideDate(date);
-
-
-						if(resultDpAttrDiff.getGeometry()==null){
-							String addr = "";
-							if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getProvince())){
-								addr += resultDpAttrDiff.getProvince();
-							}
-							if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getCity())){
-								addr += resultDpAttrDiff.getCity();
-							}
-							addr += resultDpAttrDiff.getAddress();
-							
-							if(BaiduGeocoding.geocoder(addr)!=null){
-								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
-							}else{
-								throw new Exception("无法获取geometry");
-							}
-						}
 						flag = true;
+						continue;
+					}else{
+						flag = false;
 						break;
 					}
 				}
-				if (flag)
+
+				if (flag){
+					resultDpAttrDiff = new IxDealershipResult(i);	
+					if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+						resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+					}
+					else{
+						log.info("can not get regionId");
+					}
+					insertList.add(resultDpAttrDiff);
+							
+					resultDpAttrDiff.setDealSrcDiff(3);
+					resultDpAttrDiff.setProvideDate(date);
+	
+	
+					if(resultDpAttrDiff.getGeometry()==null){
+						String addr = "";
+						if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getProvince())){
+							addr += resultDpAttrDiff.getProvince();
+						}
+						if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getCity())){
+							addr += resultDpAttrDiff.getCity();
+						}
+						addr += resultDpAttrDiff.getAddress();
+							
+						if(BaiduGeocoding.geocoder(addr)!=null){
+							resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+						}else{
+							throw new Exception("无法获取geometry");
+						}
+					}
 					continue;
+				}
 			}
 			/**************** 新增逻辑 *******************/
 

@@ -88,11 +88,6 @@ public class WorkloadAccount {
 					throw new Exception(threadPoolExecutor.getExceptions().get(0));
 				}
 			}
-			//写统计结果
-			for(Map.Entry<Integer, Object> entry:result.entrySet()){
-				
-			}
-
 		}catch(Exception e){
 			throw e;
 		}

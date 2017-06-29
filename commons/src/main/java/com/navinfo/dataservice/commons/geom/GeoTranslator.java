@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONStringer;
 import org.json.JSONWriter;
@@ -996,6 +995,118 @@ public class GeoTranslator {
 
         return 2 * R * Math.asin(0.5 * Math.sqrt(2 - 2 * Math.sin(y1) * Math.sin(y2) - 2 * Math.cos(y1) * Math.cos(y2) * Math.cos(x1 - x2)));
     }
+    
+    /**
+	 * 点coord1，coord2必须在geo上，返回被点coord1，coord2切成多段的link列表。
+	 * @param geo
+	 * @param coord1
+	 * @param coord2
+	 * @return
+     * @throws Exception 
+     * @throws JSONException 
+	 */
+	public static List<Geometry> splitGeoByPoint(Geometry geo,Coordinate coord1,Coordinate coord2) throws JSONException, Exception{
+		//点将线切成多段
+		Coordinate[] lineCoordinates = geo.getCoordinates();
+		List<Geometry> subLines=new ArrayList<Geometry>(); 
+		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
+		Coordinate coorBefore=null;
+		for(Coordinate linePoint:lineCoordinates){
+			//交点与线的端点相同
+			if(coord1.equals(linePoint)||coord2.equals(linePoint)){
+				if(tmpLine.size()!=0){
+					tmpLine.add(linePoint);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+				}
+				tmpLine.add(linePoint);
+				continue;
+			}
+			//是否第一个点
+			if(coorBefore==null){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//不是第一个点，判断交点是否在两点中间
+			if(isIntersection(coorBefore, linePoint, coord1)){
+				tmpLine.add(coord1);
+				subLines.add(GeoTranslator.createLineString(tmpLine));
+				tmpLine=new ArrayList<Coordinate>();
+				tmpLine.add(coord1);
+				tmpLine.add(linePoint);
+				continue;
+			}
+			if(isIntersection(coorBefore, linePoint, coord2)){
+				tmpLine.add(coord2);
+				subLines.add(GeoTranslator.createLineString(tmpLine));
+				tmpLine=new ArrayList<Coordinate>();
+				tmpLine.add(coord2);
+				tmpLine.add(linePoint);
+				continue;
+			}
+		}
+		if(tmpLine.size()>1){subLines.add(GeoTranslator.createLineString(tmpLine));}
+		return subLines;
+	}
+	
+	/**
+	 * 前提：line与面有且只有2个交点，且线穿过面，相交部分在面内。
+	 * 返回：面被line切成2个面，将切成的2个面返回
+	 * @param line
+	 * @param polygon
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Geometry> splitPolygonByLine(Geometry line,Geometry polygon) throws Exception{
+		Geometry interGeo=polygon.intersection(line);
+		
+		if(interGeo==null||interGeo.getCoordinates().length==0){throw new Exception("线面没有交点");}
+		if(interGeo.getCoordinates().length!=2){
+			throw new Exception("线面交点大于2个，请重新画线");
+		}
+		
+		boolean isIn=GeometryUtils.InteriorAnd2Intersection(interGeo, polygon);
+		if(!isIn){
+			throw new Exception("线不在面内，请重新划线");
+		}
+		Coordinate coord1 = interGeo.getCoordinates()[0];
+		Coordinate coord2 = interGeo.getCoordinates()[1];
+		List<Geometry> subLines = GeoTranslator.splitGeoByPoint(line, coord1, coord2);
+		//coord1，coord2为端点的线段
+		Geometry midLine=null;
+		for(Geometry s:subLines){
+			Coordinate[] sCoors = s.getCoordinates();
+			Coordinate sStart = sCoors[0];
+			Coordinate sEnd = sCoors[sCoors.length-1];
+			if(GeoTranslator.isPointEquals(sStart,coord1)&&GeoTranslator.isPointEquals(sEnd,coord2)){
+				midLine=s;
+				continue;
+			}
+			if(GeoTranslator.isPointEquals(sStart,coord2)&&GeoTranslator.isPointEquals(sEnd,coord1)){
+				midLine=s;
+				continue;
+			}
+		}
+		
+		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
+		
+		List<Geometry> polygonLine1=new ArrayList<Geometry>();
+		polygonLine1.add(subPolygonLines.get(0));
+		polygonLine1.add(midLine);
+		Geometry p1 = GeoTranslator.getCalLineToPython(polygonLine1);
+		
+		List<Geometry> polygonLine2=new ArrayList<Geometry>();
+		polygonLine2.add(subPolygonLines.get(1));
+		polygonLine2.add(midLine);
+		Geometry p2 = GeoTranslator.getCalLineToPython(polygonLine2);
+		
+		List<Geometry> polygons=new ArrayList<Geometry>();
+		polygons.add(p1);
+		polygons.add(p2);
+		
+		return polygons;		
+	}
 
 	public static void main(String[] args) throws Exception {
 		Point point = (Point) wkt2Geometry("POINT (116.38636 40.00512)");

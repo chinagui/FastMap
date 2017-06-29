@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -585,6 +589,28 @@ public class TaskController extends BaseController {
 			//TaskService.getInstance().batchMidTaskByTaskId(taskId);
 			int phaseId=TaskService.getInstance().createTaskOther2MediumJob(userId,taskId);
 			return new ModelAndView("jsonView", success(phaseId));
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 
+	 * 测试socket用
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/testSocket")
+	public ModelAndView socket(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int phaseId = dataJson.getInt("phaseId");
+			Connection conn=DBConnector.getInstance().getManConnection();
+			TaskProgressOperation.pushWebsocket(conn, phaseId);
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
 		}

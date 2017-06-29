@@ -2576,8 +2576,8 @@ public class ProgramService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT Distinct P.PROGRAM_ID, P.NAME FROM TASK T JOIN PROGRAM P ");
-			sb.append("ON T.PROGRAM_ID = P.PROGRAM_ID WHERE P.TYPE = 1 AND T.TYPE = 0 ");
+			sb.append("SELECT DISTINCT P.PROGRAM_ID, P.NAME FROM TASK T, PROGRAM P ");
+			sb.append("WHERE T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
 			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
 			
 			String selectSql= sb.toString();

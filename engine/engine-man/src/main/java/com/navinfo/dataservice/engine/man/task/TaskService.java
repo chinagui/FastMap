@@ -3741,4 +3741,48 @@ public class TaskService {
 			DbUtils.close(con);
 		}
 	}
+
+	/**
+	 * 获取质检子任务的任务列表
+	 * @param programId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject unPlanQualitylist(Integer programId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT t.task_id,t.name,t.block_id FROM TASK T, SUBTASK S  WHERE T.PROGRAM_ID = "+programId);
+			sb.append(" AND T.TASK_ID = S.TASK_ID AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
+
+			String selectSql= sb.toString();
+			log.info("unPlanQualitylist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while (rs.next()) {
+						JSONObject jo = new JSONObject();
+						jo.put("taskId", rs.getInt(1));
+						jo.put("name", rs.getString(2));
+						jo.put("blockId", rs.getInt(3));
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

@@ -376,7 +376,7 @@ public class RenderController extends BaseController {
 
 //				conn = DBConnector.getInstance().getConnectionById(dbId);
 				conn = DBConnector.getInstance().getRenderConnection();
-
+				System.out.println(conn);
 				SearchProcess p = new SearchProcess(conn);
 //				p.setArray(array);
 				data = p.searchInfoByTileWithGap(types, x, y, z, gap);

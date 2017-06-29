@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.search;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -15,7 +16,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 public class GpsRecordSearch  implements ISearch{
+	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 
     /**
      * 数据库链接
@@ -101,10 +106,10 @@ public class GpsRecordSearch  implements ISearch{
         try {
         	
 			pstmt = conn.prepareStatement(sql);
-			System.out.println("GPSRECORD sql:"+sql);
+			log.info("GPSRECORD sql:"+sql);
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			System.out.println("wkt: "+wkt);
+			log.info("wkt: "+wkt);
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();

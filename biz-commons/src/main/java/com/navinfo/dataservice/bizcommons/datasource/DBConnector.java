@@ -254,7 +254,7 @@ public class DBConnector {
 						connConfig = DbConnectConfig
 								.createConnectConfig(manDb.getConnectParam());
 					} catch (Exception e) {
-						throw new SQLException("从datahub获取代理店信息失败："
+						throw new SQLException("从datahub获取render信息失败："
 								+ e.getMessage(), e);
 					}
 					renderDataSource = MultiDataSourceFactory.getInstance()

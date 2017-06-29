@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.search;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -15,8 +16,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 public class VectorTabSearch  implements ISearch{
 
+	private Logger log = LoggerRepos.getLogger(this.getClass());
     /**
      * 数据库链接
      */
@@ -99,10 +103,11 @@ public class VectorTabSearch  implements ISearch{
 	
 	        ResultSet resultSet = null;
 	        try {
+	        	log.info("VectorTabSearch sql : "+sql);
 				pstmt = conn.prepareStatement(sql);
 	
 				String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-	
+				log.info("wkt :"+wkt);
 				pstmt.setString(1, wkt);
 	
 				resultSet = pstmt.executeQuery();

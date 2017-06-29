@@ -136,6 +136,14 @@ public class SearchFactory {
                 return new CmgBuildfaceSearch(conn);
             case CMGBUILDING:
                 return new CmgBuildingSearch(conn);
+              //*** zl 2017.06.27 GPS_RECORD , VECTOR_TAB ,VECTOR_TAB_SUSPECT **
+            case GPSRECORD:
+            	return new GpsRecordSearch(conn);
+            case VECTORTAB:
+            	return new VectorTabSearch(conn);
+            case VECTORTABSUSPECT:
+            	return new VectorTabSuspectSearch(conn);
+                
             default:
                 return null;
         }

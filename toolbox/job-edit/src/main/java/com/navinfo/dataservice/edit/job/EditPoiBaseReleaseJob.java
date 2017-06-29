@@ -40,6 +40,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -150,9 +151,11 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(conn);
+			int count=commitPoi(conn);
 			log.info("end change poi_edit_status=3 commit");
-			super.response("POI行编提交成功！",null);
+			JSONObject response =new JSONObject();
+			response.put("count", count);
+			super.response("POI行编提交成功！",response);
 		}catch(Exception e){
 			log.error("EditPoiBaseReleaseJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -250,7 +253,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(Connection conn) throws Exception{
+	public int commitPoi(Connection conn) throws Exception{
 		//Connection conn = null;
 		try{
 			//String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.GET);
@@ -265,7 +268,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			
 			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		
-	    	run.execute(conn, sql);
+	    	return run.update(conn, sql);
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

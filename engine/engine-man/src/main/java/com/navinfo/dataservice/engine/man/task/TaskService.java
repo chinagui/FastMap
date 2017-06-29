@@ -4010,7 +4010,7 @@ public class TaskService {
 				sb.append(programId);
 
 				String selectSql= sb.toString();
-				log.info("getProgramByCityId sql :" + selectSql);
+				log.info("unPlanSubtasklist sql :" + selectSql);
 
 				ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
 					public JSONObject handle(ResultSet rs) throws SQLException {

@@ -2581,7 +2581,7 @@ public class ProgramService {
 			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
 			
 			String selectSql= sb.toString();
-			log.info("getProgramByCityId sql :" + selectSql);
+			log.info("unPlanSubtasklist sql :" + selectSql);
 
 			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
 				public JSONObject handle(ResultSet rs) throws SQLException {

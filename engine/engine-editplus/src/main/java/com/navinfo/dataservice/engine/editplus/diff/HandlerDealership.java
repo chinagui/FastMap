@@ -232,7 +232,7 @@ public class HandlerDealership {
 		IxPoi p = (IxPoi) obj.getMainrow();
 		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String, String> mapKindChain = metadataApi.scPointSpecKindCodeType15();
-		if (p.getChain()!=null&&(p.getChain().equals(mapKindChain.get(p.getKindCode())))) {
+		if (p.getChain().equals(mapKindChain.get(p.getKindCode()))) {
 			return true;
 		}
 		return false;
@@ -243,7 +243,7 @@ public class HandlerDealership {
 	public static boolean isSameKindChain(IxDealershipResult dealershipMR, BasicObj obj) {
 		if(obj==null) {return false;}
 		IxPoi p = (IxPoi) obj.getMainrow();
-		if (p.getChain()!=null&&(p.getChain().equals(dealershipMR.getPoiChain())) && p.getKindCode().equals(dealershipMR.getPoiKindCode())) {
+		if (p.getChain().equals(dealershipMR.getPoiChain()) && p.getKindCode().equals(dealershipMR.getPoiKindCode())) {
 			return true;
 		}
 		return false;

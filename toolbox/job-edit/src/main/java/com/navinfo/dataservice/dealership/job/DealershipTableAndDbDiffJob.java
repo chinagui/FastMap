@@ -100,7 +100,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			List<Integer> resultIdList=new ArrayList<Integer>();
 			int sourceType=jobRequest.getSourceType();
 			chainCodeList=jobRequest.getChainCodeList();
-			if(sourceType==3||sourceType==4){
+			if(sourceType==3){
 				resultIdList=jobRequest.getResultIdList();
 			}
 			
@@ -269,7 +269,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
             //sourceType1库差分，2重新库差分、3补充数据、4实时更新、5品牌更新
 			String chains = null;
 			String resultIds=null;
-			if(sourceType!=3&&sourceType!=4){
+			if(sourceType!=3){
 				chains = "('";
 				chains += StringUtils.join(chainCodeList.toArray(), "','") + "')";
 			}else{
@@ -279,7 +279,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			StringBuffer sb = new StringBuffer();
 			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
 					+ "from IX_DEALERSHIP_RESULT r where r.deal_src_diff= " + dealSrcDiff);
-			if (sourceType==1||sourceType==5){
+			if (sourceType==1||sourceType==4||sourceType==5){
 				sb.append(" and r.workflow_status=0 and r.chain in "+chains);
 			}else if (sourceType==2){
 				sb.append(" and r.workflow_status in (0,1,2,3) and r.chain in "+chains);

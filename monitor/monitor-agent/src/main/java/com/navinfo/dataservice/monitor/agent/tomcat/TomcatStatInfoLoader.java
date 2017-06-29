@@ -32,7 +32,7 @@ public class TomcatStatInfoLoader {
 			//推送数据
 			try {
 				String url = "http://"+ip+":"+port+"/"+tomcat;
-				List<StatInfo> datas = getTomcatInfoList(url,ip);
+				List<StatInfo> datas = getTomcatInfoList(url,"192.168.4.188");
 				String result = AgentUtils.pushData(datas);
 				log.info(result);
 				

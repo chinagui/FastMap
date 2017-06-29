@@ -4037,4 +4037,29 @@ public class TaskService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 		}
+		
+		/**
+		 *  规划上传接口（新增）
+		 *  原则：修改任务的数据规划状态task表data_Plan_Status=1
+		 *  应用场景：独立工具--外业规划--数据规划--上传
+		 * @param taskId
+		 * @throws Exception
+		 * 
+		 * */
+		public void uploadPlan(int taskId) throws Exception{
+			Connection con = null;
+			try{
+				QueryRunner run = new QueryRunner();
+				con = DBConnector.getInstance().getManConnection();	
+			
+				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
+				run.execute(con, sql);
+			}catch(Exception e){
+				log.error("规划上传接口异常，原因为："+e.getMessage());
+				DbUtils.rollback(con);
+				throw e;
+			}finally{
+				DbUtils.commitAndClose(con);
+			}
+		}
 }

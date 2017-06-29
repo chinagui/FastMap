@@ -747,4 +747,26 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	//规划上传接口
+	@RequestMapping(value = "task/uploadPlan")
+	public ModelAndView uploadPlan(HttpServletRequest request){
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId") || dataJson.getString("taskId").length() < 1){
+				throw new Exception("缺少taskId");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			TaskService.getInstance().uploadPlan(taskId);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

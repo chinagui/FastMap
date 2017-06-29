@@ -354,3 +354,21 @@ START_DATE DATE,
 END_DATE DATE
 );
 
+create table DATA_PLAN
+(
+  pid              NUMBER(10) not null,
+  data_type        NUMBER(1),
+  is_plan_selected NUMBER(1) default 1,
+  task_id          NUMBER(10),
+  is_important     NUMBER(1) default 0
+);
+comment on table DATA_PLAN
+  is '日库外业规划数据表';
+-- Add comments to the columns 
+comment on column DATA_PLAN.data_type
+  is '数据类型，1 poi 2road ';
+comment on column DATA_PLAN.is_plan_selected
+  is '是否规划选中状态 0非选中状态，1选中状态';
+comment on column DATA_PLAN.is_important
+  is '是否重要poi 0非重要poi，1重要poi';
+

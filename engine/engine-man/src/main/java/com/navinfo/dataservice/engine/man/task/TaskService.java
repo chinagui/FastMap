@@ -3768,18 +3768,18 @@ public class TaskService {
 				throw new Exception("获取block的范围信息为空");
 			}
 			
-			Map<String, Object> linkAndPoiData = getPoiAndLinkData(wkt, dailyConn);
+			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
-			List<Map<String, Integer>> poiList = (List<Map<String, Integer>>)linkAndPoiData.get("poi");
-			List<Integer> linkList = (List<Integer>)linkAndPoiData.get("link");
-			//这里执行保存数据
-			log.info("开始保存数据到dataplan表");
-			insertData(dailyConn, poiList, linkList, taskId);
-			log.info("保存数据到dataplan表成功");
+			List<Integer> pois = queryImportantPid();
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i< pois.size(); i++){
+				sb.append(String.valueOf(pois.get(i))+",");
+			}
+			String poi = sb.deleteCharAt(sb.length()-1).toString(); 
+			log.info("重要POI一览表中的POI_ID为：" + poi);
+			//这里在更新一下对应在重要一览表中存在的数据类型
+			updateIsImportant(poi, taskId, dailyConn);
 			
-			Map<String, Integer> result = new HashMap<>();
-			result.put("poi", poiList.size());
-			result.put("link", linkList.size());
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为：" + e);
@@ -3793,48 +3793,102 @@ public class TaskService {
 	}
 	
 	/**
-	 * 保存poi和link数据到dataPlan表
-	 * @param 
-	 * @param
-	 * @throws Exception 
+	 * 根据元数据库中重要数据一览表更新dataPlan中的重要性字段
+	 * @throws SQLException 
 	 * 
 	 * */
-	public void insertData(Connection dailyConn, List<Map<String, Integer>> pois, List<Integer> links, int taskId) throws Exception{
+	public void updateIsImportant(String pois, int taskId, Connection dailyConn) throws SQLException{
 		try{
-			String insertSql = "insert into DATA_PLAN t (t.pid, t.data_type, t.task_id, t.is_plan_selected) values(?,?,?,?)";
 			QueryRunner run = new QueryRunner();
-			//POI
-			int i = 0;
-			Object[][] poiParams = new Object[pois.size()][4] ;
-			for(Map<String, Integer> poi : pois){
-				Object[] map = new Object[4];
-				map[0] = poi.get("pid");
-				map[1] = 1;
-				map[2] = taskId;
-				map[3] = poi.get("important");
-				poiParams[i] = map;
-				i++;
-			}
-			//LINK
-			int j = 0;
-			Object[][] linkParams = new Object[links.size()][4] ;
-			for(Integer link : links){
-				Object[] map = new Object[4];
-				map[0] = link;
-				map[1] = 2;
-				map[2] = taskId;
-				map[3] = 0;
-				linkParams[j] = map;
-				j++;
-			}
+			StringBuffer sb = new StringBuffer();
+			sb.append("update DATA_PLAN d set d.is_important = 1 where d.pid in("+pois+") ");
 			
-			run.batch(dailyConn, insertSql, poiParams);
-			run.batch(dailyConn, insertSql, linkParams);
+			sb.append("and d.task_id = "+taskId);
+			sb.append(" and d.is_important = 0");
+			
+			String sql = sb.toString();
+			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
+			run.update(dailyConn, sql);
 		}catch(Exception e){
-			log.error("保存poi和link数据到dataPlan表异常："+e);
+			log.error("根据种药POi数据更新dataPlan异常："+e.getMessage());
 			throw e;
 		}
 	}
+	
+	/**
+	 * 获取元数据库中重要POI的数据
+	 * @throws SQLException 
+	 * 
+	 * */
+	public List<Integer> queryImportantPid() throws SQLException{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getMetaConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select t.poi_num from SC_POINT_FIELD_ATTENTIONPOI t";
+			ResultSetHandler<List<Integer>> rs = new ResultSetHandler<List<Integer>>(){
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+				List<Integer> pids = new ArrayList<>();
+				while(rs.next()){
+					pids.add(rs.getInt("poi_num"));
+				}
+				return pids;
+			}
+		};
+		return run.query(conn, selectSql, rs);
+		}catch(Exception e){
+			DbUtils.close(conn);
+			log.error("从元数据库中获取重要POI异常："+e.getMessage());
+			throw e;
+		}finally{
+			DbUtils.close(conn);
+		}
+	}
+	
+//	/**
+//	 * 保存poi和link数据到dataPlan表
+//	 * @param 
+//	 * @param
+//	 * @throws Exception 
+//	 * 
+//	 * */
+//	public void insertData(Connection dailyConn, List<Map<String, Integer>> pois, List<Integer> links, int taskId) throws Exception{
+//		try{
+//			String insertSql = "insert into DATA_PLAN t (t.pid, t.data_type, t.task_id, t.is_plan_selected) values(?,?,?,?)";
+//			QueryRunner run = new QueryRunner();
+//			//POI
+//			int i = 0;
+//			Object[][] poiParams = new Object[pois.size()][4] ;
+//			for(Map<String, Integer> poi : pois){
+//				Object[] map = new Object[4];
+//				map[0] = poi.get("pid");
+//				map[1] = 1;
+//				map[2] = taskId;
+//				map[3] = poi.get("important");
+//				poiParams[i] = map;
+//				i++;
+//			}
+//			//LINK
+//			int j = 0;
+//			Object[][] linkParams = new Object[links.size()][4] ;
+//			for(Integer link : links){
+//				Object[] map = new Object[4];
+//				map[0] = link;
+//				map[1] = 2;
+//				map[2] = taskId;
+//				map[3] = 0;
+//				linkParams[j] = map;
+//				j++;
+//			}
+//			
+//			run.batch(dailyConn, insertSql, poiParams);
+//			run.batch(dailyConn, insertSql, linkParams);
+//		}catch(Exception e){
+//			log.error("保存poi和link数据到dataPlan表异常："+e);
+//			throw e;
+//		}
+//	}
 	
 	/**
 	 * 根据taskId获取对应block的范围
@@ -3864,7 +3918,7 @@ public class TaskService {
 		};
 			return run.query(con, sql, rs);
 		}catch(Exception e){
-			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e);
+			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e.getMessage());
 			throw e;
 		}finally{
 			DbUtils.close(con);
@@ -3872,53 +3926,38 @@ public class TaskService {
 	}
 	
 	/**
-	 * 获取block范围内poi和link的数据
+	 * 获取block范围内poi和link的数据保存到dataPlan表
 	 * 
 	 * */
-	public Map<String, Object> getPoiAndLinkData(String wkt, Connection dailyConn) throws Exception{
+	public Map<String, Integer> insertPoiAndLinkToDataPlan(String wkt, Connection dailyConn, int taskId) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			
-//			String sql = "select COUNT(t.link_pid) link_pid, COUNT(p.pid) pid from RD_LINK t, IX_POI p where "
-//					+ "sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE' "
-//					+ "or sdo_within_distance(p.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			StringBuffer linksb = new StringBuffer();
+			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
+			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
+			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			String linkSql = linksb.toString();
 			
-			String linkSql = "select t.link_pid from RD_LINK t where "
-					+ "sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";
-			String poiSql = "select p.* from IX_POI p where "
-					+ "sdo_within_distance(p.GEOMETRY,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			log.info("linkSql"+linkSql);
+			int linkNum = run.update(dailyConn, linkSql, wkt);
 			
-			ResultSetHandler<List<Integer>> linkRs = new ResultSetHandler<List<Integer>>(){
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-					List<Integer> link = new ArrayList<>(20000);
-					while(rs.next()){
-						link.add(rs.getInt("link_pid"));
-					}
-					return link;
-				}
-			};
-			List<Integer> links =  run.query(dailyConn, linkSql, linkRs, wkt);
+			StringBuffer poisb = new StringBuffer();
+			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
+			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where ");
+			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			String poiSql = poisb.toString();
 			
-			ResultSetHandler<List<Map<String, Integer>>> poiRs = new ResultSetHandler<List<Map<String, Integer>>>(){
-				public List<Map<String, Integer>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Integer>> poi = new ArrayList<>(20000);
-					while(rs.next()){
-						Map<String, Integer> poiMap = new HashMap<>();
-						poiMap.put("pid", rs.getInt("pid"));
-						poiMap.put("important", "A".equals(rs.getString("level")) ? 1:0);
-						poi.add(poiMap);
-					}
-					return poi;
-				}
-			};
-			List<Map<String, Integer>> pois =  run.query(dailyConn, poiSql, poiRs, wkt);
+			log.info("poiSql:"+poiSql);
+			int poiNum = run.update(dailyConn, poiSql, wkt);
 			
-			Map<String, Object> result = new HashMap<>();
-			result.put("poi", pois);
-			result.put("link", links);
+			Map<String, Integer> result = new HashMap<>();
+			result.put("poi", poiNum);
+			result.put("linkNum", linkNum);
 			
 			return result;
 		}catch(Exception e){
+			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage());
 			throw e;
 		}
 	}

@@ -362,6 +362,8 @@ create table DATA_PLAN
   task_id          NUMBER(10),
   is_important     NUMBER(1) default 0
 );
+comment on table DATA_PLAN
+  is '日库外业规划数据表';
 -- Add comments to the columns 
 comment on column DATA_PLAN.data_type
   is '数据类型，1 poi 2road ';

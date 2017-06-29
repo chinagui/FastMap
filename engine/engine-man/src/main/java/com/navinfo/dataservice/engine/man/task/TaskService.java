@@ -17,30 +17,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import oracle.sql.STRUCT;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
-import com.navinfo.dataservice.engine.man.block.BlockService;
-import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
-import com.navinfo.dataservice.engine.man.timeline.TimelineService;
-import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
@@ -53,13 +34,31 @@ import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
 import com.navinfo.dataservice.api.man.model.TaskProgress;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
+import com.navinfo.dataservice.engine.man.block.BlockService;
+import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
+import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -70,6 +69,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -3786,6 +3786,217 @@ public class TaskService {
 		}
 	}
 	
+	/**
+	 * 初始化规划数据列表
+	 * 1.范围：采集任务对应的block的不规则范围
+	 * 2.提取范围内的所有link/poi存入data_plan表中。默认全是作业数据
+	 * 
+	 * */
+	@SuppressWarnings("unchecked")
+	public Map<String, Integer> initPlanData(int taskId) throws Exception{
+		Connection con = null;
+		Connection dailyConn = null;
+		try{
+			con = DBConnector.getInstance().getManConnection();	
+			Task task = queryByTaskId(con, taskId);
+			Region region = RegionService.getInstance().query(con,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			
+			//获取block对应的范围
+//			String wkt = getBlockRange(taskId);
+			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
+			String wktJson = wktMap.get("geometry").toString();
+			String wkt = Geojson.geojson2Wkt(wktJson);
+			
+			if(StringUtils.isBlank(wkt)){
+				throw new Exception("获取block的范围信息为空");
+			}
+			
+			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
+			
+			List<Integer> pois = queryImportantPid();
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i< pois.size(); i++){
+				sb.append(String.valueOf(pois.get(i))+",");
+			}
+			String poi = sb.deleteCharAt(sb.length()-1).toString(); 
+			log.info("重要POI一览表中的POI_ID为：" + poi);
+			//这里在更新一下对应在重要一览表中存在的数据类型
+			updateIsImportant(poi, taskId, dailyConn);
+			
+			return result;
+		}catch(Exception e){
+			log.error("初始化规划数据列表失败,原因为：" + e);
+			DbUtils.rollback(con);
+			DbUtils.rollback(dailyConn);
+			throw new Exception("初始化规划数据列表失败");
+		}finally{
+			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(dailyConn);
+		}
+	}
+	
+	/**
+	 * 根据元数据库中重要数据一览表更新dataPlan中的重要性字段
+	 * @throws SQLException 
+	 * 
+	 * */
+	public void updateIsImportant(String pois, int taskId, Connection dailyConn) throws SQLException{
+		try{
+			QueryRunner run = new QueryRunner();
+			StringBuffer sb = new StringBuffer();
+			sb.append("update DATA_PLAN d set d.is_important = 1 where d.pid in("+pois+") ");
+			
+			sb.append("and d.task_id = "+taskId);
+			sb.append(" and d.is_important = 0");
+			
+			String sql = sb.toString();
+			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
+			run.update(dailyConn, sql);
+		}catch(Exception e){
+			log.error("根据种药POi数据更新dataPlan异常："+e.getMessage());
+			throw e;
+		}
+	}
+	
+	/**
+	 * 获取元数据库中重要POI的数据
+	 * @throws SQLException 
+	 * 
+	 * */
+	public List<Integer> queryImportantPid() throws SQLException{
+		Connection conn = null;
+		try{
+			//通过api调用
+			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			List<Integer> pids = api.queryImportantPid();
+			return pids;
+		}catch(Exception e){
+			DbUtils.close(conn);
+			log.error("从元数据库中获取重要POI异常："+e.getMessage());
+			throw e;
+		}finally{
+			DbUtils.close(conn);
+		}
+	}
+	
+//	/**
+//	 * 保存poi和link数据到dataPlan表
+//	 * @param 
+//	 * @param
+//	 * @throws Exception 
+//	 * 
+//	 * */
+//	public void insertData(Connection dailyConn, List<Map<String, Integer>> pois, List<Integer> links, int taskId) throws Exception{
+//		try{
+//			String insertSql = "insert into DATA_PLAN t (t.pid, t.data_type, t.task_id, t.is_plan_selected) values(?,?,?,?)";
+//			QueryRunner run = new QueryRunner();
+//			//POI
+//			int i = 0;
+//			Object[][] poiParams = new Object[pois.size()][4] ;
+//			for(Map<String, Integer> poi : pois){
+//				Object[] map = new Object[4];
+//				map[0] = poi.get("pid");
+//				map[1] = 1;
+//				map[2] = taskId;
+//				map[3] = poi.get("important");
+//				poiParams[i] = map;
+//				i++;
+//			}
+//			//LINK
+//			int j = 0;
+//			Object[][] linkParams = new Object[links.size()][4] ;
+//			for(Integer link : links){
+//				Object[] map = new Object[4];
+//				map[0] = link;
+//				map[1] = 2;
+//				map[2] = taskId;
+//				map[3] = 0;
+//				linkParams[j] = map;
+//				j++;
+//			}
+//			
+//			run.batch(dailyConn, insertSql, poiParams);
+//			run.batch(dailyConn, insertSql, linkParams);
+//		}catch(Exception e){
+//			log.error("保存poi和link数据到dataPlan表异常："+e);
+//			throw e;
+//		}
+//	}
+	
+//	/**
+//	 * 根据taskId获取对应block的范围
+//	 * 
+//	 * */
+//	public String getBlockRange(int taskId) throws Exception{
+//		Connection con = null;
+//		try{
+//			con = DBConnector.getInstance().getManConnection();
+//			QueryRunner run = new QueryRunner();
+//			
+//			//获取block对应的范围
+//			String sql = "select b.origin_geo from BLOCK b, TASK t where t.block_id = b.block_id and t.task_id = " + taskId;
+//			ResultSetHandler<String> rs = new ResultSetHandler<String>(){
+//				public String handle(ResultSet rs) throws SQLException {
+//				String wkt = "";
+//				if(rs.next()){
+//					STRUCT struct = (STRUCT) rs.getObject("origin_geo");
+//					try {
+//						wkt = GeoTranslator.struct2Wkt(struct);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//				return wkt;
+//			}
+//		};
+//			return run.query(con, sql, rs);
+//		}catch(Exception e){
+//			log.error("据taskId："+taskId+"获取对应block的范围异常：" + e.getMessage());
+//			throw e;
+//		}finally{
+//			DbUtils.close(con);
+//		}
+//	}
+	
+	/**
+	 * 获取block范围内poi和link的数据保存到dataPlan表
+	 * 
+	 * */
+	public Map<String, Integer> insertPoiAndLinkToDataPlan(String wkt, Connection dailyConn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer linksb = new StringBuffer();
+			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
+			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
+			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			String linkSql = linksb.toString();
+			
+			log.info("linkSql"+linkSql);
+			int linkNum = run.update(dailyConn, linkSql, wkt);
+			
+			StringBuffer poisb = new StringBuffer();
+			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
+			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where ");
+			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			String poiSql = poisb.toString();
+			
+			log.info("poiSql:"+poiSql);
+			int poiNum = run.update(dailyConn, poiSql, wkt);
+			
+			Map<String, Integer> result = new HashMap<>();
+			result.put("poiNum", poiNum);
+			result.put("linkNum", linkNum);
+			
+			return result;
+		}catch(Exception e){
+			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage());
+			throw e;
+		}
+	}
+	
+	
 	//获取待规划子任务的任务列表
 		public JSONObject unPlanSubtasklist(int programId)  throws Exception{
 			Connection conn = null;
@@ -3824,6 +4035,31 @@ public class TaskService {
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
+			}
+		}
+		
+		/**
+		 *  规划上传接口（新增）
+		 *  原则：修改任务的数据规划状态task表data_Plan_Status=1
+		 *  应用场景：独立工具--外业规划--数据规划--上传
+		 * @param taskId
+		 * @throws Exception
+		 * 
+		 * */
+		public void uploadPlan(int taskId) throws Exception{
+			Connection con = null;
+			try{
+				QueryRunner run = new QueryRunner();
+				con = DBConnector.getInstance().getManConnection();	
+			
+				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
+				run.execute(con, sql);
+			}catch(Exception e){
+				log.error("规划上传接口异常，原因为："+e.getMessage());
+				DbUtils.rollback(con);
+				throw e;
+			}finally{
+				DbUtils.commitAndClose(con);
 			}
 		}
 }

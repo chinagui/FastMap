@@ -2991,7 +2991,7 @@ public class SubtaskService {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject qualitylist(Integer taskId) throws Exception {
+	public JSONObject unPlanQualitylist(Integer taskId) throws Exception {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
@@ -3023,6 +3023,35 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 删除质检圈
+	 * @param qualityId
+	 * @return
+	 * @throws Exception
+	 */
+	public int qualityDelete(int qualityId)  throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("DELETE FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append(qualityId);
+
+			String sql= sb.toString();
+			log.info("qualityDelete sql :" + sql);
+
+			return run.update(conn, sql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("删除质检圈失败，原因为：" + e.getMessage());
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

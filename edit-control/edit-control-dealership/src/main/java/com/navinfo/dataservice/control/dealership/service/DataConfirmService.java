@@ -3,12 +3,15 @@ package com.navinfo.dataservice.control.dealership.service;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -204,7 +207,7 @@ public class DataConfirmService {
 
 		try {
 			//List<Map<String, Object>> importResult = readCsvFile(localFile, headers, importInfoHeader());
-			List<Map<String, Object>> importResult = reader.readExcelContent();
+			List<Map<String, Object>> importResult = reader.readExcelContent(importInfoHeader());
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
@@ -234,32 +237,62 @@ public class DataConfirmService {
 		}
 		return data;
 	}
-
-	public String xls2csv(List<Map<String, Object>> cellValue,String localPath) throws Exception{
+	
+	public String xls2csv(List<Map<String, Object>> cellValue, String localPath) throws Exception {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(StringUtils.join(headers,",")+"\n");
-		
-		for(Map<String,Object> cell:cellValue){
-			StringBuilder row = new StringBuilder();
-			for(Map.Entry<String, Object> entry:cell.entrySet()){
-				row.append(entry.getValue()+",");
-			}
-			buffer.append(row.substring(0, buffer.lastIndexOf(","))+"\n");
+		buffer.append(StringUtils.join(headers, ",") + "\n");
+
+		for (Map<String, Object> cell : cellValue) {
+			buffer.append(cell.get("resultId") + ",");
+			buffer.append(cell.get("infoId") + ",");
+			buffer.append(cell.get("province") + ",");
+			buffer.append(cell.get("city") + ",");
+			buffer.append(cell.get("project") + ",");
+			buffer.append(cell.get("kindCode") + ",");
+			buffer.append(cell.get("chain") + ",");
+			buffer.append(cell.get("name") + ",");
+			buffer.append(cell.get("nameShort") + ",");
+			buffer.append(cell.get("address") + ",");
+			buffer.append(cell.get("telSale") + ",");
+			buffer.append(cell.get("telService") + ",");
+			buffer.append(cell.get("telOther") + ",");
+			buffer.append(cell.get("postcode") + ",");
+			buffer.append(cell.get("nameEng") + ",");
+			buffer.append(cell.get("addressEng") + ",");
+			buffer.append(cell.get("sourceId") + ",");
+			buffer.append(cell.get("dealSrcDiff") + ",");
+			buffer.append(cell.get("matchMethod") + ",");
+			buffer.append(cell.get("poiNum1") + ",");
+			buffer.append(cell.get("poiNum2") + ",");
+			buffer.append(cell.get("poiNum3") + ",");
+			buffer.append(cell.get("poiNum4") + ",");
+			buffer.append(cell.get("poiNum5") + ",");
+			buffer.append(cell.get("similarity") + ",");
+			buffer.append(cell.get("xLocate") + ",");
+			buffer.append(cell.get("yLocate") + ",");
+			buffer.append(cell.get("cfmPoiNum") + ",");
+			buffer.append(cell.get("expectTime") + ",");
+			buffer.append(cell.get("infoType") + ",");
+			buffer.append(cell.get("infoLevel") + ",");
+			buffer.append(cell.get("regionId") + "\n");
 		}
-		
-		 String savePath =String.format("release%s.csv",DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
-		 File saveCSV = new File(savePath);
-		    try {   
-		        if(!saveCSV.exists())
-		            saveCSV.createNewFile();
-		        BufferedWriter writer = new BufferedWriter(new FileWriter(saveCSV));
-		        writer.write(buffer.toString());
-		        writer.close();
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    }        
-		return savePath;
+
+		String savePath = String.format("release%s.csv", DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+		File saveCSV = new File(localPath.substring(0, localPath.lastIndexOf("/")), savePath);
+		try {
+			if (!saveCSV.exists())
+				saveCSV.createNewFile();
+
+			DataOutputStream in = new DataOutputStream(new FileOutputStream(saveCSV));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(in, "GBK"));
+			writer.write(buffer.toString());
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return localPath.substring(0, localPath.lastIndexOf("/") + 1) + savePath;
 	}
+	
 	
 	/**
 	 * 情报下发：上传成功后，连接情报库，按要求更新RESULT数据库
@@ -279,8 +312,10 @@ public class DataConfirmService {
 			jsonObj.put("csvname", fileName);
 
 			StringBuilder urlStr = new StringBuilder();
-			urlStr.append(
-					"http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?access_token=");
+            
+			//调用情报下发接口：http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/import/?
+			String infoPassUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoPass);
+			urlStr.append(infoPassUrl+"access_token=");
 			urlStr.append(accessToken);
 			urlStr.append("&parameter=");
 			urlStr.append(URLEncoder.encode(jsonObj.toString(), "utf-8"));
@@ -295,20 +330,27 @@ public class DataConfirmService {
 			String[] successLists = successList.replace("[", "").replace("]", "").split(",");
 
 			for (String success : successLists) {
+				if(success.isEmpty()){
+					continue;
+				}
+				
 				String sql = String.format(
 						"UPDATE IX_DEALERSHIP_RESULT SET CFM_STATUS = 2,TO_INFO_DATE = %s WHERE RESULT_ID = '%s'",
 						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success.replace("\"", ""));
 				run.execute(conn, sql);
-				conn.commit();
 			}
-
-			String[] generateFail = resultObj.getString("generateFailedList").replace("[", "").replace("]", "")
-					.split(",");
-			String[] insertFail = resultObj.getString("insertFailedList").replace("[", "").replace("]", "").split(",");
-			String[] sendFail = resultObj.getString("sendFailedList").replace("[", "").replace("]", "").split(",");
+			conn.commit();
+			int generateFail = resultObj.getString("generateFailedList").equals("[]") ? 0
+					: (resultObj.getString("generateFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int insertFail = resultObj.getString("insertFailedList").equals("[]") ? 0
+					: (resultObj.getString("insertFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int sendFail = resultObj.getString("sendFailedList").equals("[]") ? 0
+					: (resultObj.getString("sendFailedList").replace("[", "").replace("]", "")).split(",").length;
+			int updateFail = resultObj.getString("updateFailedList").equals("[]") ? 0
+					: (resultObj.getString("updateFailedList").replace("[", "").replace("]", "")).split(",").length;
 
 			data.put("successCount", successLists.length);
-			data.put("failCount", generateFail.length + insertFail.length + sendFail.length);
+			data.put("failCount", generateFail + insertFail + sendFail + updateFail);
 
 		} catch (Exception e) {
 			conn.rollback();
@@ -378,10 +420,10 @@ public class DataConfirmService {
 		String fileName = getFeedbackFileName(timeObj, userId);
 		log.info("调用情报接口，反馈文件名称：" + fileName);
 
-		String refilePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/information/" + fileName;
 		//JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
-		String filePath = request.getSession().getServletContext().getRealPath(refilePath);
+		//String filePath = request.getSession().getServletContext().getRealPath(refilePath);
 
 		log.info("反馈情报路径：" + filePath);
 		Connection conn = null;
@@ -399,6 +441,7 @@ public class DataConfirmService {
 						"UPDATE IX_DEALERSHIP_RESULT SET WORKFLOW_STATUS = 3, CFM_STATUS = 3, FB_DATE = '%s', FB_CONTENT = '%s', FB_SOURCE = 1 WHERE RESULT_ID = %d",
 						result.get("feedbackTime") == null ? "" : result.get("feedbackTime"), fbContent,
 						Integer.valueOf(result.get("resultId").toString()));
+				
 				run.execute(conn, sql);
 			}
 			conn.commit();
@@ -458,13 +501,24 @@ public class DataConfirmService {
 		String accessToken = AccessTokenFactory.generate(userId).getTokenString();
 
 		StringBuilder urlStr = new StringBuilder();
-		urlStr.append("http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/agent/export/?access_token=");
+		String feedBackUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterInfoFeedBack);
+		urlStr.append(feedBackUrl+"access_token=");
 		urlStr.append(accessToken);
 		urlStr.append("&parameter=");
 		urlStr.append(URLEncoder.encode(timeObj.toString(), "utf-8"));
+		log.info("情报反馈URL:" + urlStr);
 
 		String return_value = Parser_Tool.do_get(urlStr.toString());
 		JSONObject resultObj = JSONObject.fromObject(return_value);
+		
+		log.info("情报反馈返回值："+return_value);
+		log.info("情报反馈："+resultObj);
+		
+		int exportCount = resultObj.getInt("exportCount");
+		if(exportCount == 0){
+			throw new Exception("未查到符合条件的情报信息!");
+		}
+		
 		String fileName = resultObj.getString("filename");
 		return fileName;
 	}
@@ -479,19 +533,26 @@ public class DataConfirmService {
 		String line = "";
 		int n = 0;
 
-		while ((line = br.readLine()) != null) {
-			n++;
-			if (n == 1)
-				continue;
-			Map<String, Object> cell = new HashMap<>();
+		try {
+			while ((line = br.readLine()) != null) {
+				n++;
+				if (n == 1)
+					continue;
+				Map<String, Object> cell = new HashMap<>();
 
-			String[] cellsValue = line.split(",");
-			for (int i = 0; i < cellsValue.length; i++) {
-				if (excelHeader.containsKey(headers[i])) {
-					cell.put(excelHeader.get(headers[i]), cellsValue[i]);
+				String[] cellsValue = line.split(",");
+				for (int i = 0; i < cellsValue.length; i++) {
+					if (excelHeader.containsKey(headers[i])) {
+						cell.put(excelHeader.get(headers[i]), cellsValue[i]);
+					}
 				}
+				sourceResult.add(cell);
 			}
-			sourceResult.add(cell);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			br.close();
+			in.close();
 		}
 		return sourceResult;
 	}

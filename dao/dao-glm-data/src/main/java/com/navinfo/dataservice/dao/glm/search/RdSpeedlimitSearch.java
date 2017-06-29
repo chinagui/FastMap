@@ -79,7 +79,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT A.TIME_DOMAIN , A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
+		String sql = "SELECT A.TOLLGATE_FLAG, A.TIME_DOMAIN , A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
 
 		if (queryType.equals("DEPENDENT")) {
 
@@ -198,6 +198,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("h", resultSet.getInt("LIMIT_SRC"));
 				jsonM.put("j", timedomain);
+				jsonM.put("k", resultSet.getInt("TOLLGATE_FLAG"));
 
 				snapshot.setM(jsonM);
 

@@ -19,6 +19,9 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 
 public class PatternImageExporter {
 
+    public static String PTN_TABLE_NAME_MODEL = "SC_MODEL_MATCH_G";
+    public static String PTN_TABLE_NAME_VECTOR = "SC_VECTOR_MATCH";
+
 	private void exportImage2Sqlite(Connection sqliteConn, String sql)
 			throws Exception {
 
@@ -153,7 +156,7 @@ public class PatternImageExporter {
 		return sqliteConn;
 	}
 
-	public void export2SqliteByNames(String dir, Set<String> names)
+	public void export2SqliteByNames(String dir, Set<String> modelPtn, Set<String> vectorPtn)
 			throws Exception {
 
 		File mkdirFile = new File(dir);
@@ -165,96 +168,106 @@ public class PatternImageExporter {
         String insertSql = "insert into meta_JVImage values("
                 + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        PreparedStatement pstmt = null;
-
-        ResultSet resultSet = null;
-
         Connection conn = null;
 
-		String sql = "select * from sc_model_match_g where";
         try{
+            PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
             conn = DBConnector.getInstance().getMetaConnection();
-
-            StringBuilder builder = new StringBuilder();
-            for(String name : names) {
-                if(builder.length() > 0) {
-                    builder.append(",");
-                }
-                builder.append(name);
+            if(modelPtn.size() > 0) {//1401,1406 对应元数据库表名 SC_MODEL_MATCH_G
+                this.insertPtn(sqliteConn, conn, prep, modelPtn, PatternImageExporter.PTN_TABLE_NAME_MODEL);
             }
+            if(vectorPtn.size() > 0) {//1401 对应元数据库表名
+                this.insertPtn(sqliteConn, conn, prep, vectorPtn, PatternImageExporter.PTN_TABLE_NAME_VECTOR);
+            }
+
+        } catch (Exception e) {
+
+            throw new Exception(e);
+
+        } finally {
+
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+
+                }
+            }
+
+            if(sqliteConn != null) {
+                sqliteConn.close();
+            }
+        }
+	}
+
+    private void insertPtn(Connection sqliteConn, Connection conn, PreparedStatement prep,
+                                Set<String> names, String tableName) {
+        String sql = "select * from " + tableName + " where";
+        StringBuilder builder = new StringBuilder();
+        for(String name : names) {
+            if(builder.length() > 0) {
+                builder.append(",");
+            }
+            builder.append(name);
+        }
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
             Clob clob = ConnectionUtil.createClob(conn);
             clob.setString(1, builder.toString());
             sql += " file_name in (select to_char(column_value) from table(clob_to_table(?)))";
-
-            PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-            pstmt=conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setClob(1, clob);
-
             resultSet = pstmt.executeQuery();
-
             resultSet.setFetchSize(5000);
 
             int count = 0;
-
             while (resultSet.next()) {
-
                 String name = resultSet.getString("file_name");
-
                 String format = resultSet.getString("format");
-
                 BLOB blob = (BLOB) resultSet.getBlob("file_content");
-
-                if(blob == null){
+                if (blob == null) {
                     continue;
                 }
-
                 InputStream is = blob.getBinaryStream();
                 int length = (int) blob.length();
                 byte[] content = new byte[length];
                 is.read(content);
                 is.close();
 
-                String bType = resultSet.getString("b_type");
+                String bType = "";
+                String mType = "";
+                if(tableName.equals(PatternImageExporter.PTN_TABLE_NAME_MODEL)) {
+                    bType = resultSet.getString("b_type");
+                    mType = resultSet.getString("m_type");
+                }else if(tableName.equals(PatternImageExporter.PTN_TABLE_NAME_VECTOR)) {
+                    bType = resultSet.getString("type");
+                }
 
-                String mType = resultSet.getString("m_type");
 
                 prep.setString(1, name);
-
                 prep.setString(2, format);
-
                 prep.setBinaryStream(3, new ByteArrayInputStream(content),
                         content.length);
-
                 prep.setString(4, bType);
-
                 prep.setString(5, mType);
-
                 prep.setInt(6, 0);
-
                 prep.setString(7, "");
-
                 prep.setString(8, "");
-
                 prep.setString(9, "");
-
                 prep.setInt(10, 0);
-
                 prep.executeUpdate();
 
                 count += 1;
-
                 if (count % 5000 == 0) {
                     sqliteConn.commit();
                 }
             }
 
             sqliteConn.commit();
-        } catch (Exception e) {
-
-            throw new Exception(e);
-
-        } finally {
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
             if (resultSet != null) {
                 try {
                     resultSet.close();
@@ -270,20 +283,8 @@ public class PatternImageExporter {
 
                 }
             }
-
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception e) {
-
-                }
-            }
-
-            if(sqliteConn != null) {
-                sqliteConn.close();
-            }
         }
-	}
+    }
 	
 	public String export2SqliteByDate(String path, String date)
 			throws Exception {

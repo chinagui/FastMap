@@ -415,8 +415,8 @@ public class DataPrepareController extends BaseController {
 		try {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			long jobId = dealerShipService.chainUpdate(userId);			
-			return new ModelAndView("jsonView", success(jobId));
+			Map<String,Object> result = dealerShipService.chainUpdate(userId);			
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			logger.error("品牌更新失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

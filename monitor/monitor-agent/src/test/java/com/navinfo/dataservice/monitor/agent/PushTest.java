@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
 import com.navinfo.dataservice.monitor.agent.utils.AgentUtils;
@@ -60,5 +63,19 @@ public class PushTest {
 		JSONObject json = JSONObject.fromObject(str);
 		Geometry geo = GeoTranslator.geojson2Jts(json);
 		System.out.println(geo);
+	}
+	
+	@Test
+	public void test04() throws Exception{
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+				new String[] {"applicationContext-quartz.xml"}); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
+	}
+	
+	@Test
+	public void test05() throws Exception{
+		boolean flag = AgentUtils.tomcatRunSuccess("192.168.4.188", "8084");
+		System.out.println(flag);
 	}
 }

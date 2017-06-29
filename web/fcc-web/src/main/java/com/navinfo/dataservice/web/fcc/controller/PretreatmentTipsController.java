@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -54,7 +55,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 			int userId=jsonReq.getInt("user");
@@ -77,9 +78,9 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.create(sourceType, tipsGeometry, userId, deep, memo, qSubTaskId);
+			String rowkey = op.create(sourceType, tipsGeometry, userId, deep, memo, qSubTaskId);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkey));
 
 		} catch (Exception e) {
 
@@ -229,7 +230,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			String rowkey=jsonReq.getString("rowkey");
 			
@@ -254,7 +255,7 @@ public class PretreatmentTipsController extends BaseController {
 
 			op.editGeo(rowkey, tipsGeometry, user);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkey));
 
 		} catch (Exception e) {
 
@@ -460,7 +461,7 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
-	 * @Description:fc预处理（情报矢量化）tip新增或者修改
+	 * @Description:（情报矢量化+FCC??）tip新增或者修改
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -478,7 +479,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			JSONObject jsonInfo=null; //jsonInfo为全量的tips信息，需要符合规格定义
 			if(jsonReq.containsKey("jsonInfo")){
@@ -541,7 +542,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 
 			JSONArray jsonInfoArr=null; //jsonInfo为全量的tips信息，需要符合规格定义
 			if(jsonReq.containsKey("jsonInfoArr")){

@@ -216,5 +216,12 @@ public class taskTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	//获取待规划子任务的任务列表
+	@Test
+	public void testUnPlanSubtasklist() throws Exception
+	{
+		JSONObject data = TaskService.getInstance().unPlanSubtasklist(71);
+		System.out.println(data);
+	}
 	
 }

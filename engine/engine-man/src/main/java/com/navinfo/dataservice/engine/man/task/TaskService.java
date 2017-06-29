@@ -4001,4 +4001,45 @@ public class TaskService {
 		}
 	}
 	
+	
+	//获取待规划子任务的任务列表
+		public JSONObject unPlanSubtasklist(int programId)  throws Exception{
+			Connection conn = null;
+			try {
+				conn = DBConnector.getInstance().getManConnection();
+				QueryRunner run = new QueryRunner();
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append("SELECT TASK_ID, NAME, BLOCK_ID FROM TASK WHERE STATUS IN (1, 2) ");
+				sb.append("AND TYPE = 0 AND DATA_PLAN_STATUS = 1 AND PROGRAM_ID = ");
+				sb.append(programId);
+
+				String selectSql= sb.toString();
+				log.info("getProgramByCityId sql :" + selectSql);
+
+				ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+					public JSONObject handle(ResultSet rs) throws SQLException {
+						JSONObject jsonObject = new JSONObject();
+						JSONArray jsonArray = new JSONArray();
+						while(rs.next()){
+							JSONObject jo = new JSONObject();
+							jo.put("taskId", rs.getInt(1));
+							jo.put("name", rs.getString(2));
+							jo.put("blockId", rs.getInt(3));
+							jsonArray.add(jo);
+						}
+						jsonObject.put("result", jsonArray);
+						jsonObject.put("totalCount", jsonArray.size());
+						return jsonObject;
+					}
+				};
+				return run.query(conn, selectSql, rsHandler);	
+			}catch(Exception e){
+				DbUtils.rollbackAndCloseQuietly(conn);
+				log.error("获取待规划子任务列表，原因为：" + e.getMessage());
+				throw e;
+			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+		}
 }

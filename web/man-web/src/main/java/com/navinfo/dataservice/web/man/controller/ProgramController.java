@@ -252,4 +252,15 @@ public class ProgramController extends BaseController {
 		}
 	}
 	
+	//获取待规划子任务的项目列表
+	@RequestMapping(value = "/program/unPlanSubtasklist")
+	public ModelAndView unPlanSubtasklist(HttpServletRequest request){
+		try {
+			JSONObject data = service.unPlanSubtasklist();
+			return new ModelAndView("jsonView",success(data));
+		} catch (Exception e) {
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 }

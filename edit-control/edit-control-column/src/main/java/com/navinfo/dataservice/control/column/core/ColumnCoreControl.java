@@ -534,10 +534,10 @@ public class ColumnCoreControl {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
 			}
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
 			
 			if(isQuality==1){

@@ -207,4 +207,14 @@ public class taskTest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void testUnPlanQualitylist() throws Exception
+	{
+		try {
+			System.out.println(TaskService.getInstance().unPlanQualitylist(57));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

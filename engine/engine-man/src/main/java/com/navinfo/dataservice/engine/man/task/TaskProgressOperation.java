@@ -108,9 +108,8 @@ public class TaskProgressOperation {
 			msg.put("phaseId", phaseId);
 			msg.put("taskId", taskProgress.getTaskId());
 			msg.put("status", taskProgress.getStatus());
-			String sysMsg = JSONArray.fromObject(msg).toString();
 			TaskOther2MediumWebSocketHandler.getInstance().sendMessageToUser(taskProgress.getOperator().toString(),
-					new TextMessage(sysMsg));
+					new TextMessage(msg.toString()));
 		}catch (Exception e) {
 			log.error("task_progress websocket消息发送失败", e);
 		}
@@ -175,6 +174,7 @@ public class TaskProgressOperation {
 					+ "       T.PHASE"
 					+ "  FROM TASK_PROGRESS T"
 					+ " WHERE T.PHASE_id = "+phaseId;
+			log.info(selectSql);
 			ResultSetHandler<TaskProgress> rsHandler = new ResultSetHandler<TaskProgress>() {
 				public TaskProgress handle(ResultSet rs) throws SQLException {
 					

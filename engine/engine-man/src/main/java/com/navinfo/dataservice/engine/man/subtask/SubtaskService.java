@@ -22,6 +22,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Infor;
@@ -31,8 +32,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -2769,19 +2768,52 @@ public class SubtaskService {
 				if(refers==null||refers.size()==0){//切分block
 					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
 				}else{
+					List<SubtaskRefer> updateRefer=new ArrayList<SubtaskRefer>();
+					List<SubtaskRefer> addRefer=new ArrayList<SubtaskRefer>();
 					for(SubtaskRefer refer:refers){
 						Geometry referGeo = refer.getGeometry();
 						//线是否穿过面
-						//是，则进行切割
-						//if()
+						Geometry interGeo=referGeo.intersection(lineGeo);						
+						if(interGeo==null||interGeo.getCoordinates().length==0){throw new ServiceException("线面没有交点");}
+						if(interGeo.getCoordinates().length!=2){
+							throw new ServiceException("线面交点大于2个，请重新画线");
+						}						
+						boolean isIn=GeometryUtils.InteriorAnd2Intersection(interGeo, referGeo);
+						if(!isIn){
+							throw new Exception("线不在面内，请重新划线");
+						}
+						
+						//line所切割的面对应的子任务是否开启
+						//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
+						List<Subtask> subtaskRelates=new ArrayList<>();
+						for(Subtask s: subtasks){
+							if(s.getReferId()==refer.getId()){
+								if(s.getStatus()==1){
+									throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+								}
+								s.setReferId(0);
+								subtaskRelates.add(s);
+							}
+						}
+						
+						List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+						//5.保存信息
+						for(Geometry g:addGeo){
+							SubtaskRefer referNew=new SubtaskRefer();
+							refer.setBlockId(refer.getBlockId());
+							refer.setGeometry(g);
+							SubtaskReferOperation.create(conn, refer);
+						}
+						
+						Set<Integer> idSet=new HashSet<Integer>();
+						idSet.add(refer.getId());
+						SubtaskReferOperation.delete(conn, idSet);
+						
+						for(Subtask s:subtaskRelates){
+							SubtaskOperation.updateSubtask(conn, s);
+						}
 					}
-				}
-				
-				//2.进行范围切割
-				Geometry geometry=null;
-				//3.需要切割的不规则圈对应的子任务的状态为开启，直接返回
-				//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
-				//5.保存信息
+				}				
 			}else{
 				/*
 				 * //若为id1，id2；则判断id对应的子任务是否开启，未开启则锁表，并获取geo；已开启则返回
@@ -2789,19 +2821,35 @@ public class SubtaskService {
 				 */
 				//1.nowait方式锁id1,id2对应的不规则圈，子任务
 				//2.是否开启，开启返回
-				List<Subtask> subtaskRefers=new ArrayList<>();
+				List<Subtask> subtaskRelates=new ArrayList<>();
 				for(Subtask s: subtasks){
 					if(s.getReferId()==id1||s.getReferId()==id2){
 						if(s.getStatus()==1){
 							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
 						}
 						s.setReferId(0);
-						subtaskRefers.add(s);
+						subtaskRelates.add(s);
 					}
 				}
 				//3.合并范围，去除关系
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
+				Geometry geo1 = refers.get(0).getGeometry();
+				Geometry geo2 = refers.get(1).getGeometry();
+				Geometry unionGeo=geo1.union(geo2);
 				//4.保存
+				SubtaskRefer refer=new SubtaskRefer();
+				refer.setBlockId(refers.get(0).getBlockId());
+				refer.setGeometry(unionGeo);
+				SubtaskReferOperation.create(conn, refer);
+				
+				Set<Integer> idSet=new HashSet<Integer>();
+				idSet.add(id1);
+				idSet.add(id2);
+				SubtaskReferOperation.delete(conn, idSet);
+				
+				for(Subtask s:subtaskRelates){
+					SubtaskOperation.updateSubtask(conn, s);
+				}
 			}			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -2811,6 +2859,7 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	
 	/**
 	 * 

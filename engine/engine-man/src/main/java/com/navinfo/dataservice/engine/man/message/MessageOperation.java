@@ -50,7 +50,7 @@ public class MessageOperation {
 	public static void insertMessage(Connection conn, Message message) throws Exception {
 		// TODO Auto-generated method stub
 		try{
-			QueryRunner run = new QueryRunner();
+			//QueryRunner run = new QueryRunner();
 			/*
 			List<Object> value = new ArrayList<Object>();
 			value.add(message.getMsgId());

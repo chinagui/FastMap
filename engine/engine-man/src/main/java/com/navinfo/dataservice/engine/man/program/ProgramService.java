@@ -2568,4 +2568,43 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	//获取待规划子任务的项目列表
+	public JSONObject unPlanSubtasklist() throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT Distinct P.PROGRAM_ID, P.NAME FROM TASK T JOIN PROGRAM P ");
+			sb.append("ON T.PROGRAM_ID = P.PROGRAM_ID WHERE P.TYPE = 1 AND T.TYPE = 0 ");
+			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
+			
+			String selectSql= sb.toString();
+			log.info("getProgramByCityId sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while(rs.next()){
+						JSONObject jo = new JSONObject();
+						jo.put("programId", rs.getInt(1));
+						jo.put("name", rs.getString(2));
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

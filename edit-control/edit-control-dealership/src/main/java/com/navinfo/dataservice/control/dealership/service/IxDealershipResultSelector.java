@@ -593,32 +593,4 @@ public class IxDealershipResultSelector {
 		IxDealershipResult result = getIxDealershipResultById(resultId, dealerConn);
 		return result.getGeometry();
 	}
-	
-	
-	/**
-	 * 更新sourecrId
-	 * @param resultId
-	 * @param conn
-	 * @throws Exception
-	 */
-	public static void updateResultSourceId(Integer resultId, Integer sourceId, Connection conn) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET SOURCE_ID = :1 WHERE RESULT_ID = :2");
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setInt(1, sourceId);
-			pstmt.setInt(2, resultId);
-			pstmt.executeUpdate();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
 }

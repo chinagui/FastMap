@@ -95,11 +95,4 @@
 	</type>
 	<type name="dealershipAddChainDataJob" class="com.navinfo.dataservice.dealership.job.DealershipAddChainDataJob"
 		request="com.navinfo.dataservice.dealership.job.DealershipAddChainDataJobRequest" /> 
-	<type name="taskOther2MediumJob" 
-		class="com.navinfo.dataservice.job.TaskOther2MediumJob"
-		request="com.navinfo.dataservice.job.TaskOther2MediumJobRequest" /> 
-	<type name="dealershipLiveUpdateJob"
-		class="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJob"
-		request="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJobRequest" >
-	</type>
 	</mapping>

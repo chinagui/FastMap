@@ -239,7 +239,7 @@ public class CheckController extends BaseController {
 	
 	/**
 	 * @Title: poiCheckResults
-	 * @Description: 某个poi检查结果查询接口
+	 * @Description: poi 检查结果查询接口
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -253,7 +253,7 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		logger.debug("listRdnResult:某个poi检查结果查询接口:parameter:"+parameter);
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
 		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -269,50 +269,9 @@ public class CheckController extends BaseController {
 			data.put("total", checkResultsArr.size());
 			
 			
-			logger.info("end check/poiResults");
+			logger.info("end check/list");
 			logger.debug(data);
 			return new ModelAndView("jsonView", success(data));
-
-		} catch (Exception e) {
-			
-			logger.error(e.getMessage(), e);
-
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-	}
-	/**
-	 * @Title: listPoiResults
-	 * @Description: 子任务范围内poi检查结果列表查询接口
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年6月23日 下午3:50:03 
-	 */
-	@RequestMapping(value = "/check/listPoiResults")
-	public ModelAndView listPoiResults(HttpServletRequest request)
-			throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-		logger.debug("listPoiResults:poi检查结果列表查询接口:parameter:"+parameter);
-		Connection conn = null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int subtaskId = jsonReq.getInt("subtaskId");
-			int dbId = jsonReq.getInt("dbId");
-			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-
-			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			Page page = selector.listPoiCheckResultList(jsonReq, subtaskId);
-			
-			logger.info("end check/listPoiResults");
-//			logger.debug(data);
-			return new ModelAndView("jsonView", success(page));
 
 		} catch (Exception e) {
 			

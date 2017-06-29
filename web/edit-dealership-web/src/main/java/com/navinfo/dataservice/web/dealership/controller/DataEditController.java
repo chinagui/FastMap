@@ -401,17 +401,11 @@ public class DataEditController extends BaseController {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-
-			Map<String, Object> result = dealerShipEditService.addChainData(request, userId);	
-			
-			List<Integer> resultIdList = (List<Integer>) result.get("resultIdList");
-			List<String> chainCodeList = (List<String>)result.get("chainCodeList");
+			List<Integer> resultIdList = dealerShipEditService.addChainData(request, userId);	
 			
 			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
 			JSONObject jobReq = new JSONObject();
 			jobReq.put("resultIdList", resultIdList);
-			jobReq.put("chainCodeList", chainCodeList);
-			jobReq.put("userId", userId);
 			
 			long jobId = jobApi.createJob("dealershipAddChainDataJob", jobReq, userId,0, "代理补充数据job");
 			
@@ -427,15 +421,15 @@ public class DataEditController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value="/loadPoiForConflict")
-	public ModelAndView loadPoiForConflict(HttpServletRequest request) throws Exception {
+	@RequestMapping(value="/loadPoiForCnflict")
+	public ModelAndView loadPoiForCnflict(HttpServletRequest request) throws Exception {
 		
 		try {
 			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
 			if(jsonObj==null){
 				throw new IllegalArgumentException("parameter参数不能为空。"); 
 			}
-			JSONObject data = dealerShipEditService.loadPoiForConflict(jsonObj);
+			JSONObject data = dealerShipEditService.loadPoiForCnflict(jsonObj);
 
 		    return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

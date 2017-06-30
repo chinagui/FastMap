@@ -20,6 +20,7 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
+import com.graphbuilder.geom.Geom;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -1020,6 +1021,7 @@ public class GeoTranslator {
 					tmpLine=new ArrayList<Coordinate>();
 				}
 				tmpLine.add(linePoint);
+				coorBefore=linePoint;
 				continue;
 			}
 			//是否第一个点
@@ -1035,6 +1037,7 @@ public class GeoTranslator {
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord1);
 				tmpLine.add(linePoint);
+				coorBefore=linePoint;
 				continue;
 			}
 			if(isIntersection(coorBefore, linePoint, coord2)){
@@ -1043,8 +1046,11 @@ public class GeoTranslator {
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord2);
 				tmpLine.add(linePoint);
+				coorBefore=linePoint;
 				continue;
 			}
+			tmpLine.add(linePoint);
+			coorBefore=linePoint;
 		}
 		if(tmpLine.size()>1){subLines.add(GeoTranslator.createLineString(tmpLine));}
 		return subLines;
@@ -1059,46 +1065,76 @@ public class GeoTranslator {
 	 * @throws Exception
 	 */
 	public static List<Geometry> splitPolygonByLine(Geometry line,Geometry polygon) throws Exception{
-		Geometry interGeo=polygon.intersection(line);
+		Geometry referGeoLine=GeoTranslator.createLineString(polygon.getCoordinates());
+		//线是否穿过面
+		Geometry interGeo=referGeoLine.intersection(line);
 		
 		if(interGeo==null||interGeo.getCoordinates().length==0){throw new Exception("线面没有交点");}
 		if(interGeo.getCoordinates().length!=2){
 			throw new Exception("线面交点大于2个，请重新画线");
 		}
 		
-		boolean isIn=GeometryUtils.InteriorAnd2Intersection(interGeo, polygon);
+		//coord1，coord2为端点的线段
+		Geometry midLine=polygon.intersection(line);
+		Geometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0]);
+		unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+		boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
 		if(!isIn){
 			throw new Exception("线不在面内，请重新划线");
 		}
 		Coordinate coord1 = interGeo.getCoordinates()[0];
 		Coordinate coord2 = interGeo.getCoordinates()[1];
-		List<Geometry> subLines = GeoTranslator.splitGeoByPoint(line, coord1, coord2);
-		//coord1，coord2为端点的线段
-		Geometry midLine=null;
-		for(Geometry s:subLines){
+//		List<Geometry> subLines = GeoTranslator.splitGeoByPoint(line, coord1, coord2);
+		
+//		for(Geometry s:subLines){
+//			Coordinate[] sCoors = s.getCoordinates();
+//			Coordinate sStart = sCoors[0];
+//			Coordinate sEnd = sCoors[sCoors.length-1];
+//			if(GeoTranslator.isPointEquals(sStart,coord1)&&GeoTranslator.isPointEquals(sEnd,coord2)){
+//				midLine=s;
+//				continue;
+//			}
+//			if(GeoTranslator.isPointEquals(sStart,coord2)&&GeoTranslator.isPointEquals(sEnd,coord1)){
+//				midLine=s;
+//				continue;
+//			}
+//		}
+		
+		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
+				
+		List<Geometry> polygonLine1=new ArrayList<Geometry>();
+		List<Geometry> polygonLine2=new ArrayList<Geometry>();
+		List<Geometry> polygonLineTmp=polygonLine1;
+		int i=1;
+		
+		for(Geometry s:subPolygonLines){
 			Coordinate[] sCoors = s.getCoordinates();
-			Coordinate sStart = sCoors[0];
-			Coordinate sEnd = sCoors[sCoors.length-1];
-			if(GeoTranslator.isPointEquals(sStart,coord1)&&GeoTranslator.isPointEquals(sEnd,coord2)){
-				midLine=s;
-				continue;
-			}
-			if(GeoTranslator.isPointEquals(sStart,coord2)&&GeoTranslator.isPointEquals(sEnd,coord1)){
-				midLine=s;
-				continue;
+			polygonLineTmp.add(s);
+			if(sCoors[sCoors.length-1].equals(coord1)||sCoors[sCoors.length-1].equals(coord2)){
+				if(i==1){
+					Geometry orderMidLine=midLine;
+					if(sCoors[sCoors.length-1].equals(coord2)){
+						orderMidLine=orderMidLine.reverse();
+					}
+					polygonLineTmp.add(orderMidLine);
+					polygonLineTmp=polygonLine2;i=2;
+				}else{
+					Geometry orderMidLine=midLine;
+					if(sCoors[sCoors.length-1].equals(coord2)){
+						orderMidLine=orderMidLine.reverse();
+					}
+					polygonLineTmp.add(orderMidLine);
+					polygonLineTmp=polygonLine1;
+				}
 			}
 		}
 		
-		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
-		
-		List<Geometry> polygonLine1=new ArrayList<Geometry>();
-		polygonLine1.add(subPolygonLines.get(0));
-		polygonLine1.add(midLine);
+		//polygonLine1.add(subPolygonLines.get(0));
+		//polygonLine1.add(midLine);
 		Geometry p1 = GeoTranslator.getCalLineToPython(polygonLine1);
 		
-		List<Geometry> polygonLine2=new ArrayList<Geometry>();
-		polygonLine2.add(subPolygonLines.get(1));
-		polygonLine2.add(midLine);
+		//polygonLine2.add(subPolygonLines.get(1));
+		//polygonLine2.add(midLine);
 		Geometry p2 = GeoTranslator.getCalLineToPython(polygonLine2);
 		
 		List<Geometry> polygons=new ArrayList<Geometry>();
@@ -1106,6 +1142,49 @@ public class GeoTranslator {
 		polygons.add(p2);
 		
 		return polygons;		
+	}
+	
+	
+	/**
+	 * 点coord加到geo的形状点中
+	 * @param geo
+	 * @param coord
+	 * @return
+     * @throws Exception 
+     * @throws JSONException 
+	 */
+	public static Geometry addCoorToGeo(Geometry geo,Coordinate coord) throws JSONException, Exception{
+		//点将线切成多段
+		Coordinate[] lineCoordinates = geo.getCoordinates();
+		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
+		Coordinate coorBefore=null;
+		for(Coordinate linePoint:lineCoordinates){
+			//交点与线的端点相同
+			if(coord.equals(linePoint)){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//是否第一个点
+			if(coorBefore==null){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//不是第一个点，判断交点是否在两点中间
+			if(isIntersection(coorBefore, linePoint, coord)){
+				tmpLine.add(coord);
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			tmpLine.add(linePoint);
+			coorBefore=linePoint;
+		}
+		List<Geometry> subLines=new ArrayList<Geometry>();
+		subLines.add(GeoTranslator.createLineString(tmpLine));
+		Geometry p = GeoTranslator.getCalLineToPython(subLines);
+		return p;
 	}
 
 	public static void main(String[] args) throws Exception {

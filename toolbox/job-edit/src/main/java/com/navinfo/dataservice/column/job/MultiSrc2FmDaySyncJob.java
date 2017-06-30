@@ -71,7 +71,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				.getBean("fmMultiSrcSyncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
-			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
+//			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
+			String localUnzipDir = "F:\\mul\\20170623160807_day";
 			response("下载文件完成",null);
 			//执行导入
 			imp(syncApi,localUnzipDir);
@@ -95,7 +96,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
 			//String uploadRoot = "D:\\temp\\";
-//			return "E:\\data\\resources\\upload\\multisrc\\201706\\20170612142402_day";
+//			return "F:\\mul\\20170623160807_day";
 //			return "E:\\data\\resources\\upload\\multisrc\\201706\\20170610102723_day";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();

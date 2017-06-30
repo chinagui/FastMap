@@ -2735,7 +2735,8 @@ public class SubtaskService {
 			int id2=0;
 			if(condition.containsKey("lineWkt")){
 				lineWkt=condition.getString("lineWkt");
-			}else{
+			}
+			if(condition.containsKey("id1")){
 				id1=condition.getInt("id1");
 				id2=condition.getInt("id2");
 			}
@@ -2767,20 +2768,58 @@ public class SubtaskService {
 				Geometry lineGeo=GeoTranslator.wkt2Geometry(lineWkt);
 				if(refers==null||refers.size()==0){//切分block
 					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
+					Geometry referGeo = block.getOriginGeo();
+					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
+					//线是否穿过面
+					Geometry interGeo=referGeoLine.intersection(lineGeo);						
+					if(interGeo==null||interGeo.getCoordinates().length==0){throw new ServiceException("线面没有交点");}
+					if(interGeo.getCoordinates().length!=2){
+						throw new ServiceException("线面交点大于2个，请重新画线");
+					}					
+					
+					Geometry midLine=referGeo.intersection(lineGeo);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+					if(!isIn){
+						throw new Exception("线不在面内，请重新划线");
+					}
+					
+					//line所切割的面对应的子任务是否开启
+					//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。					
+					List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+					//5.保存信息
+					for(Geometry g:addGeo){
+						SubtaskRefer referNew=new SubtaskRefer();
+						referNew.setBlockId(task.getBlockId());
+						referNew.setGeometry(g);
+						SubtaskReferOperation.create(conn, referNew);
+					}
 				}else{
-					List<SubtaskRefer> updateRefer=new ArrayList<SubtaskRefer>();
-					List<SubtaskRefer> addRefer=new ArrayList<SubtaskRefer>();
+					String msg=null; 
+					int referNum=0;
 					for(SubtaskRefer refer:refers){
 						Geometry referGeo = refer.getGeometry();
+						Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
 						//线是否穿过面
-						Geometry interGeo=referGeo.intersection(lineGeo);						
-						if(interGeo==null||interGeo.getCoordinates().length==0){throw new ServiceException("线面没有交点");}
+						Geometry interGeo=referGeoLine.intersection(lineGeo);						
+						if(interGeo==null||interGeo.getCoordinates().length==0){
+							log.info("线面没有交点");
+							msg="线面交点不为2个/线不在面内，请重新画线;";
+							continue;}
 						if(interGeo.getCoordinates().length!=2){
-							throw new ServiceException("线面交点大于2个，请重新画线");
-						}						
-						boolean isIn=GeometryUtils.InteriorAnd2Intersection(interGeo, referGeo);
+							log.info("线面交点不为2");
+							msg="线面交点不为2个/线不在面内，请重新画线;";
+							continue;
+						}		
+						
+						Geometry midLine=referGeo.intersection(lineGeo);
+						Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
+						unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+						boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+						//boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
 						if(!isIn){
-							throw new Exception("线不在面内，请重新划线");
+							log.info("线不在面内");
+							msg="线面交点不为2个/线不在面内，请重新划线;";
+							continue;
 						}
 						
 						//line所切割的面对应的子任务是否开启
@@ -2795,14 +2834,15 @@ public class SubtaskService {
 								subtaskRelates.add(s);
 							}
 						}
-						
+						referNum++;
 						List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+						
 						//5.保存信息
 						for(Geometry g:addGeo){
 							SubtaskRefer referNew=new SubtaskRefer();
-							refer.setBlockId(refer.getBlockId());
-							refer.setGeometry(g);
-							SubtaskReferOperation.create(conn, refer);
+							referNew.setBlockId(refer.getBlockId());
+							referNew.setGeometry(g);
+							SubtaskReferOperation.create(conn, referNew);
 						}
 						
 						Set<Integer> idSet=new HashSet<Integer>();
@@ -2812,6 +2852,12 @@ public class SubtaskService {
 						for(Subtask s:subtaskRelates){
 							SubtaskOperation.updateSubtask(conn, s);
 						}
+					}
+					if(referNum==0){
+						throw new ServiceException(msg);
+					}
+					if(referNum>1){
+						throw new ServiceException("线同时穿过2个不规则子任务圈，请重新划线，保证每次仅穿过1个不规则子任务圈");
 					}
 				}				
 			}else{
@@ -2900,7 +2946,7 @@ public class SubtaskService {
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> subtasks=new ArrayList<Subtask>();
-					if (rs.next()) {
+					while (rs.next()) {
 						Subtask subtask = new Subtask();						
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setType(rs.getInt("TYPE"));
@@ -2953,6 +2999,9 @@ public class SubtaskService {
 					if(key.equals("blockId")){
 						sql=sql+" AND R.BLOCK_ID="+condition.getInt(key);
 					}
+					if(key.equals("ids")){
+						sql=sql+" AND R.ID in "+condition.getJSONArray(key).toString().replace("[", "(").replace("]", ")");
+					}
 				}
 			}
 			if(isLock){sql=sql+ "   FOR UPDATE NOWAIT";}
@@ -2960,9 +3009,10 @@ public class SubtaskService {
 			ResultSetHandler<List<SubtaskRefer>> rsHandler = new ResultSetHandler<List<SubtaskRefer>>() {
 				public List<SubtaskRefer> handle(ResultSet rs) throws SQLException {
 					List<SubtaskRefer> subtasks=new ArrayList<SubtaskRefer>();
-					if (rs.next()) {
+					while (rs.next()) {
 						SubtaskRefer refer = new SubtaskRefer();						
-						refer.setId(rs.getInt("ID"));						
+						refer.setId(rs.getInt("ID"));		
+						refer.setBlockId(rs.getInt("BLOCK_ID"));	
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {

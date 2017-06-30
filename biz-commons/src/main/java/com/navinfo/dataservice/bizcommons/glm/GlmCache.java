@@ -65,7 +65,7 @@ public class GlmCache {
 			//1. 先确定加载哪些表
 			String ignore = SystemConfigFactory.getSystemConfig().getValue("glm.ignore.table.prefix");
 			StringBuilder loadSql = new StringBuilder();
-			loadSql.append("SELECT TABLE_NAME,FEATURE_TYPE,OBJ_NAME,OBJ_PID_COL,EDITABLE FROM GLM_TABLES WHERE GDB_VERSION=?");
+			loadSql.append("SELECT TABLE_NAME,FEATURE_TYPE,IS_MAIN,OBJ_REF_TABLE,OBJ_REF_COL,EDITABLE FROM GLM_TABLES WHERE GDB_VERSION=?");
 			if(StringUtils.isNotEmpty(ignore)){
 				Set<String> ignoreSqlSet = new HashSet<String>();
 				for(String prefix:ignore.split(",")){
@@ -81,7 +81,7 @@ public class GlmCache {
 					while(rs.next()){
 						String tableName = rs.getString("TABLE_NAME");
 					
-						set.put(rs.getString("TABLE_NAME"),rs.getInt("FEATURE_TYPE")+","+rs.getInt("EDITABLE")+","+rs.getString("OBJ_NAME")+","+rs.getString("OBJ_PID_COL"));
+						set.put(rs.getString("TABLE_NAME"),rs.getInt("IS_MAIN")+","+rs.getInt("FEATURE_TYPE")+","+rs.getInt("EDITABLE")+","+rs.getString("OBJ_REF_TABLE")+","+rs.getString("OBJ_REF_COL"));
 					}
 					return set;
 				}
@@ -120,13 +120,15 @@ public class GlmCache {
 					}
 				});
 				//赋TABLE属性
+				
 				for(String key:tables.keySet()){
 					GlmTable table = tables.get(key);
 					String[] vs = names.get(key).split(",");
-					table.setFeatureType(Integer.parseInt(vs[0])==1?GlmTable.FEATURE_TYPE_POI:GlmTable.FEATURE_TYPE_ROAD);
-					table.setEditable(Integer.parseInt(vs[1])==1?true:false);
-					table.setObjName(vs[2]);
-					table.setObjPidCol("UNKNOWN".equals(vs[3])?null:vs[3]);
+					table.setMaintable(Integer.parseInt(vs[0])==1?true:false);
+					table.setFeatureType(Integer.parseInt(vs[1])==1?GlmTable.FEATURE_TYPE_POI:GlmTable.FEATURE_TYPE_ROAD);
+					table.setEditable(Integer.parseInt(vs[2])==1?true:false);
+					table.setObjRefTable(tables.get(vs[3]));
+					table.setObjRefCol("UNKNOWN".equals(vs[4])?null:vs[4]);
 				}
 				//load pks
 				StringBuilder pkSql = new StringBuilder();
@@ -134,8 +136,7 @@ public class GlmCache {
 				pkSql.append(StringUtils.join(tables.keySet(),"','"));
 				pkSql.append("')");
 				runner.query(conn, pkSql.toString(),new GetPkHandler(tables));
-				//批找图幅号的外键或者参考字段
-				//...
+
 				glm.setAllTables(tables);
 			}
 		}catch (Exception e) {

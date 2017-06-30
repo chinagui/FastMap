@@ -16,9 +16,10 @@ import org.apache.commons.lang.StringUtils;
 public class GlmTable {
     protected String name;
     protected String featureType;
-    protected String objName;
-    protected String objPidCol;//三级表为空
+    protected GlmTable objRefTable;
+    protected String objRefCol;
     protected boolean editable;
+    protected boolean maintable;//是否是对象的主表
 	//主键字段无顺序
 	protected Set<GlmColumn> pks;
 	//所有字段按column_id排序；
@@ -43,23 +44,52 @@ public class GlmTable {
 	public void setFeatureType(String featureType) {
 		this.featureType = featureType;
 	}
+	/**
+	 * 依赖的对象主表，三级表会递归找到
+	 * @return
+	 */
 	public String getObjName() {
-		return objName;
+		if(maintable){
+			return name;
+		}else{
+			return objRefTable.getObjName();
+		}
 	}
-	public void setObjName(String objName) {
-		this.objName = objName;
-	}
+
+    /**
+     * 三级表及以下此属性返回null
+     * @return
+     */
 	public String getObjPidCol() {
-		return objPidCol;
+		if(maintable||objRefTable.isMaintable()){
+			return objRefCol;
+		}
+		return null;
 	}
-	public void setObjPidCol(String objPidCol) {
-		this.objPidCol = objPidCol;
+
+	public boolean isMaintable() {
+		return maintable;
+	}
+	public void setMaintable(boolean maintable) {
+		this.maintable = maintable;
 	}
 	public boolean isEditable() {
 		return editable;
 	}
 	public void setEditable(boolean editable) {
 		this.editable = editable;
+	}
+	public GlmTable getObjRefTable() {
+		return objRefTable;
+	}
+	public void setObjRefTable(GlmTable objRefTable) {
+		this.objRefTable = objRefTable;
+	}
+	public String getObjRefCol() {
+		return objRefCol;
+	}
+	public void setObjRefCol(String objRefCol) {
+		this.objRefCol = objRefCol;
 	}
 	public Set<GlmColumn> getPks() {
 		if(pks==null&&columns!=null){
@@ -76,6 +106,18 @@ public class GlmTable {
 		}
 		return pks;
 	}
+
+	public GlmColumn getPk() throws Exception{
+		Set<GlmColumn> pks = getPks();
+		if(pks==null||pks.size()!=1){
+			throw new Exception("使用逻辑主键表没有单一主键。");
+		}
+		for(GlmColumn pk:pks){
+			return pk;
+		}
+		return null;
+	}
+	
 	public List<GlmColumn> getColumns() {
 		return columns;
 	}

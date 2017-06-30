@@ -354,7 +354,7 @@ public class DiffJob extends AbstractJob
 		@Override
 		public void run() {
 			try{
-				int logCount = diffScanner.scan(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+				int logCount = diffScanner.scan(table,leftAccess, rightAccess);
 				if(logCount>0){
 					logTables.add(table);
 				}

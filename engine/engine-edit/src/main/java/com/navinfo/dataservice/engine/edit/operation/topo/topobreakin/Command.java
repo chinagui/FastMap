@@ -100,7 +100,7 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
-		JSONArray objIds = json.getJSONArray("objIds");
+		JSONArray objIds = json.getJSONArray("objId");
 		for (int i = 0; i < objIds.size(); i++) {
 			this.linkPids.add(objIds.getInt(i));
 		}

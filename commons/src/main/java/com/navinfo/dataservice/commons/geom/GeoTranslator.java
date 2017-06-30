@@ -834,6 +834,45 @@ public class GeoTranslator {
 
 	}
 
+	/**
+	 * 
+	 * @param link
+	 * @param breakPoint
+	 * @param pedalCoor
+	 * @return
+	 * @throws Exception
+	 */
+	public static LineString reformGeomtryByNode(LineString geometry, Set<Point> breakPoints) throws Exception {
+		Coordinate[] coordinates = GeoTranslator.transform(geometry, 0.00001, 5).getCoordinates();
+		List<Coordinate> coors = new ArrayList<Coordinate>();
+		Collections.addAll(coors, coordinates);
+
+		for(Point point: breakPoints){
+			//打断点
+			Coordinate breakPoint = new Coordinate(point.getX(),point.getY());
+			
+			//打断点对应的垂足点
+			Coordinate pedalCoor = GeometryUtils.getLinkPedalPointOnLine(breakPoint, GeoTranslator.transform(geometry, 0.00001, 5));
+			
+			for (int i = 0; i < coors.size() - 1; i++) {
+				Coordinate pointS = coors.get(i);
+				Coordinate pointE = coors.get(i + 1);
+
+				// 是否在形状点上
+				if ((Math.abs(pedalCoor.x - pointE.x) < 0.0000001 && Math.abs(pedalCoor.y - pointE.y) < 0.0000001)
+						|| (GeoTranslator.isIntersection(new double[] { pointS.x, pointS.y },
+								new double[] { pointE.x, pointE.y }, new double[] { pedalCoor.x, pedalCoor.y }))) {
+					coors.add(i + 1, breakPoint);
+					break;
+				}
+			}//for
+		}//for
+		
+		Coordinate[] c = (Coordinate[]) coors.toArray(new Coordinate[coors.size()]);
+		return (LineString) GeoTranslator.transform(geoFactory.createLineString(c),1, 5);
+	}
+	
+	
 	/***
 	 * 按顺序返回线上对应的形状点 zhaokk
 	 * 

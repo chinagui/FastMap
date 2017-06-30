@@ -55,7 +55,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 如果nodepid是某条link的起终点，从需打断link中排除,其余线需根据node修正几何
 		int nodePid = this.getCommand().getBreakNodePid();
-		List<RdLink> needBreakLink = new ArrayList<>();
+		List<Integer> breakLinks = new ArrayList<>();
 
 		if (nodePid == 0) {
 			return true;
@@ -63,14 +63,12 @@ public class Process extends AbstractProcess<Command> {
 		for (int pid : this.getCommand().getLinkPids()) {
 			RdLink link = (RdLink) selector.loadById(pid, false);
 			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
-				this.getCommand().getLinkPids().remove(pid);
 				continue;
 			}
-			needBreakLink.add(link);
+			breakLinks.add(pid);
 		}
-
-		modifyLinkGeo(nodePid, needBreakLink);
-
+		
+		this.getCommand().setLinkPids(breakLinks);
 		return true;
 	}
 
@@ -97,56 +95,6 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		return msg;
-	}
-
-	/**
-	 * 根据node点位信息，更新link的几何
-	 * 
-	 * @param nodePid
-	 * @param rdLinks
-	 * @throws Exception
-	 */
-	private void modifyLinkGeo(int nodePid, List<RdLink> rdLinks) throws Exception {
-		if (nodePid == 0 || rdLinks.size() == 0) {
-			return;
-		}
-
-		Coordinate breakPoint = new Coordinate(this.getCommand().getBreakPoint().getX(),
-				this.getCommand().getBreakPoint().getY());
-		
-		for (RdLink rdLink : rdLinks) {
-			Coordinate pedalCoor = GeometryUtils.getLinkPedalPointOnLine(breakPoint, rdLink.getGeometry());
-			Point pedalPoint = (Point) GeoTranslator.transform(geoFactory.createPoint(pedalCoor), 1, 5);
-
-			/*Set<Point> points = new HashSet<>();
-			points.add(pedalPoint);
-			LineString geo = GeoTranslator
-					.getReformLineString(geoFactory.createLineString(rdLink.getGeometry().getCoordinates()), points);*/
-			LineString geo = this.reformGeomtryByNode(rdLink, breakPoint, pedalCoor);
-			
-			rdLink.setGeometry(geo);
-		}
-	}
-
-	private LineString reformGeomtryByNode(RdLink link, Coordinate breakPoint, Coordinate pedalCoor) throws Exception {
-		Coordinate[] coordinates = link.getGeometry().getCoordinates();
-		List<Coordinate> coors = new ArrayList<Coordinate>();
-		Collections.addAll(coors, coordinates);
-
-		for (int i = 0; i < coors.size() - 1; i++) {
-			Coordinate pointS = coors.get(i);
-			Coordinate pointE = coors.get(i + 1);
-
-			// 是否在形状点上
-			if ((Math.abs(pedalCoor.x - pointE.x) < 0.0000001 && Math.abs(pedalCoor.y - pointE.y) < 0.0000001)
-					|| (GeoTranslator.isIntersection(new double[] { pointS.x, pointS.y },
-							new double[] { pointE.x, pointE.y }, new double[] { pedalCoor.x, pedalCoor.y }))) {
-				coors.add(i + 1, breakPoint);
-				break;
-			}
-		}
-		Coordinate[] c = (Coordinate[]) coors.toArray(new Coordinate[coors.size()]);
-		return (LineString) GeoTranslator.transform(geoFactory.createLineString(c), 0.00001, 5);
 	}
 	
 	@Override

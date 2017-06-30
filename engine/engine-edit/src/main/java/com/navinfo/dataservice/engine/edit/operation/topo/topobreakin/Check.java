@@ -19,9 +19,22 @@ import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelect
 
 public class Check {
 	private Connection conn;
+	private RdRestrictionSelector restrictionSelector;
+	private RdLaneConnexitySelector laneSelector;
+	private RdVoiceguideSelector rdVoiceSelector;
+	private RdBranchSelector branchSelector;
+	private RdDirectrouteSelector directrouteSelector;
+
 
 	public Check(Connection conn) {
 		this.conn = conn;
+		
+		restrictionSelector = new RdRestrictionSelector(conn);
+		laneSelector = new RdLaneConnexitySelector(conn);
+		rdVoiceSelector = new RdVoiceguideSelector(conn);
+		branchSelector = new RdBranchSelector(conn);
+		directrouteSelector = new RdDirectrouteSelector(conn);
+
 	}
 
 	/**
@@ -42,12 +55,6 @@ public class Check {
 			throw new Exception("选中的打断点处存在立交关系，请重新选择打断位置！");
 		} // for
 	}
-
-	private RdRestrictionSelector restrictionSelector = new RdRestrictionSelector(conn);
-	private RdLaneConnexitySelector laneSelector = new RdLaneConnexitySelector(conn);
-	private RdVoiceguideSelector rdVoiceSelector = new RdVoiceguideSelector(conn);
-	private RdBranchSelector branchSelector = new RdBranchSelector(conn);
-	private RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
 
 	/**
 	 * 检查需打断link中是否有车信，交限，语音引导，分歧，顺行，自然语音引导的经过线

@@ -968,5 +968,11 @@ public class MetadataApiImpl implements MetadataApi {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	//获取重要POI的PID
+	@Override
+	public List<Integer> queryImportantPid() throws SQLException {
+		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
+	}
 
 }

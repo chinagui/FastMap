@@ -46,12 +46,6 @@ public class DiffService {
 		Map<Integer,List<IxDealershipResult>> resultMap = new HashMap<Integer,List<IxDealershipResult>>();
 		List<IxDealershipResult> insertList = new ArrayList<IxDealershipResult>();
 
-//		Map<String, Integer> dealershipNameMap = new HashMap<String, Integer>();
-//		Map<String, Integer> dealershipAddrMap = new HashMap<String, Integer>();
-//		Map<String, Integer> dealershipTelMap = new HashMap<String, Integer>();
-//		Map<String, Integer> dealershipPostCodeMap = new HashMap<String, Integer>();
-//		Map<String, Integer> dealershipKindMap = new HashMap<String, Integer>();
-//		Map<String, Integer> dealershipChainMap = new HashMap<String, Integer>();
 
 		Map<String, Integer> sourceNameMap = new HashMap<String, Integer>();
 		Map<String, Integer> sourceAddrMap = new HashMap<String, Integer>();
@@ -81,208 +75,206 @@ public class DiffService {
 		
 		String t;
 
-		for (IxDealershipSource i : dealershipSources) {
+		//source内有记录
+		if(dealershipSources!=null){
+			for (IxDealershipSource i : dealershipSources) {
 
-//			if (i.getName() != null)
-//				dealershipNameMap.put(i.getName().trim(), 1);
-//			if (i.getAddress() != null)
-//				dealershipAddrMap.put(i.getAddress().trim(), 1);
-//			if (i.getTelephone() != null)
-//				dealershipTelMap.put(i.getTelephone(), 1);
-//			if (i.getPostCode() != null)
-//				dealershipPostCodeMap.put(i.getPostCode(), 1);
-//			
-//			dealershipKindMap.put(i.getKindCode(), 1);
-//			dealershipChainMap.put(i.getChain(), 1);
-			
-			//名称、地址、电话、邮编、分类、品牌
-			String shortName = (null == i.getNameShort()? "":i.getNameShort());
-			String postCode = (null == i.getPostCode()? "":i.getPostCode());
-			t = hash(i.getName().trim() + i.getAddress().trim()
-					+ i.getTelephone().trim() + postCode.trim()
-					+ i.getKindCode().trim() + i.getChain() + shortName.trim());
-			mapMatchSame.put(t, i);
+				//名称、地址、电话、邮编、分类、品牌
+				String shortName = (null == i.getNameShort()? "":i.getNameShort());
+				String postCode = (null == i.getPostCode()? "":i.getPostCode());
+				t = hash(i.getName().trim() + i.getAddress().trim()
+						+ i.getTelephone().trim() + postCode.trim()
+						+ i.getKindCode().trim() + i.getChain() + shortName.trim());
+				mapMatchSame.put(t, i);
 
-			//上传一览表与全国一览表中分类、品牌和名称均相同，且地址相似，且邮编相同但电话不同或邮编不同电话相同；
-			t = hash(i.getName().trim() + i.getKindCode().trim() + i.getChain().trim());
-			if (editPart1.get(t) == null) {
-				List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
-				dsList.add(i);
-				editPart1.put(t, dsList);
-			} else {
-				editPart1.get(t).add(i);
-			}
+				//上传一览表与全国一览表中分类、品牌和名称均相同，且地址相似，且邮编相同但电话不同或邮编不同电话相同；
+				t = hash(i.getName().trim() + i.getKindCode().trim() + i.getChain().trim());
+				if (editPart1.get(t) == null) {
+					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
+					dsList.add(i);
+					editPart1.put(t, dsList);
+				} else {
+					editPart1.get(t).add(i);
+				}
 
-			//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-			t = hash(i.getChain().trim() + i.getTelephone().trim() + i.getKindCode().trim());
-			if (editPart2.get(t) == null) {
-				List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
-				dsList.add(i);
-				editPart2.put(t, dsList);
-			} else {
-				editPart2.get(t).add(i);
-			}
+				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
+				t = hash(i.getChain().trim() + i.getTelephone().trim() + i.getKindCode().trim());
+				if (editPart2.get(t) == null) {
+					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
+					dsList.add(i);
+					editPart2.put(t, dsList);
+				} else {
+					editPart2.get(t).add(i);
+				}
 
-			//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但电话不同
-			t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
-			if (editPart3.get(t) == null) {
-				List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
-				dsList.add(i);
-				editPart3.put(t, dsList);
-			} else {
-				editPart3.get(t).add(i);
-			}
-			
-			//删除逻辑：分类和品牌均相同
-			t = hash(i.getChain().trim());
-			if (editPart4.get(t) == null) {
-				List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
-				dsList.add(i);
-				editPart4.put(t, dsList);
-			} else {
-				editPart4.get(t).add(i);
-			}
-		}
-
-		/**************** 一致,更新,新增  *******************/
-		for (IxDealershipResult i : dealershipResult) {
-			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-
-			boolean flag = false;
-			String shortName = (null == i.getNameShort()? "":i.getNameShort());
-			t = hash(i.getName().trim() + i.getAddress().trim()
-					+ i.getTelephone().trim() + i.getPostCode().trim()
-					+ i.getKindCode().trim() +  i.getChain().trim() + shortName.trim());
-
-			/**************** 新旧一致逻辑 *******************/
-			if (mapMatchSame.get(t) != null) {
-				IxDealershipSource j = mapMatchSame.get(t);
-				resultDpAttrDiff = new IxDealershipResult(i);
-				insertList.add(resultDpAttrDiff);
-
-				resultDpAttrDiff.setDealSrcDiff(1);
-				resultDpAttrDiff.setProvideDate(date);
+				//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但电话不同
+				t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
+				if (editPart3.get(t) == null) {
+					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
+					dsList.add(i);
+					editPart3.put(t, dsList);
+				} else {
+					editPart3.get(t).add(i);
+				}
 				
-				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
-
-				
-				dkeyMap.put(mapMatchSame.get(t).getSourceId(), "");
-				continue;
-			}
-			/**************** 新旧一致逻辑 *******************/
-
-			/**************** 新版较旧版有变更逻辑 *******************/
-			//上传一览表与全国一览表中分类、品牌和名称均相同，且地址相似或地址相同，且邮编相同但电话不同或邮编不同电话相同
-			t = hash(i.getName().trim() + i.getKindCode().trim() + i.getChain().trim());
-			if (editPart1.get(t) != null&&editPart1.get(t).size()!=0) {
-				for (IxDealershipSource j : editPart1.get(t)) {
-					boolean sameTel = i.getTelephone().equals(j.getTelephone());
-					boolean samePostCode = false;	
-					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
-						samePostCode = i.getPostCode().equals(j.getPostCode());	
-					}
-					if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
-						samePostCode = true;
-					
-					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
-						resultDpAttrDiff = new IxDealershipResult(i);
-						insertList.add(resultDpAttrDiff);
-						
-						resultDpAttrDiff.setDealSrcDiff(4);
-						resultDpAttrDiff.setProvideDate(date);
-
-						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
-
-						dkeyMap.put(j.getSourceId(), "");
-						flag = true;
-						break;
-					}
+				//删除逻辑：分类和品牌均相同
+				t = hash(i.getChain().trim());
+				if (editPart4.get(t) == null) {
+					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
+					dsList.add(i);
+					editPart4.put(t, dsList);
+				} else {
+					editPart4.get(t).add(i);
 				}
-				if (flag)
-					continue;
 			}
-			//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-			t = hash(i.getChain().trim() + i.getTelephone().trim()+ i.getKindCode().trim());
-			if (editPart2.get(t) != null&&editPart2.get(t).size()!=0) {
-				for (IxDealershipSource j : editPart2.get(t)) {
-					boolean sameAddr = i.getAddress().equals(j.getAddress());
-					boolean samePostCode = false;	
-					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
-						samePostCode = i.getPostCode().equals(j.getPostCode());	
-					}				
-					if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
-						samePostCode = true;
+			
+			/**************** 一致,更新,新增  *******************/
+			for (IxDealershipResult i : dealershipResult) {
+				IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
+
+				boolean flag = false;
+				String shortName = (null == i.getNameShort()? "":i.getNameShort());
+				t = hash(i.getName().trim() + i.getAddress().trim()
+						+ i.getTelephone().trim() + i.getPostCode().trim()
+						+ i.getKindCode().trim() +  i.getChain().trim() + shortName.trim());
+
+				/**************** 新旧一致逻辑 *******************/
+				if (mapMatchSame.get(t) != null) {
+					IxDealershipSource j = mapMatchSame.get(t);
+					resultDpAttrDiff = new IxDealershipResult(i);
+					insertList.add(resultDpAttrDiff);
+
+					resultDpAttrDiff.setDealSrcDiff(1);
+					resultDpAttrDiff.setProvideDate(date);
 					
-					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
-						resultDpAttrDiff = new IxDealershipResult(i);
-						insertList.add(resultDpAttrDiff);
-						
-						resultDpAttrDiff.setDealSrcDiff(4);
-						resultDpAttrDiff.setProvideDate(date);
-						
-						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
+					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
-						dkeyMap.put(j.getSourceId(), "");
-
-						flag = true;
-						break;
-					}
+					
+					dkeyMap.put(mapMatchSame.get(t).getSourceId(), "");
+					continue;
 				}
-				if (flag)
-					continue;
-			}
+				/**************** 新旧一致逻辑 *******************/
 
-			//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但邮编不同
-			t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
-			if (editPart3.get(t) != null&&editPart3.get(t).size()!=0) {
-				for (IxDealershipSource j : editPart3.get(t)) {
-					boolean sameName = (i.getName().equals(j.getTelephone())&&i.getNameShort().equals(j.getNameShort()));
-					boolean samePostCode = false;					
-					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
-						samePostCode = i.getPostCode().equals(j.getPostCode());	
-					}				
-					if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
-						samePostCode = true;
-
-					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
+				/**************** 新版较旧版有变更逻辑 *******************/
+				//上传一览表与全国一览表中分类、品牌和名称均相同，且地址相似或地址相同，且邮编相同但电话不同或邮编不同电话相同
+				t = hash(i.getName().trim() + i.getKindCode().trim() + i.getChain().trim());
+				if (editPart1.get(t) != null&&editPart1.get(t).size()!=0) {
+					for (IxDealershipSource j : editPart1.get(t)) {
+						boolean sameTel = i.getTelephone().equals(j.getTelephone());
+						boolean samePostCode = false;	
+						if(i.getPostCode()!=null&&j.getPostCode()!=null){
+							samePostCode = i.getPostCode().equals(j.getPostCode());	
+						}
+						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
+							samePostCode = true;
 						
-						resultDpAttrDiff = new IxDealershipResult(i);
-						insertList.add(resultDpAttrDiff);
+						if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
+							resultDpAttrDiff = new IxDealershipResult(i);
+							insertList.add(resultDpAttrDiff);
+							
+							resultDpAttrDiff.setDealSrcDiff(4);
+							resultDpAttrDiff.setProvideDate(date);
 
-						resultDpAttrDiff.setDealSrcDiff(4);
-						resultDpAttrDiff.setProvideDate(date);
+							updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
-						updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
-
-						dkeyMap.put(j.getSourceId(), "");
-
-						flag = true;
-						break;
+							dkeyMap.put(j.getSourceId(), "");
+							flag = true;
+							break;
+						}
 					}
+					if (flag)
+						continue;
 				}
-				if (flag)
-					continue;
-			}
-			/**************** 新版较旧版有变更逻辑 *******************/
+				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
+				t = hash(i.getChain().trim() + i.getTelephone().trim()+ i.getKindCode().trim());
+				if (editPart2.get(t) != null&&editPart2.get(t).size()!=0) {
+					for (IxDealershipSource j : editPart2.get(t)) {
+						boolean sameAddr = i.getAddress().equals(j.getAddress());
+						boolean samePostCode = false;	
+						if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+							samePostCode = i.getPostCode().equals(j.getPostCode());	
+						}				
+						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
+							samePostCode = true;
+						
+						if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
+							resultDpAttrDiff = new IxDealershipResult(i);
+							insertList.add(resultDpAttrDiff);
+							
+							resultDpAttrDiff.setDealSrcDiff(4);
+							resultDpAttrDiff.setProvideDate(date);
+							
+							updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
 
-			/**************** 新增逻辑 *******************/
-			//上传一览表与全国一览表中品牌相同，且上传一览表中存在，但地址、邮编和电话均不相同
-			t = hash(i.getChain().trim());
-			if (editPart4.get(t) != null&&editPart4.get(t).size()!=0) {
-				for (IxDealershipSource j : editPart4.get(t)) {
-					boolean sameAddress = (i.getAddress().equals(j.getAddress()));
-					boolean samePostCode = false;
-					boolean sameTel = i.getTelephone().equals(j.getTelephone());
-					
-					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
-						samePostCode = i.getPostCode().equals(j.getPostCode());	
-					}				
-					if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
-						samePostCode = true;
-					
-					if ((!sameAddress&&!sameTel&&!samePostCode)) {
+							dkeyMap.put(j.getSourceId(), "");
 
-						resultDpAttrDiff = new IxDealershipResult(i);
+							flag = true;
+							break;
+						}
+					}
+					if (flag)
+						continue;
+				}
+
+				//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但邮编不同
+				t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
+				if (editPart3.get(t) != null&&editPart3.get(t).size()!=0) {
+					for (IxDealershipSource j : editPart3.get(t)) {
+						boolean sameName = (i.getName().equals(j.getTelephone())&&i.getNameShort().equals(j.getNameShort()));
+						boolean samePostCode = false;					
+						if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+							samePostCode = i.getPostCode().equals(j.getPostCode());	
+						}				
+						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
+							samePostCode = true;
+
+						if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
+							
+							resultDpAttrDiff = new IxDealershipResult(i);
+							insertList.add(resultDpAttrDiff);
+
+							resultDpAttrDiff.setDealSrcDiff(4);
+							resultDpAttrDiff.setProvideDate(date);
+
+							updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,j);
+
+							dkeyMap.put(j.getSourceId(), "");
+
+							flag = true;
+							break;
+						}
+					}
+					if (flag)
+						continue;
+				}
+				/**************** 新版较旧版有变更逻辑 *******************/
+
+				/**************** 新增逻辑 *******************/
+				//上传一览表与全国一览表中品牌相同，且上传一览表中存在，但地址、邮编和电话均不相同
+				t = hash(i.getChain().trim());
+				if (editPart4.get(t) != null&&editPart4.get(t).size()!=0) {
+					for (IxDealershipSource j : editPart4.get(t)) {
+						boolean sameAddress = (i.getAddress().equals(j.getAddress()));
+						boolean samePostCode = false;
+						boolean sameTel = i.getTelephone().equals(j.getTelephone());
+						
+						if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+							samePostCode = i.getPostCode().equals(j.getPostCode());	
+						}				
+						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
+							samePostCode = true;
+						
+						if ((!sameAddress&&!sameTel&&!samePostCode)) {
+							flag = true;
+							continue;
+						}else{
+							flag = false;
+							break;
+						}
+					}
+
+					if (flag){
+						resultDpAttrDiff = new IxDealershipResult(i);	
 						if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
 							resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 						}
@@ -290,11 +282,11 @@ public class DiffService {
 							log.info("can not get regionId");
 						}
 						insertList.add(resultDpAttrDiff);
-							
+								
 						resultDpAttrDiff.setDealSrcDiff(3);
 						resultDpAttrDiff.setProvideDate(date);
-
-
+		
+		
 						if(resultDpAttrDiff.getGeometry()==null){
 							String addr = "";
 							if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getProvince())){
@@ -304,75 +296,107 @@ public class DiffService {
 								addr += resultDpAttrDiff.getCity();
 							}
 							addr += resultDpAttrDiff.getAddress();
-							
+								
 							if(BaiduGeocoding.geocoder(addr)!=null){
 								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
 							}else{
 								throw new Exception("无法获取geometry");
 							}
 						}
-						flag = true;
-						break;
+						continue;
 					}
 				}
-				if (flag)
-					continue;
-			}
-			/**************** 新增逻辑 *******************/
+				/**************** 新增逻辑 *******************/
 
-			
-			/**************** 其他逻辑 *******************/
-			resultDpAttrDiff = new IxDealershipResult(i);
-			resultDpAttrDiff.setDealSrcDiff(5);
-			resultDpAttrDiff.setChain(chain);
-			resultDpAttrDiff.setProvideDate(date);
-
-			if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
-				resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
-			}else{
-				log.info("can not get regionId");
-			}
-			insertList.add(resultDpAttrDiff);
-			if(resultDpAttrDiff.getGeometry()==null){
-				String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
-				if(BaiduGeocoding.geocoder(addr)!=null){
-					resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
-				}else{
-					throw new Exception("无法获取geometry");
-				}
-			}
-			/**************** 其他逻辑 *******************/
-			
-			
-
-		}
-		/**************** 一致,更新,新增  *******************/
-
-		/***************** 删除逻辑  ****************/
-		for (IxDealershipSource i : dealershipSources) {
-
-			if ((dkeyMap.get(i.getSourceId()) == null)) {
-				/***************** 删除逻辑 ****************/
-				IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-				updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
-				insertList.add(resultDpAttrDiff);
 				
+				/**************** 其他逻辑 *******************/
+				resultDpAttrDiff = new IxDealershipResult(i);
+				resultDpAttrDiff.setDealSrcDiff(5);
+				resultDpAttrDiff.setChain(chain);
 				resultDpAttrDiff.setProvideDate(date);
 
-				//上传一览表与全国一览表中品牌相同，且全国一览表中存在，但是名称、地址、电话、邮编均不相同
-				if (((sourceNameMap.get(i.getName()) == null)
-						&&(sourceChainMap.get(i.getChain()) != null)
-						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
-						&& (sourcePostCodeMap.get(i.getPostCode()) == null)
-						&& (sourceTelMap.get(i.getTelephone().trim()) == null))) {
-					resultDpAttrDiff.setDealSrcDiff(2);
-				} else
-				/***************** 其他逻辑 ****************/
-				{
-					resultDpAttrDiff.setDealSrcDiff(5);
+				if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+					resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+				}else{
+					log.info("can not get regionId");
+				}
+				insertList.add(resultDpAttrDiff);
+				if(resultDpAttrDiff.getGeometry()==null){
+					String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
+					if(BaiduGeocoding.geocoder(addr)!=null){
+						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					}else{
+						throw new Exception("无法获取geometry");
+					}
+				}
+				/**************** 其他逻辑 *******************/
+				
+				
+
+			}
+			/**************** 一致,更新,新增  *******************/
+
+			/***************** 删除逻辑  ****************/
+			for (IxDealershipSource i : dealershipSources) {
+
+				if ((dkeyMap.get(i.getSourceId()) == null)) {
+					/***************** 删除逻辑 ****************/
+					IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
+					updateIxDealershipResultWithIxDealershipSource(resultDpAttrDiff,i);
+					insertList.add(resultDpAttrDiff);
+					
+					resultDpAttrDiff.setProvideDate(date);
+
+					//上传一览表与全国一览表中品牌相同，且全国一览表中存在，但是名称、地址、电话、邮编均不相同
+					if (((sourceNameMap.get(i.getName()) == null)
+							&&(sourceChainMap.get(i.getChain()) != null)
+							&& (sourceAddrMap.get(i.getAddress().trim()) == null)
+							&& (sourcePostCodeMap.get(i.getPostCode()) == null)
+							&& (sourceTelMap.get(i.getTelephone().trim()) == null))) {
+						resultDpAttrDiff.setDealSrcDiff(2);
+					} else
+					/***************** 其他逻辑 ****************/
+					{
+						resultDpAttrDiff.setDealSrcDiff(5);
+					}
 				}
 			}
 		}
+		//source内没有数据，一览表内全部新增
+		else{
+			for (IxDealershipResult i : dealershipResult) {
+				IxDealershipResult resultDpAttrDiff = new IxDealershipResult(i);	
+				if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
+					resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
+				}
+				else{
+					log.info("can not get regionId");
+				}
+				insertList.add(resultDpAttrDiff);
+						
+				resultDpAttrDiff.setDealSrcDiff(3);
+				resultDpAttrDiff.setProvideDate(date);
+
+
+				if(resultDpAttrDiff.getGeometry()==null){
+					String addr = "";
+					if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getProvince())){
+						addr += resultDpAttrDiff.getProvince();
+					}
+					if(!resultDpAttrDiff.getAddress().contains(resultDpAttrDiff.getCity())){
+						addr += resultDpAttrDiff.getCity();
+					}
+					addr += resultDpAttrDiff.getAddress();
+						
+					if(BaiduGeocoding.geocoder(addr)!=null){
+						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					}else{
+						throw new Exception("无法获取geometry");
+					}
+				}
+			}
+		}
+
 		log.info("Table Diff End");
 
 		resultMap.put(1, insertList);		

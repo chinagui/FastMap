@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -388,58 +390,101 @@ public class NiValExceptionSelector {
 	 * @param pageSize
 	 * @param pageNum
 	 * @param flag
-	 *            0 待处理 1 例外 2 确认(修改 和 不修改)
+	 *            0 全部 1 待处理 2确认修改 3 确认不修改 4 例外 5 未质检 6 已质检
+	 * @parm level 0 全部 1 错误 2 警告 3 提示
+	 * @param ruleId
+	 *            规则号
 	 * @return
 	 * @throws Exception
 	 */
 	public Page list(int subtaskType, Collection<String> grids,
-			final int pageSize, final int pageNum, int flag) throws Exception {
+			final int pageSize, final int pageNum, int flag, String ruleId,
+			int level) throws Exception {
 
 		Clob pidsClob = ConnectionUtil.createClob(conn);
 		pidsClob.setString(1, StringUtils.join(grids, ","));
+		StringBuilder sql1 = new StringBuilder(
+				"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
+						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+						+ "worker,qa_worker,qa_status from ni_val_exception a where a.md5_code in (select b.md5_code from ni_val_exception_grid b,"
+						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
+		StringBuilder sql4 = new StringBuilder(
+				"select a.md5_code,rule_id as ruleid,situation,rank level_,1 state,"
+						+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x) x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
+						+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
+						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
+		StringBuilder sql3 = new StringBuilder(
+				"select a.md5_code,rule_id as ruleid,situation,rank level_,2 state,"
+						+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x )x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
+						+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
+						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
+		StringBuilder sql2 = new StringBuilder(
+				"   select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
+						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+						+ "worker ,qa_worker,qa_status from ni_val_exception_history a where a.md5_code in (select b.md5_code from ni_val_exception_history_grid b,"
+						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
+
 		StringBuilder sql = null;
+		if (StringUtils.isNotEmpty(ruleId)) {
+			sql1 = sql1.append(" AND  ruleid  = '" + ruleId + "' ");
+			sql2 = sql2.append(" AND ruleid  = '" + ruleId + "' ");
+			sql3 = sql3.append(" AND rule_id  = '" + ruleId + "' ");
+			sql4 = sql4.append(" AND rule_id  = '" + ruleId + "' ");
+		}
+		if (level != 0) {
+			sql1 = sql1.append(" AND \"LEVEL\"  = " + level + " ");
+			sql2 = sql2.append(" AND  \"LEVEL\"  = " + level + " ");
+			sql3 = sql3.append(" AND rank  = " + level + " ");
+			sql4 = sql4.append(" AND rank  = " + level + " ");
+		}
+
 		if (flag == 0) {
-			sql = new StringBuilder(
-					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
-							+ "worker,qa_worker,qa_status from ni_val_exception a where a.md5_code in (select b.md5_code from ni_val_exception_grid b,"
-							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-							+ "where b.grid_id =grid_table.COLUMN_VALUE)");
+			sql = sql1.append(" union all ").append(sql2).append(" union all ")
+					.append(sql3).append(" union all ").append(sql4);
 		}
 		if (flag == 1) {
-			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,rank level_,1 state,"
-							+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x) x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
-							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-							+ "where b.grid_id =grid_table.COLUMN_VALUE)");
-
+			sql = sql1;
 		}
 		if (flag == 2) {
-			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,rank level_,2 state,"
-							+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x )x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
-							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-							+ "where b.grid_id =grid_table.COLUMN_VALUE)"
-							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
-							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where a.md5_code in (select b.md5_code from ni_val_exception_history_grid b,"
-							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-							+ "where b.grid_id =grid_table.COLUMN_VALUE)");
+			sql = sql2;
+		}
+		if (flag == 3) {
+			sql = sql3;
+		}
+		if (flag == 4) {
+			sql = sql4;
+		}
+		if (flag == 5) {
+			sql1 = sql1.append(" AND qa_status  = " + 2 + " ");
+			sql2 = sql2.append(" AND qa_status  = " + 2 + " ");
+			sql3 = sql3.append(" AND qa_status  = " + 2 + " ");
+			sql4 = sql4.append(" AND qa_status  = " + 2 + " ");
+			sql = sql1.append(" union all ").append(sql2).append(" union all ")
+					.append(sql3).append(" union all ").append(sql4);
+		}
+		if (flag == 6) {
+			sql1 = sql1.append(" AND qa_status  = " + 1 + " ");
+			sql2 = sql2.append(" AND qa_status  = " + 1 + " ");
+			sql3 = sql3.append(" AND qa_status  = " + 1 + " ");
+			sql4 = sql4.append(" AND qa_status  = " + 1 + " ");
+			sql = sql1.append(" union all ").append(sql2).append(" union all ")
+					.append(sql3).append(" union all ").append(sql4);
 		}
 
-		if (subtaskType == 0 || subtaskType == 5 || subtaskType == 6
-				|| subtaskType == 7) {
-			sql.append(" and EXISTS ("
-					+ " SELECT 1 FROM CK_RESULT_OBJECT O "
-					+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
-					+ "   AND O.MD5_CODE=a.MD5_CODE)");
-		}
+		// 道路检查排除POI
+		sql.append(" and NOT EXISTS ("
+				+ " SELECT 1 FROM CK_RESULT_OBJECT O "
+				+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
+				+ "   AND O.MD5_CODE=a.MD5_CODE)");
 
 		sql.append(" order by created desc,md5_code desc");
+		log.info("sql ====" + sql.toString());
 		Page page = null;
-		if (flag == 2) {
+		if (flag == 0 || flag == 5 || flag == 6) {
 			page = new QueryRunner().query(pageNum, pageSize, conn,
 					sql.toString(), new ResultSetHandler<Page>() {
 
@@ -447,7 +492,7 @@ public class NiValExceptionSelector {
 						public Page handle(ResultSet rs) throws SQLException {
 							return handResult(pageNum, pageSize, rs);
 						}
-					}, pidsClob, pidsClob);
+					}, pidsClob, pidsClob, pidsClob, pidsClob);
 		} else {
 			page = new QueryRunner().query(pageNum, pageSize, conn,
 					sql.toString(), new ResultSetHandler<Page>() {
@@ -950,7 +995,9 @@ public class NiValExceptionSelector {
 	 * @date 2017年6月23日 下午4:07:22 
 	 */
 	public Page listPoiCheckResultList(JSONObject params,int subtaskId) throws Exception {
+		log.info(" begin time"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 		Page p = null ;
+		QueryRunner run = null;
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
 		
@@ -960,9 +1007,10 @@ public class NiValExceptionSelector {
 		}
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
-		List<Long> pids = getCheckPidList(conn,subtaskId);
+		List<Integer> pids = getCheckPidList(conn,subtaskId);
+		
 		log.info("pids :"+pids.size());
-				
+		try {		
 		if(pids !=  null && pids.size() > 0){
 			String orderSql ="";
 			com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
@@ -990,23 +1038,23 @@ public class NiValExceptionSelector {
 						+ "from "
 							+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
 						+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+							+ " and O.pid in (select column_value from table(clob_to_table(?)) "
 							+ ") "
 						+ " union all "
 						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status,O.PID "
 						+ "from "
 						+ "ck_exception c , CK_RESULT_OBJECT O "
 							+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-							+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+							+ " and O.pid in (select column_value from table(clob_to_table(?)) "
 							+ " )  "
 					+ " )  b  "+ orderSql
 					+ " ) T  WHERE ROWNUM <= ? ) q  WHERE q.ROWNO >= ? ");
 		
-		Clob clob = conn.createClob();
+		Clob clob = ConnectionUtil.createClob(conn);
 		clob.setString(1, StringUtils.join(pids, ","));
 		
 		log.info("poiCheckResultList:  " + sql);
-		QueryRunner run = new QueryRunner();
+		run = new QueryRunner();
 
 		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
 			public Page handle(ResultSet rs) throws SQLException {
@@ -1049,29 +1097,35 @@ public class NiValExceptionSelector {
 					json.put("qa_status", rs.getString("qa_status"));
 
 					JSONArray refFeaturesArr = new JSONArray();
-//					int refPoiCount = 0;
 					
 					if(targets != null && StringUtils.isNotEmpty(targets)){
 						
 						String pids =targets.replaceAll("[\\[\\]]","").replaceAll("IX_POI,", "").replaceAll(";", ","); 
+						System.out.println(pids +" "+rs.getInt("pid"));
 						refFeaturesArr= queryRefFeatures(pids,rs.getInt("pid"));
 					}
 					// 查询关联poi根据pid
 					json.put("refFeatures", refFeaturesArr);
 					json.put("refCount", refFeaturesArr.size());
 					results.add(json);
+					System.out.println("json: "+ json);
 				}
 				page.setTotalCount(total);
 				page.setResult(results);
+				
 				return page;
 			}
 		};
-
 		p = run.query(conn, sql.toString(),new Object[]{clob,clob,pageEndNum,pageStartNum}, rsHandler3);
 		
 		}
-			return p;
-		
+		log.info(" end time"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+		return p;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			
+		}
 	}
 	
 	/**
@@ -1087,7 +1141,7 @@ public class NiValExceptionSelector {
 	 */
 	private int getListPoiResultCount(Connection conn,int subtaskId) throws Exception {
 		
-		List<Long> pids = getCheckPidList(conn,subtaskId);
+		List<Integer> pids = getCheckPidList(conn,subtaskId);
 		int poiResCount = 0;
 		if(pids != null && pids.size() > 0){
 			try{
@@ -1122,7 +1176,7 @@ public class NiValExceptionSelector {
 				
 			}catch(Exception e){
 				log.error("行编获取检查数据报错", e);
-				DbUtils.rollbackAndCloseQuietly(conn);
+//				DbUtils.rollbackAndCloseQuietly(conn);
 				throw new Exception(e);
 			}
 		}
@@ -1141,8 +1195,8 @@ public class NiValExceptionSelector {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年6月23日 下午4:14:11 
 	 */
-	private List<Long> getCheckPidList(Connection conn,int subtaskId) throws Exception {
-		List<Long> pids = null;
+	private List<Integer> getCheckPidList(Connection conn,int subtaskId) throws Exception {
+		List<Integer> pids = null;
 		try{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
@@ -1156,14 +1210,16 @@ public class NiValExceptionSelector {
 					+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
 					+ "                           'mask=anyinteract') = 'TRUE'";
+			
+			log.info("getCheckPidList sql: "+sql);
 			QueryRunner run=new QueryRunner();
-			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
+			pids=run.query(conn, sql,new ResultSetHandler<List<Integer>>(){
 
 				@Override
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					List<Long> pids =new ArrayList<Long>();
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> pids =new ArrayList<Integer>();
 					while (rs.next()) {
-						pids.add(rs.getLong("PID"));						
+						pids.add(rs.getInt("PID"));						
 					}
 					return pids;
 				}});

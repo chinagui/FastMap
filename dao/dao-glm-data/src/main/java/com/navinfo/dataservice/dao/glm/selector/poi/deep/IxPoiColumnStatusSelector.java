@@ -383,6 +383,55 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	
 	
 	/**
+	 * 根据指定的poi列表，找到存在别名作业项的数据
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getHasAliasItemPids(List<Integer> pids, String secondWorkItem,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT w.pid");
+		sb.append(" FROM POI_COLUMN_STATUS w");
+		sb.append(" WHERE w.work_item_id='" + secondWorkItem + "'");
+		sb.append(" AND w.handler=" + userId +" ");
+		sb.append("   AND w.PID in (");
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			List<Integer> hasAliasItemPids = new ArrayList<Integer>();
+
+			while (resultSet.next()) {
+				hasAliasItemPids.add(resultSet.getInt("pid"));
+			}
+
+			return hasAliasItemPids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
+	/**
 	 * 查询该作业员名下未提交数据的rowId
 	 * 
 	 * @param status

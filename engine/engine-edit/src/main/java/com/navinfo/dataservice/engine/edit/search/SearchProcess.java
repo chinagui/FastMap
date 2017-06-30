@@ -839,6 +839,38 @@ public class SearchProcess {
 
 	}
 
+	public JSONObject searchInfoByTileWithGap(List<ObjType> types, int x,
+			int y, int z, int gap) throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		SearchFactory factory = new SearchFactory(conn);
+
+		try {
+
+			for (ObjType type : types) {
+				List<SearchSnapshot> list = null;
+
+					ISearch search = factory.createSearch(type);
+					list = search.searchDataByTileWithGap(x, y, z, gap);
+				JSONArray array = new JSONArray();
+
+				for (SearchSnapshot snap : list) {
+
+					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+				}
+
+				json.accumulate(type.toString(), array, getJsonConfig());
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+		}
+		return json;
+	}
+
 	public static void main(String[] args) {
 		Map<String, String> map = new HashMap<String, String>();
 		JSONObject object = new JSONObject();
@@ -852,6 +884,5 @@ public class SearchProcess {
 		 * System.out.println(JSONObject.fromObject(map));
 		 */
 		System.out.println(JSONArray.fromObject(map));
-
 	}
 }

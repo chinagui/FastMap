@@ -1332,7 +1332,7 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' and  r.result_id<>%d ",poiNum,resultId);
+				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id<>r.source_id and s.cfm_poi_num='%s' and  r.result_id=%d ",poiNum,resultId);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}

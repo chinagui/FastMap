@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: Test 
@@ -225,6 +226,19 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
+	@Test
+	public void testImportPoiToRegionDb() throws Exception{
+		JobScriptsInterface.initContext();
+		
+		JSONObject request = new JSONObject();
+		request.put("sourceDbId", 122);
+		request.put("targetDbId", 123);
+		request.put("dblink", "FM_DB_122");
+		ImportPoiToRegionDb.execute(request);
+
+		System.out.println("Over.");
+		System.exit(0);
+	}
 	public static void main(String[] args) throws ParseException {
 		Set<String> grids = new HashSet<String>();
 		grids.add("48580601");

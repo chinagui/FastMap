@@ -233,7 +233,6 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		JSONObject request = new JSONObject();
 		request.put("sourceDbId", 122);
 		request.put("targetDbId", 123);
-		request.put("dblink", "FM_DB_122");
 		ImportPoiToRegionDb.execute(request);
 
 		System.out.println("Over.");

@@ -843,16 +843,17 @@ public class GeoTranslator {
 	 * @throws Exception
 	 */
 	public static LineString reformGeomtryByNode(LineString geometry, Set<Point> breakPoints) throws Exception {
-		Coordinate[] coordinates = GeoTranslator.transform(geometry, 0.00001, 5).getCoordinates();
+		Coordinate[] coordinates = GeoTranslator.transform(geometry, 100000, 5).getCoordinates();
 		List<Coordinate> coors = new ArrayList<Coordinate>();
 		Collections.addAll(coors, coordinates);
 
 		for(Point point: breakPoints){
+			point = (Point) GeoTranslator.transform(point, 100000, 5);
 			//打断点
 			Coordinate breakPoint = new Coordinate(point.getX(),point.getY());
 			
 			//打断点对应的垂足点
-			Coordinate pedalCoor = GeometryUtils.getLinkPedalPointOnLine(breakPoint, GeoTranslator.transform(geometry, 0.00001, 5));
+			Coordinate pedalCoor = GeometryUtils.getLinkPedalPointOnLine(breakPoint, GeoTranslator.transform(geometry, 100000, 5));
 			
 			for (int i = 0; i < coors.size() - 1; i++) {
 				Coordinate pointS = coors.get(i);
@@ -869,7 +870,7 @@ public class GeoTranslator {
 		}//for
 		
 		Coordinate[] c = (Coordinate[]) coors.toArray(new Coordinate[coors.size()]);
-		return (LineString) GeoTranslator.transform(geoFactory.createLineString(c),1, 5);
+		return (LineString) GeoTranslator.transform(geoFactory.createLineString(c),0.00001, 5);
 	}
 	
 	

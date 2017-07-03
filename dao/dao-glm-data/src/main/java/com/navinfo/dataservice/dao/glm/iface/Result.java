@@ -12,7 +12,7 @@ import net.sf.json.JSONObject;
 /**
  * 操作结果
  */
-public class Result implements ISerializable {
+public class Result implements ISerializable, Cloneable {
 
 	private int primaryPid;
 	
@@ -332,4 +332,13 @@ public class Result implements ISerializable {
 			}
 		}
 	}
+
+    @Override
+    public Result clone() throws CloneNotSupportedException {
+        Result result = (Result) super.clone();
+        result.listAddIRow = (List<IRow>) ((ArrayList) this.listAddIRow).clone();
+        result.listDelIRow = (List<IRow>) ((ArrayList) this.listDelIRow).clone();
+        result.listUpdateIRow = (List<IRow>) ((ArrayList) this.listUpdateIRow).clone();
+        return result;
+    }
 }

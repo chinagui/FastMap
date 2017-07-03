@@ -8,6 +8,7 @@ import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1086,11 +1087,20 @@ public abstract class MeshUtils {
     	return new double[]{minPoint[0],minPoint[1],maxPoint[2],maxPoint[3]};
     }
     public static int[] getMinMaxInteger(Set<Integer> set){
-
     	Integer max = Collections.max(set);
     	Integer min = Collections.min(set);
         return new int[]{min, max};
     }
+
+    public static String[] geometry2Mesh(Geometry geometry) {
+        Set<String> result = new HashSet<>();
+        Coordinate[] coordinates = geometry.getCoordinates();
+        for (Coordinate coordinate : coordinates) {
+            result.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+        }
+        return result.toArray(new String[]{});
+    }
+
     public static void main(String[] args) throws Exception {
 		Set<Integer> meshes = new HashSet<Integer>();
 		meshes.add(595671);

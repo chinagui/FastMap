@@ -1,13 +1,18 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.topobreakin;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -19,9 +24,21 @@ import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelect
 
 public class Check {
 	private Connection conn;
+	private RdRestrictionSelector restrictionSelector;
+	private RdLaneConnexitySelector laneSelector;
+	private RdVoiceguideSelector rdVoiceSelector;
+	private RdBranchSelector branchSelector;
+	private RdDirectrouteSelector directrouteSelector;
 
 	public Check(Connection conn) {
 		this.conn = conn;
+
+		restrictionSelector = new RdRestrictionSelector(conn);
+		laneSelector = new RdLaneConnexitySelector(conn);
+		rdVoiceSelector = new RdVoiceguideSelector(conn);
+		branchSelector = new RdBranchSelector(conn);
+		directrouteSelector = new RdDirectrouteSelector(conn);
+
 	}
 
 	/**
@@ -43,17 +60,10 @@ public class Check {
 		} // for
 	}
 
-	private RdRestrictionSelector restrictionSelector = new RdRestrictionSelector(conn);
-	private RdLaneConnexitySelector laneSelector = new RdLaneConnexitySelector(conn);
-	private RdVoiceguideSelector rdVoiceSelector = new RdVoiceguideSelector(conn);
-	private RdBranchSelector branchSelector = new RdBranchSelector(conn);
-	private RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
-
 	/**
 	 * 检查需打断link中是否有车信，交限，语音引导，分歧，顺行，自然语音引导的经过线
 	 * 
 	 * @param command
-	 * @param conn
 	 * @throws Exception
 	 */
 	public void checkLineRelationWithPassLine(Command command) throws Exception {
@@ -132,6 +142,40 @@ public class Check {
 				throw new Exception("选中的打断点处存在顺行进入退出线信息，请重新选择打断位置");
 			}
 		}
+	}
+
+	/**
+	 * 前检查：两条RDLink不能首尾点一致，如果自动打断造成两条link首尾一致，则不允许打断
+	 * 
+	 * @param noNeedBreakLinks
+	 *            不需要打断的links（需要参与检查）
+	 * @param insertObjs
+	 *            打断后新生成的对象（link需要参与检查）
+	 * @throws Exception
+	 */
+	public void CheckTopoBreakHasSameSEnode(List<IRow> noNeedBreakLinks, List<IRow> insertObjs) throws Exception {
+		List<RdLink> breakLinks = new ArrayList<>();
+		if (noNeedBreakLinks.size() != 0) {
+			insertObjs.addAll(noNeedBreakLinks);
+		}
+
+		for (IRow row : insertObjs) {
+			if (row.objType() != ObjType.RDLINK) {
+				continue;
+			}
+			breakLinks.add((RdLink) row);
+		}
+
+		for (int i = 0; i < breakLinks.size(); i++) {
+			for (int j = i + 1; j < breakLinks.size(); j++) {
+				if ((breakLinks.get(i).getsNodePid() == breakLinks.get(j).getsNodePid()
+						&& breakLinks.get(i).geteNodePid() == breakLinks.get(j).geteNodePid())
+						|| (breakLinks.get(i).getsNodePid() == breakLinks.get(j).geteNodePid()
+								&& breakLinks.get(i).geteNodePid() == breakLinks.get(j).getsNodePid())) {
+					throw new Exception("两条RDLink不能首尾点一致，如果自动打断造成两条link首尾一致，则不允许打断!");
+				}
+			} // for j
+		} // for i
 	}
 
 }

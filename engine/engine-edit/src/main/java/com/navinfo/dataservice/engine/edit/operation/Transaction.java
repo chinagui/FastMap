@@ -1956,6 +1956,9 @@ public class Transaction {
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
+
+            // 执行后检查
+            process.postCheck();
         } catch (Exception e) {
             logger.error(String.format("%s操作失败，数据库进行回滚，requester: %s", objType, requester), e);
             for (AbstractProcess process : processes) {

@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.diff.scanner;
 
-import java.util.List;
-
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /**
@@ -12,6 +11,6 @@ import com.navinfo.dataservice.diff.exception.DiffException;
  */
 public interface DiffScanner
 {
-	public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException;
+	public int scan(GlmTable table,DataAccess leftAccess,DataAccess rightAccess)throws DiffException;
 
 }

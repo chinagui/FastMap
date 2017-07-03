@@ -3,6 +3,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.dataservice.diff.job.DiffJob;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -27,7 +28,11 @@ public class PLSQLDiffScanner implements DiffScanner
 
 
     @Override
-    public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    public int scan(GlmTable table,DataAccess leftAccess,DataAccess rightAccess)throws DiffException{
+
+    	String leftTableFullName = leftAccess.accessTable(table);
+    	String rightTableFullName = rightAccess.accessTable(table);
+    	
     	return scanLeftAddData(table,leftTableFullName,rightTableFullName)+
     	scanRightAddData(table,leftTableFullName,rightTableFullName)+
     	scanUpdateData(table,leftTableFullName,rightTableFullName);

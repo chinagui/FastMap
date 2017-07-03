@@ -56,6 +56,7 @@ public class GdbImportJob extends AbstractJob {
 			String tempTable = logSelector.select();
 			response("履历选择完成",null);
 			//2. 履历刷库
+			
 			DbInfo tarDbInfo = datahub.getDbById(req.getTargetDbId());
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDbInfo.getConnectParam()));

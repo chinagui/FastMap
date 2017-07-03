@@ -160,7 +160,7 @@ public class Check {
 		}
 
 		for (IRow row : insertObjs) {
-			if (row.objType() != ObjType.RDLINK || row.status() == ObjStatus.DELETE) {
+			if (row.objType() != ObjType.RDLINK) {
 				continue;
 			}
 			breakLinks.add((RdLink) row);

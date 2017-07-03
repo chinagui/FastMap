@@ -197,4 +197,34 @@ public class TaskProgressOperation {
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	public static void insert(Connection conn,TaskProgress bean) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "INSERT INTO TASK_PROGRESS P"
+					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID, PARAMETER, OPERATOR)"
+					+ "VALUES"
+					+ "  ("+bean.getTaskId()+",2, 0, SYSDATE, "+bean.getPhaseId()+",'"+bean.getParameter()+"',"+bean.getOperator()+")" ;
+			run.update(conn, selectSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("insert TaskProgressOperation，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static void updateTaskProgress(Connection conn, TaskProgress bean)  throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "UPDATE TASK_PROGRESS SET STATUS = 0, PHASE = 2, "
+					+ "OPERATOR = "+bean.getOperator()+", "
+					+ "PARAMETER = '"+bean.getParameter()+"'  WHERE TASK_ID = "+bean.getTaskId();
+			log.info("endProgress:"+sql);
+			run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("endProgress失败，原因为:"+e.getMessage(),e);
+		}
+	}
 }

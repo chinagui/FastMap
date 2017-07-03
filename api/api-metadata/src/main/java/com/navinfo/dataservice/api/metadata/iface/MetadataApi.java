@@ -431,5 +431,12 @@ public interface MetadataApi {
 	
 	 //获取元数据库中重要POI的数据
 	public List<Integer> queryImportantPid() throws SQLException;
+	
+	 /**
+	  * @param reliability范围
+	  * @return List<pid>
+	  * 
+	  * */
+	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 
 }

@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.sql.Clob;
+import java.sql.Timestamp;
+
 public class TaskProgress {
 	public int getPhaseId() {
 		return phaseId;
@@ -50,4 +53,19 @@ public class TaskProgress {
 	private int createUserId;
 	private String message;
 	private Long operator;
+	private Clob parameter;
+	public Clob getParameter() {
+		return parameter;
+	}
+
+	public void setParameter(Clob parameter) {
+		this.parameter = parameter;
+	}
+	public Timestamp getCreatDate() {
+		return creatDate;
+	}
+	public void setCreatDate(Timestamp creatDate) {
+		this.creatDate = creatDate;
+	}
+	private Timestamp creatDate;
 }

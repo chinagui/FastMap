@@ -183,7 +183,7 @@ public class GlmCache {
 	}
 	
 	public static void main(String[] args){
-		Glm glm = GlmCache.getInstance().getGlm("250+");
+		Glm glm = GlmCache.getInstance().getGlm("270+");
 		Map<String,GlmTable> tables = glm.getEditTables();
 		
 		for(String name:tables.keySet()){

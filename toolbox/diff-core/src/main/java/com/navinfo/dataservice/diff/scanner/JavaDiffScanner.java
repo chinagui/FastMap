@@ -47,8 +47,9 @@ public class JavaDiffScanner implements DiffScanner
         	int cd = scanRightAddData(conn,table,leftTableFullName,rightTableFullName);
         	int cu = scanUpdateData(conn,table,leftTableFullName,rightTableFullName);
         	//obj pid
-        	computeObjPid(conn,table,leftAccess,rightAccess);
-            
+        	if((ca+cd+cu)>0){
+            	computeObjPid(conn,table,leftAccess,rightAccess);
+        	}
         	conn.commit();
         	return ca+cd+cu;
     	}catch(Exception e){
@@ -77,7 +78,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',1,ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
         	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
         	sb.append(" FROM ");
@@ -109,7 +110,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',2,ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
         	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
         	sb.append(" FROM ");
@@ -150,7 +151,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',3,L.ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
         	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":("L."+table.getObjPidCol()));
         	sb.append(" FROM ");

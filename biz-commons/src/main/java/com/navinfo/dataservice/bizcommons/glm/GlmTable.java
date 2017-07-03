@@ -49,10 +49,28 @@ public class GlmTable {
 	 * @return
 	 */
 	public String getObjName() {
+//		if(maintable){
+//			return name;
+//		}else{
+//			if(objRefTable==null){
+//				return null;
+//			}else{
+//				return objRefTable.getObjName();
+//			}
+//		}
 		if(maintable){
 			return name;
+		}
+		if(objRefTable==null){
+			return null;
 		}else{
-			return objRefTable.getObjName();
+			if(objRefTable.isMaintable()){
+				return objRefTable.getName();
+			}else if(objRefTable.getObjRefTable()!=null){
+				return objRefTable.getObjRefTable().getName();
+			}else{
+				return null;
+			}
 		}
 	}
 

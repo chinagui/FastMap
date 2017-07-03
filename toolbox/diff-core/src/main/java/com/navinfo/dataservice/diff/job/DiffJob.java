@@ -82,8 +82,6 @@ public class DiffJob extends AbstractJob
 			logOpGen.generate(actId);
 			if(logTables.size()>0){
 				fillLogDetailOldNew();
-				fillLogDetailOb();
-				fillLogDetailGeo();
 				calcLogDetailGrid();
 			}
 			response("完整履历填充完成。",null);
@@ -231,13 +229,6 @@ public class DiffJob extends AbstractJob
 					.getExceptions().get(0));
 		log.debug("各生成履历任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 	}
-	protected void fillLogDetailOb(){
-		
-	}
-	protected void fillLogDetailGeo(){
-		
-	}
-
 
 	protected void initPoolExecutor() {
 		// int poolSize = config.getThreadCount();

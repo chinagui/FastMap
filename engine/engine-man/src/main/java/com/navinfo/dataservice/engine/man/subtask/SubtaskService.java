@@ -3168,6 +3168,7 @@ public class SubtaskService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT DISTINCT s.subtask_id,s.name FROM SUBTASK S WHERE S.TASK_ID ="+taskId);
 			sb.append(" AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
+			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
 
 			String selectSql= sb.toString();
 			log.info("unPlanQualitylist sql :" + selectSql);

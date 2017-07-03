@@ -85,6 +85,7 @@ public class DiffJob extends AbstractJob
 				calcLogDetailGrid();
 			}
 			response("完整履历填充完成。",null);
+			this.exeResultMsg="本次差分履历action_id为："+actId+"。";
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);

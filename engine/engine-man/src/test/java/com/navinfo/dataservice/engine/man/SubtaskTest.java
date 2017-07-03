@@ -171,4 +171,19 @@ public class SubtaskTest extends InitApplication{
 	{
 		System.out.println(SubtaskService.getInstance().qualitylist(362));
 	}
+	
+		@Test
+	public void testQueryListReferByWkt() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter = "{\"blockId\":0,\"wkt\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		System.out.println(service.queryListReferByWkt(dataJson)); 
+	}
 }

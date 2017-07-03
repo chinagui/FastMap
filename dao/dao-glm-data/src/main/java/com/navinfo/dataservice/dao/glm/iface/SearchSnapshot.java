@@ -68,6 +68,23 @@ public class SearchSnapshot implements ISerializable {
 		return false;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+
+		if (obj instanceof SearchSnapshot) {
+			SearchSnapshot snapshot = (SearchSnapshot) obj;
+
+			if (snapshot.getI() == this.getI()) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+
+	}
+
 	public int getT() {
 		return t;
 	}

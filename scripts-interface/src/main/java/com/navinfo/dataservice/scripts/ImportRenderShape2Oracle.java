@@ -20,6 +20,10 @@ import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.scripts.model.VectorTabSuspect;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.io.WKTReader;
 
 /** 
  * @ClassName: ImportRenderShape2Oracle
@@ -42,7 +46,7 @@ public class ImportRenderShape2Oracle {
 			}
 
 			String shapeFile = args[0];
-//			String shapeFile = "F:\\shapefile\\road_out.shp";
+//			String shapeFile = "F:\\shapefile\\leshan\\road_out.shp";
 
 			imp(shapeFile);
 			
@@ -60,6 +64,7 @@ public class ImportRenderShape2Oracle {
 		PreparedStatement stmt = null;
 		try{
 
+			WKTReader r = new WKTReader();
 			DbInfo manInfo = DbService.getInstance().getOnlyDbByBizType("fmRender");
 
 			OracleSchema manSchema = new OracleSchema(
@@ -82,14 +87,32 @@ public class ImportRenderShape2Oracle {
 					int id = vts.getId();
 					String geo = vts.getGeometry();
 					if(geo != null ){
-						Clob clob = ConnectionUtil.createClob(conn);
-						clob.setString(1, geo);
-						run.update(conn, insCitySql,id,clob);
-						conn.commit();
-						count++;
+						Geometry geo_mls = r.read(geo);
+//				        System.out.println(geo_mls.getGeometryType());
+				        if(geo_mls instanceof MultiLineString){
+//				        	LineString[] lineStrings = new LineString[geo_mls.getNumGeometries()];	
+				        	for (int k = 0; k < geo_mls.getNumGeometries(); k++) {
+				    			LineString ls = (LineString) geo_mls.getGeometryN(k);
+//				    			System.out.println(ls);
+				    			Clob clob = ConnectionUtil.createClob(conn);
+								clob.setString(1, ls.toString());
+								run.update(conn, insCitySql,id,clob);
+								conn.commit();
+								count++;
+				    		}
+				        }else if(geo_mls instanceof LineString){
+				        	Clob clob = ConnectionUtil.createClob(conn);
+							clob.setString(1, geo_mls.toString());
+							run.update(conn, insCitySql,id,clob);
+							conn.commit();
+							count++;
+				        }
+						
 //						System.out.println(count);
 					}
-					
+					/*if(count > 1000){
+						break;
+					}*/
 				}
 				System.out.println("count: "+count);
 			}
@@ -111,7 +134,7 @@ public class ImportRenderShape2Oracle {
         try {  
         	vtsList = new ArrayList<VectorTabSuspect>();
         	
-            ShapefileDataStore sds = (ShapefileDataStore)dataStoreFactory.createDataStore(new File("F:\\shapefile\\road_out.shp").toURI().toURL());  
+            ShapefileDataStore sds = (ShapefileDataStore)dataStoreFactory.createDataStore(new File(shapeFile).toURI().toURL());  
             sds.setCharset(Charset.forName("GBK"));  
             SimpleFeatureSource featureSource = sds.getFeatureSource();  
             SimpleFeatureIterator itertor = featureSource.getFeatures().features();  

@@ -8,12 +8,17 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AgentUtils {
+	
+	protected static Logger log = LoggerRepos.getLogger(AgentUtils.class);
 
 	/**
 	 * [
@@ -50,9 +55,9 @@ public class AgentUtils {
 			JSONArray jsa = new JSONArray();
 			for (StatInfo statInfo : datas) {
 				JSONObject jso = JSONObject.fromObject(statInfo);
-				System.out.println(jso);
 				jsa.add(jso);
 			}
+			log.debug("监控系统推送的数据:"+jsa.toString());
 			client = ClientBuilder.newClient();
 			Entity<String> payload = Entity.json(jsa.toString());
 			String url = "http://192.168.4.110:1988/v1/push";

@@ -1781,7 +1781,39 @@ public class Transaction {
     private Result filterResult(Result sourceResult) throws Exception {
         Result result = sourceResult.clone();
 
+        removeInvalidData(result.getAddObjects(), result.getListAddIRowObPid());
+        removeInvalidData(result.getUpdateObjects(), result.getListUpdateIRowObPid());
+        removeInvalidData(result.getDelObjects(), result.getListDelIRowObPid());
+
         return result;
+    }
+
+    /**
+     * 删除跨大区无效数据
+     * @param rows
+     * @param pids
+     */
+    private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
+        StringBuffer patter = new StringBuffer("^(");
+
+        patter.append("RD_LINK|RD_NODE");
+        patter.append("|AD_|ZONE_|LC_|LU_");
+        patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
+        patter.append("|RD_WARINGINFO|RD_LINK_WARING");
+        patter.append("|RD_ELECTRONICEYE|RD_ELECEYE_PAIR|RD_ELECEYE_PART");
+
+        patter.append(").*");
+
+        Iterator<IRow> rowIterator = rows.iterator();
+        Iterator<Integer> pidIterator = pids.iterator();
+        while (rowIterator.hasNext()) {
+            IRow row = rowIterator.next();
+            String tableName = row.tableName().toUpperCase();
+            if (!tableName.matches(patter.toString())) {
+                rowIterator.remove();
+                pidIterator.remove();
+            }
+        }
     }
 
     /**

@@ -149,7 +149,7 @@ public class SubtaskTest extends InitApplication{
 	}	
 		
 	@Test
-	public void testQualitylist() throws Exception
+	public void testUnPlanQualitylist() throws Exception
 	{
 		try {
 			System.out.println(SubtaskService.getInstance().unPlanQualitylist(208));
@@ -163,5 +163,12 @@ public class SubtaskTest extends InitApplication{
 	public void testQualityDelete() throws Exception
 	{
 		System.out.println(SubtaskService.getInstance().qualityDelete(3));
+	}
+	
+	//获取质检圈(测试)
+	@Test
+	public void testQualityList() throws Exception
+	{
+		System.out.println(SubtaskService.getInstance().qualitylist(362));
 	}
 }

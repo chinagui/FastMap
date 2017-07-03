@@ -3106,7 +3106,7 @@ public class SubtaskService {
 			sb.append(" AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
 
 			String selectSql= sb.toString();
-			log.info("qualitylist sql :" + selectSql);
+			log.info("unPlanQualitylist sql :" + selectSql);
 
 			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
 				public JSONObject handle(ResultSet rs) throws SQLException {
@@ -3157,6 +3157,56 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error("删除质检圈失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取质检圈列表
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject qualitylist(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SUBTASK_ID, QUALITY_ID, GEOMETRY FROM SUBTASK_QUALITY WHERE SUBTASK_ID = ");
+			sb.append(subtaskId);
+
+			String selectSql= sb.toString();
+			log.info("qualitylist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while (rs.next()) {
+						JSONObject jo = new JSONObject();
+						jo.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						jo.put("qualityId", rs.getInt("QUALITY_ID"));
+						try {
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							jo.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

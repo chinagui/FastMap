@@ -451,7 +451,7 @@ public final class MercatorProjection {
 		
 		System.out.println(tile2Wkt(107943, 49613, (byte) 17));
 		
-		System.out.println(getWktWithGap(107943, 49613, 17,2));
+		System.out.println("wkt: "+getWktWithGap(221152, 106142, 18,10));
 		
 		System.out.println(getWktWithGap(107943, 49613, 17,0));
 

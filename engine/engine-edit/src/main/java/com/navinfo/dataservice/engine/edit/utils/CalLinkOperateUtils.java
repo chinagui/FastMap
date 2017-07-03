@@ -752,5 +752,4 @@ public class CalLinkOperateUtils {
 			}
 		}
 	}
-
 }

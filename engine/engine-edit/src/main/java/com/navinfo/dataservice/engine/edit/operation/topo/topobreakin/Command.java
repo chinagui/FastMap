@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -51,6 +52,19 @@ public class Command extends AbstractCommand {
 		this.linkPids = linkPids;
 	}
 
+	/**
+	 * 
+	 */
+	private List<IRow> noNeedBreakLinks = new ArrayList<>();
+	
+	public List<IRow> getNoNeedBreakLinks(){
+		return noNeedBreakLinks;
+	}
+	
+	public void setNoNeedBreakLinks(List<IRow> links){
+		this.noNeedBreakLinks = links;
+	}
+	
 	/**
 	 * 打断点
 	 */
@@ -100,7 +114,7 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
-		JSONArray objIds = json.getJSONArray("objIds");
+		JSONArray objIds = json.getJSONArray("objId");
 		for (int i = 0; i < objIds.size(); i++) {
 			this.linkPids.add(objIds.getInt(i));
 		}

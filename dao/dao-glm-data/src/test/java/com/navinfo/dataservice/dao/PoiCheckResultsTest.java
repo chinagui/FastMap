@@ -75,15 +75,14 @@ public class PoiCheckResultsTest {
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':78,'dbId':17,'sortby':'-ruleid'}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':306,'dbId':13,'sortby':'-ruleid'}");	
 			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
 			
 				//List<JSONObject> page =null;
 				try {
-					 Page page = a.listPoiCheckResultList(jsonReq,78);
+					 Page page1 = a.listPoiCheckResultList(jsonReq,306);
+					 System.out.println(page1.getResult());
 						
-					 System.out.println(page.getResult());
-					
 					/*JSONArray results = a.queryRefFeatures(1810842);
 					System.out.println(results);*/
 				} catch (Exception e) {

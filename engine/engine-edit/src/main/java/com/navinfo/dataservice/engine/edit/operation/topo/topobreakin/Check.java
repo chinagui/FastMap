@@ -155,10 +155,13 @@ public class Check {
 	 */
 	public void CheckTopoBreakHasSameSEnode(List<IRow> noNeedBreakLinks, List<IRow> insertObjs) throws Exception {
 		List<RdLink> breakLinks = new ArrayList<>();
-		if (noNeedBreakLinks.size() != 0) {
-			insertObjs.addAll(noNeedBreakLinks);
-		}
 
+		for (IRow row : noNeedBreakLinks) {
+			if (row.objType() != ObjType.RDLINK) {
+				continue;
+			}
+			breakLinks.add((RdLink) row);
+		}
 		for (IRow row : insertObjs) {
 			if (row.objType() != ObjType.RDLINK) {
 				continue;

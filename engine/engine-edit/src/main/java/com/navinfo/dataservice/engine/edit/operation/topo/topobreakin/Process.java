@@ -75,31 +75,6 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setNoNeedBreakLinks(noNeedBreakLinks);
 		return true;
 	}
-
-	public String innerRun() throws Exception {
-		String msg;
-		try {
-			this.prepareData();
-
-			IOperation operation = new Operation(this.getCommand(), this.getConn());
-
-			msg = operation.run(this.getResult());
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-		} catch (Exception e) {
-
-			this.getConn().rollback();
-
-			throw e;
-		}
-
-		return msg;
-	}
 	
 	@Override
 	public String preCheck() throws Exception {

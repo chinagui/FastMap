@@ -642,10 +642,13 @@ public class SubtaskService {
 					Map<Integer, List<SubtaskQuality>> qualitys = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
 					if(qualitys.containsKey(subtaskId)){
 						List<String> qualityGeos=new ArrayList<String>();
+						List<JSONObject> qualityGeosJSON=new ArrayList<JSONObject>();
 						for(SubtaskQuality qtmp:qualitys.get(subtaskId)){
 							qualityGeos.add(GeoTranslator.jts2Wkt(qtmp.getGeometry()));
+							qualityGeosJSON.add(GeoTranslator.jts2Geojson(qtmp.getGeometry()));
 						}
 						subtaskMap.put("qualityGeos", qualityGeos);
+						subtaskMap.put("qualityGeosJSON", qualityGeosJSON);
 					}
 				}
 			}

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -56,6 +57,7 @@ public class Process extends AbstractProcess<Command> {
 		// 如果nodepid是某条link的起终点，从需打断link中排除,其余线需根据node修正几何
 		int nodePid = this.getCommand().getBreakNodePid();
 		List<Integer> breakLinks = new ArrayList<>();
+		List<IRow> noNeedBreakLinks = new ArrayList<>();
 
 		if (nodePid == 0) {
 			return true;
@@ -63,12 +65,14 @@ public class Process extends AbstractProcess<Command> {
 		for (int pid : this.getCommand().getLinkPids()) {
 			RdLink link = (RdLink) selector.loadById(pid, false);
 			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+				noNeedBreakLinks.add(link);
 				continue;
 			}
 			breakLinks.add(pid);
 		}
 		
 		this.getCommand().setLinkPids(breakLinks);
+		this.getCommand().setNoNeedBreakLinks(noNeedBreakLinks);
 		return true;
 	}
 
@@ -99,6 +103,7 @@ public class Process extends AbstractProcess<Command> {
 	
 	@Override
 	public String preCheck() throws Exception {
+		check.CheckTopoBreakHasSameSEnode(this.getCommand().getNoNeedBreakLinks(), this.getResult().getAddObjects());
 		return super.preCheck();
 	}
 }

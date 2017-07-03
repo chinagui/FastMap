@@ -334,12 +334,11 @@ public class Result implements ISerializable, Cloneable {
 	}
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
+    public Result clone() throws CloneNotSupportedException {
         Result result = (Result) super.clone();
         result.listAddIRow = (List<IRow>) ((ArrayList) this.listAddIRow).clone();
         result.listDelIRow = (List<IRow>) ((ArrayList) this.listDelIRow).clone();
         result.listUpdateIRow = (List<IRow>) ((ArrayList) this.listUpdateIRow).clone();
-
         return result;
     }
 }

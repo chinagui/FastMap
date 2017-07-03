@@ -52,11 +52,26 @@ public class programTest extends InitApplication{
 		Page msg=ProgramService.getInstance().list(1, 2, null, null, 1, 15);
 		System.out.println(msg);
 	}
+	
+	@Test
+	public void testUnPlanQualitylist() throws Exception
+	{
+		JSONObject data = ProgramService.getInstance().unPlanQualitylist();
+		System.out.println(data);
+	}
 
 	@Override
 	@Before
 	public void init() {
 		initContext();
+	}
+	
+	//获取待规划子任务的项目列表（测试）
+	@Test
+	public void testUnPlanSubtasklist() throws Exception
+	{
+		JSONObject data = ProgramService.getInstance().unPlanSubtasklist();
+		System.out.println(data);
 	}
 	
 }

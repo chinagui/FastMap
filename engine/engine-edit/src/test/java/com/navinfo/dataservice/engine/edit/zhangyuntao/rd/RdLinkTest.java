@@ -1,15 +1,21 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -131,10 +137,12 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void testCreateSideRoad() {
-        String requester = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"distance\":4," +
-                "\"sideType\":1,\"sNodePid\":409000057,\"data\":{\"linkPids\":[502000077]}}";
-        TestUtil.run(requester);
+    public void testCreateSideRoad() throws Exception {
+        RdLink link = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(242836, false);
+        System.out.println(Arrays.toString(DbMeshInfoUtil.calcDbIds(link.getGeometry()).toArray()));
+        RdLink link1 = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(6845499, false);
+        System.out.println(Arrays.toString(DbMeshInfoUtil.calcDbIds(link1.getGeometry()).toArray()));
+        System.out.println(CollectionUtils.isSubCollection(DbMeshInfoUtil.calcDbIds(link.getGeometry()), DbMeshInfoUtil.calcDbIds(link.getGeometry())));
     }
 
 }

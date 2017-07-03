@@ -852,12 +852,7 @@ public class SysMsgService {
 			parMap.put("title", mailTitle);
 			parMap.put("content", mailContext.toString());
 			String result = ServiceInvokeUtil.invokeByGet(url, parMap);
-			JSONObject res=JSONObject.fromObject(result);
-			log.info("监控系统邮件发送成功,"+result);
-			String success=res.getString("success");
-			if(!"sucess".equals(success)){
-				throw new Exception("监控系统邮件发送失败,"+result);
-			}
+			log.info("发送邮件，调用smap请求返回值："+result);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("发送失败，原因为:"+e.getMessage(),e);

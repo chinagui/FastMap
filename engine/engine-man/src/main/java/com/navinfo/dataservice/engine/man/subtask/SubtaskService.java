@@ -22,7 +22,9 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Program;
@@ -30,8 +32,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -44,6 +44,7 @@ import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -56,7 +57,9 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @ClassName: SubtaskService
@@ -621,15 +624,42 @@ public class SubtaskService {
 	 * @throws ServiceException
 	 */
 	
-	public Map<String,Object> query(Integer subtaskId,int platform) throws ServiceException {
-		Map<String,Object> subtaskMap= queryBySubtaskId(subtaskId); 
-		if(platform==0||platform==1){
-			if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
-				Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
-				subtaskMap.put("gridIds",gridIds.keySet());
+	public Map<String,Object> query(int subtaskId,int platform) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			Map<String,Object> subtaskMap= queryBySubtaskId(conn,subtaskId); 
+			//增加平台参数。0：采集端，1：编辑平台2管理平台（grids返回值不一样）
+			if(platform==0||platform==1){
+				if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
+					Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
+					subtaskMap.put("gridIds",gridIds.keySet());
+				}
+				int isQuality=(int) subtaskMap.get("isQuality");
+				if(isQuality==1){
+					Set<Integer> subtaskIds=new HashSet<Integer>();
+					subtaskIds.add(subtaskId);
+					Map<Integer, List<SubtaskQuality>> qualitys = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
+					if(qualitys.containsKey(subtaskId)){
+						List<String> qualityGeos=new ArrayList<String>();
+						List<JSONObject> qualityGeosJSON=new ArrayList<JSONObject>();
+						for(SubtaskQuality qtmp:qualitys.get(subtaskId)){
+							qualityGeos.add(GeoTranslator.jts2Wkt(qtmp.getGeometry()));
+							qualityGeosJSON.add(GeoTranslator.jts2Geojson(qtmp.getGeometry()));
+						}
+						subtaskMap.put("qualityGeos", qualityGeos);
+						subtaskMap.put("qualityGeosJSON", qualityGeosJSON);
+					}
+				}
 			}
-		}
-		return subtaskMap;
+			return subtaskMap;	
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}		
 	}
 	
 	/**
@@ -639,10 +669,8 @@ public class SubtaskService {
 	 * @throws ServiceException
 	 */
 	
-	public Map<String,Object> queryBySubtaskId(Integer subtaskId) throws ServiceException {
-		Connection conn = null;
+	public Map<String,Object> queryBySubtaskId(Connection conn,Integer subtaskId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			StringBuilder sb = new StringBuilder();
@@ -772,17 +800,6 @@ public class SubtaskService {
 							subtask.put("dbId",rs.getInt("DAILY_DB_ID"));
 						}	
 						
-//						if(1 == rs.getInt("STATUS")){
-//							subtask.put("percent",100);
-//							SubtaskStatInfo stat = new SubtaskStatInfo();
-//							try{	
-//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-//							} catch (Exception e) {
-//								log.warn("subtask query error",e);
-//							}
-//							subtask.put("percent",stat.getPercent());
-//						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
@@ -791,6 +808,25 @@ public class SubtaskService {
 			};
 			log.info("queryBySubtaskId sql:" + selectSql);
 			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 获取subtask详情
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException
+	 */
+	
+	public Map<String,Object> queryBySubtaskId(Integer subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			return queryBySubtaskId(conn, subtaskId);		
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1293,6 +1329,28 @@ public class SubtaskService {
 				page = SubtaskOperation.getListByUserSnapshotPage(conn, dataJson,curPageNum,pageSize,platForm);
 			}else{
 				page = SubtaskOperation.getListByUserPage(conn, dataJson,curPageNum,pageSize,platForm);		
+				//返回质检圈
+				List<HashMap<Object,Object>> list=(List<HashMap<Object, Object>>) page.getResult();
+				Set<Integer> subtaskIds=new HashSet<Integer>();
+				for(HashMap<Object,Object> tmp:list){
+					int subtaskId=(int)tmp.get("subtaskId");
+					int isQuality=(int)tmp.get("isQuality");
+					if(isQuality==1){subtaskIds.add(subtaskId);}
+				}
+				
+				Map<Integer, List<SubtaskQuality>> qualityMap = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
+				for(HashMap<Object,Object> tmp:list){
+					int subtaskId=(int)tmp.get("subtaskId");
+					int isQuality=(int)tmp.get("isQuality");
+					if(isQuality==1&&qualityMap.containsKey(subtaskId)){
+						List<SubtaskQuality> qualitys = qualityMap.get(subtaskId);
+						List<String> qualityGeos=new ArrayList<String>();
+						for(SubtaskQuality qtmp:qualitys){
+							qualityGeos.add(GeoTranslator.jts2Wkt(qtmp.getGeometry()));
+						}
+						tmp.put("qualityGeos", qualityGeos);
+					}
+				}
 			}
 			
 			return page;
@@ -1604,29 +1662,93 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " select t.id,t.geometry FROM subtask_refer T "
-					+ "WHERE SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
+					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			if (json.getInt("blockId")!=0) {
+				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
+					List<HashMap<String,Integer>> countList = new ArrayList<HashMap<String,Integer>>();
+					int tempId = 0;
+					int count0=0;//status:0//0没有对应子任务（subtask表refer_id），或者对应的子任务都处于关闭状态
+					int count1=0;//1存在开启状态的子任务
+					int count2=0;//2不存在开启状态子任务，但存在草稿状态子任务
+					HashMap<String,Integer> countMap = null;
 					while(rs.next()){
 						try {
+							
 							HashMap<String,Object> map = new HashMap<String,Object>();
-							map.put("id", rs.getInt("ID"));							
-							try {
-								STRUCT struct=(STRUCT)rs.getObject("geometry");
-								String clobStr = GeoTranslator.struct2Wkt(struct);
-								map.put("geometry", Geojson.wkt2Geojson(clobStr));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
+							int id = rs.getInt("ID");
+							int status = rs.getInt("status");
+							
+							if (tempId!=id) {
+								map.put("id",id);
+								try {
+									STRUCT struct=(STRUCT)rs.getObject("geometry");
+									String clobStr = GeoTranslator.struct2Wkt(struct);
+									map.put("geometry", Geojson.wkt2Geojson(clobStr));
+								} catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								
+								tempId = id;
+								countMap = new HashMap<>();
+								countMap.put("id", id);
+								count0=0;
+								count1=0;
+								count2=0;
+								countList.add(countMap);
 							}
-							list.add(map);
+							
+							if(status==0){
+								count0++;
+							}else if(status==1){
+								count1++;
+							}else if(status==2){
+								count2++;
+							}
+							
+							countMap.put("count0", count0);
+							countMap.put("count1", count1);
+							countMap.put("count2", count2);
+							
+							if(null!=map&&!map.isEmpty()){
+								list.add(map);
+							}
+							
+							
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}						
 					}
+					
+					
+					for (HashMap<String, Object> map : list) {
+						for (HashMap<String, Integer> countIdMap : countList) {
+							if((int)map.get("id")==(int)countIdMap.get("id")){
+								int countId0 = countIdMap.get("count0");
+								int countId1 = countIdMap.get("count1");
+								int countId2 = countIdMap.get("count2");
+								if(countId0>0&&countId1==0&&countId2==0){
+									map.put("status", 0);
+									break;
+								}
+								if(countId1>0){
+									map.put("status", 1);
+									break;
+								}
+								if(countId1==0&&countId2>0){
+									map.put("status", 2);
+									break;
+								}
+							}
+						}
+					}
+					
 					return list;
 				}	    		
 	    	}		;
@@ -2713,6 +2835,443 @@ public class SubtaskService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 编辑子任务圈接口
+	 * 原则：如果S圈对应的采集子任务已经开启，则不能进行任何操作；草稿状态子任务的S圈如果修改，则删除与采集子任务的关联
+	 * 应用场景：独立工具--外业规划--绘制子任务圈—合并/切分等操作
+	 * @param blockId
+	 * @param condition
+	 * @throws Exception
+	 */
+	public void paintRefer(int taskId, JSONObject condition)  throws Exception {
+		Connection conn = null;
+		try {
+			String lineWkt="";
+			int id1=0;
+			int id2=0;
+			if(condition.containsKey("lineWkt")){
+				lineWkt=condition.getString("lineWkt");
+			}
+			if(condition.containsKey("id1")){
+				id1=condition.getInt("id1");
+				id2=condition.getInt("id2");
+			}
+			
+			conn=DBConnector.getInstance().getManConnection();
+			
+			//1.nowait方式锁与blockId下的子任务圈以及对应的采集子任务，并获取范围
+			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
+			JSONObject conditionQuery2=new JSONObject();
+			conditionQuery2.put("blockId", task.getBlockId());
+			if(StringUtils.isEmpty(lineWkt)){
+				JSONArray ids=new JSONArray();
+				ids.add(id1);
+				ids.add(id2);
+				conditionQuery2.put("ids", ids);
+			}
+			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
+
+			JSONObject conditionQuery=new JSONObject();
+			conditionQuery.put("taskId", taskId);
+			conditionQuery.put("stage", 0);				
+			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
+			
+			if(!StringUtils.isEmpty(lineWkt)){
+				/*
+				 * //wkt,判断要拆分的子任务圈是否已开启，未开启则锁表，并获取geo；已开启则返回
+			//若没有子任务，则直接拆分block；否则拆分子任务圈，并删除采集子任务与不规则圈的关联
+				 */
+				Geometry lineGeo=GeoTranslator.wkt2Geometry(lineWkt);
+				if(refers==null||refers.size()==0){//切分block
+					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
+					Geometry referGeo = block.getOriginGeo();
+					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
+					//线是否穿过面
+					Geometry interGeo=referGeoLine.intersection(lineGeo);						
+					if(interGeo==null||interGeo.getCoordinates().length==0){throw new ServiceException("线面没有交点");}
+					if(interGeo.getCoordinates().length!=2){
+						throw new ServiceException("线面交点大于2个，请重新画线");
+					}					
+					
+					Geometry midLine=referGeo.intersection(lineGeo);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+					if(!isIn){
+						throw new Exception("线不在面内，请重新划线");
+					}
+					
+					//line所切割的面对应的子任务是否开启
+					//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。					
+					List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+					//5.保存信息
+					for(Geometry g:addGeo){
+						SubtaskRefer referNew=new SubtaskRefer();
+						referNew.setBlockId(task.getBlockId());
+						referNew.setGeometry(g);
+						SubtaskReferOperation.create(conn, referNew);
+					}
+				}else{
+					String msg=null; 
+					int referNum=0;
+					for(SubtaskRefer refer:refers){
+						Geometry referGeo = refer.getGeometry();
+						Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
+						//线是否穿过面
+						Geometry interGeo=referGeoLine.intersection(lineGeo);						
+						if(interGeo==null||interGeo.getCoordinates().length==0){
+							log.info("线面没有交点");
+							msg="线面交点不为2个/线不在面内，请重新画线;";
+							continue;}
+						if(interGeo.getCoordinates().length!=2){
+							log.info("线面交点不为2");
+							msg="线面交点不为2个/线不在面内，请重新画线;";
+							continue;
+						}		
+						
+						Geometry midLine=referGeo.intersection(lineGeo);
+						Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
+						unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+						boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+						//boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+						if(!isIn){
+							log.info("线不在面内");
+							msg="线面交点不为2个/线不在面内，请重新划线;";
+							continue;
+						}
+						
+						//line所切割的面对应的子任务是否开启
+						//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
+						List<Subtask> subtaskRelates=new ArrayList<>();
+						for(Subtask s: subtasks){
+							if(s.getReferId()==refer.getId()){
+								if(s.getStatus()==1){
+									throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+								}
+								s.setReferId(0);
+								subtaskRelates.add(s);
+							}
+						}
+						referNum++;
+						List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+						
+						//5.保存信息
+						for(Geometry g:addGeo){
+							SubtaskRefer referNew=new SubtaskRefer();
+							referNew.setBlockId(refer.getBlockId());
+							referNew.setGeometry(g);
+							SubtaskReferOperation.create(conn, referNew);
+						}
+						
+						Set<Integer> idSet=new HashSet<Integer>();
+						idSet.add(refer.getId());
+						SubtaskReferOperation.delete(conn, idSet);
+						
+						for(Subtask s:subtaskRelates){
+							SubtaskOperation.updateSubtask(conn, s);
+						}
+					}
+					if(referNum==0){
+						throw new ServiceException(msg);
+					}
+					if(referNum>1){
+						throw new ServiceException("线同时穿过2个不规则子任务圈，请重新划线，保证每次仅穿过1个不规则子任务圈");
+					}
+				}				
+			}else{
+				/*
+				 * //若为id1，id2；则判断id对应的子任务是否开启，未开启则锁表，并获取geo；已开启则返回
+			//未开启，则删除id1，id2,合并不规则圈生成id3，
+				 */
+				//1.nowait方式锁id1,id2对应的不规则圈，子任务
+				//2.是否开启，开启返回
+				List<Subtask> subtaskRelates=new ArrayList<>();
+				for(Subtask s: subtasks){
+					if(s.getReferId()==id1||s.getReferId()==id2){
+						if(s.getStatus()==1){
+							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+						}
+						s.setReferId(0);
+						subtaskRelates.add(s);
+					}
+				}
+				//3.合并范围，去除关系
+				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
+				Geometry geo1 = refers.get(0).getGeometry();
+				Geometry geo2 = refers.get(1).getGeometry();
+				Geometry unionGeo=geo1.union(geo2);
+				//4.保存
+				SubtaskRefer refer=new SubtaskRefer();
+				refer.setBlockId(refers.get(0).getBlockId());
+				refer.setGeometry(unionGeo);
+				SubtaskReferOperation.create(conn, refer);
+				
+				Set<Integer> idSet=new HashSet<Integer>();
+				idSet.add(id1);
+				idSet.add(id2);
+				SubtaskReferOperation.delete(conn, idSet);
+				
+				for(Subtask s:subtaskRelates){
+					SubtaskOperation.updateSubtask(conn, s);
+				}
+			}			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param subtaskId
+	 * @param isLock true 锁表 false 不锁表
+	 * @return
+	 * @throws ServiceException
+	 */
+	public List<Subtask> querySubtask(Connection conn,JSONObject condition,boolean isLock) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String sql="SELECT S.SUBTASK_ID,"
+					+ "       S.TASK_ID,"
+					+ "       S.GEOMETRY,"
+					+ "       S.STAGE,"
+					+ "       S.TYPE,"
+					+ "       S.STATUS,"
+					+ "       S.IS_QUALITY,"
+					+ "       S.REFER_ID"
+					+ "  FROM SUBTASK S"
+					+ " WHERE 1=1";
+			if(condition!=null&&condition.size()>0){
+				Iterator<?> keyIter = condition.keys();
+				while (keyIter.hasNext()) {
+					String key=(String) keyIter.next();
+					if(key.equals("taskId")){
+						sql=sql+" AND S.TASK_ID="+condition.getInt(key);
+					}
+					if(key.equals("stage")){
+						sql=sql+" AND S.STAGE="+condition.getInt(key);
+					}
+				}
+			}
+			if(isLock){sql=sql+ "   FOR UPDATE NOWAIT";}
+			log.info("请求子任务详情SQL："+sql);
+			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> subtasks=new ArrayList<Subtask>();
+					while (rs.next()) {
+						Subtask subtask = new Subtask();						
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}		
+						subtasks.add(subtask);
+					}
+					return subtasks;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} 
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param subtaskId
+	 * @param isLock true 锁表 false 不锁表
+	 * @return
+	 * @throws ServiceException
+	 */
+	public List<SubtaskRefer> queryReferByTaskId(Connection conn,JSONObject condition,boolean isLock) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String sql="SELECT R.ID, R.GEOMETRY, R.BLOCK_ID"
+					+ "  FROM SUBTASK_REFER R"
+					+ " WHERE 1=1";
+			if(condition!=null&&condition.size()>0){
+				Iterator<?> keyIter = condition.keys();
+				while (keyIter.hasNext()) {
+					String key=(String) keyIter.next();
+					if(key.equals("blockId")){
+						sql=sql+" AND R.BLOCK_ID="+condition.getInt(key);
+					}
+					if(key.equals("ids")){
+						sql=sql+" AND R.ID in "+condition.getJSONArray(key).toString().replace("[", "(").replace("]", ")");
+					}
+				}
+			}
+			if(isLock){sql=sql+ "   FOR UPDATE NOWAIT";}
+			log.info("queryReferByTaskId SQL："+sql);
+			ResultSetHandler<List<SubtaskRefer>> rsHandler = new ResultSetHandler<List<SubtaskRefer>>() {
+				public List<SubtaskRefer> handle(ResultSet rs) throws SQLException {
+					List<SubtaskRefer> subtasks=new ArrayList<SubtaskRefer>();
+					while (rs.next()) {
+						SubtaskRefer refer = new SubtaskRefer();						
+						refer.setId(rs.getInt("ID"));		
+						refer.setBlockId(rs.getInt("BLOCK_ID"));	
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							refer.setGeometry(GeoTranslator.struct2Jts(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}		
+						subtasks.add(refer);
+					}
+					return subtasks;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} 
+	}
+	
+	
+	/**
+	 * 获取所有质检子任务列表
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject unPlanQualitylist(Integer taskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT s.subtask_id,s.name FROM SUBTASK S WHERE S.TASK_ID ="+taskId);
+			sb.append(" AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
+
+			String selectSql= sb.toString();
+			log.info("unPlanQualitylist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while (rs.next()) {
+						JSONObject jo = new JSONObject();
+						jo.put("subtaskId", rs.getInt(1));
+						jo.put("sub", rs.getString(2));
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 删除质检圈
+	 * @param qualityId
+	 * @return
+	 * @throws Exception
+	 */
+	public int qualityDelete(int qualityId)  throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("DELETE FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append(qualityId);
+
+			String sql= sb.toString();
+			log.info("qualityDelete sql :" + sql);
+
+			return run.update(conn, sql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("删除质检圈失败，原因为：" + e.getMessage());
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取质检圈列表
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject qualitylist(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SUBTASK_ID, QUALITY_ID, GEOMETRY FROM SUBTASK_QUALITY WHERE SUBTASK_ID = ");
+			sb.append(subtaskId);
+
+			String selectSql= sb.toString();
+			log.info("qualitylist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while (rs.next()) {
+						JSONObject jo = new JSONObject();
+						jo.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						jo.put("qualityId", rs.getInt("QUALITY_ID"));
+						try {
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							jo.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

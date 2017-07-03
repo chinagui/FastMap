@@ -25,6 +25,11 @@ import net.sf.json.JSONObject;
  */
 public interface ManApi{
 	/**
+	 * 修改task_progress的值，并发送socket
+	 * @throws Exception
+	 */
+	public void endProgressAndSocket(int phaseId,int status,String message) throws Exception;
+	/**
 	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
 	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
 	 * 应用场景：采集（poi，tips）成果批任务号

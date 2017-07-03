@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.bizcommons.glm.GlmColumn;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.dataservice.diff.job.DiffJob;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -36,13 +37,19 @@ public class JavaDiffScanner implements DiffScanner
     }
 
     @Override
-    public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    public int scan(GlmTable table,DataAccess leftAccess,DataAccess rightAccess)throws DiffException{
     	Connection conn = null;
     	try{
         	conn = diffServer.getPoolDataSource().getConnection();
+        	String leftTableFullName = leftAccess.accessTable(table);
+        	String rightTableFullName = rightAccess.accessTable(table);
         	int ca = scanLeftAddData(conn,table,leftTableFullName,rightTableFullName);
         	int cd = scanRightAddData(conn,table,leftTableFullName,rightTableFullName);
         	int cu = scanUpdateData(conn,table,leftTableFullName,rightTableFullName);
+        	//obj pid
+        	if((ca+cd+cu)>0){
+            	computeObjPid(conn,table,leftAccess,rightAccess);
+        	}
         	conn.commit();
         	return ca+cd+cu;
     	}catch(Exception e){
@@ -71,7 +78,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',1,ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
         	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
         	sb.append(" FROM ");
@@ -103,7 +110,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',2,ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
         	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
         	sb.append(" FROM ");
@@ -144,9 +151,9 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',3,L.ROW_ID,'");
-        	sb.append(table.getObjName());
+        	sb.append(StringUtils.isEmpty(table.getObjName())?"UNKNOWN":table.getObjName());
         	sb.append("',");
-        	sb.append((StringUtils.isEmpty(table.getObjPidCol()))?"0":("L."+table.getObjPidCol()));
+        	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":("L."+table.getObjPidCol()));
         	sb.append(" FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
@@ -173,5 +180,46 @@ public class JavaDiffScanner implements DiffScanner
     	}else{
     		return "L.\""+col.getName()+"\" = "+"R.\""+col.getName()+"\"";
     	}
+    }
+    /**
+     * //暂时只支持三级子表
+     * @param table
+     * @param leftTableFullName
+     * @param rightTableFullName
+     * @throws DiffException
+     */
+    private void computeObjPid(Connection conn,GlmTable table,DataAccess leftAccess,DataAccess rightAccess)throws Exception{
+    	if(table.isMaintable()||table.getObjRefTable().isMaintable()){
+    		return;
+        }
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("UPDATE LOG_DETAIL T SET T.OB_PID=(SELECT P.");
+    	sb.append(table.getObjRefTable().getObjPidCol());
+    	sb.append(" FROM ");
+    	sb.append(leftAccess.accessTable(table)+" R1,");
+    	sb.append(leftAccess.accessTable(table.getObjRefTable())+" P WHERE R1.");
+    	sb.append(table.getObjRefCol()+"=P.");
+    	if(table.getObjRefTable().getPks()==null||table.getObjRefTable().getPks().size()>1){
+    		throw new DiffException(table.getName()+"表在glm_tables配置错误。");
+    	}
+    	sb.append(table.getObjRefTable().getPk().getName()+" AND T.TB_ROW_ID=R1.ROW_ID) WHERE TB_NM='");
+    	sb.append(table.getName()+"' AND OP_TP IN (1,3)");
+    	runner.update(conn, sb.toString());
+    	//删除的从右库中获取
+    	sb.delete(0, sb.length());
+    	sb.append("UPDATE LOG_DETAIL T SET T.OB_PID=(SELECT P.");
+    	sb.append(table.getObjRefTable().getObjPidCol());
+    	sb.append(" FROM ");
+    	sb.append(rightAccess.accessTable(table)+" R1,");
+    	sb.append(rightAccess.accessTable(table.getObjRefTable())+" P WHERE R1.");
+    	sb.append(table.getObjRefCol()+"=P.");
+    	if(table.getObjRefTable().getPks()==null||table.getObjRefTable().getPks().size()>1){
+    		throw new DiffException(table.getName()+"表在glm_tables配置错误。");
+    	}
+    	sb.append(table.getObjRefTable().getPk().getName()+" AND T.TB_ROW_ID=R1.ROW_ID) WHERE TB_NM='");
+    	sb.append(table.getName()+"' AND OP_TP IN (2)");
+    	runner.update(conn, sb.toString());
+    	
+    	
     }
 }

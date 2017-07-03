@@ -120,16 +120,16 @@ public class BasicOperator extends AbstractOperator {
                     }
                 } else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
                     key.append(M_ROW_ID + ",");
-                    String tableName = SelectorUtils.getObjTableName(row);
-                    if (StringUtils.isNotEmpty(row.rowId())) {
-                        if (!tableName.equals("IX_POI")) {
-                            row.setRowId(UuidUtils.genUuid());
-                        }
-                    } else {
-                        row.setRowId(UuidUtils.genUuid());
-                    }
-                    logger.info("rowid:" + row.rowId());
-                    System.out.println("poi rowid:" + row.rowId());
+                    //String tableName = SelectorUtils.getObjTableName(row);
+                    //if (StringUtils.isNotEmpty(row.rowId())) {
+                    //    if (!tableName.equals("IX_POI")) {
+                    //        row.setRowId(UuidUtils.genUuid());
+                    //    }
+                    //} else {
+                    //    row.setRowId(UuidUtils.genUuid());
+                    //}
+                    //logger.info("rowid:" + row.rowId());
+                    //System.out.println("poi rowid:" + row.rowId());
                     value.append("'" + row.rowId() + "',");
                 } else if (row instanceof IxPoiPhoto && name.equals("fccPid")) {
                     key.append("pid,");

@@ -207,4 +207,21 @@ public class taskTest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void testUnPlanQualitylist() throws Exception
+	{
+		try {
+			System.out.println(TaskService.getInstance().unPlanQualitylist(57));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	//获取待规划子任务的任务列表
+	@Test
+	public void testUnPlanSubtasklist() throws Exception
+	{
+		JSONObject data = TaskService.getInstance().unPlanSubtasklist(71);
+		System.out.println(data);
+	}
+	
 }

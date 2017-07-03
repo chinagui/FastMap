@@ -79,54 +79,54 @@ public class SubtaskOperation {
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
 			List<Object> value = new ArrayList<Object>();
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " NAME= " + "'" + bean.getName() + "'";
 			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " DESCP= " + "'" + bean.getDescp() + "'";
 			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " PLAN_START_DATE= " + "to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " EXE_USER_ID= " + bean.getExeUserId();
 			};
-			if (bean!=null&&bean.getExeGroupId()!=null && StringUtils.isNotEmpty(bean.getExeGroupId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_GROUP_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " EXE_GROUP_ID= " + bean.getExeGroupId();
 			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " STATUS= " + bean.getStatus();
 			};
 			//修改新增的两个字段
-			if (bean!=null&&bean.getQualitySubtaskId()!=null && StringUtils.isNotEmpty(bean.getQualitySubtaskId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " QUALITY_SUBTASK_ID= " + bean.getQualitySubtaskId();
 			};
-			if (bean!=null&&bean.getIsQuality()!=null && StringUtils.isNotEmpty(bean.getIsQuality().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_QUALITY")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " IS_QUALITY= " + bean.getIsQuality();
 			};
-			if (bean!=null&&bean.getReferId()!=null && StringUtils.isNotEmpty(bean.getReferId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REFER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " REFER_ID= " + bean.getReferId();
 			};
 			
-			if (bean!=null&&bean.getWorkKind()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " work_kind= " + bean.getWorkKind();
 			};
 			
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
@@ -136,10 +136,8 @@ public class SubtaskOperation {
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
 			}
-
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				updateSql += " where SUBTASK_ID= " + bean.getSubtaskId();
-			};
+			
+			updateSql += " where SUBTASK_ID= " + bean.getSubtaskId();
 			
 			log.info("updateSubtask sql:" + baseSql+updateSql);
 			if(value.isEmpty() || value.size()==0){
@@ -233,168 +231,6 @@ public class SubtaskOperation {
 		}
 	}
 	
-//	//根据subtaskId列表获取包含subtask type,status,gridIds信息的List<Subtask>
-//	public static List<Subtask> getSubtaskListByIdList(Connection conn,List<Integer> subtaskIdList) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			String subtaskIds = "(";
-//			
-//			subtaskIds += StringUtils.join(subtaskIdList.toArray(),",") + ")";
-//			
-//			
-//			String selectSql = "select m.SUBTASK_ID"
-//					+ ",listagg(m.GRID_ID, ',') within group(order by m.SUBTASK_ID) as GRID_ID"
-//					+ ",s.TYPE"
-//					+ ",s.STAGE"
-//					+ " from SUBTASK_GRID_MAPPING m"
-//					+ ", SUBTASK s"
-//					+ " where s.SUBTASK_ID = m.Subtask_Id"
-//					+ " and s.SUBTASK_ID in " + subtaskIds
-//					+ " group by m.SUBTASK_ID"
-//					+ ", s.TYPE, s.STAGE";
-//			
-//			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
-//				public List<Subtask> handle(ResultSet rs) throws SQLException {
-//					List<Subtask> list = new ArrayList<Subtask>();
-//					while(rs.next()){
-//						Subtask subtask = new Subtask();
-//						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-//						subtask.setStage(rs.getInt("STAGE"));
-//						subtask.setType(rs.getInt("TYPE"));
-//						String gridIds = rs.getString("GRID_ID");
-//
-//						String[] gridIdList = gridIds.split(",");
-//						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
-//						list.add(subtask);
-//					}
-//					return list;
-//				}
-//	    		
-//	    	};
-//	    	
-//	    	List<Subtask> subtaskList = run.query(conn, selectSql,rsHandler);
-//	    	return subtaskList;
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	
-//	//判断采集任务是否可关闭
-//	public static Boolean isCollectReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
-//		try{
-//			List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(subtask.getSubtaskId());
-//			List<String> gridIdList = ArrayUtil.reConvertList(gridIds);
-//			List<GridStatInfo> gridStatInfoColArr = staticsApi.getLatestCollectStatByGrids(gridIdList);
-//			//0POI
-//			if(0==subtask.getType()){
-//				for(int j=0;j<gridStatInfoColArr.size();j++){
-//					if(100 > (int)gridStatInfoColArr.get(j).getPercentPoi()){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}
-//			//1道路
-//			else if(1==subtask.getType()){
-//				for(int j=0;j<gridStatInfoColArr.size();j++){
-//					if(100 > (int)gridStatInfoColArr.get(j).getPercentRoad()){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}
-//			//2一体化
-//			else if(2==subtask.getType()){
-//				for(int j=0;j<gridStatInfoColArr.size();j++){
-//					if((100 > (int)gridStatInfoColArr.get(j).getPercentPoi()) 
-//							|| 
-//							(100 > (int)gridStatInfoColArr.get(j).getPercentRoad())){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}else{
-//				return true;
-//			}
-//			
-//		}catch(Exception e){
-//			log.error(e.getMessage(), e);
-//			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	
-//	//判断日编任务是否可关闭
-//	public static Boolean isDailyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
-//		try{
-//			List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(subtask.getSubtaskId());
-//			List<String> gridIdList = ArrayUtil.reConvertList(gridIds);
-//			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIdList);
-//			//0POI,5多源POI
-//			if(0==subtask.getType()||5==subtask.getType()){
-//				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
-//					if(100 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}
-//			//3一体化_grid粗编，4一体化_区域粗编
-//			else if(3==subtask.getType()||4==subtask.getType()){
-//				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
-//					if((100 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()) 
-//							|| 
-//							(100 > (int)gridStatInfoDailyEditArr.get(j).getPercentRoad())){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}else{
-//				return true;
-//			}
-//			
-//		}catch(Exception e){
-//			log.error(e.getMessage(), e);
-//			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	
-//	//判断月编任务是否可关闭
-//	public static Boolean isMonthlyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
-//		try{
-//			List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(subtask.getSubtaskId());
-//			List<String> gridIdList = ArrayUtil.reConvertList(gridIds);
-//			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIdList);
-//			//6代理店， 7POI专项
-//			if(6==subtask.getType()||7==subtask.getType()){
-//				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
-//					if(100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentPoi()){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}
-//			//8道路_grid精编，9道路_grid粗编，10道路区域专项
-//			else if(8==subtask.getType()||9==subtask.getType()||10==subtask.getType()){
-//				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
-//					if(100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentRoad()){
-//						return false;
-//					}
-//				}
-//				return true;
-//			}else{
-//				return true;
-//			}
-//		}catch(Exception e){
-//			log.error(e.getMessage(), e);
-//			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
 	public static void closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
@@ -461,40 +297,37 @@ public class SubtaskOperation {
 			String column = "";
 			String values = "";
 			List<Object> value = new ArrayList<Object>();
-			if (bean!=null&&bean.getSubtaskId()!=null && bean.getSubtaskId()!=0 && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" SUBTASK_ID ";
 				values+=" ? ";
 				value.add(bean.getSubtaskId());
 			};
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" NAME ";
 				values+=" ? ";
 				value.add(bean.getName());
 			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" GEOMETRY ";
 				values+=" ? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};
-			if (bean!=null&&bean.getStage()!=null && bean.getStage()!=0 
-					&& StringUtils.isNotEmpty(bean.getStage().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STAGE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" STAGE ";
 				values+=" ? ";
 				value.add(bean.getStage());
 			};
-			if (bean!=null&&bean.getType()!=null && bean.getType()!=0 
-					&& StringUtils.isNotEmpty(bean.getType().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TYPE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" TYPE ";
 				values+=" ? ";
 				value.add(bean.getType());
 			};
-			if (bean!=null&&bean.getCreateUserId()!=null && bean.getCreateUserId()!=0 
-					&& StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CREATE_USER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" CREATE_USER_ID ";
 				values+=" ? ";
@@ -506,78 +339,69 @@ public class SubtaskOperation {
 			values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
 			
-			if (bean!=null&&bean.getStatus()!=null && bean.getStatus()!=0 
-					&& StringUtils.isNotEmpty(bean.getStatus().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" STATUS ";
 				values+=" ? ";
 				value.add(bean.getStatus());
 			};
 			
-			if (bean!=null&&bean.getPlanStartDate()!=null
-					&& StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_START_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getPlanStartDate().toString().substring(0, 10));
 			};
-			if (bean!=null&&bean.getPlanEndDate()!=null
-					&& StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_END_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getPlanEndDate().toString().substring(0, 10));
 			};			
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" DESCP ";
 				values+=" ? ";
 				value.add(bean.getDescp());
 			};
-			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 
-					&& StringUtils.isNotEmpty(bean.getTaskId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" TASK_ID ";
 				values+=" ? ";
 				value.add(bean.getTaskId());
 			};
-			if (bean!=null&&bean.getQualitySubtaskId()!=null && bean.getQualitySubtaskId()!=0 
-					&& StringUtils.isNotEmpty(bean.getQualitySubtaskId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" QUALITY_SUBTASK_ID ";
 				values+=" ? ";
 				value.add(bean.getQualitySubtaskId());
 			};
-			if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
-			column+=" IS_QUALITY ";
-			values+=" ? ";
-			if (bean!=null&&bean.getIsQuality()!=null && bean.getIsQuality()!=0 
-					&& StringUtils.isNotEmpty(bean.getIsQuality().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_QUALITY")){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" IS_QUALITY ";
+				values+=" ? ";
 				value.add(bean.getIsQuality());
-			}else{value.add(0);}
+			}
 			//外业参考任务圈
-			if (bean!=null&&bean.getReferId()!=null && bean.getReferId()!=0 
-					&& StringUtils.isNotEmpty(bean.getReferId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REFER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" REFER_ID ";
 				values+=" ? ";
 				value.add(bean.getReferId());
 			}
-			if (bean!=null&&bean.getExeGroupId()!=null && bean.getExeGroupId()!=0 
-					&& StringUtils.isNotEmpty(bean.getExeGroupId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_GROUP_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" EXE_GROUP_ID ";
 				values+=" ? ";
 				value.add(bean.getExeGroupId());
 			};
-			if (bean!=null&&bean.getExeUserId()!=null && bean.getExeUserId()!=0 
-					&& StringUtils.isNotEmpty(bean.getExeUserId().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" EXE_USER_ID ";
 				values+=" ? ";
 				value.add(bean.getExeUserId());
 			};
-			if (bean!=null&&bean.getWorkKind()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" work_kind ";
 				values+=" ? ";
@@ -1170,37 +994,7 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
-						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((0==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
-							try {
-								Subtask subtaskObj=new Subtask();
-								subtaskObj.setDbId((int)subtask.get("dbId"));
-								subtaskObj.setType(rs.getInt("TYPE"));
-								subtaskObj.setGeometry(wkt);
-								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
-								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
-								
-								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
-								if(subtaskStat != null){
-									if(subtaskStat.containsKey("poiFinish")){
-										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
-										subtask.put("poiTotal",subtaskStat.get("poiTotal"));
-									}
-									if(subtaskStat.containsKey("tipsFinish")){
-										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
-										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
-									}
-								}else{
-									subtask.put("poiFinish",0);
-									subtask.put("poiTotal",0);
-									subtask.put("tipsFinish",0);
-									subtask.put("tipsTotal",0);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}		
+							
 						list.add(subtask);
 					}
 					page.setTotalCount(total);

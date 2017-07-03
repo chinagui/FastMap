@@ -172,11 +172,14 @@ public class MetaController extends BaseController {
 //          String[] result = py.pyVoiceConvert(word, null, adminId, null);
             
             String result = py.pyPolyphoneConvert(word, adminId);
+            String voiceStr = py.voiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();
 
                 json.put("phonetic", result);
+                
+                json.put("voicefile", voiceStr);
 
                 return new ModelAndView("jsonView", success(json));
             } else {

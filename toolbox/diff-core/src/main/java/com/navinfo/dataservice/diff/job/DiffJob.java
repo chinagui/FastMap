@@ -82,11 +82,10 @@ public class DiffJob extends AbstractJob
 			logOpGen.generate(actId);
 			if(logTables.size()>0){
 				fillLogDetailOldNew();
-				fillLogDetailOb();
-				fillLogDetailGeo();
 				calcLogDetailGrid();
 			}
 			response("完整履历填充完成。",null);
+			this.exeResultMsg="本次差分履历action_id为："+actId+"。";
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -231,13 +230,6 @@ public class DiffJob extends AbstractJob
 					.getExceptions().get(0));
 		log.debug("各生成履历任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 	}
-	protected void fillLogDetailOb(){
-		
-	}
-	protected void fillLogDetailGeo(){
-		
-	}
-
 
 	protected void initPoolExecutor() {
 		// int poolSize = config.getThreadCount();
@@ -354,7 +346,7 @@ public class DiffJob extends AbstractJob
 		@Override
 		public void run() {
 			try{
-				int logCount = diffScanner.scan(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+				int logCount = diffScanner.scan(table,leftAccess, rightAccess);
 				if(logCount>0){
 					logTables.add(table);
 				}

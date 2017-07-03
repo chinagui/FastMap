@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.Page;
 @Controller
 public class ProgramController extends BaseController {
@@ -201,6 +202,63 @@ public class ProgramController extends BaseController {
 			String msg=service.pushMsg(userId, programIds);
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 获取待数据规划项目列表
+	 * 应用场景：中线项目下，具有同时满足草稿状态+未进行数据规划的采集任务的项目列表
+	 * @author songhe
+	 * @return Map
+	 */
+	@RequestMapping(value = "/program/unPlanlist")
+	public ModelAndView unPlanlist(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(dataJson.containsKey("condition")){
+				dataJson = dataJson.getJSONObject("condition");
+			}
+			
+			List<Map<String, Object>> data = service.unPlanlist(dataJson);
+			Map<String, Object> result = new HashMap<String, Object>();
+			result.put("totalCount", data.size());
+			result.put("result", data);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			log.error("子任务查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	/**
+	 * 获取质检子任务的项目列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/program/unPlanQualitylist")
+	public ModelAndView unPlanQualitylist(HttpServletRequest request) {
+		try{	
+			JSONObject data = service.unPlanQualitylist();
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	//获取待规划子任务的项目列表
+	@RequestMapping(value = "/program/unPlanSubtasklist")
+	public ModelAndView unPlanSubtasklist(HttpServletRequest request){
+		try {
+			JSONObject data = service.unPlanSubtasklist();
+			return new ModelAndView("jsonView",success(data));
+		} catch (Exception e) {
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}

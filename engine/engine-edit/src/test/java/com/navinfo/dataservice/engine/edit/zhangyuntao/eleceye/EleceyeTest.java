@@ -55,7 +55,7 @@ public class EleceyeTest extends InitApplication {
 
     @Test
     public void deleteEleceye() {
-        String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','objId':100281916}";
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RDELECTRONICEYE\",\"objId\":500000005,\"infect\":1}";
         TestUtil.run(requester);
     }
 

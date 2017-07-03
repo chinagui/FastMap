@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 import net.sf.json.JSON;
@@ -16,8 +18,11 @@ import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -57,6 +62,7 @@ import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 
 /**
  * 查询进程
@@ -64,11 +70,26 @@ import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 public class SearchProcess {
 
 	private Connection conn;
+	private static final Logger logger = Logger.getLogger(SearchProcess.class);
 
 	public SearchProcess(Connection conn) throws Exception {
 
 		this.conn = conn;
 
+	}
+
+	public SearchProcess() throws Exception {
+
+	}
+
+	private int dbId;
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
 	}
 
 	private JSONArray array;
@@ -169,30 +190,75 @@ public class SearchProcess {
 
 		JSONObject json = new JSONObject();
 
-		SearchFactory factory = new SearchFactory(conn);
-
 		try {
 
-			for (ObjType type : types) {
-				List<SearchSnapshot> list = null;
+			// 1.计算瓦片的几何
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			// 2 根据瓦片计算
+			Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator
+					.wkt2Geometry(wkt));
+			Map<String, List<SearchSnapshot>> map = new HashMap<String, List<SearchSnapshot>>();
+			for (int dbId : dbIds) {
+				try {
+					logger.info("dbId========" + dbId);
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+					SearchFactory factory = new SearchFactory(conn);
+					for (ObjType type : types) {
+						if (dbId == this.getDbId()) {
+							if (!this.getBasicObjForRender(type)) {
+								continue;
+							}
+						}
+						List<SearchSnapshot> list = null;
+						if (type == ObjType.IXPOI) {
+							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+							list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
+									gap, this.getArray());
+						} else {
+							ISearch search = factory.createSearch(type);
+							list = search.searchDataByTileWithGap(x, y, z, gap);
+						}
+						if (map.containsKey(type.toString())) {
+							List<SearchSnapshot> snapshots = map.get(type
+									.toString());
 
-				if (type == ObjType.IXPOI) {
-					IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,
-							this.getArray());
-				} else {
-					ISearch search = factory.createSearch(type);
-					list = search.searchDataByTileWithGap(x, y, z, gap);
+							for (SearchSnapshot snapshot : list) {
+								if (!snapshots.contains(snapshot)) {
+									snapshots.add(snapshot);
+								}
+
+							}
+						} else {
+							map.put(type.toString(), list);
+						}
+
+					}
+				} catch (Exception e) {
+
+					throw e;
+
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
+			}
+			for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
 				JSONArray array = new JSONArray();
 
-				for (SearchSnapshot snap : list) {
+				for (SearchSnapshot snap : entry.getValue()) {
 
 					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
 				}
 
-				json.accumulate(type.toString(), array, getJsonConfig());
+				json.accumulate(entry.getKey(), array, getJsonConfig());
+
 			}
+
 		} catch (Exception e) {
 
 			throw e;
@@ -200,6 +266,39 @@ public class SearchProcess {
 		} finally {
 		}
 		return json;
+	}
+
+	private boolean getBasicObjForRender(ObjType type) {
+		if (type == ObjType.RDLINK) {
+			return true;
+		} else if (type == ObjType.RDNODE) {
+			return true;
+		} else if (type == ObjType.ADNODE) {
+			return true;
+		} else if (type == ObjType.ADLINK) {
+			return true;
+		} else if (type == ObjType.ADFACE) {
+			return true;
+		} else if (type == ObjType.LUNODE) {
+			return true;
+		} else if (type == ObjType.LULINK) {
+			return true;
+		} else if (type == ObjType.LUFACE) {
+			return true;
+		} else if (type == ObjType.LCNODE) {
+			return true;
+		} else if (type == ObjType.LCLINK) {
+			return true;
+		} else if (type == ObjType.LCFACE) {
+			return true;
+		} else if (type == ObjType.RWLINK) {
+			return true;
+		} else if (type == ObjType.RWNODE) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 	/**
@@ -851,8 +950,8 @@ public class SearchProcess {
 			for (ObjType type : types) {
 				List<SearchSnapshot> list = null;
 
-					ISearch search = factory.createSearch(type);
-					list = search.searchDataByTileWithGap(x, y, z, gap);
+				ISearch search = factory.createSearch(type);
+				list = search.searchDataByTileWithGap(x, y, z, gap);
 				JSONArray array = new JSONArray();
 
 				for (SearchSnapshot snap : list) {

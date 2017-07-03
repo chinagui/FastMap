@@ -23,7 +23,7 @@ import net.sf.json.JSONObject;
  * @author zhangli5174
  *
  */
-public class Subtask implements Serializable  {
+public class Subtask extends BaseObj  implements Serializable{
 	private Integer subtaskId ;
 	private String name ;
 //	private Integer blockId;
@@ -43,7 +43,7 @@ public class Subtask implements Serializable  {
 	private String descp ;
 	private Map<Integer,Integer> gridIds = new HashMap<Integer,Integer>();
 	private Integer dbId ;
-	private Integer groupId;
+	private int groupId;
 //	private String blockManName;
 //	private String taskName;
 	private String version;
@@ -76,111 +76,18 @@ public class Subtask implements Serializable  {
 	}
 	public Subtask (){
 	}
-	//***************zl 2016.11.03*****************
-	public Subtask(Integer subtaskId, String name, Integer blockId, Integer blockManId, Integer cityId, Integer taskId,
-			String geometry, Integer stage, Integer type, Integer createUserId, Timestamp createDate, Integer exeUserId,
-			Integer exeGroupId, Integer status, Timestamp planStartDate, Timestamp planEndDate, String descp,
-			List<Integer> gridIds, Integer dbId, Integer groupId, String blockManName, String taskName, String version,
-			Integer executerId, String executer, int percent, JSONObject geometryJSON, Integer qualitySubtaskId,
-			Integer isQuality, Integer qualityExeUserId, Timestamp qualityPlanStartDate, Timestamp qualityPlanEndDate,
-			Integer qualityTaskStatus,Integer referId) {
-		super();
-		this.subtaskId = subtaskId;
-		this.name = name;
-//		this.blockId = blockId;
-//		this.blockManId = blockManId;
-//		this.cityId = cityId;
-		this.taskId = taskId;
-		this.geometry = geometry;
-		this.stage = stage;
-		this.type = type;
-		this.createUserId = createUserId;
-		this.createDate = createDate;
-		this.exeUserId = exeUserId;
-		this.exeGroupId = exeGroupId;
-		this.status = status;
-		this.planStartDate = planStartDate;
-		this.planEndDate = planEndDate;
-		this.descp = descp;
-//		this.gridIds = gridIds;
-		this.dbId = dbId;
-		this.groupId = groupId;
-//		this.blockManName = blockManName;
-//		this.taskName = taskName;
-		this.version = version;
-		this.executerId = executerId;
-		this.executer = executer;
-		this.percent = percent;
-		this.geometryJSON = geometryJSON;
-		this.qualitySubtaskId = qualitySubtaskId;
-		this.isQuality = isQuality;
-//		this.qualityExeUserId = qualityExeUserId;
-//		this.qualityPlanStartDate = qualityPlanStartDate;
-//		this.qualityPlanEndDate = qualityPlanEndDate;
-//		this.qualityTaskStatus = qualityTaskStatus;
-		this.referId = referId;
-	}
-
-
-	public Subtask (Integer subtaskId ,
-			String name,
-			Integer blockId,
-			Integer blockManId,
-			Integer cityId,
-			Integer taskId,
-			String geometry,
-			Integer stage,
-			Integer type,
-			Integer createUserId,
-			Timestamp createDate,
-			Integer exeUserId,
-			Integer exeGroupId,
-			Integer status,
-			Timestamp planStartDate,
-			Timestamp planEndDate,
-			String descp,
-			String blockManName,						
-			String taskName,	
-			List<Integer> gridIds,
-			Integer dbId,
-			Integer groupId,
-			JSONObject geometryJSON){
-		this.subtaskId=subtaskId ;
-		this.name = name;
-//		this.blockId=blockId ;
-//		this.blockManId=blockManId ;
-//		this.cityId=cityId ;
-		this.taskId=taskId ;
-		this.geometry=geometry ;
-		this.stage=stage ;
-		this.type=type ;
-		this.createUserId=createUserId ;
-		this.createDate=createDate ;
-		this.exeUserId=exeUserId ;
-		this.exeGroupId = exeGroupId;
-		this.status=status ;
-		this.planStartDate=planStartDate ;
-		this.planEndDate=planEndDate ;
-		this.descp=descp ;
-//		this.blockManName = blockManName;		
-//		this.taskName = taskName;
-//		this.gridIds = gridIds;
-		this.dbId = dbId;
-		this.groupId = groupId;
-		this.geometryJSON = geometryJSON;
-	}
 	public int getGroupId(){
 		return groupId;
 	}
 	public void setGroupId(int groupId) {
-		this.groupId = groupId;
+		if(this.checkValue("GROUP_ID",this.groupId,groupId)){this.groupId = groupId;}
 	}
 	public String getName(){
 		if(null==name){return "";}
 		return name;
 	}
 	public void setName(String name) {
-		this.name = name;
+		if(this.checkValue("NAME",this.name,name)){this.name = name;}
 	}
 	public int getDbId(){
 		return dbId;
@@ -199,33 +106,15 @@ public class Subtask implements Serializable  {
 		return list;
 	}
 	public void setGridIds(Map<Integer,Integer> list) {
-//		for(Map.Entry<String, Integer> entry:list.entrySet()){
-//			this.gridIds.put(Integer.parseInt(entry.getKey()), entry.getValue());
-//		}
 		this.gridIds = list;
 	}
 	
-//	public void setGridIds(JSONObject list) {
-//		for(Object gridId:list.keySet()){
-//			int k = Integer.parseInt(gridId.toString());
-//			int v =Integer.parseInt(list.get(gridId).toString()); 
-//			this.gridIds.put(k, v);
-//		}
-//	}
-
-
-//	public String getTaskName(){
-//		return taskName;
-//	}
-//	public void setTaskName(String taskName) {
-//		this.taskName = taskName;
-//	}
 	public Integer getSubtaskId() {
 		if(null==subtaskId){return 0;}
 		return subtaskId;
 	}
 	public void setSubtaskId(Integer subtaskId) {
-		this.subtaskId = subtaskId;
+		if(this.checkValue("SUBTASK_ID",this.subtaskId,subtaskId)){this.subtaskId = subtaskId;}
 	}
 //	public Integer getBlockId() {
 //		if(null==blockId){return 0;}
@@ -239,77 +128,77 @@ public class Subtask implements Serializable  {
 		return taskId;
 	}
 	public void setTaskId(Integer taskId) {
-		this.taskId = taskId;
+		if(this.checkValue("TASK_ID",this.taskId,taskId)){this.taskId = taskId;}
 	}
 	public String getGeometry() {
 		if(null==geometry){return "";}
 		return geometry;
 	}
 	public void setGeometry(String geometry) {
-		this.geometry = geometry;
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){this.geometry = geometry;}
 	}
 	public Integer getStage() {
 		return stage;
 	}
 	public void setStage(Integer stage) {
-		this.stage = stage;
+		if(this.checkValue("STAGE",this.stage,stage)){this.stage = stage;}
 	}
 	public Integer getType() {
 		return type;
 	}
 	public void setType(Integer type) {
-		this.type = type;
+		if(this.checkValue("TYPE",this.type,type)){this.type = type;}
 	}
 	public Integer getCreateUserId() {
 		if(null==createUserId){return 0;}
 		return createUserId;
 	}
 	public void setCreateUserId(Integer createUserId) {
-		this.createUserId = createUserId;
+		if(this.checkValue("CREATE_USER_ID",this.createUserId,createUserId)){this.createUserId = createUserId;}
 	}
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
 	public void setCreateDate(Timestamp createDate) {
-		this.createDate = createDate;
+		if(this.checkValue("CREATE_DATE",this.createDate,createDate)){this.createDate = createDate;}
 	}
 	public Integer getExeUserId() {
 		if(null==exeUserId){return 0;}
 		return exeUserId;
 	}
 	public void setExeUserId(Integer exeUserId) {
-		this.exeUserId = exeUserId;
+		if(this.checkValue("EXE_USER_ID",this.exeUserId,exeUserId)){this.exeUserId = exeUserId;}
 	}
 	public Integer getExeGroupId() {
 		if(null==exeGroupId){return 0;}
 		return exeGroupId;
 	}
 	public void setExeGroupId(Integer exeGroupId) {
-		this.exeGroupId = exeGroupId;
+		if(this.checkValue("EXE_GROUP_ID",this.exeGroupId,exeGroupId)){this.exeGroupId = exeGroupId;}
 	}
 	public Integer getStatus() {
 		return status;
 	}
 	public void setStatus(Integer status) {
-		this.status = status;
+		if(this.checkValue("STATUS",this.status,status)){this.status = status;}
 	}
 	public Timestamp getPlanStartDate() {
 		return planStartDate;
 	}
 	public void setPlanStartDate(Timestamp planStartDate) {
-		this.planStartDate = planStartDate;
+		if(this.checkValue("PLAN_START_DATE",this.planStartDate,planStartDate)){this.planStartDate = planStartDate;}
 	}
 	public Timestamp getPlanEndDate() {
 		return planEndDate;
 	}
 	public void setPlanEndDate(Timestamp planEndDate) {
-		this.planEndDate = planEndDate;
+		if(this.checkValue("PLAN_END_DATE",this.planEndDate,planEndDate)){this.planEndDate = planEndDate;}
 	}
 	public String getDescp() {
 		return descp;
 	}
 	public void setDescp(String descp) {
-		this.descp = descp;
+		if(this.checkValue("DESCP",this.descp,descp)){this.descp = descp;}
 	}
 	//***************zl 2016.11.03*****************
 	//新增质检子任务字段
@@ -318,7 +207,7 @@ public class Subtask implements Serializable  {
 	}
 
 	public void setQualitySubtaskId(Integer qualitySubtaskId) {
-		this.qualitySubtaskId = qualitySubtaskId;
+		if(this.checkValue("QUALITY_SUBTASK_ID",this.qualitySubtaskId,qualitySubtaskId)){this.qualitySubtaskId = qualitySubtaskId;}
 	}
 	//是否是质检子任务
 	public Integer getIsQuality() {
@@ -326,7 +215,7 @@ public class Subtask implements Serializable  {
 	}
 
 	public void setIsQuality(Integer isQuality) {
-		this.isQuality = isQuality;
+		if(this.checkValue("IS_QUALITY",this.isQuality,isQuality)){this.isQuality = isQuality;}
 	}
 	//增质检子任务执行人字段(只在实体中使用,数据库表中无此字段)
 	public Integer getQualityExeUserId() {
@@ -654,12 +543,12 @@ public class Subtask implements Serializable  {
 		return referId;
 	}
 	public void setReferId(Integer referId) {
-		this.referId = referId;
+		if(this.checkValue("REFER_ID",this.referId,referId)){this.referId = referId;}
 	}
 	public int getWorkKind() {
 		return workKind;
 	}
 	public void setWorkKind(int workKind) {
-		this.workKind = workKind;
+		if(this.checkValue("WORK_KIND",this.workKind,workKind)){this.workKind = workKind;}
 	}
 }

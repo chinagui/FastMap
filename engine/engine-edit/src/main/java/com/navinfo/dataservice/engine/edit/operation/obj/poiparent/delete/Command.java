@@ -40,7 +40,8 @@ public class Command extends AbstractCommand implements ICommand {
 		return requester;
 	}
 
-	public Command(JSONObject json) {
+	public Command(JSONObject json, String requester) {
+	    this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 
 		this.objId = json.getInt("objId");

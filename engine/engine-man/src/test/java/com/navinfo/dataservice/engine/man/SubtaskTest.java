@@ -55,6 +55,40 @@ public class SubtaskTest extends InitApplication{
 	}
 	
 	@Test
+	public void testPaintRefer() throws Exception {
+		// TODO Auto-generated constructor stub
+		/*
+		 * if(condition.containsKey("lineWkt")){
+				lineWkt=condition.getString("lineWkt");
+			}else{
+				id1=condition.getInt("id1");
+				id2=condition.getInt("id2");
+			}
+		 */
+		/*
+		 * POLYGON ((116.3625 39.50833,116.3625 40.8125, 116.9875 40.8125,116.9875 39.50833,116.3625 39.50833))
+		 * LINESTRING(116.6001 40.9001,116.5807 39.78,116.6022 39.5)
+		 * 
+		 * LINESTRING(116.3001 39.7,117.2 39.7)
+		 * 
+		 * LINESTRING(116.3001 39.7,116.7 39.7)
+		 */
+		//String parameter ="{\"lineWkt\":\"LINESTRING(116.3001 39.7,116.7 39.7)\"}"; 
+		String parameter ="{\"id1\":23,\"id2\":24}"; 
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		int taskId=135;
+		service.paintRefer(taskId, dataJson);	
+		System.out.print("end paintRefer");
+	}
+	
+	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
 		String parameter ="{\"taskId\":617;\"name\":\"江苏省宿迁市城区_20170612_多源组test1_me\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
@@ -72,14 +106,14 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.queryBySubtaskId(285);
+		Map<String, Object> result = service.query(362,1);
 		System.out.print(result);
 	}
 	
 	@Test
 	public void testListByUser() throws Exception {
-		AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"type\":0,\"stage\":0}");
+		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -102,10 +136,11 @@ public class SubtaskTest extends InitApplication{
 			dataJson.remove("platForm");
 		}
 		if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
-			dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			//dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			dataJson.put("exeUserId", 1664);
 		}
         Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
-        			
+        System.out.print(page.getResult());			
 	}
 		@Override
 	@Before
@@ -114,12 +149,41 @@ public class SubtaskTest extends InitApplication{
 	}	
 		
 	@Test
-	public void testQualitylist() throws Exception
+	public void testUnPlanQualitylist() throws Exception
 	{
 		try {
-			System.out.println(SubtaskService.getInstance().qualitylist(208));
+			System.out.println(SubtaskService.getInstance().unPlanQualitylist(208));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	//删除质检圈(测试)
+	@Test
+	public void testQualityDelete() throws Exception
+	{
+		System.out.println(SubtaskService.getInstance().qualityDelete(3));
+	}
+	
+	//获取质检圈(测试)
+	@Test
+	public void testQualityList() throws Exception
+	{
+		System.out.println(SubtaskService.getInstance().qualitylist(362));
+	}
+	
+		@Test
+	public void testQueryListReferByWkt() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter = "{\"blockId\":0,\"wkt\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		System.out.println(service.queryListReferByWkt(dataJson)); 
 	}
 }

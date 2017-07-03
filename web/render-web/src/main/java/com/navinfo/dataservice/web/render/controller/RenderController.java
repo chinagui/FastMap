@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
-import com.navinfo.dataservice.commons.util.StringUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -82,27 +82,8 @@ public class RenderController extends BaseController {
 					if (t == ObjType.RDLINK || t == ObjType.ADLINK
 							|| t == ObjType.RWLINK) {
 						tileTypes.add(t);
-					} else {
-						gdbTypes.add(t);
 					}
 				}
-
-				if (!gdbTypes.isEmpty()) {
-
-					conn = DBConnector.getInstance().getConnectionById(dbId);
-
-					SearchProcess p = new SearchProcess(conn);
-					p.setArray(array);
-					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y,
-							z, gap);
-
-					if (data == null) {
-						data = new JSONObject();
-					}
-
-					data.putAll(jo);
-				}
-
 				if (!tileTypes.isEmpty()) {
 					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z,
 							dbId);
@@ -115,10 +96,9 @@ public class RenderController extends BaseController {
 				}
 
 			} else {
-				conn = DBConnector.getInstance().getConnectionById(dbId);
-
-				SearchProcess p = new SearchProcess(conn);
+				SearchProcess p = new SearchProcess();
 				p.setArray(array);
+				p.setDbId(dbId);
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			}
@@ -218,27 +198,27 @@ public class RenderController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-//			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			// JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-//			int x = jsonReq.getInt("x");
-//
-//			int y = jsonReq.getInt("y");
-//
-//			int z = jsonReq.getInt("z");
-//
-//			int gap = jsonReq.getInt("gap");
-//
-//			String mdFlag = jsonReq.getString("mdFlag");
+			// int x = jsonReq.getInt("x");
+			//
+			// int y = jsonReq.getInt("y");
+			//
+			// int z = jsonReq.getInt("z");
+			//
+			// int gap = jsonReq.getInt("gap");
+			//
+			// String mdFlag = jsonReq.getString("mdFlag");
 
-//			JSONArray types = new JSONArray();
-//			if (jsonReq.containsKey("types")) {
-//				types = jsonReq.getJSONArray("types");
-//			}
-//
-//			JSONArray noQFilter = new JSONArray();
-//			if (jsonReq.containsKey("noQFilter")) {
-//				noQFilter = jsonReq.getJSONArray("noQFilter");
-//			}
+			// JSONArray types = new JSONArray();
+			// if (jsonReq.containsKey("types")) {
+			// types = jsonReq.getJSONArray("types");
+			// }
+			//
+			// JSONArray noQFilter = new JSONArray();
+			// if (jsonReq.containsKey("noQFilter")) {
+			// noQFilter = jsonReq.getJSONArray("noQFilter");
+			// }
 
 			TipsSelector selector = new TipsSelector();
 
@@ -325,4 +305,81 @@ public class RenderController extends BaseController {
 		}
 	}
 
+	/**
+	 * @Title: getinfoByTile
+	 * @Description: 情报图层的render 服务
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 *             void
+	 * @throws
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月28日 下午4:10:00
+	 */
+	@RequestMapping(value = "/info/getByTileWithGap")
+	public void getinfoByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			// JSONArray array = null;
+
+			JSONArray type = jsonReq.getJSONArray("types");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			List<ObjType> types = new ArrayList<ObjType>();
+
+			for (int i = 0; i < type.size(); i++) {
+				types.add(ObjType.valueOf(type.getString(i)));
+			}
+
+			JSONObject data = null;
+
+			if (z >= 13) {
+
+				// conn = DBConnector.getInstance().getConnectionById(dbId);
+				conn = DBConnector.getInstance().getRenderConnection();
+				System.out.println(conn);
+				SearchProcess p = new SearchProcess(conn);
+				// p.setArray(array);
+				data = p.searchInfoByTileWithGap(types, x, y, z, gap);
+
+			}
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }

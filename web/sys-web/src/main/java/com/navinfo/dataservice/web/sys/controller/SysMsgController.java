@@ -381,6 +381,32 @@ public class SysMsgController extends BaseController {
 		}
 	}*/
 	
+	/**
+	 * 处理监控系统邮件信息
+	 */
+	@RequestMapping(value = "/monitor/emailMessage")
+	public ModelAndView handleMonitorMessage(HttpServletRequest request){
+		try{
+			// 发送邮件
+			String tos = request.getParameter("tos");
+			if (StringUtils.isEmpty(tos)) {
+				throw new IllegalArgumentException("tos参数不能为空。");
+			}
+			String subject = request.getParameter("subject");
+			if (StringUtils.isEmpty(subject)) {
+				throw new IllegalArgumentException("subject参数不能为空。");
+			}
+			String content = request.getParameter("content");
+			if (StringUtils.isEmpty(content)) {
+				throw new IllegalArgumentException("content参数不能为空。");
+			}
+			SysMsgService.getInstance().handleMonitorMessage(tos, subject, content);
+			return new ModelAndView("jsonView", success("监控系统邮件发送成功!"));
+		}catch(Exception e){
+			log.error("监控系统邮件发送失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 	
 	/**
 	 * 测试发消息的临时接口

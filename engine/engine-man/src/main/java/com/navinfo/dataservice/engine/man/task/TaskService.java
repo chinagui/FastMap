@@ -3759,7 +3759,8 @@ public class TaskService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT DISTINCT t.task_id,t.name,t.block_id FROM TASK T, SUBTASK S  WHERE T.PROGRAM_ID = "+programId);
 			sb.append(" AND T.TASK_ID = S.TASK_ID AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
-
+			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
+			
 			String selectSql= sb.toString();
 			log.info("unPlanQualitylist sql :" + selectSql);
 
@@ -4013,7 +4014,7 @@ public class TaskService {
 				sb.append(programId);
 
 				String selectSql= sb.toString();
-				log.info("getProgramByCityId sql :" + selectSql);
+				log.info("unPlanSubtasklist sql :" + selectSql);
 
 				ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
 					public JSONObject handle(ResultSet rs) throws SQLException {

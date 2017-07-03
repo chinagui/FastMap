@@ -43,6 +43,8 @@ public abstract class AbstractJob implements Runnable {
 	
 	protected List<Integer> lockDbIds;
 	protected List<FmEditLock> editLocks;
+	
+	protected String exeResultMsg=null;
 
 	public AbstractJob(JobInfo jobInfo){
 		this.jobInfo=jobInfo;
@@ -58,7 +60,7 @@ public abstract class AbstractJob implements Runnable {
 			lock();
 			response("初始化任务执行环境及相关操作已完成...",null);
 			execute();
-			endJob(JobStatus.STATUS_SUCCESS,"job执行成功");
+			endJob(JobStatus.STATUS_SUCCESS,"job执行成功。"+(StringUtils.isEmpty(exeResultMsg)?"":exeResultMsg));
 		}catch(Exception e){
 			exception = e;
 			log.error(e.getMessage(),e);

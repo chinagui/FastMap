@@ -2539,8 +2539,9 @@ public class ProgramService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT DISTINCT P.PROGRAM_ID,P.NAME FROM PROGRAM P, TASK T, SUBTASK S");
 			sb.append(" WHERE P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
-			sb.append(" AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
-
+			sb.append(" AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1 ");
+			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
+			
 			String selectSql= sb.toString();
 			log.info("unPlanQualitylist sql :" + selectSql);
 
@@ -2581,7 +2582,7 @@ public class ProgramService {
 			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
 			
 			String selectSql= sb.toString();
-			log.info("getProgramByCityId sql :" + selectSql);
+			log.info("unPlanSubtasklist sql :" + selectSql);
 
 			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
 				public JSONObject handle(ResultSet rs) throws SQLException {

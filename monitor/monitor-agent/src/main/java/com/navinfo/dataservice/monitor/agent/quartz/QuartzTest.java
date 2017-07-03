@@ -3,14 +3,17 @@ package com.navinfo.dataservice.monitor.agent.quartz;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.navinfo.dataservice.monitor.agent.runjob.ServiceJob;
+import com.navinfo.dataservice.monitor.agent.runjob.TomcatJob;
+
 public class QuartzTest {
 
 	public static void main(String[] args) {  
         try {  
             String job_name = "动态任务调度service"; 
             String tomcat_name = "动态任务调度tomcat";
-            QuartzManager.addJob(job_name, ServiceJob.class, "0/5 * * * * ?");
-            QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/10 * * * * ?");
+            QuartzManager.addJob(job_name, ServiceJob.class, "0/5 * * * * ?",null);
+            QuartzManager.addJob(tomcat_name, TomcatJob.class, "0/10 * * * * ?",null);
             QuartzManager.startJobs();
             Thread.sleep(50000);  
             System.out.println("【移除定时】开始...");    

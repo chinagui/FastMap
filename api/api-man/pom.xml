@@ -38,5 +38,10 @@
 		<groupId>net.sf.ezmorph</groupId>
 		<artifactId>ezmorph</artifactId>
 	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>commons</artifactId>
+	</dependency>
   </dependencies>
 </project>

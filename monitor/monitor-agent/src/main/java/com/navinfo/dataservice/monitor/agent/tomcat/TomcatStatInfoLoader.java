@@ -97,9 +97,9 @@ public class TomcatStatInfoLoader {
 					int activeCount = dbJobj.getInt("ActiveCount");//当前活跃连接数
 					int LogicConnectCount = dbJobj.getInt("LogicConnectCount");//逻辑连接建立总数
 					int LogicCloseCount = dbJobj.getInt("LogicCloseCount");//逻辑连接关闭总数
-					int PhysicalConnectCount = dbJobj.getInt("PhysicalConnectCount");//物理连接建立总数
-					int PhysicalCloseCount = dbJobj.getInt("ActiveCount");//物理关闭总数
-					int unclosedCount = (LogicConnectCount-LogicCloseCount)+(PhysicalConnectCount-PhysicalCloseCount);
+//					int PhysicalConnectCount = dbJobj.getInt("PhysicalConnectCount");//物理连接建立总数
+//					int PhysicalCloseCount = dbJobj.getInt("ActiveCount");//物理关闭总数
+					int unclosedCount = (LogicConnectCount-LogicCloseCount);
 					StatInfo statInfo_db_unclosed = new StatInfo();
 					statInfo_db_unclosed.setEndpoint(ip);
 					statInfo_db_unclosed.setMetric("fos.tomcat.jdbc.unclosedConn");

@@ -6,12 +6,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -20,10 +20,10 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSearch implements ISearch {
-
+	private static final Logger log = Logger.getLogger(RdLinkSearch.class);
+	
 	private Connection conn;
 
 	public RdLinkSearch(Connection conn) {
@@ -237,23 +237,35 @@ public class RdLinkSearch implements ISearch {
 
 		String sql = "with tmp1 as  "
 				+ "("
-					+ "select LANE_NUM , link_pid,direct, kind,special_traffic,function_class, s_node_pid, e_node_pid,length,imi_code, geometry "
+					+ " select l.LANE_NUM , l.link_pid,l.direct, l.kind,l.special_traffic,l.function_class, l.s_node_pid, l.e_node_pid,l.length,l.imi_code, l.geometry,p.is_plan_selected  "
 					+ "    from rd_link l , data_plan p   "
-					+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' "
-					+ " and u_record != 2 "
-					+ " and l.u_record != 2 and l.link_pid = p.pid and p.data_type = 2 and p.task_id = :2 "
-				+ "), tmp2 as  (select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits     from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid), tmp3 as  (select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid) select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */            b.link_pid, c.name             from rd_link_name b, rd_name c            where b.name_groupid = c.name_groupid              and b.name_class = 1              and b.seq_num = 1              and c.lang_code = 'CHI'              and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
+					+ " where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' "
+					+ " and l.u_record != 2 "
+					+ " and l.link_pid = p.pid and p.data_type = 2 and p.task_id = :2 "
+				+ "), "
+				+ "tmp2 as  "
+				+ "("
+					+ "select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits  from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid"
+				+ "), "
+				+ "tmp3 as  "
+				+ "("
+					+ "select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid"
+				+ ") "
+					
+				+ "select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */    b.link_pid, c.name  from rd_link_name b, rd_name c   where b.name_groupid = c.name_groupid   and b.name_class = 1    and b.seq_num = 1   and c.lang_code = 'CHI'  and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
 
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
+			log.info("sql: "+sql);
 			pstmt = conn.prepareStatement(sql);
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
+			pstmt.setInt(2, taskId);
 
 			resultSet = pstmt.executeQuery();
 

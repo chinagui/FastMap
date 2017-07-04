@@ -1422,7 +1422,7 @@ public class Transaction {
         // 计算删除数据
         calcDbIdRefResultList(result.getDelObjects(), dbIds);
 
-        logger.info(String.format("本次跨大区操作涉及数据库ID:[%s]", Arrays.toString(dbIds.toArray())));
+        logger.info(String.format("本次操作涉及数据库ID:[%s]", Arrays.toString(dbIds.toArray())));
 
         JSONObject json = JSONObject.fromObject(requester);
         dbIds.remove(Integer.valueOf(process.getCommand().getDbId()));
@@ -1899,6 +1899,7 @@ public class Transaction {
             IRow row = rowIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
+                logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
                 rowIterator.remove();
                 pidIterator.remove();
             }
@@ -1919,10 +1920,10 @@ public class Transaction {
                 try {
                     return method.invoke(row);
                 } catch (IllegalAccessException e) {
-                    logger.error("根据属性名获取IRow的属性值", e);
+                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
-                    logger.error("根据属性名获取IRow的属性值", e);
+                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
                     e.printStackTrace();
                 }
             }

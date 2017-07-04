@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Test;
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.navicommons.database.Page;
@@ -72,7 +71,7 @@ public class RdNameResultsTest {
 				Page page = null;
 				//List<JSONObject> page =null;
 				try {
-					page = a.listCheckResultsByJobId(jsonReq, jobId, jobUuid, 78, tips);
+				//	page = a.listCheckResultsByJobId(jsonReq, jobId, jobUuid, 78, tips);
 					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
 					 System.out.println(page.getResult());
 					 System.out.println(page.getTotalCount());
@@ -99,7 +98,7 @@ public class RdNameResultsTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void checkResultListByTask(){
 		Connection conn =null;
 		try{
@@ -107,7 +106,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'4471ce577cbd4588886a3ed9672a8a0d','tableName':'rdName','params':{'name':'Jin','nameId':'647501','adminId':'440000','namePhonetic':'','ruleCode':'CHR70107','information':'中文中'}}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','tableName':'rdName','params':{'name':'东河沿南','nameId':'3862625','adminId':'320000','namePhonetic':'Dong He Yan Nan Lu','ruleCode':'CHR60010','information':'汉字与'}}");	
 			
 				NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
@@ -131,6 +130,38 @@ public class RdNameResultsTest {
 		}
 	}
 	
+	
+	@Test
+	public void checkResultListByJobId(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "fm_meta_trunk", "fm_meta_trunk").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','sortby':'-rank','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+				
+				Page page = null;
+				//List<JSONObject> page =null;
+				try {
+					Map adminMap = new HashMap();
+					page = a.listCheckResultsByJobId(jsonReq, 29, "e22f39fb816c471cbaaf914b7bbf38cf");
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println("哈哈哈: "+page.getResult());
+					 System.out.println(page.getTotalCount());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
 	
 	//@Test
 	public void listCheckResultsRuleIds(){
@@ -171,7 +202,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['rule','level','information','adminName']}");
+			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','data':['rule','level','information','adminName']}");
 //			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid']}");
 				String taskName = "";
 				taskName = jsonReq.getString("taskName");
@@ -264,5 +295,64 @@ public class RdNameResultsTest {
 		}
 	}
 	
+//	@Test
+	public void updateCheckLogStatusForRdTest(){
+			Connection conn =null;
+			try{
+				conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+						"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+						//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+				
+				JSONObject jsonReq = JSONObject.fromObject("{'id':'4554635','type':3}");	//
+				
+				String id = jsonReq.getString("id");
+
+				int type = jsonReq.getInt("type");
+					NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+					
+					try {
+						selector.updateCheckLogStatusForRd(id, type);
+
+						 System.out.println(" end ");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		}
 	
+//	@Test
+	public void checkPoiResultList(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			JSONObject jsonReq = JSONObject.fromObject("{'pid':500000008}");	
+			
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+				JSONArray checkResultsArr = null;
+				//List<JSONObject> page =null;
+				try {
+					int pid = jsonReq.getInt("pid");
+					checkResultsArr = a.poiCheckResultList(pid);
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println("哈哈哈: "+checkResultsArr);
+					 System.out.println(checkResultsArr.size());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
 }

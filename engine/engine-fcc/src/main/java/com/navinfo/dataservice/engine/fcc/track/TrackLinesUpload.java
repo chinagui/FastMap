@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
-import net.sf.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -14,25 +14,44 @@ import org.apache.hadoop.hbase.util.Bytes;
 public class TrackLinesUpload extends TrackUpload{
     @Override
     public String getSourceRowkey(JSONObject json) {
-        String segmentId = json.getString("segmentId");
-        return segmentId;
+        String a_prjName=json.getString("prjName");
+        String a_weekSeconds=json.getString("weekSeconds");
+        return a_prjName + a_weekSeconds;
     }
 
     @Override
     public Put generatePut(JSONObject json, String rowkey) throws Exception {
         Put put = new Put(rowkey.getBytes());
-        put.addColumn("attribute".getBytes(), "a_uuid".getBytes(),
+        put.addColumn("attribute".getBytes(), "a_id".getBytes(),
                 json.getString("id").getBytes());
-        put.addColumn("attribute".getBytes(), "a_startTime".getBytes(),
-                json.getString("startTime").getBytes());
-        put.addColumn("attribute".getBytes(), "a_endTime".getBytes(),
-                Bytes.toBytes(json.getInt("endTime")));
+        put.addColumn("attribute".getBytes(), "a_weekSeconds".getBytes(),
+                Bytes.toBytes(json.getDouble("weekSeconds")));
+        put.addColumn("attribute".getBytes(), "a_direction".getBytes(),
+                Bytes.toBytes(json.getDouble("direction")));
+        put.addColumn("attribute".getBytes(), "a_speed".getBytes(),
+                Bytes.toBytes(json.getDouble("speed")));
+        put.addColumn("attribute".getBytes(), "a_recordTime".getBytes(),
+                json.getString("recordTime").getBytes());
         put.addColumn("attribute".getBytes(), "a_user".getBytes(),
-                json.getString("userId").getBytes());
+                Bytes.toBytes(json.getInteger("userId")));
+        put.addColumn("attribute".getBytes(), "a_deviceNum".getBytes(),
+                json.getString("deviceNum").getBytes());
+        put.addColumn("attribute".getBytes(), "a_hdop".getBytes(),
+                Bytes.toBytes(json.getDouble("hdop")));
+        put.addColumn("attribute".getBytes(), "a_height".getBytes(),
+                Bytes.toBytes(json.getDouble("altitude")));
+        put.addColumn("attribute".getBytes(), "a_posType".getBytes(),
+                Bytes.toBytes(json.getInteger("posType")));
+        put.addColumn("attribute".getBytes(), "a_satNum".getBytes(),
+                Bytes.toBytes(json.getInteger("satNum")));
+        put.addColumn("attribute".getBytes(), "a_mediaFlag".getBytes(),
+                Bytes.toBytes(json.getInteger("mediaFlag")));
+        put.addColumn("attribute".getBytes(), "a_linkId".getBytes(),
+                Bytes.toBytes(json.getInteger("linkId")));
+        put.addColumn("attribute".getBytes(), "a_prjName".getBytes(),
+                json.getString("prjName").getBytes());
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
                 json.getString("geometry").getBytes());
-        put.addColumn("attribute".getBytes(), "a_segmentId".getBytes(),
-                json.getString("segmentId").getBytes());
         return put;
     }
 

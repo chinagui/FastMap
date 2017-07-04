@@ -1,17 +1,17 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -43,7 +43,8 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class FMBAT20194 extends BasicBatchRule {
 	
-	private Map<Long, List<Long>>  childrenMap = new HashMap<Long, List<Long>>();
+	private Map<Long,Long> childPidParentPid;
+	private Map<Long, List<Long>> childrenMap;
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
@@ -51,14 +52,30 @@ public class FMBAT20194 extends BasicBatchRule {
 		for(BasicObj obj:batchDataList){
 			pidList.add(obj.objPid());
 		}
+		
+		childPidParentPid = IxPoiSelector.getParentPidsByChildrenPids(getBatchRuleCommand().getConn(), pidList);
 		childrenMap = IxPoiSelector.getChildrenPidsByParentPidList(getBatchRuleCommand().getConn(), pidList);
 		
-		Set<Long> childPids = new HashSet<Long>();
-		for (Long parentPid:childrenMap.keySet()) {
-			childPids.addAll(childrenMap.get(parentPid));
+		Set<Long> parentPids = new HashSet<Long>();
+		
+		if(!childPidParentPid.isEmpty()){
+			for (Long childPid:childPidParentPid.keySet()) {
+				parentPids.add(childPidParentPid.get(childPid));
+			}
 		}
 		
-		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(childPids, ObjectName.IX_POI, null, false);
+		if(!childrenMap.isEmpty()){
+			for (Long childPid:childrenMap.keySet()) {
+				parentPids.addAll(childrenMap.get(childPid));
+			}
+		}
+		if(parentPids.size()==0){
+			return;
+		}
+		
+		Set<String> referSubrow =  new HashSet<String>();
+		referSubrow.add("IX_POI_GASSTATION");
+		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(parentPids, ObjectName.IX_POI, referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 
 	}
@@ -67,70 +84,155 @@ public class FMBAT20194 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (!(poiObj.getIxPoiParents().size()>0)) {
-			return;
+		boolean isParent = false;
+		boolean isChild = false;
+		
+		if(!childPidParentPid.isEmpty()){
+			if(childPidParentPid.containsKey(poi.getPid())){
+				isChild = true;
+			}
 		}
 		
-		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230215")) {
-			return;
+		if(!childrenMap.isEmpty()){
+			if(childrenMap.containsKey(poi.getPid())){
+				isParent = true;
+			}
 		}
 		
-		List<Long> childrenList = childrenMap.get(poi.getPid());
-		
-		boolean flag = true;
-		
-		if(poi.getHisOpType().equals(OperationType.INSERT)){
-			flag = true;
+		if(isChild){
+			if (!childPidParentPid.containsKey(poi.getPid())) {
+				return;
+			}
+			if(!judgeChildKindCode(poi.getKindCode())){
+				return;
+			}
+			Long parentPid = childPidParentPid.get(poi.getPid());
+			
+			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
+			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
+			if (!parentPoi.getKindCode().equals("230215")) {
+				return;
+			}
+
+			boolean flag = false;
+			
+			if(poi.getHisOpType().equals(OperationType.INSERT)){
+				flag = true;
+			}
+			
+			if(poi.getHisOpType().equals(OperationType.UPDATE)){
+				if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
+					String kindCode=poi.getKindCode();
+					String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+					if(!kindCode.equals(oldKindCode)){
+						flag = true;
+					}
+				}
+			}
+			
+			List<Long> poiPids=new ArrayList<Long>();
+			poiPids.add(poiObj.getMainrow().getObjPid());
+			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByTBRowIDEditStatus(getBatchRuleCommand().getConn(), poiPids);
+			for(List<LogDetail> value:logs.values()){
+				for(LogDetail LogDetail:value){
+					if(LogDetail.getTbNm().equals("IX_POI_CHILDREN")){
+						flag = true;
+					}
+				}
+			}
+			
+			String type = "1";//1： 大陆 		2：港澳
+			
+			if(!flag){return;}
+			
+			List<IxPoiGasstation> gasstationList = parentPoiObj.getIxPoiGasstations();
+			if (gasstationList!=null&&!gasstationList.isEmpty()) {
+				for (IxPoiGasstation gasstation:gasstationList) {
+					String service = gasstation.getService();
+					service = getService(poi,service,type);
+					gasstation.setService(service);
+				}
+			} else {
+				IxPoiGasstation gasstation = parentPoiObj.createIxPoiGasstation();
+				gasstation.setPoiPid(parentPoi.getPid());
+				String service = gasstation.getService();
+				service = getService(poi,service,type);
+				gasstation.setService(service);
+			}
 		}
 		
-		if(poi.getHisOpType().equals(OperationType.UPDATE)){
+		if(isParent){
+			if (poiObj.getIxPoiParents()==null||poiObj.getIxPoiParents().isEmpty()) {
+				return;
+			}
+			
+			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230215")) {
+				return;
+			}
+			
+			List<Long> childrenList = childrenMap.get(poi.getPid());
+			
+			boolean flag = false;
+			
 			for (Long childPid:childrenList) {
 				BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoi childPoi = (IxPoi) childObj.getMainrow();
-				if(childPoi.getHisOpType().equals(OperationType.INSERT)||
-						childPoi.getHisOpType().equals(OperationType.UPDATE)||
-						childPoi.getHisOpType().equals(OperationType.DELETE)){
-					flag = true;
+				String kindCode=childPoi.getKindCode();
+				flag = judgeChildKindCode(kindCode);
+				if(flag){
 					break;
 				}
 			}
 			
-			if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
-				String newKindCode=poi.getKindCode();
-				String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
-				if(!newKindCode.equals(oldKindCode)){
-					flag = true;
-				}
+			if(!flag){return;}//判断子分类是否正确
+			
+			if(poi.getHisOpType().equals(OperationType.INSERT)){//父新增
+				flag = true;
 			}
-		}
-		
-		for (Long childPid:childrenList) {
-			BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
-			IxPoi childPoi = (IxPoi) childObj.getMainrow();
-			if(childPoi.hisOldValueContains(IxPoi.KIND_CODE)){
-				String newKindCode=childPoi.getKindCode();
-				if(newKindCode.equals("130105")||newKindCode.equals("140203")||newKindCode.equals("140302")
-						||newKindCode.equals("210215")||newKindCode.equals("110101")||newKindCode.equals("110102")
-						||newKindCode.equals("110103")||newKindCode.equals("110200")||newKindCode.equals("110301")
-						||newKindCode.equals("110302")||newKindCode.equals("110303")||newKindCode.equals("110304")
-						||newKindCode.equals("120101")||newKindCode.equals("120102")||newKindCode.equals("120103")
-						||newKindCode.equals("120104")||newKindCode.equals("120201")||newKindCode.equals("120202")){
-					String oldKindCode=(String) childPoi.getHisOldValue(IxPoi.KIND_CODE);
-					if(!newKindCode.equals(oldKindCode)){
+			
+			if(poi.getHisOpType().equals(OperationType.UPDATE)){
+				if(poi.hisOldValueContains(IxPoi.KIND_CODE)){//父改分类
+					String kindCode=poi.getKindCode();
+					String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+					if(!kindCode.equals(oldKindCode)){
 						flag = true;
+					}
+				}
+				for (Long childPid:childrenList) {
+					BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);//父子关系修改
+					IxPoi childPoi = (IxPoi) childObj.getMainrow();
+					if(childPoi.getHisOpType().equals(OperationType.INSERT)||
+							childPoi.getHisOpType().equals(OperationType.UPDATE)||
+							childPoi.getHisOpType().equals(OperationType.DELETE)){
+						flag = true;
+						break;
 					}
 				}
 				
 			}
-		}
-		
-		String type = "1";//1： 大陆 		2：港澳
-		
-		if(!flag){return;}
-		
-		List<IxPoiGasstation> gasstationList = poiObj.getIxPoiGasstations();
-		if (gasstationList.size()>0) {
-			for (IxPoiGasstation gasstation:gasstationList) {
+			
+			
+			String type = "1";//1： 大陆 		2：港澳
+			
+			if(!flag){return;}
+			
+			List<IxPoiGasstation> gasstationList = poiObj.getIxPoiGasstations();
+			if (gasstationList!=null&&!gasstationList.isEmpty()) {
+				for (IxPoiGasstation gasstation:gasstationList) {
+					String service = gasstation.getService();
+					for (Long childPid:childrenList) {
+						BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+						IxPoi childPoi = (IxPoi) childObj.getMainrow();
+						service = getService(childPoi,service,type);
+					}
+					gasstation.setService(service);
+				}
+			} else {
+				IxPoiGasstation gasstation = poiObj.createIxPoiGasstation();
+				gasstation.setPoiPid(poi.getPid());
 				String service = gasstation.getService();
 				for (Long childPid:childrenList) {
 					BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
@@ -139,18 +241,9 @@ public class FMBAT20194 extends BasicBatchRule {
 				}
 				gasstation.setService(service);
 			}
-		} else {
-			IxPoiGasstation gasstation = poiObj.createIxPoiGasstation();
-			gasstation.setPoiPid(poi.getPid());
-			String service = gasstation.getService();
-			for (Long childPid:childrenList) {
-				BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childPid);
-				IxPoi childPoi = (IxPoi) childObj.getMainrow();
-				service = getService(childPoi,service,type);
-			}
-			gasstation.setService(service);
 		}
-
+		
+		
 	}
 	
 	private String getService(IxPoi childPoi,String service,String type) {
@@ -237,6 +330,19 @@ public class FMBAT20194 extends BasicBatchRule {
 			}
 		}
 		return service;
+	}
+	
+	public boolean judgeChildKindCode(String kindCode){
+		boolean flag = false;
+		if(kindCode.equals("130105")||kindCode.equals("140203")||kindCode.equals("140302")
+				||kindCode.equals("210215")||kindCode.equals("110101")||kindCode.equals("110102")
+				||kindCode.equals("110103")||kindCode.equals("110200")||kindCode.equals("110301")
+				||kindCode.equals("110302")||kindCode.equals("110303")||kindCode.equals("110304")
+				||kindCode.equals("120101")||kindCode.equals("120102")||kindCode.equals("120103")
+				||kindCode.equals("120104")||kindCode.equals("120201")||kindCode.equals("120202")){
+				flag = true;
+		}
+		return flag;
 	}
 
 }

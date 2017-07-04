@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -291,6 +292,99 @@ public class ColumnController extends BaseController {
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * 常规作业员下拉列表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/queryWorkerList")
+	public ModelAndView queryWorkerList(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			
+			JSONArray data = control.getQueryWorkerList(userId, jsonReq);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * 质检问题查询
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/queryQcProblem")
+	public ModelAndView queryQcProblem(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			
+			JSONArray data = control.queryQcProblem(jsonReq);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 质检问题保存
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/saveQcProblem")
+	public ModelAndView saveQcProblem(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			
+			JSONObject data = control.saveQcProblem(jsonReq);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+
 			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));

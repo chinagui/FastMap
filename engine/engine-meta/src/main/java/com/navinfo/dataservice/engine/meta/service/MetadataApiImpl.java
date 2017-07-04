@@ -50,15 +50,21 @@ import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translates.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
+import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
+import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +89,27 @@ public class MetadataApiImpl implements MetadataApi {
             LevelSelector selector = new LevelSelector(conn);
 			String res = selector.getLevelForMulti(jsonObj);
             return res;
+        } catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        	throw e;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+	}
+	/**
+	 * 获取众包truck
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public int getCrowdTruck(String kindCode) throws Exception{
+		Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getMetaConnection();
+            TruckSelector selector = new TruckSelector(conn);
+			int truck = selector.getCrowdTruck(kindCode);
+            return truck;
         } catch (Exception e) {
         	log.error(e.getMessage(), e);
         	throw e;
@@ -290,9 +317,9 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public void nameImport(String name, double longitude, double latitude, String rowkey) throws Exception {
+	public void nameImport(String name, JSONObject gLocation, String rowkey, String sourceType) throws Exception {
 		RdNameImportor nameImportor = new RdNameImportor();
-		nameImportor.importName(name, longitude, latitude, rowkey);
+		nameImportor.importName(name, gLocation, rowkey, sourceType);
 
 	}
 
@@ -332,21 +359,13 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String[] pyConvert(String word) throws Exception {
 		PinyinConverter py = new PinyinConverter();
+		//String[] result = py.convert(word);
 
-		String[] result = py.convert(word);
-
+        String[] result = py.pyVoiceConvert(word, null, null, null);
+        CollectionUtils.reverseArray(result);
 		return result;
 	}
 	
-	@Override
-	public String pyConvertHz(String word) throws Exception {
-		PinyinConverter py = new PinyinConverter();
-
-		String result = py.convertHz(word);
-
-		return result;
-	}
-
 	@Override
 	public MetadataMap getMetadataMap() throws Exception {
 		MetadataMap result = new MetadataMap();
@@ -536,8 +555,8 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public String convertEng(String word) throws Exception {
-        EnglishConvert convert = new EnglishConvert();
+	public String convertEng(String word, String admin) {
+        EnglishConvert convert = new EnglishConvert(admin);
 		return convert.convert(word);
 	}
 	
@@ -545,6 +564,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType15();
 	}
 	
 	@Override
@@ -659,6 +684,8 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
 	}
+	
+	
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=9且HM_FLAG<>’HM’的PRE_KEY
 	 * @return List<String> pre_key列表
@@ -805,6 +832,10 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 	@Override
+	public Map<String, String> scPointCode2LevelOld() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2LevelOld();
+	}
+	@Override
 	public JSONObject getAdminMap() throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea();
 		return areaSelector.getAdminMap();
@@ -812,6 +843,136 @@ public class MetadataApiImpl implements MetadataApi {
 	private JSONObject getAdminMap(Connection conn) throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
+	}
+
+	
+	/**
+	 * @Title: pyConvert
+	 * @Description: 调用cop函数转拼音
+	 * @param word   待翻译的词  必填
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String pyConvert(String word, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.pyConvert(word, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: voiceConvert
+	 * @Description: 调用cop函数转语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String voiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.voiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	
+	/**
+	 * @Title: pyVoiceConvert
+	 * @Description: 调用cop函数转拼音及语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 			result[0] = resultSet.getString("phonetic");
+				result[1] = resultSet.getString("voicefile");
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String[] pyVoiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] result = py.pyVoiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: engConvert
+	 * @Description: 调用cop函数转英文
+	 * @param word   待翻译的词  必填
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String engConvert(String word, String adminId) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.engConvert(word, adminId);
+
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.metadata.iface.MetadataApi#getScPointTruckList()
+	 */
+	@Override
+	public List<Map<String, Object>> getScPointTruckList() throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT T.KIND,T.CHAIN,T.TYPE,T.TRUCK    ");
+			sb.append("   FROM SC_POINT_TRUCK T                 ");
+			
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>> (){
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						map.put("kind", rs.getString("KIND"));
+						map.put("chain", rs.getString("CHAIN"));
+						map.put("type", rs.getString("TYPE"));
+						map.put("truck", rs.getString("TRUCK"));
+						result.add(map);
+					}
+					return result;
+				}	
+	    	};				
+
+	    	return run.query(conn, sb.toString(), rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//获取重要POI的PID
+	@Override
+	public List<Integer> queryImportantPid() throws SQLException {
+		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
 	}
 
 }

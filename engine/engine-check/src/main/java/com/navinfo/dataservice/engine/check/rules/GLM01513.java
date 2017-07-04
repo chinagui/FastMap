@@ -8,8 +8,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import org.apache.poi.hssf.record.formula.functions.False;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

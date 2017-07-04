@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
@@ -11,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * 别名删除或新增批处理: 
@@ -25,10 +29,14 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author jch
  */
 public class FMBATM0101 extends BasicBatchRule {
-
+	private Map<Long,Long> pidAdminId;
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 
 	}
 
@@ -36,7 +44,10 @@ public class FMBATM0101 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		if (obj.objName().equals(ObjectName.IX_POI)) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
-
+			String adminId=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+				adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			}
 			// 查询别名中文列表
 			List<IxPoiName> brList = poiObj.getAliasCHIName();
 			if (brList.size()!=0) {
@@ -48,14 +59,14 @@ public class FMBATM0101 extends BasicBatchRule {
 						IxPoiName originEngAlias = poiObj.getOriginAliasENGName(br.getNameGroupid());
 						MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 						if (originEngAlias != null) {
-							originEngAlias.setName(metadataApi.convertEng(br.getName()));
+							originEngAlias.setName(metadataApi.convertEng(br.getName(),adminId));
 						} else {
 							IxPoiName poiName = (IxPoiName) poiObj.createIxPoiName();
 							poiName.setNameGroupid(br.getNameGroupid());
 							poiName.setLangCode("ENG");
 							poiName.setNameClass(3);
 							poiName.setNameType(2);
-							poiName.setName(metadataApi.convertEng(br.getName()));
+							poiName.setName(metadataApi.convertEng(br.getName(),adminId));
 						}
 					}
 

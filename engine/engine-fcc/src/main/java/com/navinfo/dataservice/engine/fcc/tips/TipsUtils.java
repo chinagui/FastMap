@@ -1,10 +1,20 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.List;
+import java.util.Map;
+
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @ClassName: TipsUtils.java
@@ -24,295 +34,213 @@ public class TipsUtils {
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
-	
-	
-	
-	/**
-	 * 组装Track(上传、接边、预处理都调用)
-	 * 
-	 * @param lifecycle
-	 * @param handler
-	 * @param oldTrackInfo
-	 * @param currentDate 
-	 * @param t_cStatus
-	 * @param t_dStatus
-	 * @param t_mStatus
-	 * @param t_fStatus 
-	 * @return
-	 */
-	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
-			int command, JSONArray oldTrackInfo, String t_operateDate,
-			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus,
-			int t_inMeth, int t_pStatus, int t_dInProc, int t_mInProc, int t_fStatus) {
 
-		JSONObject jsonTrack = new JSONObject();
-
-		jsonTrack.put("t_lifecycle", lifecycle);
-
-		jsonTrack.put("t_command", command);
-
-		jsonTrack.put("t_date", currentDate);//数据入库时服务器时间
-
-		jsonTrack.put("t_cStatus", t_cStatus);
-
-		jsonTrack.put("t_dStatus", t_dStatus);
-
-		jsonTrack.put("t_mStatus", t_mStatus);
-
-		//jsonTrack.put("t_inStatus", t_inStatus);
-
-		jsonTrack.put("t_inMeth", t_inMeth);
-		
-		jsonTrack.put("t_pStatus", t_pStatus);
-		
-		jsonTrack.put("t_dInProc", t_dInProc);
-		
-		jsonTrack.put("t_mInProc", t_mInProc);
-
-		JSONObject jsonTrackInfo = new JSONObject();
-
-		jsonTrackInfo.put("stage", stage);
-
-		jsonTrackInfo.put("date", t_operateDate); //t_operateDate 原值导入
-
-		jsonTrackInfo.put("handler", handler);
-
-		if (null == oldTrackInfo) {
-
-			oldTrackInfo = new JSONArray();
-		}
-
-		oldTrackInfo.add(jsonTrackInfo);
-
-		jsonTrack.put("t_trackInfo", oldTrackInfo);
-		
-
-		return jsonTrack;
-	}
 
 	/**
 	 * @Description:生成tip索引信息(目前上传用)
 	 * @param json（上传txt生成的json）
-	 * @param currentDate
+	 * @param stage
 	 * @return
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-12-27 上午10:08:16
 	 */
-	public static JSONObject generateSolrIndex(JSONObject json,
-			String currentDate) throws Exception {
+	public static TipsIndexModel generateSolrIndex(JSONObject json, int stage) throws Exception {
+		TipsIndexModel tipsIndexModel = new TipsIndexModel();
+		tipsIndexModel.setId(json.getString("rowkey"));
+		tipsIndexModel.setStage(stage);
+        tipsIndexModel.setT_date(json.getString("t_date"));//当前时间
+        tipsIndexModel.setT_operateDate(json.getString("t_operateDate"));//t_operateDate原值导入
+        tipsIndexModel.setT_lifecycle(json.getInt("t_lifecycle"));
+        tipsIndexModel.setT_command(json.getInt("t_command"));
+        tipsIndexModel.setHandler(json.getInt("t_handler"));
+        tipsIndexModel.setS_sourceType(json.getString("s_sourceType"));
+        tipsIndexModel.setS_sourceCode(json.getInt("s_sourceCode"));
+        tipsIndexModel.setG_guide(json.getString("g_guide"));
 
-		JSONObject index = new JSONObject();
+        JSONObject g_location = json.getJSONObject("g_location");
+        tipsIndexModel.setG_location(g_location.toString());
 
-		index.put("id", json.getString("rowkey"));
+        JSONObject deep = json.getJSONObject("deep");
+        tipsIndexModel.setDeep(deep.toString());
 
-		index.put("stage", 1);
-
-		index.put("t_date", currentDate); //当前时间
-
-		index.put("t_operateDate", json.getString("t_operateDate")); //t_operateDate原值导入
-
-		index.put("t_lifecycle", json.getInt("t_lifecycle"));
-
-		index.put("t_command", json.getInt("t_command"));
-
-		index.put("handler", json.getInt("t_handler"));
-
-		index.put("t_cStatus", json.getInt("t_cStatus"));
-
-		index.put("t_dStatus", json.getInt("t_dStatus"));
-
-		index.put("t_mStatus", json.getInt("t_mStatus"));
-		
-		//index.put("t_inStatus", json.getInt("t_inStatus"));
-
-		index.put("t_inMeth", json.getInt("t_inMeth"));
-		
-		index.put("t_dInProc", json.getInt("t_dInProc"));
-		
-		index.put("t_mInProc", json.getInt("t_mInProc"));
-		
-		index.put("t_pStatus", json.getInt("t_pStatus"));
-
-		index.put("s_sourceType", json.getString("s_sourceType"));
-
-		index.put("s_sourceCode", json.getInt("s_sourceCode"));
-
-		index.put("g_guide", json.getJSONObject("g_guide"));
-
-		JSONObject g_location = json.getJSONObject("g_location");
-
-		index.put("g_location", g_location);
-
-		JSONObject deep = json.getJSONObject("deep");
-
-		index.put("deep", deep.toString());
+        JSONObject feedback = json.getJSONObject("feedback");
+        tipsIndexModel.setFeedback(feedback.toString());
 
 		String sourceType = json.getString("s_sourceType");
 
-		JSONObject feedbacks = json.getJSONObject("feedback");
-
-		index.put("feedback", feedbacks.toString());
-
 		//这个主要是g_location:目前只用于tips的下载和渲染
-		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
-				g_location, feedbacks));
+        tipsIndexModel.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deep,
+                g_location, feedback));
 		
 		//统计坐标，用于其他的：tips的查询、统计等
-		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
-				g_location, feedbacks));
+        tipsIndexModel.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
+				g_location, feedback));
 
-		index.put("s_reliability", 100);
-		
-		 //???????
-		
+        tipsIndexModel.setS_reliability(json.getInt("s_reliability"));
+        tipsIndexModel.setS_qTaskId(json.getInt("s_qTaskId"));
+        tipsIndexModel.setS_mTaskId(json.getInt("s_mTaskId"));
+        tipsIndexModel.setS_qSubTaskId(json.getInt("s_qSubTaskId"));
+        tipsIndexModel.setS_mSubTaskId(json.getInt("s_mSubTaskId"));
+
+        String tipDiff = "{}";
 		if(json.containsKey("tipdiff")){
-			
-			index.put("tipdiff", json.getJSONObject("tipdiff"));
-			
-		}else{
-			index.put("tipdiff", "{}");
+            tipDiff = json.getString("tipdiff");
 		}
-		
-		index.put("s_qTaskId", json.getInt("s_qTaskId"));
-		
-		index.put("s_mTaskId", json.getInt("s_mTaskId"));
-		
-		index.put("t_fStatus", json.getInt("t_fStatus"));
-		
-		index.put("s_qSubTaskId", json.getInt("s_qSubTaskId"));
-		
-		index.put("s_mSubTaskId", json.getInt("s_mSubTaskId"));
-		
-		return index;
-		
+        tipsIndexModel.setTipdiff(tipDiff);
+
+		Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
+		tipsIndexModel.setRelate_links(relateMap.get("relate_links"));
+        tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
+
+        tipsIndexModel.setT_tipStatus(json.getInt("t_tipStatus"));
+        //Tips上传赋值为0，无需赋值
+//        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
+//        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
+//        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
+//        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
+
+		return tipsIndexModel;
 	}
-	
-
-	/**
-	 * @Description:新增，根据字段值，新增一个sorl Json(街边 预计处理用)
-	 * @param rowkey
-	 * @param stage
-	 * @param operateDate
-	 * @param t_lifecycle
-	 * @param t_command
-	 * @param user
-	 * @param t_cStatus
-	 * @param t_dStatus
-	 * @param t_mStatus
-	 * @param sourceType
-	 * @param s_sourceCode
-	 * @param g_guide
-	 * @param g_location
-	 * @param deepStr
-	 * @param feedBackArr
-	 * @return
-	 * @author: y
-	 * @param currentDate
-	 * @param s_reliability
-	 * @param s_mSubTaskId 
-	 * @param s_qSubTaskId 
-	 * @throws Exception
-	 * @time:2016-11-16 上午10:46:38
-	 */
-	public static JSONObject generateSolrIndex(String rowkey, int stage,
-			String operateDate, String currentDate, int t_lifecycle,
-			int t_command, int t_handler, int t_cStatus, int t_dStatus,
-			int t_mStatus, String sourceType, int s_sourceCode,
-			JSONObject g_guide, JSONObject g_location, JSONObject deep,
-			JSONObject feedbackObj, int s_reliability,int t_inMeth,
-			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus, int s_qSubTaskId, int s_mSubTaskId) throws Exception {
-		JSONObject index = new JSONObject();
-
-		index.put("id", rowkey);
-
-		index.put("stage", stage);
-
-		index.put("t_date", currentDate);
-
-		index.put("t_operateDate", operateDate);
-
-		index.put("t_lifecycle", t_lifecycle);
-
-		index.put("t_command", t_command);
-
-		index.put("handler", t_handler);
-
-		index.put("t_cStatus", t_cStatus);
-
-		index.put("t_dStatus", t_dStatus);
-
-		index.put("t_mStatus", t_mStatus);
-		
-		//index.put("t_inStatus", t_inStatus);
-		
-		index.put("t_inMeth", t_inMeth);
-
-		index.put("t_pStatus", t_pStatus);
-		
-		index.put("t_dInProc", t_dInProc);
-		
-		index.put("t_mInProc", t_mInProc);
-		
-		index.put("s_sourceType", sourceType);
-
-		index.put("s_sourceCode", s_sourceCode);
-		
-		if(g_guide==null){
-			
-			index.put("g_guide", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
-		}else{
-			
-			index.put("g_guide", g_guide);
-		}
-
-		if(g_location==null){
-			
-			index.put("g_location", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
-		}else{
-			
-			index.put("g_location", g_location);
-		}
 
 
-		if (deep != null && !deep.isNullObject()) {
-			
-			index.put("deep", deep.toString());
-		} else {
-			
-			index.put("deep", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
-		}
-	/*	JSONArray f_array=new JSONArray(); 
-		if(feedbackObj!=null){
-			f_array=feedbackObj.getJSONArray("f_array");
-		}*/
+    /**
+     * 新增，根据字段值，新增一个sorl Json(街边 预计处理用)
+     * @param rowkey
+     * @param stage
+     * @param operateDate
+     * @param handler
+     * @param trackJson
+     * @param sourceJson
+     * @param geomJson
+     * @param deepJson
+     * @param feedbackJson
+     * @return
+     * @throws Exception
+     */
+	public static TipsIndexModel generateSolrIndex(String rowkey, int stage, String operateDate, int handler,
+                                               JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
+                                               JSONObject deepJson, JSONObject feedbackJson) throws Exception {
+		TipsIndexModel tipsIndexModel = new TipsIndexModel();
+        tipsIndexModel.setId(rowkey);
+        tipsIndexModel.setStage(stage);
+        tipsIndexModel.setT_date(trackJson.getString("t_date"));//当前时间
+        tipsIndexModel.setT_operateDate(operateDate);//t_operateDate原值导入
+        tipsIndexModel.setT_lifecycle(trackJson.getInt("t_lifecycle"));
+        tipsIndexModel.setT_command(trackJson.getInt("t_command"));
+        tipsIndexModel.setHandler(handler);
+        tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
+        tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
+        if(StringUtils.isNotEmpty(sourceJson.getString("s_project"))) {
+            tipsIndexModel.setS_project(sourceJson.getString("s_project"));
+        }
+        com.alibaba.fastjson.JSONObject fastGuide = TipsUtils.netJson2fastJson(geomJson.getJSONObject("g_guide"));
+        tipsIndexModel.setG_guide(fastGuide.toString());
 
-		index.put("feedback", feedbackObj);
+        com.alibaba.fastjson.JSONObject fastLocation = TipsUtils.netJson2fastJson(geomJson.getJSONObject("g_location"));
+        JSONObject g_location = geomJson.getJSONObject("g_location");
+        tipsIndexModel.setG_location(fastLocation.toString());
 
-		//这个主要是g_location:目前只用于tips的下载和渲染
-		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
-				g_location, feedbackObj));
-		
-		//统计坐标，用于其他的：tips的查询、统计等
-		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
-				g_location, feedbackObj));
+        tipsIndexModel.setDeep(deepJson.toString());
 
-		index.put("s_reliability", s_reliability);
-		
-		index.put("tipdiff", "{}"); //???????
-		
-		index.put("s_qTaskId", s_qTaskId);
-		
-		index.put("s_mTaskId", s_mTaskId);
-		
-		index.put("t_fStatus", t_fStatus);
-		
-		index.put("s_qSubTaskId", s_qSubTaskId);
-		
-		index.put("s_mSubTaskId", s_mSubTaskId);
+        tipsIndexModel.setFeedback(feedbackJson.toString());
 
-		return index;
+        String sourceType = sourceJson.getString("s_sourceType");
+
+        //这个主要是g_location:目前只用于tips的下载和渲染
+        tipsIndexModel.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deepJson,
+                g_location, feedbackJson));
+
+        //统计坐标，用于其他的：tips的查询、统计等
+        tipsIndexModel.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deepJson,
+                g_location, feedbackJson));
+
+        tipsIndexModel.setS_reliability(sourceJson.getInt("s_reliability"));
+        tipsIndexModel.setS_qTaskId(sourceJson.getInt("s_qTaskId"));
+        tipsIndexModel.setS_mTaskId(sourceJson.getInt("s_mTaskId"));
+        tipsIndexModel.setS_qSubTaskId(sourceJson.getInt("s_qSubTaskId"));
+        tipsIndexModel.setS_mSubTaskId(sourceJson.getInt("s_mSubTaskId"));
+
+        String tipDiff = "{}";
+        tipsIndexModel.setTipdiff(tipDiff);
+
+        Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deepJson);
+        tipsIndexModel.setRelate_links(relateMap.get("relate_links"));
+        tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
+
+        tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
+        //Tips上传赋值为0，无需赋值
+//        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
+//        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
+//        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
+//        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
+
+        return tipsIndexModel;
 	}
+
+    public static TipsIndexModel generateSolrIndex(String rowkey, String operateDate,
+                                                   JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
+                                                   JSONObject deepJson, JSONObject feedbackJson) throws Exception {
+        JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
+        int size = trackInfoArr.size();
+        JSONObject lastTrackInfo = trackInfoArr.getJSONObject(size - 1);
+        TipsIndexModel tipsIndexModel = new TipsIndexModel();
+        tipsIndexModel.setId(rowkey);
+        tipsIndexModel.setStage(lastTrackInfo.getInt("stage"));
+        tipsIndexModel.setT_date(trackJson.getString("t_date"));//当前时间
+        tipsIndexModel.setT_operateDate(operateDate);//t_operateDate原值导入
+        tipsIndexModel.setT_lifecycle(trackJson.getInt("t_lifecycle"));
+        tipsIndexModel.setT_command(trackJson.getInt("t_command"));
+        tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
+        tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
+        tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
+
+        com.alibaba.fastjson.JSONObject fastGuide = TipsUtils.netJson2fastJson(geomJson
+                .getJSONObject("g_guide"));
+        tipsIndexModel.setG_guide(fastGuide.toString());
+
+        com.alibaba.fastjson.JSONObject fastLocation = TipsUtils.netJson2fastJson(geomJson
+                .getJSONObject("g_location"));
+        JSONObject g_location = geomJson.getJSONObject("g_location");
+        tipsIndexModel.setG_location(fastLocation.toString());
+
+        com.alibaba.fastjson.JSONObject fastDeep = TipsUtils.netJson2fastJson(deepJson);
+        tipsIndexModel.setDeep(fastDeep.toString());
+
+        tipsIndexModel.setFeedback(feedbackJson.toString());
+
+        String sourceType = sourceJson.getString("s_sourceType");
+
+        //这个主要是g_location:目前只用于tips的下载和渲染
+        tipsIndexModel.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deepJson,
+                g_location, feedbackJson));
+
+        //统计坐标，用于其他的：tips的查询、统计等
+        tipsIndexModel.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deepJson,
+                g_location, feedbackJson));
+
+        tipsIndexModel.setS_reliability(sourceJson.getInt("s_reliability"));
+        tipsIndexModel.setS_qTaskId(sourceJson.getInt("s_qTaskId"));
+        tipsIndexModel.setS_mTaskId(sourceJson.getInt("s_mTaskId"));
+        tipsIndexModel.setS_qSubTaskId(sourceJson.getInt("s_qSubTaskId"));
+        tipsIndexModel.setS_mSubTaskId(sourceJson.getInt("s_mSubTaskId"));
+
+        String tipDiff = "{}";
+        tipsIndexModel.setTipdiff(tipDiff);
+
+        Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deepJson);
+        tipsIndexModel.setRelate_links(relateMap.get("relate_links"));
+        tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
+
+        tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
+        //Tips上传赋值为0，无需赋值
+//        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
+//        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
+//        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
+//        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
+
+        return tipsIndexModel;
+    }
 
 	/**
 	 * @Description:生成一个tip的rowkey 原则：Tips新增：02+s_sourceType+uuid
@@ -414,87 +342,47 @@ public class TipsUtils {
 
 	}
 
-	/**
-	 * @Description:通过tips的json生成Solr索引
-	 * @param jsonInfo：和规格完全一直的json数据
-	 * @param currentDate
-	 * @return
-	 * @author: y
-	 * @param user 
-	 * @throws Exception 
-	 * @time:2017-3-13 下午5:03:43
-	 */
-	public static JSONObject generateSolrIndexFromTipsJson(JSONObject jsonInfo,
-			String currentDate) throws Exception {
-		
-		JSONObject index = new JSONObject();
-		JSONObject track=jsonInfo.getJSONObject("track");
-		JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
-		int size=trackInfoArr.size();
-		JSONObject lastTrackInfo=trackInfoArr.getJSONObject(size-1);
-		
-		String sourceType=jsonInfo.getJSONObject("source").getString("s_sourceType");
-		JSONObject g_location=jsonInfo.getJSONObject("geometry").getJSONObject("g_location");
-		JSONObject deep=jsonInfo.getJSONObject("deep");
-		JSONObject feedback=null;
-	    if(jsonInfo.containsKey("feedback")){
-	    	feedback=jsonInfo.getJSONObject("feedback");
-	    }
-		
-		index.put("id", jsonInfo.getString("rowkey"));
-		index.put("stage", lastTrackInfo.getInt("stage"));
-		index.put("t_date", currentDate);
-		index.put("t_operateDate", currentDate);
-		index.put("t_lifecycle", track.getInt("t_lifecycle"));
-		index.put("t_command", track.getInt("t_command"));
-		index.put("handler",lastTrackInfo.getInt("handler"));
-		index.put("s_sourceType",sourceType);
-		index.put("s_sourceCode",jsonInfo.getJSONObject("source").getInt("s_sourceCode"));
-		index.put("g_location",g_location);
-		index.put("g_guide",jsonInfo.getJSONObject("geometry").getJSONObject("g_guide").toString());
-		
-		//这个主要是g_location:目前只用于tips的下载和渲染
-		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
-				g_location, feedback));
-		
-		//统计坐标，用于其他的：tips的查询、统计等
-		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
-				g_location, feedback));
-	   
-	   index.put("deep",jsonInfo.getJSONObject("deep").toString());
-	   
-	   if(feedback!=null){
-		   index.put("feedback",feedback);
-	   }else{
-		   JSONArray  infoArr=new JSONArray();
-		   feedback=new JSONObject();
-		   feedback.put("f_array", infoArr);
-		   index.put("feedback",feedback);
-	   }
-	   
-	   index.put("s_reliability",jsonInfo.getJSONObject("source").getInt("s_reliability"));
-	   index.put("t_cStatus", track.getInt("t_cStatus"));
-	   index.put("t_dStatus", track.getInt("t_dStatus"));
-	   index.put("t_mStatus", track.getInt("t_mStatus"));
-	   index.put("t_inMeth", track.getInt("t_inMeth"));
-	   index.put("t_pStatus", track.getInt("t_pStatus"));
-	   index.put("t_dInProc", track.getInt("t_dInProc"));
-	   index.put("t_mInProc", track.getInt("t_mInProc"));
-	   System.out.println(jsonInfo.getJSONObject("source"));
-	   index.put("s_qTaskId", jsonInfo.getJSONObject("source").getInt("s_qTaskId"));
-	   index.put("s_mTaskId", jsonInfo.getJSONObject("source").getInt("s_mTaskId"));
-	   index.put("t_fStatus", track.getInt("t_fStatus"));
-	   
-	   if(jsonInfo.containsKey("tipdiff")){
-		   index.put("tipdiff", jsonInfo.getJSONObject("tipdiff").toString());
-	   }else{
-		   index.put("tipdiff", "{}");
-	   }
-	   
-	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
-	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
-	   
-	   return index;
-	}
+//    public static JSONObject stringToSFJson(String text) {
+//        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(text);
+//        JSONObject jsonObject = JsonUtils.fastJson2netJson(fastJson);
+//        return jsonObject;
+//    }
 
+    public static JSONObject stringToSFJson(String text) {
+        Map<String,Object> fastJson = com.alibaba.fastjson.JSONObject.parseObject(text,new TypeReference<Map<String,Object>>(){});
+        JSONObject jsonObject = new JSONObject();
+        for(String key : fastJson.keySet()) {
+            if(fastJson.get(key) == null) {
+                jsonObject.put(key, net.sf.json.JSONNull.getInstance());
+            }else {
+                jsonObject.put(key, fastJson.get(key));
+            }
+
+        }
+        return jsonObject;
+    }
+
+    public static com.alibaba.fastjson.JSONObject netJson2fastJson(JSONObject json)
+    {
+        com.alibaba.fastjson.JSONObject obj = new com.alibaba.fastjson.JSONObject();
+
+        for(Object key :json.keySet())
+        {
+
+
+            obj.put((String)key, json.get(key));
+        }
+
+        return obj;
+    }
+
+    public static void main(String[] args) throws Exception {
+        String parameter = "{\"subtaskId\":108,\"grids\":[46597623,47590731,47590700,47590730,47591701,46597711,47591700,46597730,46597633,46597720,50600122,46597603,46597613,47591603,47590603],\"mdFlag\":\"d\",\"workStatus\":5}";
+        JSONObject jsonObject = TipsUtils.stringToSFJson(parameter);
+        JSONArray girdArray = jsonObject.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(girdArray);
+        System.out.println(wkt);
+
+
+    }
 }

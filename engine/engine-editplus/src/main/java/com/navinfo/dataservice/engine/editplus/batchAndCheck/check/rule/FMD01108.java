@@ -78,7 +78,7 @@ public class FMD01108 extends BasicCheckRule {
 	
 	
 	public boolean judgeMacher(String str){
-		Pattern p = Pattern.compile("^[ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ]+$");
+		Pattern p = Pattern.compile(".*[ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ]+.*");
 		Matcher m = p.matcher(str);
 		return m.matches();
 	}

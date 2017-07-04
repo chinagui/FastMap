@@ -1,27 +1,18 @@
 package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.*;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdBranchSelector extends AbstractSelector {
 
@@ -742,7 +733,7 @@ public class RdBranchSelector extends AbstractSelector {
 		return rows;
 	}
 
-	public List<RdBranch> loadByLinkPids(List<Integer> linkPids, int linkType,
+	private List<RdBranch> loadByLinkPids(List<Integer> linkPids, int linkType,
 			boolean isLock) throws Exception {
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 
@@ -812,7 +803,6 @@ public class RdBranchSelector extends AbstractSelector {
 	 * 
 	 * @param nodePids
 	 *            不能超过1000个
-	 * @param isLock
 	 * @return
 	 */
 	public List<Integer> getPidByPassNode(List<Integer> nodePids)
@@ -868,7 +858,6 @@ public class RdBranchSelector extends AbstractSelector {
 	 * 
 	 * @param nodePids
 	 *            不能超过1000个
-	 * @param isLock
 	 * @return
 	 */
 	public List<Integer> getPidByInNode(List<Integer> nodePids) throws Exception {
@@ -912,9 +901,7 @@ public class RdBranchSelector extends AbstractSelector {
 	/**
 	 *  获取node关联link做为退出线的分歧pid
 	 * 
-	 * @param nodePids
-	 *            不能超过1000个
-	 * @param isLock
+	 * @param nodePid
 	 * @return
 	 */
 	public List<Integer> getPidByOutNode(int nodePid)
@@ -956,6 +943,44 @@ public class RdBranchSelector extends AbstractSelector {
 		}
 		
 		return pids;
+	}
+
+	public List<IRow> getsubTable(ObjType ObjType, List<Integer> branchPids, boolean isLock) throws Exception {
+
+		switch (ObjType) {
+			case RDBRANCHDETAIL:
+				return new AbstractSelector(RdSignasreal.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+
+			case RDBRANCHREALIMAGE:
+
+				return new AbstractSelector(RdBranchRealimage.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+
+			case RDBRANCHSCHEMATIC:
+
+				return new AbstractSelector(RdBranchSchematic.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+
+			case RDSIGNBOARD:
+
+				return new AbstractSelector(RdSignboard.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+
+			case RDSIGNASREAL:
+
+				return new AbstractSelector(RdSignasreal.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+
+			case RDSERIESBRANCH:
+
+				return new AbstractSelector(RdSeriesbranch.class, conn)
+						.loadRowsByParentIds(branchPids, isLock);
+			default:
+				break;
+		}
+
+		return new ArrayList<>();
 	}
 
 }

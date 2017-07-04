@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,14 +35,14 @@ public class ConvertUtil {
         while (-1 != sourceText.indexOf("//")) {
             sourceText = sourceText.replaceAll("//", "/");
         }
-        return sourceText.trim();
+        return sourceText;
     }
 
     public static String removeRepeatSpace(String sourceText){
         while (-1 != sourceText.indexOf("  ")) {
             sourceText = sourceText.replaceAll("  ", " ");
         }
-        return sourceText.trim();
+        return sourceText;
     }
 
     public static String trimSymbolSpace(String sourceText){
@@ -57,7 +60,7 @@ public class ConvertUtil {
         sourceText = sourceText.replaceAll("\\+ ", "+");
         sourceText = sourceText.replaceAll(" / ", "/");
         sourceText = sourceText.replaceAll("/ ", "/");
-        return sourceText;
+        return sourceText.trim();
     }
 
     public static String firstCapital(String sourceText){
@@ -140,8 +143,10 @@ public class ConvertUtil {
         if (TranslateConstant.HALF_TO_FULL == convertType) {
             for (Character c : sourceText.toCharArray()) {
                 wordValue = c.toString();
-                if (TranslateDictData.getInstance().getDictFhWidth().containsKey(wordValue)) {
-                    wordValue = TranslateDictData.getInstance().getDictFhWidth().get(wordValue);
+                for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictFhWidth().entrySet()) {
+                    if (String.valueOf(c).equals(entry.getKey())) {
+                        wordValue = StringUtils.isEmpty(entry.getValue()) ? wordValue : entry.getValue();
+                    }
                 }
                 result.append(wordValue);
             }
@@ -150,7 +155,7 @@ public class ConvertUtil {
                 wordValue = c.toString();
                 for (Map.Entry<String, String> e : TranslateDictData.getInstance().getDictFhWidth().entrySet()) {
                     if(e.getValue().equals(wordValue)){
-                        wordValue = e.getKey();
+                        wordValue = StringUtils.isEmpty(e.getKey()) ? wordValue : e.getKey();
                     }
                 }
                 result.append(wordValue);
@@ -173,17 +178,17 @@ public class ConvertUtil {
     }
 
     public static boolean isChinese(Character c) {
-        Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
-        if (ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
-                || ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
-                || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
-                || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B
-                || ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
-                || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS
-                || ub == Character.UnicodeBlock.GENERAL_PUNCTUATION) {
+        Character.UnicodeScript sc = Character.UnicodeScript.of(c);
+        if (sc == Character.UnicodeScript.HAN) {
             return true;
         }
         return false;
+    }
+
+    // 根据UnicodeBlock方法判断中文标点符号
+    public static boolean isChinesePunctuation(char c) {
+        String partten = "[\\pP‘’“”]";
+        return Pattern.compile(partten).matcher(String.valueOf(c)).matches();
     }
 
     public static boolean isLetter(char c) {
@@ -208,5 +213,9 @@ public class ConvertUtil {
         if ((c >= 'a' && c <= 'z') || (c >= 'ａ' && c <= 'ｚ'))
             return true;
         return false;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(isChinese('℃'));
     }
 }

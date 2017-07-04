@@ -5,9 +5,11 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.avro.data.Json;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
@@ -52,35 +55,32 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
-			
-			
-			//int userId = getUserIdFromRequest(request);
-			
 			int userId=jsonReq.getInt("user");
-
 			String sourceType = jsonReq.getString("sourceType");
-			
 			String memo=jsonReq.getString("memo");
-			
 			JSONObject deep = jsonReq.getJSONObject("deep"); //tips详细信息
-			
-			
+
+            if (!jsonReq.containsKey("qSubTaskId")) {
+                throw new IllegalArgumentException("参数错误：qSubTaskId不能为空。");
+            }
+            int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
 			if (StringUtils.isEmpty(sourceType)) {
 				throw new IllegalArgumentException("参数错误：sourceType不能为空。");
 			}
 			
-			if (tipsGeometry.isNullObject()||tipsGeometry==null) {
+			if (tipsGeometry.isNullObject() || tipsGeometry == null) {
 				throw new IllegalArgumentException("参数错误：geometry不能为空。");
 			}
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.create(sourceType, tipsGeometry, userId,deep,memo);
+			String rowkey = op.create(sourceType, tipsGeometry, userId, deep, memo, qSubTaskId);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkey));
 
 		} catch (Exception e) {
 
@@ -170,7 +170,16 @@ public class PretreatmentTipsController extends BaseController {
 			
 			int subTaskId=jsonReq.getInt("subtaskId"); //任务号
 			
-			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
+			int taskType=jsonReq.getInt("taskType"); //任务类型（中线或者是快线的任务号）
+			
+			//web传递的是1，或4，需要转成子任务类型
+			if(taskType == TaskType.Q_TASK_TYPE){
+				taskType=TaskType.Q_SUB_TASK_TYPE;
+			}
+			
+			else if(taskType == TaskType.M_TASK_TYPE){
+				taskType=TaskType.M_SUB_TASK_TYPE;
+			}
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -182,9 +191,13 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
 
-			return new ModelAndView("jsonView", success());
+			JSONObject  data=new JSONObject();
+			
+			data.put("rowkey", rowkey);
+
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
@@ -217,7 +230,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			String rowkey=jsonReq.getString("rowkey");
 			
@@ -237,12 +250,12 @@ public class PretreatmentTipsController extends BaseController {
 			if (tipsGeometry.isNullObject()||tipsGeometry==null) {
 				throw new IllegalArgumentException("参数错误：geometry不能为空。");
 			}
-			
+
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
 			op.editGeo(rowkey, tipsGeometry, user);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkey));
 
 		} catch (Exception e) {
 
@@ -291,12 +304,17 @@ public class PretreatmentTipsController extends BaseController {
 			if (pointGeo.isNullObject()||pointGeo==null) {
 				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 			}
+//
+//            if (!jsonReq.containsKey("qSubTaskId")) {
+//                throw new IllegalArgumentException("参数错误：qSubTaskId不能为空。");
+//            }
+//            int qSubTaskId = jsonReq.getInt("qSubTaskId");
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.breakLine(rowkey, pointGeo, user);
+			JSONArray rowkeyArray = op.breakLine(rowkey, pointGeo, user);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkeyArray));
 
 		} catch (Exception e) {
 
@@ -327,20 +345,13 @@ public class PretreatmentTipsController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		/*	JSONArray grids = jsonReq.getJSONArray("grids");
-
-
-			if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }*/
-
-			//int user = getUserIdFromRequest(request);  //不能用token是应为token需要改web.xml增加token的Filter配置。这样一来 所有的接口都需要token，但是采集端 的几口没有token会报错
-			
 			int user = jsonReq.getInt("user");
-			
+
+			int subTaskId = jsonReq.getInt("subTaskId");
+
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submit2Web( user);
+			op.submit2Web(user, subTaskId);
 
 			return new ModelAndView("jsonView", success());
 
@@ -450,7 +461,7 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
-	 * @Description:fc预处理（情报矢量化）tip新增或者修改
+	 * @Description:（情报矢量化+FCC??）tip新增或者修改
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -468,7 +479,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 			
 			JSONObject jsonInfo=null; //jsonInfo为全量的tips信息，需要符合规格定义
 			if(jsonReq.containsKey("jsonInfo")){
@@ -482,15 +493,17 @@ public class PretreatmentTipsController extends BaseController {
 			
 			int command = jsonReq.getInt("command"); //command,0：save or:1：update
 			
-			if (command!=0&&command!=1) {
+			if (command!=0 && command!=1) {
 				throw new IllegalArgumentException("参数错误：command不在范围内【0,1】");
 			}
 			
 			int user = jsonReq.getInt("user");
 
+			int dbId = jsonReq.getInt("dbId");
+
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			String rowkey=op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+			String rowkey = op.saveOrUpdateTips(jsonInfo, command, user, dbId); //新增或者修改一个tips
 			
 			JSONObject  data=new JSONObject();
 			
@@ -529,7 +542,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
 
 			JSONArray jsonInfoArr=null; //jsonInfo为全量的tips信息，需要符合规格定义
 			if(jsonReq.containsKey("jsonInfoArr")){

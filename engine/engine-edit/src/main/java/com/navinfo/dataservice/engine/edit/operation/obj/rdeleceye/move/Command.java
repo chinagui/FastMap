@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
@@ -67,8 +68,8 @@ public class Command extends AbstractCommand {
         JSONObject data = json.getJSONObject("data");
         this.pid = data.getInt("pid");
         int linkPid = data.getInt("linkPid");
-        double latitude = data.getDouble("latitude");
-        double longitude = data.getDouble("longitude");
+        double latitude = DoubleUtil.keepSpecDecimal(data.getDouble("latitude"));
+        double longitude = DoubleUtil.keepSpecDecimal(data.getDouble("longitude"));
         int direct = -1;
         if (data.containsKey("direct"))
             direct = Integer.valueOf(data.get("direct").toString());

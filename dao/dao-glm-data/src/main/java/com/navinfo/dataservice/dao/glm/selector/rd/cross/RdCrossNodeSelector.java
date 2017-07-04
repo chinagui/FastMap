@@ -29,13 +29,13 @@ public class RdCrossNodeSelector extends AbstractSelector {
 
 	/**
 	 * 根据nodePid查询路口
+	 * 
 	 * @param nodePid
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
-	public IRow loadByNodeId(int nodePid,boolean isLock) throws Exception
-	{
+	public IRow loadByNodeId(int nodePid, boolean isLock) throws Exception {
 		RdCrossNode node = null;
 
 		String sql = "select * from rd_cross_node where node_pid=(:1) and u_record !=2 ";
@@ -57,11 +57,11 @@ public class RdCrossNodeSelector extends AbstractSelector {
 
 			if (resultSet.next()) {
 				node = new RdCrossNode();
-				
+
 				ReflectionAttrUtils.executeResultSet(node, resultSet);
 			}
 		} catch (Exception e) {
-			logger.error("根据nodePid："+nodePid+" 查询路口出错");
+			logger.error("根据nodePid：" + nodePid + " 查询路口出错");
 			throw e;
 
 		} finally {
@@ -69,17 +69,54 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return node;
-	}	
-	
+	}
+
+	/***
+	 * 查询是否路口组成点
+	 * 
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	public int loadCrossNodeByNodePid(int nodePid) throws Exception {
+
+		String sql = "select pid from rd_cross_node where node_pid=(:1) and u_record !=2 ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return resultSet.getInt("pid");
+			}
+		} catch (Exception e) {
+			logger.error("根据nodePid：" + nodePid + " 查询路口出错");
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return 0;
+	}
+
 	/**
 	 * 根据node所关联路口组成的所有nodePid
+	 * 
 	 * @param nodePid
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> getCrossNodePidByNode(int nodePid)
-			throws Exception {
+	public List<Integer> getCrossNodePidByNode(int nodePid) throws Exception {
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -96,8 +133,7 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			pstmt.setInt(1, nodePid);
 
 			resultSet = pstmt.executeQuery();
-			
-			
+
 			while (resultSet.next()) {
 
 				nodePids.add(resultSet.getInt("NODE_PID"));

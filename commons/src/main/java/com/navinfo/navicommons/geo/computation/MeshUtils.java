@@ -1,17 +1,16 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +24,7 @@ public abstract class MeshUtils {
 
     private static Logger log = Logger.getLogger(MeshUtils.class);
 
-    public static void main(String[] args) throws Exception {
+   /* public static void main(String[] args) throws Exception {*/
         //		Set<String> meshes = new HashSet<String>();
         //		meshes.add("595671");
         //		meshes.add("595672");
@@ -216,16 +215,11 @@ public abstract class MeshUtils {
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08345, 116.50022, 40.08333)));
         //System.out.println(Arrays.toString(line2Meshes(116.50032, 40.08341, 116.50049, 40.0835)));
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08328, 116.50007, 40.08333)));
-        Geometry mesh = mesh2Jts("605612");
-        JSONObject json = new JSONObject();
-        json.put("type", "LineString");
-        json.put("coordinates", "[[116.24999910593033,40.09000063562161],[116.24999910593033,40.089891880564885],[116.24999910593033,40.08980056722269]]");
-        //json.put("coordinates","[[116.24981671571733,40.08986007480792],[116.25013053417204,40.08990316647509]]");
-        //json.put("coordinates","[[116.24980330467223,40.089813905134235],[116.2498891353607,40.08990932242532],[116.25007823109628,40.08992984225538]]");
-        Geometry link = GeoTranslator.geojson2Jts(json);
-        Geometry result = linkInterMeshPolygon(link, mesh);
-        System.out.println(result.getGeometryType());
-    }
+ /*       Geometry geo1 = GeoTranslator.wkt2Geometry("POLYGON ((116.5 39.75, 116.5 39.833333, 116.625 39.833333, 116.625 39.75, 116.5 39.75))");
+        Geometry geo2 = GeoTranslator.wkt2Geometry("POLYGON ((116.52351 39.74985, 116.52341 39.74997, 116.52353 39.74997, 116.52365 39.74997, 116.52351 39.74985))");
+        System.out.println(geo1.intersects(geo2));
+        System.out.println(mesh2Jts("595654").intersects(geo2));
+    }*/
 
 
     /**
@@ -373,7 +367,10 @@ public abstract class MeshUtils {
      * 计算线段所属图幅号，可以在图廓线上
      * 计算原则：1.只要有任意一点在图幅内部,2.两点都在图幅的边线上
      *
-     * @param line:[x1,y1,x2,y2]
+     * @param x1
+     * @param x2
+     * @param y1
+     * @param y2
      * @return
      */
     public static String[] line2Meshes(double x1, double y1, double x2, double y2) {
@@ -451,6 +448,11 @@ public abstract class MeshUtils {
                             lbMesh = rtMesh = m;
                             break;
                         }
+                    }
+                    // 左下、右上坐标的图幅号完全不相等（左下点处于左下左上图幅, 右上点处于右下右上图幅）
+                    if (StringUtils.isEmpty(lbMesh) || StringUtils.isEmpty(rtMesh)) {
+                        lbMesh = lbMeshes[0];
+                        rtMesh = rtMeshes[1];
                     }
                 }
             // 右上坐标处于四个图幅共用线
@@ -853,7 +855,7 @@ public abstract class MeshUtils {
     /**
      * 计算n圈的邻接图幅
      *
-     * @param meshId
+     * @param meshSet
      * @param extendCount
      * @return
      */
@@ -872,7 +874,7 @@ public abstract class MeshUtils {
     /**
      * 计算n圈的邻接图幅
      *
-     * @param meshId
+     * @param meshSet
      * @param extendCount
      * @return
      */
@@ -921,7 +923,7 @@ public abstract class MeshUtils {
 
     /***
      * @author zhaokk
-     * @param Geometry g
+     * @param  g
      * @return 图幅号
      * 判断是否图廓线
      * @throws Exception
@@ -977,7 +979,7 @@ public abstract class MeshUtils {
      * 判断grid是否被一个面包含
      *
      * @param face
-     * @param gridId
+     * @param meshId
      * @return
      */
     public static boolean meshInFace(double[] face, String meshId) {
@@ -1007,7 +1009,7 @@ public abstract class MeshUtils {
     /**
      * grid转wkt
      *
-     * @param gridId
+     * @param meshes
      * @return
      * @throws ParseException
      */
@@ -1026,5 +1028,96 @@ public abstract class MeshUtils {
             }
         }
         return geometry;
+    }
+
+    //rect:[minx,miny,maxx,maxy]
+    /**
+     * @Title: meshs2Rect
+     * @Description: TODO
+     * @param meshes
+     * @return  double[minx,miny,maxx,maxy] [最小经度,最小维度,最大经度,最大维度]
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年6月6日 下午4:20:55 
+     */
+    public static double[] meshs2Rect(Set<Integer> meshes){
+    	Set<Integer> xSet = new HashSet<Integer>();//所有经度集合
+    	Set<Integer> ySet = new HashSet<Integer>();//所有维度集合
+    	
+    	for(Integer mesh : meshes){
+    		String meshStr = mesh.toString();
+    		if(meshStr.length() != 6){
+    			log.info("不能识别图幅号: "+mesh);
+    			continue;
+    		}
+    		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
+    		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
+    		xSet.add(Integer.parseInt(xStr));
+    		ySet.add(Integer.parseInt(yStr));
+    	}
+    	int[] xArr = null;
+    	if(xSet != null && xSet.size() > 0){
+    		xArr = getMinMaxInteger(xSet);
+    	}
+    	int[] yArr = null;
+    	if(ySet != null && ySet.size() > 0){
+    		yArr = getMinMaxInteger(ySet);
+    	}
+    	
+    	String maxMesh = null;
+    	String minMesh = null;
+    	
+    	if(xArr.length == 2 && yArr.length ==2){
+    		String x0Str = xArr[0]+"";
+    		String x1Str = xArr[1]+"";
+    		
+    		String y0Str = yArr[0]+"";
+    		String y1Str = yArr[1]+"";
+    		
+    		minMesh= x0Str.substring(0,2) + y0Str.substring(0, 2)+x0Str.substring(2)+y0Str.substring(2);
+    		
+    		maxMesh= x1Str.substring(0,2) + y1Str.substring(0, 2)+x1Str.substring(2)+y1Str.substring(2);
+    	}
+    	
+    	double[] minPoint = mesh2Rect(minMesh);
+    	
+    	double[] maxPoint = mesh2Rect(maxMesh);
+    	
+//    	System.out.println(minPoint[0]+" , "+minPoint[1]+" , "+maxPoint[2]+" , "+maxPoint[3]);
+    	return new double[]{minPoint[0],minPoint[1],maxPoint[2],maxPoint[3]};
+    }
+    public static int[] getMinMaxInteger(Set<Integer> set){
+    	Integer max = Collections.max(set);
+    	Integer min = Collections.min(set);
+        return new int[]{min, max};
+    }
+
+    public static String[] geometry2Mesh(Geometry geometry) {
+        Set<String> result = new HashSet<>();
+        Coordinate[] coordinates = geometry.getCoordinates();
+        for (Coordinate coordinate : coordinates) {
+            result.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+        }
+        return result.toArray(new String[]{});
+    }
+
+    public static void main(String[] args) throws Exception {
+		Set<Integer> meshes = new HashSet<Integer>();
+		meshes.add(595671);
+		meshes.add(595672);
+		meshes.add(595661);
+		
+		double[] xy = meshs2Rect(meshes);
+		
+		System.out.println(xy);
+		
+		
+		
+    	/*Integer mesh = 595671;
+    	String meshStr = mesh.toString();
+		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
+		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
+		System.out.println(xStr);
+		System.out.println(yStr);*/
     }
 }

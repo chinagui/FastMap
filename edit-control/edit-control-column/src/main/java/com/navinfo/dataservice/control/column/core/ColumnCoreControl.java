@@ -18,10 +18,11 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
@@ -39,6 +40,7 @@ import net.sf.json.JSONObject;
  *
  */
 public class ColumnCoreControl {
+	private static final Logger logger = Logger.getLogger(ColumnCoreControl.class);
 
 	public int applyData(JSONObject jsonReq, long userId) throws Exception {
 		// TODO
@@ -46,9 +48,24 @@ public class ColumnCoreControl {
 		try {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-
 			int taskId = jsonReq.getInt("taskId");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int qcFlag=0;
+			int comSubTaskId=0;
+			int isQuality =subtask.getIsQuality();
+			//获取对应的常规任务信息
+			if(isQuality==1){
+				qcFlag=1;
+				Subtask comSubtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", 1);
+				comSubTaskId=comSubtask.getSubtaskId();
+			}else{
+				comSubTaskId=taskId;
+			}
+			//获取查询条件信息
+			JSONObject conditions=new JSONObject();
+			if(jsonReq.containsKey("conditions")){
+				conditions = jsonReq.getJSONObject("conditions");
+			}
 
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -77,7 +94,7 @@ public class ColumnCoreControl {
 
 				if (columnSecondWorkItems.contains(secondWorkItem)) {
 
-					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId);
+					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
 					int canApply = 100 - hasApply;
 					if (canApply == 0) {
@@ -85,7 +102,7 @@ public class ColumnCoreControl {
 					}
 
 					// 申请数据
-					List<Integer> pids = columnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
+					List<Integer> pids = columnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type,qcFlag,conditions,userId);
 					if (pids.size() == 0) {
 						// 库中未查到可以申请的数据，返回0
 						return 0;
@@ -99,12 +116,38 @@ public class ColumnCoreControl {
 						// 库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 						applyDataPids = pids;
 					}
-
+					
 					// 数据加锁， 赋值handler，task_id,apply_date
 					Timestamp timeStamp = new Timestamp(new Date().getTime());
 					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
-					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
+					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, comSubTaskId, timeStamp,qcFlag);
 					totalCount += applyDataPids.size();
+					
+					//常规申请需要打质检标记
+					if(isQuality==0){
+						double sampleLevel =((double )apiService.queryQualityLevel((int) userId, firstWorkItem))/100.0;
+						//别名打标机数据
+						List<Integer> hasAliasItemPids = new ArrayList<Integer>();
+						//补充打标记数据
+						List<Integer> suppSampDataPids = new ArrayList<Integer>();
+						
+						hasAliasItemPids=columnSelector.getHasAliasItemPids(applyDataPids,"FM-M01-01",userId);
+						logger.info("hasAliasItemPids:"+hasAliasItemPids);
+						if(hasAliasItemPids.size()>0){
+							updateQCFlag(hasAliasItemPids,conn,comSubTaskId,userId);
+						}
+						double hasSampleLevel=((double) hasAliasItemPids.size())/applyDataPids.size();
+						logger.info("hasSampleLevel:"+hasSampleLevel+" sampleLevel:"+sampleLevel);
+						if (Math.ceil(hasSampleLevel*100)<Math.ceil(sampleLevel*100)){
+							int ct=(int) Math.ceil(applyDataPids.size()*sampleLevel);
+							if(ct!=0){
+								applyDataPids.removeAll(hasAliasItemPids);
+								int supplementCt=ct-hasAliasItemPids.size();
+								suppSampDataPids = applyDataPids.subList(0, supplementCt);
+								if(suppSampDataPids.size()>0){updateQCFlag(suppSampDataPids,conn,comSubTaskId,userId);}
+							}
+						}
+					}
 				}
 			}
 
@@ -122,6 +165,35 @@ public class ColumnCoreControl {
 			throw e;
 		} finally {
 			DbUtils.commitAndClose(conn);
+		}
+	}
+	
+	/**
+	 * 质检提交时调用，更新质检问题表状态
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updateQCFlag(List<Integer> pidList,Connection conn,int comSubTaskId,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_column_status SET qc_flag=1 ");
+		sb.append(" WHERE TASK_ID ="+comSubTaskId);
+		sb.append(" AND PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append(" AND handler="+userId);
+		sb.append(" AND first_work_status=1");
+		sb.append(" AND second_work_status=1");
+		
+		PreparedStatement pstmt = null;
+		try {
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 
@@ -188,18 +260,23 @@ public class ColumnCoreControl {
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			int taskId = jsonReq.getInt("taskId");
+			
 //			int pageSize = jsonReq.getInt("pageSize");
 //			int pageNo = jsonReq.getInt("pageNo");
 			
 //			int startRow = (pageNo - 1) * pageSize + 1;
 //			int endRow = pageNo * pageSize;
-
+			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
+			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
-			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,taskId);
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,subtask.getSubtaskId(),isQuality);
 			List<Integer> pidList =new ArrayList<Integer>();
 			if(data.get("pidList") instanceof List){ 
 				pidList = (List) data.get("pidList"); 
@@ -212,10 +289,12 @@ public class ColumnCoreControl {
 				return result;
 			}
 			//获取数据详细字段
-			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
+			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId,isQuality);
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
+			Map<Integer,JSONObject> isProblems=new HashMap<Integer,JSONObject>();
+			if(isQuality==1&&status==2){isProblems= selector.queryIsProblemsByPids(pidList,secondWorkItem,subtask.getSubtaskId());}
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
-			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules);
+			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules,isProblems);
 
 			result.put("total", total);
 			result.put("rows", datas);
@@ -277,13 +356,16 @@ public class ColumnCoreControl {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
-
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
+			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
-			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, taskId);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, subtask.getSubtaskId(),isQuality);
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -469,6 +551,44 @@ public class ColumnCoreControl {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
+			int dbId = subtask.getDbId();
+			
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
+			}
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId,isQuality);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 常规作业员下拉列表
+	 * @param userId
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray getQueryWorkerList(long userId, JSONObject jsonReq) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", 1);
 			
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
@@ -478,13 +598,118 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId);
+			List<Long> commonHandlerList = columnStatusSelector.getQueryWorkerList(subtask.getSubtaskId(), userId);
 			
-			return result;
+			JSONArray datas = new JSONArray();
+			
+			for (Long commonHandler : commonHandlerList) {
+				UserInfo userInfo  = apiService.getUserInfoByUserId(commonHandler);
+				JSONObject userInfoObject = new JSONObject();
+				userInfoObject.put("userId", commonHandler);
+				userInfoObject.put("name", userInfo.getUserRealName());
+				userInfoObject.put("level", userInfo.getUserLevel());
+				datas.add(userInfoObject);
+			}
+			
+			return datas;
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 质检问题查询
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryQcProblem(JSONObject jsonReq) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			Integer pid = jsonReq.containsKey("pid")?jsonReq.getInt("pid"):null;
+			String firstWorkItem = jsonReq.containsKey("firstWorkItem")?jsonReq.getString("firstWorkItem"):null;
+			String secondWorkItem = jsonReq.containsKey("secondWorkItem")?jsonReq.getString("secondWorkItem"):null;
+			String nameId = jsonReq.containsKey("nameId")?jsonReq.getString("nameId"):null;
+			
+			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", 1);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			
+			JSONArray datas = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,nameId,apiService);
+			
+			return datas;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 质检问题保存
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject saveQcProblem(JSONObject jsonReq) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			Integer pid = jsonReq.containsKey("pid")?jsonReq.getInt("pid"):null;
+			String firstWorkItem = jsonReq.containsKey("firstWorkItem")?jsonReq.getString("firstWorkItem"):null;
+			String secondWorkItem = jsonReq.containsKey("secondWorkItem")?jsonReq.getString("secondWorkItem"):null;
+			String errorType = jsonReq.getString("errorType");
+			String errorLevel = jsonReq.getString("errorLevel");
+			String problemDesc  = jsonReq.getString("problemDesc");
+			String techGuidance = jsonReq.getString("techGuidance");
+			String techScheme = jsonReq.getString("techScheme");
+			String nameId = jsonReq.containsKey("nameId")?jsonReq.getString("nameId"):null;
+			//获取查询条件信息
+			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", 1);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			JSONObject data = null;
+			
+			if(StringUtils.isBlank(nameId)){//非拼音类
+				data = columnStatusSelector.saveQcProblem(pid, firstWorkItem, secondWorkItem, errorType, 
+						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId());
+			}else{
+				JSONArray jsonArray = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,null,apiService);
+				JSONObject jsonObject = (JSONObject) jsonArray.get(0);
+				data = columnStatusSelector.saveQcProblemWithPinYin(pid, firstWorkItem, secondWorkItem, errorType, 
+						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId(),jsonObject,nameId);
+			}
+			
+			return data;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	
 }

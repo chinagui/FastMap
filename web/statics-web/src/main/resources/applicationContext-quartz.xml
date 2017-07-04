@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
+<beans>
+    <bean name="quartzScheduler"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <!--允许配置多个需要调度的任务-->
+            <list>
+                <!-- 调度任务1：利用了复杂调度器，每天凌晨1：00启动 -->
+                <!--ref bean="demonstrationCronTrigger" /-->
+                <!-- 调度任务2：利用了简单调度器，系统启动后被启动，并间隔若干毫秒被冲服运行 -->
+                <!--ref bean="demonstrationSimpleTrigger" /-->
+                <!-- 调度任务3：利用了简单调度器，系统启动后被启动，并间隔若干毫秒被冲服运行 -->
+                <!--ref bean="demonstrationJDBCSearch" /-->
+                
+                <!-- WorkTimePlan定时调度任务： 利用了复杂调度器，每天凌晨2：00启动-->
+<!--                 <ref bean="poiDayStatics_Trigger" /> -->
+                <ref bean="poiDayStat_Trigger" />
+                <ref bean="poiMonthStat_Trigger" />
+            </list>
+        </property>
+        <property name="quartzProperties">
+            <props>
+                <!--内存中JobStore -->
+                <prop key="org.quartz.jobStore.class">
+                    org.quartz.simpl.RAMJobStore
+                </prop>
+                
+            </props>
+        </property>
+    </bean>
+    
+    <!--=================================================================================================
+    ======================================以下是复杂定时器调度示例=========================================
+    
+    附：cronExpression配置说明
+
+        字段		允许值		    允许的特殊字符
+        秒		 0-59		          , - * /
+        分		 0-59		          , - * /
+        小时		0-23		         , - * /
+        日期		1-31		         , - * ? / L W C
+        月份		1-12 或者 JAN-DEC		, - * /
+        星期		1-7 或者 SUN-SAT		, - * ? / L C #
+        年（可选）	     留空, 1970-2099	      , - * /
+
+
+        表达式 意义 
+        "0 0 12 * * ?" 每天中午12点触发 
+        "0 15 10 ? * *" 每天上午10:15触发 
+        "0 15 10 * * ?" 每天上午10:15触发 
+        "0 15 10 * * ? *" 每天上午10:15触发 
+        "0 15 10 * * ? 2005" 2005年的每天上午10:15触发 
+        "0 * 14 * * ?" 在每天下午2点到下午2:59期间的每1分钟触发 
+        "0 0/5 14 * * ?" 在每天下午2点到下午2:55期间的每5分钟触发 
+        "0 0/5 14,18 * * ?" 在每天下午2点到2:55期间和下午6点到6:55期间的每5分钟触发 
+        "0 0-5 14 * * ?" 在每天下午2点到下午2:05期间的每1分钟触发 
+        "0 10,44 14 ? 3 WED" 每年三月的星期三的下午2:10和2:44触发 
+        "0 15 10 ? * MON-FRI" 周一至周五的上午10:15触发 
+        "0 15 10 15 * ?" 每月15日上午10:15触发 
+        "0 15 10 L * ?" 每月最后一日的上午10:15触发 
+        "0 15 10 ? * 6L" 每月的最后一个星期五上午10:15触发 
+        "0 15 10 ? * 6L 2002-2005" 2002年至2005年的每月的最后一个星期五上午10:15触发 
+        "0 15 10 ? * 6#3" 每月的第三个星期五上午10:15触发
+
+    =====================================================================================================-->
+     <!--=========================CIS应用定时器==================================-->
+    
+    <!-- 每周一6点
+    <bean id="MONITOR_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="monitor_alert" />
+        <property name="cronExpression" value="0 0 6 ? * MON" />
+    </bean> -->
+	
+	<!--Cron表达式“10 */1 * * * ?”意为：从10秒开始，每1分钟执行一次。  
+	<bean id="taskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean"> <property name="jobDetail" ref="jobDetail" /> 
+	<property name="startDelay" value="10000" />
+	<property name="repeatInterval" value="60000" />
+	</bean> 
+	该调度表示，延迟10秒启动，然后每隔1分钟执行一次。-->
+	<!--<bean id="MONITOR_Trigger"
+          class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+        <property name="jobDetail" ref="monitor_alert" />
+        <property name="startDelay" value="10000" />
+		<property name="repeatInterval" value="60000" />
+    </bean>-->
+    <!-- 每分钟执行一次，整点分钟执行 -->
+    <bean id="poiDayStatics_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="poiDayStatics_detail" />
+        <property name="cronExpression" value="0 * * * * ?" />
+    </bean>
+    <bean id="poiDayStat_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="poiDayStat_detail" />
+        <property name="cronExpression" value="0 * * * * ?" />
+    </bean>
+    <bean id="poiMonthStat_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="poiMonthStat_detail" />
+        <property name="cronExpression" value="0 * * * * ?" />
+    </bean>
+    
+    <!--  外业生产时长监控 -->
+    <bean id="poiDayStatics_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="poiDayStatics" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
+    <bean id="poiDayStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="poiDayStat" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
+    <bean id="poiMonthStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="poiMonthStat" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
+   
+	<!--  业务逻辑处理类 -->
+	<bean id="poiDayStatics" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsStarter"/>
+	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
+	<bean id="poiMonthStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiMonthStatStarter"/>
+	
+	
+</beans>

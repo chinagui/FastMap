@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 
@@ -203,9 +204,9 @@ public class AbstractSelector implements ISelector {
 
         Clob pidClod = null;
         if (idList.size() > 1000) {
-            pidClod = conn.createClob();
+            pidClod = ConnectionUtil.createClob(conn);
             pidClod.setString(1, ids);
-            inClause = primaryKey + " IN (select to_number(pid) from table(clob_to_table(?)))";
+            inClause = primaryKey + " IN (select to_number(column_value) from table(clob_to_table(?)))";
         } else {
             inClause = primaryKey + " IN (" + ids + ")";
         }
@@ -431,7 +432,7 @@ public class AbstractSelector implements ISelector {
 
         pidsTemp.addAll(pids);
 
-        int pointsDataLimit = 100;
+        int pointsDataLimit = 1000;
 
         while (pidsTemp.size() >= pointsDataLimit) {
 

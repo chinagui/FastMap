@@ -33,7 +33,7 @@ public class ReflectionAttrUtils {
 	/**
 	 * 将一条记录转成一个对象
 	 * 
-	 * @param cls
+	 * @param row
 	 *            泛型类型
 	 * @param rs
 	 *            ResultSet对象
@@ -219,6 +219,14 @@ public class ReflectionAttrUtils {
 			return "RD_BRANCH_SCHEMATIC";
 		case RDSIGNASREAL:
 			return "RD_SIGNASREAL";
+        case CMGBUILDNODE:
+            return "CMG_BUILDNODE";
+        case CMGBUILDLINK:
+            return "CMG_BUILDLINK";
+        case CMGBUILDFACE:
+            return "CMG_BUILDFACE";
+		case CMGBUILDING:
+			return "CMG_BUILDING";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}
@@ -239,6 +247,8 @@ public class ReflectionAttrUtils {
 			return ObjType.ADNODE;
 		case "ZONE_NODE":
 			return ObjType.ZONENODE;
+		case "LC_NODE":
+			return ObjType.LCNODE;
 		case "LU_NODE":
 			return ObjType.LUNODE;
 		case "RW_NODE":
@@ -249,10 +259,14 @@ public class ReflectionAttrUtils {
 			return ObjType.ADLINK;
 		case "ZONE_LINK":
 			return ObjType.ZONELINK;
+		case "LC_LINK":
+			return ObjType.LCLINK;
 		case "LU_LINK":
 			return ObjType.LULINK;
 		case "RW_LINK":
 			return ObjType.RWLINK;
+		case "CMG_BUILDLINK":
+			return ObjType.CMGBUILDLINK;
 		default:
 			throw new Exception("不支持的表名转对象名称:" + tableName);
 		}

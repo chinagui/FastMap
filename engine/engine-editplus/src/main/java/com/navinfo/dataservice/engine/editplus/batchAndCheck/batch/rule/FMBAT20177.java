@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -11,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  *查询条件：
  *(1)POI对象新增且存在中文别名：
@@ -26,11 +30,15 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author gaopengrong
  */
 public class FMBAT20177 extends BasicBatchRule {
-
+	private Map<Long,Long> pidAdminId;
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 	}
 
 	@Override
@@ -38,6 +46,10 @@ public class FMBAT20177 extends BasicBatchRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isBatch(poiObj)){return;}
+			String adminId=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+				adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			}
 			List<IxPoiName> names=poiObj.getAliasCHIName();
 			if(names.size()==0){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -46,7 +58,7 @@ public class FMBAT20177 extends BasicBatchRule {
 				String nameStr= name.getName();
 				if(nameStr.isEmpty()){continue;}
 				IxPoiName originAliasENG= poiObj.getOriginAliasENGName(groupId);
-				String newOriginAliasEngStr=metadataApi.convertEng(nameStr);
+				String newOriginAliasEngStr=metadataApi.convertEng(nameStr,adminId);
 				//将“NO.”，“nO.”，“no.”修改成“No.”
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("NO.", "No.");
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("nO.", "No.");

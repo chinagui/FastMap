@@ -9,21 +9,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
-
-import sun.tools.tree.ThisExpression;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -36,9 +36,9 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -56,8 +56,25 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
 	private int dbId;
 	
+	protected Map<Long,Integer> quickSubtaskIdMap = new HashMap<Long,Integer>();
+	protected Map<Long,Integer> mediumSubtaskIdMap = new HashMap<Long,Integer>();
+	protected List<PoiRelation> samePoiPid = new ArrayList<PoiRelation>();
+	protected Set<Long> insertPids = new HashSet<Long>();
+	protected Set<Long> pidWithoutSubtask = new HashSet<Long>();
+	protected Set<Long> pids = new HashSet<Long>();
+	
+	private List<Map<String,Object>> scPointTruckList = new ArrayList<Map<String,Object>>();
+
+	
 	public Map<Long, String> getSourceTypes() {
 		return sourceTypes;
+	}
+	
+	public Map<Long, Integer> getQuickSubtaskIdMap() {
+		return quickSubtaskIdMap;
+	}
+	public Map<Long, Integer> getMediumSubtaskIdMap() {
+		return mediumSubtaskIdMap;
 	}
 
 	public MultiSrcPoiDayImportor(Connection conn,OperationResult preResult) {
@@ -71,34 +88,242 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	public List<PoiRelation> getParentPid() {
 		return parentPid;
 	}
+	public List<PoiRelation> getSamePoiPid() {
+		return samePoiPid;
+	}
+	public Set<Long> getInsertPids() {
+		return insertPids;
+	}
+	public Set<Long> getPidWithoutSubtask() {
+		return pidWithoutSubtask;
+	}
+	public Set<Long> getPids() {
+		return pids;
+	}
 
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		MultiSrcUploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		this.dbId= ((MultiSrcPoiDayImportorCommand)cmd).getDbId();
+		
+		//入库时如果常规数据或众包数据未作业完成，即处于"待作业"或"待提交"状态且存在常规子任务或众包子任务号，则多源数据不入大区域库，返回失败信息，失败信息报log：常规(众包)子任务XX正在作业！
+		filterPoiUnderSubtask(pois);
+
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		//获取多源子任务-grid
+		Map<Integer,List<Integer>> quickSubtaskGridMapping = manApi.getOpendMultiSubtaskGridMappingByDbId(this.dbId,4);
+		Map<Integer,List<Integer>> mediumSubtaskGridMapping = manApi.getOpendMultiSubtaskGridMappingByDbId(this.dbId,1);
+		
 		if(pois!=null){
+			//加载元数据库sc_point_truck
+			MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			this.scPointTruckList = metaApi.getScPointTruckList();
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();
 			if(addPois!=null&&addPois.size()>0){
 				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,addPois);
-				result.putAll(ixPoiObjAdd);
+				//根据多源子任务范围删选数据，记录POI多源子任务信息
+				List<IxPoiObj> ixPoiObjAddResult = filterPoiUnderSubtask(ixPoiObjAdd,quickSubtaskGridMapping,mediumSubtaskGridMapping);
+				result.putAll(ixPoiObjAddResult);
 			}
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
 			if(updatePois!=null&&updatePois.size()>0){
 				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
-				result.putAll(ixPoiObjUpdate);
+				//根据多源子任务范围删选数据，记录POI多源子任务信息
+				List<IxPoiObj> ixPoiObjUpdateResult = filterPoiUnderSubtask(ixPoiObjUpdate,quickSubtaskGridMapping,mediumSubtaskGridMapping);
+				result.putAll(ixPoiObjUpdateResult);
 			}
 			//删除
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
 			if(deletePois!=null&&deletePois.size()>0){
 				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
-				result.putAll(ixPoiObjDelete);
+				//根据多源子任务范围删选数据，记录POI多源子任务信息
+				List<IxPoiObj> ixPoiObjDeleteResult = filterPoiUnderSubtask(ixPoiObjDelete,quickSubtaskGridMapping,mediumSubtaskGridMapping);
+				result.putAll(ixPoiObjDeleteResult);
 			}
-			
+
 		}
 	}
 	
+	/**
+	 * @param ixPoiObjList
+	 * @param mediumSubtaskGridMapping 
+	 * @param quickSubtaskGridMapping 
+	 * @throws Exception 
+	 */
+	private List<IxPoiObj> filterPoiUnderSubtask(List<IxPoiObj> ixPoiObjList, Map<Integer, List<Integer>> quickSubtaskGridMapping, Map<Integer, List<Integer>> mediumSubtaskGridMapping) throws Exception {
+		List<IxPoiObj> result = new ArrayList<IxPoiObj>();
+		for(IxPoiObj obj:ixPoiObjList){
+			boolean flg = false;
+			IxPoi poi = (IxPoi)obj.getMainrow();
+			Set<String> gridSet = CompGeometryUtil.geo2GridsWithoutBreak(poi.getGeometry());
+			
+			for(String gridId:gridSet){
+				for(Entry<Integer, List<Integer>> entry:quickSubtaskGridMapping.entrySet()){
+					if(entry.getValue().contains(Integer.parseInt(gridId))){
+						if(quickSubtaskIdMap.containsKey(poi.getPid())){
+							int subtaskId = quickSubtaskIdMap.get(poi.getPid());
+							if(subtaskId < entry.getKey()){
+								flg = true;
+								if(pidWithoutSubtask.contains(poi.getPid())){
+									break;
+								}
+								quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							}
+						}else{
+							flg = true;
+							if(pidWithoutSubtask.contains(poi.getPid())){
+								break;
+							}
+							quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+
+						}
+					}
+				}
+				
+				if(!flg){
+					for(Entry<Integer, List<Integer>> entry:mediumSubtaskGridMapping.entrySet()){
+						if(entry.getValue().contains(Integer.parseInt(gridId))){
+							if(mediumSubtaskIdMap.containsKey(poi.getPid())){
+								int subtaskId = mediumSubtaskIdMap.get(poi.getPid());
+								if(subtaskId<entry.getKey()){
+									flg = true;
+									if(pidWithoutSubtask.contains(poi.getPid())){
+										break;
+									}
+									mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+								}
+							}else{
+								flg = true;
+								if(pidWithoutSubtask.contains(poi.getPid())){
+									break;
+								}
+								mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							}
+						}
+					}
+				}
+			}
+
+			if(flg){
+				result.add(obj);
+			}else{
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				errLog.put(ixPoi.getPoiNum(), "FID为" + ixPoi.getPoiNum() + "的数据找不到对应的多源子任务！");
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private void multiSubtaskInfo() throws Exception {
+		
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		//获取多源子任务-grid
+		Map<Integer,List<Integer>> quickSubtaskGridMapping = manApi.getOpendMultiSubtaskGridMappingByDbId(this.dbId,4);
+		Map<Integer,List<Integer>> mediumSubtaskGridMapping = manApi.getOpendMultiSubtaskGridMappingByDbId(this.dbId,1);
+		
+		List<BasicObj> objs = result.getAllObjs();
+		for(BasicObj obj:objs){
+			boolean flg = false;
+			IxPoi poi = (IxPoi)obj.getMainrow();
+			Set<String> gridSet = CompGeometryUtil.geo2GridsWithoutBreak(poi.getGeometry());
+
+			if(pidWithoutSubtask.contains(poi.getPid())){
+				continue;
+			}
+			
+			for(String gridId:gridSet){
+				for(Entry<Integer, List<Integer>> entry:quickSubtaskGridMapping.entrySet()){
+					if(entry.getValue().contains(Integer.parseInt(gridId))){
+						if(quickSubtaskIdMap.containsKey(poi.getPid())){
+							int subtaskId = quickSubtaskIdMap.get(poi.getPid());
+							if(subtaskId<entry.getKey()){
+								quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+								flg = true;
+							}
+						}else{
+							quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							flg = true;
+						}
+					}
+				}
+				
+				if(quickSubtaskIdMap.containsKey(poi.getPid())){
+					break;
+				}
+				
+				for(Entry<Integer, List<Integer>> entry:mediumSubtaskGridMapping.entrySet()){
+					if(entry.getValue().contains(Integer.parseInt(gridId))){
+						if(mediumSubtaskIdMap.containsKey(poi.getPid())){
+							int subtaskId = mediumSubtaskIdMap.get(poi.getPid());
+							if(subtaskId<entry.getKey()){
+								mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+								flg = true;
+							}
+						}else{
+							mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							flg = true;
+						}
+					}
+				}
+				break;
+			}
+			if(!flg){
+				
+			}
+
+		}
+	}
+
+	/**
+	 * @param pois 
+	 * @throws Exception 
+	 * 
+	 */
+	private void filterPoiUnderSubtask(MultiSrcUploadPois pois) throws Exception {
+		//全部fids
+		List<String> fids = new ArrayList<String>();
+		//修改或者删除的fids
+		List<String> uOrDfids = new ArrayList<String>();
+
+		fids.addAll(pois.getAddPois().keySet());
+		fids.addAll(pois.getUpdatePois().keySet());
+		fids.addAll(pois.getDeletePois().keySet());
+
+		
+		Map<String,Integer> poiUnderNormalSubtask = PoiEditStatus.poiUnderSubtask(conn,this.dbId,fids,1);
+		Map<String,Integer> poiUnderCrowdsSubtask = PoiEditStatus.poiUnderSubtask(conn,this.dbId,fids,2);
+
+		//无子任务数据：status in (1,2),无子任务号
+		pidWithoutSubtask = PoiEditStatus.poiWithOutSubtask(conn,this.dbId,fids);
+
+		for(Map.Entry<String, Integer> entry:poiUnderNormalSubtask.entrySet()){
+			errLog.put(entry.getKey(), "常规(众包)子任务"+ entry.getValue() +"正在作业！");
+			if(pois.getAddPois().containsKey(entry.getKey())){
+				pois.getAddPois().remove(entry.getKey());
+			}else if(pois.getUpdatePois().containsKey(entry.getKey())){
+				pois.getUpdatePois().remove(entry.getKey());
+			}else if(pois.getDeletePois().containsKey(entry.getKey())){
+				pois.getDeletePois().remove(entry.getKey());
+			}
+		}
+		for(Map.Entry<String, Integer> entry:poiUnderCrowdsSubtask.entrySet()){
+			errLog.put(entry.getKey(), "常规(众包)子任务"+ entry.getValue() +"正在作业！");
+			if(pois.getAddPois().containsKey(entry.getKey())){
+				pois.getAddPois().remove(entry.getKey());
+			}else if(pois.getUpdatePois().containsKey(entry.getKey())){
+				pois.getUpdatePois().remove(entry.getKey());
+			}else if(pois.getDeletePois().containsKey(entry.getKey())){
+				pois.getDeletePois().remove(entry.getKey());
+			}
+		}
+	}
+
 	/**
 	 * 新增数据解析
 	 * @author Han Shaoming
@@ -120,6 +345,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
 				importAddByJson(poiObj, jo);
 				ixPoiObjList.add(poiObj);
+				insertPids.add(poiObj.getMainrow().getObjPid());
+				pids.add(poiObj.getMainrow().getObjPid());
+				
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
 				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
@@ -160,6 +388,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}else{
 						this.importUpdateByJson(ixPoiObj, jo.getValue());
 						ixPoiObjList.add(ixPoiObj);
+						pids.add(ixPoiObj.getMainrow().getObjPid());
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -200,6 +429,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}else{
 						this.importDeleteByJson(ixPoiObj, jo.getValue());
 						ixPoiObjList.add(ixPoiObj);
+						pids.add(ixPoiObj.getMainrow().getObjPid());
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -396,7 +626,52 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				}else{
 					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceProvider );
+				
+				/*
+				 * 2017.06.30 zl 取消新增多源入ix_poi_flag 需求 1450
+				 * //IX_POI_FLAG表
+				IxPoiFlag ixPoiFlag = poi.createIxPoiFlag();
+				if(sourceProvider.equals("001000020000")){
+					ixPoiFlag.setFlagCode("110000240000");
+				}else if(sourceProvider.equals("001000030000")||sourceProvider.equals("001000030001")||sourceProvider.equals("001000030002")||sourceProvider.equals("001000030003")){
+					ixPoiFlag.setFlagCode("110000280000");
+				}else if(sourceProvider.equals("001000030004")){
+					ixPoiFlag.setFlagCode("110000270000");
+				}*/
+				
+//				sourceTypes.put(poi.objPid(), sourceProvider );
+				//truck
+				boolean flg = false;
+				for(Map<String,Object> entry:scPointTruckList){
+					if(entry.get("kind")!=null&&entry.get("kind").equals(jo.getString("kind"))){
+						flg = true;
+						if(entry.get("type")!=null&&entry.get("type").equals("1")){
+							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+						}else if(entry.get("type")!=null&&entry.get("chain")!=null&&entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
+							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+						}
+						break;
+					}
+				}
+				
+				if(!flg){
+					for(Map<String,Object> entry:scPointTruckList){
+						if(entry.get("chain")!=null&&entry.get("chain").equals(jo.getString("chain"))){
+							if(entry.get("kind")!=null&&!entry.get("kind").equals(jo.getString("kind"))){
+								if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+									ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+								}
+							}else if(entry.get("kind")==null){
+								if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+									ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+								}
+							}
+						}
+						
+					}
+				}
+				
+				
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -520,15 +795,63 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 						||(StringUtils.contains(log,"改名称")&&ixPoi.getKindCode().equals("200200"))){
 					usdateLevel(poi);
 				}
-				//多源类型
-				String sourceProvider = null;
-				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
-					sourceProvider = jo.getString("sourceProvider");
-				}else{
-					throw new Exception("多源类型sourceProvider字段名不存在");
-				}
-				sourceTypes.put(poi.objPid(), sourceProvider );
+//				//多源类型
+//				String sourceProvider = null;
+//				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+//					sourceProvider = jo.getString("sourceProvider");
+//				}else{
+//					throw new Exception("多源类型sourceProvider字段名不存在");
+//				}
+//				sourceTypes.put(poi.objPid(), sourceProvider );
+				
+				//truck
+				if(StringUtils.contains(log,"改分类")||StringUtils.contains(log,"改品牌")){
+					String kind = ixPoi.getKindCode();
+					String chain =ixPoi.getChain();
+					if(StringUtils.contains(log,"改分类")){
+						if(!JSONUtils.isNull(jo.get("kind"))){
+							kind = jo.getString("kind");
+						}
+					}
+					if(StringUtils.contains(log,"改品牌")){
+						if(!JSONUtils.isNull(jo.get("chain"))){
+							chain = jo.getString("chain");
+						}
+					}
+					
+					boolean flg = false;
+					for(Map<String,Object> entry:scPointTruckList){
+						if(entry.get("kind")!=null&&entry.get("kind").equals(jo.getString("kind"))){
+							flg = true;
+							if(entry.get("type")!=null&&entry.get("type").equals("1")){
+								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							}else if(entry.get("type")!=null&&entry.get("type").equals("3")&&entry.get("chain")!=null&&entry.get("chain").equals(entry.get("chain"))){
+								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							}
+							break;
+						}
+					}
+					
+					if(!flg){
+						for(Map<String,Object> entry:scPointTruckList){
+							if(entry.get("chain")!=null&&entry.get("chain").equals(jo.getString("chain"))){
+								if(entry.get("kind")!=null&&entry.get("chain")!=null&&!entry.get("kind").equals(jo.getString("kind"))){
+									if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain")!=null&&entry.get("chain").equals(entry.get("chain"))){
+										ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+									}
+								}else if(entry.get("kind")==null){
+									if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+										ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+									}
+								}
+							}
+							
+						}
+					}
 
+				}
+				
+				
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -788,14 +1111,20 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					pr.setPid(poi.objPid());
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
+					
+					//处理同一关系
+					PoiRelation pr2 = new PoiRelation();
+					pr2.setPid(poi.objPid());
+					pr2.setPoiRelationType(PoiRelationType.SAME_POI);
+					samePoiPid.add(pr);
 					//多源类型
-					String sourceProvider = null;
-					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
-						sourceProvider = jo.getString("sourceProvider");
-					}else{
-						throw new Exception("多源类型sourceProvider字段名不存在");
-					}
-					sourceTypes.put(poi.objPid(), sourceProvider);
+//					String sourceProvider = null;
+//					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+//						sourceProvider = jo.getString("sourceProvider");
+//					}else{
+//						throw new Exception("多源类型sourceProvider字段名不存在");
+//					}
+//					sourceTypes.put(poi.objPid(), sourceProvider);
 					
 				}
 				return true;

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.dropbox.service;
 
+import org.springframework.stereotype.Service;
+
 import com.navinfo.dataservice.api.dropbox.iface.DropboxApi;
 import com.navinfo.dataservice.api.dropbox.model.UploadInfo;
 
@@ -9,6 +11,7 @@ import com.navinfo.dataservice.api.dropbox.model.UploadInfo;
  * @date 2017年4月24日
  * @Description: DropboxApiImpl.java
  */
+@Service("dropboxApi")
 public class DropboxApiImpl implements DropboxApi {
 
 	@Override

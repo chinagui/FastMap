@@ -1,14 +1,12 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -20,6 +18,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
@@ -32,6 +31,7 @@ import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
@@ -46,6 +46,7 @@ import net.sf.json.JSONObject;
  */
 @Service("manApi")
 public class ManApiImpl implements ManApi {
+	private Logger log = LoggerRepos.getLogger(ManApiImpl.class);
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
@@ -280,14 +281,131 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)
-	 */
+	
 	@Override
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
 		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
 		return taskIdSet;
 	}
+
+
+	@Override
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getOpendMultiSubtaskGridMappingByDbId(dbId,type);
+	}
+
+	@Override
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
+		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
+	}
+
+	@Override
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId, String stage, Integer isQuality) throws Exception {
+		return SubtaskService.getInstance().queryBySubTaskIdAndIsQuality(taskId, stage, isQuality);
+	}
 	
+	@Override
+	public int queryQualityLevel(Integer userId,String firstWorkItem) throws Exception {
+		return UserInfoService.getInstance().queryQualityLevel(userId,firstWorkItem);
+	}
+	
+	@Override
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
+		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
+	}
+	
+	/**
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
+	 */
+	@Override
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getCommonSubtaskByQualitySubtask(qualitySubtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getProvinceRegionIdMap()
+	 */
+	@Override
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception {
+		// TODO Auto-generated method stub
+		return CpRegionProvinceService.getInstance().getProvinceRegionIdMap();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#listDayDbIds()
+	 */
+	@Override
+	public List<Integer> listDayDbIds() throws Exception {
+		// TODO Auto-generated method stub
+		return RegionService.getInstance().listDayDbIds();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getUsers()
+	 */
+	@Override
+	public Map<Integer, String> getUsers() throws Exception {
+		// TODO Auto-generated method stub
+		return UserInfoService.getInstance().getUsers();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getsubtaskUserMap()
+	 */
+	@Override
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getsubtaskUserMap();
+	}
+
+    @Override
+    public JSONArray getGridIdsByTaskId(int taskId) throws Exception {
+        Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            return TaskService.getInstance().getGridListByTaskId(conn, taskId);
+        }catch(Exception e){
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+        }finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+	@Override
+	public JSONArray getAdminCodeAndProvince() throws Exception {
+		return CpRegionProvinceService.getInstance().getAdminCodeAndProvince();
+	}
+
+	/**
+	 * 修改task_progress的值，并发送socket
+	 */
+	@Override
+	public void endProgressAndSocket(int phaseId, int status, String message) throws Exception {
+		Connection conn=null;
+		try {
+			conn=DBConnector.getInstance().getManConnection();
+			TaskProgressOperation.endProgressAndSocket(conn, phaseId, status,message);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("", e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }
 

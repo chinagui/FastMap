@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
-import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -229,9 +228,6 @@ public class Operation implements IOperation {
             List<LcLink> links = new ArrayList<>();
             LcLink lcLink = LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result, null);
             links.add(lcLink);
-            LcLinkKind kind = new LcLinkKind();
-            kind.setLinkPid(lcLink.pid());
-            lcLink.getKinds().add(kind);
             this.reCaleFaceGeometry(links);
         } // 如果跨图幅
         else {
@@ -257,9 +253,6 @@ public class Operation implements IOperation {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         LcLink lcLink = LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result, null);
-        LcLinkKind kind = new LcLinkKind();
-        kind.setLinkPid(lcLink.pid());
-        lcLink.getKinds().add(kind);
         return lcLink;
     }
 

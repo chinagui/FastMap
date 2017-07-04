@@ -2,21 +2,27 @@ package com.navinfo.dataservice.engine.meta.rdname;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.*;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
+import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
+import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSON;
+import net.sf.json.util.JSONUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.druid.sql.visitor.functions.Substring;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.commons.util.RomanUtils;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
@@ -42,15 +48,14 @@ public class RdNameImportor {
 	/**
 	 * @Description:道路名导入
 	 * @param name
-	 * @param longitude
-	 * @param latitude
+	 * @param gLocation
 	 * @param rowkey
 	 * @author: y
 	 * @throws Exception
 	 * @time:2016-6-28 下午3:12:21
 	 */
-	public void importName(String name, double longitude, double latitude,
-			String rowkey) throws Exception {
+	public void importName(String name, JSONObject gLocation,
+			String rowkey, String sourceType) throws Exception {
 		// 不满足条件的名称，不入库
 		if (isIgnoreName(name.toString())) {
 			return;
@@ -65,18 +70,38 @@ public class RdNameImportor {
 		name = ExcelReader.h2f(name);
 		nameObj.put("name", name);
 		// 判断RD_name中是否已存在,不存在则新增并拆分；存在则不处理
-		String meshes[] = MeshUtils.point2Meshes(longitude, latitude);
-		//从元数据库查询adminId
-		int adminId = new MeshSelector().getAdminIdByLocation(longitude,
-				latitude);
-		if (!exitsInMeshAdmin(meshes, name)) {
-			//JSONObject srcResumeObj=new JSONObject();
-			//srcResumeObj.put("tips", rowkey);
-			String srcResume ="\"tips\":\""+rowkey+"\"";
-			insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminId, srcResume);
-		}else{
-			log.warn(name+"已存在");
-		}
+		Geometry geoLocation = GeoTranslator.geojson2Jts(gLocation);
+        if (!geoLocation.getGeometryType().equals(GeometryTypeName.POINT)) {//面
+            geoLocation = JtsGeometryFactory.createLineString(geoLocation.getCoordinates());
+        }
+        String meshes[] = CompGeometryUtil.geo2MeshesWithoutBreak(geoLocation);
+        RdNameSelector nameSelector = new RdNameSelector();
+        MeshSelector meshSelector = new MeshSelector();
+        int roadType = 0;
+        for (String meshId : meshes) {
+            List<Integer> adminIdList = null;
+            if(sourceType.equals("1407") || sourceType.equals("8006")) {
+                adminIdList = new ArrayList<>();
+                adminIdList.add(214);
+                if(sourceType.equals("1407")) {
+                    roadType = 4;
+                }else {
+                    roadType = 1;
+                }
+            } else {
+                adminIdList = meshSelector.getAdminIdByMesh(meshId);
+            }
+            int existsAdminId = nameSelector.isNameExists(name, adminIdList, sourceType);
+            if (existsAdminId != 0) {//该图幅所在行政区划name已存在
+                log.warn(name+"已存在");
+            }else {//该图幅所在行政区划name不存在
+				//TODO 暂时保存一个
+                String srcResume ="\"tips\":\""+rowkey+"\"";
+//                for(int adminId : adminIdList) {
+                    insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminIdList.get(0), srcResume, roadType);
+//                }
+            }
+        }
 
 	}
 
@@ -91,7 +116,7 @@ public class RdNameImportor {
 	 * @time:2016-6-28 下午3:49:58
 	 */
 	private void insertNameAndTeilen(String name, String langCode, int adminId,
-			String srcResume) throws Exception {
+			String srcResume, int roadType) throws Exception {
 		
 		//***********************以下代码是路演环境临时使用*begin***********************
 		/*Connection conn=null;
@@ -126,7 +151,7 @@ public class RdNameImportor {
 
 		rdName.setSrcResume(srcResume);
 		rdName.setSrcFlag(0);
-		rdName.setRoadType(0);
+		rdName.setRoadType(roadType);
 		rdName.setAdminId(adminId);
 		rdName.setCodeType(0);
 		rdName.setSplitFlag(0);
@@ -224,29 +249,6 @@ public class RdNameImportor {
 	 * }
 	 */
 
-	/**
-	 * @Description:查询name在图幅所在的行政区划中是否存在
-	 * @param meshes
-	 * @param name
-	 * @return
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-6-28 下午1:49:01
-	 */
-	private boolean exitsInMeshAdmin(String[] meshes, String name)
-			throws Exception {
-		RdNameSelector nameSelector = new RdNameSelector();
-		MeshSelector meshSelector = new MeshSelector();
-		int adminId = 0;
-		for (String meshId : meshes) {
-			adminId = meshSelector.getAdminIdByMesh(meshId);
-			adminId = nameSelector.isNameExists(name, adminId);
-			if (adminId != 0) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	/**
 	 * @Description:判断是否是不入库的名称
@@ -308,6 +310,16 @@ public class RdNameImportor {
 			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);
+			
+			//处理完数据自动进行拆分
+			//**********zl 2017.05.08***
+			if(rdNameNew != null && rdNameNew.getSplitFlag() != 1){
+				log.info("auto RdNameTeilen ");
+				RdNameTeilen teilen = new RdNameTeilen(conn);
+				teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupid(),rdNameNew.getLangCode(),rdNameNew.getRoadType());
+			}
+			//**************************
+			
 			JSONObject json = JSONObject.fromObject(rdNameNew);
 			
 			result.put("flag", 1);
@@ -371,11 +383,19 @@ public class RdNameImportor {
 	public static void main(String[] args) {
 		String a = "\"tips\":\"reuwoireuwir83erewr343\"";
 	//	a.substring();
-		
-		
-		
-		
-		
+        String s = "{\"type\":\"MultiLineString\",\"coordinates\":[[[116.36948,40.1675],[116.37251,40.16732]],[[116.37368,40.16667],[116.37436,40.16565]]]}";
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("g_location", s);
+        Geometry geoLocation = GeoTranslator.geojson2Jts(jsonObject.getJSONObject("g_location"));
+        Geometry geoLocationLine = JtsGeometryFactory.createLineString(geoLocation.getCoordinates());
+		System.out.println(geoLocationLine.toString());
+
+        s = "{\"coordinates\":[[[116.49546,40.13406],[116.49546,40.13406],[116.49539,40.13407],[116.49538,40.13408],[116.49534,40.13411],[116.49533,40.13411],[116.4953,40.13419],[116.4953,40.1342],[116.49531,40.13425],[116.49531,40.13426],[116.49534,40.13431],[116.49535,40.13432],[116.4954,40.13435],[116.49541,40.13435],[116.49548,40.13437],[116.49548,40.13437],[116.49556,40.13437],[116.49557,40.13437],[116.49565,40.13433],[116.49566,40.13432],[116.4957,40.13425],[116.4957,40.13424],[116.4957,40.13417],[116.49569,40.13416],[116.49565,40.13411],[116.49565,40.1341],[116.49555,40.13406],[116.49554,40.13406],[116.49546,40.13406]]],\"type\":\"Polygon\"}";
+//        jsonObject = new JSONObject();
+        jsonObject.put("g_location", s);
+        geoLocation = GeoTranslator.geojson2Jts(jsonObject.getJSONObject("g_location"));
+        geoLocationLine = JtsGeometryFactory.createLineString(geoLocation.getCoordinates());
+        System.out.println(geoLocationLine.toString());
 		
 	}
 }

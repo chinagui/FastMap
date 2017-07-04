@@ -618,8 +618,21 @@ public class commonTest extends InitApplication {
 
 	@Test
 	public void testIdentityHashMap() {
+
+		List<Integer>lists=new ArrayList<>();
+
+		lists.add(1);
+		lists.add(1);
+		lists.add(2);
+		lists.add(2);
+		lists.add(3);
+		lists.add(3);
+
+		Integer [] pids =lists.toArray(new Integer[lists.size()]);
+
+		HashSet tmp = new HashSet(lists);
 		
-		Map<Integer,Integer> maps=new IdentityHashMap<Integer,Integer>();
+		Map<Integer,Integer> maps=new IdentityHashMap<>();
 		
 		maps.put(1, 1);
 		maps.put(1, 2);

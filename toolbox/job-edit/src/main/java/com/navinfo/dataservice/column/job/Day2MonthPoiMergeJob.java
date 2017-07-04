@@ -6,8 +6,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -41,8 +45,10 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -51,6 +57,7 @@ import com.navinfo.dataservice.day2mon.Classifier;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogByFilterGridsSelector;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.DeepInfoMarker;
+import com.navinfo.dataservice.day2mon.PoiGuideLinkBatch;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
 import com.navinfo.dataservice.impcore.exception.LockException;
@@ -134,6 +141,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					if(closeGrids.size()>0){
 						List<String> logGrids =selectLogFromCloseGrids(closeGrids,datahubApi,region);
 						if(logGrids!=null&&logGrids.size()>0){
+							//更新任务状态
+							manApi.taskUpdateCmsProgress(phaseId,3,"以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
 							throw new Exception("以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
 						}
 					}
@@ -221,7 +230,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		if(filterGrids!=null&&filterGrids.size()>0){allGrids = filterGrids;}
 		if(grids!=null&&grids.size()>0){allGrids = grids;}
 		List<Integer> meshs =grids2meshs(allGrids);
-		
+		String tempPoiGLinkTab ="";
+		boolean isbatch = true;
+		OperationResult result=new OperationResult();
 		try{
 			
 			log.info("处理日落月和DMS的数据读写锁");
@@ -241,25 +252,27 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
 			if(0==flushResult.getTotal()){
 				log.info("没有符合条件的履历，不执行日落月，返回");
+				isbatch = false;
 			}else{
 				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
 				logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("开始进行履历分析");
-				OperationResult result = parseLog(logMoveResult, monthConn);
-				if(result==null){throw new LockException("可落的履历全部刷库失败，请查看："+flushResult.getTempFailLogTable());}
-				log.info("开始进行深度信息打标记");
-				new DeepInfoMarker(result,monthConn).execute();
-				log.info("开始执行前批");
-				new PreBatch(result, monthConn).execute();
-				log.info("开始执行检查");
-				Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-				new Classifier(checkResult,monthConn).execute();
-				log.info("开始执行后批处理");
-				new PostBatch(result,monthConn).execute();
-				log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
-				updateField(result, monthConn);
-				
+				result = parseLog(logMoveResult, monthConn);
+				if(result.getAllObjs().size()>0){
+					log.info("开始进行深度信息打标记");
+					new DeepInfoMarker(result,monthConn).execute();
+					log.info("开始执行前批");
+					new PreBatch(result, monthConn).execute();
+					log.info("开始执行检查");
+					Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+					new Classifier(checkResult,monthConn).execute();
+					log.info("开始执行后批处理");
+					new PostBatch(result,monthConn).execute();
+					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
+					updateField(result, monthConn);
+				}
+
 				updateLogCommitStatus(dailyConn,tempOpTable);
 				
 			}
@@ -273,7 +286,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				manApi.taskUpdateCmsProgress(phaseId,2,null);
 			}
 			
+			log.info("开始筛选需要批引导LINK的POI");
+			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
+			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+			
 		}catch(Exception e){
+			isbatch = false;
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
@@ -304,11 +322,77 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				log.info("释放履历锁");
 				logSelector.unselect(false);
 			}
+			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+				log.info("开始执行引导LINK批处理");
+				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+				log.info("引导LINK批处理执行完成");
+			}
 			
 		}
 		
 	}
 	
+
+	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
+		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
+		int count=0;
+		try{
+			//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
+			if(opResult.getAllObjs().size()==0){
+				log.info("没有获取到有变更的poi数据");
+				return "";
+				}
+			
+			List<Long> pids=new ArrayList<Long>();
+			//2.把精选的POI.pid放在临时表temp_poi_glink_yyyyMMddhhmmss（临时表不存在则新建）；
+			String tempPoiGLinkTab = createTempPoiGLinkTable(conn);
+			//3.精选POI:根据粗选的结果，进一步过滤得到(新增POI或修改引导坐标或引导link为0的POI对象或对应引导link不存在rd_link表中)
+			Set<Long> refinedPois = new HashSet<Long>();
+			for(BasicObj poiObj:opResult.getAllObjs()){
+				pids.add(poiObj.objPid());
+				if(OperationType.INSERT==poiObj.getMainrow().getHisOpType()||
+						(OperationType.UPDATE==poiObj.getMainrow().getHisOpType()&&(poiObj.getMainrow().hisOldValueContains(IxPoi.Y_GUIDE)
+								||poiObj.getMainrow().hisOldValueContains(IxPoi.X_GUIDE)||
+								Integer.valueOf(0).equals(poiObj.getMainrow().getAttrByColName("LINK_PID"))))){
+					refinedPois.add(poiObj.objPid());
+				}
+			}
+			count=count+insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
+			count=count+insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			if(count==0){return "";}
+			return tempPoiGLinkTab;
+		}catch(Exception e){
+			log.info(e.getMessage());
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+	private int insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
+		String sql = "insert  into "+tempPoiTable
+				+ " select pid from ix_poi t  "
+				+ " where t.pid in (select column_value from table(clob_to_table(?))) "
+				+ " and not exists(select 1 from rd_link r where r.link_pid=t.link_pid)";
+		this.log.debug("sql:"+sql);
+		Clob clobPids=ConnectionUtil.createClob(conn);
+		clobPids.setString(1, StringUtils.join(pids, ","));
+		return new QueryRunner().update(conn, sql, clobPids);
+	}
+	private int insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
+		String sql = "insert into "+tempPoiTable
+				+ " select column_value from table(clob_to_table(?)) ";
+		this.log.debug("sql:"+sql);
+		Clob clobPids=ConnectionUtil.createClob(conn);
+		clobPids.setString(1, StringUtils.join(pids, ","));
+		return new  QueryRunner().update(conn, sql, clobPids);
+	}
+	private String createTempPoiGLinkTable(Connection conn) throws Exception {
+		String tableName = "tmp_p_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));
+		String sql ="create table "+tableName+" (pid number(10))";
+		new QueryRunner().update(conn, sql);
+		return tableName;
+	}
 	protected void updateField(OperationResult opResult,Connection conn) throws Exception {
 		List<Integer> pids=new ArrayList<Integer>();
 		for(BasicObj Obj:opResult.getAllObjs()){

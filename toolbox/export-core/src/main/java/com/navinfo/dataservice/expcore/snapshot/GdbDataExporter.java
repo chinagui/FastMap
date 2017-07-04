@@ -4,11 +4,12 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.Set;
-
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
 
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
@@ -59,27 +60,31 @@ public class GdbDataExporter {
 
 		String operateDate = StringUtils.getCurrentTime();
 
-		System.out.println("exporting rdline");
+		System.out.println("exporting region_index: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+		
+		RegionIndexExporter.run(sqliteConn, stmt, meshes,dir);
+		
+		System.out.println("exporting rdline: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 		
 		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting rdnode");
+		System.out.println("exporting rdnode: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 
 		RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting bkline");
+		System.out.println("exporting bkline: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 
 		BkLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting bkface");
+		System.out.println("exporting bkface: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 
 		BkFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting rdlinegsc");
+		System.out.println("exporting rdlinegsc : time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 
 		RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 		
-		System.out.println("exporting adface");
+		System.out.println("exporting adface :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 
 		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 

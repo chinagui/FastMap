@@ -13,6 +13,8 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -22,6 +24,11 @@ import net.sf.json.JSONObject;
  * 描述：apiGridSelectorExternalService.java
  */
 public interface ManApi{
+	/**
+	 * 修改task_progress的值，并发送socket
+	 * @throws Exception
+	 */
+	public void endProgressAndSocket(int phaseId,int status,String message) throws Exception;
 	/**
 	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
 	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
@@ -44,7 +51,30 @@ public interface ManApi{
 	
 	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
-//	List<Grid> listGrids()throws Exception;
+	/**
+	 * 根据质检任务号查询常规任务    或者     根据常规子任务号查询质检任务
+	 * TASKID 任务号
+	 * STAGE 作业阶段	 NUMBER(1) 0采集，1日编，2月编
+	 * ISQUALITY	NUMBER(1)	0非质检子任务 1质检子任务
+	 * @param qualitySubtaskId
+	 * @param stage
+	 * @param isQuality
+	 * @return
+	 * @throws Exception
+	 */
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId,String stage,Integer isQuality) throws Exception ;
+	
+	/**
+	 * 根据用户一级项，userId,查询抽检系数
+	 * userId 
+	 * firstWorkItem 一级作业项
+	 * @param userId
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public int queryQualityLevel(Integer userId,String firstWorkItem) throws Exception ;
+
 	/**
 	
 	 * @param taskList subTaskId的列表
@@ -154,6 +184,66 @@ public interface ManApi{
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
+	/**
+	 * 获取开启的多源子任务与grid的map
+	 * @param dbId 所在大区库
+	 * @param type 1常规4快速更新
+	 * @return
+	 */
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type)  throws Exception;
+	/**
+	 * @param dbId
+	 * @param statusList
+	 * @param workKind
+	 * @return
+	 */
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception;
 	
+	/**
+	 * 更具grid获取众包子任务
+	 * @param grid
+	 * @return
+	 * @throws Exception
+	 */
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception;
+	/**
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
+	 */
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId)
+			throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception;
+	/**
+	 * @return
+	 */
+	public List<Integer> listDayDbIds() throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, String> getUsers() throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, Integer> getsubtaskUserMap() throws Exception;
+
+    public JSONArray getGridIdsByTaskId(int taskId) throws Exception;
+    
+    public JSONArray getAdminCodeAndProvince() throws Exception;
 }
 

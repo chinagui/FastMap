@@ -220,7 +220,7 @@ public class TipsImportUtils {
 		}
 
 		if (geos.size() == 1) {
-			return GeoTranslator.jts2Wkt(geos.get(0));
+			return GeoTranslator.jts2Wkt(geos.get(0), 0.00001, 5);
 		} else {
 			/**
 			 * 20161026修改，如果复杂几何中存在相同的坐标，则保留一个，否则solr计算wkt相交有问题（
@@ -243,7 +243,7 @@ public class TipsImportUtils {
 			}
 			Geometry g = factory.createGeometryCollection(gArray);
 
-			return GeoTranslator.jts2Wkt(g);
+			return GeoTranslator.jts2Wkt(g, 0.00001, 5);
 		}
 
 	}
@@ -274,7 +274,7 @@ public class TipsImportUtils {
 	 * @author: y
 	 * @time:2017-4-19 下午7:16:38
 	 */
-	public static Object generateSolrStatisticsWkt(String sourceType,
+	public static String generateSolrStatisticsWkt(String sourceType,
 			JSONObject deep, JSONObject g_location, JSONObject feedback) {
 		
 		  JSONObject geometry=g_location; //默认的是显示坐标
@@ -290,6 +290,6 @@ public class TipsImportUtils {
 		  
 		  Geometry geo= GeoTranslator.geojson2Jts(geometry);
 		
-		 return GeoTranslator.jts2Wkt(geo);
+		 return GeoTranslator.jts2Wkt(geo, 0.00001, 5);
 	}
 }

@@ -173,4 +173,66 @@ public class RdTollgateSelector extends AbstractSelector {
         }
         return rdTollgates;
     }
+
+    /**
+     * 根据linkPid加载gate
+     *
+     * @param linkPids
+     * @return
+     * @throws Exception
+     */
+    public List<RdTollgate> loadByLinks(List<Integer> linkPids, boolean isLock)
+            throws Exception {
+
+        List<RdTollgate> rows = new ArrayList<>();
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+        try {
+            String sql = "SELECT pid FROM rd_tollgate WHERE (in_link_pid in ("
+                    + ids + ") or out_link_pid in (" + ids
+                    + ")) and u_record!=2";
+
+            if (isLock) {
+                sql += " for update nowait";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            List<Integer>pids=new ArrayList<>();
+
+            while (resultSet.next()) {
+
+                int pid = resultSet.getInt("pid");
+
+                if (!pids.contains(pid)) {
+
+                    pids.add(pid);
+                }
+            }
+
+            AbstractSelector abSelector = new AbstractSelector(
+                    RdTollgate.class, conn);
+
+            List<IRow> rowTollgates = abSelector.loadByIds(pids, true, true);
+
+            for (IRow row : rowTollgates) {
+
+                rows.add((RdTollgate) row);
+            }
+
+            return rows;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+    }
 }

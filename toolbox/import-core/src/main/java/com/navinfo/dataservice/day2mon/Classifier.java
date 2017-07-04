@@ -208,7 +208,7 @@ public class Classifier {
 						+ " as d  FROM dual) T2 ");
 				sb.append(" ON ( T1.pid=T2.b and T1.work_item_id=T2.c) ");
 				sb.append(" WHEN MATCHED THEN ");
-				sb.append(" UPDATE SET T1.first_work_status = 1,T1.second_work_status = 1,T1.handler = T2.d ");
+				sb.append(" UPDATE SET T1.first_work_status = 1,T1.second_work_status = 1,T1.handler = T2.d,T1.QC_FLAG=0,T1.common_handler=0 ");
 				sb.append(" WHEN NOT MATCHED THEN ");
 				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler) VALUES(T2.b,T2.c,1,1,T2.d)");
 				

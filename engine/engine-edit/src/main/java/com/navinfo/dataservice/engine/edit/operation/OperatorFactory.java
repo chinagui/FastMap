@@ -24,23 +24,18 @@ public class OperatorFactory {
 	 * @throws Exception
 	 */
 	public static void recordData(Connection conn, Result result) throws Exception {
-		
-		Set<String> delRowIds = new HashSet<String>();
+		Set<String> delRowIds = new HashSet<>();
 
 		for (IRow obj : result.getDelObjects()) {
-
 			getOperator(conn, obj).deleteRow();
-
 			delRowIds.add(obj.rowId());
 		}
 
 		for (IRow obj : result.getAddObjects()) {
-
 			getOperator(conn, obj).insertRow();
 		}
 
 		for (IRow obj : result.getUpdateObjects()) {
-
 			if (delRowIds.contains(obj.rowId())) {
 				continue;
 			}

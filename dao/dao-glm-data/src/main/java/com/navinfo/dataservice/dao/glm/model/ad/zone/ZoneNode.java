@@ -41,11 +41,13 @@ public class ZoneNode implements IObj {
 
 	private int editFlag = 1;//编辑标识
 	
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 	
-	private List<IRow> meshes = new ArrayList<IRow>();
+	private List<IRow> meshes = new ArrayList<>();
 
-	public Map<String, ZoneNodeMesh> meshMap = new HashMap<String, ZoneNodeMesh>();
+	public Map<String, ZoneNodeMesh> meshMap = new HashMap<>();
+
+	protected ObjStatus status;
 	
 	public ZoneNode() {
 	}	
@@ -70,55 +72,37 @@ public class ZoneNode implements IObj {
 		return form;
 	}
 
-
-
 	public void setForm(int form) {
 		this.form = form;
 	}
-
-
 
 	public Geometry getGeometry() {
 		return geometry;
 	}
 
-
-
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
 	}
-
-
 
 	public int getEditFlag() {
 		return editFlag;
 	}
 
-
-
 	public void setEditFlag(int editFlag) {
 		this.editFlag = editFlag;
 	}
-
-
 
 	public List<IRow> getMeshes() {
 		return meshes;
 	}
 
-
-
 	public void setMeshes(List<IRow> meshes) {
 		this.meshes = meshes;
 	}
 
-
-
 	public String getRowId() {
 		return rowId;
 	}
-
-
 
 	@Override
 	public String rowId() {
@@ -128,7 +112,6 @@ public class ZoneNode implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-
 	}
 
 	@Override
@@ -138,14 +121,12 @@ public class ZoneNode implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
-		return null;
+	    return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-
+        this.status = os;
 	}
 
 	@Override
@@ -155,8 +136,18 @@ public class ZoneNode implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
+        ZoneNode node = (ZoneNode) row;
+        this.kind = node.getKind();
+        this.form = node.getForm();
+        this.geometry = node.getGeometry();
+        List<IRow> meshes = new ArrayList<>();
+        for (IRow m : node.getMeshes()) {
+            ZoneNodeMesh mesh = new ZoneNodeMesh();
+            mesh.copy(m);
+            mesh.setNodePid(this.pid);
+            meshes.add(mesh);
+        }
+        this.meshes = meshes;
 	}
 
 	@Override
@@ -182,9 +173,7 @@ public class ZoneNode implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-
 		children.add(this.getMeshes());
-
 		return children;
 	}
 

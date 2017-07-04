@@ -1082,6 +1082,24 @@ public class StaticsOperation {
 		}
 	}
 
-
+	/**
+	 * 若通过web界面进行了无任务转中，则在统计表中进行标识，表示此次执行过无任务转中操作了。
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static void changeTaskConvertFlagToOK(Connection conn, int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();			
+			String selectSql = "UPDATE FM_STAT_OVERVIEW_TASK SET CONVERT_FLAG = 1 WHERE TASK_ID = " + taskId;
+			run.update(conn, selectSql);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
 	
 }

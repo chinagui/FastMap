@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,18 +17,22 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
- * FM-BAT-20-188
-	查询条件：
-	 POI分类为230218且为父且非删除，且SERVICE_PROV不为[null,0~23],即为品牌chainID值；
+ * 	查询条件：
+	(1)POI分类为230227且为子且非删除；
+	(2)POI分类为230218且非删除且为父，且SERVICE_PROV不为[null,0~23],即为品牌chainID值；
+	满足(1)或(2)时，查询父的SERVICE_PROV.chainID，分别判断父的SERVICE_PROV.chainID与子openType.chainID一致，如果一致，则不批处理，如果不一致，则批处理；
 	批处理：
-	 将该POI的所有子POI(非删除)的OPEN_TYPE赋值查询出的chainID值；
+	(1)若子的openType=1(对所有车辆开放),则不批处理；
+	(2)若子的openType!=1(对所有车辆开放),且openType不包含chainID中的任何一个，则opentType直接追加父的SERVICE_PROV.chainID,多个值|分隔；
+	(3)若子的openType!=1(对所有车辆开放),且openType包含chainID其中一个，判断父与子的chainID值是否一致，如果一致，则不批处理，如果不一致，则替换子的chainID；
 	并生成履历；
  * @author sunjiawei
  *
  */
 public class FMBAT20188 extends BasicBatchRule {
 
-	private Map<Long, List<Long>>  childrenMap = new HashMap<Long, List<Long>>();
+	private Map<Long,Long> childPidParentPid;
+	private Map<Long, List<Long>> childrenMap;
 	private List<String> serviceList = new ArrayList<String>();
 	
 	@Override
@@ -38,15 +41,31 @@ public class FMBAT20188 extends BasicBatchRule {
 		for(BasicObj obj:batchDataList){
 			pidList.add(obj.objPid());
 		}
+		childPidParentPid = IxPoiSelector.getParentPidsByChildrenPids(getBatchRuleCommand().getConn(), pidList);
 		childrenMap = IxPoiSelector.getChildrenPidsByParentPidList(getBatchRuleCommand().getConn(), pidList);
 		
-		Set<Long> childPids = new HashSet<Long>();
-		for (Long parentPid:childrenMap.keySet()) {
-			childPids.addAll(childrenMap.get(parentPid));
+		Set<Long> parentPids = new HashSet<Long>();
+
+		if(!childPidParentPid.isEmpty()){
+			for (Long childPid:childPidParentPid.keySet()) {
+				parentPids.add(childPidParentPid.get(childPid));
+			}
 		}
+		
+		if(!childrenMap.isEmpty()){
+			for (Long childPid:childrenMap.keySet()) {
+				parentPids.addAll(childrenMap.get(childPid));
+			}
+		}
+		if(parentPids.size()==0){
+			return;
+		}
+
+		
 		Set<String> referSubrow =  new HashSet<String>();
 		referSubrow.add("IX_POI_CHARGINGPLOT");
-		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(childPids, ObjectName.IX_POI, referSubrow, false);
+		referSubrow.add("IX_POI_CHARGINGSTATION");
+		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(parentPids, ObjectName.IX_POI, referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 		
 		
@@ -80,31 +99,102 @@ public class FMBAT20188 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")) {
-			return;
+		boolean isParent = false;
+		boolean isChild = false;
+		
+		if(!childPidParentPid.isEmpty()){
+			if(childPidParentPid.containsKey(poi.getPid())){
+				isChild = true;
+			}
 		}
-		if(poi.getHisOpType().equals(OperationType.INSERT)||poi.getHisOpType().equals(OperationType.UPDATE)){
+		
+		if(!childrenMap.isEmpty()){
+			if(childrenMap.containsKey(poi.getPid())){
+				isParent = true;
+			}
+		}
+		
+		if(isChild){
+			if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")
+					||poi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
 
-			List<Long> childrenList  =  childrenMap.get(poi.getPid());
+			Long parentPid = childPidParentPid.get(poi.getPid());
 			
-			List<IxPoiChargingstation> chargingStationList = poiObj.getIxPoiChargingstations();
-			if (chargingStationList.size() == 0) {
+			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
+			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
+			if (!parentPoi.getKindCode().equals("230218") || parentPoi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
+			List<IxPoiChargingstation> chargingStationList = parentPoiObj.getIxPoiChargingstations();
+			if (chargingStationList==null||chargingStationList.isEmpty()) {
 				return;
 			}
 			IxPoiChargingstation chargingStation = chargingStationList.get(0);
 			String serviceProv = chargingStation.getServiceProv();
-			if (serviceProv == null || serviceList.contains(serviceProv)) {
+			if (serviceProv == null || serviceList.contains(serviceProv)|| serviceProv.length()!=4) {
+				return;
+			}
+			batchChildOpenType(poiObj, poi, serviceProv);
+		}
+		if(isParent){
+			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")
+					||poi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
+	
+			List<Long> childrenList  =  childrenMap.get(poi.getPid());
+			
+			List<IxPoiChargingstation> chargingStationList = poiObj.getIxPoiChargingstations();
+			if (chargingStationList==null||chargingStationList.isEmpty()) {
+				return;
+			}
+			IxPoiChargingstation chargingStation = chargingStationList.get(0);
+			String serviceProv = chargingStation.getServiceProv();
+			if (serviceProv == null || serviceList.contains(serviceProv) || serviceProv.length()!=4) {
 				return;
 			}
 			
 			for (Long childPid:childrenList) {
 				BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoiObj child = (IxPoiObj) childObj;
-				List<IxPoiChargingplot> chargingPlotsList = child.getIxPoiChargingplots();
-				for (IxPoiChargingplot plot:chargingPlotsList) {
-					plot.setOpenType(serviceProv);
+				IxPoi childPoi = (IxPoi)  child.getMainrow();
+				batchChildOpenType(child, childPoi, serviceProv);
+			}
+		
+		}
+		
+		
+	}
+	
+	public void batchChildOpenType(IxPoiObj child,IxPoi childPoi,String serviceProv){
+		if(childPoi.getKindCode().equals("230227")&&(!childPoi.getHisOpType().equals(OperationType.DELETE))){
+			List<IxPoiChargingplot> chargingPlotsList = child.getIxPoiChargingplots();
+			for (IxPoiChargingplot plot:chargingPlotsList) {
+				String openType = plot.getOpenType();
+				if(!openType.equals("1")){//(1)若子的openType=1(对所有车辆开放),则不批处理；
+					String[] openTypeArray = openType.split("\\|");
+					boolean hasChain = false;
+					String childChain = "";
+					for (String chOpenType : openTypeArray) {
+						if(chOpenType.length()==4){
+							hasChain = true;
+							childChain = chOpenType;
+							break;
+						}
+					}
+					if(!hasChain){//(2)若子的openType!=1(对所有车辆开放),且openType不包含chainID中的任何一个，则opentType直接追加父的SERVICE_PROV.chainID,多个值|分隔；
+						plot.setOpenType(openType+"|"+serviceProv);
+					}else{
+						if(!serviceProv.equals(childChain)){//(3)若子的openType!=1(对所有车辆开放),且openType包含chainID其中一个，判断父与子的chainID值是否一致，如果一致，则不批处理，如果不一致，则替换子的chainID；
+							plot.setOpenType(openType.replace(childChain, serviceProv));
+						}
+					}
 				}
-			
 			}
 		}
 	}

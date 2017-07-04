@@ -25,7 +25,7 @@ public class Command extends AbstractCommand {
 	/**
 	 * 建筑物种别
 	 */
-	private String kind;
+	private String kind = "";
 
 	private List<Integer> facePids;
 
@@ -60,11 +60,14 @@ public class Command extends AbstractCommand {
 
 		JSONObject data = json.getJSONObject("data");
 
-		this.kind = data.getString("kind");
+		if (data.containsKey("kind")) {
+
+			this.kind = data.getString("kind");
+		}
 		
 		JSONArray array = data.getJSONArray("facePids");
 
-		facePids = new ArrayList<Integer>();
+		facePids = new ArrayList<>();
 
 		for (int i = 0; i < array.size(); i++) {
 

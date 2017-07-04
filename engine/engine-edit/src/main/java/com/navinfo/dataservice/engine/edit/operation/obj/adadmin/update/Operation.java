@@ -22,12 +22,20 @@ public class Operation implements IOperation {
 
 	private AdAdmin adAdmin;
 
+	private Connection conn;
+
+	public Operation(Connection conn) {
+
+		this.conn = conn;
+	}
+
 	public Operation(Command command, AdAdmin adAdmin) {
 		this.command = command;
 
 		this.adAdmin = adAdmin;
 
 	}
+
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -132,4 +140,24 @@ public class Operation implements IOperation {
 		return alertList;
 	}
 
+
+	/**
+	 * 删除link维护admin的引导link，side不维护
+	 * @param linkPids
+	 * @param result 结果集
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		AdAdminSelector selector = new AdAdminSelector(conn);
+
+		List<AdAdmin> AdAdmins = selector.loadRowsByLinkPids(linkPids, true);
+
+		for (AdAdmin adAdmin : AdAdmins) {
+
+			adAdmin.changedFields().put("linkPid", 0);
+
+			result.insertObject(adAdmin, ObjStatus.UPDATE, adAdmin.pid());
+		}
+	}
 }

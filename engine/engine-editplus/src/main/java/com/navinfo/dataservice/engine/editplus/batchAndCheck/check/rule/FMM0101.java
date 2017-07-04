@@ -31,7 +31,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 新增POI对象、修改POI对象且修改内容为改名称或改分类或改等级;
  * 检查原则：
  * (1)POI的官方标准中文名称仅为全英文或仅为全阿拉伯数字或仅为英文和阿拉伯数字的组合时，字母和数字不区分全半角和大小写，不检查；
- * (5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，O，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
+ * (5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，〇，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
  * (2)如果poi的分类为停车场230210，且父分类为230103,230126,160105其中之一，且该POI的官方标准化名称中包含其父的官方标准化名称，则报log：别名需作业！
  * (3)如果poi的分类为风景名胜分类180400，且IX_POI_ATTRACTION.SIGHT_LEVEL in (3A,4A,5A),且子设施分类与父分类相同，
  * 且子的官方标准化名称包含父的官方标准化名称，则该poi和子poi均报log：别名需作业！
@@ -76,8 +76,8 @@ public class FMM0101 extends BasicCheckRule {
 				}
 			}
 			if(onlyDigitLetter){return;}
-			//(5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，O，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
-			Pattern p = Pattern.compile(".*[零一二三四五六七八九十０]{3,}.*");
+			//(5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，〇，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
+			Pattern p = Pattern.compile(".*[零一二三四五六七八九〇]{3,}.*");
 			Matcher m = p.matcher(officeNameStr);
 			if (m.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);

@@ -111,21 +111,21 @@ public class GLM01213 extends baseRule {
 		linkPidList.addAll(huandaoChain.getRdLinkPidSet());
 		
 		Set<Integer> chainPidSet=huandaoChain.getRdLinkPidSet();
-		String pidStr=chainPidSet.toString().replace("[", "").replace("]", "");
-		String sql="SELECT L.SPEED_TYPE"
-				+ "  FROM RD_LINK_SPEEDLIMIT L"
-				+ " WHERE L.LINK_PID IN ("+pidStr+") AND L.U_RECORD != 2"
-				+ " GROUP BY L.SPEED_TYPE"
-				+ " HAVING COUNT(DISTINCT DECODE(L.FROM_LIMIT_SRC,0,L.TO_LIMIT_SRC,L.FROM_LIMIT_SRC)) > 1";
-		DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(getConn(), sql);
-		if(resultList.size()>0 && Integer.valueOf((String)resultList.get(0))>1){
-			String target=chainPidSet.toString().replace(" ", "").
-			replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ",");
-			this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());
-		}
+		String pidStr= chainPidSet.toString().replace("[", "").replace("]", "");
+		String sql = "with tmp1 as(SELECT SUM(COUNT(1)) num FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID IN (" + pidStr + ") AND "
+                + "L.U_RECORD != 2 GROUP BY L.FROM_LIMIT_SRC), tmp2 as( SELECT SUM(COUNT(1)) num FROM RD_LINK_SPEEDLIMIT L "
+                + "WHERE L.LINK_PID IN (" + pidStr + ") AND L.U_RECORD != 2 GROUP BY L.TO_LIMIT_SRC) "
+                + "select tmp1.num + tmp2.num from tmp1, tmp2";
+        DatabaseOperator getObj=new DatabaseOperator();
+        List<Object> resultList = getObj.exeSelect(getConn(), sql);
+
+        if(resultList.size()>0 && Integer.valueOf((String)resultList.get(0)) > 2) {
+            String target=chainPidSet.toString().replace(" ", "").
+                    replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").
+                    replace("%", ",");
+            this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());
+        }
 	}
-	
+
 
 }

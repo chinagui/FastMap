@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -11,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * 查询条件：存在IX_POI_NAME新增或者修改，且IX_POI_NAME.U_RECORD！=2(删除)
@@ -28,11 +32,14 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  *
  */
 public class FMBAT20104 extends BasicBatchRule {
-
+	private Map<Long,Long> pidAdminId;
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
-
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 	}
 
 	@Override
@@ -56,6 +63,11 @@ public class FMBAT20104 extends BasicBatchRule {
 		IxPoiName standardPoiName = poiObj.getOfficeStandardCHName();
 		IxPoiName originalPoiName = poiObj.getOfficeOriginCHName();
 		MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminCode=pidAdminId.get(poi.getPid()).toString();
+		}
+		
 		if (standardPoiName != null) {
 			// (1)如果存在
 			String standardName = "";
@@ -76,7 +88,7 @@ public class FMBAT20104 extends BasicBatchRule {
 			// NAME_PHONETIC根据官方标准名称转拼音；
 			// (3)将官方原始名称和官方标准名称(NAME)转全角；
 			// (4)为官方原始(NAME_CLASS=1,NAME_TYPE=2)拼音NAME_PHONETIC赋值；
-			String namePy = apiService.pyConvertHz(originalName);
+			String namePy = apiService.pyConvert(originalName,adminCode,null);
 			standardPoiName.setName(originalName);
 			standardPoiName.setNamePhonetic(namePy);
 			originalPoiName.setName(originalName);
@@ -92,7 +104,7 @@ public class FMBAT20104 extends BasicBatchRule {
 				originalName = originalPoiName.getName();
 			}
 			originalName = ExcelReader.h2f(originalName);
-			String namePy = apiService.pyConvertHz(originalName);
+			String namePy = apiService.pyConvert(originalName,adminCode,null);
 			
 			standardPoiName = poiObj.createIxPoiName();
 			standardPoiName.setNameClass(1);

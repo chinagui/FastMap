@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -183,27 +184,29 @@ public class GLM08004_7 extends baseRule{
 		if(resultList.size()>0){
 			this.setCheckResult("", "", 0);
 		}
-		//检查经过线
-		StringBuilder sb2 = new StringBuilder();
 
-		sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
-		sb2.append(" AND RLL.VEHICLE = 2147483784");
-		sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
-		sb2.append(" AND RLL.U_RECORD <> 2");
-		sb2.append(" AND RLL.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
-		sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
-		sb2.append(" AND RLF.FORM_OF_WAY = 50");
-		sb2.append(" AND RLF.U_RECORD <> 2)");
+		if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+            //检查经过线
+            StringBuilder sb2 = new StringBuilder();
 
-		String sql2 = sb2.toString();
-		log.info("RdRestriction前检查GLM08004_7:" + sql2);
+            sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+            sb2.append(" AND RLL.VEHICLE = 2147483784");
+            sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
+            sb2.append(" AND RLL.U_RECORD <> 2");
+            sb2.append(" AND RLL.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(), ",") + ")");
+            sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
+            sb2.append(" AND RLF.FORM_OF_WAY = 50");
+            sb2.append(" AND RLF.U_RECORD <> 2)");
 
-		resultList = getObj.exeSelect(this.getConn(), sql2);
+            String sql2 = sb2.toString();
+            log.info("RdRestriction前检查GLM08004_7:" + sql2);
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
-		}
-		
+            resultList = getObj.exeSelect(this.getConn(), sql2);
+
+            if (resultList.size() > 0) {
+                this.setCheckResult("", "", 0);
+            }
+        }
 	}
 
 	/* (non-Javadoc)

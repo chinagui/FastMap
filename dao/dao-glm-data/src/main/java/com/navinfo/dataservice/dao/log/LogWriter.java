@@ -466,10 +466,31 @@ public class LogWriter {
 
 	private boolean addToOperation(ICommand command, IRow r, LogDetail ld) {
 		boolean flag = false;
+		
 		if (r.objType() == ObjType.RDNODE || r.objType() == ObjType.RDLINK
 				|| r.objType() == ObjType.ADLINK
 				|| r.objType() == ObjType.ADNODE
-				|| r.objType() == ObjType.ADFACE) {
+				|| r.objType() == ObjType.ADFACE
+				|| r.objType() == ObjType.LULINK
+				|| r.objType() == ObjType.LUNODE
+				|| r.objType() == ObjType.LUFACE
+				|| r.objType() == ObjType.LCLINK
+				|| r.objType() == ObjType.LCNODE
+				|| r.objType() == ObjType.ZONELINK
+				|| r.objType() == ObjType.ZONEFACE
+				|| r.objType() == ObjType.ZONENODE
+				|| r.objType() == ObjType.RWLINK
+				|| r.objType() == ObjType.RWNODE
+				|| r.objType() == ObjType.CMGBUILDNODE
+				|| r.objType() == ObjType.CMGBUILDLINK
+				|| r.objType() == ObjType.CMGBUILDFACE
+				|| r.objType() == ObjType.RDELECEYEPAIR
+				|| r.objType() == ObjType.RDGSC
+			    || r.objType() == ObjType.RDHGWGLIMIT
+			    || r.objType() == ObjType.RDMILEAGEPILE
+			    || r.objType() == ObjType.RDOBJECT
+				
+				) {
 
 			if (r.status() == ObjStatus.INSERT
 					|| r.status() == ObjStatus.DELETE) {

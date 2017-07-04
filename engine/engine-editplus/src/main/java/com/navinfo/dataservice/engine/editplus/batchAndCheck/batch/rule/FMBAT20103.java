@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -10,6 +13,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * 查询条件：存在IX_POI_ADDRESS新增或者修改,且IX_POI_ADDRESS.U_RECORD!=2（删除） 
@@ -22,10 +26,14 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  *
  */
 public class FMBAT20103 extends BasicBatchRule {
-
+	private Map<Long,Long> pidAdminId;
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 
 	}
 
@@ -41,9 +49,13 @@ public class FMBAT20103 extends BasicBatchRule {
 		if (chiAddress == null) {
 			return;
 		}
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminCode=pidAdminId.get(poi.getPid()).toString();
+		}
 		if (chiAddress.getHisOpType().equals(OperationType.INSERT) || chiAddress.getHisOpType().equals(OperationType.UPDATE)) {
 			chiAddress.setFullname(ExcelReader.h2f(chiAddress.getFullname()));
-			chiAddress.setFullnamePhonetic(apiService.pyConvertHz(chiAddress.getFullname()));
+			chiAddress.setFullnamePhonetic(apiService.pyConvert(chiAddress.getFullname(),adminCode,null));
 		} 
 	}
 

@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import net.sf.json.JSON;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -21,10 +22,7 @@ import java.util.Scanner;
  * 轨迹入库
  */
 public abstract class TrackUpload {
-
-	private static final int FAIL = 0;
-    private static final int SUCESS = 1;
-    private JSONArray resultJsonArr = new JSONArray();
+    private JSONObject result = new JSONObject();
     private int failed = 0;
     private int total = 0;
 
@@ -81,7 +79,7 @@ public abstract class TrackUpload {
 			String rowkey = null;
 			try{
 				String line = scanner.nextLine();
-				JSONObject json = JSONObject.fromObject(line);
+                JSONObject json = JSONObject.parseObject(line);
                 //获取rowkey
                 rowkey = this.getSourceRowkey(json);
 				//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
@@ -93,32 +91,12 @@ public abstract class TrackUpload {
 					puts.clear();
 					count = 0;
 				}
-				resultJsonArr.add(newResultObject(rowkey, SUCESS, 1));
 			}catch (Exception e) {
 				failed ++;
-				resultJsonArr.add(newResultObject(rowkey, FAIL, 0));
+				throw new Exception(e.getMessage());
 			}
 		}
 		htab.put(puts);
-	}
-	
-
-	/**
-	 * @Description:入库信息（用于接口返回）
-	 * @param id
-	 * @param result
-	 * @param errorReason
-	 * @return
-	 * @author: y
-	 * @time:2016-6-30 下午4:50:41
-	 */
-	private JSONObject newResultObject(String id, int result,int errorReason) {
-		JSONObject json = new JSONObject();
-		json.put("id", id);
-		json.put("status", result);
-        json.put("trackType", this.getTrackType());
-        json.put("remark", errorReason);
-		return json;
 	}
 
     private static void createTabIfNotExists(Connection connection,
@@ -132,8 +110,6 @@ public abstract class TrackUpload {
             admin.createTable(htd);
         }
     }
-
-
 
     /**
 	 * @return the errCount
@@ -149,39 +125,24 @@ public abstract class TrackUpload {
 	public int getTotal() {
 		return total;
 	}
-	
 
-	/**
-	 * @return the resultJsonArr
-	 */
-	public JSONArray getResultJsonArr() {
-		return resultJsonArr;
+
+	public JSONObject getResult() {
+		return result;
 	}
 
-	/**
-	 * @param resultJsonArr the resultJsonArr to set
-	 */
-	public void setResultJsonArr(JSONArray resultJsonArr) {
-		this.resultJsonArr = resultJsonArr;
+	public void setResult(JSONObject result) {
+		this.result = result;
 	}
 
-	
 	public static void main(String[] args) throws Exception {
-		
-		long t1=System.currentTimeMillis();
-
-        TrackLinesUpload trackUploader = new TrackLinesUpload();
-		trackUploader.run("F:\\FCC\\track\\Datum_Track.json","tracklines_sprint5");
-        System.out.println(trackUploader.getResultJsonArr().get(0).toString());
-
-//		TrackUpload a = new TrackUpload();
-//
-//		a.run("D:\\line.txt");
-		
-		long t2=System.currentTimeMillis();
-		
-		System.out.println("耗时："+(t2-t1));
-		
-//		System.out.println(a.getResultJsonArr());
+//		AdasTrackPointUpload trackUploader = new AdasTrackPointUpload();
+//		trackUploader.run("F:\\FCC\\adas_track_collect.json","trackpoints_trunk");
+//        System.out.println(trackUploader.getFailed());
+        net.sf.json.JSONObject nameTipsJson = new net.sf.json.JSONObject();
+        nameTipsJson.put("g_location", "{\"coordinates\":[116.79561,39.93595],\"type\":\"Point\"}");
+        net.sf.json.JSONObject gLocation = net.sf.json.JSONObject.fromObject(nameTipsJson.get("g_location"));
+        net.sf.json.JSONArray jsonArray = gLocation.getJSONArray("coordinates");
+        System.out.println(jsonArray.get(0));
 	}
 }

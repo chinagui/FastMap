@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -12,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNameckUtil;
 /**
  * 查询条件：本次日编存在IX_POI_NAME新增或者修改履历，或者存在主表改分类的修改履历，且分类为150101（Chain为6003、6045、6002、6001、6000、6028、6025、602C、6047、6027、600A）
@@ -28,11 +31,15 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNamec
  * @author gaopengrong
  */
 public class FMBAT20138 extends BasicBatchRule {
-
+	private Map<Long,Long> pidAdminId;
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 	}
 
 	@Override
@@ -41,6 +48,10 @@ public class FMBAT20138 extends BasicBatchRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isBatch(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			String adminCode=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+				adminCode=pidAdminId.get(poi.getPid()).toString();
+			}
 			String newKindCode=poi.getKindCode();
 			String newChain=poi.getChain();
 			IxPoiName br=poiObj.getOfficeStandardCHName();
@@ -73,7 +84,7 @@ public class FMBAT20138 extends BasicBatchRule {
 						newShortSubrow.setName(newShortName);
 						newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 						//批拼音
-						newShortSubrow.setNamePhonetic(metadataApi.pyConvertHz(newShortName));	
+						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminCode,null));	
 						return;
 					}
 					//如果数据中存在简称，当“RESULT_KEY”字段内容+官方标准化中文名称中未被替换的其余部分在简称名称能找到时，则不处理；
@@ -92,7 +103,7 @@ public class FMBAT20138 extends BasicBatchRule {
 					newShortSubrow.setName(newShortName);
 					newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 					//批拼音
-					newShortSubrow.setNamePhonetic(metadataApi.pyConvertHz(newShortName));
+					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminCode,null));
 				}
 			}	
 		}		

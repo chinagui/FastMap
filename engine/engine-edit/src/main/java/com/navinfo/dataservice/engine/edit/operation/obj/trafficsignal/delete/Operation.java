@@ -1,20 +1,17 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-
-import com.navinfo.dataservice.dao.glm.iface.AlertObject;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -147,6 +144,40 @@ public class Operation implements IOperation {
 		for (RdTrafficsignal trafficsignal : trafficsignals) {
 
 			result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.getPid());
+		}
+	}
+
+	/**
+	 * 删除link维护信息
+	 *
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		if (conn == null || linkPids.size() == 0) {
+			return;
+		}
+
+		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
+
+		Integer [] pids =linkPids.toArray(new Integer[linkPids.size()]);
+
+		List<RdTrafficsignal> trafficsignals = selector.loadByLinkPid(true, pids);
+
+		Set<Integer>delPids= new HashSet<>();
+
+		for (RdTrafficsignal trafficsignal : trafficsignals) {
+
+			if(delPids.contains(trafficsignal.getPid()))
+			{
+				continue;
+			}
+
+			result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.getPid());
+
+			delPids.contains(trafficsignal.getPid());
 		}
 	}
 

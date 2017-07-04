@@ -23,7 +23,7 @@ public class CmgBuildfaceTest extends InitApplication {
     @Test
     public void testCreateCmgBuildface(){
         String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"linkType\":\"CMGBUILDLINK\",\"linkPids\":[501000112,408000007,504000109,502000011]}}";
+                "\"data\":{\"linkType\":\"CMGBUILDLINK\",\"linkPids\":[403000036,507000047]}}";
         TestUtil.run(requester);
     }
 
@@ -41,7 +41,7 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testDeleteCmgBuildface() {
-        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":507000005}";
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":509000006}";
         TestUtil.run(requester);
     }
 }

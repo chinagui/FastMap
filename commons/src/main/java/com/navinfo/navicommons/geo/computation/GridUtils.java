@@ -22,44 +22,12 @@ public class GridUtils {
 	public static void main(String[] args) {
 		try{
 			JSONArray grids = JSONArray.fromObject(new Integer[]{60561001,
-					60561002,
-					60561003,
-					60561101,
-					60561102,
-					60561103,
-					60561201,
-					60561202,
-					60561011,
-					60561012,
-					60561013,
-					60561111,
-					60561112,
-					60561113,
-					60561211,
-					60561212,
-					60561022,
-					60561023,
-					60561121,
-					60561122,
-					60561123,
-					60561221,
-					60561222,
-					60560031,
-					60560032,
-					60560033,
-					60560131,
-					60560132,
-					60560133,
-					60560130,
-					60560230,
-					60561110,
-					60561120,
-					60561210,
-					60561220,
-					60561200,
+			
 					60561100});
 			String wkt = GridUtils.grids2Wkt(grids);
 			System.out.println(wkt);
+			//String grid = getNeighborGridInSameMesh("59567100",TopoLocation.Top);
+			//System.out.println("grid:"+grid);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -268,6 +236,79 @@ public class GridUtils {
 		lonlat[1] = lat;
 
 		return lonlat;
+	}
+	
+	/**
+	 * 获取一个grid号的指定方位的邻接grid，邻接grid不能超过图幅，如果超过图幅范围返回null;
+	 * @param gridId
+	 * @param loc:方位
+	 * @return
+	 */
+	public static String getNeighborGridInSameMesh(String gridId,TopoLocation loc){
+		gridId = StringUtils.leftPad(gridId, 8, '0');
+		int m12 = Integer.valueOf(gridId.substring(0, 2));
+		int m34 = Integer.valueOf(gridId.substring(2, 4));
+		int m5 = Integer.valueOf(gridId.substring(4, 5));
+		int m6 = Integer.valueOf(gridId.substring(5, 6));
+		int m7 = Integer.valueOf(gridId.substring(6, 7));
+		int m8 = Integer.valueOf(gridId.substring(7, 8));
+		switch(loc){
+		case Top:
+			if((++m7)>3){
+				return null;
+			}
+			break;
+		case Bottom:
+			if((--m7)<0){
+				return null;
+			}
+			break;
+		case Left:
+			if((--m8)<0){
+				return null;
+			}
+			break;
+		case Right:
+			if((++m8)>3){
+				return null;
+			}
+			break;
+		case LeftTop:
+			if((++m7)>3){
+				return null;
+			}
+			if((--m8)<0){
+				return null;
+			}
+			break;
+		case LeftBottom:
+			if((--m7)<0){
+				return null;
+			}
+			if((--m8)<0){
+				return null;
+			}
+			break;
+		case RightTop:
+			if((++m7)>3){
+				return null;
+			}
+			if((++m8)>3){
+				return null;
+			}
+			break;
+		case RightBottom:
+			if((--m7)<0){
+				return null;
+			}
+			if((++m8)>3){
+				return null;
+			}
+			break;
+		default:
+			break;
+		}
+		return String.format("%02d%02d%d%d%d%d", m12, m34, m5, m6,m7,m8);
 	}
 	
 	public static String getNeighborGrid(String gridId,TopoLocation loc){

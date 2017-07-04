@@ -1,17 +1,15 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
 import java.sql.Connection;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -112,14 +110,13 @@ public interface MetadataApi {
 	/**
 	 * @Description:名称导入，将名称写入元数据库
 	 * @param name
-	 * @param longitude
-	 * @param latitude
+	 * @param gLocation
 	 * @param rowkey
 	 * @author: y
 	 * @time:2016-6-28 下午2:49:30
 	 */
 	
-	public void nameImport(String name,double longitude, double latitude,String rowkey)throws Exception ;
+	public void nameImport(String name,JSONObject gLocation,String rowkey, String sourceType)throws Exception ;
 	
 	public MetadataMap getMetadataMap() throws Exception;
 	
@@ -129,13 +126,6 @@ public interface MetadataApi {
 	
 	public String[] pyConvert(String word) throws Exception;
 	
-	/**
-	 * 转拼音，不转数字英文字母
-	 * @param word
-	 * @return
-	 * @throws Exception
-	 */
-	public String pyConvertHz(String word) throws Exception;
 	
 	/**
 	 * 根据瓦片渲染TMC_POINT
@@ -198,12 +188,14 @@ public interface MetadataApi {
 	public List<String> getDeepAdminCodeList() throws Exception;
 
 	/**
-	 * 转英文
-	 * @param word
-	 * @return
+	 * <p>中文转英文接口</p>
+     * 根据SC_POINT_CHI2KEY_WORD转英文（未匹配内容转为拼音）
+	 * @param word 待翻译文本
+     * @param admin 行政区划号码
+	 * @return 翻译后文本
 	 * @throws Exception
 	 */
-	public String convertEng(String word) throws Exception;
+	public String convertEng(String word, String admin);
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
 	
@@ -415,6 +407,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointCode2Level() throws Exception;
+	public Map<String, String> scPointCode2LevelOld() throws Exception;
 	/**
 	 * 多源导入时，批level
 	 * @param jsonObj
@@ -423,5 +416,20 @@ public interface MetadataApi {
 	 */
 	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
 	public JSONObject getAdminMap()throws Exception;
+
+	public List<Map<String, Object>> getScPointTruckList() throws Exception;
+
+	public String pyConvert(String word,String adminId,String isRdName) throws Exception ;
+	
+	public String voiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
+	
+	public String[] pyVoiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
+	
+	public String engConvert(String word,String adminId) throws Exception ;
+	public int getCrowdTruck(String kindCode) throws Exception;
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
+	
+	 //获取元数据库中重要POI的数据
+	public List<Integer> queryImportantPid() throws SQLException;
 
 }

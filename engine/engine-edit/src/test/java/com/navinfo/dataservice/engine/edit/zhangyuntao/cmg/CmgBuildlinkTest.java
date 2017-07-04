@@ -20,9 +20,9 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildlink() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.0669363439083,33.9616218843058],[127.06732124090196," +
-                "33.96170864585347]]},\"catchLinks\":[]},\"dbId\":84}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":65,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.87499806284903,40.08321439763695]," +
+                "[116.87499940395355,40.08349041597817]]},\"catchLinks\":[]}}";
         TestUtil.run(requester);
     }
 
@@ -34,11 +34,9 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testRepairCmgBuildlink() {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":401000007,\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52590990066528," +
-                "39.74020261499875],[116.52642,39.73992],[116.52611,39.73939],[116.52585,39.7399]]}," +
-                "\"catchInfos\":[{\"nodePid\":510000009,\"longitude\":116.52590990066528,\"latitude\":39.74020261499875}," +
-                "{\"nodePid\":510000009,\"longitude\":116.52585,\"latitude\":39.7399}]}}";
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":502000032,\"dbId\":13,\"subtaskId\":58," +
+                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[123.67841,32.41627]" +
+                "[123.67865,32.41596]]},\"catchInfos\":[]}}";
         TestUtil.run(requester);
     }
 }

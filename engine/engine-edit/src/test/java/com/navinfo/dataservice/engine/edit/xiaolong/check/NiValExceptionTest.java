@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -101,9 +102,9 @@ public class NiValExceptionTest extends InitApplication {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			Page page = selector.list(9, grids, 5, 1, 0);
-			System.out.println(page.getResult()
-					+ "-----------------------------------------------");
+//			Page page = selector.list(9, grids, 5, 1, 0);
+//			System.out.println(page.getResult()
+//					+ "-----------------------------------------------");
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
@@ -172,7 +173,7 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void testgetsuites() throws Exception {
 		try {
 			String parameter = "{'type':5,'flag':1}";
@@ -191,15 +192,19 @@ public class NiValExceptionTest extends InitApplication {
 		} finally {
 		}
 	}
-//	@Test
+	@Test
 	public void testgetrules() throws Exception {
 		try {
-			String parameter = "{'suiteId':'suite7'}";
+			String parameter = "{'suiteId':'suite7','ruleCode':'CHR73040'}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			String suiteId=jsonReq.getString("suiteId");	
-			
-			JSONArray rules=CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+			String ruleCode = "";
+			if(jsonReq.containsKey("ruleCode") && jsonReq.getString("ruleCode") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("ruleCode"))){
+				ruleCode = jsonReq.getString("ruleCode");
+			}
+			JSONArray rules=CheckService.getInstance().getCkRulesBySuiteId(suiteId,ruleCode);
 			System.out.println("rules: "+rules);
 		} catch (Exception e) {
 			e.printStackTrace();

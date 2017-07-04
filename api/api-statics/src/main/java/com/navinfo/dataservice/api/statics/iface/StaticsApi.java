@@ -49,7 +49,7 @@ public interface StaticsApi {
 	
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 	
-	public SubtaskStatInfo getStatBySubtask(int subtaskId);
+//	public SubtaskStatInfo getStatBySubtask(int subtaskId);
 	
 	public Map<Integer,SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList);
 

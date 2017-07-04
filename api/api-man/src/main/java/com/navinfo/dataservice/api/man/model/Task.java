@@ -2,8 +2,10 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -45,6 +47,57 @@ public class Task implements Serializable{
 	private Integer groupLeader =0; 
 	private String workProperty ;
 	
+	private String workKind;
+	private String overdueReason;
+	private String overdueOtherReason;
+
+	public String getWorkKind() {
+		return workKind;
+	}
+	
+	public List<Integer> getWorkKindList(){
+		String[] kindList = this.workKind.split("\\|");
+		List<Integer> result=new ArrayList<Integer>();
+		for(int i=0;i<kindList.length;i++){
+			if(kindList[i].equals("1")){
+				result.add(i+1);
+			}
+		}
+		return result;
+	}
+
+
+	public void setWorkKind(String workKind) {
+		this.workKind = workKind;
+	}
+	/**
+	 * 将JSONArray转成workKind，例如workKindArray=[1，2，3]，workKind=1|1|1|0
+	 * @param workKindArray
+	 */
+	public void setWorkKind(JSONArray workKindArray){
+		if(workKindArray==null||workKindArray.size()==0){
+			this.workKind="0|0|0|0";
+			return;
+		}
+		String result = "0|0|0|0";
+		for(Object kind:workKindArray){
+			int t=Integer.valueOf(kind.toString());
+			result=result.substring(0,(t-1)*2)+"1"+result.substring((t-1)*2+1,result.length());
+		}
+		this.workKind= result;
+	}
+	
+	/**
+	 * workKind=0|1|0|0,num=2,则返回1，num=1，则返回0
+	 * 1外业采集，2众包，3情报矢量，4多源
+	 * @param num
+	 * @return
+	 */
+	public int getSubWorkKind(int num){
+		if(this.workKind==null||this.workKind.equals("")){return 0;}
+		return Integer.valueOf(this.workKind.substring((num-1)*2, (num-1)*2+1));
+	}
+
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;
 	
@@ -545,6 +598,22 @@ public class Task implements Serializable{
 
 	public void setAdminName(String adminName) {
 		this.adminName = adminName;
+	}
+
+	public String getOverdueReason() {
+		return overdueReason;
+	}
+
+	public void setOverdueReason(String overdueReason) {
+		this.overdueReason = overdueReason;
+	}
+
+	public String getOverdueOtherReason() {
+		return overdueOtherReason;
+	}
+
+	public void setOverdueOtherReason(String overdueOtherReason) {
+		this.overdueOtherReason = overdueOtherReason;
 	}
 
 }

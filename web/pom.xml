@@ -23,6 +23,7 @@
 		<module>edit-column-web</module>
 		<module>edit-row-web</module>
 		<module>sys-web</module>
+		<module>edit-dealership-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

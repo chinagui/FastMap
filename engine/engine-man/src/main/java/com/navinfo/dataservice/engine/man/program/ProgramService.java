@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,6 +41,7 @@ import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
@@ -388,6 +388,9 @@ public class ProgramService {
 					+ " WHERE INFOR_ID IN (SELECT INFOR_ID FROM PROGRAM WHERE PROGRAM_ID = "+programId+")";
 			run.update(conn,updateSql);
 			
+			//记录关闭时间
+			TimelineService.recordTimeline(programId, "program", 0, conn);
+			
 			try {
 				//发送消息
 				JSONObject condition=new JSONObject();
@@ -681,7 +684,7 @@ public class ProgramService {
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));}
 						else if(rs.getInt("TYPE")==4){
-							map.put("inforId", rs.getString("INFOR_ID"));
+							map.put("inforId", rs.getInt("INFOR_ID"));
 							map.put("inforName", rs.getString("INFOR_NAME"));}
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					
@@ -1652,7 +1655,7 @@ public class ProgramService {
 			sb.append("          P.NAME                       PROGRAM_NAME,       ");
 			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
 			sb.append("          P.TYPE,                                          ");
-//			sb.append("          P.LOT,                                           ");
+			sb.append("          P.STATUS,                                           ");
 			sb.append("          C.CITY_NAME,                                     ");
 			sb.append("          C.CITY_ID,                                       ");
 			sb.append("          I.INFOR_ID,                                      ");
@@ -1674,7 +1677,7 @@ public class ProgramService {
 			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
 			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
 			sb.append("      AND P.LATEST = 1                                     ");
-			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID(+)                     ");
 			sb.append("      AND P.PROGRAM_ID = "+programId);
 			
 			String sql = sb.toString();
@@ -1687,7 +1690,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-//						map.put("lot", rs.getInt("LOT"));
+						map.put("status", rs.getInt("STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
@@ -1932,16 +1935,30 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(conn,infor.getAdminName());
+					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+						t.setWorkKind("0|0|1|0");
+					}
+					UserGroup group =null;
+					/*web端有人触发的情报项目发布，导致的采集任务创建，则不赋组；
+					 *否则均是后台自动触发的项目，任务，子任务创建，需要根据如下原则赋值:
+					 *     根据INFOR表“情报对应方式”字段，进行赋值：
+					 *     1.“矢量制作”：赋值=空
+					 *     2.其它：根据INFOR表情报“情报省份城市”字段，参考<行政与作业组配置表>，取作业组赋值
+					 */
+					if(t.getType()==0&&userId==0){
+						if(!"矢量制作".equals(infor.getMethod())){
+							group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
+						}
+					}else if(t.getType()==1){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
+					}
+					if(group!=null){
+						t.setGroupId(group.getGroupId());
+					}
+					
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
-					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
-
-					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
-						t.setGroupId(userGroupMap.get(0).getGroupId());
-					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
-						t.setGroupId(userGroupMap.get(1).getGroupId());
-					}
+					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);					
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}
 			}
@@ -2001,6 +2018,7 @@ public class ProgramService {
 	 * 2.2.项目包含的所有任务作业组组长
 	 * 项目:XXX(任务名称)内容发生变更，请关注*/
 	public void programPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList,long pushUser) throws Exception {
+		UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, pushUser);
 		//查询所有生管角色
 		String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
 				+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
@@ -2008,12 +2026,12 @@ public class ProgramService {
 				+ "   AND M.USER_ID = I.USER_ID";
 		Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
 		for(Long userId:userIdList.keySet()){
-			String pushUserName =userIdList.get(userId).getUserRealName();
+			//String pushUserName =userIdList.get(userId).getUserRealName();
 			for(Map<String, Object> map:msgContentList){
 				//发送消息到消息队列
 				String msgContent = (String) map.get("msgContent");
 				String msgParam = (String) map.get("msgParam");
-				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushUserName);
+				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushObj.getUserRealName());
 			}
 		}
 		Map<Long, UserInfo> leaderIdByGroupId=null;
@@ -2027,9 +2045,10 @@ public class ProgramService {
 				String msgParam = (String) map.get("msgParam");
 				List<Long> groupIds=(List<Long>) map.get("groupIds");
 				for(Long groupId:groupIds){
+					//if(Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())==0){continue;}
 					try{
 						SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
-								2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+								2, msgParam,pushObj.getUserRealName());
 					}catch (Exception e) {
 						log.warn("项目推送消息错误，groupId="+groupId, e);
 					}
@@ -2067,6 +2086,7 @@ public class ProgramService {
 				//发送消息到消息队列
 				List<Long> groupIds=(List<Long>) map.get("groupIds");
 				for(Long groupId:groupIds){
+					//if(Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())==0){continue;}
 					UserInfo userInfo = leaderIdByGroupId.get(groupId);
 					//判断邮箱格式
 					String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
@@ -2107,7 +2127,7 @@ public class ProgramService {
 		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
 				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date,"
 				+ "P.MONTH_EDIT_PLAN_START_DATE,P.MONTH_EDIT_PLAN_END_DATE,"
-				+ "P.PLAN_START_DATE,P.PLAN_END_DATE  "
+				+ "P.PLAN_START_DATE,P.PLAN_END_DATE,P.PRODUCE_PLAN_START_DATE,P.PRODUCE_PLAN_END_DATE,p.DESCP  "
 				+ "FROM PROGRAM P where p.latest=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
@@ -2127,6 +2147,10 @@ public class ProgramService {
 					map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
 					map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 					map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+					map.setProducePlanStartDate(rs.getTimestamp("PRODUCE_PLAN_START_DATE"));
+					map.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
+					map.setDescp(rs.getString("DESCP"));
+					
 					list.add(map);
 				}
 				return list;
@@ -2431,5 +2455,157 @@ public class ProgramService {
 		if (bean!=null&&bean.getInforId()!=0){
 			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
 		};	
+	}
+	
+	public Program queryProgramByTaskId(Connection conn,int taskId) throws Exception{
+		String sql="select p.* from program p,task t where p.program_id=t.program_id"
+				+ " and t.task_id="+taskId;
+		QueryRunner run = new QueryRunner();
+		log.info("queryProgramByTaskId:"+sql);
+		return run.query(conn, sql, new ResultSetHandler<Program>(){
+
+			@Override
+			public Program handle(ResultSet rs) throws SQLException {
+				if(rs.next()){
+					Program program=new Program();
+					program.setProgramId(rs.getInt("program_id"));
+					program.setInforId(rs.getInt("infor_id"));
+					program.setCityId(rs.getInt("city_id"));
+					program.setType(rs.getInt("type"));
+					return program;
+				}
+				return null;
+			}});
+	}
+	
+	/**
+	 * 获取待数据规划项目列表
+	 * 应用场景：中线项目下，具有同时满足草稿状态+未进行数据规划的采集任务的项目列表
+	 * @author songhe
+	 * @return List
+	 * @throws SQLException 
+	 */
+	public List<Map<String, Object>> unPlanlist(JSONObject json) throws SQLException{
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer sb = new StringBuffer();
+			//未规划草稿状态
+			sb.append("select p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
+			//中线采集任务
+			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and t.program_id = p.program_id");
+			if(json.containsKey("name") && json.getString("name").length() > 0){
+				String name = json.getString("name");
+				sb.append(" and p.name like '%"+name+"%'");
+			}
+			String sql = sb.toString();
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>(){
+			@Override
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<>();
+					map.put("programId", rs.getInt("program_id"));
+					map.put("name", rs.getString("name"));
+					result.add(map);
+				}
+				return result;
+			}
+		};
+		log.info("获取待数据规划项目列表SQL:"+ sql);
+		return run.query(con, sql, rs);
+		}catch(Exception e){
+			DbUtils.rollback(con);
+			throw e;
+		}finally{
+			DbUtils.close(con);
+		}
+	}
+	
+	
+	/**
+	 * 获取质检子任务的项目列表
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject unPlanQualitylist() throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT P.PROGRAM_ID,P.NAME FROM PROGRAM P, TASK T, SUBTASK S");
+			sb.append(" WHERE P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
+			sb.append(" AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1 ");
+			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
+			
+			String selectSql= sb.toString();
+			log.info("unPlanQualitylist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while (rs.next()) {
+						JSONObject jo = new JSONObject();
+						jo.put("programId", rs.getInt(1));
+						jo.put("name", rs.getString(2));
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//获取待规划子任务的项目列表
+	public JSONObject unPlanSubtasklist() throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT P.PROGRAM_ID, P.NAME FROM TASK T, PROGRAM P ");
+			sb.append("WHERE T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
+			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
+			
+			String selectSql= sb.toString();
+			log.info("unPlanSubtasklist sql :" + selectSql);
+
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jsonObject = new JSONObject();
+					JSONArray jsonArray = new JSONArray();
+					while(rs.next()){
+						JSONObject jo = new JSONObject();
+						jo.put("programId", rs.getInt(1));
+						jo.put("name", rs.getString(2));
+						jsonArray.add(jo);
+					}
+					jsonObject.put("result", jsonArray);
+					jsonObject.put("totalCount", jsonArray.size());
+					return jsonObject;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -1,19 +1,5 @@
 package com.navinfo.dataservice.web.metadata.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.Set;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-import org.apache.uima.pear.util.FileUtil;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -43,6 +29,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.service.ScPointPoicodeNewService;
 import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
@@ -50,11 +37,25 @@ import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+import org.apache.uima.pear.util.FileUtil;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Controller
 public class MetaController extends BaseController {
@@ -100,16 +101,32 @@ public class MetaController extends BaseController {
 
             String word = jsonReq.getString("word");
 
+            String oldWord = word;
+            
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
             PinyinConverter py = new PinyinConverter();
 
-            String[] result = py.convert(word);
+            //特殊处理  以G、S、Y、X、C、Z开头的词(分歧编辑中)
+            if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") == 1 ){
+            	word = py.wordConvert(word, adminId);
+            }
+            
+//          String[] result = py.convert(word);
+            String[] result = py.pyVoiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();
 
-                json.put("voicefile", result[0]);
+                if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") == 1 ){
+                	json.put("phonetic", py.pyConvert(oldWord, adminId, null));
+                }else{
+                	json.put("phonetic", result[0]);
+                }
 
-                json.put("phonetic", result[1]);
+                json.put("voicefile", result[1]);
 
                 return new ModelAndView("jsonView", success(json));
             } else {
@@ -124,6 +141,104 @@ public class MetaController extends BaseController {
         }
     }
     
+    /**
+     * @Title: pyPolyphoneConvert
+     * @Description: 含多音字的转拼音接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年5月24日 下午3:17:26 
+     */
+    @RequestMapping(value = "/pinyin/pyPolyphoneConvert")
+    public ModelAndView pyPolyphoneConvert(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
+            PinyinConverter py = new PinyinConverter();
+
+//          String[] result = py.pyVoiceConvert(word, null, adminId, null);
+            
+            String result = py.pyPolyphoneConvert(word, adminId);
+            String voiceStr = py.voiceConvert(word, null, adminId, null);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("phonetic", result);
+                
+                json.put("voicefile", voiceStr);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转拼音失败");
+            }
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+    /**
+     * 转语音接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/pinyin/voiceConvert")
+    public ModelAndView convertVoice(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
+            String phonetic = null;
+            if(jsonReq.containsKey("phonetic")){
+            	phonetic = jsonReq.getString("phonetic");
+            }
+            PinyinConverter py = new PinyinConverter();
+            
+            String result = py.voiceConvert(word, phonetic, adminId, null);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("voicefile", result);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转语音失败");
+            }
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
     /**
      * @Title: autoConvertPinyin
      * @Description: 自动生成语音及拼音
@@ -146,10 +261,15 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             String word = jsonReq.getString("word");
+            
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
 
             PinyinConverter py = new PinyinConverter();
 
-            String[] result = py.autoConvert(word);
+            String[] result = py.pyVoiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();
@@ -178,8 +298,8 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
             String languageType = jsonReq.getString("languageType");
             String word = jsonReq.getString("word");
-            EngConverterHelper converterHelper = new EngConverterHelper();
-            String result = converterHelper.chiToEng(word);
+            EnglishConvert englishConvert = new EnglishConvert();
+            String result = englishConvert.convert(word);
             if (result != null) {
                 JSONObject json = new JSONObject();
                 json.put("eng", result);
@@ -749,7 +869,7 @@ public class MetaController extends BaseController {
 //    			int dbId = subtask.getDbId();
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), subtaskId, 1901, new JSONArray());
 
                 logger.info("tips: "+tips);
                  data = selector.searchForWeb(jsonReq, tips);
@@ -918,7 +1038,7 @@ public class MetaController extends BaseController {
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId, 1901, new JSONArray());
 
                 operation.teilenRdNameByTask(tips);
             }
@@ -1346,4 +1466,40 @@ public class MetaController extends BaseController {
         }
     }
 
+    /**
+     * @Title: getCiParaKindTop
+     * @Description: 查询POI分类元数据接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年5月18日 下午5:18:31 
+     */
+    @RequestMapping(value = "/getCiParaKindTop")
+    public ModelAndView getCiParaKindTop(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            ScPointPoicodeNewService scPointPoicodeNewService = new ScPointPoicodeNewService();
+            JSONArray data = scPointPoicodeNewService.list(jsonReq);
+
+            return new ModelAndView("jsonView", success(data));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 }

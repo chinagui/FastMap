@@ -156,6 +156,7 @@ public class Check {
 		throw new Exception(msg);
 	}
 
+	//PERMIT_CHECK_LINK_NODE_CRFI  如果link上的node已经参与制作了CRFI，则不允许对此node进行修形操作
 	public void checkCRFI(Connection conn, Command command) throws Exception {
 		RdInterSelector selector = new RdInterSelector(conn);
 		AbstractSelector nodeFormSelector = new AbstractSelector(RdNodeForm.class, conn);

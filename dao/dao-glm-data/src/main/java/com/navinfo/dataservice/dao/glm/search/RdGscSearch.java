@@ -55,7 +55,14 @@ public class RdGscSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as (select a.pid   from rd_gsc a  where a.u_record != 2    and sdo_within_distance(a.geometry, sdo_geometry(    :1 , 8307), 'DISTANCE=0') =        'TRUE'),          tmp2 as( select a.pid from rd_gsc_link a,tmp1 b where a.pid = b.pid and a.table_name in ('RD_LINK','RW_LINK') group by a.pid having count(1)>1),          tmp3 as( select a.*,b.geometry from rd_gsc_link a, rd_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RD_LINK'   and a.pid=c.pid), tmp4 as (   select a.*,b.geometry from rd_gsc_link a, rw_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RW_LINK'   and a.pid=c.pid)      select * from (select * from tmp3   union all   select * from tmp4) order by pid";
+		String sql = "WITH tmp1 AS (SELECT a.pid FROM rd_gsc a WHERE a.u_record != 2 AND sdo_within_distance(a.geometry, sdo_geometry(:1," +
+                " 8307), 'DISTANCE=0') = 'TRUE'), tmp2 AS (SELECT a.pid FROM rd_gsc_link a, tmp1 b WHERE a.pid = b.pid AND a.table_name " +
+                "IN ('RD_LINK', 'RW_LINK', 'CMG_BUILDLINK') GROUP BY a.pid HAVING count(1) > 1), tmp3 AS (SELECT a.*, b.geometry FROM " +
+                "rd_gsc_link a, rd_link b, tmp2 c WHERE a.link_pid = b.link_pid AND a.table_name = 'RD_LINK' AND a.pid = c.pid), tmp4 AS" +
+                " (SELECT a.*, b.geometry FROM rd_gsc_link a, rw_link b, tmp2 c WHERE a.link_pid = b.link_pid AND a.table_name = " +
+                "'RW_LINK' AND a.pid = c.pid), tmp5 AS (SELECT a.*, b.geometry FROM rd_gsc_link a, cmg_buildlink b, tmp2 c WHERE a" +
+                ".link_pid = b.link_pid AND a.table_name = 'CMG_BUILDLINK' AND a.pid = c.pid) SELECT * FROM (SELECT * FROM tmp3 UNION " +
+                "ALL SELECT * FROM tmp4 UNION ALL SELECT * FROM tmp5) ORDER BY pid";
 		
 		PreparedStatement pstmt = null;
 
@@ -163,9 +170,9 @@ public class RdGscSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+		List<SearchSnapshot> list = new ArrayList<>();
 
-		String sql = "WITH TMP1 AS (SELECT A.PID FROM RD_GSC A WHERE A.U_RECORD != 2 AND SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE'), TMP2 AS (SELECT A.PID FROM RD_GSC_LINK A, TMP1 B WHERE A.PID = B.PID AND A.U_RECORD != 2 AND A.TABLE_NAME IN ('RD_LINK', 'RW_LINK','LC_LINK') GROUP BY A.PID HAVING COUNT(1) > 1), TMP3 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, RD_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'RD_LINK' AND A.PID = C.PID), TMP4 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, RW_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'RW_LINK' AND A.PID = C.PID), TMP5 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, LC_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'LC_LINK' AND A.PID = C.PID) SELECT TMP.*, A.GEOMETRY AS GSC_GEO FROM (SELECT * FROM TMP3 UNION ALL SELECT * FROM TMP4 UNION ALL SELECT * FROM TMP5) TMP, RD_GSC A WHERE TMP.PID = A.PID ORDER BY TMP.PID, TMP.ZLEVEL  ";
+		String sql = "WITH TMP1 AS (SELECT A.PID FROM RD_GSC A WHERE A.U_RECORD != 2 AND SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE'), TMP2 AS (SELECT A.PID FROM RD_GSC_LINK A, TMP1 B WHERE A.PID = B.PID AND A.U_RECORD != 2 AND A.TABLE_NAME IN ('RD_LINK', 'RW_LINK', 'LC_LINK', 'CMG_BUILDLINK') GROUP BY A.PID HAVING COUNT(1) > 1), TMP3 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, RD_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'RD_LINK' AND A.PID = C.PID), TMP4 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, RW_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'RW_LINK' AND A.PID = C.PID), TMP5 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, LC_LINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'LC_LINK' AND A.PID = C.PID) , TMP6 AS (SELECT A.*, B.GEOMETRY FROM RD_GSC_LINK A, CMG_BUILDLINK B, TMP2 C WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND A.TABLE_NAME = 'CMG_BUILDLINK' AND A.PID = C.PID) SELECT TMP.*, A.GEOMETRY AS GSC_GEO FROM (SELECT * FROM TMP3 UNION ALL SELECT * FROM TMP4 UNION ALL SELECT * FROM TMP5 UNION ALL SELECT * FROM TMP6) TMP, RD_GSC A WHERE TMP.PID = A.PID ORDER BY TMP.PID, TMP.ZLEVEL";
 		
 		PreparedStatement pstmt = null;
 

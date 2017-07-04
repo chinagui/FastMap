@@ -29,6 +29,26 @@ public class Command extends AbstractCommand {
 	private int kind = 7;
 
 	private int laneNum = 2;
+	
+	private int width = 55;
+	
+	private int laneClass =1;
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getLaneClass() {
+		return laneClass;
+	}
+
+	public void setLaneClass(int laneClass) {
+		this.laneClass = laneClass;
+	}
 
 	private JSONArray catchLinks;
 
@@ -126,6 +146,12 @@ public class Command extends AbstractCommand {
 
 		if (data.containsKey("laneNum")) {
 			this.laneNum = data.getInt("laneNum");
+		}
+		if(data.containsKey("width")){
+			this.width = data.getInt("width");
+		}
+		if(data.containsKey("laneClass")){
+			this.laneClass = data.getInt("laneClass");
 		}
 
 		if (data.containsKey("catchLinks")) {

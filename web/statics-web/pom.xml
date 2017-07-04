@@ -150,6 +150,15 @@
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>
 		</dependency>
+		<dependency> <groupId>org.quartz-scheduler</groupId> <artifactId>quartz</artifactId></dependency> 
+		<dependency>
+		  <groupId>com.thoughtworks.future</groupId>
+		  <artifactId>future_2.12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>opensymphony</groupId>
+			<artifactId>quartz-all</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>statics</finalName>

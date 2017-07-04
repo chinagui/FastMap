@@ -1,25 +1,34 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
-
 import org.apache.commons.lang.StringUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkExporter {
 
@@ -94,40 +103,7 @@ public class RdLinkExporter {
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
-		String sql3 = " select * from rd_link a where a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-//		
-		PreparedStatement stmt3 = conn.prepareStatement(sql3);
-
-		stmt3.setClob(1, clob);
 		
-		ResultSet resultSet3 = stmt3.executeQuery();
-
-		resultSet3.setFetchSize(5000);
-
-		//****************************************
-		Set<Integer> linkPidSet = new HashSet<Integer>();//所有linkPid 的集合 无重复
-		List<Integer> sNodePidList=new ArrayList<Integer>();//所有sNodePid 的集合 有重复
-		List<Integer> eNodePidList=new ArrayList<Integer>();//所有eNodePid 的集合 有重复
-		Map<Integer,Integer> pidKind = new HashMap<Integer,Integer>();// 所有 linkpid,kind的map集合
-		Map<Integer,Double> pidLength = new HashMap<Integer,Double>();// 所有 linkpid,length的map集合
-		Map<Integer,Integer> sNodeAndeNode = new HashMap<Integer,Integer>();// 所有 sNodePid,eNodePid的map集合
-		Map<Integer,Integer> eNodeAndsNode = new HashMap<Integer,Integer>();// 所有eNodePid, sNodePid的map集合
-		Map<Integer,Integer> sNodeAndLinkPid = new HashMap<Integer,Integer>();// 所有 sNodePid,linkPid的map集合
-		Map<Integer,Integer> eNodeAndLinkPid = new HashMap<Integer,Integer>();// 所有eNodePid,linkPid的map集合
-		while (resultSet3.next()) {
-			if(resultSet3.getInt("kind") != 10){//排除十级路
-				linkPidSet.add(resultSet3.getInt("link_pid"));
-				sNodePidList.add(resultSet3.getInt("S_NODE_PID"));
-				eNodePidList.add(resultSet3.getInt("E_NODE_PID"));
-				pidKind.put(resultSet3.getInt("link_pid"), resultSet3.getInt("kind"));
-				pidLength.put(resultSet3.getInt("link_pid"), resultSet3.getDouble("length"));
-				sNodeAndeNode.put(resultSet3.getInt("S_NODE_PID"), resultSet3.getInt("E_NODE_PID"));
-				eNodeAndsNode.put(resultSet3.getInt("E_NODE_PID"), resultSet3.getInt("S_NODE_PID"));
-				sNodeAndLinkPid.put(resultSet3.getInt("S_NODE_PID"), resultSet3.getInt("link_pid"));
-				eNodeAndLinkPid.put(resultSet3.getInt("E_NODE_PID"), resultSet3.getInt("link_pid"));
-			}
-		}
-		//****************************************
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
 
 		stmt2.setClob(1, clob);
@@ -141,11 +117,7 @@ public class RdLinkExporter {
 
 		while (resultSet.next()) {
 
-			JSONObject json = enclosingRdLine(resultSet, operateDate,
-					sNodePidList,eNodePidList,
-					pidKind,pidLength,
-					sNodeAndeNode,eNodeAndsNode,
-					sNodeAndLinkPid,eNodeAndLinkPid);
+			JSONObject json = enclosingRdLine(resultSet, operateDate,conn);
 
 			int pid = json.getInt("pid");
 
@@ -232,11 +204,7 @@ public class RdLinkExporter {
 		sqliteConn.commit();
 	}
 
-	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, List<Integer> sNodePidList, 
-			List<Integer> eNodePidList, Map<Integer, Integer> pidKind, 
-			Map<Integer, Double> pidLength, Map<Integer, Integer> sNodeAndeNode,
-			Map<Integer, Integer> eNodeAndsNode,
-			Map<Integer, Integer> sNodeAndLinkPid,Map<Integer, Integer> eNodeAndLinkPid)
+	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, Connection conn)
 			throws Exception {
 
 		JSONObject json = new JSONObject();
@@ -450,62 +418,63 @@ public class RdLinkExporter {
 			}else if(formList.contains(35) && direct == 1){//双向调头口
 				isADAS = 3;
 			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
-				System.out.println("begin kind == 7 && linkLength < 1000 :");
+//				System.out.println("begin kind == 7 && linkLength < 1000  linkPid :"+pid);
+//				System.out.println(" begin time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 				//计算此link 的sNode和eNode 出现的次数
-				List<Integer> nodeList = new ArrayList<>();
-				nodeList.addAll(sNodePidList);
-				nodeList.addAll(eNodePidList);
-				
+				//*****************2017.05.09 zl*************
 				Integer sNodePid = rs.getInt("S_NODE_PID");
 				Integer eNodePid = rs.getInt("E_NODE_PID");
-				
 				//计算断头路 
 				double length = linkLength;
-				for(int i=0; i<nodeList.size() ;i++){
-					int sNodeCount = 1;
-					int eNodeCount = 1;
-					if(sNodePid > 0){
-						sNodeCount =getNodeCount(sNodePid,nodeList);
+				//根据当前snode 和 enode 获取下一个link
+				List<RdLink> nextLinks_s = loadNextLink(sNodePid ,pid,conn);
+				List<RdLink> nextLinks_e = loadNextLink(eNodePid ,pid,conn);
+				List<RdLink> nextLinks = new ArrayList<RdLink>();
+				int nextNodePid =0;
+				if(nextLinks_s.size() == 0 && nextLinks_e.size() == 1){//追踪eNode
+					nextLinks=nextLinks_e;
+					nextNodePid=eNodePid;
+				}else if(nextLinks_e.size() == 0 && nextLinks_s.size() == 1){//追踪sNode
+					nextLinks_e=nextLinks_s;
+					nextNodePid=sNodePid;
+				}
+				
+				while (nextLinks.size() == 1) {
+					RdLink nextLink = nextLinks.get(0);
+					
+					if(nextLink.getKind() == 7){
+						length+=nextLink.getLength();
 					}
-					System.out.println("sNodeCount: "+ sNodePid+":"+sNodeCount);
-					if(eNodeCount > 0){
-						eNodeCount =getNodeCount(eNodePid,nodeList);
+					if(length >= 1000){
+						break;
 					}
-					System.out.println("eNodeCount: "+ eNodePid+":"+eNodeCount);
-					if((sNodeCount ==1 && eNodeCount ==2) || (sNodeCount ==2 && eNodeCount ==1)){//判断是否存在断头路迟勋跟踪
-						Map<String,Object> map = 
-								getLengthAll(sNodeCount,eNodeCount,
-												sNodePid,eNodePid,
-												sNodePidList,eNodePidList,
-												pidKind,pidLength,
-												sNodeAndeNode,eNodeAndsNode,
-												sNodeAndLinkPid,eNodeAndLinkPid,
-												nodeList);
-							if(map.containsKey("sNodePid")){
-								sNodePid=(Integer) map.get("sNodePid");
-							}else{
-								sNodePid=0;
-							}
-							if(map.containsKey("eNodePid")){
-								eNodePid=(Integer) map.get("eNodePid");
-							}else{
-								eNodePid=0;
-							}
-							double len = (double) map.get("length");
-							length+= len;
+					
+					nextNodePid = (nextNodePid == nextLink.getsNodePid()) ? nextLink
+							.geteNodePid() : nextLink.getsNodePid();
+					
+					List<RdLink> nextLinkList = loadNextLink(nextNodePid ,nextLink.getPid(),conn);
+					if (nextLinkList.size() == 1) {
+						// 赋值查找下一组联通links  继续循环
+						nextLinks=nextLinkList;
 					}else{
 						break;
 					}
 				}
+				
+				
 				if(length < 1000){
 					isADAS =3;
 				}
+//				System.out.println(" end  length: "+length+" isADAS:"+isADAS);
+//				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 			}
 		}
 		json.put("isADAS", isADAS);
 
 		return json;
 	}
+
+	
 
 	private static int computeStyle(JSONArray forms, 
 			JSONArray styleFactors, int multiDigitized) {
@@ -516,7 +485,7 @@ public class RdLinkExporter {
 			style = 32;
 			count+=1;
 		}
-		System.out.println("forms : "+forms);
+//		System.out.println("forms : "+forms);
 		List<Integer> formList = new ArrayList<Integer>();
 
 		for (int i = 0; i < forms.size(); i++) {
@@ -566,6 +535,7 @@ public class RdLinkExporter {
 		}*/
 
 		List<Integer> styleList = new ArrayList<>();
+//		System.out.println("styleFactors:  "+styleFactors);
 		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
 
@@ -573,6 +543,7 @@ public class RdLinkExporter {
 		}
 
 		if (styleList.contains(98)) {
+//			System.out.println(" type = 98");
 			style = 29;
 			count+=1;
 		}
@@ -599,118 +570,128 @@ public class RdLinkExporter {
 		if (count == 0) {
 			style = 255;
 		}
-		System.out.println("style: "+style+" ,count: "+count);
+//		System.out.println("style: "+style+" ,count: "+count);
 		return style;
-	}
+	}	
 	
 	
 	/**
-	 * @Title: getLengthAll
-	 * @Description: 判断追踪反向
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年4月27日 下午2:38:35 
+	 * @author zhangli5174
+	 *
+	 *	RdLink
 	 */
-	private static Map<String, Object> getLengthAll(int sNodeCount,int eNodeCount,
-			int sNodePid, int eNodePid,
-			List<Integer> sNodePidList,List<Integer> eNodePidList, 
-			Map<Integer, Integer> pidKind, Map<Integer, Double> pidLength,
-			Map<Integer, Integer> sNodeAndeNode,Map<Integer, Integer> eNodeAndsNode,
-			Map<Integer, Integer> sNodeAndLinkPid,Map<Integer, Integer> eNodeAndLinkPid,
-			List<Integer> nodeList) {
-		Map<String,Object> map = new HashMap<String,Object>();
-		double length = 0;
-		int flag = 0;
-		//第一步
-		if(sNodeCount == 1 && eNodeCount == 2){
-			//追踪eNode  返回的是7级路的总长度
-			System.out.println("追踪eNode snode是唯一点    eNodePid: "+eNodePid);
-				map = traceNode(0,
-						 sNodePid,eNodePid,
-						 sNodePidList,eNodePidList,
-						pidKind,pidLength,
-						sNodeAndeNode,eNodeAndsNode,
-						sNodeAndLinkPid,eNodeAndLinkPid,nodeList);
-		}else if(eNodeCount == 1 && sNodeCount == 2){
-			//追踪sNode  返回的是7级路的总长度
-			System.out.println("追踪sNode enode是唯一点    sNodePid: "+sNodePid);
-				map =  traceNode(1,
-						 sNodePid,eNodePid,
-						 sNodePidList,eNodePidList,
-						 pidKind,pidLength,
-						 sNodeAndeNode,eNodeAndsNode,
-						 sNodeAndLinkPid,eNodeAndLinkPid,nodeList);
-		}else{
-			map.put("sNodePid", -1);
-			map.put("eNodePid", -1);
-			map.put("length", length);
-		}
-		
-		
-		return map;
+	private static class RdLink{
+
+		private int pid;
+
+	    private int sNodePid;
+
+	    private int eNodePid;
+
+	    private int kind = 7;
+
+	    private double length;
+
+
+	    public RdLink() {
+
+	    }
+
+	
+	    public int getPid() {
+	        return pid;
+	    }
+
+	    public void setPid(int linkPid) {
+	        this.pid = linkPid;
+	    }
+
+	    public int getsNodePid() {
+	        return sNodePid;
+	    }
+
+	    public void setsNodePid(int sNodePid) {
+	        this.sNodePid = sNodePid;
+	    }
+
+	    public int geteNodePid() {
+	        return eNodePid;
+	    }
+
+	    public void seteNodePid(int eNodePid) {
+	        this.eNodePid = eNodePid;
+	    }
+
+	    public int getKind() {
+	        return kind;
+	    }
+
+	    public void setKind(int kind) {
+	        this.kind = kind;
+	    }
+
+	    public double getLength() {
+	        return length;
+	    }
+
+	    public void setLength(double length) {
+	        this.length = length;
+	    }
+
 	}
+	
+	
+
 	/**
-	 * @Title: getNodeCount
-	 * @Description: 
-	 * @param nodePid
-	 * @param nodeList
-	 * @return  int
+	 * @Title: loadNextLink
+	 * @Description: 根据nodePid 和 pid  获取nextlink 的集合
+	 * @param sNodePid
+	 * @param pid
+	 * @param conn 
+	 * @return  List<RdLink>
+	 * @throws SQLException 
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年4月26日 上午10:15:10 
+	 * @date 2017年5月9日 下午5:00:07 
 	 */
-	private static int getNodeCount(int nodePid,List<Integer> nodeList){
-		int nodeCount = 0;
-		if(nodeList != null && nodeList.size() >0 ){
-			for(int i=0;i < nodeList.size();i++ ){
-				if(nodeList.get(i) == nodePid){
-					nodeCount++;
+	private static List<RdLink> loadNextLink(Integer nodePid, int pid, Connection conn) throws SQLException  {
+		
+		String sql = " select l.link_pid,l.s_node_pid,l.e_node_pid,l.length,l.kind from rd_link l where l.u_record != 2 "
+					+ " and l.kind != 10 "
+					+" and  l.link_pid != "+pid+" "
+                    +"  and (l.s_node_pid = "+nodePid+" or l.e_node_pid = "+nodePid+" )";
+//		
+		PreparedStatement stmt = null;
+		List<RdLink> rdLinkList=null;
+		try {
+			stmt = conn.prepareStatement(sql);
+			ResultSet resultSet = stmt.executeQuery();
+
+			resultSet.setFetchSize(5000);
+
+//			System.out.println("sql: "+sql);
+			//****************************************
+			rdLinkList=new ArrayList<RdLink>();
+			
+			while (resultSet.next()) {
+				if(resultSet.getInt("kind") != 10){//排除十级路
+					RdLink rdLink  = new RdLink();// 所有每条记录的 linkPid,sNode,eNode 的map集合
+					rdLink.setKind(resultSet.getInt("kind"));
+					rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
+					rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
+					rdLink.setPid(resultSet.getInt("link_pid"));
+					rdLink.setLength(resultSet.getDouble("length"));
+					rdLinkList.add(rdLink);
 				}
 			}
-		}
-		return nodeCount;
-	}
-	/**
-	 * @Title: traceNode
-	 * @Description: 追踪node_pid ,返回下一节点node_pid
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年4月27日 下午2:37:13 
-	 */
-	private static Map<String,Object> traceNode(int flag ,
-			int sNodePid, int eNodePid, 
-			List<Integer> sNodePidList, List<Integer> eNodePidList,
-			Map<Integer, Integer> pidKind, Map<Integer, Double> pidLength, 
-			Map<Integer, Integer> sNodeAndeNode,Map<Integer, Integer> eNodeAndsNode,
-			Map<Integer, Integer> sNodeAndLinkPid,Map<Integer, Integer> eNodeAndLinkPid, 
-			List<Integer> nodeList) {
-		Map<String,Object> map = new HashMap<String,Object>();
-		double length = 0;
-		if(flag > 0){//追踪sNode  返回的是所7级路的总长度
-			//终点只挂接了本身
-			int nexteNode1 = eNodeAndsNode.get(sNodePid);//以此起点为终点去获取下一个终点
-			int nextLinkPid = sNodeAndLinkPid.get(nexteNode1);
-			int nextKind = pidKind.get(nextLinkPid);
-			if(nextKind == 7){
-				length+=pidLength.get(nextLinkPid);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(stmt != null){
+				stmt.close();
 			}
-			map.put("sNodePid", nexteNode1);
-			map.put("eNodePid", -1);
-			map.put("length", length);
-			
-		}else{//追踪eNode  返回的是所7级路的总长度
-			//启点只挂接了本身
-			int nexteNode1 = sNodeAndeNode.get(eNodePid);//以此终点为起点去获取下一个终点
-			int nextLinkPid = sNodeAndLinkPid.get(nexteNode1);
-			int nextKind = pidKind.get(nextLinkPid);
-			if(nextKind == 7){
-				length+=pidLength.get(nextLinkPid);
-			}
-			map.put("sNodePid", -1);
-			map.put("eNodePid", nexteNode1);
-			map.put("length", length);
-			
 		}
-		return map;
+		//****************************************
+		return rdLinkList;
 	}
 }

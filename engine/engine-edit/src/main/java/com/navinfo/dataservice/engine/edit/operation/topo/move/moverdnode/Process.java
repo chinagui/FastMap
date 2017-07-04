@@ -58,11 +58,13 @@ public class Process extends AbstractProcess<Command> {
 		return false;
 	}
 
+	private Check check = new Check();
 	@Override
 	public String exeOperation() throws Exception {
 
 		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
 				updateNode);
+		check.checkCRFI(this.getConn(), this.getCommand().getNodePid());
 		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());
 	}
 

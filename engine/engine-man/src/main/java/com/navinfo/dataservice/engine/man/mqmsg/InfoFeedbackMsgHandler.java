@@ -6,11 +6,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -25,7 +28,6 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class InfoFeedbackMsgHandler implements MsgHandler {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	String sql = "UPDATE INFOR SET feedback_type=1 WHERE INFOR_ID=?";
 
 	@Override
 	public void handle(String message) {
@@ -39,13 +41,35 @@ public class InfoFeedbackMsgHandler implements MsgHandler {
 		}
 	}
 
+	/**
+	 *  feedMsg.put("taskId", info.get("taskId"));
+                                            feedMsg.put("isAdopted", info.get("c_isAdopted"));
+                                            feedMsg.put("denyReason", info.get("c_denyReason"));
+                                            feedMsg.put("feedbackDate", info.get("c_date"));
+
+	 * @param message
+	 * @throws Exception
+	 */
 	public void save(String message) throws Exception {
+		log.info("FEEDBACK:"+message);
 		Connection conn = null;
 		try {
+			JSONObject msgJSON = JSONObject.fromObject(message);
+			String sql="UPDATE INFOR"
+					+ "   SET IS_ADOPTED = ?, DENY_REASON = ?, FEEDBACK_DATE = ?"
+					+ " WHERE INFOR_ID = (SELECT P.INFOR_ID"
+					+ "                     FROM PROGRAM P, TASK T, SUBTASK S"
+					+ "                    WHERE P.PROGRAM_ID = T.PROGRAM_ID"
+					+ "                      AND T.TASK_ID = S.TASK_ID"
+					+ "                      AND S.SUBTASK_ID = ?)";
 			conn = DBConnector.getInstance().getManConnection();			
 			List<Object> values = new ArrayList<Object>();
-			values.add(message);
+			values.add(msgJSON.getInt("isAdopted"));
+			values.add(msgJSON.getString("denyReason"));
+			values.add(DateUtils.stringToTimestamp(msgJSON.getString("feedbackDate"), DateUtils.DATE_COMPACTED_FORMAT));
+			values.add(msgJSON.getInt("taskId"));
 			QueryRunner run = new QueryRunner();
+			log.info("FEEDBACK:"+sql);
 			run.update(conn, sql, values.toArray());			
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);

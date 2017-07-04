@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -23,31 +26,28 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 
 public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
-	static String S_SOURCETYPE="8002";//接边标识tips类型
+	static String S_SOURCETYPE = "8002";//接边标识tips类型
 
 	private static final Logger logger = Logger
 			.getLogger(EdgeMatchTipsOperator.class);
 
 	public EdgeMatchTipsOperator() {
+		
 
 	}
 
 	/**
 	 * @Description:创建一个tips
-	 * @param sourceType
 	 * @param g_location
-	 * @param g_guide
 	 * @param content
 	 *            :feedback.content
-	 * @param deep
 	 * @author: y
 	 * @param user
-	 * @param memo 
-	 * @param type
+	 * @param memo
 	 * @throws Exception
 	 * @time:2016-11-15 上午11:03:20
 	 */
-	public String create( JSONObject g_location, String content, int user, String memo) throws Exception {
+	public String create( JSONObject g_location, String content, int user, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn;
 		try {
@@ -85,27 +85,17 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			
 			// 3.track
 			int stage = 2;
-
+			//20170509 状态流转变更
+			int t_tipStatus = 2;
 			int t_lifecycle = 3;
-			int t_command = 0;
-			int t_cStatus = 0;
-			int t_dStatus = 0;
-			int t_mStatus = 0;
-			//int t_inStatus = 0;
-			int t_inMeth = 0;
-			int t_pStatus = 0;
-			int t_dInProc = 0;
-			int t_mInProc = 0;  
-			int s_qTaskId=0;
-			int s_mTaskId=0;
-			int t_fStatus=0;
-			
-			int s_qSubTaskId=0;
-			int s_mSubTaskId=0;
+			//track
+			TipsTrack track = new TipsTrack();
+			track.setT_lifecycle(t_lifecycle);
+			track.setT_date(currentDate);
+			track.setT_tipStatus(t_tipStatus);
+			track.addTrackInfo(stage, currentDate, user);
+			JSONObject trackJson = JSONObject.fromObject(track);
 
-			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
-					user, t_command, null, currentDate,currentDate,t_cStatus, t_dStatus,
-					t_mStatus, t_inMeth,t_pStatus,t_dInProc,t_mInProc,t_fStatus);
 
 			// 4.geometry
 			JSONObject jsonGeom = new JSONObject();
@@ -114,16 +104,14 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			jsonGeom.put("g_guide",g_guide ); 
 
 			// source
+			// source
 			int s_sourceCode = 15;
-			int s_reliability = 100;
-			JSONObject source = new JSONObject();
-			source.put("s_featureKind", 2);
-			source.put("s_project", TipsUtils.STRING_NULL_DEFAULT_VALUE);
-			source.put("s_sourceCode", s_sourceCode);
-			source.put("s_sourceId", TipsUtils.STRING_NULL_DEFAULT_VALUE);
-			source.put("s_sourceType", S_SOURCETYPE);
-			source.put("s_reliability", 100);
-			source.put("s_sourceProvider", 0);
+			int s_qSubTaskId = qSubTaskId;//TODO 快线子任务
+			TipsSource source = new TipsSource();
+			source.setS_sourceCode(s_sourceCode);
+			source.setS_qSubTaskId(s_qSubTaskId);//快线子任务ID
+			source.setS_sourceType(S_SOURCETYPE);
+			JSONObject sourceJson = JSONObject.fromObject(source);
 
 			// deep;
 			/*Object deepObj = null;
@@ -133,45 +121,28 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
 			// put
 			Put put = new Put(rowkey.getBytes());
-
-			put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
+			put.addColumn("data".getBytes(), "track".getBytes(), trackJson
 					.toString().getBytes());
-
-			put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+			com.alibaba.fastjson.JSONObject fastGeom = TipsUtils.netJson2fastJson(jsonGeom);
+			put.addColumn("data".getBytes(), "geometry".getBytes(), fastGeom
 					.toString().getBytes());
-
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedbackObj
 					.toString().getBytes());
-
-			put.addColumn("data".getBytes(), "source".getBytes(), source
+			put.addColumn("data".getBytes(), "source".getBytes(), sourceJson
 					.toString().getBytes());
 
-			/*if (!StringUtils.isEmpty(deep)) {
-				put.addColumn("data".getBytes(), "deep".getBytes(), deepObj
-						.toString().getBytes());
-			}*/
-
 			// solr index json
-
-			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
-					currentDate, currentDate, t_lifecycle, t_command, user,
-					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, feedbackObj , s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc,s_qTaskId,s_mTaskId,t_fStatus,s_qSubTaskId,s_mSubTaskId);
-
-			solr.addTips(solrIndex);
+			TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, stage, currentDate, user,
+					trackJson, sourceJson, jsonGeom, new JSONObject(), feedbackObj);
+			solr.addTips(JSONObject.fromObject(tipsIndexModel));
 
 			List<Put> puts = new ArrayList<Put>();
-
 			puts.add(put);
-
 			htab.put(puts);
-
 			htab.close();
-			
 			htab.close();
 			
 			return rowkey;
-
 		} catch (IOException e) {
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);

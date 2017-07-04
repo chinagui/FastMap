@@ -38,8 +38,8 @@ public class StaticsController extends BaseController {
 			
 			int subtaskId = dataJson.getInt("subtaskId");
 
-			SubtaskStatInfo data = staticsApiImpl.getStatBySubtask(subtaskId);
-			return new ModelAndView("jsonView", success(data));
+			//SubtaskStatInfo data = staticsApiImpl.getStatBySubtask(subtaskId);
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
 		}

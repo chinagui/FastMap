@@ -13,5 +13,4 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" ref="datalockApi" />
 	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.EditApi" ref="editApi" /> 
 
-
 </beans>

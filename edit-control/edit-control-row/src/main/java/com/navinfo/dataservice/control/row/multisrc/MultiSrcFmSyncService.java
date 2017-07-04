@@ -192,12 +192,15 @@ public class MultiSrcFmSyncService {
 			}
 			//判断是否为已经导入成功的多源增量包
 			MultiSrcFmSync multiSrcFmSync = queryLastSuccessSync();
-			String successZipUrl = multiSrcFmSync.getZipFile();
-			String zipFile = StringUtils.substringAfterLast(successZipUrl, "/");
-			String newZipFile = StringUtils.substringAfterLast(zipUrl, "/");
-			if(newZipFile.equals(zipFile)){
-				throw new Exception("申请失败:日库多源数据包已经导入FM日库,不能重复导入");
+			if(multiSrcFmSync!=null){
+				String successZipUrl = multiSrcFmSync.getZipFile();
+				String zipFile = StringUtils.substringAfterLast(successZipUrl, "/");
+				String newZipFile = StringUtils.substringAfterLast(zipUrl, "/");
+				if(newZipFile.equals(zipFile)){
+					throw new Exception("申请失败:日库多源数据包已经导入FM日库,不能重复导入");
+				}
 			}
+
 			JSONObject job = new JSONObject();
 			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
 			job.put("remoteZipFile", zipUrl);

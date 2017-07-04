@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
@@ -40,6 +41,11 @@ public class InforController extends BaseController {
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
+			String subtaskId ="0";
+			if(json.containsKey("subtaskId") && json.getString("subtaskId") != null && StringUtils.isNotEmpty(json.getString("subtaskId"))){
+				subtaskId = json.getString("subtaskId");
+			}
+			logger.info(subtaskId);
 
 			UploadService upload = UploadService.getInstance();
 
@@ -48,7 +54,7 @@ public class InforController extends BaseController {
 			String url = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.inforUploadUrl);
 
-			String result = upload.uploadFile(url, "infor.json", filePath);
+			String result = upload.uploadInfoFile(url, "infor.json", filePath,subtaskId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(JSONObject

@@ -751,7 +751,7 @@ public class UserInfoOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			// 查询用户所在组组长id
-			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL "
+			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL,U.USER_LEVEL USER_LEVEL "
 					+ "FROM USER_INFO U WHERE USER_ID = ?";
 			Object[] params = {userId};		
 			ResultSetHandler<UserInfo> rsh = new ResultSetHandler<UserInfo>() {
@@ -763,6 +763,7 @@ public class UserInfoOperation {
 						userInfo.setUserId(rs.getInt("USER_ID"));
 						userInfo.setUserRealName(rs.getString("USER_REAL_NAME"));
 						userInfo.setUserEmail(rs.getString("USER_EMAIL"));
+						userInfo.setUserLevel(rs.getInt("USER_LEVEL"));
 					}
 					return userInfo;
 				}

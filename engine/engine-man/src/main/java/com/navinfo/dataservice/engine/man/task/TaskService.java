@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.io.BufferedReader;
+import java.io.Reader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -46,6 +48,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -4095,10 +4098,8 @@ public class TaskService {
 					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt);
 				}else{
 					log.info("没有上传wkt数据，为条件规划");
-					int prograssCount = taskInPrograssCount(conn, taskId);
-					if(prograssCount > 1){
-						throw new Exception("taskPrograss表中对应的taskId"+taskId+"数量大于1，为："+prograssCount);
-					}
+					Map<String, Object> prograssMap = taskInPrograssCount(conn, taskId);
+					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
 					int minCount = condition.getInt("poiMultiMinCount");
@@ -4112,7 +4113,7 @@ public class TaskService {
 					//更新从元数据库中获取的pid到dataPlan表中
 					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					//保存到taskPrograss表
-					maintainTaskPrograss(conn, prograssCount, dataJson, userId);
+					maintainTaskPrograss(conn, prograssMap, dataJson, userId);
 				}
 			}catch(Exception e){
 				log.error("规划数据保存失败，原因为："+e.getMessage());
@@ -4258,21 +4259,40 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public void maintainTaskPrograss(Connection conn, int prograssCount, JSONObject dataJson, long userId) throws Exception{
+		public void maintainTaskPrograss(Connection conn, Map<String, Object> prograssMap, JSONObject dataJson, long userId) throws Exception{
 			try{
 				TaskProgress bean = new TaskProgress();
 				int taskId = dataJson.getInt("taskId");
-				Clob parameter = new javax.sql.rowset.serial.SerialClob(dataJson.getJSONObject("condition").toString().toCharArray());
+				String parameter = dataJson.getJSONObject("condition").toString();
 				
-				int phaseId = TaskProgressOperation.getNewPhaseId(conn);
-				bean.setPhaseId(phaseId);
+				int phaseId = 0;
 				bean.setTaskId(taskId);
 				bean.setOperator(userId);
 				bean.setParameter(parameter);
-				if(prograssCount == 0){
-					TaskProgressOperation.insert(conn, bean);
+				if(prograssMap == null || prograssMap.size() == 0){
+					phaseId = TaskProgressOperation.getNewPhaseId(conn);
+					bean.setPhaseId(phaseId);
+					Timestamp time = new Timestamp(System.currentTimeMillis()); 
+					bean.setCreatDate(time);
+					bean.setPhase(2);
+					bean.setStatus(0);
+					TaskProgressOperation.create(conn, bean);
 				}else{
+					phaseId = Integer.parseInt(prograssMap.get("phaseId").toString());
+					bean.setPhaseId(phaseId);
 					TaskProgressOperation.updateTaskProgress(conn, bean);
+//					Clob t = TaskProgressOperation.query(conn, phaseId);
+//					 String reString = "";  
+//				        Reader is = t.getCharacterStream();// 得到流  
+//				        BufferedReader br = new BufferedReader(is);  
+//				        String s = br.readLine();  
+//				        StringBuffer sb = new StringBuffer();  
+//				        while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING  
+//				            sb.append(s);  
+//				            s = br.readLine();  
+//				        }  
+//				        reString = sb.toString();  
+//				        System.out.println(reString);
 				}
 			}catch(Exception e){
 				log.error("保存数据到taskPrograss表出错："+e.getMessage());
@@ -4317,25 +4337,20 @@ public class TaskService {
 				String roadFCs = dataPlan.get("roadFCs").toString();
 				String levels = dataPlan.get("levels").toString();
 				
-				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ( ");
+				String data_type = "1";
+				if(dataType == 3){
+					data_type = "1,2";
+				}
+				
+				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ");
 				//POI查询条件
 				if(dataType == 1 || dataType == 3){
-					sb.append("(select t.pid from IX_POI t where ");
-					sb.append("t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
-						sb.append(" or t.kind_code like '" + kindCode + "'");
+						sb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
 					sb.append(")");
-//					String data_type = "1";
-//					if(dataType == 3){
-//						data_type = "1,2";
-//					}
-//					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where ");
-//					sb.append("t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
-//					for(String kindCode : kindCodes){
-//						sb.append(" or t.kind_code like '" + kindCode + "' ");
-//					}
-//					sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
 				}
 				
 				if(dataType == 3){
@@ -4344,15 +4359,15 @@ public class TaskService {
 				
 				//ROAD查询条件
 				if(dataType == 2 || dataType == 3){
-					sb.append("(select r.link_pid from RD_LINK r where ");
-					sb.append("r.function_class in ("+roadFCs+") ");
+					sb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					sb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						sb.append("or ");
 						sb.append("r.kind in ("+roadKinds+") ");
 					}
-					sb.append(")");
+					sb.append(")) ");
 				}
-				sb.append(")");
+				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.data_type = 1 and d.task_id = "+taskId);
 				
 				String sql = sb.toString();
 				log.info("跟据条件保存数据sql:"+sql);
@@ -4377,7 +4392,13 @@ public class TaskService {
 				for(int i = 0; i < reliabilityPid.size(); i++){
 					sb.append(reliabilityPid.get(i)+",");
 				}
+				
 				String pids = sb.deleteCharAt(sb.length() - 1).toString();
+				String parameter = "d.pid";
+				if(reliabilityPid.size() > 1){
+					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
+				}
+				
 				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+")";
 				run.execute(conn, sql);
 			}catch(Exception e){
@@ -4393,18 +4414,26 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public int taskInPrograssCount(Connection conn, int taskId) throws Exception{
+		public Map<String, Object> taskInPrograssCount(Connection conn, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
-				String sql = "select COUNT(1) count from TASK_PROGRESS t where t.task_id = "+taskId;
-				ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>(){
-					public Integer handle(ResultSet rs) throws SQLException {
-						int count = 0;
+				String sql = "select t.* from TASK_PROGRESS t where t.phase = 2 and t.task_id = "+taskId;
+				ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>(){
+					public Map<String, Object> handle(ResultSet rs) throws SQLException {
+						Map<String, Object> map = new HashMap<>();
 						if(rs.next()){
-							count = rs.getInt("count");
-							
+							map.put("phaseId", rs.getInt("PHASE_ID"));
+							map.put("phase", rs.getInt("PHASE"));
+							map.put("status", rs.getInt("STATUS"));
+							map.put("creatDate", rs.getTimestamp("CREATE_DATE"));
+							map.put("startDate", rs.getTimestamp("START_DATE"));
+							map.put("endDate", rs.getTimestamp("END_DATE"));
+							map.put("message", rs.getString("MESSAGE"));
+							map.put("parameter", rs.getClob("PARAMETER"));
+							map.put("operator", rs.getInt("OPERATOR"));
+							map.put("taskId", rs.getInt("TASK_ID"));
 						}
-						return count;
+						return map;
 					}
 				};
 				return run.query(conn, sql, rs);

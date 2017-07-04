@@ -4391,7 +4391,7 @@ public class TaskService {
 				
 				String pids = sb.deleteCharAt(sb.length() - 1).toString();
 				String parameter = "d.pid";
-				if(reliabilityPid.size() > 1){
+				if(reliabilityPid.size() > 900){
 					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
 				}
 				

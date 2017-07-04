@@ -1209,6 +1209,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
+			sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1250,6 +1251,7 @@ public class TaskService {
 			sb.append("	                          NULL          PLAN_END_DATE,");
 			sb.append("	                          NULL          ROAD_PLAN_TOTAL,");
 			sb.append("	                          NULL          POI_PLAN_TOTAL,");
+			sb.append("	                          NULL          DATA_PLAN_STATUS,");
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
@@ -1281,6 +1283,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
+			sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1388,6 +1391,7 @@ public class TaskService {
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
@@ -3654,6 +3658,7 @@ public class TaskService {
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
 					+ "   AND GROUP_ID != 0"
+					+ "	  AND t.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT TASK_ID"
 					+ "  FROM TASK"
@@ -3663,6 +3668,7 @@ public class TaskService {
 					+ "   AND LATEST = 1"
 					+ "   AND (WORK_KIND LIKE '1|%' OR WORK_KIND LIKE '0|1%')"
 					+ "   AND GROUP_ID != 0"
+					+ "	  AND t1.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT TASK_ID"
 					+ "  FROM TASK"
@@ -3671,7 +3677,8 @@ public class TaskService {
 					+ "   AND STATUS = 2"
 					+ "   AND LATEST = 1"
 					+ "   AND WORK_KIND LIKE '0|0%'"
-					+ "   AND GROUP_ID = 0";
+					+ "   AND GROUP_ID = 0"
+					+ "	  AND t2.DATA_PLAN_STATUS <> 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
 				@Override

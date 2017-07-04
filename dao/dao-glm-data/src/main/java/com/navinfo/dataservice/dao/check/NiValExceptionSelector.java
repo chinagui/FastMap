@@ -403,6 +403,7 @@ public class NiValExceptionSelector {
 
 		Clob pidsClob = ConnectionUtil.createClob(conn);
 		pidsClob.setString(1, StringUtils.join(grids, ","));
+		
 		StringBuilder sql1 = new StringBuilder(
 				"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
 						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
@@ -474,9 +475,9 @@ public class NiValExceptionSelector {
 			sql = sql1.append(" union all ").append(sql2).append(" union all ")
 					.append(sql3).append(" union all ").append(sql4);
 		}
-
+        sql.append(" select * from ("+ sql +") a");
 		// 道路检查排除POI
-		sql.append(" and NOT EXISTS ("
+		sql.append(" where  NOT EXISTS ("
 				+ " SELECT 1 FROM CK_RESULT_OBJECT O "
 				+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
 				+ "   AND O.MD5_CODE=a.MD5_CODE)");

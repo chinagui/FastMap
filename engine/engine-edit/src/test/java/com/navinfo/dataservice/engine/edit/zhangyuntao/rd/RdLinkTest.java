@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -47,17 +51,17 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void repair() {
-        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":404000297,\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.54062,39.74981]," +
-                "[116.54075324535368,39.74999770430387],[116.541,39.74987]]},\"catchInfos\":[]}}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":501000385,\"dbId\":13,\"subtaskId\":64," +
+                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[113.35777,36.50017]," +
+                "[113.35765376687048,36.50000001391655]]},\"catchInfos\":[{\"nodePid\":404000309,\"longitude\":113.35765376687048," +
+                "\"latitude\":36.50000001391655}]}}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.54057890176773,39.74988840790541]," +
-                "[116.54075726866722,39.74999873540115],[116.54089137911797,39.74990902988064]]},\"catchLinks\":[]}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":13,\"subtaskId\":64,\"data\":{\"direct\":2," +
+                "\"linkPid\":404000369,\"longitude\":113.3587695658207,\"latitude\":36.49999785780438}}";
         TestUtil.run(parameter);
     }
 
@@ -131,10 +135,10 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void testCreateSideRoad() {
-        String requester = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"distance\":4," +
-                "\"sideType\":1,\"sNodePid\":409000057,\"data\":{\"linkPids\":[502000077]}}";
-        TestUtil.run(requester);
+    public void testCreateSideRoad() throws Exception {
+        Geometry geometry = GeoTranslator.wkt2Geometry("POLYGON ((124.11183536052704 32.252855302834995,124.11257565021515 32.252855302834995," +
+                "124.11257565021515 32.25348136457513,124.11183536052704 32.25348136457513,124.11183536052704 32.252855302834995))");
+        DbMeshInfoUtil.calcDbIds(geometry);
     }
 
 }

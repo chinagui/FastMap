@@ -106,14 +106,14 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.queryBySubtaskId(285);
+		Map<String, Object> result = service.query(362,1);
 		System.out.print(result);
 	}
 	
 	@Test
 	public void testListByUser() throws Exception {
-		AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"type\":0,\"stage\":0}");
+		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -136,10 +136,11 @@ public class SubtaskTest extends InitApplication{
 			dataJson.remove("platForm");
 		}
 		if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
-			dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			//dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			dataJson.put("exeUserId", 1664);
 		}
         Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
-        			
+        System.out.print(page.getResult());			
 	}
 		@Override
 	@Before
@@ -148,7 +149,7 @@ public class SubtaskTest extends InitApplication{
 	}	
 		
 	@Test
-	public void testQualitylist() throws Exception
+	public void testUnPlanQualitylist() throws Exception
 	{
 		try {
 			System.out.println(SubtaskService.getInstance().unPlanQualitylist(208));
@@ -162,5 +163,42 @@ public class SubtaskTest extends InitApplication{
 	public void testQualityDelete() throws Exception
 	{
 		System.out.println(SubtaskService.getInstance().qualityDelete(3));
+	}
+	
+	//获取质检圈(测试)
+	@Test
+	public void testQualityList() throws Exception
+	{
+		System.out.println(SubtaskService.getInstance().qualitylist(362));
+	}
+	
+		@Test
+	public void testQueryListReferByWkt() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter = "{\"blockId\":0,\"wkt\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		System.out.println(service.queryListReferByWkt(dataJson)); 
+	}
+		
+	//创建质检圈(测试)
+	@Test
+	public void testQualityCreate() throws Exception {
+		String parameter = "{\"subtaskId\":172,\"geometry\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		service.qualityCreate(dataJson);
 	}
 }

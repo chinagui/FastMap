@@ -7,14 +7,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -648,6 +653,209 @@ public class SysMsgService {
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 监控系统处理邮件发送数据
+	 * @author Han Shaoming
+	 * @param tos
+	 * @param subject
+	 * @param content
+	 * @return 
+	 * @throws ServiceException
+	 */
+	public void handleMonitorMessage(String tos,String subject,String content) throws ServiceException{
+		try {
+			// 获取IP
+			String ip = null;
+			String regex = "\\b((?!\\d\\d\\d)\\d+|1\\d\\d|2[0-4]\\d|25[0-5])\\."
+					+ "((?!\\d\\d\\d)\\d+|1\\d\\d|2[0-4]\\d|25[0-5])\\.((?!\\d\\d\\d)\\d+|1\\d\\d|2[0-4]\\d|25[0-5])\\."
+					+ "((?!\\d\\d\\d)\\d+|1\\d\\d|2[0-4]\\d|25[0-5])\\b";
+			Pattern p = Pattern.compile(regex);
+			Matcher m = p.matcher(subject);
+			while (m.find()) {
+				if (!"".equals(m.group())) {
+					ip = m.group();
+					System.out.println("come here:" + m.group());
+					break;
+				}
+			}
+			String[] datas = content.split("\r\n");
+			System.out.println(datas.toString());
+			// 报警状态
+			String status = null;
+			String statusPre = datas[0];
+			if ("OK".equals(statusPre)) {
+				status = "监控报警恢复";
+			} else if ("PROBLEM".equals(statusPre)) {
+				status = "监控报警";
+			} else {
+				status = statusPre;
+			}
+			// 报警等级
+			String level = null;
+			String levelPre = datas[1];
+			if ("P0".equals(levelPre)) {
+				level = "零级";
+			} else if ("P1".equals(levelPre)) {
+				level = "一级";
+			} else if ("P2".equals(levelPre)) {
+				level = "二级";
+			} else if ("P3".equals(levelPre)) {
+				level = "三级";
+			} else if ("P4".equals(levelPre)) {
+				level = "四级";
+			} else if ("P5".equals(levelPre)) {
+				level = "五级";
+			} else if ("P6".equals(levelPre)) {
+				level = "六级";
+			} else {
+				level = levelPre;
+			}
+			// 采集指标名称
+			String metric = null;
+			String metricPre = datas[3].split(":", 2)[1];
+			if ("fos.service.interfaceStatus".equals(metricPre)) {
+				metric = "服务接口状态";
+			} else if ("fos.service.responseTime".equals(metricPre)) {
+				metric = "服务接口响应时间";
+			} else if ("fos.service.totalVisitCount".equals(metricPre)) {
+				metric = "服务总访问次数";
+			} else if ("fos.service.visitCount".equals(metricPre)) {
+				metric = "服务接口访问次数";
+			} else if ("fos.tomcat.gc".equals(metricPre)) {
+				metric = "tomcat垃圾回收时间";
+			} else if ("fos.tomcat.jdbc.activeConn".equals(metricPre)) {
+				metric = "数据库活跃连接数";
+			} else if ("fos.tomcat.jdbc.unclosedConn".equals(metricPre)) {
+				metric = "数据库未关闭的连接数";
+			} else if ("fos.tomcat.memoUsed".equals(metricPre)) {
+				metric = "tomcat内存使用率";
+			} else if ("net.port.listen".equals(metricPre)) {
+				metric = "服务器启动状态";
+			} else {
+				metric = metricPre;
+			}
+			// 采集指标tag
+			String tag = null;
+			String tagPre = datas[4].split(":", 2)[1];
+			if ("port=8081".equals(tagPre)) {
+				tag = "edit服务(" + tagPre + ")";
+			} else if ("port=8082".equals(tagPre)) {
+				tag = "fcc服务(" + tagPre + ")";
+			} else if ("port=8083".equals(tagPre)) {
+				tag = "metadata服务(" + tagPre + ")";
+			} else if ("port=8084".equals(tagPre)) {
+				tag = "man服务(" + tagPre + ")";
+			} else if ("port=8085".equals(tagPre)) {
+				tag = "render服务(" + tagPre + ")";
+			} else if ("port=8086".equals(tagPre)) {
+				tag = "dropbox服务(" + tagPre + ")";
+			} else if ("port=8087".equals(tagPre)) {
+				tag = "job服务(" + tagPre + ")";
+			} else if ("port=8089".equals(tagPre)) {
+				tag = "datahub服务(" + tagPre + ")";
+			} else if ("port=8090".equals(tagPre)) {
+				tag = "statics服务(" + tagPre + ")";
+			} else if ("port=8091".equals(tagPre)) {
+				tag = "mapspotter服务(" + tagPre + ")";
+			} else if ("port=8092".equals(tagPre)) {
+				tag = "column服务(" + tagPre + ")";
+			} else if ("port=8093".equals(tagPre)) {
+				tag = "row服务(" + tagPre + ")";
+			} else if ("port=8094".equals(tagPre)) {
+				tag = "sys服务(" + tagPre + ")";
+			} else if ("port=8095".equals(tagPre)) {
+				tag = "collector服务(" + tagPre + ")";
+			} else if ("port=8096".equals(tagPre)) {
+				tag = "dealership服务(" + tagPre + ")";
+			} else{
+				tag = tagPre;
+			}
+			// 报警值及监控值
+			String value = datas[5].split(":", 2)[1];
+			String reg = "\\d+(\\.\\d+)?";
+			Pattern p1 = Pattern.compile(reg);
+			Matcher m1 = p1.matcher(value);
+			List<String> list = new ArrayList<String>();
+			while (m1.find()) {
+				if (!"".equals(m1.group())) {
+					list.add(m1.group());
+				}
+			}
+			String alarmValue = list.get(0);
+			String monitorValue = list.get(1);
+			// 报警描述
+			String note = datas[6].split(":", 2)[1];
+			// 报警时间
+			String time = datas[8].split(":", 2)[1];
+			// 报警策略
+			String alarmAddr = datas[9];
+			// 处理邮件内容
+			String mailTitle = null;
+			if ("OK".equals(statusPre)) {
+				mailTitle = "FM监控异常报警:"+ip+"的"+metric;
+			} else if ("PROBLEM".equals(statusPre)) {
+				mailTitle = "FM监控恢复通知:"+ip+"的"+metric;
+			} else {
+				mailTitle = "FM监控("+ip+")";
+			}
+			StringBuilder mailContext = new StringBuilder();
+			mailContext.append("<!DOCTYPE html><html><head>");
+			mailContext.append("<meta http-equiv=\"content-type\" content=\"text/html\" charset=\"UTF-8\" />");
+			mailContext.append("<title>FastMap Monitor</title></head>");
+			mailContext.append("<body style=\"background-color:#F5F5F5\">");
+			mailContext.append("<table border=\"1\" width=\"50%\" cellpadding=\"10\" cellspacing=\"2\" align=\"center\">");
+			mailContext.append("<caption><h1>FastMap-监控系统</h1></caption>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"azure\">");
+			mailContext.append("<th>服务器</th>");
+			mailContext.append("<th>"+ip+"</th>");
+			mailContext.append("<th colspan=\"2\">"+time+"</th>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th>报警状态</th>");
+			mailContext.append("<td>"+status+"</td>");
+			mailContext.append("<th>报警等级</th>");
+			mailContext.append("<td>"+level+"</td>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th>监控名称</th>");
+			mailContext.append("<td colspan=\"3\">"+metric+"</td>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th>tag名称</th>");
+			mailContext.append("<td colspan=\"3\">"+tag+"</td>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th>报警值</th>");
+			mailContext.append("<td>"+alarmValue+"</td>");
+			mailContext.append("<th>监控值</th>");
+			mailContext.append("<td>"+monitorValue+"</td>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th>报警描述</th>");
+			mailContext.append("<td colspan=\"3\">"+note+"</td>");
+			mailContext.append("</tr>");
+			mailContext.append("<tr align=\"center\" bgcolor=\"lightgray\">");
+			mailContext.append("<th colspan=\"4\"><a href=\""+alarmAddr+"\" target=\"_blank\">报警策略</a></th>");
+			mailContext.append("</tr>");
+			mailContext.append("</table></body></html>");
+			//调用接口发送邮件
+			String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.smapMailUrl);
+			String SEND_EMAil=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendEmail);
+			String SEND_PWD=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendPwd);
+			Map<String,String> parMap = new HashMap<String,String>();
+			parMap.put("mailUser", SEND_EMAil);
+			parMap.put("mailPwd", SEND_PWD);
+			parMap.put("mailList", tos);
+			parMap.put("title", mailTitle);
+			parMap.put("content", mailContext.toString());
+			String result = ServiceInvokeUtil.invokeByGet(url, parMap);
+			log.info("发送邮件，调用smap请求返回值："+result);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("发送失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

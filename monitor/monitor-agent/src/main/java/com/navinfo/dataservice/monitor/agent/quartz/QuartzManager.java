@@ -12,6 +12,9 @@ import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
 
+import com.navinfo.dataservice.monitor.agent.model.Constrant;
+
+
 public class QuartzManager  {
 
 	private static SchedulerFactory gSchedulerFactory = new StdSchedulerFactory();
@@ -29,7 +32,7 @@ public class QuartzManager  {
 	 *            时间设置
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void addJob(String jobName, Class job, String time) {
+	public static void addJob(String jobName, Class job, String time,Object jobObj) {
 		try {
 			Scheduler sched = gSchedulerFactory.getScheduler();
 			// 任务名，任务组，任务执行类
@@ -38,7 +41,7 @@ public class QuartzManager  {
 			
 			// 可以传递参数
 			JobDetail jobDetail = jobBuilder.build();
-//			jobDetail.getJobDataMap().put("param", "railsboy");
+			jobDetail.getJobDataMap().put(Constrant.JOB_CLASS_NAME, jobObj);
 			// 触发器
 			TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
 			// 触发器名,触发器组
@@ -63,7 +66,7 @@ public class QuartzManager  {
 	 * @param time
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public static void modifyJobTime(String jobName, String time) {
+	public static void modifyJobTime(String jobName, String time,Object jobObj) {
 		try {
 			Scheduler sched = gSchedulerFactory.getScheduler();
 			CronTrigger trigger = (CronTrigger) sched.getTrigger(new TriggerKey(jobName,TRIGGER_GROUP_NAME));
@@ -75,7 +78,7 @@ public class QuartzManager  {
 				JobDetail jobDetail = sched.getJobDetail(new JobKey(jobName,JOB_GROUP_NAME));
 				Class objJobClass = jobDetail.getJobClass();
 				removeJob(jobName);
-				addJob(jobName, objJobClass, time);
+				addJob(jobName, objJobClass, time,jobObj);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);

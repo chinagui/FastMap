@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
-import com.navinfo.dataservice.dao.glm.iface.BaseObj;
+import com.navinfo.dataservice.api.man.model.BaseObj;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class SubtaskRefer extends BaseObj {

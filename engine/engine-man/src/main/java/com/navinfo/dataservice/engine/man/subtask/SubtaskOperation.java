@@ -994,37 +994,7 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
-						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((0==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
-							try {
-								Subtask subtaskObj=new Subtask();
-								subtaskObj.setDbId((int)subtask.get("dbId"));
-								subtaskObj.setType(rs.getInt("TYPE"));
-								subtaskObj.setGeometry(wkt);
-								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
-								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
-								
-								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
-								if(subtaskStat != null){
-									if(subtaskStat.containsKey("poiFinish")){
-										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
-										subtask.put("poiTotal",subtaskStat.get("poiTotal"));
-									}
-									if(subtaskStat.containsKey("tipsFinish")){
-										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
-										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
-									}
-								}else{
-									subtask.put("poiFinish",0);
-									subtask.put("poiTotal",0);
-									subtask.put("tipsFinish",0);
-									subtask.put("tipsTotal",0);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}		
+							
 						list.add(subtask);
 					}
 					page.setTotalCount(total);

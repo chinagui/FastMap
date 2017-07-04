@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.monitor.agent.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,23 +20,24 @@ import net.sf.json.JSONObject;
  * @date 2017年6月13日
  * @Description: ServiceStatInfoLoader.java
  */
-public class ServiceStatInfoLoader {
+public class ServiceStatInfoLoader{
 	
-	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	protected static Logger log = LoggerRepos.getLogger(ServiceStatInfoLoader.class);
 	
-	private Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
+	private static Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
 	
 	/**
 	 * 推送数据
+	 * @param time 
 	 */
-	public void pushStatInfo(List<List<String>> monitorTarget){
+	public static void pushStatInfo(List<List<String>> monitorTarget, long time){
 		for (List<String> list : monitorTarget) {
 			String host = list.get(0);
 			String port = list.get(1);
 			String tomcat = list.get(2);
 			//推送数据
 			try {
-				List<StatInfo> resultList = this.handleStatInfo(host,port,tomcat);
+				List<StatInfo> resultList = handleStatInfo(host,port,tomcat,time);
 				String msg = AgentUtils.pushData(resultList);
 				log.info(msg);
 				
@@ -54,15 +54,19 @@ public class ServiceStatInfoLoader {
 	 * @param tomcat 
 	 * @param port 
 	 * @param host 
+	 * @param time 
 	 */
-	public List<StatInfo> handleStatInfo(String host, String port, String tomcat){
+	private static List<StatInfo> handleStatInfo(String host, String port, String tomcat, long time){
 		String url = "http://"+host+":"+port+"/"+tomcat+"/monitoring?part=counterSummaryPerClass&counter=http&format=json&period=jour";
-		log.info("访问地址:"+url);
+		log.info("service访问地址:"+url);
 		List<StatInfo> resultList = new ArrayList<StatInfo>();
 		try {
 			String data = ServiceInvokeUtil.invokeByGet(url);
 			JSONObject jso = JSONObject.fromObject(data);
 			JSONArray jsa = jso.getJSONArray("list");
+			//tomcat总访问次数
+			int totalVisitCount = 0;
+			String tomcatKey = host+"/"+tomcat+"/visitCount";
 			if(jsa != null){
 				for (int i=0;i<jsa.size();i++) {
 					JSONObject obj = jsa.getJSONObject(i);
@@ -71,9 +75,8 @@ public class ServiceStatInfoLoader {
 					int	hits = obj.getInt("hits");
 					int durationsSum = obj.getInt("durationsSum");
 					int systemErrors = obj.getInt("systemErrors");
-					
-					Date date = new Date();
-					int time = (int) date.getTime();
+					//处理总访问次数
+					totalVisitCount += hits;
 					
 					String metricVisitCount = "fos.service.visitCount";
 					String metricResTime = "fos.service.responseTime";
@@ -98,19 +101,20 @@ public class ServiceStatInfoLoader {
 					if(valueVisitCount > 0){
 						valueResTime = (durationsSum - durationsSumLast)/valueVisitCount;
 					}
-					float valueInterfaceStatus = 0;
-					//0-正常,1-异常
+					float valueInterfaceStatus = 1;
+					//1-正常,0-异常
 					if(systemErrors > 0 &&(systemErrors > systemErrorsLast)){
-						valueInterfaceStatus = 1;
+						valueInterfaceStatus = 0;
 					}
-					log.info("访问次数:"+valueVisitCount+"响应时间:"+valueResTime+"接口状态:"+valueInterfaceStatus);
+					log.info("本次数据,访问次数:"+hits+"响应时间:"+durationsSum+"接口状态:"+systemErrors);
 					//保存数据
+					int step = 300;
 					//访问次数
 					StatInfo statInfoVisitCount = new StatInfo();
 					statInfoVisitCount.setEndpoint(host);
 					statInfoVisitCount.setMetric(metricVisitCount);
 					statInfoVisitCount.setTimestemp(time);
-					statInfoVisitCount.setStep(60);
+					statInfoVisitCount.setStep(step);
 					statInfoVisitCount.setValue(valueVisitCount);
 					statInfoVisitCount.setCounterType("GAUGE");
 					statInfoVisitCount.setTags(tags);
@@ -120,7 +124,7 @@ public class ServiceStatInfoLoader {
 					statInfoResTime.setEndpoint(host);
 					statInfoResTime.setMetric(metricResTime);
 					statInfoResTime.setTimestemp(time);
-					statInfoResTime.setStep(60);
+					statInfoResTime.setStep(step);
 					statInfoResTime.setValue(valueResTime);
 					statInfoResTime.setCounterType("GAUGE");
 					statInfoResTime.setTags(tags);
@@ -130,7 +134,7 @@ public class ServiceStatInfoLoader {
 					statInfoInterfaceStatus.setEndpoint(host);
 					statInfoInterfaceStatus.setMetric(metricInterfaceStatus);
 					statInfoInterfaceStatus.setTimestemp(time);
-					statInfoInterfaceStatus.setStep(60);
+					statInfoInterfaceStatus.setStep(step);
 					statInfoInterfaceStatus.setValue(valueInterfaceStatus);
 					statInfoInterfaceStatus.setCounterType("GAUGE");
 					statInfoInterfaceStatus.setTags(tags);
@@ -143,6 +147,36 @@ public class ServiceStatInfoLoader {
 					mapLast.put("systemErrors", systemErrors);
 					statInfoPre.put(mapKey, mapLast);
 				}
+				//处理tomcat总访问次数
+				String metricTotalVisitCount = "fos.service.totalVisitCount";
+				String tags = "biz="+tomcat;
+				//上一次数据
+				int	totalVisitCountLast = 0;
+				if(statInfoPre.size() > 0){
+					if(statInfoPre.containsKey(tomcatKey)){
+						Map<String, Object> map = statInfoPre.get(tomcatKey);
+						totalVisitCountLast = (int) map.get("totalVisitCount");
+						log.info("上一次数据,总访问次数:"+totalVisitCountLast);
+					}
+				}
+				log.info("本次数据,总访问次数:"+totalVisitCount);
+				int valueTotalVisitCount = totalVisitCount - totalVisitCountLast;
+				//保存数据
+				int step = 300;
+				//访问次数
+				StatInfo statInfoVisitCount = new StatInfo();
+				statInfoVisitCount.setEndpoint(host);
+				statInfoVisitCount.setMetric(metricTotalVisitCount);
+				statInfoVisitCount.setTimestemp(time);
+				statInfoVisitCount.setStep(step);
+				statInfoVisitCount.setValue(valueTotalVisitCount);
+				statInfoVisitCount.setCounterType("GAUGE");
+				statInfoVisitCount.setTags(tags);
+				resultList.add(statInfoVisitCount);
+				//保存数据下次使用
+				Map<String, Object> mapLast = new HashMap<String, Object>();
+				mapLast.put("totalVisitCount", totalVisitCount);
+				statInfoPre.put(tomcatKey, mapLast);
 			}
 			
 		} catch (Exception e) {

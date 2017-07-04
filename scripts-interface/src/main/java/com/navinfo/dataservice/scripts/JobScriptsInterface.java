@@ -19,98 +19,100 @@ import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
 import net.sf.json.JSONObject;
 
-/** 
-* @ClassName: ScriptsInterface 
-* @author Xiao Xiaowen 
-* @date 2016年6月6日 下午3:35:24 
-* @Description: TODO
-*  
-*/
+/**
+ * @ClassName: ScriptsInterface
+ * @author Xiao Xiaowen
+ * @date 2016年6月6日 下午3:35:24
+ * @Description: TODO
+ * 
+ */
 public class JobScriptsInterface {
-	public static JSONObject execute(String type,JSONObject request)throws Exception{
-		JobInfo jobInfo = new JobInfo(0,UuidUtils.genUuid());
+	public static JSONObject execute(String type, JSONObject request) throws Exception {
+		JobInfo jobInfo = new JobInfo(0, UuidUtils.genUuid());
 		jobInfo.setType(type);
 		jobInfo.setRequest(request);
 		jobInfo.setTaskId(0);
-		//设置jobId
-//		jobInfo.setId(963);
+		// 设置jobId
+		// jobInfo.setId(963);
 		AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 		job.run();
 		return job.getJobInfo().getResponse();
 	}
-	
-	public static JSONObject readJson(String fileName)throws Exception{
+
+	public static JSONObject readJson(String fileName) throws Exception {
 		File file = new File(fileName);
-		try{
+		try {
 			String str = FileUtils.readFileToString(file);
 			JSONObject json = JSONObject.fromObject(str);
 			return json;
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
 	}
-	public static void writeJson(JSONObject json,String fileName)throws Exception{
+
+	public static void writeJson(JSONObject json, String fileName) throws Exception {
 		File file = new File(fileName);
 		BufferedWriter bw = null;
-		try{
-			bw = new BufferedWriter(new FileWriter(file,true));
-	        bw.write(json + "\r\n");
-	        bw.flush();
-		}catch(Exception e){
+		try {
+			bw = new BufferedWriter(new FileWriter(file, true));
+			bw.write(json + "\r\n");
+			bw.flush();
+		} catch (Exception e) {
 			e.printStackTrace();
-		}finally{
-            if (bw != null)
-                bw.close();
+		} finally {
+			if (bw != null)
+				bw.close();
 		}
 	}
-	
-	public static void main(String[] args){
-		try{
-			Map<String,String> map = new HashMap<String,String>();
-			if(args.length%2!=0){
+
+	public static void main(String[] args) {
+		try {
+			Map<String, String> map = new HashMap<String, String>();
+			if (args.length % 2 != 0) {
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
 			}
-			for(int i=0; i<args.length;i+=2){
-			        map.put(args[i], args[i+1]);
-		    }
+			for (int i = 0; i < args.length; i += 2) {
+				map.put(args[i], args[i + 1]);
+			}
 			String itype = map.get("-itype");
-			if(StringUtils.isEmpty(itype)){
+			if (StringUtils.isEmpty(itype)) {
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
 			}
 			String irequest = map.get("-irequest");
-			if(StringUtils.isEmpty(irequest)){
+			if (StringUtils.isEmpty(irequest)) {
 				System.out.println("ERROR:need args:-irequest xxx");
 				return;
 			}
 			String iresponse = map.get("-iresponse");
-			if(StringUtils.isEmpty(iresponse)){
+			if (StringUtils.isEmpty(iresponse)) {
 				System.out.println("ERROR:need args:-iresponse xxx");
 				return;
 			}
-			JSONObject request=null;
+			JSONObject request = null;
 			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
-			request = readJson(dir+"request"+File.separator+irequest);
-			//初始化context
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+			// String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			request = readJson(dir + "request" + File.separator + irequest);
+			// 初始化context
 			initContext();
-			//执行job
-			response = execute(itype,request);
-			writeJson(response,dir+"response"+File.separator+iresponse);
+			// 执行job
+			response = execute(itype, request);
+			writeJson(response, dir + "response" + File.separator + iresponse);
 			System.out.println(response);
 			System.out.println("Over.");
 			System.exit(0);
-		}catch(Exception e){
+		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
 		}
 	}
-	public static void initContext(){
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] { "dubbo-app-scripts.xml","dubbo-scripts.xml" }); 
+
+	public static void initContext() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "dubbo-app-scripts.xml", "dubbo-scripts.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

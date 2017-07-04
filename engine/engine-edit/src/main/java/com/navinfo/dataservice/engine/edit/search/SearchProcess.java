@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 import net.sf.json.JSON;
@@ -16,8 +18,11 @@ import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -58,6 +63,7 @@ import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 
 /**
  * 查询进程
@@ -65,11 +71,26 @@ import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 public class SearchProcess {
 
 	private Connection conn;
+	private static final Logger logger = Logger.getLogger(SearchProcess.class);
 
 	public SearchProcess(Connection conn) throws Exception {
 
 		this.conn = conn;
 
+	}
+
+	public SearchProcess() throws Exception {
+
+	}
+
+	private int dbId;
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
 	}
 
 	private JSONArray array;
@@ -87,7 +108,7 @@ public class SearchProcess {
 	 * 
 	 * @return JsonConfig
 	 */
-	private JsonConfig getJsonConfig() {
+	private   JsonConfig getJsonConfig() {
 		JsonConfig jsonConfig = new JsonConfig();
 
 		jsonConfig.registerJsonValueProcessor(String.class,
@@ -170,30 +191,75 @@ public class SearchProcess {
 
 		JSONObject json = new JSONObject();
 
-		SearchFactory factory = new SearchFactory(conn);
-
 		try {
 
-			for (ObjType type : types) {
-				List<SearchSnapshot> list = null;
+			// 1.计算瓦片的几何
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			// 2 根据瓦片计算
+			Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator
+					.wkt2Geometry(wkt));
+			Map<String, List<SearchSnapshot>> map = new HashMap<String, List<SearchSnapshot>>();
+			for (int dbId : dbIds) {
+				try {
+					logger.info("dbId========" + dbId);
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+					SearchFactory factory = new SearchFactory(conn);
+					for (ObjType type : types) {
+						if (dbId != this.getDbId()) {
+							if (!this.getBasicObjForRender(type)) {
+								continue;
+							}
+						}
+						List<SearchSnapshot> list = null;
+						if (type == ObjType.IXPOI) {
+							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+							list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
+									gap, this.getArray());
+						} else {
+							ISearch search = factory.createSearch(type);
+							list = search.searchDataByTileWithGap(x, y, z, gap);
+						}
+						if (map.containsKey(type.toString())) {
+							List<SearchSnapshot> snapshots = map.get(type
+									.toString());
 
-				if (type == ObjType.IXPOI) {
-					IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,
-							this.getArray());
-				} else {
-					ISearch search = factory.createSearch(type);
-					list = search.searchDataByTileWithGap(x, y, z, gap);
+							for (SearchSnapshot snapshot : list) {
+								if (!snapshots.contains(snapshot)) {
+									snapshots.add(snapshot);
+								}
+
+							}
+						} else {
+							map.put(type.toString(), list);
+						}
+
+					}
+				} catch (Exception e) {
+
+					throw e;
+
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
+			}
+			for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
 				JSONArray array = new JSONArray();
 
-				for (SearchSnapshot snap : list) {
+				for (SearchSnapshot snap : entry.getValue()) {
 
 					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
 				}
 
-				json.accumulate(type.toString(), array, getJsonConfig());
+				json.accumulate(entry.getKey(), array, getJsonConfig());
+
 			}
+
 		} catch (Exception e) {
 
 			throw e;
@@ -201,6 +267,39 @@ public class SearchProcess {
 		} finally {
 		}
 		return json;
+	}
+
+	private boolean getBasicObjForRender(ObjType type) {
+		if (type == ObjType.RDLINK) {
+			return true;
+		} else if (type == ObjType.RDNODE) {
+			return true;
+		} else if (type == ObjType.ADNODE) {
+			return true;
+		} else if (type == ObjType.ADLINK) {
+			return true;
+		} else if (type == ObjType.ADFACE) {
+			return true;
+		} else if (type == ObjType.LUNODE) {
+			return true;
+		} else if (type == ObjType.LULINK) {
+			return true;
+		} else if (type == ObjType.LUFACE) {
+			return true;
+		} else if (type == ObjType.LCNODE) {
+			return true;
+		} else if (type == ObjType.LCLINK) {
+			return true;
+		} else if (type == ObjType.LCFACE) {
+			return true;
+		} else if (type == ObjType.RWLINK) {
+			return true;
+		} else if (type == ObjType.RWNODE) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 	/**
@@ -903,8 +1002,8 @@ public class SearchProcess {
 			for (ObjType type : types) {
 				List<SearchSnapshot> list = null;
 
-					ISearch search = factory.createSearch(type);
-					list = search.searchDataByTileWithGap(x, y, z, gap);
+				ISearch search = factory.createSearch(type);
+				list = search.searchDataByTileWithGap(x, y, z, gap);
 				JSONArray array = new JSONArray();
 
 				for (SearchSnapshot snap : list) {
@@ -923,18 +1022,100 @@ public class SearchProcess {
 		return json;
 	}
 
-	public static void main(String[] args) {
-		Map<String, String> map = new HashMap<String, String>();
-		JSONObject object = new JSONObject();
-		object.put(11, "121");
-		System.out.println(object);
-		map.put("111", "aaa");
-		map.put("222", "bbb");
-		map.put("333", "ccc");
+	public static void main(String[] args) throws Exception {
+		SearchProcess p = new SearchProcess();
+		p.setArray(null);
+		p.setDbId(13);
+		int x = 442895;
+		int y = 212474;
+		int z = 19;
+		List<ObjType> types = new ArrayList<ObjType>();
+		types.add(ObjType.RDLINK);
+		types.add(ObjType.RDNODE);
+		types.add(ObjType.IXPOI);
+		types.add(ObjType.ZONELINK);
+		types.add(ObjType.LULINK);
+		types.add(ObjType.ZONENODE);
+		types.add(ObjType.ADADMIN);
+		int gap =10;
+
+		JSONObject data   = p.searchDataByTileWithGap(types, x, y, z, gap);
+		System.out.println(data);
+		
+		//parameter={"dbId":13,"gap":10,"types":["RDLINK","RDNODE","IXPOI","ADLINK","ZONELINK","LULINK","ZONENODE","ADADMIN"],"x":442895,"y":212474,"z":19}
+		
+		
+		
+		
 		/*
-		 * System.out.println(map.toString());
-		 * System.out.println(JSONObject.fromObject(map));
-		 */
-		System.out.println(JSONArray.fromObject(map));
-	}
+		JSONObject json = new JSONObject();
+		
+		 * String str1 =
+		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
+		 * ; JSONObject obj1 = JSONObject.fromObject(str1); String str2 =
+		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
+		 * ; JSONObject obj2 = JSONObject.fromObject(str2);
+		 * System.out.println(obj2); System.out.println(obj1);
+		 * obj1.accumulateAll(obj2); System.out.println(obj1);
+		 
+		Map<String, List<SearchSnapshot>> map = new HashMap<String, List<SearchSnapshot>>();
+
+		List<SearchSnapshot> list1 = new ArrayList<SearchSnapshot>();
+		List<SearchSnapshot> list2 = new ArrayList<SearchSnapshot>();
+		SearchSnapshot snapshot11 = new SearchSnapshot();
+		snapshot11.setI(1101);
+		SearchSnapshot snapshot12 = new SearchSnapshot();
+		snapshot12.setI(1102);
+		// list1.add(snapshot11);
+		// list1.add(snapshot12);
+
+		SearchSnapshot snapshot21 = new SearchSnapshot();
+		snapshot21.setI(2101);
+		SearchSnapshot snapshot22 = new SearchSnapshot();
+		snapshot22.setI(1102);
+		// list2.add(snapshot21);
+		// list2.add(snapshot22);
+
+		List<List<SearchSnapshot>> lists = new ArrayList<List<SearchSnapshot>>();
+
+		lists.add(list1);
+		lists.add(list2);
+
+		List<ObjType> types = new ArrayList<ObjType>();
+		types.add(ObjType.ADLINK);
+		types.add(ObjType.ADLINK);
+		for (int i = 0; i < lists.size(); i++) {
+			for (ObjType type : types) {
+				if (map.containsKey(type.toString())) {
+					List<SearchSnapshot> snapshots = map.get(type.toString());
+
+					for (SearchSnapshot snapshot : lists.get(i)) {
+						if (!snapshots.contains(snapshot)) {
+							snapshots.add(snapshot);
+						}
+
+					}
+				} else {
+					map.put(type.toString(), lists.get(i));
+				}
+			}
+		}
+		for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
+			JSONArray array = new JSONArray();
+
+			for (SearchSnapshot snap : entry.getValue()) {
+
+				try {
+					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			json.accumulate(entry.getKey(), array, getJsonConfig());
+
+		}
+		System.out.println(json);
+	*/}
 }

@@ -115,11 +115,26 @@ public class RenderController extends BaseController {
 				}
 
 			} else {
-				conn = DBConnector.getInstance().getConnectionById(dbId);
+				if(jsonReq.containsKey("platform") && jsonReq.getString("platform") != null 
+						&& jsonReq.getString("platform").equals("dataPlan")){
+					int taskId = jsonReq.getInt("taskId");
+					
+					//当 大于等于 17 级时  且 含platform = dataPlan
+					conn = DBConnector.getInstance().getConnectionById(dbId);
 
-				SearchProcess p = new SearchProcess(conn);
-				p.setArray(array);
-				data = p.searchDataByTileWithGap(types, x, y, z, gap);
+					SearchProcess p = new SearchProcess(conn);
+					p.setArray(array);
+					data = p.searchDataByTileWithGap(types, x, y, z, gap, taskId);
+					
+				}else{
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+
+					SearchProcess p = new SearchProcess(conn);
+					p.setArray(array);
+					data = p.searchDataByTileWithGap(types, x, y, z, gap);
+				}
+				
+				
 
 			}
 			response.getWriter().println(

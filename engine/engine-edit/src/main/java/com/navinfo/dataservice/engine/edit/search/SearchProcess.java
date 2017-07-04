@@ -35,6 +35,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
@@ -202,6 +203,57 @@ public class SearchProcess {
 		return json;
 	}
 
+	/**
+	 * @Title: searchDataByTileWithGap
+	 * @Description: 平台渲染接口
+	 * @param types
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param taskId
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 上午10:30:49 
+	 */
+	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
+			int y, int z, int gap,int taskId) throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		try {
+
+			for (ObjType type : types) {
+				List<SearchSnapshot> list = null;
+
+				if (type == ObjType.IXPOI) {
+					IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
+				} else if(type == ObjType.RDLINK){
+					RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
+					list = rdLinkSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
+				}
+				/*else {
+					
+				}*/
+				JSONArray array = new JSONArray();
+				if(list != null && list.size() > 0){
+					for (SearchSnapshot snap : list) {
+						array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+					}
+				}
+				json.accumulate(type.toString(), array, getJsonConfig());
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+		}
+		return json;
+	}
 	/**
 	 * 根据pid查询
 	 * 

@@ -6,10 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
-import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -38,7 +35,6 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -237,7 +233,7 @@ public class IxPoiSearch implements ISearch {
 					+ "FROM IX_POI i ,data_plan p "
 					+ " WHERE SDO_RELATE(i.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT')= 'TRUE' "
 					+ " AND U_RECORD != 2 "
-					+ " AND p.data_type = 1 and and p.task_id =:2 and i.pid = p.pid "
+					+ " AND p.data_type = 1 and p.task_id =:2 and i.pid = p.pid "
 				+ "), "
 				+ "TMP2 AS "
 				+ "("

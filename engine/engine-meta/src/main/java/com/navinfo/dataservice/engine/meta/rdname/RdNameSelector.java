@@ -73,8 +73,13 @@ public class RdNameSelector {
 				return result;
 			}
 
-			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid, a.road_type    ,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
-
+			//*****zl 2017.06.30 *********
+			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
+			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
+			
+//			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid, a.road_type    ,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
+			String sql = " SELECT *  FROM (SELECT c.*, rownum rn FROM (select distinct count(1) over(partition by 1) total,a.name_groupid, a.road_type,a.name,a.admin_id from rd_name a where  a.name like :1 ) c WHERE rownum <= :2 ) WHERE rn >= :3 ";
+			
 			int startRow = (pageNum-1) * pageSize+1;
 
 			int endRow = pageNum * pageSize;
@@ -100,7 +105,18 @@ public class RdNameSelector {
 
 				String nameStr = resultSet.getString("name");
 
-				String province = resultSet.getString("province");
+				String province = "";
+				int adminId = resultSet.getInt("admin_id");
+
+				if(adminId == 214){
+					province = "全国";
+				}else{
+					if (!adminMap.isEmpty()) {
+						if (adminMap.containsKey(String.valueOf(adminId))) {
+							province=adminMap.get(String.valueOf(adminId));
+						} 
+					}
+				}
 				int roadType = resultSet.getInt("road_type");
 
 				//*******zl 2017.3.10 315临时代码里处理province获取省份简称
@@ -116,7 +132,7 @@ public class RdNameSelector {
 				json.put("name", nameStr);
 				
 				json.put("roadType", roadType);
-
+				
 				json.put("province", province);
 
 				array.add(json);

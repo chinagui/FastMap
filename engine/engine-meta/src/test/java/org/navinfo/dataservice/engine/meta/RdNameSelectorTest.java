@@ -213,7 +213,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testSearchScPoint()
 	{
 		String parameter = "{'name':'服务票','code':'210303'}";
@@ -224,6 +224,22 @@ public class RdNameSelectorTest {
 			ScPointPoicodeNewService selector = new ScPointPoicodeNewService();
 			
 			JSONArray data = selector.list(jsonReq);
+			
+			System.out.println(data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void testSearchRdname()
+	{
+
+		try {
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			JSONObject data = selector.searchByName("３３０１", 20, 1);
 			
 			System.out.println(data);
 

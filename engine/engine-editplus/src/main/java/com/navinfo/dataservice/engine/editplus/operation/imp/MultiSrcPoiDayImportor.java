@@ -627,7 +627,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
 				
-				//IX_POI_FLAG表
+				/*
+				 * 2017.06.30 zl 取消新增多源入ix_poi_flag 需求 1450
+				 * //IX_POI_FLAG表
 				IxPoiFlag ixPoiFlag = poi.createIxPoiFlag();
 				if(sourceProvider.equals("001000020000")){
 					ixPoiFlag.setFlagCode("110000240000");
@@ -635,7 +637,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					ixPoiFlag.setFlagCode("110000280000");
 				}else if(sourceProvider.equals("001000030004")){
 					ixPoiFlag.setFlagCode("110000270000");
-				}
+				}*/
 				
 //				sourceTypes.put(poi.objPid(), sourceProvider );
 				//truck

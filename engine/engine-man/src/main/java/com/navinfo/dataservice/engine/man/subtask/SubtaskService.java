@@ -3279,8 +3279,7 @@ public class SubtaskService {
 	
 	/**
 	 * 创建质检圈
-	 * @param subtaskId
-	 * @param geometry
+	 * @param dataJson
 	 * @throws Exception
 	 */
 	public void qualityCreate(JSONObject dataJson)  throws Exception {
@@ -3322,6 +3321,55 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("创建质检圈失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 修改质检圈
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void qualityUpdate(JSONObject dataJson)  throws Exception {
+		Integer qualityId = dataJson.getInt("qualityId");
+		Geometry geometry = GeoTranslator.wkt2Geometry(dataJson.getString("geometry"));
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT GEOMETRY FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append(qualityId);
+			
+			String selectSql = sb.toString();
+			log.info("查询质检圈 sql :" + selectSql);
+			
+			ResultSetHandler<Geometry> rsHandler = new ResultSetHandler<Geometry>() {
+				public Geometry handle(ResultSet rs) throws SQLException {
+					while (rs.next()) {
+						try {
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							return GeoTranslator.wkt2Geometry(clobStr);
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					}
+					return null;
+				}
+			};
+			Geometry geometryQuality = run.query(conn, selectSql, rsHandler);
+			if(geometryQuality != null){
+				Geometry newGeometry = geometry.intersection(geometryQuality);
+				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
+				run.update(conn, updateSql, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)), qualityId);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("修改质检圈失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

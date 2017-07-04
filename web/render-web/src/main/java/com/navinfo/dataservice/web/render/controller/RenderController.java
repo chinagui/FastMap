@@ -97,8 +97,9 @@ public class RenderController extends BaseController {
 					//当 大于等于 17 级时  且 含platform = dataPlan
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 
-					SearchProcess p = new SearchProcess(conn);
+					SearchProcess p = new SearchProcess();
 					p.setArray(array);
+					p.setDbId(dbId);
 					data = p.searchDataByTileWithGap(types, x, y, z, gap, taskId);
 					
 				}else{

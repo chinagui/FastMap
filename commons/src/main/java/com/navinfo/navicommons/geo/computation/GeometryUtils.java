@@ -6,10 +6,7 @@ import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import net.sf.json.JSONObject;
-
-import org.hamcrest.core.IsInstanceOf;
 import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
 

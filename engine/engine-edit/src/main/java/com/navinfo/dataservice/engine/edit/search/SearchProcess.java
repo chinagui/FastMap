@@ -319,32 +319,78 @@ public class SearchProcess {
 	 */
 	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
 			int y, int z, int gap,int taskId) throws Exception {
-
 		JSONObject json = new JSONObject();
 
 		try {
 
-			for (ObjType type : types) {
-				List<SearchSnapshot> list = null;
+			// 1.计算瓦片的几何
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			// 2 根据瓦片计算
+			Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator
+					.wkt2Geometry(wkt));
+			Map<String, List<SearchSnapshot>> map = new HashMap<String, List<SearchSnapshot>>();
+			for (int dbId : dbIds) {
+				try {
+					logger.info("dbId========" + dbId);
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+					SearchFactory factory = new SearchFactory(conn);
+					for (ObjType type : types) {
+						if (dbId != this.getDbId()) {
+							if (!this.getBasicObjForRender(type)) {
+								continue;
+							}
+						}
+						List<SearchSnapshot> list = null;
+						if (type == ObjType.IXPOI) {
+							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+							list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
+						} else if(type == ObjType.RDLINK){
+							RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
+							list = rdLinkSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
+						}
+						if (map.containsKey(type.toString())) {
+							List<SearchSnapshot> snapshots = map.get(type
+									.toString());
+							if(list != null && list.size() > 0){
+								for (SearchSnapshot snapshot : list) {
+									if (!snapshots.contains(snapshot)) {
+										snapshots.add(snapshot);
+									}
 
-				if (type == ObjType.IXPOI) {
-					IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
-				} else if(type == ObjType.RDLINK){
-					RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-					list = rdLinkSearch.searchDataByTileWithGap(x, y, z, gap,taskId);
-				}
-				/*else {
-					
-				}*/
-				JSONArray array = new JSONArray();
-				if(list != null && list.size() > 0){
-					for (SearchSnapshot snap : list) {
-						array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+								}
+							}
+							
+						} else {
+							map.put(type.toString(), list);
+						}
+
+					}
+				} catch (Exception e) {
+
+					throw e;
+
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
-				json.accumulate(type.toString(), array, getJsonConfig());
 			}
+			for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
+				JSONArray array = new JSONArray();
+
+				for (SearchSnapshot snap : entry.getValue()) {
+
+					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+				}
+
+				json.accumulate(entry.getKey(), array, getJsonConfig());
+
+			}
+
 		} catch (Exception e) {
 
 			throw e;
@@ -992,7 +1038,7 @@ public class SearchProcess {
 
 	public JSONObject searchInfoByTileWithGap(List<ObjType> types, int x,
 			int y, int z, int gap) throws Exception {
-
+		
 		JSONObject json = new JSONObject();
 
 		SearchFactory factory = new SearchFactory(conn);

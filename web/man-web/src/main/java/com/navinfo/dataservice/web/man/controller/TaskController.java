@@ -231,7 +231,8 @@ public class TaskController extends BaseController {
 			if (dataJson.containsKey("pageSize")){
 				curPageSize = dataJson.getInt("pageSize");
 			}
-			Page data = TaskService.getInstance().list(condition,curPageNum,curPageSize);
+			Integer dataPlanStatus = dataJson.getInt("dataPlanStatus");
+			Page data = TaskService.getInstance().list(condition,curPageNum,curPageSize,dataPlanStatus);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());

@@ -3651,7 +3651,7 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT TASK_ID"
+			String selectSql = "SELECT t.TASK_ID"
 					+ "  FROM TASK t"
 					+ " WHERE t.PROGRAM_ID = "+programId
 					+ "   AND t.TYPE IN (1, 2)"
@@ -3660,7 +3660,7 @@ public class TaskService {
 					+ "   AND t.GROUP_ID != 0"
 					+ "	  AND t.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
-					+ " SELECT TASK_ID t1"
+					+ " SELECT t1.TASK_ID"
 					+ "  FROM TASK t1"
 					+ " WHERE t1.PROGRAM_ID = "+programId
 					+ "   AND t1.TYPE = 0"
@@ -3670,7 +3670,7 @@ public class TaskService {
 					+ "   AND t1.GROUP_ID != 0"
 					+ "	  AND t1.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
-					+ " SELECT t2.TASK_ID"
+					+ " SELECT t2.TASK_ID "
 					+ "  FROM TASK t2"
 					+ " WHERE t2.PROGRAM_ID = "+programId
 					+ "   AND t2.TYPE = 0"

@@ -76,7 +76,6 @@ public class RenderController extends BaseController {
 
 				List<ObjType> tileTypes = new ArrayList<ObjType>();
 
-				List<ObjType> gdbTypes = new ArrayList<ObjType>();
 
 				for (ObjType t : types) {
 					if (t == ObjType.RDLINK || t == ObjType.ADLINK

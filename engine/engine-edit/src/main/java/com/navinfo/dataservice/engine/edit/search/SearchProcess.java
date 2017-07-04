@@ -107,7 +107,7 @@ public class SearchProcess {
 	 * 
 	 * @return JsonConfig
 	 */
-	private  static JsonConfig getJsonConfig() {
+	private   JsonConfig getJsonConfig() {
 		JsonConfig jsonConfig = new JsonConfig();
 
 		jsonConfig.registerJsonValueProcessor(String.class,

@@ -181,17 +181,23 @@ public class TipsUtils {
     public static TipsIndexModel generateSolrIndex(String rowkey, String operateDate,
                                                    JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
                                                    JSONObject deepJson, JSONObject feedbackJson) throws Exception {
-        JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
-        int size = trackInfoArr.size();
-        JSONObject lastTrackInfo = trackInfoArr.getJSONObject(size - 1);
+
         TipsIndexModel tipsIndexModel = new TipsIndexModel();
+        if(trackJson.containsKey("t_trackInfo")) {
+            JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
+            int size = trackInfoArr.size();
+            if(size > 0) {
+                JSONObject lastTrackInfo = trackInfoArr.getJSONObject(size - 1);
+                tipsIndexModel.setStage(lastTrackInfo.getInt("stage"));
+                tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
+            }
+        }
+
         tipsIndexModel.setId(rowkey);
-        tipsIndexModel.setStage(lastTrackInfo.getInt("stage"));
         tipsIndexModel.setT_date(trackJson.getString("t_date"));//当前时间
         tipsIndexModel.setT_operateDate(operateDate);//t_operateDate原值导入
         tipsIndexModel.setT_lifecycle(trackJson.getInt("t_lifecycle"));
         tipsIndexModel.setT_command(trackJson.getInt("t_command"));
-        tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
         tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
 

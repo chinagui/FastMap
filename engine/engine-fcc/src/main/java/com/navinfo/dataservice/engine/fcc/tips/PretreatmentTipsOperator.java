@@ -55,6 +55,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
     public static int PRE_TIPS_STAGE = 5;
     public static int TIP_STATUS_EDIT = 1;
     public static int TIP_STATUS_COMMIT = 2;
+    public static int INFO_TIPS_STAGE = 6;
 	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
@@ -1496,18 +1497,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		JSONObject track = jsonInfo.getJSONObject("track");
 
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
-				.size() - 1);
-
-		trackInfoArr.remove(lastTrackInfo);
-
-		lastTrackInfo.put("date", date); // 修改时间，为服务的当前时间
-
-		trackInfoArr.add(lastTrackInfo);
-
-		track.put("t_trackInfo", trackInfoArr);
+//		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+//
+//		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
+//				.size() - 1);
+//
+//		trackInfoArr.remove(lastTrackInfo);
+//
+//		lastTrackInfo.put("date", date); // 修改时间，为服务的当前时间
+//
+//		trackInfoArr.add(lastTrackInfo);
+//
+//		track.put("t_trackInfo", trackInfoArr);
 
 		track.put("t_date", date);// 修改时间，为服务的当前时间
 //       前端维护
@@ -2106,8 +2107,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				JSONObject old = getOldTips(rowkey, htab);
 
 				JSONObject oldTrack = old.getJSONObject("track");
-
 				oldTrack.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT);
+
+                JSONArray trackInfoArr = new JSONArray();
+                JSONObject trackInfo = new JSONObject();
+                trackInfo.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
+                trackInfo.put("handler", user);
+                String date = StringUtils.getCurrentTime();
+                trackInfo.put("date", date); // 修改时间，为服务的当前时间
+                trackInfoArr.add(trackInfo);
+                oldTrack.put("t_trackInfo", trackInfoArr);
+                oldTrack.put("t_date", date);
+
+                json.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
+                json.put("handler", user);
+                json.put("t_date", date);
 
 				// put
 				Put put = new Put(rowkey.getBytes());

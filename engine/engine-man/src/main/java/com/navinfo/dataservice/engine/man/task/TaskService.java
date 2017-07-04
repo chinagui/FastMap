@@ -4336,6 +4336,8 @@ public class TaskService {
 				String data_type = "1";
 				if(dataType == 3){
 					data_type = "1,2";
+				}else{
+					data_type = String.valueOf(dataType);
 				}
 				
 				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ");
@@ -4363,7 +4365,7 @@ public class TaskService {
 					}
 					sb.append(")) ");
 				}
-				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.data_type = 1 and d.task_id = "+taskId);
+				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
 				
 				String sql = sb.toString();
 				log.info("跟据条件保存数据sql:"+sql);

@@ -4,13 +4,17 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 
 public class RdLinkTest extends InitApplication {
@@ -197,5 +201,26 @@ public class RdLinkTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	@Test
+	public void testRender() throws Exception{
+		SearchProcess p = new SearchProcess();
+		p.setArray(null);
+		p.setDbId(13);
+		int x = 442895;
+		int y = 212474;
+		int z = 19;
+		List<ObjType> types = new ArrayList<ObjType>();
+		types.add(ObjType.RDLINK);
+		types.add(ObjType.RDNODE);
+		types.add(ObjType.IXPOI);
+		types.add(ObjType.ZONELINK);
+		types.add(ObjType.LULINK);
+		types.add(ObjType.ZONENODE);
+		types.add(ObjType.ADADMIN);
+		int gap =10;
+
+		JSONObject data   = p.searchDataByTileWithGap(types, x, y, z, gap);
+		System.out.println(data);
 	}
 }

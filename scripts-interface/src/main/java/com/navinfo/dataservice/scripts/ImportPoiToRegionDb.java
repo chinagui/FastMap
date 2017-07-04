@@ -49,6 +49,10 @@ public class ImportPoiToRegionDb {
 		jobInfo.setTaskId(0);
 		AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 		job.run();
+		if (job.getJobInfo().getStatus()!= 3) {
+			String msg = (job.getException()==null)?"未知错误。":"错误："+job.getException().getMessage();
+			throw new Exception("调用创建dbjob内部发生"+msg);
+		}
 		JSONObject createDbResponse = job.getJobInfo().getResponse();
 
 		// 2)调用diff Job执行差分，生成履历
@@ -61,6 +65,11 @@ public class ImportPoiToRegionDb {
 		jobDiff.setTaskId(0);
 		AbstractJob jobDiffPoi = JobCreateStrategy.createAsMethod(jobDiff);
 		jobDiffPoi.run();
+		
+		if (jobDiffPoi.getJobInfo().getStatus()!= 3) {
+			String msg = (jobDiffPoi.getException()==null)?"未知错误。":"错误："+jobDiffPoi.getException().getMessage();
+			throw new Exception("调用差分job内部发生"+msg);
+		}
 
 		// 3)调用GdbImport刷履历、数据
 		JSONObject gdbImpReq = new JSONObject();
@@ -72,14 +81,18 @@ public class ImportPoiToRegionDb {
 		jobGdbImp.setTaskId(0);
 		AbstractJob jobImp = JobCreateStrategy.createAsMethod(jobGdbImp);
 		jobImp.run();
-
+		
+		if (jobImp.getJobInfo().getStatus()!= 3) {
+			String msg = (jobImp.getException()==null)?"未知错误。":"错误："+jobImp.getException().getMessage();
+			throw new Exception("调用刷履历job内部发生"+msg);
+		}
 		// 3）写入子任务到履历；
 		// 更新log_action表，默认为0,不用修改
 
 		// 4）生成poi_edit_status记录；
-		System.out.println("begin genPoiEditRecode");
+		System.out.println("begin genPoiEditRecord");
 		genPoiEditRecord(request.getInt("sourceDbId"));
-		System.out.println("genPoiEditRecode end");
+		System.out.println("genPoiEditRecord end");
 		// 5）修改日落月标记，改为未落过，默认生成的履历就是未落过（log_operation->con_sta）=0,不用修改
 		// updateDaytoMonthFlag(sourceConn);
 
@@ -201,9 +214,9 @@ public static void updateData(int sourceDbId,int targetDbId) throws Exception{
 		pstmt = conn.prepareStatement(sql);
 		pstmt.executeUpdate(sql);
 		
-		String sql1="UPDATE log_day_release r SET r.rel_poi_sta=1, r.rel_all_sta=1 WHERE EXISTS ( "
+		String sql1="UPDATE log_day_release r SET r.rel_poi_sta=1, r.rel_all_sta=1 WHERE r.op_id in ( "
 			+"	SELECT l.op_id FROM log_detail l,ix_poi@DBLINK_"+sourceDbId 
-			+" p WHERE l.ob_nm='IX_POI' AND l.op_id=r.op_id AND l.ob_pid=p.pid)";
+			+" p WHERE l.ob_nm='IX_POI' AND l.ob_pid=p.pid)";
 		
 		pstmt1 = conn.prepareStatement(sql1);
 		pstmt.executeUpdate(sql1);

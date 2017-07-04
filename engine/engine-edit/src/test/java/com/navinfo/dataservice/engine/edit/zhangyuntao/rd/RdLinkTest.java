@@ -11,11 +11,9 @@ import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -138,11 +136,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testCreateSideRoad() throws Exception {
-        RdLink link = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(242836, false);
-        System.out.println(Arrays.toString(DbMeshInfoUtil.calcDbIds(link.getGeometry()).toArray()));
-        RdLink link1 = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(6845499, false);
-        System.out.println(Arrays.toString(DbMeshInfoUtil.calcDbIds(link1.getGeometry()).toArray()));
-        System.out.println(CollectionUtils.isSubCollection(DbMeshInfoUtil.calcDbIds(link.getGeometry()), DbMeshInfoUtil.calcDbIds(link.getGeometry())));
+        Geometry geometry = GeoTranslator.wkt2Geometry("POLYGON ((124.11183536052704 32.252855302834995,124.11257565021515 32.252855302834995," +
+                "124.11257565021515 32.25348136457513,124.11183536052704 32.25348136457513,124.11183536052704 32.252855302834995))");
+        DbMeshInfoUtil.calcDbIds(geometry);
     }
 
 }

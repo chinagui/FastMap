@@ -216,10 +216,121 @@ public class RdLinkSearch implements ISearch {
 		return list;
 	}
 	
-	
-	
-	
-	
+	/**
+	 * @Title: searchDataByTileWithGap
+	 * @Description: TODO
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param taskId
+	 * @return
+	 * @throws Exception  List<SearchSnapshot>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 上午10:56:53 
+	 */
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap,int taskId) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = "with tmp1 as  "
+				+ "("
+					+ "select LANE_NUM , link_pid,direct, kind,special_traffic,function_class, s_node_pid, e_node_pid,length,imi_code, geometry "
+					+ "    from rd_link l , data_plan p   "
+					+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' "
+					+ " and u_record != 2 "
+					+ " and l.u_record != 2 and l.link_pid = p.pid and p.data_type = 2 and p.task_id = :2 "
+				+ "), tmp2 as  (select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits     from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid), tmp3 as  (select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid) select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */            b.link_pid, c.name             from rd_link_name b, rd_name c            where b.name_groupid = c.name_groupid              and b.name_class = 1              and b.seq_num = 1              and c.lang_code = 'CHI'              and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("kind"));
+
+				m.put("b", resultSet.getString("name"));
+
+				m.put("c", resultSet.getString("limits"));
+
+				m.put("d", resultSet.getInt("direct"));
+
+				m.put("e", resultSet.getInt("s_node_pid"));
+
+				m.put("f", resultSet.getInt("e_node_pid"));
+
+				m.put("h", resultSet.getString("forms"));
+
+				m.put("i", resultSet.getInt("function_class"));
+
+				m.put("j", resultSet.getInt("imi_code"));
+				m.put("k", resultSet.getDouble("length"));
+				
+				m.put("l", resultSet.getInt("special_traffic"));
+
+				m.put("m", resultSet.getInt("LANE_NUM"));
+				
+				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(4);
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+				snapshot.setG(jo.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return list;
+	}
 	
 	private List<SearchSnapshot> searchData(ResultSet resultSet)
 			throws Exception {

@@ -97,7 +97,7 @@ public class PoiCheckResultsTest {
 	}
 	
 	public static void main(String[] args) {
-		int pid = 176;
+		/*int pid = 176;
 		String pids = "170,176";
 		String[] pidsArr = pids.split(",");
 		
@@ -113,7 +113,27 @@ public class PoiCheckResultsTest {
 					
 				}
 			}
+		}*/
+		com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
+		String sortby = "ruleid";
+		String orderSql = "";
+		if (sortby.length()>0) {
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				orderSql+=" ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				orderSql+="  ";
+				orderSql+=sortbyName;
+				orderSql+=" DESC";
+			} else {
+				orderSql+=" ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				orderSql+="  ";
+				orderSql+=sortbyName;
+			}
 		}
+		System.out.println(orderSql);
+		
 	}
 
 }

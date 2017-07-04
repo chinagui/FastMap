@@ -3649,34 +3649,34 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE IN (1, 2)"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND GROUP_ID != 0"
-					+ "	  AND DATA_PLAN_STATUS <> 0"
+			String selectSql = "SELECT t.TASK_ID"
+					+ "  FROM TASK t"
+					+ " WHERE t.PROGRAM_ID = "+programId
+					+ "   AND t.TYPE IN (1, 2)"
+					+ "   AND t.STATUS = 2"
+					+ "   AND t.LATEST = 1"
+					+ "   AND t.GROUP_ID != 0"
+					+ "	  AND t.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
-					+ " SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE = 0"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND (WORK_KIND LIKE '1|%' OR WORK_KIND LIKE '0|1%')"
-					+ "   AND GROUP_ID != 0"
-					+ "	  AND DATA_PLAN_STATUS <> 0"
+					+ " SELECT t1.TASK_ID"
+					+ "  FROM TASK t1"
+					+ " WHERE t1.PROGRAM_ID = "+programId
+					+ "   AND t1.TYPE = 0"
+					+ "   AND t1.STATUS = 2"
+					+ "   AND t1.LATEST = 1"
+					+ "   AND (t1.WORK_KIND LIKE '1|%' OR t1.WORK_KIND LIKE '0|1%')"
+					+ "   AND t1.GROUP_ID != 0"
+					+ "	  AND t1.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
-					+ " SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE = 0"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND WORK_KIND LIKE '0|0%'"
-					+ "   AND GROUP_ID = 0"
-					+ "	  AND DATA_PLAN_STATUS <> 0";
+					+ " SELECT t2.TASK_ID "
+					+ "  FROM TASK t2"
+					+ " WHERE t2.PROGRAM_ID = "+programId
+					+ "   AND t2.TYPE = 0"
+					+ "   AND t2.STATUS = 2"
+					+ "   AND t2.LATEST = 1"
+					+ "   AND t2.WORK_KIND LIKE '0|0%'"
+					+ "   AND t2.GROUP_ID = 0"
+					+ "	  AND t2.DATA_PLAN_STATUS <> 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
 				@Override

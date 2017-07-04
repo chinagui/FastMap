@@ -205,7 +205,7 @@ public class SubtaskTest extends InitApplication{
 	//修改质检圈(测试)
 	@Test
 	public void testQualityUpdate() throws Exception {
-		String parameter = "{\"qualityId\":27,\"geometry\":\"POLYGON ((80.83422 30.51848, 120.4135 20.51848, 120.4135 50.31498, 80.83422 50.31498, 80.83422 30.51848))\"}";
+		String parameter = "{\"qualityId\":27,\"geometry\":\"POLYGON ((80.83422 20.51848, 120.4135 20.51848, 120.4135 50.31498, 80.83422 50.31498, 80.83422 20.51848))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}

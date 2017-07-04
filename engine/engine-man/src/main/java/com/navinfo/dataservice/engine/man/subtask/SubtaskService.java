@@ -3297,21 +3297,7 @@ public class SubtaskService {
 			String selectSql = sb.toString();
 			log.info("查询不规则子任务圈 sql :" + selectSql);
 
-			ResultSetHandler<Geometry> rsHandler = new ResultSetHandler<Geometry>() {
-				public Geometry handle(ResultSet rs) throws SQLException {
-					while (rs.next()) {
-						try {
-							STRUCT struct=(STRUCT)rs.getObject("geometry");
-							String clobStr = GeoTranslator.struct2Wkt(struct);
-							return GeoTranslator.wkt2Geometry(clobStr);
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
-					return null;
-				}
-			};
-			Geometry geometryRefer = run.query(conn, selectSql, rsHandler);
+			Geometry geometryRefer = run.query(conn, selectSql, geometryHandler);
 			if(geometryRefer != null){
 				Geometry newGeometry = geometry.intersection(geometryRefer);
 				String createSql = "INSERT INTO SUBTASK_QUALITY (QUALITY_ID, SUBTASK_ID, GEOMETRY) VALUES (Subtask_quality_SEQ.Nextval,?,?)";
@@ -3340,27 +3326,15 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT GEOMETRY FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append("SELECT SR.GEOMETRY FROM SUBTASK S, SUBTASK_REFER SR WHERE S.REFER_ID = SR.ID AND S.SUBTASK_ID = ");
+			sb.append("(SELECT SUBTASK_ID FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
 			sb.append(qualityId);
+			sb.append(")");
 			
 			String selectSql = sb.toString();
-			log.info("查询质检圈 sql :" + selectSql);
+			log.info("查询不规则子任务圈 sql :" + selectSql);
 			
-			ResultSetHandler<Geometry> rsHandler = new ResultSetHandler<Geometry>() {
-				public Geometry handle(ResultSet rs) throws SQLException {
-					while (rs.next()) {
-						try {
-							STRUCT struct=(STRUCT)rs.getObject("geometry");
-							String clobStr = GeoTranslator.struct2Wkt(struct);
-							return GeoTranslator.wkt2Geometry(clobStr);
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
-					return null;
-				}
-			};
-			Geometry geometryQuality = run.query(conn, selectSql, rsHandler);
+			Geometry geometryQuality = run.query(conn, selectSql, geometryHandler);
 			if(geometryQuality != null){
 				Geometry newGeometry = geometry.intersection(geometryQuality);
 				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
@@ -3374,4 +3348,22 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 创建、修改质检圈的结果集处理器
+	 */
+	ResultSetHandler<Geometry> geometryHandler = new ResultSetHandler<Geometry>() {
+		public Geometry handle(ResultSet rs) throws SQLException {
+			while (rs.next()) {
+				try {
+					STRUCT struct=(STRUCT)rs.getObject("geometry");
+					String clobStr = GeoTranslator.struct2Wkt(struct);
+					return GeoTranslator.wkt2Geometry(clobStr);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+			return null;
+		}
+	};
 }

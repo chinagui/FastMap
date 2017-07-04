@@ -4091,10 +4091,13 @@ public class TaskService {
 				String wkt = null;
 				if(condition.containsKey("wkt") && condition.getString("wkt").length() > 1){
 					wkt = condition.getString("wkt");
-					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt);
+					if(StringUtils.isBlank(wkt)){
+						throw new Exception("wkt参数为空");
+					}
+					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt, taskId);
 				}else{
 					log.info("没有上传wkt数据，为条件规划");
-					Map<String, Object> prograssMap = taskInPrograssCount(conn, taskId);
+					TaskProgress taskPrograss = taskInPrograssCount(conn, taskId);
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
@@ -4109,7 +4112,7 @@ public class TaskService {
 					//更新从元数据库中获取的pid到dataPlan表中
 					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					//保存到taskPrograss表
-					maintainTaskPrograss(conn, prograssMap, dataJson, userId);
+					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
 				log.error("规划数据保存失败，原因为："+e.getMessage());
@@ -4130,7 +4133,7 @@ public class TaskService {
 		 * @throws Exception 
 		 * 
 		 * */
-		public void updateDataPlanStatusByWkt(Connection conn, int isPlanStatus, int dataType, String wkt) throws Exception{
+		public void updateDataPlanStatusByWkt(Connection conn, int isPlanStatus, int dataType, String wkt, int taskId) throws Exception{
 			try{
 				String type = null;
 				if(isPlanStatus != 0 && isPlanStatus != 1){
@@ -4147,22 +4150,22 @@ public class TaskService {
 				//根据范围更新数据状态
 				QueryRunner run = new QueryRunner();
 				StringBuffer sb = new StringBuffer();
+				StringBuffer poisb = new StringBuffer();
+				StringBuffer linksb = new StringBuffer();
+				String poisql = "";
+				String linksql = "";
 				sb.append("update DATA_PLAN t set t.is_plan_selected = "+isPlanStatus+" where ");
-				sb.append("t.data_type in ("+type+") and t.pid in (");
-				if("1".equals(type)){
-					sb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+				sb.append("t.task_id = "+taskId+" and t.data_type in ("+type+") and t.pid in (");
+				if("1".equals(type) || "1,2".equals(type)){
+					poisb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+					poisql = sb.toString()+poisb.toString();
+					run.update(conn, poisql, wkt);
 				}
-				if("2".equals(type)){
-					sb.append("select t.link_pid from RD_LINK t where sdo_relate(t.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+				if("2".equals(type) || "1,2".equals(type)){
+					linksb.append("select r.link_pid from RD_LINK r where sdo_relate(r.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+					linksql = sb.toString()+linksb.toString();
+					run.update(conn, linksql, wkt);
 				}
-				if("1,2".equals(type)){
-					sb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
-					sb.append(" union all");
-					sb.append("select t.link_pid from RD_LINK t where sdo_relate(t.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
-				}
-				String sql = sb.toString();
-				log.info("范围规划，根据wkt范围处理范围内的数据作业状态sql:"+sql);
-				run.execute(conn, sql);
 			}catch(Exception e){
 				log.info("根据范围修改数据作业状态异常:"+e.getMessage());
 				throw e;
@@ -4255,7 +4258,7 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public void maintainTaskPrograss(Connection conn, Map<String, Object> prograssMap, JSONObject dataJson, long userId) throws Exception{
+		public void maintainTaskPrograss(Connection conn, TaskProgress taskPrograss, JSONObject dataJson, long userId) throws Exception{
 			try{
 				TaskProgress bean = new TaskProgress();
 				int taskId = dataJson.getInt("taskId");
@@ -4265,30 +4268,18 @@ public class TaskService {
 				bean.setTaskId(taskId);
 				bean.setOperator(userId);
 				bean.setParameter(parameter);
-				if(prograssMap == null || prograssMap.size() == 0){
+				bean.setPhase(2);
+				bean.setStatus(0);
+				if(taskPrograss == null){
 					phaseId = TaskProgressOperation.getNewPhaseId(conn);
 					bean.setPhaseId(phaseId);
 					Timestamp time = new Timestamp(System.currentTimeMillis()); 
 					bean.setCreatDate(time);
-					bean.setPhase(2);
-					bean.setStatus(0);
 					TaskProgressOperation.create(conn, bean);
 				}else{
-					phaseId = Integer.parseInt(prograssMap.get("phaseId").toString());
+					phaseId = taskPrograss.getPhaseId();
 					bean.setPhaseId(phaseId);
 					TaskProgressOperation.updateTaskProgress(conn, bean);
-//					Clob t = TaskProgressOperation.query(conn, phaseId);
-//					 String reString = "";  
-//				        Reader is = t.getCharacterStream();// 得到流  
-//				        BufferedReader br = new BufferedReader(is);  
-//				        String s = br.readLine();  
-//				        StringBuffer sb = new StringBuffer();  
-//				        while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING  
-//				            sb.append(s);  
-//				            s = br.readLine();  
-//				        }  
-//				        reString = sb.toString();  
-//				        System.out.println(reString);
 				}
 			}catch(Exception e){
 				log.error("保存数据到taskPrograss表出错："+e.getMessage());
@@ -4398,6 +4389,7 @@ public class TaskService {
 				}
 				
 				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+")";
+				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
 				run.execute(conn, sql);
 			}catch(Exception e){
 				throw e;
@@ -4412,26 +4404,27 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public Map<String, Object> taskInPrograssCount(Connection conn, int taskId) throws Exception{
+		public TaskProgress taskInPrograssCount(Connection conn, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
 				String sql = "select t.* from TASK_PROGRESS t where t.phase = 2 and t.task_id = "+taskId;
-				ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>(){
-					public Map<String, Object> handle(ResultSet rs) throws SQLException {
-						Map<String, Object> map = new HashMap<>();
+				ResultSetHandler<TaskProgress> rs = new ResultSetHandler<TaskProgress>(){
+					public TaskProgress handle(ResultSet rs) throws SQLException {
 						if(rs.next()){
-							map.put("phaseId", rs.getInt("PHASE_ID"));
-							map.put("phase", rs.getInt("PHASE"));
-							map.put("status", rs.getInt("STATUS"));
-							map.put("creatDate", rs.getTimestamp("CREATE_DATE"));
-							map.put("startDate", rs.getTimestamp("START_DATE"));
-							map.put("endDate", rs.getTimestamp("END_DATE"));
-							map.put("message", rs.getString("MESSAGE"));
-							map.put("parameter", rs.getClob("PARAMETER"));
-							map.put("operator", rs.getInt("OPERATOR"));
-							map.put("taskId", rs.getInt("TASK_ID"));
+							TaskProgress taskPrograss = new TaskProgress();
+							taskPrograss.setTaskId(rs.getInt("TASK_ID"));
+							taskPrograss.setPhase(rs.getInt("PHASE"));
+							taskPrograss.setStatus(rs.getInt("STATUS"));
+							taskPrograss.setCreatDate(rs.getTimestamp("CREATE_DATE"));
+							taskPrograss.setStartDate(rs.getTimestamp("START_DATE"));
+							taskPrograss.setEndDate(rs.getTimestamp("END_DATE"));
+							taskPrograss.setMessage(rs.getString("MESSAGE"));
+							taskPrograss.setParameter(rs.getClob("PARAMETER").toString());
+							taskPrograss.setOperator(rs.getLong("OPERATOR"));
+							taskPrograss.setPhaseId(rs.getInt("PHASE_ID"));
+							return taskPrograss;
 						}
-						return map;
+						return null;
 					}
 				};
 				return run.query(conn, sql, rs);

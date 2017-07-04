@@ -1067,7 +1067,7 @@ public class TaskService {
 //	}
 	
 
-	public Page list(JSONObject condition,int curPageNum,int pageSize,int dataPlanStatus)throws Exception{
+	public Page list(JSONObject condition,int curPageNum,int pageSize)throws Exception{
 		if(condition.containsKey("cityId")){
 			return listByCity(condition,curPageNum,pageSize);
 		}

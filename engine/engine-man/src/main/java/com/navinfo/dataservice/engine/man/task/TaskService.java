@@ -4095,7 +4095,7 @@ public class TaskService {
 					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt);
 				}else{
 					log.info("没有上传wkt数据，为条件规划");
-					int prograssCount = taskInPrograss(conn, taskId);
+					int prograssCount = taskInPrograssCount(conn, taskId);
 					if(prograssCount > 1){
 						throw new Exception("taskPrograss表中对应的taskId"+taskId+"数量大于1，为："+prograssCount);
 					}
@@ -4289,7 +4289,11 @@ public class TaskService {
 		public void updateDataPlanToNoPlan(Connection dailyConn, int dataType, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 0 where d.data_type = "+dataType+" and d.task_id = "+taskId;
+				String type = String.valueOf(dataType);
+				if(dataType == 3){
+					type = "1,2";
+				}
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 0 where d.data_type in ("+type+") and d.task_id = "+taskId;
 				run.execute(dailyConn, sql);
 			}catch(Exception e){
 				throw e;
@@ -4389,7 +4393,7 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public int taskInPrograss(Connection conn, int taskId) throws Exception{
+		public int taskInPrograssCount(Connection conn, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
 				String sql = "select COUNT(1) count from TASK_PROGRESS t where t.task_id = "+taskId;

@@ -89,7 +89,8 @@ public class Constant {
      * RDLINK相关关系要素
      */
     public static List<ObjType> RDLINK_REF_OBJECT = new ArrayList() {{
-        add(ObjType.RDELECTRONICEYE);
+        add(ObjType.RDWARNINGINFO);
+        add(ObjType.RDTRAFFICSIGNAL);
     }};
 
     public final static Map<ObjType, Class> OBJ_TYPE_CLASS_MAP = new HashMap() {{

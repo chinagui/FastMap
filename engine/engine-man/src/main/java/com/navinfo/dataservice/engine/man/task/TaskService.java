@@ -4108,7 +4108,7 @@ public class TaskService {
 					//把不满足条件的数据状态更新为不需要作业
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
 					//日库中的dataPlan更新数据
-					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType);
+					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
 					//更新从元数据库中获取的pid到dataPlan表中
 					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					//保存到taskPrograss表
@@ -4303,7 +4303,7 @@ public class TaskService {
 		 * @param List<Integer>
 		 * 
 		 * */
-		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType) throws Exception{
+		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
 				StringBuffer sb = new StringBuffer();
@@ -4322,6 +4322,16 @@ public class TaskService {
 						sb.append(" or t.kind_code like '" + kindCode + "'");
 					}
 					sb.append(")");
+//					String data_type = "1";
+//					if(dataType == 3){
+//						data_type = "1,2";
+//					}
+//					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where ");
+//					sb.append("t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+//					for(String kindCode : kindCodes){
+//						sb.append(" or t.kind_code like '" + kindCode + "' ");
+//					}
+//					sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
 				}
 				
 				if(dataType == 3){

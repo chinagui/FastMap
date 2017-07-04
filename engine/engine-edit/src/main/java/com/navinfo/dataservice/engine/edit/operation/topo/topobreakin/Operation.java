@@ -52,20 +52,20 @@ public class Operation implements IOperation {
 		JSONObject breakJson = new JSONObject();
 		breakJson.put("objId", linkPid);
 		breakJson.put("dbId", this.command.getDbId());
-		
+
 		JSONObject data = new JSONObject();
 		JSONArray breakNodes = new JSONArray();
-		
+
 		if (this.command.getBreakNodePid() != 0) {
 			data.put("breakNodePid", this.command.getBreakNodePid());
 			data.put("longitude", this.command.getBreakPoint().getX());
 			data.put("latitude", this.command.getBreakPoint().getY());
-		
+
 			JSONObject breakObj = new JSONObject();
-			breakObj.put("longitude", this.command.getBreakPoint().getX());
-			breakObj.put("latitude", this.command.getBreakPoint().getY());
+			breakObj.put("longitude", (double) Math.round(this.command.getBreakPoint().getX() * 100000) / 100000);
+			breakObj.put("latitude", (double) Math.round(this.command.getBreakPoint().getY() * 100000) / 100000);
 			breakObj.put("breakNodePid", this.command.getBreakNodePid());
-			breakObj.put("operate",OperType.TOPOBREAK);
+			breakObj.put("operate", OperType.TOPOBREAK);
 			breakNodes.add(breakObj);
 			data.put("breakNodes", breakNodes);
 		} else {
@@ -76,7 +76,7 @@ public class Operation implements IOperation {
 		breakJson.put("data", data);
 		return breakJson;
 	}
-	
+
 	/**
 	 * 没有打断nodePid，第一次打断后，给打断点赋nodePid，记录该nodePid，用于剩余link打断
 	 * @param msg

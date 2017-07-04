@@ -55,6 +55,7 @@ public class ImportPoiToRegionDb {
 		JSONObject diffReq = new JSONObject();
 		diffReq.put("leftDbId", request.getInt("sourceDbId"));
 		diffReq.put("rightDbId", createDbResponse.getInt("outDbId"));
+		diffReq.put("specificTables", request.getJSONArray("specificTables"));
 		JobInfo jobDiff = new JobInfo(0, UuidUtils.genUuid());
 		jobDiff.setType("diff");
 		jobDiff.setRequest(diffReq);

@@ -449,6 +449,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

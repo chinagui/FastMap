@@ -4138,7 +4138,7 @@ public class TaskService {
 				log.error("规划数据保存失败，原因为："+e);
 				DBUtils.rollBack(conn);
 				DBUtils.rollBack(dailyConn);
-				throw new Exception("规划数据保存失败");
+				throw new Exception("规划数据保存失败",e);
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				DbUtils.commitAndCloseQuietly(dailyConn);
@@ -4403,6 +4403,7 @@ public class TaskService {
 		 * */
 		public void updateDataPlanStatusByReliability(Connection conn, List<Integer> reliabilityPid) throws Exception{
 			try{
+				if(reliabilityPid==null||reliabilityPid.size()==0){return;}
 				QueryRunner run = new QueryRunner();
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i < reliabilityPid.size(); i++){

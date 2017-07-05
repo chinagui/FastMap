@@ -40,6 +40,8 @@ import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
+import com.navinfo.navicommons.exception.ServiceException;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
@@ -55,6 +57,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Controller
@@ -1501,5 +1505,26 @@ public class MetaController extends BaseController {
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }
+    }
+    
+    /**
+     * @Title: ScPointPoicodeNewService
+     * @Description: 查询POI大分类/中分类元数据接口，应用场景：外业规划平台--数据规划--条件规划--poi分类
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws ServiceException 
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年5月18日 下午5:18:31 
+     */
+    @RequestMapping(value = "/scPointPoicodeList")
+    public ModelAndView scPointPoicodeList(HttpServletRequest request)
+            throws ServletException, IOException, ServiceException {
+            ScPointPoicodeNewService scPointPoicodeNewService = new ScPointPoicodeNewService();
+            List<Map<String, Object>> data = scPointPoicodeNewService.list();
+
+            return new ModelAndView("jsonView", success(data));
     }
 }

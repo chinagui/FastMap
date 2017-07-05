@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -4061,18 +4062,26 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
+			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
+				Task task = queryByTaskId(con, taskId);
+				Region region = RegionService.getInstance().query(con,task.getRegionId());
+				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
+				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
+				run.execute(dailyConn, deletesql);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e);
 				DbUtils.rollback(con);
+				DbUtils.rollback(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
+				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		
@@ -4438,7 +4447,11 @@ public class TaskService {
 							taskPrograss.setStartDate(rs.getTimestamp("START_DATE"));
 							taskPrograss.setEndDate(rs.getTimestamp("END_DATE"));
 							taskPrograss.setMessage(rs.getString("MESSAGE"));
-							taskPrograss.setParameter(rs.getClob("PARAMETER").toString());
+							try {
+								taskPrograss.setParameter(TaskProgressOperation.ClobToString(rs.getClob("PARAMETER")));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 							taskPrograss.setOperator(rs.getLong("OPERATOR"));
 							taskPrograss.setPhaseId(rs.getInt("PHASE_ID"));
 							return taskPrograss;
@@ -4505,5 +4518,33 @@ public class TaskService {
 //			}
 //		
 //		}
+		
+		/**
+		 *  获取条件规划
+		 *  获取该任务保存的条件规划情况task_progess中phase=2的记录的parameter
+		 *  应用场景：独立工具--外业规划--数据规划
+		 * @param int taskId
+		 * @return String parameter
+		 * @throws Exception
+		 * 
+		 * */
+		public JSONObject getPlan(int taskId) throws Exception{
+			Connection conn = null;
+			try{
+				conn = DBConnector.getInstance().getManConnection();
+				TaskProgress tp = taskInPrograssCount(conn, taskId);
+				String parameter = tp.getParameter();
+				JSONObject json = JSONObject.fromObject(parameter);
+				return json;
+			}catch(Exception e){
+				log.error("获取条件规划异常，原因为：" + e);
+				DbUtils.closeQuietly(conn);
+				throw new Exception("获取条件规划异常");
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		}
+		
+
 		
 }

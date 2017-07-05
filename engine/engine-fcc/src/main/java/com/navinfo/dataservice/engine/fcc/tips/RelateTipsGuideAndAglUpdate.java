@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -12,6 +13,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * @ClassName: RelateTipsGuideAndAglUpdate.java
@@ -37,59 +39,63 @@ public class RelateTipsGuideAndAglUpdate {
 		this.linesAfterCut = linesAfterCut;
 	}
 
-	public JSONObject excute() throws Exception {
-
-		JSONObject lineLocation = new JSONObject(); // 关联测线的显示坐标
-
-		lineLocation = maitanGuide();
-
-		JSONObject guide = JSONObject.fromObject(json.getString("g_guide")); // 得到引导坐标
-
-		json = updateAgl(lineLocation, guide);
-
-		return json;
-
-	}
-
 	/**
-	 * @Description:维护引导坐标  存在疑问 在不修改
+	 * @Description:维护[显示坐标]、引导坐标、角度、[起点、终点、geo]
 	 * @return
 	 * @author: y
+	 * @throws Exception 
 	 * @time:2017-6-27 下午1:44:01
 	 */
-	private JSONObject maitanGuide() {
+	public JSONObject excute() throws Exception {
 		
 		//说明：包含打断的线  才更新的哦  linesAfterCut
+		
+		//1.其他类型：修形不维护
 		switch (sourceType) {
-        case "1803":// 2.挂接 null
-            return updateHookTips();
-        case "1116":// 3.立交 [f_array].id  有疑问？？？ 多条线的交点（拿不到其他关联先的几何） 是否需要同时维护显示坐标？
-            return updateGSCTips();
-        case "1201":// 4.种别  g_location到f.id的垂足
-            return updateKindTips();
-        case "1203":// 5.道路通行方向  g_location到f.id的垂足
-            return updateLinkDirTips();
-        case "1202":// 6. 车道数 f.id  g_location到f.id的垂足
-            return updateKindLaneTips();
-            // 7.SA、PA、匝道 f.id  g_location到f.id的垂足
+		case "2001"://测线
+        case "1803"://挂接
+        case "1806"://28.草图
+        case "1116"://立交
+        case "1102":// 11 .红绿灯   
+        case "1901":// 25. 道路名 null
+            return json;
+           // return json;
+        
+        
+        //2.打点类：维护g_guide维护：显示坐标到引导link的最近点
+        case "1201":// 4.种别   f.id
+        case "1203":// 5.道路通行方向    f.id
+        case "1202":// 6. 车道数 f.id 
+       // 7.SA、PA、匝道 f.id  g_location到f.id的
         case "1205": 
-            return updateSATips();
         case "1206": // 8 .PA f.id
-            return updatePATips();
         case "1207": // 9.匝道 f.id
-            return updateRampTips();
-        case "1211": // 10.IC\JCT  g_location到f.id的垂足
-            return updateJCTTips();
-        case "1102":// 11 .红绿灯   ？？？显示坐标就是引导坐标。（显示坐标已不原来的线上，测线只是其中一条）如何计算   link是不受控。。没有引导link。 这个不需要维护引导坐标
-            return updateTrafficSignalTips();
-        case "1107":// 12.收费站  g_location到in.id的垂足
-            return updateTollgateTips();
+        case "1211": // 10.IC\JCT  g_location到f.id
         case "1101":// 13. 点限速 f.id  g_location到f.id的垂足
-            return updateSpeedLimitTips();
+        case "1706"://27.ADAS打点   g_location到f.id
+        case "1702":// 24. 铁路道口  g_location到f.id
+        case "2101":// 26.删除道路标记 null
+            return updateSimpleFPointTips();
+        	
+        	
+        case "1107":// 12.收费站  g_location到in.id的垂足
         case "1301":// 14. 车道信息 g_location到in.id的垂足
-            return updateRdLaneTips();
         case "1302":// 15. 普通交限 复杂的 g_location到in.id的垂足
-            return updateRestrictionTips();
+            return updateSimpleInPointTips();
+        	
+            
+        // 4.范围线类
+        //范围线，测线打断后，范围线的g_location：根据修形后的link重新维护几何坐标）。范围线的引导坐标是，范围线组成线组成的多形的中心。geo根据修形后的link重新计算几何中心点.g_guide=geo
+        case "1604":// 23. 区域内道路   范围线
+        case "1601":// 22. 环岛     范围线  
+            return updateAreaLine();
+            
+    
+     
+       
+     
+        //范围线，待补充~~~~~~~~
+  
         case "1501": // 16. 上下线分离    ？？？ 起终点。  1.打断是否维护 显示坐标？？ 2.引导坐标就是起点。 起点已不在线上，其他线可能是rd_link
             return updateUpDownSeparateLine();
         case "1507":// 17.步行街     ？？？ 起终点
@@ -103,21 +109,8 @@ public class RelateTipsGuideAndAglUpdate {
             return updateTunnel();
         case "1514":// 21.施工    ？？？ 起终点
             return updateConstruction();
-            // 范围线类
-        case "1601":// 22. 环岛   ？？？  范围线  （范围线，测线打断后，范围线的g_location要不要维护？？ 怎么维护？）。范围线的引导坐标是，范围线组成线组成的多形的中心。geo是否需要维护
-            return updateFArray_Id();
-        case "1604":// 23. 区域内道路  ？？？  范围线
-            return updateFArray_Id();
-        case "1702":// 24. 铁路道口  g_location到f.id的垂足
-            return updateSimpleF();
-        case "1901":// 25. 道路名 null
-            return null;
-        case "2101":// 26.删除道路标记 null
-            return null;
-        case "1706"://27.ADAS打点   g_location到f.id的垂足
-            return updateSimpleF();
-        case "1806"://28.草图
-            return null;
+            
+       
 	    default:
 		    return null;
 	}
@@ -125,25 +118,187 @@ public class RelateTipsGuideAndAglUpdate {
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:打点tips维护1
 	 * @return
 	 * @author: y
-	 * @time:2017-6-27 下午1:46:39
+	 * @throws Exception 
+	 * @time:2017-7-4 下午8:16:36
 	 */
-	private JSONObject updateSimpleF() {
-		// TODO Auto-generated method stub
-		return null;
+	private JSONObject updateSimpleFPointTips() throws Exception {
+		
+		//打点tips的显示坐标.
+		JSONObject g_location  =JSONObject.fromObject(json.getString("g_location")) ; 
+		Point point = (Point) GeoTranslator.geojson2Jts(g_location);
+		
+		//打点tips的关联link_id
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject f = deep.getJSONObject("f");
+		String lineId=f.getString("id");
+		
+		//测线的坐标
+		JSONObject lineLocation=null;
+		
+		//测线的坐标，如果只有一条，则就就是当前测线的坐标。如果是多条。则是tips中记录的关联测线
+		for (JSONObject line : linesAfterCut) {
+			
+			if(lineId.equals(line.getString("id"))){
+				
+				lineLocation=line.getJSONObject("g_location");
+				
+				break;
+			}
+		}
+		
+		Geometry lineGeo= GeoTranslator.geojson2Jts(lineLocation);
+		
+		JSONObject  g_guide= getNearLeastPoint(point, lineGeo);
+		
+		json.put("g_guide", g_guide);
+		
+		updateAgl(lineLocation, g_guide); //更新角度
+		
+		return json;
 	}
+	
+	
+	/**
+	 * @Description:打点tips维护2
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-7-4 下午8:16:36
+	 */
+	private JSONObject updateSimpleInPointTips() throws Exception {
+		
+		//打点tips的显示坐标.
+		JSONObject g_location  =JSONObject.fromObject(json.getString("g_location")) ; 
+		Point point = (Point) GeoTranslator.geojson2Jts(g_location);
+		
+		//打点tips的关联link_id
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject f = deep.getJSONObject("in");
+		String lineId=f.getString("id");
+		
+		//测线的坐标
+		JSONObject lineLocation=null;
+		
+		//测线的坐标，如果只有一条，则就就是当前测线的坐标。如果是多条。则是tips中记录的关联测线
+		for (JSONObject line : linesAfterCut) {
+			
+			if(lineId.equals(line.getString("id"))){
+				
+				lineLocation=line.getJSONObject("g_location");
+				
+				break;
+			}
+		}
+		
+		Geometry lineGeo= GeoTranslator.geojson2Jts(lineLocation);
+		
+		JSONObject  g_guide= getNearLeastPoint(point, lineGeo);
+		
+		json.put("g_guide", g_guide);
+		
+		double agl=calAngle(lineLocation, g_guide);
+		
+		if(deep.containsKey("agl")){
+			
+			deep.put("agl", agl);
+			
+			json.put("deep", deep);
+		}
+		
+		return json;
+	}
+	
+	
 
 	/**
 	 * @Description:TOOD
+	 * @param point
+	 * @param lineGeo
 	 * @return
 	 * @author: y
+	 * @time:2017-7-4 下午8:44:12
+	 */
+	private JSONObject getNearLeastPoint(Point point, Geometry lineGeo) {
+		//打点tips到 测线的最近的点
+		Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(point,
+	                0.00001, 5).getCoordinate(), GeoTranslator.transform(lineGeo, 0.00001, 5));
+        JSONObject geoPoint = new JSONObject();
+        geoPoint.put("type", "Point");
+        geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
+        
+		return geoPoint;
+	}
+
+
+	/**
+	 * @Description:范围线，修形维护
+	 * @return
+	 * @author: y
+	 * @throws Exception 
 	 * @time:2017-6-27 下午1:46:33
 	 */
-	private JSONObject updateFArray_Id() {
-		// TODO Auto-generated method stub
-		return null;
+	private JSONObject updateAreaLine() throws Exception {
+		
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+
+		JSONArray f_array = deep.getJSONArray("f_array");
+		
+		int index=-1; //旧测线在数组中的位置，用户更新g_location(范围线使用)
+		
+		//只有一条说明就是原有测线本身，是修形，替换g_location
+		if(linesAfterCut.size()==1){
+			String oldRowkey= linesAfterCut.get(0).getString("id");
+			int i=-1;
+			
+			for (Object object : f_array) {
+				i++;
+				JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
+				
+				// 关联link是测线的
+	            if(fInfo != null && fInfo.containsKey("type")) {
+	                int type = fInfo.getInt("type");
+	                String id = fInfo.getString("id");
+	                if (type == 2 && id.equals(oldRowkey)) {
+	                    index=i;
+	                    break;
+	                }
+	            }
+			}
+		}
+		
+		// 1.如果是测线修形（未打断），则需要更新g_location.(已打断的，再打断时G_location已经更新)
+		if (index>-1) {
+			
+			//1.更新g_location
+			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,linesAfterCut); //更新g_location
+			
+		}
+		
+		//2.如果是范围线：更新geo、更新g_guide=geo
+		if("1601".equals(sourceType)||"1604".equals(sourceType)){
+			
+			JSONObject gLocation=json.getJSONObject("g_location");
+			
+			Geometry geometry=GeoTranslator.geojson2Jts(gLocation);
+			
+			Point point=(Point)GeometryUtils.getPointFromGeo(geometry); //中心
+			
+			JSONObject pointGeo = GeoTranslator.jts2Geojson(point);
+			
+			//2.1更新geo
+			deep.put("geo", pointGeo);
+			
+			json.put("deep", deep); //1.修改deep
+			
+			//2.2更新guide
+			json.put("g_guide",pointGeo);
+			
+		}
+
+		return json;
 	}
 
 	/**
@@ -212,160 +367,9 @@ public class RelateTipsGuideAndAglUpdate {
 		return null;
 	}
 
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:08
-	 */
-	private JSONObject updateRestrictionTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:04
-	 */
-	private JSONObject updateRdLaneTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:02
-	 */
-	private JSONObject updateSpeedLimitTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:58
-	 */
-	private JSONObject updateTollgateTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:52
-	 */
-	private JSONObject updateTrafficSignalTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:48
-	 */
-	private JSONObject updateJCTTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:43
-	 */
-	private JSONObject updateRampTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:41
-	 */
-	private JSONObject updatePATips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:37
-	 */
-	private JSONObject updateSATips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:32
-	 */
-	private JSONObject updateKindLaneTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:22
-	 */
-	private JSONObject updateLinkDirTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:18
-	 */
-	private JSONObject updateKindTips() {
-		
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:14
-	 */
-	private JSONObject updateGSCTips() {
-		
-		
-		return null;
-	}
-
-	/**
-	 * @Description:不维护
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:45:09
-	 */
-	private JSONObject updateHookTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/**
 	 * @Description:更新tips的角度

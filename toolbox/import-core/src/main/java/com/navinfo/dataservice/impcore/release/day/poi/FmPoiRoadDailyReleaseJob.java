@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -64,6 +65,7 @@ import com.navinfo.dataservice.impcore.statusModifier.PoiReleaseDailyLogStatusMo
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 
 import net.sf.json.JSONObject;
@@ -430,12 +432,14 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	}
 	private Map<String,Object> getEarliestFromReleaseTask() throws Exception {
 		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try{
 			Map<String,Object> result= new HashMap<String,Object>();
 			conn = DBConnector.getInstance().getManConnection();
-			Statement sourceStmt = conn.createStatement();
 			String sql = "SELECT TASK_ID,RELEASE_STATUS,TEMP_TAB FROM (select * from RELEASE_TASK ORDER BY CREATE_DATE DESC) WHERE ROWNUM = 1 ";
-			ResultSet rs = sourceStmt.executeQuery(sql);
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
 			while(rs.next()){
 				int task_id=rs.getInt("TASK_ID");
 				String str=rs.getString("TEMP_TAB");
@@ -449,6 +453,10 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

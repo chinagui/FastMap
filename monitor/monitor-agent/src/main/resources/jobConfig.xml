@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobConfig>
+	<job>
+		<name>service定时任务</name>
+		<activity>true</activity>
+		<scanPeriod>0 0/5 * * * ?</scanPeriod>
+		<className>com.navinfo.dataservice.monitor.agent.runjob.ServiceJob</className>
+	</job>
+	<job>
+		<name>tomcat定时任务</name>
+		<activity>true</activity>
+		<scanPeriod>0/30 * * * * ?</scanPeriod>
+		<className>com.navinfo.dataservice.monitor.agent.runjob.TomcatJob</className>
+	</job>
+
+</jobConfig>

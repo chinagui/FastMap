@@ -199,7 +199,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
         log.info("BEGIN  POSTCHECK ");
 
-        this.postCheck();
+        //this.postCheck();
 
         endPostCheckTime = System.currentTimeMillis();
 

@@ -1,18 +1,27 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.web.socket.TextMessage;
+
 import com.navinfo.dataservice.api.man.model.TaskProgress;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.websocket.TaskOther2MediumWebSocketHandler;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 public class TaskProgressOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskProgressOperation.class);
@@ -24,18 +33,95 @@ public class TaskProgressOperation {
 	public static int taskSuccess=2;
 	public static int taskFail=3;
 	
+//	public static void create(Connection conn,TaskProgress bean) throws Exception{
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			String selectSql = "INSERT INTO TASK_PROGRESS P"
+//					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
+//					+ "VALUES"
+//					+ "  ("+bean.getTaskId()+","+bean.getPhase()+", 0, SYSDATE, "+bean.getPhaseId()+")" ;
+//			run.update(conn, selectSql);
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询create TaskProgressOperation，原因为:"+e.getMessage(),e);
+//		}
+//	}
+	
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 */
 	public static void create(Connection conn,TaskProgress bean) throws Exception{
 		try{
+			//持久化
 			QueryRunner run = new QueryRunner();
-			String selectSql = "INSERT INTO TASK_PROGRESS P"
-					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
-					+ "VALUES"
-					+ "  ("+bean.getTaskId()+","+bean.getPhase()+", 0, SYSDATE, "+bean.getPhaseId()+")" ;
-			run.update(conn, selectSql);
+			
+			String createSql = "insert into TASK_PROGRESS ";			
+			List<String> columns = new ArrayList<String>();
+			List<String> placeHolder = new ArrayList<String>();
+			List<Object> values = new ArrayList<Object>();
+			
+			columns.add(" PHASE_ID ");
+			placeHolder.add("TASK_PROGRESS_SEQ.NEXTVAL");
+				
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TASK_ID")){
+				columns.add(" TASK_ID ");
+				placeHolder.add("?");
+				values.add(bean.getTaskId());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PHASE")){
+				columns.add(" PHASE ");
+				placeHolder.add("?");
+				values.add(bean.getPhase());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
+				columns.add(" STATUS ");
+				placeHolder.add("?");
+				values.add(bean.getStatus());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("OPERATOR")){
+				columns.add(" OPERATOR ");
+				placeHolder.add("?");
+				values.add(bean.getOperator());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PARAMETER")){
+				columns.add(" PARAMETER ");
+				placeHolder.add("?");
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, bean.getParameter().toString());
+				values.add(clob);
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CREATE_DATE")){
+				columns.add(" CREATE_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getCreatDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("START_DATE")){
+				columns.add(" START_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getStartDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("END_DATE")){
+				columns.add(" END_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getEndDate());
+			};
+			
+			if(!columns.isEmpty()){
+				String columsStr = "(" + StringUtils.join(columns.toArray(),",") + ")";
+				String placeHolderStr = "(" + StringUtils.join(placeHolder.toArray(),",") + ")";
+				createSql = createSql + columsStr + " values " + placeHolderStr;
+			}
+
+			run.update(conn, 
+					   createSql, 
+					   values.toArray() );
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询create TaskProgressOperation，原因为:"+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	
@@ -186,6 +272,83 @@ public class TaskProgressOperation {
 						progress.setPhase(rs.getInt("phase"));
 						progress.setStatus(rs.getInt("status"));
 						return progress;
+					}
+					return null;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * @Title: updateTaskProgress
+	 * @param conn
+	 * @param bean
+	 * @throws Exception
+	 * 
+	 */
+	public static void updateTaskProgress(Connection conn,TaskProgress bean) throws Exception{
+		try{
+			String baseSql = "update TASK_PROGRESS set ";
+			QueryRunner run = new QueryRunner();
+			
+			String updateSql="";
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TASK_ID")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " TASK_ID= " + bean.getTaskId();
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PHASE")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " PHASE= " + bean.getPhase();
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " STATUS= " + bean.getStatus();
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("OPERATOR")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " OPERATOR= " + bean.getOperator();
+			};
+			Clob clob = null;
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PARAMETER")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, bean.getParameter().toString());
+				
+				updateSql += " PARAMETER=  ?";
+			};
+			updateSql += " where PHASE_ID= " + bean.getPhaseId();
+			
+			log.info("updateSubtask sql:" + baseSql+updateSql);
+			run.update(conn,baseSql+updateSql,clob);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询对应taskPrograss的parameter参数
+	 * @param phaseId
+	 * @return parameter
+	 * @throws Exception 
+	 */
+	public static Clob query(Connection conn,int phaseId) throws Exception {
+		QueryRunner run =null;
+		try{
+			run = new QueryRunner();
+			String selectSql = "SELECT T.PARAMETER"
+					+ "  FROM TASK_PROGRESS T"
+					+ " WHERE T.PHASE_ID = "+phaseId;
+			ResultSetHandler<Clob> rsHandler = new ResultSetHandler<Clob>() {
+				public Clob handle(ResultSet rs) throws SQLException {
+					while(rs.next()) {
+						return rs.getClob("PARAMETER");
 					}
 					return null;
 				}

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.row.job;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,11 +13,13 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -103,6 +106,13 @@ public class PoiRowValidationJob extends AbstractJob {
 			
 			Check check=new Check(conn, operationResult);
 			check.operate(checkCommand);
+			
+			//查询检查结果数量
+			int resultCount = 0;
+			resultCount = getListPoiResultCount(conn,myRequest);
+			
+			this.exeResultMsg=" 有错误: "+resultCount+" 条";
+			log.info("查询poi检查结果数量:" +resultCount);
 			log.info("end PoiRowValidationJob");
 		}catch(Exception e){
 			log.error("PoiRowValidationJob错误", e);
@@ -178,5 +188,69 @@ public class PoiRowValidationJob extends AbstractJob {
 	public String getOperationName() {
 		//return "POI_ROW_VALIDATION";
 		return "POI_ROW_COMMIT";
+	}
+	
+	/**
+	 * @Title: getListPoiResultCount
+	 * @Description: 获取去子任务范围内所有poi 检查结果的总条数
+	 * @param conn
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 *             int
+	 * @throws
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 下午20:30:51
+	 */
+	private int getListPoiResultCount(Connection conn,PoiRowValidationJobRequest myRequest)
+			throws Exception {
+
+		List<Long> pids = myRequest.getPids();
+		int poiResCount = 0;
+		if (pids != null && pids.size() > 0) {
+			try {
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				// 行编有针对删除数据进行的检查，此处要把删除数据也加载出来
+				StringBuilder sql = new StringBuilder(
+						"select count(1) total from ( "
+								+ "select O.PID "
+								+ "from "
+								+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
+								+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
+								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+								+ ") "
+								+ " union all "
+								+ "select O.PID "
+								+ "from "
+								+ "ck_exception c , CK_RESULT_OBJECT O "
+								+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
+								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+								+ " )  " + " )  b ");
+				
+				log.info("sql: " +sql.toString());
+				QueryRunner run = new QueryRunner();
+				poiResCount = run.query(conn, sql.toString(),
+						new ResultSetHandler<Integer>() {
+
+							@Override
+							public Integer handle(ResultSet rs)
+									throws SQLException {
+								Integer resCount = 0;
+								if (rs.next()) {
+									resCount = rs.getInt("total");
+								}
+								return resCount;
+							}
+						},clob,clob);
+
+			} catch (Exception e) {
+				log.error("行编获取检查数据报错", e);
+				// DbUtils.rollbackAndCloseQuietly(conn);
+				throw new Exception(e);
+			}
+		}
+		log.info("poiResCount: " + poiResCount);
+		return poiResCount;
 	}
 }

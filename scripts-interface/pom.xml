@@ -84,7 +84,7 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		
-<dependency>
+		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-statics</artifactId>
 		</dependency>

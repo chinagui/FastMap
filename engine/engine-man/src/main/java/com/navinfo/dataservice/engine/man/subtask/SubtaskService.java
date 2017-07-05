@@ -1662,29 +1662,93 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " select t.id,t.geometry FROM subtask_refer T "
-					+ "WHERE SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
+					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			if (json.getInt("blockId")!=0) {
+				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
+					List<HashMap<String,Integer>> countList = new ArrayList<HashMap<String,Integer>>();
+					int tempId = 0;
+					int count0=0;//status:0//0没有对应子任务（subtask表refer_id），或者对应的子任务都处于关闭状态
+					int count1=0;//1存在开启状态的子任务
+					int count2=0;//2不存在开启状态子任务，但存在草稿状态子任务
+					HashMap<String,Integer> countMap = null;
 					while(rs.next()){
 						try {
+							
 							HashMap<String,Object> map = new HashMap<String,Object>();
-							map.put("id", rs.getInt("ID"));							
-							try {
-								STRUCT struct=(STRUCT)rs.getObject("geometry");
-								String clobStr = GeoTranslator.struct2Wkt(struct);
-								map.put("geometry", Geojson.wkt2Geojson(clobStr));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
+							int id = rs.getInt("ID");
+							int status = rs.getInt("status");
+							
+							if (tempId!=id) {
+								map.put("id",id);
+								try {
+									STRUCT struct=(STRUCT)rs.getObject("geometry");
+									String clobStr = GeoTranslator.struct2Wkt(struct);
+									map.put("geometry", Geojson.wkt2Geojson(clobStr));
+								} catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								
+								tempId = id;
+								countMap = new HashMap<>();
+								countMap.put("id", id);
+								count0=0;
+								count1=0;
+								count2=0;
+								countList.add(countMap);
 							}
-							list.add(map);
+							
+							if(status==0){
+								count0++;
+							}else if(status==1){
+								count1++;
+							}else if(status==2){
+								count2++;
+							}
+							
+							countMap.put("count0", count0);
+							countMap.put("count1", count1);
+							countMap.put("count2", count2);
+							
+							if(null!=map&&!map.isEmpty()){
+								list.add(map);
+							}
+							
+							
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}						
 					}
+					
+					
+					for (HashMap<String, Object> map : list) {
+						for (HashMap<String, Integer> countIdMap : countList) {
+							if((int)map.get("id")==(int)countIdMap.get("id")){
+								int countId0 = countIdMap.get("count0");
+								int countId1 = countIdMap.get("count1");
+								int countId2 = countIdMap.get("count2");
+								if(countId0>0&&countId1==0&&countId2==0){
+									map.put("status", 0);
+									break;
+								}
+								if(countId1>0){
+									map.put("status", 1);
+									break;
+								}
+								if(countId1==0&&countId2>0){
+									map.put("status", 2);
+									break;
+								}
+							}
+						}
+					}
+					
 					return list;
 				}	    		
 	    	}		;
@@ -3104,6 +3168,7 @@ public class SubtaskService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT DISTINCT s.subtask_id,s.name FROM SUBTASK S WHERE S.TASK_ID ="+taskId);
 			sb.append(" AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1");
+			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
 
 			String selectSql= sb.toString();
 			log.info("unPlanQualitylist sql :" + selectSql);
@@ -3211,4 +3276,94 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 创建质检圈
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void qualityCreate(JSONObject dataJson)  throws Exception {
+		Integer subtaskId = dataJson.getInt("subtaskId");
+		Geometry geometry = GeoTranslator.wkt2Geometry(dataJson.getString("geometry"));
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SR.GEOMETRY FROM SUBTASK S, SUBTASK_REFER SR WHERE S.REFER_ID = SR.ID AND S.SUBTASK_ID = ");
+			sb.append(subtaskId);
+
+			String selectSql = sb.toString();
+			log.info("查询不规则子任务圈 sql :" + selectSql);
+
+			Geometry geometryRefer = run.query(conn, selectSql, geometryHandler);
+			if(geometryRefer != null){
+				Geometry newGeometry = geometry.intersection(geometryRefer);
+				String createSql = "INSERT INTO SUBTASK_QUALITY (QUALITY_ID, SUBTASK_ID, GEOMETRY) VALUES (Subtask_quality_SEQ.Nextval,?,?)";
+				run.update(conn, createSql, subtaskId, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)));
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建质检圈失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 修改质检圈
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void qualityUpdate(JSONObject dataJson)  throws Exception {
+		Integer qualityId = dataJson.getInt("qualityId");
+		Geometry geometry = GeoTranslator.wkt2Geometry(dataJson.getString("geometry"));
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SR.GEOMETRY FROM SUBTASK S, SUBTASK_REFER SR WHERE S.REFER_ID = SR.ID AND S.SUBTASK_ID = ");
+			sb.append("(SELECT SUBTASK_ID FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append(qualityId);
+			sb.append(")");
+			
+			String selectSql = sb.toString();
+			log.info("查询不规则子任务圈 sql :" + selectSql);
+			
+			Geometry geometryQuality = run.query(conn, selectSql, geometryHandler);
+			if(geometryQuality != null){
+				Geometry newGeometry = geometry.intersection(geometryQuality);
+				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
+				run.update(conn, updateSql, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)), qualityId);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("修改质检圈失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 创建、修改质检圈的结果集处理器
+	 */
+	ResultSetHandler<Geometry> geometryHandler = new ResultSetHandler<Geometry>() {
+		public Geometry handle(ResultSet rs) throws SQLException {
+			while (rs.next()) {
+				try {
+					STRUCT struct=(STRUCT)rs.getObject("geometry");
+					String clobStr = GeoTranslator.struct2Wkt(struct);
+					return GeoTranslator.wkt2Geometry(clobStr);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+			return null;
+		}
+	};
 }

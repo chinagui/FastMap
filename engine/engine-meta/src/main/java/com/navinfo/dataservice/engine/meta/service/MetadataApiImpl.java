@@ -974,5 +974,17 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<Integer> queryImportantPid() throws SQLException {
 		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
 	}
+	
+	/**
+	 * 根据多源poi置信度范围检索对应pid
+	 * @param 范围最小值
+	 * @param 范围最大值
+	 * @return List<pid>
+	 * 
+	 * */
+	@Override
+	public List<Integer> queryReliabilityPid(int minNumber, int maxNumber) throws SQLException {
+		return ScQueryReliabilityPid.getInstance().ScQueryReliabilityPid(minNumber, maxNumber);
+	}
 
 }

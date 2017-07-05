@@ -3423,7 +3423,7 @@ public class TaskService {
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
 				 + " and pes.status ！= 0"
-				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0 and pes.quick_task_id=0";
 		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
 		return run.update(dailyConn, updateSql);
@@ -3573,31 +3573,31 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE IN (1, 2)"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND GROUP_ID != 0"
+			String selectSql = "SELECT t.TASK_ID"
+					+ "  FROM TASK t"
+					+ " WHERE t.PROGRAM_ID = "+programId
+					+ "   AND t.TYPE IN (1, 2)"
+					+ "   AND t.STATUS = 2"
+					+ "   AND t.LATEST = 1"
+					+ "   AND t.GROUP_ID != 0"
 					+ " UNION ALL"
-					+ " SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE = 0"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND (WORK_KIND LIKE '1|%' OR WORK_KIND LIKE '0|1%')"
-					+ "   AND GROUP_ID != 0"
+					+ " SELECT t.TASK_ID"
+					+ "  FROM t.TASK"
+					+ " WHERE t.PROGRAM_ID = "+programId
+					+ "   AND t.TYPE = 0"
+					+ "   AND t.STATUS = 2"
+					+ "   AND t.LATEST = 1"
+					+ "   AND (t.WORK_KIND LIKE '1|%' OR t.WORK_KIND LIKE '0|1%')"
+					+ "   AND t.GROUP_ID != 0"
 					+ " UNION ALL"
-					+ " SELECT TASK_ID"
-					+ "  FROM TASK"
-					+ " WHERE PROGRAM_ID = "+programId
-					+ "   AND TYPE = 0"
-					+ "   AND STATUS = 2"
-					+ "   AND LATEST = 1"
-					+ "   AND WORK_KIND LIKE '0|0%'"
-					+ "   AND GROUP_ID = 0";
+					+ " SELECT t.TASK_ID"
+					+ "  FROM t.TASK"
+					+ " WHERE t.PROGRAM_ID = "+programId
+					+ "   AND t.TYPE = 0"
+					+ "   AND t.STATUS = 2"
+					+ "   AND t.LATEST = 1"
+					+ "   AND t.WORK_KIND LIKE '0|0%'"
+					+ "   AND t.GROUP_ID = 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
 				@Override
@@ -3612,6 +3612,8 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	

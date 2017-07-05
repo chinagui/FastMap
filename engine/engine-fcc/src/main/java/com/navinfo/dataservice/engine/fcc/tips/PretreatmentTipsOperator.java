@@ -1753,7 +1753,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		for (JSONObject json : snapotList) {
 
 			//1.维护关联的测线
-			JSONObject result = null;
+			JSONObject result = json;
 			
 			//size>1说明跨图幅打断了，进行打断维护
 			if(linesAfterCut.size()>1){
@@ -1763,6 +1763,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			//2.维护角度和引导坐标 (修改了坐标的才维护)
 			if(hasModifyGlocation){
+				
 				result=updateGuiderAndAgl(result,linesAfterCut); //若果是跨图幅打断linesAfterCut是多条~~。如果跨图幅没打断 linesAfterCut是一条。就是测线本身	
 			}
 			
@@ -1841,7 +1842,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 JSONObject geometry=new JSONObject(); //更新geometry
                 geometry.put("g_location", g_location);
                 geometry.put("g_guide", g_guide);
-                put.addColumn("geometry".getBytes(), "geometry".getBytes(), deep.toString()
+                put.addColumn("data".getBytes(), "geometry".getBytes(), geometry.toString()
                         .getBytes());
                 puts.add(put);
 

@@ -62,6 +62,7 @@ public class Process extends AbstractProcess<Command> {
 		if (nodePid == 0) {
 			return true;
 		}
+		
 		for (int pid : this.getCommand().getLinkPids()) {
 			RdLink link = (RdLink) selector.loadById(pid, false);
 			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {

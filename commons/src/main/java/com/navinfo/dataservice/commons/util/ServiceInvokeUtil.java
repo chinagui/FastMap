@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.log4j.Logger;
 
@@ -225,6 +226,61 @@ public class ServiceInvokeUtil
             else
             {
                 json = "{success : false,msg:'调用服务失败！'}";
+            }
+        } catch (IOException e)
+        {
+            //log.error("调用服务失败",e);
+            throw new Exception("调用服务失败，服务为" + service_url,e.getCause());
+        } finally
+        {
+            if(serviceGet != null)
+            {
+                serviceGet.releaseConnection();
+            }
+        }
+        return json;
+    }
+    
+    public static String invokeByGet(String service_url,Map<String,String> parMap,int responseTime) throws Exception
+    {
+        GetMethod serviceGet = null;
+        String json = null;
+        try
+        {
+            serviceGet = new GetMethod(service_url);
+            serviceGet.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            //判断是否有参数
+            if(parMap!=null){
+            	NameValuePair[] params=new NameValuePair[parMap.size()];
+            	int i=0;
+                for(String parName : parMap.keySet())
+                {
+                    if(parMap.get(parName) != null)
+                    {
+                    	NameValuePair pair=new NameValuePair();
+                    	pair.setName(parName);
+                    	pair.setValue(parMap.get(parName));
+                    	params[i]=pair;
+                    	i++;
+                    }
+                }
+                serviceGet.setQueryString(params);
+            }
+            
+            HttpClient client = new HttpClient();
+            //设置时间
+            HttpClientParams param = new HttpClientParams();
+            param.setConnectionManagerTimeout(responseTime);
+            param.setSoTimeout(responseTime);
+            client.setParams(param);
+            int status = client.executeMethod(serviceGet);
+            if (status == HttpStatus.SC_OK)
+            {
+                json = serviceGet.getResponseBodyAsString();
+            }
+            else
+            {
+            	throw new Exception("调用服务失败，服务为" + service_url);
             }
         } catch (IOException e)
         {

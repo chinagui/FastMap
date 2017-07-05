@@ -734,6 +734,14 @@ public class SysMsgService {
 				metric = "tomcat内存使用率";
 			} else if ("net.port.listen".equals(metricPre)) {
 				metric = "服务器启动状态";
+			} else if ("cpu.busy".equals(metricPre)) {
+				metric = "CPU使用率";
+			}else if ("df.bytes.used.percent".equals(metricPre)) {
+				metric = "磁盘使用率";
+			}else if ("load.1min".equals(metricPre)) {
+				metric = "系统负载";
+			}else if ("mem.memused.percent".equals(metricPre)) {
+				metric = "内存使用率";
 			} else {
 				metric = metricPre;
 			}

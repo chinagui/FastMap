@@ -3580,7 +3580,7 @@ public class TaskService {
 					+ "   AND t.GROUP_ID != 0"
 					+ " UNION ALL"
 					+ " SELECT t.TASK_ID"
-					+ "  FROM t.TASK"
+					+ "  FROM TASK t"
 					+ " WHERE t.PROGRAM_ID = "+programId
 					+ "   AND t.TYPE = 0"
 					+ "   AND t.STATUS = 2"
@@ -3589,7 +3589,7 @@ public class TaskService {
 					+ "   AND t.GROUP_ID != 0"
 					+ " UNION ALL"
 					+ " SELECT t.TASK_ID"
-					+ "  FROM t.TASK"
+					+ "  FROM TASK t"
 					+ " WHERE t.PROGRAM_ID = "+programId
 					+ "   AND t.TYPE = 0"
 					+ "   AND t.STATUS = 2"

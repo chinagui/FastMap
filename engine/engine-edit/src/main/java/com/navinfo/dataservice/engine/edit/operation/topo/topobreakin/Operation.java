@@ -2,10 +2,15 @@ package com.navinfo.dataservice.engine.edit.operation.topo.topobreakin;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Command;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,10 +19,12 @@ public class Operation implements IOperation {
 
 	private Command command;
 	private Connection conn;
+	private RdNodeSelector nodeSelector;
 
 	public Operation(Command command, Connection conn) {
 		this.command = command;
 		this.conn = conn;
+		nodeSelector = new RdNodeSelector(conn);
 	}
 
 	@Override
@@ -48,7 +55,7 @@ public class Operation implements IOperation {
 	 * @param linkPid
 	 * @return
 	 */
-	private JSONObject getBreaksPara(int linkPid) {
+	private JSONObject getBreaksPara(int linkPid) throws Exception{
 		JSONObject breakJson = new JSONObject();
 		breakJson.put("objId", linkPid);
 		breakJson.put("dbId", this.command.getDbId());
@@ -61,9 +68,13 @@ public class Operation implements IOperation {
 			data.put("longitude", this.command.getBreakPoint().getX());
 			data.put("latitude", this.command.getBreakPoint().getY());
 
+			RdNode rdNode = (RdNode)nodeSelector.loadById(this.command.getBreakNodePid(), false);
+			Geometry nodeGeo = GeoTranslator.transform(rdNode.getGeometry(), 0.00001, 5);
+			Coordinate coor = nodeGeo.getCoordinate();
+			
 			JSONObject breakObj = new JSONObject();
-			breakObj.put("longitude", (double) Math.round(this.command.getBreakPoint().getX() * 100000) / 100000);
-			breakObj.put("latitude", (double) Math.round(this.command.getBreakPoint().getY() * 100000) / 100000);
+			breakObj.put("longitude", coor.x);
+			breakObj.put("latitude", coor.y);
 			breakObj.put("breakNodePid", this.command.getBreakNodePid());
 			breakObj.put("operate", OperType.TOPOBREAK);
 			breakNodes.add(breakObj);

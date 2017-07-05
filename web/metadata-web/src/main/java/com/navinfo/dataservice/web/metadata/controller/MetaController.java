@@ -192,7 +192,53 @@ public class MetaController extends BaseController {
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
-    
+    /**
+     * 转语音接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/pinyin/voiceConvert")
+    public ModelAndView convertVoice(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
+            String phonetic = null;
+            if(jsonReq.containsKey("phonetic")){
+            	phonetic = jsonReq.getString("phonetic");
+            }
+            PinyinConverter py = new PinyinConverter();
+            
+            String result = py.voiceConvert(word, phonetic, adminId, null);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("voicefile", result);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转语音失败");
+            }
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
     /**
      * @Title: autoConvertPinyin
      * @Description: 自动生成语音及拼音

@@ -1158,65 +1158,7 @@ public class NiValExceptionSelector {
 		}
 	}
 
-	/**
-	 * @Title: getListPoiResultCount
-	 * @Description: 获取去子任务范围内所有poi 检查结果的总条数
-	 * @param conn
-	 * @param subtaskId
-	 * @return
-	 * @throws Exception
-	 *             int
-	 * @throws
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年6月23日 下午4:30:51
-	 */
-	private int getListPoiResultCount(Connection conn, int subtaskId)
-			throws Exception {
-
-		List<Integer> pids = getCheckPidList(conn, subtaskId);
-		int poiResCount = 0;
-		if (pids != null && pids.size() > 0) {
-			try {
-				// 行编有针对删除数据进行的检查，此处要把删除数据也加载出来
-				StringBuilder sql = new StringBuilder(
-						"select count(1) total from ( "
-								+ "select O.PID "
-								+ "from "
-								+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
-								+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-								+ ") "
-								+ " union all "
-								+ "select O.PID "
-								+ "from "
-								+ "ck_exception c , CK_RESULT_OBJECT O "
-								+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
-								+ " )  " + " )  b ");
-				QueryRunner run = new QueryRunner();
-				poiResCount = run.query(conn, sql.toString(),
-						new ResultSetHandler<Integer>() {
-
-							@Override
-							public Integer handle(ResultSet rs)
-									throws SQLException {
-								Integer resCount = 0;
-								if (rs.next()) {
-									resCount = rs.getInt("total");
-								}
-								return resCount;
-							}
-						});
-
-			} catch (Exception e) {
-				log.error("行编获取检查数据报错", e);
-				// DbUtils.rollbackAndCloseQuietly(conn);
-				throw new Exception(e);
-			}
-		}
-		log.info("poiResCount: " + poiResCount);
-		return poiResCount;
-	}
+	
 
 	/**
 	 * @Title: getCheckPidList
@@ -1823,4 +1765,5 @@ public class NiValExceptionSelector {
 			return jobRuleObjs;
 		}
 	}
+	
 }

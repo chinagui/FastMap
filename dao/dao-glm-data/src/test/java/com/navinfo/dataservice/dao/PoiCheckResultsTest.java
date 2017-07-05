@@ -1,14 +1,23 @@
 package com.navinfo.dataservice.dao;
 
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.navicommons.database.Page;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -66,7 +75,7 @@ public class PoiCheckResultsTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void checkListPoiResults(){
 		Connection conn =null;
 		try{
@@ -95,9 +104,89 @@ public class PoiCheckResultsTest {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
+	@Test
+	public void getListPoiResultsCount(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+
+			NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':306,'dbId':13,'sortby':'-ruleid'}");	
+			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
+			
+				//List<JSONObject> page =null;
+				try {
+//					int count = a.getListPoiResultCount(conn);
+//					System.out.println(count);
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	/*public int getListPoiResultCount(Connection conn)
+			throws Exception {
+
+		List<Long> pids = new ArrayList<Long>();
+			pids.add((long) 401000129);
+			pids.add((long) 406000007);
+			pids.add((long) 420000008);
+		int poiResCount = 0;
+		if (pids != null && pids.size() > 0) {
+			try {
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				// 行编有针对删除数据进行的检查，此处要把删除数据也加载出来
+				StringBuilder sql = new StringBuilder(
+						"select count(1) total from ( "
+								+ "select O.PID "
+								+ "from "
+								+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
+								+ "WHERE  (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
+								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+								+ ") "
+								+ " union all "
+								+ "select O.PID "
+								+ "from "
+								+ "ck_exception c , CK_RESULT_OBJECT O "
+								+ "  WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
+								+ " and o.pid in (select column_value from table(clob_to_table(?)) "
+								+ " )  " + " )  b ");
+				
+				log.info("sql: " +sql.toString());
+				QueryRunner run = new QueryRunner();
+				poiResCount = run.query(conn, sql.toString(),
+						new ResultSetHandler<Integer>() {
+
+							@Override
+							public Integer handle(ResultSet rs)
+									throws SQLException {
+								Integer resCount = 0;
+								if (rs.next()) {
+									resCount = rs.getInt("total");
+								}
+								return resCount;
+							}
+						},clob,clob);
+
+			} catch (Exception e) {
+				log.error("行编获取检查数据报错", e);
+				// DbUtils.rollbackAndCloseQuietly(conn);
+				throw new Exception(e);
+			}
+		}
+		log.info("poiResCount: " + poiResCount);
+		return poiResCount;
+	}*/
 	public static void main(String[] args) {
-		int pid = 176;
+		/*int pid = 176;
 		String pids = "170,176";
 		String[] pidsArr = pids.split(",");
 		
@@ -113,7 +202,27 @@ public class PoiCheckResultsTest {
 					
 				}
 			}
+		}*/
+		com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
+		String sortby = "ruleid";
+		String orderSql = "";
+		if (sortby.length()>0) {
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				orderSql+=" ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				orderSql+="  ";
+				orderSql+=sortbyName;
+				orderSql+=" DESC";
+			} else {
+				orderSql+=" ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				orderSql+="  ";
+				orderSql+=sortbyName;
+			}
 		}
+		System.out.println(orderSql);
+		
 	}
 
 }

@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,7 +15,7 @@ import net.sf.json.JSONObject;
  * @ClassName: TipsRelateLineUpdate.java
  * @author y
  * @date 2017-4-13 上午9:54:08
- * @Description: TODO
+ * @Description: 测线跨图幅打断、测线打断。维护测线上关联要素的 ：关联id、显示坐标（起终点和范围线需要维护）
  * 
  */
 public class TipsRelateLineUpdate {
@@ -648,7 +649,13 @@ public class TipsRelateLineUpdate {
 		JSONArray f_array = deep.getJSONArray("f_array");
 
 		JSONArray f_array_new = new JSONArray(); // 一个新的f_array数组
+		
+		int index=-1; //旧测线在数组中的位置，用户更新g_location(范围线使用)
+		
+		int i=-1;
 		for (Object object : f_array) {
+			
+			i++;
 
 			JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
 
@@ -663,10 +670,14 @@ public class TipsRelateLineUpdate {
             			 String idNew=json.getString("id");
             			 JSONObject newFInfo =JSONObject.fromObject(fInfo);//创建一个新的
             			 newFInfo.put("id", idNew);
-            			 newFInfo.put("geo", newGeo);
+            			 //只有立交有geo
+            			 if(newFInfo.containsKey("geo")){
+            				 newFInfo.put("geo", newGeo); 
+            			 }
             			 f_array_new.add(newFInfo); // 添加新对象到新数组
             		}
                     hasMeasuringLine = true;
+                    index=i;
                 }
                 //如果关联的不是当前测线，则将原来的也添加到新数组
                 else{
@@ -676,20 +687,23 @@ public class TipsRelateLineUpdate {
             }
 
 		}
-
+		
 		// 如果有测线，则修改，并返回
 		if (hasMeasuringLine) {
 
 			deep.put("f_array", f_array_new);// 新的
 
-			json.put("deep", deep);
-
+			json.put("deep", deep); //1.修改deep
+			//int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines
+			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
+			
 			return json;
 		}
 
 		return null;
 	}
 
+	
 	/**
 	 * @Description:种别 f.id
 	 * @author: y

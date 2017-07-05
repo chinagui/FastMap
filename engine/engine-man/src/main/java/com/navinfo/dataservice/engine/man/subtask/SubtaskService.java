@@ -3276,4 +3276,94 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 创建质检圈
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void qualityCreate(JSONObject dataJson)  throws Exception {
+		Integer subtaskId = dataJson.getInt("subtaskId");
+		Geometry geometry = GeoTranslator.wkt2Geometry(dataJson.getString("geometry"));
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SR.GEOMETRY FROM SUBTASK S, SUBTASK_REFER SR WHERE S.REFER_ID = SR.ID AND S.SUBTASK_ID = ");
+			sb.append(subtaskId);
+
+			String selectSql = sb.toString();
+			log.info("查询不规则子任务圈 sql :" + selectSql);
+
+			Geometry geometryRefer = run.query(conn, selectSql, geometryHandler);
+			if(geometryRefer != null){
+				Geometry newGeometry = geometry.intersection(geometryRefer);
+				String createSql = "INSERT INTO SUBTASK_QUALITY (QUALITY_ID, SUBTASK_ID, GEOMETRY) VALUES (Subtask_quality_SEQ.Nextval,?,?)";
+				run.update(conn, createSql, subtaskId, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)));
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建质检圈失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 修改质检圈
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void qualityUpdate(JSONObject dataJson)  throws Exception {
+		Integer qualityId = dataJson.getInt("qualityId");
+		Geometry geometry = GeoTranslator.wkt2Geometry(dataJson.getString("geometry"));
+		
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SR.GEOMETRY FROM SUBTASK S, SUBTASK_REFER SR WHERE S.REFER_ID = SR.ID AND S.SUBTASK_ID = ");
+			sb.append("(SELECT SUBTASK_ID FROM SUBTASK_QUALITY WHERE QUALITY_ID = ");
+			sb.append(qualityId);
+			sb.append(")");
+			
+			String selectSql = sb.toString();
+			log.info("查询不规则子任务圈 sql :" + selectSql);
+			
+			Geometry geometryQuality = run.query(conn, selectSql, geometryHandler);
+			if(geometryQuality != null){
+				Geometry newGeometry = geometry.intersection(geometryQuality);
+				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
+				run.update(conn, updateSql, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)), qualityId);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("修改质检圈失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 创建、修改质检圈的结果集处理器
+	 */
+	ResultSetHandler<Geometry> geometryHandler = new ResultSetHandler<Geometry>() {
+		public Geometry handle(ResultSet rs) throws SQLException {
+			while (rs.next()) {
+				try {
+					STRUCT struct=(STRUCT)rs.getObject("geometry");
+					String clobStr = GeoTranslator.struct2Wkt(struct);
+					return GeoTranslator.wkt2Geometry(clobStr);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+			return null;
+		}
+	};
 }

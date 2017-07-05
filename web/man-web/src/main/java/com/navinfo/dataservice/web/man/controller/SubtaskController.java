@@ -706,4 +706,56 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/**
+	 * 创建质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityCreate")
+	public ModelAndView qualityCreate(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			SubtaskService.getInstance().qualityCreate(dataJson);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("创建质检圈失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 修改质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityUpdate")
+	public ModelAndView qualityUpdate(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			SubtaskService.getInstance().qualityUpdate(dataJson);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("修改质检圈失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

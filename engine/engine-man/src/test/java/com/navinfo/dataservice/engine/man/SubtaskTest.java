@@ -186,4 +186,34 @@ public class SubtaskTest extends InitApplication{
 		SubtaskService service = SubtaskService.getInstance();
 		System.out.println(service.queryListReferByWkt(dataJson)); 
 	}
+		
+	//创建质检圈(测试)
+	@Test
+	public void testQualityCreate() throws Exception {
+		String parameter = "{\"subtaskId\":172,\"geometry\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		service.qualityCreate(dataJson);
+	}
+	
+	//修改质检圈(测试)
+	@Test
+	public void testQualityUpdate() throws Exception {
+		String parameter = "{\"qualityId\":27,\"geometry\":\"POLYGON ((80.83422 20.51848, 120.4135 20.51848, 120.4135 50.31498, 80.83422 50.31498, 80.83422 20.51848))\"}";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		SubtaskService service = SubtaskService.getInstance();
+		service.qualityUpdate(dataJson);
+	}
 }

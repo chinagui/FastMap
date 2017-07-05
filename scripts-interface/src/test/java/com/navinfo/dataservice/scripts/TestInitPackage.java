@@ -231,8 +231,8 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		JobScriptsInterface.initContext();
 		
 		JSONObject request = new JSONObject();
-		request.put("sourceDbId", 122);
-		request.put("targetDbId", 123);
+		request.put("sourceDbId", 382);
+		request.put("targetDbId", 383);
 		ImportPoiToRegionDb.execute(request);
 
 		System.out.println("Over.");

@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -18,9 +20,12 @@ import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Check {
 	private Connection conn;
@@ -48,15 +53,22 @@ public class Check {
 	 * @throws Exception
 	 */
 	public void checkHasGSCinLine(Command command) throws Exception {
-		RdGscLinkSelector selector = new RdGscLinkSelector(conn);
+		RdGscSelector selector = new RdGscSelector(conn);
 
 		for (int linkPid : command.getLinkPids()) {
-			List<RdGscLink> gscLink = selector.loadByLinkId(linkPid, false);
-			if (gscLink.size() == 0) {
+			List<RdGsc> gsces = selector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", false);
+			if (gsces.size() == 0) {
 				continue;
 			}
 
-			throw new Exception("选中的打断点处存在立交关系，请重新选择打断位置！");
+			for (RdGsc gsc : gsces) {
+				Geometry geo = GeoTranslator.transform(gsc.getGeometry(), 0.00001, 5);
+				Coordinate coor = geo.getCoordinate();
+				if (GeoTranslator.isPointEquals(coor.x, coor.y, command.getBreakPoint().getX(),
+						command.getBreakPoint().getY()) == true) {
+					throw new Exception("选中的打断点处存在立交关系，请重新选择打断位置！");
+				}
+			} // for
 		} // for
 	}
 
@@ -155,10 +167,13 @@ public class Check {
 	 */
 	public void CheckTopoBreakHasSameSEnode(List<IRow> noNeedBreakLinks, List<IRow> insertObjs) throws Exception {
 		List<RdLink> breakLinks = new ArrayList<>();
-		if (noNeedBreakLinks.size() != 0) {
-			insertObjs.addAll(noNeedBreakLinks);
-		}
 
+		for (IRow row : noNeedBreakLinks) {
+			if (row.objType() != ObjType.RDLINK) {
+				continue;
+			}
+			breakLinks.add((RdLink) row);
+		}
 		for (IRow row : insertObjs) {
 			if (row.objType() != ObjType.RDLINK) {
 				continue;

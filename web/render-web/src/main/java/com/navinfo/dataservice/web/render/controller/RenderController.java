@@ -4,22 +4,17 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
-
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -76,7 +71,6 @@ public class RenderController extends BaseController {
 
 				List<ObjType> tileTypes = new ArrayList<ObjType>();
 
-				List<ObjType> gdbTypes = new ArrayList<ObjType>();
 
 				for (ObjType t : types) {
 					if (t == ObjType.RDLINK || t == ObjType.ADLINK
@@ -96,10 +90,27 @@ public class RenderController extends BaseController {
 				}
 
 			} else {
-				SearchProcess p = new SearchProcess();
-				p.setArray(array);
-				p.setDbId(dbId);
-				data = p.searchDataByTileWithGap(types, x, y, z, gap);
+				if(jsonReq.containsKey("platform") && jsonReq.getString("platform") != null 
+						&& jsonReq.getString("platform").equals("dataPlan")){
+					int taskId = jsonReq.getInt("taskId");
+					
+					//当 大于等于 17 级时  且 含platform = dataPlan
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+
+					SearchProcess p = new SearchProcess();
+					p.setArray(array);
+					p.setDbId(dbId);
+					data = p.searchDataByTileWithGap(types, x, y, z, gap, taskId);
+					
+				}else{
+					SearchProcess p = new SearchProcess();
+					p.setArray(array);
+					p.setDbId(dbId);
+					data = p.searchDataByTileWithGap(types, x, y, z, gap);
+
+				}
+				
+				
 
 			}
 			response.getWriter().println(

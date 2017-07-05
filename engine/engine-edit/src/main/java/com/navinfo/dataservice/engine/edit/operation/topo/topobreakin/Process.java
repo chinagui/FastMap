@@ -62,6 +62,7 @@ public class Process extends AbstractProcess<Command> {
 		if (nodePid == 0) {
 			return true;
 		}
+		
 		for (int pid : this.getCommand().getLinkPids()) {
 			RdLink link = (RdLink) selector.loadById(pid, false);
 			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
@@ -74,31 +75,6 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setLinkPids(breakLinks);
 		this.getCommand().setNoNeedBreakLinks(noNeedBreakLinks);
 		return true;
-	}
-
-	public String innerRun() throws Exception {
-		String msg;
-		try {
-			this.prepareData();
-
-			IOperation operation = new Operation(this.getCommand(), this.getConn());
-
-			msg = operation.run(this.getResult());
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-		} catch (Exception e) {
-
-			this.getConn().rollback();
-
-			throw e;
-		}
-
-		return msg;
 	}
 	
 	@Override

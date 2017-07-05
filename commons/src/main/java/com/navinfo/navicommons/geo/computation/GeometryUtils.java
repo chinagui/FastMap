@@ -7,7 +7,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import net.sf.json.JSONObject;
 import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -953,7 +952,7 @@ public class GeometryUtils {
 
     public static void main(String[] args) throws Exception {
 
-//        WKTReader r = new WKTReader();
+        WKTReader r = new WKTReader();
 //
 //        String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162,116.05578 39.87162, 116.05567 39.87190)";
 //
@@ -981,7 +980,21 @@ public class GeometryUtils {
         //116.3907, 39.9985
         //17.00630000000001
         //116.3907, 39.998470063
-    	
-    	System.out.println(getDistance(23,112.00001,23,112.00002));
+        String mlsStr = "MULTILINESTRING ((106.507989215851 33.591582661438, 106.507624435425 33.5915182884216, 106.507538604736 33.5913251693726, 106.507238197327 33.5911964233398, 106.50706653595 33.5909818466187, 106.506615924835 33.5908745582581, 106.506615924835 33.5908745582581))";
+        Geometry geo_mls = r.read(mlsStr);
+        
+        if(geo_mls instanceof MultiLineString){
+        	LineString[] lineStrings = new LineString[geo_mls.getNumGeometries()];	
+        	for (int k = 0; k < geo_mls.getNumGeometries(); k++) {
+    			LineString ls = (LineString) geo_mls.getGeometryN(k);
+
+    			System.out.println(ls);
+    			
+    		}
+        	
+        }
+        
+//    	com.vividsolutions.jts.geom.MultiLineString mls =new  MultiLineString(lineStrings, factory)
+//    	System.out.println(getDistance(23,112.00001,23,112.00002));
     }
 }

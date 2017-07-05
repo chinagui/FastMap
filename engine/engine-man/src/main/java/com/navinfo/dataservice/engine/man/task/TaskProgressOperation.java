@@ -333,9 +333,9 @@ public class TaskProgressOperation {
 	}
 	
 	/**
-	 * 测试用
+	 * 查询对应taskPrograss的parameter参数
 	 * @param phaseId
-	 * @return
+	 * @return parameter
 	 * @throws Exception 
 	 */
 	public static Clob query(Connection conn,int phaseId) throws Exception {

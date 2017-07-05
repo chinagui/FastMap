@@ -4078,6 +4078,7 @@ public class TaskService {
 		 *  根据条件规划或者范围规划对数据修改规划状态
 		 *  应用场景：独立工具--外业规划--数据规划
 		 * @param dataJson
+		 * @parame userId
 		 * @throws Exception
 		 * 
 		 * */
@@ -4134,9 +4135,10 @@ public class TaskService {
 		
 		/**
 		 * 范围规划，根据wkt范围处理范围内的数据作业状态
-		 * @param dataPlanStatus  作业状态
+		 * @param isPlanStatus  作业状态
 		 * @param dataType 1 poi 2road 3一体化
 		 * @param wkt  范围
+		 * @parame taskId
 		 * @throws Exception 
 		 * 
 		 * */
@@ -4182,8 +4184,8 @@ public class TaskService {
 		/**
 		 * 条件规划：处理数据
 		 * 不满足选中条件的数据，为不需要作业；满足条件的数据，为需要作业
-		 * @param JSONObject
-		 * @param int
+		 * @param JSONObject condition
+		 * @param int dataType
 		 * @return Map<String, Object>
 		 * @throws Exception
 		 * 
@@ -4260,8 +4262,10 @@ public class TaskService {
 		
 		/**
 		 * 根据是否taskprograss表中有数据保存数据
-		 * @param boolean
+		 * @param TaskProgress
 		 * @param Connection
+		 * @param JSONObject
+		 * @param long userId
 		 * @throws Exception
 		 * 
 		 * */
@@ -4297,6 +4301,8 @@ public class TaskService {
 		/**
 		 * 条件规划：更新不满足条件规划的数据状态为不需要作业
 		 * @param Connection
+		 * @param int dataType
+		 * @param int taskId
 		 * @throws Exception 
 		 * 
 		 * */
@@ -4318,7 +4324,9 @@ public class TaskService {
 		 * 条件规划：跟据条件保存数据到dataPlan表中
 		 * 不满足选中条件的数据，为不需要作业；满足条件的数据，为需要作业
 		 * @param Connection
-		 * @param List<Integer>
+		 * @param Map<String, Object>
+		 * @param int dataType
+		 * @parame int taskId
 		 * 
 		 * */
 		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType, int taskId) throws Exception{
@@ -4407,7 +4415,8 @@ public class TaskService {
 		/**
 		 * 条件规划：判断task_progress表中是否存在task记录
 		 * @param taskId
-		 * @return boolean task在规划表中是否有数据
+		 * @param Connection
+		 * @return TaskProgress
 		 * @throws Exception
 		 * 
 		 * */
@@ -4443,6 +4452,8 @@ public class TaskService {
 		
 		/**
 		 * 获取元数据库中重要POI的数据
+		 * @param int minNumber
+		 * @param int maxNumber
 		 * @throws SQLException 
 		 * 
 		 * */

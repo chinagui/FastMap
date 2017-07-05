@@ -511,7 +511,6 @@ public class LogWriter {
 			if (resultSet.next()) {
 				count = resultSet.getInt("count");
 			}
-
 		} finally {
 
 			DBUtils.closeResultSet(resultSet);

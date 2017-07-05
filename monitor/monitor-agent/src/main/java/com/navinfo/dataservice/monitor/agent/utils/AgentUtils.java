@@ -89,8 +89,9 @@ public class AgentUtils {
 	 * @param host
 	 * @param port
 	 * @return
+	 * @throws Exception 
 	 */
-	public static boolean tomcatRunSuccess(String host,String port){
+	public static boolean tomcatRunSuccess(String host,String port) throws Exception{
 		try {
 			String url = "http://"+host+":"+port+"/";
 			int responseTime = 2000;

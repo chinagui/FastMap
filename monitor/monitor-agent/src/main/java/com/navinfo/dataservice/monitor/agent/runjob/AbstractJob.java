@@ -70,6 +70,8 @@ public abstract class AbstractJob {
 						result.add(port);
 						result.add(tomcat);
 						monitor.add(result);
+					}else{
+						log.info("服务未启动,host="+host+",port="+port+",tomcat="+tomcat);
 					}
 				} catch (Exception ex) {
 					System.out.println("host="+host+",port="+port+",tomcat="+tomcat);

@@ -4533,13 +4533,19 @@ public class TaskService {
 			try{
 				conn = DBConnector.getInstance().getManConnection();
 				TaskProgress tp = taskInPrograssCount(conn, taskId);
+				if(tp==null){
+					return null;
+				}
 				String parameter = tp.getParameter();
+				if(StringUtils.isEmpty(parameter)){
+					return null;
+				}
 				JSONObject json = JSONObject.fromObject(parameter);
 				return json;
 			}catch(Exception e){
 				log.error("获取条件规划异常，原因为：" + e);
 				DbUtils.closeQuietly(conn);
-				throw new Exception("获取条件规划异常");
+				throw new Exception("获取条件规划异常",e);
 			}finally{
 				DbUtils.closeQuietly(conn);
 			}

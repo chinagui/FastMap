@@ -54,11 +54,6 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>job-man</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-datahub</artifactId>
 		</dependency>
 		<dependency>
@@ -84,7 +79,7 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		
-<dependency>
+		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-statics</artifactId>
 		</dependency>
@@ -160,5 +155,11 @@
 	       <groupId>com.alibaba</groupId>
 	       <artifactId>dubbo</artifactId>
 	   </dependency>
+	   
+	   <dependency>  
+            <groupId>org.geotools</groupId>  
+            <artifactId>gt-shapefile</artifactId>  
+            <version>11.0</version>  
+        </dependency>  
 	</dependencies>
 </project>

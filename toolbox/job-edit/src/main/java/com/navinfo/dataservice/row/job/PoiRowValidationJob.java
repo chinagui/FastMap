@@ -176,7 +176,6 @@ public class PoiRowValidationJob extends AbstractJob {
 	}
 	
 	public String getOperationName() {
-		//return "POI_ROW_VALIDATION";
-		return "POI_ROW_COMMIT";
+		return "POI_ROW_VALIDATION";
 	}
 }

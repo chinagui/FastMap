@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.task;
 
-import java.security.interfaces.RSAKey;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -46,7 +45,6 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;

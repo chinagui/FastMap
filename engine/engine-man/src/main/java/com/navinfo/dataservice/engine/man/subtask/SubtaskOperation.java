@@ -3087,24 +3087,26 @@ public class SubtaskOperation {
 		
 	}
 	
-	/**
-	 * @param conn
-	 * @param subtaskId
-	 * @throws Exception 
-	 */
-	public static void closeBySubtaskId(int subtaskId) throws Exception {
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
-			closedSubtaskList.add(subtaskId);
-			closeBySubtaskList(conn, closedSubtaskList);
-		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}
-		
-	}
+//	20170705未使用方法/**
+//	 * @param conn
+//	 * @param subtaskId
+//	 * @throws Exception 
+//	 */
+//	public static void closeBySubtaskId(int subtaskId) throws Exception {
+//		Connection conn = null;
+//		try{
+//			conn = DBConnector.getInstance().getManConnection();
+//			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
+//			closedSubtaskList.add(subtaskId);
+//			closeBySubtaskList(conn, closedSubtaskList);
+//		}catch(Exception e){
+//			log.error(e.getMessage(), e);
+//			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//		
+//	}
 
 	/*
 	 * 查询大区库履历，获取子任务修改的POI几何列表

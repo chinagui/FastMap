@@ -2493,7 +2493,7 @@ public class ProgramService {
 			
 			StringBuffer sb = new StringBuffer();
 			//未规划草稿状态
-			sb.append("select p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
+			sb.append("select distinct p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
 			//中线采集任务
 			sb.append("and p.type = 1 and t.type = 0 ");
 			sb.append("and t.program_id = p.program_id");

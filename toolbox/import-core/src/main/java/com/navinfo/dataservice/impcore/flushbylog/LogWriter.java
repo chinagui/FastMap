@@ -283,7 +283,7 @@ public class LogWriter {
 		} catch (Exception e) {
 
 			if ((e.getMessage().indexOf("ORA-00001") != -1)) {
-				log.warn("新增已存在 接边作业履历冲突：" + e.getMessage(), e);
+				log.warn("新增已存在 接边作业履历冲突" + e.getMessage(), e);
 				data.put("result", -1);
 				data.put("log", e.getMessage());
 

@@ -357,8 +357,8 @@ public class RelateTipsGuideAndAglUpdate {
 			deep.put("gELoc", gELocNew);// 新的终点
 			json.put("deep", deep);
 			
-			g_guide.put("coordinates", gSLocNew);
-			json.put("g_guide", g_guide);
+			json.put("g_guide", gSLocNew);
+			//json.put("g_guide", g_guide);
 		}
 		
 		return json;
@@ -377,7 +377,9 @@ public class RelateTipsGuideAndAglUpdate {
 		Geometry geo = GeoTranslator.geojson2Jts(mutiLines);
 		//取最近jsonPoint的线几何
 		MultiLineString lines = (MultiLineString) geo;
-		for(int i=0;i<lines.getLength();i++){
+		
+		for (int i = 0; i < lines.getNumGeometries(); i++) {
+			
 			LineString line = (LineString) lines.getGeometryN(i);
 			double distinct=point.distance(line);
 			 if(minDistinct==null||distinct<minDistinct){

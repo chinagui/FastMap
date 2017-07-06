@@ -135,8 +135,8 @@ public class GLocationUpdate {
 			{
 				
 				int geoNum = geometry.getNumGeometries();
-				for (int k= 0; k < geoNum; i++) {
-					Geometry subGeo = geometry.getGeometryN(i);
+				for (int k= 0; k < geoNum; k++) {
+					Geometry subGeo = geometry.getGeometryN(k);
 					if (subGeo instanceof LineString) {
 						lines[i]=(LineString)subGeo;
 						break;
@@ -148,12 +148,6 @@ public class GLocationUpdate {
 				
 				lines[i]=(LineString)line;
 			}
-			
-			
-			
-			
-			
-			
 			
 			i++;
 		}

@@ -101,28 +101,27 @@ public class ScPointPoicodeNewService {
 			conn = DBConnector.getInstance().getMetaConnection();	
 					
 			String selectSql = " select distinct n.class_name,n.sub_class_name,n.class_code,n.sub_class_code from  "
-					+ " SC_POINT_POICODE_NEW  n ";
+					+ " SC_POINT_POICODE_NEW n order by n.class_code";
 			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> returns=new ArrayList<Map<String, Object>>();
-					Map<String, Object> bigClassMap=new HashMap<String, Object>();
-					
-					List<Map<String, Object>> subClassS=new ArrayList<Map<String, Object>>();
-					Map<String, Object> subClassMap=new HashMap<String, Object>();
+					Map<String, Object> bigClassMap=new HashMap<String, Object>();					
+					List<Map<String, Object>> subClassS=new ArrayList<Map<String, Object>>();					
 					String bigClass="";
 					while(rs.next()){
+						Map<String, Object> subClassMap=new HashMap<String, Object>();
 						if(StringUtils.isEmpty(bigClass)){bigClass=rs.getString("class_code");}
 						if(!bigClass.equals(rs.getString("class_code"))){
 							bigClassMap.put("subClassCodes", subClassS);
 							returns.add(bigClassMap);
 							bigClassMap=new HashMap<String, Object>();
-							subClassMap=new HashMap<String, Object>();
+							subClassS=new ArrayList<Map<String, Object>>();
 						}
 						bigClassMap.put("classCode", rs.getString("class_code"));
 						bigClassMap.put("className", rs.getString("class_name"));
 						bigClassMap.put("flag", 1);
-						subClassMap.put("subClassCode", rs.getString("sub_class_code"));
-						subClassMap.put("subClassName", rs.getString("sub_class_name"));
+						subClassMap.put("classCode", rs.getString("sub_class_code"));
+						subClassMap.put("className", rs.getString("sub_class_name"));
 						subClassMap.put("flag", 1);
 						subClassS.add(subClassMap);
 					}

@@ -4071,9 +4071,9 @@ public class TaskService {
 				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
-				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
+//				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
-				run.execute(dailyConn, deletesql);
+//				run.execute(dailyConn, deletesql);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e);
 				DbUtils.rollback(con);
@@ -4230,7 +4230,7 @@ public class TaskService {
 							if(subFlag == 0){
 								continue;
 							}
-							String subClassCode = subKindJson.getString("subClassCode");
+							String subClassCode = subKindJson.getString("classCode");
 							kindCode = classCode + subClassCode + "%";
 							kindCodes.add(kindCode);
 						}

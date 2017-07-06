@@ -48,6 +48,7 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
@@ -3366,4 +3367,83 @@ public class SubtaskService {
 			return null;
 		}
 	};
+	
+	/**
+	 * 日编子任务未规划grid接口
+	 * grid及tips完成情况统计
+	 * 筛选出未规划的grid
+	 * 按照tips个数从大到小排序，gridid从大到小排序
+	 * @param int taskId
+	 * @param int pageNum
+	 * @param int pageSize
+	 * @return page
+	 * @throws Exception
+	 * 
+	 * */
+	public Page unPlanGridList(int taskId, int pageNum, int pageSize) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			Page page = new Page();
+			
+			List<Integer> grids = queryDailySubTaskGrids(conn, taskId);
+			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Integer> map = result.get(i);
+				int gidId = map.get("gridId");
+				//将包含的日编子任务的gird数据移除
+				for(int j = 0; j < grids.size(); j++){
+					if(gidId == grids.get(j)){
+						result.remove(i);
+					}
+				}
+			}
+			//排序
+			int tipsCount = 0;
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Integer> map = result.get(i);
+				tipsCount = map.get("unfinished");
+			}
+			
+			return page;
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因为："+e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("日编子任务未规划grid接口异常:"+e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取日编子任务对应的grid
+	 * taskid对应的日编子任务（type=3的grid子任务）
+	 * @parame int taskId
+	 * @parame Connection
+	 * @return  List<Integer> gridIds
+	 * @throws Exception
+	 * 
+	 * */
+	public List<Integer> queryDailySubTaskGrids(Connection conn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select distinct sgm.grid_id from SUBTASK_GRID_MAPPING sgm, SUBTASK st  where sgm.subtask_id = st.subtask_id "
+					+ "and st.task_id = "+taskId;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gids = new ArrayList<>();
+					while (rs.next()) {
+						gids.add(rs.getInt("grid_id"));
+					}
+					return gids;
+				}
+			};
+			return run.query(conn, sql, rsHandler);	
+		}catch(Exception e){
+			log.error("获取日编子任务对应的grid异常："+e);
+			throw e;
+		}
+	}
 }

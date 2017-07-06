@@ -758,4 +758,41 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 日编子任务未规划grid接口
+	 * grid及tips完成情况统计
+	 * 筛选出未规划的grid
+	 * 按照tips个数从大到小排序，gridid从大到小排序
+	 * 
+	 * */
+	@RequestMapping(value = "/subtask/unPlanGridList")
+	public ModelAndView unPlanGridList(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int pageNum = 1;
+			if(dataJson.containsKey("pageNum")){
+				pageNum = dataJson.getInt("pageNum");
+			}
+			int pageSize = 20;
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new Exception("缺少taskId");
+			}
+			int taskId = dataJson.getInt("taskId");
+			
+			 Page page = SubtaskService.getInstance().unPlanGridList(taskId,pageNum,pageSize);
+			
+			return new ModelAndView("jsonView", success(page));
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+		
+	}
 }

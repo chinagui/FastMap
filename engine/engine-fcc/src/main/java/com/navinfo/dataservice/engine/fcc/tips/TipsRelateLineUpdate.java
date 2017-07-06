@@ -480,7 +480,7 @@ public class TipsRelateLineUpdate {
 		JSONObject out = deep.getJSONObject("out");
 
 		// 关联link是测线的
-        if(out != null && out.containsKey("type")) {
+        if(out != null && out.containsKey("id")) {
             int outType = out.getInt("type");
             String outId = out.getString("id");
             if (outType == 2 && outId.equals(oldRowkey)) {
@@ -652,6 +652,8 @@ public class TipsRelateLineUpdate {
 		
 		int index=-1; //旧测线在数组中的位置，用户更新g_location(范围线使用)
 		
+		JSONArray geoArr=new JSONArray();//范围线使用
+		
 		int i=-1;
 		for (Object object : f_array) {
 			
@@ -663,6 +665,14 @@ public class TipsRelateLineUpdate {
             if(fInfo != null && fInfo.containsKey("type")) {
                 int type = fInfo.getInt("type");
                 String id = fInfo.getString("id");
+            	
+	           	JSONObject geoF=null;
+	           	 
+	           	 if(fInfo.containsKey("geoF")){
+	           		 
+	           		geoF=fInfo.getJSONObject("geoF");
+	           	 }
+                
                 if (type == 2 && id.equals(oldRowkey)) {
                 	
                 	 for (JSONObject json : cutLines) {
@@ -674,7 +684,12 @@ public class TipsRelateLineUpdate {
             			 if(newFInfo.containsKey("geo")){
             				 newFInfo.put("geo", newGeo); 
             			 }
+            			 //范围线
+            			 if(newFInfo.containsKey("geoF")){
+            				 newFInfo.put("geoF", newGeo); 
+            			 }
             			 f_array_new.add(newFInfo); // 添加新对象到新数组
+            			 geoArr.add(newGeo);
             		}
                     hasMeasuringLine = true;
                     index=i;
@@ -683,6 +698,8 @@ public class TipsRelateLineUpdate {
                 else{
                 	
                 	f_array_new.add(fInfo); // 添加到新数组
+                	
+                	geoArr.add(geoF);
                 }
             }
 
@@ -697,7 +714,19 @@ public class TipsRelateLineUpdate {
 			//int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines
 			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
 			
-			json=GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,cutLines);
+		   //范围线的，需要重新计算范围线的g_location
+			if(index!=-1&&("1601".equals(sourceType)||"1604".equals(sourceType))){
+				
+				json=GLocationUpdate.updateAreaLineLocation(geoArr,json);
+			}
+		
+			//起终点的，需要替换g_location.将旧的坐标替换为新的两条或者多条线的坐标
+			if(index != -1 && ("1501".equals(sourceType) || "1507".equals(sourceType) || "1508".equals(sourceType)
+					 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType))){
+				
+				json=GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,cutLines);
+				
+			}
 			
 			return json;
 		}

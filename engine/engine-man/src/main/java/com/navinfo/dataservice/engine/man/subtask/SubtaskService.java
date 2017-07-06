@@ -1502,6 +1502,7 @@ public class SubtaskService {
 		if(program==null){throw new Exception("众包子任务发布，通知mapsppotor失败：数据错误，未找到子任务对应项目");}
 		JSONObject par=new JSONObject();
 		par.put("subTaskId", subtask.getSubtaskId());
+		par.put("userId", subtask.getCreateUserId());
 		if(program.getType()==1){
 			par.put("priority", 2);
 			par.put("geometryJSON", subtask.getGeometryJSON());			

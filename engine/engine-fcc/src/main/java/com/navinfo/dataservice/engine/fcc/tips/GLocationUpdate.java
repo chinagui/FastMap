@@ -6,6 +6,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -127,9 +128,32 @@ public class GLocationUpdate {
 			
 			JSONObject geoJson=JSONObject.fromObject(geo);
 			
-			LineString line= (LineString)GeoTranslator.geojson2Jts(geoJson);
+			Geometry  geometry=GeoTranslator.geojson2Jts(geoJson);
+		
+			//这里临时添加特殊处理，主要是因为 web端的数据有问题。geoF不对。？？ 为了星星不报错 临时增加if
+			if(geometry.getGeometryType().equals(GeometryTypeName.GEOMETRYCOLLECTION))
+			{
+				
+				int geoNum = geometry.getNumGeometries();
+				for (int k= 0; k < geoNum; i++) {
+					Geometry subGeo = geometry.getGeometryN(i);
+					if (subGeo instanceof LineString) {
+						lines[i]=(LineString)subGeo;
+						break;
+				}
+			}
+			}else
+			{
+				LineString line= (LineString)GeoTranslator.geojson2Jts(geoJson);
+				
+				lines[i]=(LineString)line;
+			}
 			
-			lines[i]=line;
+			
+			
+			
+			
+			
 			
 			i++;
 		}

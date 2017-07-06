@@ -672,7 +672,6 @@ public class TipsRelateLineUpdate {
 	           		 
 	           		geoF=fInfo.getJSONObject("geoF");
 	           	 }
-                
                 if (type == 2 && id.equals(oldRowkey)) {
                 	
                 	 for (JSONObject json : cutLines) {
@@ -712,7 +711,7 @@ public class TipsRelateLineUpdate {
 
 			json.put("deep", deep); //1.修改deep
 			//int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines
-			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
+			//json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
 			
 		   //范围线的，需要重新计算范围线的g_location
 			if(index!=-1&&("1601".equals(sourceType)||"1604".equals(sourceType))){
@@ -731,7 +730,7 @@ public class TipsRelateLineUpdate {
 			return json;
 		}
 
-		return null;
+		return json;
 	}
 
 	

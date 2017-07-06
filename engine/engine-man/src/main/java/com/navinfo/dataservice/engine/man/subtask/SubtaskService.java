@@ -42,6 +42,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.QuikSortListUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockService;
@@ -3381,6 +3382,7 @@ public class SubtaskService {
 	 * @throws Exception
 	 * 
 	 * */
+	@SuppressWarnings("unchecked")
 	public Page unPlanGridList(int taskId, int pageNum, int pageSize) throws Exception{
 		Connection conn = null;
 		try{
@@ -3389,23 +3391,52 @@ public class SubtaskService {
 			Page page = new Page();
 			
 			List<Integer> grids = queryDailySubTaskGrids(conn, taskId);
+			
 			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			int gridNum = result.size();
+
+			List<Map<String, Object>> convertList = new ArrayList();
 			for(int i = 0; i < result.size(); i++){
-				Map<String, Integer> map = result.get(i);
-				int gidId = map.get("gridId");
-				//将包含的日编子任务的gird数据移除
+				Map<String, Object> map = result.get(i);
+				int gridId = Integer.parseInt(map.get("gridId").toString());
 				for(int j = 0; j < grids.size(); j++){
-					if(gidId == grids.get(j)){
-						result.remove(i);
+					if(gridId == grids.get(j)){
+						result.remove(j);
 					}
 				}
 			}
-			//排序
-			int tipsCount = 0;
-			for(int i = 0; i < result.size(); i++){
-				Map<String, Integer> map = result.get(i);
-				tipsCount = map.get("unfinished");
+			
+			int unPlanTipsNum = 0;
+			int tipsNum = 0;
+			
+			int totalCount = result.size();
+			int unPlanGridNum = result.size();
+			for(Map<String, Object> map : result){
+				convertList.add(map);
+				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
+				tipsNum += Integer.parseInt(map.get("finished").toString());
+				tipsNum += Integer.parseInt(map.get("unfinished").toString());
 			}
+			
+			String key = "gridId";
+			List<Map<String, Object>> sortListByGridId = QuikSortListUtils.sortListInMapByMapKey(convertList, key);
+			key = "unfinished";
+			List<Map<String, Object>> sortList = QuikSortListUtils.sortListInMapByMapKey(sortListByGridId, key);
+			
+			for(int i = 0; i < sortList.size(); i++){
+				Map<String, Object> map = sortList.get(i);
+				map.remove("finished");
+			}
+			
+			Map<String, Object> resultMap = new HashMap<>();
+			resultMap.put("unPlanTipsNum", unPlanTipsNum);
+			resultMap.put("tipsNum", tipsNum);
+			resultMap.put("gridNum", gridNum);
+			resultMap.put("totalCount", totalCount);
+			resultMap.put("unPlanGridNum", unPlanGridNum);
+			resultMap.put("detail", sortList);
+			page.setTotalCount(sortList.size());
+			page.setResult(resultMap);
 			
 			return page;
 		}catch(Exception e){

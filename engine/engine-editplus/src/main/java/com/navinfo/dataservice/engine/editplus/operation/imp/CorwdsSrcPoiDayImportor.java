@@ -437,9 +437,10 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						ixPoiContact.setPriority(i+1);
 					}
 					// IX_POI_FLAG
-					String flag = "110000290000";
-					IxPoiFlag ixPoiFlag = poi.createIxPoiFlag();
-					ixPoiFlag.setFlagCode(flag);
+					// 新增数据取消掉IX_POI_FLAG表
+//					String flag = "110000290000";
+//					IxPoiFlag ixPoiFlag = poi.createIxPoiFlag();
+//					ixPoiFlag.setFlagCode(flag);
 					// IX_POI_PHOTO
 					JSONObject photos = tPoi.getJSONObject("PHOTO");
 					if(photos != null && !photos.isEmpty() && !photos.isNullObject()){

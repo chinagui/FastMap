@@ -1053,9 +1053,9 @@ public class SubtaskOperation {
 					int poiWaitWork = 0;
 					while(rs.next()){
 						int status = rs.getInt("status");
-						if(status == 1){poiWaitWork += 1;};
-						if(status == 2){poiWorked += 1;};
-						if(status == 3){poiCommit += 1;};
+						if(status == 1){poiWaitWork = rs.getInt("finishNum");};
+						if(status == 2){poiWorked = rs.getInt("finishNum");};
+						if(status == 3){poiCommit = rs.getInt("finishNum");};
 //						if(status==3){finish = rs.getInt("finishNum");}
 //						total+=rs.getInt("finishNum");
 					}

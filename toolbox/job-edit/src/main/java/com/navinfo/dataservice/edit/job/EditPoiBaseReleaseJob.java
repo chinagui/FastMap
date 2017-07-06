@@ -155,8 +155,9 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("end change poi_edit_status=3 commit ："+count+" 条");
 			JSONObject response =new JSONObject();
 			response.put("count", count);
-			super.response("POI行编提交成功！",response);
 			this.exeResultMsg=" 提交成功："+count+" 条数据；";
+			super.response("POI行编提交成功！",response);
+			
 		}catch(Exception e){
 			log.error("EditPoiBaseReleaseJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

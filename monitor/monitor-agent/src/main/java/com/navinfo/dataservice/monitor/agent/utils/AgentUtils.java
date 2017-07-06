@@ -9,8 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
 
 import net.sf.json.JSONArray;
@@ -89,15 +89,23 @@ public class AgentUtils {
 	 * @param host
 	 * @param port
 	 * @return
+	 * @throws Exception 
 	 */
-	public static boolean tomcatRunSuccess(String host,String port){
-		String url = "http://"+host+":"+port+"/";
-		Client client = ClientBuilder.newClient();
-		Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get();
-		int status = response.getStatus();
-		if(status==200){
+	public static boolean tomcatRunSuccess(String host,String port) throws Exception{
+		try {
+			String url = "http://"+host+":"+port+"/";
+			int responseTime = 2000;
+			ServiceInvokeUtil.invokeByGet(url, null, responseTime);
+//			Client client = ClientBuilder.newClient();
+//			Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get();
+//			int status = response.getStatus();
+//			if(status==200){
+//			}else{
+//				return false;
+//			}
 			return true;
-		}else{
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		}
 	}

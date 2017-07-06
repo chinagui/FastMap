@@ -1031,9 +1031,10 @@ public class DataPrepareService {
 			if(ClientConfirmResultList!=null&&!ClientConfirmResultList.isEmpty()){
 				for (ExpClientConfirmResult result : ClientConfirmResultList) {
 					Connection regionConn = null;
+					Connection mancon = null;
 					try {
 						int regionId = getRegionId(result.getResultId(), conn);
-						Connection mancon = DBConnector.getInstance().getManConnection();
+						mancon = DBConnector.getInstance().getManConnection();
 						int dbId = getDailyDbId(regionId, mancon);
 						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int pid = IxDealershipResultSelector.setRegionFiledByPoiNum(result,regionConn);//根据poiNum赋值日库中对应POI相关的字段
@@ -1049,6 +1050,7 @@ public class DataPrepareService {
 						e.printStackTrace();
 						throw e;
 					} finally{
+						DbUtils.commitAndCloseQuietly(mancon);
 						DbUtils.commitAndCloseQuietly(regionConn);
 					}
 				}

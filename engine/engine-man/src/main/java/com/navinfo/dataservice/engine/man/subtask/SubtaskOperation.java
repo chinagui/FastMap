@@ -188,7 +188,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
+			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,s.create_user_id,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -204,6 +204,7 @@ public class SubtaskOperation {
 						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setCreateUserId(rs.getInt("create_user_id"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						subtask.setWorkKind(rs.getInt("WORK_KIND"));
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -1052,9 +1053,9 @@ public class SubtaskOperation {
 					int poiWaitWork = 0;
 					while(rs.next()){
 						int status = rs.getInt("status");
-						if(status == 1){poiWaitWork += 1;};
-						if(status == 2){poiWorked += 1;};
-						if(status == 3){poiCommit += 1;};
+						if(status == 1){poiWaitWork = rs.getInt("finishNum");};
+						if(status == 2){poiWorked = rs.getInt("finishNum");};
+						if(status == 3){poiCommit = rs.getInt("finishNum");};
 //						if(status==3){finish = rs.getInt("finishNum");}
 //						total+=rs.getInt("finishNum");
 					}

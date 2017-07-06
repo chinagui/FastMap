@@ -1053,8 +1053,6 @@ public abstract class MeshUtils {
     		}
     		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
     		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
-//    		System.out.println(Integer.parseInt(xStr));
-//    		System.out.println(Integer.parseInt(yStr));
     		xSet.add(Integer.parseInt(xStr));
     		ySet.add(Integer.parseInt(yStr));
     	}

@@ -4232,7 +4232,7 @@ public class TaskService {
 							if(subFlag == 0){
 								continue;
 							}
-							String subClassCode = subKindJson.getString("subClassCode");
+							String subClassCode = subKindJson.getString("classCode");
 							kindCode = classCode + subClassCode + "%";
 							kindCodes.add(kindCode);
 						}

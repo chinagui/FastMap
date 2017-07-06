@@ -141,4 +141,10 @@ public class RdLinkTest extends InitApplication {
         DbMeshInfoUtil.calcDbIds(geometry);
     }
 
+    @Test
+    public void delete() throws Exception {
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":506000437,\"infect\":0}";
+        TestUtil.run(requester);
+    }
+
 }

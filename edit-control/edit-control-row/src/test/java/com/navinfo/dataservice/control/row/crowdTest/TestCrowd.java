@@ -64,11 +64,13 @@ public class TestCrowd {
 	}
 	
 	@Test
-	public void testGetTelephone() throws SQLException{
+	public void testGetTelephone() throws Exception{
 		double x = 116.4300328;
 		double y = 39.85880944;
 		RowCrowdsControl control = new RowCrowdsControl();
-		JSONObject result = control.getTelephone(x, y);
-		System.out.println(result);
+//		JSONObject result = control.getTelephone(x, y);
+//		System.out.println(result);
+		System.out.println(control.getDailyDbId(116.330015199342, 39.9264604897165));
+		
 	}
 }

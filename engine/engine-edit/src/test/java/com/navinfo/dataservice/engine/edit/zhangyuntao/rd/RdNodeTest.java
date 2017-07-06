@@ -26,10 +26,8 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void create(){
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":1005,\"objId\":87669302,\"data\":{\"longitude\":116.37677623850006,\"latitude\":40.03536495436415},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"CREATE\",\"dbId\":84,\"type\":\"RDSAMENODE\"," +
-                "\"data\":{\"nodes\":[{\"nodePid\":506000059,\"type\":\"RDNODE\",\"isMain\":1}," +
-                "{\"nodePid\":505000002,\"type\":\"LUNODE\",\"isMain\":0}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDNODE\",\"dbId\":13,\"subtaskId\":394,\"objId\":520000455," +
+                "\"data\":{\"longitude\":116.83157949657176,\"latitude\":39.9471097788328}}";
 		TestUtil.run(parameter);
 	}
 

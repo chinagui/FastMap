@@ -1409,10 +1409,11 @@ public class DataEditService {
 			if(resultList!=null&&!resultList.isEmpty()){
 				for (IxDealershipResult result : resultList) {
 					Connection regionConn = null;
+					Connection mancon = null;
 					try {
 						String poiNum = result.getCfmPoiNum();
 						
-						Connection mancon = DBConnector.getInstance().getManConnection();
+						mancon = DBConnector.getInstance().getManConnection();
 						int dbId = getDailyDbId(result.getRegionId(), mancon);
 						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int count = queryCKLogByPoiNum(poiNum,"IX_POI",regionConn);//查询该pid下有无错误log
@@ -1429,6 +1430,7 @@ public class DataEditService {
 						e.printStackTrace();
 						throw e;
 					} finally{
+						DbUtils.commitAndCloseQuietly(mancon);
 						DbUtils.commitAndCloseQuietly(regionConn);
 					}
 				}

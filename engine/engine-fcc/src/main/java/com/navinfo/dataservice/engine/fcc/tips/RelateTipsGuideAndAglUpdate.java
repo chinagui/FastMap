@@ -91,24 +91,14 @@ public class RelateTipsGuideAndAglUpdate {
             return updateAreaLine();
             
     
-     
-       
-     
-        //范围线，待补充~~~~~~~~
-  
-        case "1501": // 16. 上下线分离    ？？？ 起终点。  1.打断是否维护 显示坐标？？ 2.引导坐标就是起点。 起点已不在线上，其他线可能是rd_link
-            return updateUpDownSeparateLine();
-        case "1507":// 17.步行街     ？？？ 起终点
-            return updateWalkStreetTips();
-        case "1508":// 18.公交专用道     ？？？ 起终点
-            return updateLineAttrTips();
-            // 起终点类
-        case "1510":// 19. 桥     ？？？ 起终点
-            return updateBridgeTips();
-        case "1511":// 20. 隧道     ？？？ 起终点
-            return updateTunnel();
-        case "1514":// 21.施工    ？？？ 起终点
-            return updateConstruction();
+         // 起终点类
+        case "1501":// 21.上下分离
+        case "1507":// 22.步行街
+        case "1508":// 23.公交专用道
+        case "1510":// 24.桥 
+        case "1511":// 25.隧道 
+        case "1514":// 26.施工 
+            return updateStartEndPoint();
             
        
 	    default:
@@ -300,76 +290,87 @@ public class RelateTipsGuideAndAglUpdate {
 
 		return json;
 	}
+	
+	/**
+	 * @Description:起终点类
+	 * @return
+	 * @author: jiayong
+	 * @time:2017-7-4 下午4:29:09
+	 */
+	private JSONObject updateStartEndPoint(){
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		
+		if(linesAfterCut.size() == 1){
+			String rowkey = linesAfterCut.get(0).getString("id");;
+			
+			int index = -1;//记录关联测线再关联数组中的位置
+			JSONArray f_array = deep.getJSONArray("f_array");
+			for(int i = 0; i < f_array.size(); i++){
+				JSONObject fInfo = JSONObject.fromObject(f_array.get(i)); // 是个对象
+				if(fInfo != null && fInfo.containsKey("type")) {
+	                int type = fInfo.getInt("type");
+	                String id = fInfo.getString("id");
+	                if (type == 2 && id.equals(rowkey)) {
+	                	index = i;
+	                	break;
+	                }                
+	            }
+			}
+			
+			if(index > -1){
+				//更新g_location
+				json = GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,linesAfterCut); 
+			}
+			
+		}
 
+		if("1501".equals(sourceType) || "1507".equals(sourceType) || "1508".equals(sourceType)
+				 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)){
+			JSONObject g_location = JSONObject.fromObject(this.json.getString("g_location"));
+			JSONObject g_guide = JSONObject.fromObject(this.json.getString("g_guide"));
+			
+			JSONArray loc_array = g_location.getJSONArray("coordinates");
+			
+			JSONObject gSLoc = JSONObject.fromObject(deep.getString("gSLoc"));
+			JSONObject gELoc = JSONObject.fromObject(deep.getString("gELoc"));
+			
+			JSONObject gSLocNew = getNearlestLineId(gSLoc,loc_array);
+			JSONObject gELocNew = getNearlestLineId(gELoc,loc_array);
+			
+			deep.put("gSLoc", gSLocNew);// 新的起点
+			deep.put("gELoc", gELocNew);// 新的终点
+			json.put("deep", deep);
+			
+			g_guide.put("coordinates", gSLocNew);
+			json.put("g_guide", g_guide);
+		}
+		
+		return json;
+	}
+	
 	/**
 	 * @Description:TOOD
 	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:31
+	 * @author: jiayong
+	 * @time:2017-7-4 下午5:49:09
 	 */
-	private JSONObject updateConstruction() {
-		// TODO Auto-generated method stub
-		return null;
+	private JSONObject getNearlestLineId(JSONObject jsonPoint,JSONArray lines) {
+		Point point = (Point) GeoTranslator.geojson2Jts(jsonPoint);
+		Double minDistinct=null;
+		JSONObject nearlastLink=null;
+		//取最近jsonPoint的线几何
+		for (Object object : lines) {
+			JSONObject jsonObject = JSONObject.fromObject(object); // 是个对象
+			Geometry geo = GeoTranslator.geojson2Jts(jsonObject);
+			double distinct = point.distance(geo);
+			if(minDistinct == null || distinct < minDistinct){
+				minDistinct = distinct; 
+				nearlastLink = jsonObject;
+			}
+		}
+		return nearlastLink;
 	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:25
-	 */
-	private JSONObject updateTunnel() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:23
-	 */
-	private JSONObject updateBridgeTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:18
-	 */
-	private JSONObject updateLineAttrTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:15
-	 */
-	private JSONObject updateWalkStreetTips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @return
-	 * @author: y
-	 * @time:2017-6-27 下午1:46:10
-	 */
-	private JSONObject updateUpDownSeparateLine() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
-
+	
 
 	/**
 	 * @Description:更新tips的角度

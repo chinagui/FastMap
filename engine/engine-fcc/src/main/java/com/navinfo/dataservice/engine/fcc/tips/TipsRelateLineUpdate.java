@@ -697,6 +697,8 @@ public class TipsRelateLineUpdate {
 			//int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines
 			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
 			
+			json=GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,cutLines);
+			
 			return json;
 		}
 

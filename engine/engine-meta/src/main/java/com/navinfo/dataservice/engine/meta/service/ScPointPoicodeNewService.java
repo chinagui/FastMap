@@ -116,6 +116,7 @@ public class ScPointPoicodeNewService {
 							returns.add(bigClassMap);
 							bigClassMap=new HashMap<String, Object>();
 							subClassS=new ArrayList<Map<String, Object>>();
+							bigClass=rs.getString("class_code");
 						}
 						bigClassMap.put("classCode", rs.getString("class_code"));
 						bigClassMap.put("className", rs.getString("class_name"));

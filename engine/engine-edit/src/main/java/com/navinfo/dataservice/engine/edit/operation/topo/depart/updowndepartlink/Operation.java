@@ -430,8 +430,10 @@ public class Operation implements IOperation {
             // 17对线点线关系（车信，交限，分歧，语音引导，顺行）信息的维护
             // 18.方向
             link.setDirect(2);
-            // 19. 维护AdminId、ZoneId
-            this.updateAdminIdAndZoneId(link, result);
+            // 19. 维护AdminId、ZoneId、Urban
+            updateAdminId(link, result);
+            updateZoneId(link, result);
+            updateUrban(link, result);
             // 20. 维护Rdlink的限速信息
             SpeedUtils.updateLinkSpeed(link);
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
@@ -1114,11 +1116,26 @@ public class Operation implements IOperation {
 
     }
 
-    private void updateAdminIdAndZoneId(RdLink link, Result result) {
-        link.getZones().clear();
+    private void updateAdminId(RdLink link, Result result) {
         try {
             AdminIDBatchUtils.updateAdminID(link, null, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateZoneId(RdLink link, Result result) {
+        link.getZones().clear();
+        try {
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateUrban(RdLink link, Result result) {
+        try {
+            UrbanBatchUtils.updateUrban(link, null, conn, result);
         } catch (Exception e) {
             e.printStackTrace();
         }

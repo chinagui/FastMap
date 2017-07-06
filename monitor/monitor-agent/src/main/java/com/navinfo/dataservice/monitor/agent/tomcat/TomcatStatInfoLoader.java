@@ -23,6 +23,8 @@ import net.sf.json.JSONObject;
 public class TomcatStatInfoLoader {
 	protected static Logger log = LoggerRepos.getLogger(TomcatStatInfoLoader.class);
 	
+	private static Map<String,Map<String,Object>> statInfoPre = new HashMap<String,Map<String,Object>>();
+	
 	public static void sendTomcatStatInfo(List<List<String>> monitorTarget, long time){
 		for (List<String> list : monitorTarget) {
 			String ip = list.get(0);
@@ -67,7 +69,20 @@ public class TomcatStatInfoLoader {
 				double usedMemory = memoryInformationsObj.getDouble("usedMemory");
 				double maxMemory = memoryInformationsObj.getDouble("maxMemory");
 				double usedPercent = (double)Math.round((usedMemory/maxMemory)*10000)/100;
+				//处理gc数据
 				double gctm = memoryInformationsObj.getDouble("garbageCollectionTimeMillis");
+				String mapKey = ip+"/"+tomcat;
+				double gctmLast = 0;
+				if(statInfoPre.size() > 0){
+					if(statInfoPre.containsKey(mapKey)){
+						Map<String, Object> map = statInfoPre.get(mapKey);
+						gctmLast = (double) map.get("gctm");
+						log.info(mapKey+"上一次数据,垃圾回收响应时间:"+gctmLast);
+					}
+				}
+				log.info(mapKey+"本次数据,垃圾回收响应时间:"+gctm);
+				double gctmPercent = (double)Math.round(((gctm-gctmLast)/(step*1000))*10000)/100;
+						
 				StatInfo statInfo_memo = new StatInfo();
 				statInfo_memo.setEndpoint(ip);
 				statInfo_memo.setMetric("fos.tomcat.memoUsed");
@@ -80,12 +95,17 @@ public class TomcatStatInfoLoader {
 				statInfo_gc.setEndpoint(ip);
 				statInfo_gc.setMetric("fos.tomcat.gc");
 				statInfo_gc.setTags("biz="+tomcat);
-				statInfo_gc.setValue(gctm);
+				statInfo_gc.setValue(gctmPercent);
 				statInfo_gc.setTimestemp(time);
 				statInfo_gc.setStep(step);
 				
 				datas.add(statInfo_memo);
 				datas.add(statInfo_gc);
+				
+				//保存数据下次使用
+				Map<String, Object> mapLast = new HashMap<String, Object>();
+				mapLast.put("gctm", gctm);
+				statInfoPre.put(mapKey, mapLast);
 				
 			json_druid = ServiceInvokeUtil.invokeByGet(service_url_druid);
 				JSONObject jsonReq_druid = JSONObject.fromObject(json_druid);

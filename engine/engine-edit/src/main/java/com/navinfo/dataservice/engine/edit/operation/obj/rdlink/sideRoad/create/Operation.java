@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -113,7 +114,7 @@ public class Operation implements IOperation {
 
 			List<RdLink> sideRoads = exeCreateSideRoad(requester, result);
 
-			setSideRoad(sideRoads);
+			setSideRoad(sideRoads, result);
 			
 			Coordinate sPoint = newLineCoordinates.get(0);
 
@@ -798,7 +799,7 @@ public class Operation implements IOperation {
 	 * @param sideRoads
 	 * @throws Exception
 	 */
-	private void setSideRoad(List<RdLink> sideRoads) throws Exception {
+	private void setSideRoad(List<RdLink> sideRoads, Result result) throws Exception {
 		for (RdLink link : sideRoads) {
 			// 生成的link均为顺方向
 			link.setDirect(2);
@@ -826,6 +827,8 @@ public class Operation implements IOperation {
 			link.setKind(9);
 			// 道路幅宽为30
 			link.setWidth(30);
+			// 更新RdLink的Urban属性
+            UrbanBatchUtils.updateUrban(link, null, conn, result);
 
 			// 限制信息：自动增加一组限制信息：限制类型：穿行限制；限制方向：默认为未调查，不允许编辑;时间段：默认为空;车辆类型：默认为空;赋值方式：未验证
 			RdLinkLimit limit = new RdLinkLimit();

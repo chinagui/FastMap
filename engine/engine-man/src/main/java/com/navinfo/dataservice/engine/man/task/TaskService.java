@@ -4062,13 +4062,13 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
-			Connection dailyConn = null;
+//			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
-				Task task = queryByTaskId(con, taskId);
-				Region region = RegionService.getInstance().query(con,task.getRegionId());
-				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+//				Task task = queryByTaskId(con, taskId);
+//				Region region = RegionService.getInstance().query(con,task.getRegionId());
+//				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
 //				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
@@ -4077,11 +4077,11 @@ public class TaskService {
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e);
 				DbUtils.rollback(con);
-				DbUtils.rollback(dailyConn);
+//				DbUtils.rollback(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
-				DbUtils.commitAndCloseQuietly(dailyConn);
+//				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		

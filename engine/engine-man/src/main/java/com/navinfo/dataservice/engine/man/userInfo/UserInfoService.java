@@ -516,6 +516,7 @@ public class UserInfoService {
 						model.setUserLevel(rs.getInt("USER_LEVEL"));
 						model.setUserScore(rs.getInt("USER_SCORE"));
 						model.setUserGpsid(rs.getString("USER_GPSID"));
+						model.setRisk(rs.getInt("RISK"));
 						list.add(model);
 					}
 					return list;

@@ -66,7 +66,7 @@ public class Command extends AbstractCommand {
 	}
 	
 	/**
-	 * 打断点
+	 * 交叉点（无node时，为打断点）
 	 */
 	private Point breakPoint;
 

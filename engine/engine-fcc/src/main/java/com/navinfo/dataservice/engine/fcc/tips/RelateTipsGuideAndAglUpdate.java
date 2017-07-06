@@ -145,6 +145,13 @@ public class RelateTipsGuideAndAglUpdate {
 		
 		json.put("g_guide", g_guide);
 		
+		//1706（GPS打点） 1702  铁路道口需要同时维护g_location=g_guide
+		if("1706".equals(sourceType)||"1702".equals(sourceType)){
+			
+			json.put("g_location", g_guide);
+			
+		}
+		
 		updateAgl(lineLocation, g_guide); //更新角度
 		
 		return json;
@@ -232,44 +239,54 @@ public class RelateTipsGuideAndAglUpdate {
 	 */
 	private JSONObject updateAreaLine() throws Exception {
 		
+		JSONArray geoArr=new JSONArray();
+		
 		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
 
 		JSONArray f_array = deep.getJSONArray("f_array");
 		
-		int index=-1; //旧测线在数组中的位置，用户更新g_location(范围线使用)
+		JSONArray f_array_new = new JSONArray(); //一个新的数组
+		
+		boolean hasOldLine=false;
 		
 		//只有一条说明就是原有测线本身，是修形，替换g_location
 		if(linesAfterCut.size()==1){
 			String oldRowkey= linesAfterCut.get(0).getString("id");
-			int i=-1;
 			
 			for (Object object : f_array) {
-				i++;
 				JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
 				
 				// 关联link是测线的
 	            if(fInfo != null && fInfo.containsKey("type")) {
 	                int type = fInfo.getInt("type");
 	                String id = fInfo.getString("id");
+	                JSONObject geoF=fInfo.getJSONObject("geoF");//组成线的几何
+	                
+	                //是当前线，则替换
 	                if (type == 2 && id.equals(oldRowkey)) {
-	                    index=i;
-	                    break;
+	                	hasOldLine=true;
+	                    geoArr.add(linesAfterCut.get(0).getJSONObject("g_location")); //新的
+	                    fInfo.put("geoF", linesAfterCut.get(0).getJSONObject("g_location")); //替换fInfo.geoF
+	                    f_array_new.add(fInfo); 
+	                }else{
+	                	 geoArr.add(geoF);
+	                	 f_array_new.add(fInfo);
 	                }
 	            }
 			}
 		}
 		
 		// 1.如果是测线修形（未打断），则需要更新g_location.(已打断的，再打断时G_location已经更新)
-		if (index>-1) {
+		if (hasOldLine) {
 			
-			//1.更新g_location
-			json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,linesAfterCut); //更新g_location
+			//1.更新deep.f_array
+			deep.put("f_array", f_array_new); //替换 [f_array]
 			
-		}
-		
-		//2.如果是范围线：更新geo、更新g_guide=geo
-		if("1601".equals(sourceType)||"1604".equals(sourceType)){
+			//2.更新g_location
+			json=GLocationUpdate.updateAreaLineLocation(geoArr,json); //更新g_location
 			
+			//3.如果是范围线：更新geo、更新g_guide=geo
+				
 			JSONObject gLocation=json.getJSONObject("g_location");
 			
 			Geometry geometry=GeoTranslator.geojson2Jts(gLocation);

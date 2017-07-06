@@ -118,6 +118,12 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			//锁定 subtask_refer表  2017.07.06 zl
+			if(dataJson.containsKey("referId")){
+				int referId = dataJson.getInt("referId");
+				lockSubtaskRefer(conn,referId);
+			}
+			
 			//创建质检子任务
 			//这里变量的创建都放在判断里，减小不必要的内存占用
 			int qualitySubtaskId = 0;
@@ -175,6 +181,8 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+
 	/**
 	 * 修改质检子任务名称，按照常规子任务_质检的原则
 	 * @param conn
@@ -246,11 +254,13 @@ public class SubtaskService {
 			// 插入SUBTASK_GRID_MAPPING
 			if(bean.getGridIds() != null){
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
-				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
+				/*
+				 * 2017.07.06 zl
+				 * //web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
 				List<Integer> deleteGrids = SubtaskOperation.checkSubtaskGridMapping(conn, bean);
 				if(deleteGrids!=null&&deleteGrids.size()>0){
 					updateSubtaskGeo(conn,bean.getSubtaskId());
-				}
+				}*/
 			}
 			log.debug("子任务创建成功!");
 			return subtaskId;
@@ -297,6 +307,12 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}
+			
+			//锁定 subtask_refer表 2017.07.06 zl
+			if(dataJson.containsKey("refer_id")){
+				int referId = dataJson.getInt("refer_id");
+				lockSubtaskRefer(conn,referId);
 			}
 			
 			int qualitySubtaskId = 0;//质检子任务id
@@ -3367,4 +3383,45 @@ public class SubtaskService {
 			return null;
 		}
 	};
+	
+	/**
+	 * @Title: lockSubtaskRefer
+	 * @Description: 锁定 subTask_refer 表
+	 * @param conn
+	 * @param referId  void
+	 * @throws ServiceException 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月6日 上午10:19:49 
+	 */
+	public void lockSubtaskRefer(Connection conn, int referId) throws ServiceException {
+		try {
+			int total = 0;
+			QueryRunner run = new QueryRunner();
+			
+			String sql="SELECT count(1) total "
+					+ "  FROM SUBTASK_REFER R"
+					+ " WHERE 1=1 "
+					+ " and R.ID = ? ";
+			
+				sql=sql+ "   FOR UPDATE NOWAIT " ;
+			log.info("lockSubtaskRefer SQL("+referId+")："+sql);
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int total = 0;
+					if (rs.next()) {
+						total = rs.getInt("total");
+					}
+					return total;
+				}	
+			};
+			
+			total = run.query(conn, sql,referId,rsHandler);	
+			log.info("锁定 subtask_refer表id为 "+referId+" 数据,锁定条数: "+total);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
+		} 
+	}
 }

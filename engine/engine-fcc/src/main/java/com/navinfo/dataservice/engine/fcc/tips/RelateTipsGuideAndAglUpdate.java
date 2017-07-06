@@ -12,6 +12,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -92,7 +93,7 @@ public class RelateTipsGuideAndAglUpdate {
             
     
          // 起终点类
-        case "1501":// 21.上下分离
+        //case "1501":// 21.上下分离
         case "1507":// 22.步行街
         case "1508":// 23.公交专用道
         case "1510":// 24.桥 
@@ -341,18 +342,16 @@ public class RelateTipsGuideAndAglUpdate {
 			
 		}
 
-		if("1501".equals(sourceType) || "1507".equals(sourceType) || "1508".equals(sourceType)
+		if( "1507".equals(sourceType) || "1508".equals(sourceType)
 				 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)){
 			JSONObject g_location = JSONObject.fromObject(this.json.getString("g_location"));
 			JSONObject g_guide = JSONObject.fromObject(this.json.getString("g_guide"));
 			
-			JSONArray loc_array = g_location.getJSONArray("coordinates");
-			
 			JSONObject gSLoc = JSONObject.fromObject(deep.getString("gSLoc"));
 			JSONObject gELoc = JSONObject.fromObject(deep.getString("gELoc"));
 			
-			JSONObject gSLocNew = getNearlestLineId(gSLoc,loc_array);
-			JSONObject gELocNew = getNearlestLineId(gELoc,loc_array);
+			JSONObject gSLocNew = getNearlestLineId(gSLoc,g_location);
+			JSONObject gELocNew = getNearlestLineId(gELoc,g_location);
 			
 			deep.put("gSLoc", gSLocNew);// 新的起点
 			deep.put("gELoc", gELocNew);// 新的终点
@@ -371,21 +370,22 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @author: jiayong
 	 * @time:2017-7-4 下午5:49:09
 	 */
-	private JSONObject getNearlestLineId(JSONObject jsonPoint,JSONArray lines) {
+	private JSONObject getNearlestLineId(JSONObject jsonPoint,JSONObject mutiLines) {
 		Point point = (Point) GeoTranslator.geojson2Jts(jsonPoint);
 		Double minDistinct=null;
-		JSONObject nearlastLink=null;
+		Geometry nearlastLink=null;
+		Geometry geo = GeoTranslator.geojson2Jts(mutiLines);
 		//取最近jsonPoint的线几何
-		for (Object object : lines) {
-			JSONObject jsonObject = JSONObject.fromObject(object); // 是个对象
-			Geometry geo = GeoTranslator.geojson2Jts(jsonObject);
-			double distinct = point.distance(geo);
-			if(minDistinct == null || distinct < minDistinct){
-				minDistinct = distinct; 
-				nearlastLink = jsonObject;
-			}
+		MultiLineString lines = (MultiLineString) geo;
+		for(int i=0;i<lines.getLength();i++){
+			LineString line = (LineString) lines.getGeometryN(i);
+			double distinct=point.distance(line);
+			 if(minDistinct==null||distinct<minDistinct){
+				 minDistinct=distinct; 
+				 nearlastLink = line;
+			 }
 		}
-		return nearlastLink;
+		return getNearLeastPoint(point,nearlastLink);
 	}
 	
 

@@ -45,9 +45,10 @@ public class GLocationUpdate {
 				 for (JSONObject json : cutLines) {
 	    			 JSONObject newGeo = json.getJSONObject("g_location");
 	    			
-	    			 JSONObject cutLineCoordinates = newGeo.getJSONObject("coordinates"); //打断后的线的几何
+	    			 JSONArray cutLineCoordinates = newGeo.getJSONArray("coordinates"); //打断后的线的几何
 	    			 
 	    			 coordinates_new.add(cutLineCoordinates);
+	    			 
 	    		}
 				
 			}else{

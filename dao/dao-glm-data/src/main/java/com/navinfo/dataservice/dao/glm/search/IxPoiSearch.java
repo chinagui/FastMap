@@ -6,11 +6,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -34,14 +35,13 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
-
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	private Map<String, String> CHAINMAP;
@@ -205,6 +205,137 @@ public class IxPoiSearch implements ISearch {
 
 		return list;
 	}
+	
+	/**
+	 * @Title: searchDataByTileWithGap
+	 * @Description: TODO
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param taskId
+	 * @return
+	 * @throws Exception  List<SearchSnapshot>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 上午10:57:18 
+	 */
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap ,int taskId) throws Exception {
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("WITH "
+				+ "TMP1 AS "
+				+ "("
+					+ "SELECT i.PID, i.KIND_CODE, i.INDOOR, i.X_GUIDE, i.Y_GUIDE, i.GEOMETRY, i.ROW_ID,p.is_plan_selected,p.is_important  "
+					+ "FROM IX_POI i ,data_plan p "
+					+ " WHERE SDO_RELATE(i.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT')= 'TRUE' "
+					+ " AND U_RECORD != 2 "
+					+ " AND p.data_type = 1 and p.task_id =:2 and i.pid = p.pid "
+				+ "), "
+				+ "TMP2 AS "
+				+ "("
+					+ "SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
+					+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
+					+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
+					+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2"
+				+ ") "
+				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_SUBTASK_ID,0) QUICK_SUBTASK_ID ,nvl(B.MEDIUM_SUBTASK_ID,0) MEDIUM_SUBTASK_ID  FROM TMP1 A LEFT JOIN "
+				+ "POI_EDIT_STATUS B ON A.PID = B.PID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			log.info("sql: "+sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+			pstmt.setInt(2, taskId);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				int status = resultSet.getInt("status");
+
+				JSONObject m = new JSONObject();
+
+				m.put("b", status);
+				m.put("d", resultSet.getString("kind_code"));
+
+				m.put("e", resultSet.getString("name"));
+
+				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
+				m.put("quickFlag",
+						resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
+				m.put("mediumFlag",
+						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
+
+				Double xGuide = resultSet.getDouble("x_guide");
+
+				Double yGuide = resultSet.getDouble("y_guide");
+
+				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
+
+				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
+
+				Geojson.point2Pixel(guidejson, z, px, py);
+
+				m.put("c", guidejson.getJSONArray("coordinates"));
+				
+				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
+				m.put("isImportant", resultSet.getInt("is_important"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(21);
+
+				snapshot.setI(resultSet.getInt("pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				Geojson.point2Pixel(geojson, z, px, py);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return list;
+	}
 
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap, JSONArray noQFilter) throws Exception {
@@ -219,19 +350,27 @@ public class IxPoiSearch implements ISearch {
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
-				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_TASK_ID,0) QUICK_TASK_ID ,nvl(B.MEDIUM_TASK_ID,0) MEDIUM_TASK_ID  FROM TMP1 A LEFT JOIN "
-				+ "POI_EDIT_STATUS B ON A.PID = B.PID ");
+				+ "SELECT TMP.*, T . NAME FROM (");
 
-		if (noQFilter != null && noQFilter.size() > 0) {
-			sb.append(" WHERE B.QUICK_TASK_ID = 0 ");
-			if (noQFilter.contains(1) && noQFilter.size() == 1) {
-				sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
-
+		if (noQFilter != null) {
+			if(noQFilter.size() > 0){
+				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
+					+ "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
+					+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
+				if (noQFilter.contains(1) && noQFilter.size() == 1) {
+					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
+	
+				}
+				if (noQFilter.contains(2) && noQFilter.size() == 1) {
+					sb.append(" AND B.MEDIUM_TASK_ID = 0 ");
+	
+				}
+			}else{
+				return null;
 			}
-			if (noQFilter.contains(2) && noQFilter.size() == 1) {
-				sb.append(" AND B.MEDIUM_TASK_ID = 0 ");
-
-			}
+		}else{
+			sb.append("SELECT A.*, 0 STATUS,0 QUICK_TASK_ID ,"
+				+ "0 MEDIUM_TASK_ID  FROM TMP1 A");
 		}
 		sb.append(" ) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
@@ -239,7 +378,7 @@ public class IxPoiSearch implements ISearch {
 		ResultSet resultSet = null;
 
 		try {
-
+			log.info(sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
@@ -895,7 +1034,7 @@ public class IxPoiSearch implements ISearch {
 	 */
 	public JSONArray searchColumnPoiByPid(String firstWordItem,
 			String secondWorkItem, List<Integer> pids, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules) throws Exception {
+			JSONObject classifyRules, JSONObject ckRules,Map<Integer,JSONObject> isProblems) throws Exception {
 
 		JSONArray dataList = new JSONArray();
 
@@ -963,6 +1102,12 @@ public class IxPoiSearch implements ISearch {
 					List<JSONObject> value = new ArrayList<JSONObject>();
 					poiObj.put("ckRules", value);
 				}
+				// isProblem赋值
+				if(isProblems!=null&&isProblems.containsKey(pid)){	
+					JSONObject isProblem = (JSONObject) isProblems.get(pid);
+					poiObj.put("isProblem", isProblem);
+				}
+
 				// 大陆作业无值，港澳后续补充
 				poiObj.put("namerefMsg", "");
 				// 获取特殊字段
@@ -1326,7 +1471,7 @@ public class IxPoiSearch implements ISearch {
 					JSONObject addrObj = address.Serialize(null);
 					// 由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
 					if (address.getLangCode().equals("CHI")) {
-						String addrnameStr = stringIsNull(address.getProvince())
+						String roadnameStr = stringIsNull(address.getProvince())
 								+ "|"
 								+ stringIsNull(address.getCity())
 								+ "|"
@@ -1338,7 +1483,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getStreet());
 
-						String roadnameStr = stringIsNull(address.getLandmark())
+						String addrnameStr = stringIsNull(address.getLandmark())
 								+ "|"
 								+ stringIsNull(address.getPrefix())
 								+ "|"
@@ -1362,7 +1507,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getAddons());
 
-						String addrnamePhoneticStr = stringIsNull(address
+						String roadnamePhoneticStr = stringIsNull(address
 								.getProvPhonetic())
 								+ "|"
 								+ stringIsNull(address.getCityPhonetic())
@@ -1375,7 +1520,7 @@ public class IxPoiSearch implements ISearch {
 								+ "|"
 								+ stringIsNull(address.getStreetPhonetic());
 
-						String roadnamePhoneticStr = stringIsNull(address
+						String addrnamePhoneticStr = stringIsNull(address
 								.getLandmarkPhonetic())
 								+ "|"
 								+ stringIsNull(address.getPrefixPhonetic())

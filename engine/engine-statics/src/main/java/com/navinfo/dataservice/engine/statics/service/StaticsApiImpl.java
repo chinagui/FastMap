@@ -65,10 +65,10 @@ public class StaticsApiImpl implements StaticsApi {
 		return StaticsService.getInstance().getExpectStatusByCitys(citys);
 	}
 
-	@Override
-	public SubtaskStatInfo getStatBySubtask(int subtaskId) {
-		return StaticsService.getInstance().getStatBySubtask(subtaskId);
-	}
+//	@Override
+//	public SubtaskStatInfo getStatBySubtask(int subtaskId) {
+//		return StaticsService.getInstance().getStatBySubtask(subtaskId);
+//	}
 
 //	@Override
 //	public List<Integer> getOpen100TaskIdList() throws Exception {

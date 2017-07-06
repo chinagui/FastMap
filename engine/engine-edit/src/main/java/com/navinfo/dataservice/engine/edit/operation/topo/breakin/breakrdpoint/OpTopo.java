@@ -13,12 +13,14 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -114,10 +116,11 @@ public class OpTopo implements IOperation {
 		this.command.getNewLinks().get(1)
 				.setsNodePid(command.getBreakNodePid());
 		for (RdLink link : this.command.getNewLinks()) {
+            // 维护打断后生成线Urban属性
+		    UrbanBatchUtils.updateUrban(link, null, conn, result);
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 			jaDisplayLink.add(link.Serialize(ObjLevel.BRIEF));
 		}
-
 	}
 
 	/***
@@ -197,13 +200,23 @@ public class OpTopo implements IOperation {
 	private LineString getReformGeometry(Set<Point> points) throws Exception {
 		Geometry geometry = GeoTranslator.transform(
 				this.breakLink.getGeometry(), 0.00001, 5);// 分割线的几何
+	
+		//自动打断功能新增：根据操作类型，重写reformLineString(2m范围内)
+		String type = null;
+		
 		// 组装Point点信息 ，前端传入的Point是无序的
-
 		for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
 			JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
 			double lon = obj.getDouble("longitude");
 			double lat = obj.getDouble("latitude");
+			if(obj.containsKey("operate")){
+				type = (String)obj.get("operate");
+			}
 			points.add(JtsGeometryFactory.createPoint(new Coordinate(lon, lat)));
+		}
+		
+		if(type =="TOPOBREAK"){
+			return GeoTranslator.reformGeomtryByNode((LineString)geometry, points);
 		}
 		return GeoTranslator.getReformLineString((LineString) geometry, points);
 	}
@@ -219,8 +232,9 @@ public class OpTopo implements IOperation {
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			RdLink link = RdLinkOperateUtils.addLink(g, map.get(g).getInt("s"),
-					map.get(g).getInt("e"), result, this.breakLink);
+			RdLink link = RdLinkOperateUtils.addLink(g, map.get(g).getInt("s"), map.get(g).getInt("e"), result, this.breakLink);
+			// 维护打断后生成线Urban属性
+            UrbanBatchUtils.updateUrban(link, null, conn, result);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			this.command.getNewLinks().add(link);
 			jaDisplayLink.add(link.Serialize(ObjLevel.BRIEF));

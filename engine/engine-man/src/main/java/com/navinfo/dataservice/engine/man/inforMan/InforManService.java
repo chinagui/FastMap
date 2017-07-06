@@ -111,65 +111,6 @@ public class InforManService {
 		}
 	}
 
-	public Page listAll(JSONObject conditionJson, JSONObject orderJson, int currentPageNum, int pageSize)
-			throws Exception {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-
-			String selectSql = "select i.infor_id," + " i.descp,"
-					+ " nvl(u.user_real_name, '') user_name,"
-					+ " to_char(i.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date,"
-					+ " to_char(i.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
-					+ " to_char(i.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date,"
-					+ " to_char(i.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date,"
-					+ " to_char(i.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
-					+ " to_char(i.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
-					+ " to_char(i.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
-					+ " to_char(i.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,"
-					+ " to_char(i.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
-					+ " to_char(i.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
-					+ " i.infor_status," + " b.block_id," + " k.block_name"
-					+ " from infor_man i, infor_block_mapping b, block k, user_info u"
-					+ " where i.infor_id = b.infor_id(+)" + "  and b.block_id = k.block_id(+)"
-					+ "   and i.create_user_id = u.user_id(+)";
-			if (null != conditionJson && !conditionJson.isEmpty()) {
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("inforId".equals(key)) {
-						selectSql += " and i.infor_id=" + conditionJson.getString(key);
-					}
-					if ("createUserName".equals(key)) {
-						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
-					}
-				}
-			}
-			if (null != orderJson && !orderJson.isEmpty()) {
-				Iterator keys = orderJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("inforStatus".equals(key)) {
-						selectSql += (" order by i.infor_status " + orderJson.getString("inforStatus"));
-						break;
-					}
-					if ("inforId".equals(key)) {
-						selectSql += (" order by i.infor_id " + orderJson.getString("inforId"));
-						break;
-					}
-				}
-			} else {
-				selectSql += " order by i.infor_id";
-			}
-			return InforManOperation.selectInforList(conn, selectSql, null, currentPageNum, pageSize);
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
 	/**
 	 * 一级情报监控
 	 * 原则： 
@@ -235,25 +176,5 @@ public class InforManService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	/*public HashMap<String, Object> queryByTaskId(int taskId) throws Exception {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select * from infor where task_id='" + taskId + "'";
-			List<HashMap<String,Object>> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
-			if (list.size() > 0) {
-				return list.get(0);
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询明细失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}*/
 
 }

@@ -11,6 +11,8 @@ import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncApiImpl;
+import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
@@ -22,9 +24,10 @@ public class Fm2MultiSrcSyncScript {
 		JSONObject response = new JSONObject();
 		try {
 			JSONObject job = new JSONObject();
-			FmMultiSrcSyncApi syncApi = (FmMultiSrcSyncApi) ApplicationContextUtil.getBean("fmMultiSrcSyncApi");
+//			FmMultiSrcSyncApi syncApi = (FmMultiSrcSyncApi) ApplicationContextUtil.getBean("fmMultiSrcSyncApi");
 			//查询最近的成功同步时间
-			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
+//			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
+			FmMultiSrcSync fmMultiSrcSync = FmMultiSrcSyncService.getInstance().queryLastSuccessSync();
 			String lastSyncTime = null;
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			if(fmMultiSrcSync!=null&&fmMultiSrcSync.getSyncTime() != null){
@@ -47,7 +50,8 @@ public class Fm2MultiSrcSyncScript {
 			//创建job,获取jobId
 			long jobId = JobService.getInstance().create("fm2MultiSrcSync", job, 0,0, "创建FM日库多源增量包");
 			//创建管理记录
-			syncApi.insertFmMultiSrcSync(jobId,syncTime);
+//			syncApi.insertFmMultiSrcSync(jobId,syncTime);
+			new FmMultiSrcSyncApiImpl().insertFmMultiSrcSync(jobId,syncTime);
 			response.put("msg", "执行成功");
 		} catch (Exception e) {
 			response.put("msg", "ERROR:" + e.getMessage());

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONStringer;
 import org.json.JSONWriter;
@@ -21,6 +20,7 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
+import com.graphbuilder.geom.Geom;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -686,13 +686,10 @@ public class GeoTranslator {
 
 	/**
 	 * 线几何组成面的几何
-	 * 
-	 * @param List
-	 *            <Geometry> 线几何
+	 * @param gList<Geometry> 线几何
 	 * @return 面几何
 	 */
-	public static Geometry getCalLineToPython(List<Geometry> gList)
-			throws Exception {
+	public static Geometry getCalLineToPython(List<Geometry> gList) throws Exception {
 		//gList已经是按照线的联通关系添加后的，只需要根据划线方向组好点的几何
 		List<Coordinate> corList = new ArrayList<>();
 		for(Coordinate cor : gList.get(0).getCoordinates())
@@ -731,7 +728,15 @@ public class GeoTranslator {
 			
 		}
 
-		return geoFactory.createPolygon((Coordinate[])corList.toArray(new Coordinate[corList.size()]));
+		Geometry geometry = geoFactory.createPolygon((Coordinate[])corList.toArray(new Coordinate[corList.size()]));
+		Set<Coordinate> set = new HashSet<>();
+		for (Coordinate coordinate : geometry.getCoordinates()) {
+		    set.add(coordinate);
+        }
+        if (set.size() < geometry.getCoordinates().length - 1) {
+		    throw new Exception("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
+		return geometry;
 	}
 
 	/**
@@ -830,6 +835,46 @@ public class GeoTranslator {
 
 	}
 
+	/**
+	 * 
+	 * @param link
+	 * @param breakPoint
+	 * @param pedalCoor
+	 * @return
+	 * @throws Exception
+	 */
+	public static LineString reformGeomtryByNode(LineString geometry, Set<Point> breakPoints) throws Exception {
+		Coordinate[] coordinates = GeoTranslator.transform(geometry, 100000, 5).getCoordinates();
+		List<Coordinate> coors = new ArrayList<Coordinate>();
+		Collections.addAll(coors, coordinates);
+
+		for(Point point: breakPoints){
+			point = (Point) GeoTranslator.transform(point, 100000, 5);
+			//打断点
+			Coordinate breakPoint = new Coordinate(point.getX(),point.getY());
+			
+			//打断点对应的垂足点
+			Coordinate pedalCoor = GeometryUtils.getLinkPedalPointOnLine(breakPoint, GeoTranslator.transform(geometry, 100000, 5));
+			
+			for (int i = 0; i < coors.size() - 1; i++) {
+				Coordinate pointS = coors.get(i);
+				Coordinate pointE = coors.get(i + 1);
+
+				// 是否在形状点上
+				if ((Math.abs(pedalCoor.x - pointE.x) < 0.0000001 && Math.abs(pedalCoor.y - pointE.y) < 0.0000001)
+						|| (GeoTranslator.isIntersection(new double[] { pointS.x, pointS.y },
+								new double[] { pointE.x, pointE.y }, new double[] { pedalCoor.x, pedalCoor.y }))) {
+					coors.add(i + 1, breakPoint);
+					break;
+				}
+			}//for
+		}//for
+		
+		Coordinate[] c = (Coordinate[]) coors.toArray(new Coordinate[coors.size()]);
+		return (LineString) GeoTranslator.transform(geoFactory.createLineString(c),0.00001, 5);
+	}
+	
+	
 	/***
 	 * 按顺序返回线上对应的形状点 zhaokk
 	 * 
@@ -991,6 +1036,196 @@ public class GeoTranslator {
 
         return 2 * R * Math.asin(0.5 * Math.sqrt(2 - 2 * Math.sin(y1) * Math.sin(y2) - 2 * Math.cos(y1) * Math.cos(y2) * Math.cos(x1 - x2)));
     }
+    
+    /**
+	 * 点coord1，coord2必须在geo上，返回被点coord1，coord2切成多段的link列表。
+	 * @param geo
+	 * @param coord1
+	 * @param coord2
+	 * @return
+     * @throws Exception 
+     * @throws JSONException 
+	 */
+	public static List<Geometry> splitGeoByPoint(Geometry geo,Coordinate coord1,Coordinate coord2) throws JSONException, Exception{
+		//点将线切成多段
+		Coordinate[] lineCoordinates = geo.getCoordinates();
+		List<Geometry> subLines=new ArrayList<Geometry>(); 
+		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
+		Coordinate coorBefore=null;
+		for(Coordinate linePoint:lineCoordinates){
+			//交点与线的端点相同
+			if(coord1.equals(linePoint)||coord2.equals(linePoint)){
+				if(tmpLine.size()!=0){
+					tmpLine.add(linePoint);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+				}
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//是否第一个点
+			if(coorBefore==null){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//不是第一个点，判断交点是否在两点中间
+			if(isIntersection(coorBefore, linePoint, coord1)){
+				tmpLine.add(coord1);
+				subLines.add(GeoTranslator.createLineString(tmpLine));
+				tmpLine=new ArrayList<Coordinate>();
+				tmpLine.add(coord1);
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			if(isIntersection(coorBefore, linePoint, coord2)){
+				tmpLine.add(coord2);
+				subLines.add(GeoTranslator.createLineString(tmpLine));
+				tmpLine=new ArrayList<Coordinate>();
+				tmpLine.add(coord2);
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			tmpLine.add(linePoint);
+			coorBefore=linePoint;
+		}
+		if(tmpLine.size()>1){subLines.add(GeoTranslator.createLineString(tmpLine));}
+		return subLines;
+	}
+	
+	/**
+	 * 前提：line与面有且只有2个交点，且线穿过面，相交部分在面内。
+	 * 返回：面被line切成2个面，将切成的2个面返回
+	 * @param line
+	 * @param polygon
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Geometry> splitPolygonByLine(Geometry line,Geometry polygon) throws Exception{
+		Geometry referGeoLine=GeoTranslator.createLineString(polygon.getCoordinates());
+		//线是否穿过面
+		Geometry interGeo=referGeoLine.intersection(line);
+		
+		if(interGeo==null||interGeo.getCoordinates().length==0){throw new Exception("线面没有交点");}
+		if(interGeo.getCoordinates().length!=2){
+			throw new Exception("线面交点大于2个，请重新画线");
+		}
+		
+		//coord1，coord2为端点的线段
+		Geometry midLine=polygon.intersection(line);
+		Geometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0]);
+		unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+		boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+		if(!isIn){
+			throw new Exception("线不在面内，请重新划线");
+		}
+		Coordinate coord1 = interGeo.getCoordinates()[0];
+		Coordinate coord2 = interGeo.getCoordinates()[1];
+//		List<Geometry> subLines = GeoTranslator.splitGeoByPoint(line, coord1, coord2);
+		
+//		for(Geometry s:subLines){
+//			Coordinate[] sCoors = s.getCoordinates();
+//			Coordinate sStart = sCoors[0];
+//			Coordinate sEnd = sCoors[sCoors.length-1];
+//			if(GeoTranslator.isPointEquals(sStart,coord1)&&GeoTranslator.isPointEquals(sEnd,coord2)){
+//				midLine=s;
+//				continue;
+//			}
+//			if(GeoTranslator.isPointEquals(sStart,coord2)&&GeoTranslator.isPointEquals(sEnd,coord1)){
+//				midLine=s;
+//				continue;
+//			}
+//		}
+		
+		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
+				
+		List<Geometry> polygonLine1=new ArrayList<Geometry>();
+		List<Geometry> polygonLine2=new ArrayList<Geometry>();
+		List<Geometry> polygonLineTmp=polygonLine1;
+		int i=1;
+		
+		for(Geometry s:subPolygonLines){
+			Coordinate[] sCoors = s.getCoordinates();
+			polygonLineTmp.add(s);
+			if(sCoors[sCoors.length-1].equals(coord1)||sCoors[sCoors.length-1].equals(coord2)){
+				if(i==1){
+					Geometry orderMidLine=midLine;
+					if(sCoors[sCoors.length-1].equals(coord2)){
+						orderMidLine=orderMidLine.reverse();
+					}
+					polygonLineTmp.add(orderMidLine);
+					polygonLineTmp=polygonLine2;i=2;
+				}else{
+					Geometry orderMidLine=midLine;
+					if(sCoors[sCoors.length-1].equals(coord2)){
+						orderMidLine=orderMidLine.reverse();
+					}
+					polygonLineTmp.add(orderMidLine);
+					polygonLineTmp=polygonLine1;
+				}
+			}
+		}
+		
+		//polygonLine1.add(subPolygonLines.get(0));
+		//polygonLine1.add(midLine);
+		Geometry p1 = GeoTranslator.getCalLineToPython(polygonLine1);
+		
+		//polygonLine2.add(subPolygonLines.get(1));
+		//polygonLine2.add(midLine);
+		Geometry p2 = GeoTranslator.getCalLineToPython(polygonLine2);
+		
+		List<Geometry> polygons=new ArrayList<Geometry>();
+		polygons.add(p1);
+		polygons.add(p2);
+		
+		return polygons;		
+	}
+	
+	
+	/**
+	 * 点coord加到geo的形状点中
+	 * @param geo
+	 * @param coord
+	 * @return
+     * @throws Exception 
+     * @throws JSONException 
+	 */
+	public static Geometry addCoorToGeo(Geometry geo,Coordinate coord) throws JSONException, Exception{
+		//点将线切成多段
+		Coordinate[] lineCoordinates = geo.getCoordinates();
+		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
+		Coordinate coorBefore=null;
+		for(Coordinate linePoint:lineCoordinates){
+			//交点与线的端点相同
+			if(coord.equals(linePoint)){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//是否第一个点
+			if(coorBefore==null){
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			//不是第一个点，判断交点是否在两点中间
+			if(isIntersection(coorBefore, linePoint, coord)){
+				tmpLine.add(coord);
+				tmpLine.add(linePoint);
+				coorBefore=linePoint;
+				continue;
+			}
+			tmpLine.add(linePoint);
+			coorBefore=linePoint;
+		}
+		List<Geometry> subLines=new ArrayList<Geometry>();
+		subLines.add(GeoTranslator.createLineString(tmpLine));
+		Geometry p = GeoTranslator.getCalLineToPython(subLines);
+		return p;
+	}
 
 	public static void main(String[] args) throws Exception {
 		Point point = (Point) wkt2Geometry("POINT (116.38636 40.00512)");

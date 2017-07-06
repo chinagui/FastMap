@@ -3,8 +3,10 @@ package com.navinfo.dataservice.control.row.crowds;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +15,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
@@ -26,8 +30,10 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CorwdsSrcPoiDayImportor;
+import com.navinfo.dataservice.engine.editplus.utils.AdFaceSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
 
@@ -182,8 +188,9 @@ public class RowCrowdsControl {
 				imp.persistChangeLog(OperationSegment.SG_ROW, 0); //众包用户ID
 				// 维护状态表poi_edit_status
 				logger.info("维护状态表:pid" + pid);
-				List<Long> pids = Arrays.asList(pid);
-				PoiEditStatus.normalPoi(dayConn, pids, subTaskId, taskId, subtaskType);
+				Map<Long, String> pids = new HashMap<Long, String>();
+				pids.put(pid, null);
+				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType);
 			}else{
 				return "FID:" + fid + "数据未获取到大区库信息，不入库！";
 			}
@@ -251,7 +258,7 @@ public class RowCrowdsControl {
 	 * @return
 	 * @throws Exception
 	 */
-	private static String getDailyDbId(double x,double y) throws Exception {
+	public static String getDailyDbId(double x,double y) throws Exception {
 		String dbId = "";
 		Connection manConn = null;
 		try{
@@ -263,7 +270,30 @@ public class RowCrowdsControl {
 			dbId = qRunner.queryForString(manConn, manQuery, grid);
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
-			throw e;
+			throw new Exception("数据未获取到大区库信息，不入库");
+		}finally{
+			DbUtils.commitAndClose(manConn);
+		}
+		return dbId;
+	}
+	
+	/**
+	 * 根据grid算日库的dbId
+	 * @param grid
+	 * @return
+	 * @throws Exception
+	 */
+	public static String getDailyDbId(String grid) throws Exception {
+		String dbId = "";
+		Connection manConn = null;
+		try{
+			manConn = DBConnector.getInstance().getManConnection();
+			String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
+			QueryRunner qRunner = new QueryRunner();
+			dbId = qRunner.queryForString(manConn, manQuery, grid);
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			throw new Exception("数据未获取到大区库信息，不入库");
 		}finally{
 			DbUtils.commitAndClose(manConn);
 		}
@@ -282,12 +312,47 @@ public class RowCrowdsControl {
 		grid = gridUtil.point2Grids(x, y)[0];
 		return grid;
 	}
+	
+	
+	/**
+	 * 根据点位坐标算出区划号和电话号，电话长度
+	 * @param x
+	 * @param y
+	 * @return
+	 * @throws SQLException 
+	 */
+	public JSONObject getTelephone(double x, double y) throws SQLException{
+		JSONObject result = new JSONObject();
+		Connection conn = null;
+		try{
+			String dbId = getDailyDbId(x, y);
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			AdFaceSelector faceSeletor = new AdFaceSelector(conn);
+			Geometry geometry = GeoTranslator.point2Jts(x, y);
+			MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			
+			// 元数据服务，根据点位坐标算出meshid，然后根据meshId在cp_meshlist中算出adminId
+			//int adminCode = metadataApi.queryAdminIdByLocation(x, y);
+			
+			int adminCode = faceSeletor.getAminIdByGeometry(geometry);
+			
+			String adminCodeStr = String.valueOf(adminCode);
+			JSONObject phoneJson = metadataApi.searchByAdminCode(adminCodeStr);
+			if (phoneJson != null && phoneJson.containsKey(adminCodeStr)){
+				result = phoneJson.getJSONObject(adminCodeStr);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			result = null;
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+		return result;
+	}
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String phone = "029-8888888";
-		String[] phones = phone.split("\\|");
-		System.out.println(phones[0]);
+		System.out.println(getDailyDbId(116.330015199342, 39.9264604897165));
 	}
 
 }

@@ -2,6 +2,7 @@
 package com.navinfo.dataservice.engine.man.userInfo;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -515,6 +516,7 @@ public class UserInfoService {
 						model.setUserLevel(rs.getInt("USER_LEVEL"));
 						model.setUserScore(rs.getInt("USER_SCORE"));
 						model.setUserGpsid(rs.getString("USER_GPSID"));
+						model.setRisk(rs.getInt("RISK"));
 						list.add(model);
 					}
 					return list;
@@ -583,6 +585,75 @@ public class UserInfoService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询user抽检等级
+	 * @param userId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public int queryQualityLevel(long userId,String firstWorkItem) throws ServiceException{
+		Connection conn=null;
+		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item='"+firstWorkItem+"' AND u.user_id="+userId+" AND pc.type=1 ";
+		int qcLevel=0;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			PreparedStatement pstmt = null;
+
+			ResultSet resultSet = null;
+
+			pstmt = conn.prepareStatement(selectSql);
+
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				qcLevel=resultSet.getInt("QC_VALUE");
+			}
+
+			return qcLevel;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询user抽检等级失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, String> getUsers() throws Exception {
+		Connection conn=null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select u.user_id,u.user_real_name from user_info u ";
+
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+
+			pstmt = conn.prepareStatement(selectSql);
+			resultSet = pstmt.executeQuery();
+			Map<Integer, String> result = new HashMap<Integer,String>();
+			
+			while (resultSet.next()) {
+				result.put(resultSet.getInt("user_id"), resultSet.getString("user_real_name"));
+			}
+
+			return result;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询users，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

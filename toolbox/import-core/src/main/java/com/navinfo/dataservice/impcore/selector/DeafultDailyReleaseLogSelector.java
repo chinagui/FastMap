@@ -19,15 +19,10 @@ import com.navinfo.dataservice.commons.sql.SqlClause;
  * 描述：import-coreDeafultDailyReleaseLogSelector.java
  */
 public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
-	List<Integer> grids =null;
 	public DeafultDailyReleaseLogSelector(OracleSchema logSchema,List<Integer> grids) {
 		super(logSchema);
 		this.grids = grids;
 		// TODO Auto-generated constructor stub
-	}
-
-	protected List<Integer> getGrids() {
-		return grids;
 	}
 	
 	protected  SqlClause getPrepareSql(Connection conn) throws Exception{
@@ -67,18 +62,20 @@ public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
 		return sqlClause;
 	}
 	
-	protected String getExtendLogSql() {
+	protected SqlClause getExtendLogSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO ");
 		sb.append(this.tempTable);
-		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
+		sb.append(" T USING (SELECT DISTINCT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(this.tempTable);
 		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.TB_ROW_ID=L.TB_ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.OP_ID=R.OP_ID "
 				+ "AND R.REL_ALL_STA=0" //全要素和poi这的实现不同
 				+ ") TP "
 				+ "ON (T.OP_ID=TP.OP_ID) "
 				+ "WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT,TP.OP_SEQ)");
-		return sb.toString();
+		List<Object> values = new ArrayList<Object> ();
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
 	}
 	
 	protected String getUnlockLogSql(boolean commitStatus){

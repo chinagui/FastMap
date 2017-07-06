@@ -213,29 +213,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-//	@Test
-	public void autoConvert() throws Exception{
-		String word = "ｗ２４５";
-
-        PinyinConverter py = new PinyinConverter();
-
-        String[] result = py.autoConvert(word);
-        if (result != null) {
-            JSONObject json = new JSONObject();
-
-            json.put("voicefile", result[1]);
-
-            json.put("phonetic", result[0]);
-
-            System.out.println( json );
-        } else {
-            throw new Exception("转拼音失败");
-        }
-        
-	}
-	
-	
-	@Test
+	//@Test
 	public void testSearchScPoint()
 	{
 		String parameter = "{'name':'服务票','code':'210303'}";
@@ -246,6 +224,22 @@ public class RdNameSelectorTest {
 			ScPointPoicodeNewService selector = new ScPointPoicodeNewService();
 			
 			JSONArray data = selector.list(jsonReq);
+			
+			System.out.println(data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void testSearchRdname()
+	{
+
+		try {
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			JSONObject data = selector.searchByName("３３０１", 20, 1);
 			
 			System.out.println(data);
 

@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 import com.wordnik.swagger.annotations.ApiParam;
 
@@ -568,7 +571,8 @@ public class SubtaskController extends BaseController {
 	}
 	
 	/**
-	 * 子任务查询列表
+	 * 1.根据参数cityName与infor表中的admin_name模糊匹配，获取匹配成功的情报的所有采集子任务列表
+	 * 应用场景：独立工具：采集成果中/无转快时，获取快线子任务列表
 	 * @author songhe
 	 * @param  cityName
 	 * @return List
@@ -593,6 +597,164 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("子任务查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 编辑子任务圈接口
+	 * 原则：如果S圈对应的采集子任务已经开启，则不能进行任何操作；草稿状态子任务的S圈如果修改，则删除与采集子任务的关联
+	 * 应用场景：独立工具--外业规划--绘制子任务圈—合并/切分等操作
+	 * @author songhe
+	 * @param  cityName
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/paintRefer")
+	public ModelAndView paintRefer(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONObject condition = new JSONObject();			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			SubtaskService.getInstance().paintRefer(taskId, condition);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("子任务查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 获取所有质检子任务列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/unPlanQualitylist")
+	public ModelAndView unPlanQualitylist(HttpServletRequest request) {
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));		
+			Integer taskId = dataJson.getInt("taskId");
+			JSONObject data = SubtaskService.getInstance().unPlanQualitylist(taskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 删除质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityDelete")
+	public ModelAndView qualityDelete(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int qualityId = dataJson.getInt("qualityId");
+
+			SubtaskService.getInstance().qualityDelete(qualityId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("删除质检圈失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 获取质检圈列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualitylist")
+	public ModelAndView qualitylist(HttpServletRequest request){
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int subtaskId = dataJson.getInt("subtaskId");
+			
+			JSONObject data = SubtaskService.getInstance().qualitylist(subtaskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取质检圈列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 创建质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityCreate")
+	public ModelAndView qualityCreate(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			SubtaskService.getInstance().qualityCreate(dataJson);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("创建质检圈失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 修改质检圈
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/qualityUpdate")
+	public ModelAndView qualityUpdate(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			SubtaskService.getInstance().qualityUpdate(dataJson);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("修改质检圈失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

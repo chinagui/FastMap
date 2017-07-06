@@ -100,7 +100,7 @@ public class RefinementLogDependent {
 			List<String> a = new ArrayList<String>();
 			a.add("1");
 			a.add("2");
-			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, null, null);
+			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObjSpecial("IX_POI", "IX_POI", null, null, null);
 //			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000", "201704120000");
 //			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000");
 

@@ -20,11 +20,9 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildlink() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":65," +
-                "\"data\":{\"sNodePid\":402000042,\"eNodePid\":403000032,\"geometry\":{\"type\":\"LineString\"," +
-                "\"coordinates\":[[116.99396878480911,39.99996079681034],[116.99401035904886,40.00013339076144],[116.9936241209507," +
-                "40.0001354454487],[116.99362948536873,39.9999505233471]]},\"catchLinks\":[{\"nodePid\":402000042,\"seqNum\":0}," +
-                "{\"nodePid\":403000032,\"seqNum\":3}]}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":65,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.87499806284903,40.08321439763695]," +
+                "[116.87499940395355,40.08349041597817]]},\"catchLinks\":[]}}";
         TestUtil.run(requester);
     }
 
@@ -36,10 +34,9 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testRepairCmgBuildlink() {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":520000022,\"dbId\":13,\"subtaskId\":65," +
-                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.89272,39.9997]," +
-                "[116.89391434192656,40.000325503753466]]},\"catchInfos\":[{\"nodePid\":504000029,\"longitude\":116.89272," +
-                "\"latitude\":39.9997},{\"nodePid\":501000038,\"longitude\":116.89391434192656,\"latitude\":40.000325503753466}]}}";
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":502000032,\"dbId\":13,\"subtaskId\":58," +
+                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[123.67841,32.41627]" +
+                "[123.67865,32.41596]]},\"catchInfos\":[]}}";
         TestUtil.run(requester);
     }
 }

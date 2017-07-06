@@ -46,7 +46,10 @@ public class FMBAT20177 extends BasicBatchRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isBatch(poiObj)){return;}
-			String adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			String adminId=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+				adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+			}
 			List<IxPoiName> names=poiObj.getAliasCHIName();
 			if(names.size()==0){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -55,7 +58,7 @@ public class FMBAT20177 extends BasicBatchRule {
 				String nameStr= name.getName();
 				if(nameStr.isEmpty()){continue;}
 				IxPoiName originAliasENG= poiObj.getOriginAliasENGName(groupId);
-				String newOriginAliasEngStr=metadataApi.engConvert(nameStr,adminId);
+				String newOriginAliasEngStr=metadataApi.convertEng(nameStr,adminId);
 				//将“NO.”，“nO.”，“no.”修改成“No.”
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("NO.", "No.");
 				newOriginAliasEngStr=newOriginAliasEngStr.replace("nO.", "No.");

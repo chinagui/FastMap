@@ -1,41 +1,33 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.Set;
-
-import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.nirobot.common.utils.JsonUtil;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 保存上传的tips数据
@@ -61,7 +53,9 @@ class ErrorType {
 
 public class TipsUpload {
 
-	static int IMPORT_STATE = 1;
+	static int IMPORT_STAGE = 1;
+
+    static int IMPORT_TIP_STATUS = 2;
 
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
 
@@ -125,16 +119,24 @@ public class TipsUpload {
 				// 1，中线 4，快线
 				int taskType = taskMap.get("programType");
 
-				if (TaskType.M_TASK_TYPE == taskType) {
+				if (TaskType.M_TASK_TYPE == taskType) {//中线
 
 					s_mTaskId = taskId;// 中线任务号
 					s_mSubTaskId = subTaskId; // 中线子任务号
+
+                    //20170519 赋中线清空快线
+                    s_qTaskId = 0;
+                    s_qSubTaskId = 0;
 				}
 
-				if (TaskType.Q_TASK_TYPE == taskType) {
+				if (TaskType.Q_TASK_TYPE == taskType) {//快线
 					s_qTaskId = taskId; // 快线任务号
 					s_qSubTaskId = subTaskId; // 快线子任务号
-				}
+
+                    //20170519 赋快线清空中线
+                    s_mTaskId = 0;
+                    s_mSubTaskId = 0;
+                }
 			}else{
 				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+subTaskId);
 			}
@@ -172,7 +174,7 @@ public class TipsUpload {
 
 	/**
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
-	 * 
+	 *
 	 * @param fileName
 	 * @param audioMap
 	 * @param photoMap
@@ -234,7 +236,7 @@ public class TipsUpload {
 			String rowkey = en.getKey();
 			// 坐标
 			JSONObject nameTipJson = en.getValue();
-			JSONObject gLocation = JSONObject.fromObject(nameTipJson.get("g_location"));
+			JSONObject gLocation = nameTipJson.getJSONObject("g_location");
             String sourceType = nameTipJson.getString("s_sourceType");
 
 			// 名称,调用元数据库接口入库
@@ -260,7 +262,7 @@ public class TipsUpload {
 
 	/**
 	 * 读取Tips文件，组装Get列表
-	 * 
+	 *
 	 * @param fileName
 	 * @return
 	 * @throws Exception
@@ -268,7 +270,6 @@ public class TipsUpload {
 	private List<Get> loadFileContent(String fileName,
 			Map<String, Photo> photoInfo, Map<String, Audio> AudioInfo)
 			throws Exception {
-
 		Scanner scanner = new Scanner(new FileInputStream(fileName));
 
 		List<Get> gets = new ArrayList<Get>();
@@ -283,7 +284,7 @@ public class TipsUpload {
 
 				String line = scanner.nextLine();
 
-				JSONObject json = JSONObject.fromObject(line);
+				JSONObject json = TipsUtils.stringToSFJson(line);
 
 				rowkey = json.getString("rowkey");
 
@@ -297,8 +298,6 @@ public class TipsUpload {
 
 					continue;
 				}
-
-				// String operateDate = json.getString("t_operateDate");
 
 				JSONArray attachments = json.getJSONArray("attachments");
 
@@ -371,8 +370,7 @@ public class TipsUpload {
 
 				String sourceType = json.getString("s_sourceType");
                 JSONObject gLocation = json.getJSONObject("g_location");
-                JSONObject deep = JSONObject.fromObject(json
-                        .getString("deep"));
+                JSONObject deep = json.getJSONObject("deep");
 				if (sourceType.equals("2001")) {
 
 					double length = GeometryUtils.getLinkLength(GeoTranslator
@@ -383,25 +381,11 @@ public class TipsUpload {
 					json.put("deep", deep);
 				}
 
-				json.put("t_cStatus", 1);
-
-				json.put("t_dStatus", 0);
-
-				json.put("t_mStatus", 0);
-
-				json.put("t_inMeth", 0);
-
-				json.put("t_pStatus", 0);
-
-				json.put("t_dInProc", 0);
-
-				json.put("t_mInProc", 0);
-
-				json.put("t_fStatus", 0);
-
 				// 20170223添加：增加快线、中线任务号
-
 				updateTaskIds(json);
+
+                //20170519 Tips上传服务赋值
+                updateTipsStatus(json);
 
 				// 道路名测线
                 JSONObject rdNameObject = new JSONObject();
@@ -465,7 +449,7 @@ public class TipsUpload {
 				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
 
 				logger.error(e.getMessage(), e);
-				
+
 				e.printStackTrace();
 			}
 
@@ -484,14 +468,23 @@ public class TipsUpload {
 	public void updateTaskIds(JSONObject json) throws Exception {
 
 		json.put("s_qTaskId", s_qTaskId);
-	
+
 		json.put("s_qSubTaskId", s_qSubTaskId);
-	
+
 		json.put("s_mTaskId", s_mTaskId);
-	
+
 		json.put("s_mSubTaskId", s_mSubTaskId);
 
 	}
+
+    /**
+     * Tips上传FCC服务赋值
+     * @param json
+     */
+    public void updateTipsStatus(JSONObject json) {
+        json.put("t_tipStatus", TipsUpload.IMPORT_TIP_STATUS);
+        json.put("t_date", currentDate);
+    }
 
 	/**
 	 * @Description:TOOD
@@ -522,7 +515,7 @@ public class TipsUpload {
 
 	/**
 	 * 从Hbase读取要修改和删除的Tips
-	 * 
+	 *
 	 * @param htab
 	 * @param gets
 	 * @throws Exception
@@ -552,9 +545,9 @@ public class TipsUpload {
 
 				if (result.containsColumn("data".getBytes(),
 						"feedback".getBytes())) {
-					JSONObject feedback = JSONObject.fromObject(new String(
-							result.getValue("data".getBytes(),
-									"feedback".getBytes())));
+                    String fastFeedback = new String(result.getValue("data".getBytes(),
+                                    "feedback".getBytes()));
+					JSONObject feedback = TipsUtils.stringToSFJson(fastFeedback);
 
 					jo.put("feedback", feedback);
 				} else {
@@ -579,7 +572,7 @@ public class TipsUpload {
 
 	/**
 	 * 处理新增的Tips
-	 * 
+	 *
 	 * @param puts
 	 */
 	private void doInsert(List<Put> puts) throws Exception {
@@ -644,11 +637,10 @@ public class TipsUpload {
 							json.getString("s_sourceType"));
 				}
 
-				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,
-						currentDate);
+				TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
 
-				solr.addTips(solrIndex);
-				
+				solr.addTips(JSONObject.fromObject(tipsIndexModel));
+
 				puts.add(put);
 
 			} catch (Exception e) {
@@ -711,16 +703,20 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-		JSONObject jsonTrack = TipsUtils.generateTrackJson(3,
-				TipsUpload.IMPORT_STATE, json.getInt("t_handler"),
-				json.getInt("t_command"), null,
-				json.getString("t_operateDate"), currentDate,
-				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
-				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
-				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
+        // track
+        int stage = TipsUpload.IMPORT_STAGE;
+        //20170519 状态流转变更
+        int t_lifecycle = 3;
+        //track
+        TipsTrack track = new TipsTrack();
+        track.setT_lifecycle(t_lifecycle);
+        track.setT_date(currentDate);
+        track.setT_command(json.getInt("t_command"));
+        track.setT_tipStatus(json.getInt("t_tipStatus"));
+        track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
-		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
+        JSONObject trackJson = JSONObject.fromObject(track);
+		put.addColumn("data".getBytes(), "track".getBytes(), trackJson
 				.toString().getBytes());
 
 		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
@@ -749,7 +745,7 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
 				.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "deep".getBytes(),
@@ -757,9 +753,7 @@ public class TipsUpload {
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		// feedback.put("f_array", json.getJSONArray("feedback"));
-
-		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
+		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
 				.toString().getBytes());
 
 		return put;
@@ -767,7 +761,7 @@ public class TipsUpload {
 
 	/**
 	 * 处理修改和删除的Tips
-	 * 
+	 *
 	 * @param puts
 	 */
 	private void doUpdate(List<Put> puts) throws Exception {
@@ -794,7 +788,7 @@ public class TipsUpload {
 
 				JSONObject json = en.getValue();
 
-				
+
 				int lifecycle = json.getInt("t_lifecycle");
 				// 是否是鲜度验证的tips  lifecycle==1删除的，不进行鲜度验证
 				if (lifecycle!=1&&isFreshnessVerification(oldTip, json)) {
@@ -822,10 +816,9 @@ public class TipsUpload {
 
 				Put put = updatePut(rowkey, json, oldTip);
 
-				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,
-						currentDate);
+				TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
 
-				solr.addTips(solrIndex);
+				solr.addTips(JSONObject.fromObject(tipsIndexModel));
 
 				puts.add(put);
 
@@ -848,21 +841,21 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-		int lifecycle = json.getInt("t_lifecycle");
+		int t_lifecycle = json.getInt("t_lifecycle");
 
 		JSONObject oldTrack = oldTip.getJSONObject("track");
 
-		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,
-				TipsUpload.IMPORT_STATE, json.getInt("t_handler"),
-				json.getInt("t_command"), oldTrack.getJSONArray("t_trackInfo"),
-				json.getString("t_operateDate"), currentDate,
-				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
-				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
-				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
+        // track
+        int stage = TipsUpload.IMPORT_STAGE;
+        TipsTrack track = (TipsTrack) JSONObject.toBean(oldTrack, TipsTrack.class);
+        track.setT_lifecycle(t_lifecycle);
+        track.setT_date(currentDate);
+        track.setT_tipStatus(json.getInt("t_tipStatus"));
+        track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
-		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
-				.toString().getBytes());
+        JSONObject trackJson = JSONObject.fromObject(track);
+        put.addColumn("data".getBytes(), "track".getBytes(), trackJson
+                .toString().getBytes());
 
 		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
 
@@ -891,7 +884,7 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
+		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
 				.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "deep".getBytes(),
@@ -899,7 +892,7 @@ public class TipsUpload {
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
+		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
 				.toString().getBytes());
 
 		return put;
@@ -1059,10 +1052,20 @@ public class TipsUpload {
 		 * 
 		 * System.out.println("成功");
 		 */
-		JSONObject json = new JSONObject();
-		json.put("g_guide",
-				"{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
-		TipsUpload l = new TipsUpload(0);
-		l.updateTaskIds(json);
+//		TipsUpload l = new TipsUpload(0);
+//		l.run("F:\\FCC\\11151449646061.txt", null, null);
+
+        String str = "{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.000,40.01351567]}}";
+        //System.out.println(str.toString());
+        JSONObject strJson = TipsUtils.stringToSFJson(str);
+//
+//        com.alibaba.fastjson.JSONObject fj = TipsUtils.netJson2fastJson(strJson);
+//        System.out.println(fj.toString());
+//        System.out.println(strJson.toString());
+        JSONObject locJson1 = strJson.getJSONObject("g_location");
+        JSONArray jsonArray1  = locJson1.getJSONArray("coordinates");
+        System.out.println(jsonArray1.get(0));
+        System.out.println(jsonArray1.get(1));
+        System.out.println(GeoTranslator.transform(GeoTranslator.geojson2Jts(locJson1), 0.00001, 5));
 	}
 }

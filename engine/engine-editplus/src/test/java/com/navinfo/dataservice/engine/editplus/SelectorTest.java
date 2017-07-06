@@ -381,11 +381,11 @@ public class SelectorTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void test15(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(19);
+			conn = DBConnector.getInstance().getConnectionById(12);
 			/*
 			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
 					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\","
@@ -404,7 +404,7 @@ public class SelectorTest {
 			//String data = "{\"names\":[{\"pid\":0,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":1,\"name\":\"1111\",\"nameFlags\":[{\"nameId\":0,\"flagCode\":\"002000010000\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB4B0B6592F7E050A8C08304EE4C\",\"pid\":336,\"objStatus\":\"UPDATE\"}";
 			//String data = "{\"photos\":[{\"poiPid\":306000196,\"pid\":\"3a09569156b3463fa4fec23919e6aec0\",\"tag\":7,\"photoId\":0,\"status\":\"\",\"memo\":\"ea378e47ddd54bd0b39ca5a82d929713\",\"objStatus\":\"INSERT\"}],\"rowId\":\"F51CD1C76DB24A7C8D9B074FABCF891E\",\"pid\":306000196,\"objStatus\":\"UPDATE\"}";
 			//String data = "{\"photos\":[{\"poiPid\":16247512,\"fccPid\":\"d9adeea2e69b42e3abb02ec9a00b3e52\",\"tag\":7,\"photoId\":0,\"status\":\"\",\"memo\":\"6084a4fece3f4485a6193aaf6242ea85\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0C63344604E050A8C083041544\",\"pid\":16247512,\"objStatus\":\"UPDATE\"}";
-			String data = "{\"names\":[{\"pid\":0,\"poiPid\":10435,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":1,\"name\":\"Public ToiletPublic ToiletPublic Toilet\",\"nameFlags\":[{\"nameId\":0,\"flagCode\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"495AF30CF23A0288E0530100007F07FC\",\"pid\":10435,\"objStatus\":\"UPDATE\"}";
+			String data = "{\"names\":[{\"pid\":0,\"poiPid\":10435,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":1,\"name\":\"Public ToiletPublic ToiletPublic Toilet\",\"nameFlags\":[{\"nameId\":0,\"flagCode\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"495AF30CF23A0288E0530100007F07FC\",\"pid\":10435,\"objStatus\":\"UPDATE\",\"geometry\":{\"type\": \"Point\",\"coordinates\":[116.47199,40.14608]}}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
 			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
@@ -417,6 +417,9 @@ public class SelectorTest {
 			//List<BasicObj> list = df.improtAdd(conn, addMap);
 			List<BasicObj> list = df.improtUpdate(conn, updateMap);
 			for (BasicObj basicObj : list) {
+				BasicRow mainrow = basicObj.getMainrow();
+				IxPoi  ixPoi = (IxPoi) mainrow;
+				System.out.println(ixPoi.getGeometry());
 				System.out.println(basicObj);
 			}
 			System.out.println("Over.");

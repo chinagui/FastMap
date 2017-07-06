@@ -23,9 +23,11 @@ public class OpRefRdLane {
 
 	public String run(Result result, Command command) throws Exception {
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
-				conn);
-		operation.deleteRdLaneforRdLinks(command.getLinkPids(), result);
+		if (command.getLinkPids() != null && command.getLinkPids().size() > 0) {
+			com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+					conn);
+			operation.deleteRdLaneforRdLinks(command.getLinkPids(), result);
+		}
 		return null;
 	}
 

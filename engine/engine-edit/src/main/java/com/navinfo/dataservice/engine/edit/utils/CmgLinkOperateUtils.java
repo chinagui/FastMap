@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.navinfo.navicommons.geo.computation.MyGeoConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -219,7 +220,8 @@ public final class CmgLinkOperateUtils {
         Set<String> meshes = new HashSet<>();
         Coordinate[] cs = geometry.getCoordinates();
         for (int i = 1; i < cs.length; i++) {
-            CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(cs[i - 1].x, cs[i - 1].y, cs[i].x, cs[i].y));
+            double[] rect = MyGeoConvertor.lineArr2RectArr(new double[]{cs[i - 1].x, cs[i - 1].y, cs[i].x, cs[i].y});
+            CollectionUtils.addAll(meshes, MeshUtils.rect2Meshes(rect[0], rect[1], rect[2], rect[3]));
         }
         Iterator<String> iterator = meshes.iterator();
         if (meshes.size() > 1) {

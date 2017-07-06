@@ -141,6 +141,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					if(closeGrids.size()>0){
 						List<String> logGrids =selectLogFromCloseGrids(closeGrids,datahubApi,region);
 						if(logGrids!=null&&logGrids.size()>0){
+							//更新任务状态
+							manApi.taskUpdateCmsProgress(phaseId,3,"以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
 							throw new Exception("以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
 						}
 					}
@@ -257,19 +259,20 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("开始进行履历分析");
 				result = parseLog(logMoveResult, monthConn);
-				if(result.getAllObjs().size()==0){throw new LockException("可落的履历全部刷库失败，请查看："+flushResult.getTempFailLogTable());}
-				log.info("开始进行深度信息打标记");
-				new DeepInfoMarker(result,monthConn).execute();
-				log.info("开始执行前批");
-				new PreBatch(result, monthConn).execute();
-				log.info("开始执行检查");
-				Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-				new Classifier(checkResult,monthConn).execute();
-				log.info("开始执行后批处理");
-				new PostBatch(result,monthConn).execute();
-				log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
-				updateField(result, monthConn);
-				
+				if(result.getAllObjs().size()>0){
+					log.info("开始进行深度信息打标记");
+					new DeepInfoMarker(result,monthConn).execute();
+					log.info("开始执行前批");
+					new PreBatch(result, monthConn).execute();
+					log.info("开始执行检查");
+					Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+					new Classifier(checkResult,monthConn).execute();
+					log.info("开始执行后批处理");
+					new PostBatch(result,monthConn).execute();
+					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
+					updateField(result, monthConn);
+				}
+
 				updateLogCommitStatus(dailyConn,tempOpTable);
 				
 			}

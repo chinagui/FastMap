@@ -5,6 +5,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.nirobot.business.Tips2AuMarkApi;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-/*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
 
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
@@ -37,35 +37,35 @@ public class FccApiImpl implements FccApi{
 
     }
 
-    @Override
-    public JSONObject getSubTaskStats(JSONArray grids) throws Exception {
-        JSONObject result=new JSONObject();
-
-        if (grids==null||grids.isEmpty()) {
-
-            throw new IllegalArgumentException("参数错误:grids不能为空。");
-        }
-
-        TipsSelector selector = new TipsSelector();
-
-        //统计日编总量 stage=1
-        int total=selector.getTipsCountByStage(grids, 1);
-
-        //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
-
-        result.put("total", total);
-
-        result.put("finished", finished);
-
-        return result;
-    }
+//    @Override
+//    public JSONObject getSubTaskStats(JSONArray grids) throws Exception {
+//        JSONObject result=new JSONObject();
+//
+//        if (grids==null||grids.isEmpty()) {
+//
+//            throw new IllegalArgumentException("参数错误:grids不能为空。");
+//        }
+//
+//        TipsSelector selector = new TipsSelector();
+//
+//        //统计日编总量 stage=1
+//        int total=selector.getTipsCountByStage(grids, 1);
+//
+//        //统计日编已完成量stage=2 and t_dStatus=1
+//        int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
+//
+//        result.put("total", total);
+//
+//        result.put("finished", finished);
+//
+//        return result;
+//    }
 
     @Override
     public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception {
-        JSONObject result=new JSONObject();
+        JSONObject result = new JSONObject();
 
-        if (wkt==null||wkt.isEmpty()) {
+        if (wkt == null || wkt.isEmpty()) {
 
             throw new IllegalArgumentException("参数错误:wkt不能为空。");
         }
@@ -73,10 +73,10 @@ public class FccApiImpl implements FccApi{
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量 stage=1
-        int total=selector.getTipsCountByStageAndWkt(wkt, 1, collectTaskIds);
+        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total");
 
         //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt, 2, 1, collectTaskIds);
+        int finished = selector.getTipsDayTotal(wkt, collectTaskIds, "dFinished");
 
         result.put("total", total);
 
@@ -102,8 +102,6 @@ public class FccApiImpl implements FccApi{
             Thread newThread=new Thread(tips2AuMark);
 
             newThread.start();
-
-            //tips2AuMark.run();
 
             logger.debug("进入Api:tips2Aumark,调用run()");
         }catch (Exception e) {
@@ -456,6 +454,23 @@ public class FccApiImpl implements FccApi{
         }
         TipsOperator tipsOperator = new TipsOperator();
         tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+    }
+
+	@Override
+	public Map<String, Integer> getCheckTaskCount(int checkSubTaskId)
+			throws Exception {
+		CheckTaskSelector selector=new CheckTaskSelector();
+		
+		Map<String, Integer> result=selector.queryTaskCountByTaskId(checkSubTaskId);
+		
+		return result;
+	}
+
+    @Override
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+        TipsSelector selector = new TipsSelector();
+        Set<Integer> meshSet = selector.getTipsMeshIdSet(collectTaskSet);
+        return meshSet;
     }
 
 }

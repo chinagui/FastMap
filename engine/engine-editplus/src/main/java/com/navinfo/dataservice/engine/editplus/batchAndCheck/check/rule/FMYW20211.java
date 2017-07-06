@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /**
  * @ClassName FMYW20211
@@ -34,10 +35,12 @@ public class FMYW20211 extends BasicCheckRule {
 			for (IxPoiChargingplot ixPoiChargingPlot : ixPoiChargingPlots) {
 				String plotPower = ixPoiChargingPlot.getPower();
 				if(plotPower != null){
-					int power = Integer.parseInt(plotPower);
-					if(power > 100){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-						return;
+					if(CheckUtil.isNumber(plotPower)){
+						Double power = Double.parseDouble(plotPower);
+						if(power > 100){
+							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+							return;
+						}
 					}
 				}
 			}

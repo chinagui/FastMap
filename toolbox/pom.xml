@@ -17,6 +17,7 @@
 		<module>job-datahub</module>
 		<module>job-edit</module>
 		<module>job-statics</module>
+		<module>job-man</module>
     </modules>
     <packaging>pom</packaging>
     <name>toolbox</name>

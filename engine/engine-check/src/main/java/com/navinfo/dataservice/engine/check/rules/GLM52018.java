@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
@@ -46,6 +47,10 @@ public class GLM52018 extends baseRule {
                 List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
                 for (LuFace luFace : list) {
                     Geometry tmpGeo = GeoTranslator.transform(luFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
+                    //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
+                    //    continue;
+                    //}
+
                     int luKind = luFace.getKind();
                     if (6 == luKind) {
                         setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
@@ -72,6 +77,10 @@ public class GLM52018 extends baseRule {
 
                 if (kind == 6) {
                     for (LcFace lcFace : list) {
+                        //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, lcFace.getGeometry())) {
+                        //    continue;
+                        //}
+
                         if (17 != lcFace.getKind()) {
                             setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                         }
@@ -79,6 +88,10 @@ public class GLM52018 extends baseRule {
                 } else if (kind == 11) {
                     for (LcFace lcFace : list) {
                         Geometry tmpGeo = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
+                        //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
+                        //    continue;
+                        //}
+
                         if (17 != lcFace.getKind() && !geometry.covers(tmpGeo)) {
                             setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                         }

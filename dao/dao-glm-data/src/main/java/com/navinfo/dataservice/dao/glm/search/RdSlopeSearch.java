@@ -6,6 +6,15 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import net.sf.json.JSONArray;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -24,25 +33,24 @@ public class RdSlopeSearch implements ISearch {
 	public RdSlopeSearch(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdSlopeSelector selector = new RdSlopeSelector(conn);
-		
-		IObj obj = (IObj)selector.loadById(pid, false);
+
+		IObj obj = (IObj) selector.loadById(pid, false);
 		return obj;
 	}
-	
+
 	@Override
 	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
-		
-		RdSlopeSelector selector = new RdSlopeSelector(conn);		
+		RdSlopeSelector selector = new RdSlopeSelector(conn);
 
 		List<IRow> rows = selector.loadByIds(pidList, false, true);
 
 		return rows;
 	}
-	
+
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {
@@ -57,14 +65,11 @@ public class RdSlopeSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+		List<SearchSnapshot> list = new ArrayList<>();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.LINK_PID, A.S_NODE_PID FROM RD_LINK A WHERE sdo_within_distance(A.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'AND A.U_RECORD != 2) SELECT A.PID, A.TYPE, A.LINK_PID, A.NODE_PID, TMP1.GEOMETRY, TMP1.S_NODE_PID FROM RD_SLOPE A, TMP1 WHERE A.LINK_PID = TMP1.LINK_PID AND A.U_RECORD != 2";
 
-		
-		String sql = "WITH TMP1 AS (SELECT SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY) as geometry, A.NODE_PID FROM RD_NODE A, RD_SLOPE B WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2 group by SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY),A.NODE_PID ) SELECT A.PID, A.TYPE, A.NODE_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_SLOPE A, TMP1 WHERE A.NODE_PID = TMP1.NODE_PID AND A.U_RECORD != 2 ";
-		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -95,49 +100,52 @@ public class RdSlopeSearch implements ISearch {
 
 				snapshot.setI(resultSet.getInt("pid"));
 
-				String pointWkt = resultSet.getString("geometry");
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				JSONObject geojson = Geojson.wkt2Geojson(pointWkt);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				Geojson.point2Pixel(geojson, z, px, py);
+                Geometry geometry = GeoTranslator.geojson2Jts(geojson);
 
-				snapshot.setG(geojson.getJSONArray("coordinates"));
+                int nodePid = resultSet.getInt("node_pid");
+                int sNodePid = resultSet.getInt("s_node_pid");
+                if (nodePid != sNodePid) {
+                    geometry = geometry.reverse();
+                }
+
+                double length = GeometryUtils.getLinkLength(geometry);
+
+                if (30.0d < length) {
+                    length = 30.0d;
+                } else {
+                    length = length / 3.0d;
+                }
+
+                Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance((LineString) geometry, length);
+
+				JSONArray array = Geojson.lonlat2Pixel(coordinate.x, coordinate.y, z, px, py);
+
+				snapshot.setG(array);
 
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-
 			throw new Exception(e);
 		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-
-				}
-			}
-
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
 		}
 
 		return list;
 	}
 
 	public static void main(String[] args) throws Exception {
-		
+
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		
+
 		RdSlopeSearch s = new RdSlopeSearch(conn);
-		
+
 		IObj obj = s.searchDataByPid(132837);
-		
+
 		System.out.println(obj.Serialize(null));
 	}
 }

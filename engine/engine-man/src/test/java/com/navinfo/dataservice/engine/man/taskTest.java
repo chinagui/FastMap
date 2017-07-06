@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.engine.man;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -123,7 +126,32 @@ public class taskTest extends InitApplication{
 	@Test
 	public void testReOpen() throws ServiceException
 	{
-		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
+		TaskService.getInstance().reOpen(Long.valueOf(0), 514);
+	}
+	
+	@Test
+	public void testClose() throws Exception
+	{
+		TaskService.getInstance().close(2190, 10001, "", "");
+	}
+	
+	@Test
+	public void testCreateCmsProgress() throws Exception
+	{
+		Connection conn= DBConnector.getInstance().getManConnection();
+		JSONObject parameter=new JSONObject();
+		parameter.put("TEST", 1);
+		TaskService.getInstance().createCmsProgress(conn,514,1,parameter);
+		DbUtils.commitAndCloseQuietly(conn);
+	}
+	
+	@Test
+	public void testPushMsg() throws Exception
+	{
+		JSONArray taskIds=new JSONArray();
+		taskIds.add(809);
+		String message = TaskService.getInstance().taskPushMsg(0, taskIds);
+		System.out.println(message);
 	}
 
 	@Override
@@ -177,6 +205,23 @@ public class taskTest extends InitApplication{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testUnPlanQualitylist() throws Exception
+	{
+		try {
+			System.out.println(TaskService.getInstance().unPlanQualitylist(57));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	//获取待规划子任务的任务列表
+	@Test
+	public void testUnPlanSubtasklist() throws Exception
+	{
+		JSONObject data = TaskService.getInstance().unPlanSubtasklist(71);
+		System.out.println(data);
 	}
 	
 }

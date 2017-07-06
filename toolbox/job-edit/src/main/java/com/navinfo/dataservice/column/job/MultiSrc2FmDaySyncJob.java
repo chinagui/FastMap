@@ -72,6 +72,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
 			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
+//			String localUnzipDir = "F:\\mul\\20170623160807_day";
 			response("下载文件完成",null);
 			//执行导入
 			imp(syncApi,localUnzipDir);
@@ -95,7 +96,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
 			//String uploadRoot = "D:\\temp\\";
-//			return "E:\\data\\resources\\upload\\multisrc\\20170510\\20170510100000_day";
+//			return "F:\\mul\\20170623160807_day";
+//			return "E:\\data\\resources\\upload\\multisrc\\201706\\20170610102723_day";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
@@ -341,7 +343,6 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				//数据打多源标识
-//				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
 				Date uploadDate = new Date();
 				PoiEditStatus.insertPoiEditStatus(conn, imp.getInsertPids(),1);
 				PoiEditStatus.updatePoiEditStatus(conn, imp.getPids(), 1, 1, uploadDate);

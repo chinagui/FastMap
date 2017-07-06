@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.city;
 
-import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -66,7 +65,8 @@ public class CityService {
 					+ "           AND LATEST = 1) K"
 					+ " WHERE T.CITY_ID = K.CITY_ID(+)"
 					+ "   AND T.PLAN_STATUS IN "+planningStatus
-					+ "   AND SDO_ANYINTERACT(T.GEOMETRY,SDO_GEOMETRY(?,8307))='TRUE'";		
+					+ "   AND sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,"
+					+ "8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";		
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
@@ -219,7 +219,6 @@ public class CityService {
 	 */
 	public Map<Integer, Integer> getGridMapByCityId(Connection conn, int cityId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.CITY_ID = " + cityId;
@@ -276,14 +275,15 @@ public class CityService {
 			conn = DBConnector.getInstance().getManConnection();
 			String extentSql="";
 			if(dataJson.containsKey("planStatus")){
-				extentSql="   AND PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
+				extentSql="   AND T.PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
 						.replace("[", "(").replace("]", ")");
 			}
-			String querySql = "SELECT CITY_ID, ADMIN_GEO, PLAN_STATUS"
-					+ "  FROM CITY"
+			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
+					+ "  FROM CITY T"
 					+ " WHERE 1 = 1"
 					+ extentSql ;
-			return run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
+			log.info(querySql);
+			List<Map<String, Object>> result= run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
 
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs)
@@ -305,6 +305,7 @@ public class CityService {
 					}
 					return res;
 				}});
+			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

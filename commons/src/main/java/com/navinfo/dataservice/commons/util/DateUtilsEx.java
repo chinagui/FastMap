@@ -586,4 +586,16 @@ public final class DateUtilsEx {
         }
         return time;
     }
+    
+    public final static String getTimeStr(Date date,String format) {
+        DateFormat df = new java.text.SimpleDateFormat(format);
+        String time = null;
+        try {
+        	if(date!=null)
+        	time = df.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return time;
+    }
 }

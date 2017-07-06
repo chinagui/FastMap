@@ -1004,6 +1004,15 @@ public class IxPoiObj extends AbstractIxObj {
 		return aliasCHINameList;
 	}
 	
+	public IxPoiName getAliasCHITypeName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
 	public IxPoiName getStandardAliasENGName(long nameGroupId){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
@@ -1410,7 +1419,7 @@ catch (Exception e) {
 		Map<String,Object> ixPoiOldValues = ixPoi.getOldValues();
 		if(ixPoiOldValues!=null){
 			for(String key:ixPoiOldValues.keySet()){
-				if(key.equals(IxPoi.POI_MEMO)||key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)){
+				if(key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)){
 					continue;
 				}else{
 					return false;

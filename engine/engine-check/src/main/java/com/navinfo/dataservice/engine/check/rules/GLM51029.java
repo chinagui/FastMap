@@ -7,6 +7,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
@@ -42,12 +44,21 @@ public class GLM51029 extends baseRule {
 
             List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, false);
             for (LcFace lcFace : list) {
+                if (face.pid() == lcFace.pid()) {
+                    continue;
+                }
+
                 Geometry tmpGeo = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                 if (17 == kind && 17 != lcFace.getKind() && geometry.covers(tmpGeo)) {
                     continue;
                 } else if (17 != kind && 17 == lcFace.getKind() && geometry.coveredBy(tmpGeo)) {
                     continue;
                 }
+
+                if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
+                    continue;
+                }
+
                 setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
             }
         }
@@ -55,6 +66,5 @@ public class GLM51029 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-
     }
 }

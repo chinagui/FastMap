@@ -7,6 +7,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
@@ -33,9 +35,14 @@ public class GLM57022 extends baseRule {
             if (face.changedFields().containsKey("geometry")) {
                 geometry = GeoTranslator.geojson2Jts((JSONObject) row.changedFields().get("geometry"));
             }
-            String wkt = GeoTranslator.jts2Wkt(geometry, GeoTranslator.dPrecisionMap,5);
+            geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
+            String wkt = GeoTranslator.jts2Wkt(geometry);
             List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
             for (CmgBuildface cmgface : list) {
+                if (CheckGeometryUtils.isOnlyEdgeShared(geometry, cmgface.getGeometry())) {
+                    continue;
+                }
+
                 if (face.pid() != cmgface.pid()) {
                     setCheckResult("市街图面重合", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()),0);
                 }

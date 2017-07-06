@@ -106,6 +106,7 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 			if(ipps==null||ipps.size()==0){//不存在，则直接新增父表
 				ipp = poiObj.createIxPoiParent();
 				ipp.setParentPoiPid(parentPid);
+				changedPids.add(poiObj.objPid());
 			}else{
 				ipp = ipps.get(0);
 			}
@@ -118,6 +119,8 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 						cPids.remove(ipcPid);
 					}else{
 						poiObj.deleteSubrow(ipc);
+						changedPids.add(poiObj.objPid());//当前poi pid
+						changedPids.add(ipcPid);//子 poi  pid
 					}
 				}
 			}
@@ -126,6 +129,8 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 					IxPoiChildren c = poiObj.createIxPoiChildren(ipp.getGroupId());
 					c.setChildPoiPid(cpid);
 					c.setRelationType(2);
+					changedPids.add(poiObj.objPid());//当前poi pid
+					changedPids.add(cpid);//子 poi  pid
 				}
 			}
 		}

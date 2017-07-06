@@ -23,7 +23,6 @@ import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
-import com.navinfo.dataservice.engine.meta.model.ScBcrossnodeMatchck;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
@@ -54,16 +53,13 @@ import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 import com.navinfo.navicommons.database.QueryRunner;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -363,21 +359,13 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String[] pyConvert(String word) throws Exception {
 		PinyinConverter py = new PinyinConverter();
+		//String[] result = py.convert(word);
 
-		String[] result = py.convert(word);
-
+        String[] result = py.pyVoiceConvert(word, null, null, null);
+        CollectionUtils.reverseArray(result);
 		return result;
 	}
 	
-	@Override
-	public String pyConvertHz(String word) throws Exception {
-		PinyinConverter py = new PinyinConverter();
-
-		String result = py.convertHz(word);
-
-		return result;
-	}
-
 	@Override
 	public MetadataMap getMetadataMap() throws Exception {
 		MetadataMap result = new MetadataMap();
@@ -567,8 +555,8 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public String convertEng(String word) throws Exception {
-        EnglishConvert convert = new EnglishConvert();
+	public String convertEng(String word, String admin) {
+        EnglishConvert convert = new EnglishConvert(admin);
 		return convert.convert(word);
 	}
 	
@@ -576,6 +564,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType15();
 	}
 	
 	@Override
@@ -690,6 +684,8 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
 	}
+	
+	
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=9且HM_FLAG<>’HM’的PRE_KEY
 	 * @return List<String> pre_key列表
@@ -836,6 +832,10 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 	@Override
+	public Map<String, String> scPointCode2LevelOld() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2LevelOld();
+	}
+	@Override
 	public JSONObject getAdminMap() throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea();
 		return areaSelector.getAdminMap();
@@ -967,6 +967,24 @@ public class MetadataApiImpl implements MetadataApi {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	//获取重要POI的PID
+	@Override
+	public List<Integer> queryImportantPid() throws SQLException {
+		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
+	}
+	
+	/**
+	 * 根据多源poi置信度范围检索对应pid
+	 * @param 范围最小值
+	 * @param 范围最大值
+	 * @return List<pid>
+	 * 
+	 * */
+	@Override
+	public List<Integer> queryReliabilityPid(int minNumber, int maxNumber) throws SQLException {
+		return ScQueryReliabilityPid.getInstance().ScQueryReliabilityPid(minNumber, maxNumber);
 	}
 
 }

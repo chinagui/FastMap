@@ -24,221 +24,216 @@ import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+    }
 
-	public void lockRdCross() throws Exception {
-		// 获取该cross对象
-		RdCrossSelector selector = new RdCrossSelector(this.getConn());
+    public void lockRdCross() throws Exception {
+        // 获取该cross对象
+        RdCrossSelector selector = new RdCrossSelector(this.getConn());
 
-		RdCross cross = (RdCross) selector.loadById(this.getCommand().getPid(), true);
+        RdCross cross = (RdCross) selector.loadById(this.getCommand().getPid(), true);
 
-		this.getCommand().setCross(cross);
-	}
+        this.getCommand().setCross(cross);
+    }
 
-	public void lockRdRestriction() throws Exception {
-		RdRestrictionSelector selector = new RdRestrictionSelector(this.getConn());
+    public void lockRdRestriction() throws Exception {
+        RdRestrictionSelector selector = new RdRestrictionSelector(this.getConn());
 
-		List<RdRestriction> rdRestrictions = selector.getRestrictionByCrossPid(this.getCommand().getPid(), true);
+        List<RdRestriction> rdRestrictions = selector.getRestrictionByCrossPid(this.getCommand().getPid(), true);
 
-		this.getCommand().setRestricts(rdRestrictions);
-	}
+        this.getCommand().setRestricts(rdRestrictions);
+    }
 
-	public void lockRdLaneConnexity() throws Exception {
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(getConn());
+    public void lockRdLaneConnexity() throws Exception {
+        RdLaneConnexitySelector selector = new RdLaneConnexitySelector(getConn());
 
-		List<RdLaneConnexity> rdLaneConnexities = selector.getRdLaneConnexityByCrossPid(this.getCommand().getPid(),
-				true);
+        List<RdLaneConnexity> rdLaneConnexities = selector.getRdLaneConnexityByCrossPid(this.getCommand().getPid(), true);
 
-		this.getCommand().setLanes(rdLaneConnexities);
-	}
+        this.getCommand().setLanes(rdLaneConnexities);
+    }
 
-	public void lockRdBranch() throws Exception {
+    public void lockRdBranch() throws Exception {
 
-		RdBranchSelector selector = new RdBranchSelector(getConn());
+        RdBranchSelector selector = new RdBranchSelector(getConn());
 
-		List<RdBranch> branches = selector.getRdBranchByCrossPid(this.getCommand().getPid(), true);
+        List<RdBranch> branches = selector.getRdBranchByCrossPid(this.getCommand().getPid(), true);
 
-		this.getCommand().setBranches(branches);
-	}
-	
-	@Override
-	public boolean prepareData() throws Exception {
+        this.getCommand().setBranches(branches);
+    }
 
-		lockRdCross();
+    @Override
+    public boolean prepareData() throws Exception {
 
-		if (this.getCommand().getCross() == null) {
+        lockRdCross();
 
-			throw new Exception("指定删除的路口不存在！");
-		}
+        if (this.getCommand().getCross() == null) {
 
-		lockRdRestriction();
+            throw new Exception("指定删除的路口不存在！");
+        }
 
-		lockRdLaneConnexity();
+        lockRdRestriction();
 
-		lockRdBranch();
+        lockRdLaneConnexity();
 
-		return true;
-	}
-	
-	@Override
-	public String run() throws Exception {
+        lockRdBranch();
 
-		try {
-			if (!this.getCommand().isCheckInfect()) {
-				this.getConn().setAutoCommit(false);
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
+        return true;
+    }
 
-				prepareData();
+    @Override
+    public String run() throws Exception {
 
-				updataRelationObj();
+        //try {
+        if (!this.getCommand().isCheckInfect()) {
+            //this.getConn().setAutoCommit(false);
+            String preCheckMsg = this.preCheck();
+            if (preCheckMsg != null) {
+                throw new Exception(preCheckMsg);
+            }
 
-				recordData();
+            prepareData();
 
-				postCheck();
+            updataRelationObj();
 
-				this.getConn().commit();
-			} else {
-				prepareData();
-				
-				Map<String, List<AlertObject>> infects = confirmRelationObj();
-				
-				this.getConn().commit();
+            //recordData();
 
-				return JSONObject.fromObject(infects).toString();
-			}
+            postCheck();
 
-		} catch (Exception e) {
+            //this.getConn().commit();
+        } else {
+            prepareData();
 
-			this.getConn().rollback();
+            Map<String, List<AlertObject>> infects = confirmRelationObj();
 
-			throw e;
-		} finally {
-			try {
-				this.getConn().close();
-			} catch (Exception e) {
+            //this.getConn().commit();
 
-			}
-		}
+            return JSONObject.fromObject(infects).toString();
+        }
 
-		return null;
-	}
-	
-	/**
-	 * @throws Exception 
-	 * 
-	 */
-	private void updataRelationObj() throws Exception {
-		IOperation op = new OpTopo(this.getCommand(), getConn());
+        //} catch (Exception e) {
+        //
+        //this.getConn().rollback();
+        //
+        //	throw e;
+        //} finally {
+        //	try {
+        //		this.getConn().close();
+        //	} catch (Exception e) {
+        //
+        //	}
+        //}
 
-		op.run(this.getResult());
+        return null;
+    }
 
-		//交限
-		IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
+    /**
+     * @throws Exception
+     */
+    private void updataRelationObj() throws Exception {
+        IOperation op = new OpTopo(this.getCommand(), getConn());
 
-		opRefRestrict.run(this.getResult());
+        op.run(this.getResult());
 
-		//车信
-		IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
+        //交限
+        IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
 
-		opRefLaneConnexity.run(this.getResult());
+        opRefRestrict.run(this.getResult());
 
-		// 删除信号灯
-		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
+        //车信
+        IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
-		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
-		
-//		//分歧
-//		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
-//		
-//		opRefBranch.run(this.getResult());
-		
-		//顺行
-		OpRefDirectoroute opRefDirectoroute = new OpRefDirectoroute(this.getConn());
-		opRefDirectoroute.run(this.getResult(), this.getCommand().getPid());
-		
-		//语音引导
-		OpRefVoiceGuide opRefVoiceGuide = new OpRefVoiceGuide(this.getConn());
-		opRefVoiceGuide.run(this.getResult(), this.getCommand().getPid());
-	}
+        opRefLaneConnexity.run(this.getResult());
 
-	/**
-	 * 删除node影响到的关联要素
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
-		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-		
-		Connection conn = getConn();
-		
-		int crossPid = this.getCommand().getPid();
-		
-		//路口自身删除提示
-		OpTopo crossTopo = new OpTopo();
-		List<AlertObject> alertObject = crossTopo.getDeleteCrossInfectData(crossPid);
-		if(CollectionUtils.isNotEmpty(this.getCommand().getCross().getNames()))
-		{
-			infects.put("删除路口(此路口记录有路口名称信息，请注意维护)", alertObject);
-		}
-		else
-		{
-			infects.put("删除路口", alertObject);
-		}
-		
-		//信号灯
-		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation(
-				conn);		
-		List<AlertObject> trafficAlertData = trafficOperation.getDeleteCrossTrafficInfectData(this.getCommand().getCross().getNodes(),conn);
-		if(CollectionUtils.isNotEmpty(trafficAlertData))
-		{
-			infects.put("删除路口删除路口信号灯", trafficAlertData);
-		}
-		//车信
-		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation();
-		List<AlertObject> rdLaneConAlertData = rdLaneConOperation.getDeleteCrossRdlaneConInfectData(this.getCommand().getLanes());
-		if(CollectionUtils.isNotEmpty(rdLaneConAlertData))
-		{
-			infects.put("删除路口删除路口车信", rdLaneConAlertData);
-		}
-		//交限
-		com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation rdResOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation();
-		List<AlertObject> rdResAlertData = rdResOperation.getDeleteCrossRestrictInfectData(this.getCommand().getRestricts());
-		if(CollectionUtils.isNotEmpty(rdResAlertData))
-		{
-			infects.put("删除路口删除路口交限", rdResAlertData);
-		}
-//		//分歧
-//		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation();
-//		List<AlertObject> rdBranchAlertData = rdBranchOperation.getDeleteCrossBranchInfectData(this.getCommand().getBranches());
-//		if(CollectionUtils.isNotEmpty(rdBranchAlertData))
-//		{
-//			infects.put("删除路口删除路口分歧", rdBranchAlertData);
-//		}
-		//语音引导
-		com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation voiceGuideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation(conn);
-		List<AlertObject> voiceGuideAlertData = voiceGuideOperation.getDeleteCrossVoiceGuideInfectData(crossPid);
-		if(CollectionUtils.isNotEmpty(voiceGuideAlertData))
-		{
-			infects.put("删除路口删除语音引导", voiceGuideAlertData);
-		}
-		//顺行
-		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation directoureOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation(conn);
-		List<AlertObject> directoureAlertData = directoureOperation.getDeleteCrossDirectoureInfectData(crossPid);
-		if(CollectionUtils.isNotEmpty(directoureAlertData))
-		{
-			infects.put("删除路口删除顺行", directoureAlertData);
-		}
-		return infects;
-	}
+        // 删除信号灯
+        OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
 
-	@Override
-	public String exeOperation() throws Exception {
-		return null;
-	}
+        opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
+
+        //		//分歧
+        //		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+        //
+        //		opRefBranch.run(this.getResult());
+
+        //顺行
+        OpRefDirectoroute opRefDirectoroute = new OpRefDirectoroute(this.getConn());
+        opRefDirectoroute.run(this.getResult(), this.getCommand().getPid());
+
+        //语音引导
+        OpRefVoiceGuide opRefVoiceGuide = new OpRefVoiceGuide(this.getConn());
+        opRefVoiceGuide.run(this.getResult(), this.getCommand().getPid());
+    }
+
+    /**
+     * 删除node影响到的关联要素
+     *
+     * @return
+     * @throws Exception
+     */
+    private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+        Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+
+        Connection conn = getConn();
+
+        int crossPid = this.getCommand().getPid();
+
+        //路口自身删除提示
+        OpTopo crossTopo = new OpTopo();
+        List<AlertObject> alertObject = crossTopo.getDeleteCrossInfectData(crossPid);
+        if (CollectionUtils.isNotEmpty(this.getCommand().getCross().getNames())) {
+            infects.put("删除路口(此路口记录有路口名称信息，请注意维护)", alertObject);
+        } else {
+            infects.put("删除路口", alertObject);
+        }
+
+        //信号灯
+        com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficOperation = new com.navinfo.dataservice
+                .engine.edit.operation.obj.trafficsignal.delete.Operation(conn);
+        List<AlertObject> trafficAlertData = trafficOperation.getDeleteCrossTrafficInfectData(this.getCommand().getCross().getNodes(),
+                conn);
+        if (CollectionUtils.isNotEmpty(trafficAlertData)) {
+            infects.put("删除路口删除路口信号灯", trafficAlertData);
+        }
+        //车信
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo
+                .dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation();
+        List<AlertObject> rdLaneConAlertData = rdLaneConOperation.getDeleteCrossRdlaneConInfectData(this.getCommand().getLanes());
+        if (CollectionUtils.isNotEmpty(rdLaneConAlertData)) {
+            infects.put("删除路口删除路口车信", rdLaneConAlertData);
+        }
+        //交限
+        com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation rdResOperation = new com.navinfo.dataservice
+                .engine.edit.operation.obj.rdrestriction.delete.Operation();
+        List<AlertObject> rdResAlertData = rdResOperation.getDeleteCrossRestrictInfectData(this.getCommand().getRestricts());
+        if (CollectionUtils.isNotEmpty(rdResAlertData)) {
+            infects.put("删除路口删除路口交限", rdResAlertData);
+        }
+        //		//分歧
+        //		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo
+        // .dataservice.engine.edit.operation.obj.rdbranch.delete.Operation();
+        //		List<AlertObject> rdBranchAlertData = rdBranchOperation.getDeleteCrossBranchInfectData(this.getCommand().getBranches());
+        //		if(CollectionUtils.isNotEmpty(rdBranchAlertData))
+        //		{
+        //			infects.put("删除路口删除路口分歧", rdBranchAlertData);
+        //		}
+        //语音引导
+        com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation voiceGuideOperation = new com.navinfo
+                .dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation(conn);
+        List<AlertObject> voiceGuideAlertData = voiceGuideOperation.getDeleteCrossVoiceGuideInfectData(crossPid);
+        if (CollectionUtils.isNotEmpty(voiceGuideAlertData)) {
+            infects.put("删除路口删除语音引导", voiceGuideAlertData);
+        }
+        //顺行
+        com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation directoureOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation(conn);
+        List<AlertObject> directoureAlertData = directoureOperation.getDeleteCrossDirectoureInfectData(crossPid);
+        if (CollectionUtils.isNotEmpty(directoureAlertData)) {
+            infects.put("删除路口删除顺行", directoureAlertData);
+        }
+        return infects;
+    }
+
+    @Override
+    public String exeOperation() throws Exception {
+        return null;
+    }
 }

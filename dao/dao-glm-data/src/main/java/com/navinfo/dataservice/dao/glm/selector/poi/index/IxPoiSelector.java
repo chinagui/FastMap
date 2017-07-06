@@ -1,23 +1,29 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.index;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
@@ -33,6 +39,7 @@ import net.sf.json.JSONObject;
 public class IxPoiSelector extends AbstractSelector {
 
 	private Connection conn;
+	public static Logger log = Logger.getLogger(IxPoiSelector.class);
 
 	public IxPoiSelector(Connection conn) {
 
@@ -53,12 +60,14 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPids(boolean isLock, String pidName,
-			int type, int subtaskId, int pageSize, int pageNum) throws Exception {
+	public JSONObject loadPids(boolean isLock, String pidName, int type,
+			int subtaskId, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
 		JSONArray array = new JSONArray();
+
+		Map<Long, JSONObject> objs = new HashMap<Long, JSONObject>();
 
 		int total = 0;
 		int startRow = (pageNum - 1) * pageSize + 1;
@@ -67,18 +76,17 @@ public class IxPoiSelector extends AbstractSelector {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
-		buffer.append(" FROM (SELECT /*+ index(ip IX_POI_GEOMETRY) leading(ps,ip,ipn) use_hash(ps,ip,ipn)*/  COUNT (1) OVER (PARTITION BY 1) total,");
-		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.geometry,ip.collect_time ");
+		buffer.append(" FROM (SELECT   COUNT (1) OVER (PARTITION BY 1) total,");
+		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.collect_time, ");
+		buffer.append(" (SELECT COUNT (1)  FROM ix_poi_photo iph WHERE ip.pid = iph.poi_pid(+) AND U_RECORD != 2) as photocount  ,");
+		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IX_POI') as checkcount ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 
-		// buffer.append(" AND ipn.lang_code = 'CHI'");
-		// buffer.append(" AND ipn.name_type = 2 ");
-		// buffer.append(" AND ipn.name_class = 1");
-
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
-		buffer.append(" AND (ps.QUICK_SUBTASK_ID="+subtaskId+" or ps.MEDIUM_SUBTASK_ID="+subtaskId+") ");
-		
+		buffer.append(" AND (ps.QUICK_SUBTASK_ID=" + subtaskId
+				+ " or ps.MEDIUM_SUBTASK_ID=" + subtaskId + ") ");
+
 		if (!pidName.isEmpty()) {
 			Pattern pattern = Pattern.compile("[0-9]*");
 			Matcher isNum = pattern.matcher(pidName);
@@ -92,20 +100,13 @@ public class IxPoiSelector extends AbstractSelector {
 			}
 		}
 
-		// if (pid != 0) {
-		// buffer.append(" AND ip.pid = " + pid + "");
-		// } else {
-		// if (StringUtils.isNotBlank(pidName)) {
-		// buffer.append(" AND ipn.name like '%" + pidName + "%'");
-		// }
-		// }
-
 		buffer.append(" ) c");
 		buffer.append(" WHERE ROWNUM <= :1) ");
 		buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
+		log.info(buffer.toString());
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -115,19 +116,14 @@ public class IxPoiSelector extends AbstractSelector {
 
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
-			LogReader logRead = new LogReader(conn);
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				// STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				// Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
-
+				long pid = resultSet.getLong("pid");
 				json.put("poiNum", resultSet.getString("poi_num"));
-				json.put("pid", resultSet.getInt("pid"));
-				json.put("status", logRead.getObjectState(
-						resultSet.getInt("pid"), "IX_POI"));
+				json.put("pid", pid);
 				json.put("name", resultSet.getString("name"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				String flag = "";
@@ -135,10 +131,8 @@ public class IxPoiSelector extends AbstractSelector {
 					flag = resultSet.getString("flag");
 				}
 				json.put("flag", flag);
-				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(
-						conn);
-				json.put("photo",
-						selector.getPoiPhotoTotal(resultSet.getInt("pid")));
+
+				json.put("photo", resultSet.getInt("photocount"));
 				String poiMemo = "";
 				if (StringUtils.isNotEmpty(resultSet.getString("poi_memo"))) {
 					poiMemo = resultSet.getString("poi_memo");
@@ -151,20 +145,27 @@ public class IxPoiSelector extends AbstractSelector {
 				json.put("collectTime", collectTime);
 				json.put("freshnessVefication",
 						resultSet.getInt("freshness_vefication"));
-				json.put("errorCount",
-						getcheckErrorTotal(resultSet.getInt("pid"), "IX_POI"));
+				json.put("errorCount", resultSet.getInt("checkcount"));
 				json.put("errorType", "");
 				json.put("auditProblem", "");
 				json.put("auditStatus", "");
-				// json.put("geometry", GeoTranslator.jts2Geojson(geometry));
-				// json.put("uRecord", resultSet.getInt("u_record"));
 
-				array.add(json);
+				objs.put(pid, json);
 			}
 			result.put("total", total);
-
+			// get status
+			if (objs.size() > 0) {
+				LogReader logRead = new LogReader(conn);
+				Map<Long, Integer> objStatus = logRead.getObjectState(
+						objs.keySet(), ObjectName.IX_POI);
+				for (Entry<Long, JSONObject> entry : objs.entrySet()) {
+					Integer status = objStatus.get(entry.getKey());
+					JSONObject jo = entry.getValue();
+					jo.put("status", status == null ? 0 : status);
+					array.add(jo);
+				}
+			}
 			result.put("rows", array);
-
 			return result;
 		} catch (Exception e) {
 
@@ -433,8 +434,8 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 		String rawFields = null;
-		
-		//这个接口日编和月编都调用了，而月编没有这些字段，所以要加判断（RAW_FIELDS，STATUS，FRESH_VERIFIED）
+
+		// 这个接口日编和月编都调用了，而月编没有这些字段，所以要加判断（RAW_FIELDS，STATUS，FRESH_VERIFIED）
 		if (poiEditStatus.containsKey("RAW_FIELDS")) {
 			if (poiEditStatus.get("RAW_FIELDS") == null) {
 				poi.setRawFields(rawFields);
@@ -444,14 +445,14 @@ public class IxPoiSelector extends AbstractSelector {
 			}
 		}
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
-		if(poiEditStatus.containsKey("STATUS")){
-		poi.setStatus(poiEditStatus.getInt("STATUS"));}
-		
-		if(poiEditStatus.containsKey("FRESH_VERIFIED")){
+		if (poiEditStatus.containsKey("STATUS")) {
+			poi.setStatus(poiEditStatus.getInt("STATUS"));
+		}
+
+		if (poiEditStatus.containsKey("FRESH_VERIFIED")) {
 			poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
 		}
-		
-		
+
 		return poi;
 	}
 
@@ -579,7 +580,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 	/**
 	 * 根据引导LINK查询poi对象
-	 *
+	 * 
 	 * @param linkPids
 	 *            引导link
 	 * @param isLock
@@ -587,8 +588,8 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return poi主对象
 	 * @throws Exception
 	 */
-	public List<IxPoi> loadIxPoiByLinkPids(List<Integer> linkPids, boolean isLock)
-			throws Exception {
+	public List<IxPoi> loadIxPoiByLinkPids(List<Integer> linkPids,
+			boolean isLock) throws Exception {
 
 		List<IxPoi> poiList = new ArrayList<>();
 
@@ -599,7 +600,8 @@ public class IxPoiSelector extends AbstractSelector {
 
 		String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
 
-		String sql = "select * from  ix_poi where link_pid IN (" + ids + ") and u_record !=2";
+		String sql = "select * from  ix_poi where link_pid IN (" + ids
+				+ ") and u_record !=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -619,7 +621,7 @@ public class IxPoiSelector extends AbstractSelector {
 				IxPoi ixPoi = new IxPoi();
 
 				ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
-				
+
 				poiList.add(ixPoi);
 			}
 
@@ -637,4 +639,75 @@ public class IxPoiSelector extends AbstractSelector {
 		return poiList;
 	}
 
+	/**
+	 * 根据引导POI pids 查询官方原始名称 zhakk
+	 * 
+	 * @param POI
+	 * @param isLock
+	 *            是否加锁
+	 * @return Map
+	 * @throws Exception
+	 */
+	public JSONArray loadNamesByPids(List<Integer> poiPids, boolean isLock)
+			throws Exception {
+
+		JSONArray array = new JSONArray();
+
+		if (poiPids.size() < 1) {
+
+			return array;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(poiPids, ",");
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(" SELECT ip.pid, im.name ");
+		buffer.append(" FROM ix_poi_name im, ix_poi ip ");
+		buffer.append(" WHERE     im.u_record(+) <> 2 AND ip.u_record <> 2 ");
+		buffer.append(" AND im.lang_code(+) = 'CHI'  AND name_class(+) = 1  AND name_type(+) = 2  ");
+		buffer.append(" AND ip.pid = im.poi_pid(+) ");
+		Clob pidClod = null;
+		if (poiPids.size() > 1000) {
+			pidClod = ConnectionUtil.createClob(conn);
+			pidClod.setString(1, ids);
+			buffer.append(" AND ip.pid IN (select to_number(column_value) from table(clob_to_table(?))) ");
+		} else {
+			buffer.append("　AND ip.pid IN (" + ids + ") ");
+		}
+
+		if (isLock) {
+			buffer.append(" for update nowait ");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(buffer.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				JSONObject object = new JSONObject();
+				int pid = resultSet.getInt("pid");
+				String name = resultSet.getString("name");
+				object.put("pid", pid);
+				object.put("name", name);
+
+				array.add(object);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return array;
+	}
 }

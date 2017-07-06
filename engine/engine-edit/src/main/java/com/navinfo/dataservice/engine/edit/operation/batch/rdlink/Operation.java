@@ -1,13 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.batch.rdlink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -36,12 +28,20 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.batch.BatchRuleType;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.IntersectionMatrix;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -119,11 +119,6 @@ public class Operation implements IOperation {
 		List<RdLink> links = filterZoneLinks(zoneFace);
 
 		for (RdLink link : links) {
-
-			if (CollectionUtils.isNotEmpty(link.getZones())) {
-
-				continue;
-			}
 
 			ZoneIDBatchUtils.setZoneID(link, zoneFace, conn, result);
 		}
@@ -212,72 +207,54 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private List<RdLink> filterUrbanLinks(int batchType) throws Exception {
-
-		List<RdLink> updateLinks = new ArrayList<RdLink>();
+		List<RdLink> updateLinks = new ArrayList<>();
 
 		LuFaceSelector luFaceSelector = new LuFaceSelector(conn);
-
-		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(),
-				true);
-
+		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(), true);
 		if (face.getKind() != 21) {
-
 			return updateLinks;
 		}
 
 		// 假想线
-		List<LuLink> meshLinks = new ArrayList<LuLink>();
-
+		List<LuLink> meshLinks = new ArrayList<>();
 		// 组成面的lulink
-		List<LuLink> luLinks = new ArrayList<LuLink>();
+		List<LuLink> luLinks = new ArrayList<>();
 
 		getLuLinkInfo(face, meshLinks, luLinks);
 
 		BatchSelector batchSelector = new BatchSelector(this.conn);
+		List<RdLink> rdLinks = batchSelector.loadLinkByLuFace(face.getPid(), batchType, true);
 
-		List<RdLink> rdLinks = batchSelector.loadLinkByLuFace(face.getPid(),
-				batchType, true);
+		LineString linkGeometry;
 
-		LineString linkGeometry = null;
-
-		Geometry faceGeometry = GeoTranslator.geojson2Jts(
-				GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
+		Geometry faceGeometry = GeoTranslator.transform(face.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
 
 		for (RdLink link : rdLinks) {
+			linkGeometry = (LineString) GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
 
-			linkGeometry = (LineString) GeoTranslator.geojson2Jts(
-					GeoTranslator.jts2Geojson(link.getGeometry()), 0.00001, 5);
-
-			IntersectionMatrix intersectionMatrix = linkGeometry
-					.relate(faceGeometry);
+			IntersectionMatrix intersectionMatrix = linkGeometry.relate(faceGeometry);
 
 			// Link完全在Polygon内
 			if (GeoRelationUtils.Interior(intersectionMatrix)) {
-
 				updateLinks.add(link);
-
 				continue;
 			}
 
 			// Link的两个端点在Polygon的边界上，除端点外其他部分完全在Polygon内部
 			if (GeoRelationUtils.InteriorAnd2Intersection(intersectionMatrix)) {
-
 				// 起点在假想线上
 				boolean intersectsSNode = false;
 				// 终点在假想线上
 				boolean intersectsENode = false;
 
 				for (LuLink lulink : meshLinks) {
+                    Geometry tmpGeometry = GeoTranslator.transform(lulink.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
 
-					if (linkGeometry.getStartPoint().intersects(
-							lulink.getGeometry())) {
-
+					if (linkGeometry.getStartPoint().intersects(tmpGeometry)) {
 						intersectsSNode = true;
 					}
 
-					if (linkGeometry.getEndPoint().intersects(
-							lulink.getGeometry())) {
-
+					if (linkGeometry.getEndPoint().intersects(tmpGeometry)) {
 						intersectsENode = true;
 					}
 
@@ -288,80 +265,60 @@ public class Operation implements IOperation {
 
 				// link的端点均在假想线上
 				if (intersectsSNode && intersectsENode) {
-
 					updateLinks.add(link);
-
 					continue;
 				}
 
-				boolean sNodeHaveSameNode = haveSameNodeByLU(
-						link.getsNodePid(), luLinks);
-
+				boolean sNodeHaveSameNode = haveSameNodeByLU(link.getsNodePid(), luLinks);
 				// 起点没有制作同一点
 				if (!sNodeHaveSameNode) {
 					continue;
 				}
 
-				boolean eNodeHaveSameNode = haveSameNodeByLU(
-						link.geteNodePid(), luLinks);
-
+				boolean eNodeHaveSameNode = haveSameNodeByLU(link.geteNodePid(), luLinks);
 				// 两个端点均与此Polygon的边界点制作了同一Node
 				if (sNodeHaveSameNode && eNodeHaveSameNode) {
-
 					updateLinks.add(link);
 				}
-
 				continue;
 			}
 
 			if (GeoRelationUtils.InteriorAnd1Intersection(intersectionMatrix)) {
+                // 交点pid
+                int intersectionNodePid = link.getsNodePid();
+                // 交点几何
+                Point intersectionNodeGeo = linkGeometry.getStartPoint();
 
-				// 交点pid
-				int intersectionNodePid = link.getsNodePid();
-
-				// 交点几何
-				Point intersectionNodeGeo = linkGeometry.getStartPoint();
-
-				if (linkGeometry.getEndPoint().intersects(faceGeometry)) {
-
-					intersectionNodePid = link.geteNodePid();
-
-					intersectionNodeGeo = linkGeometry.getEndPoint();
-				}
+                if (linkGeometry.getStartPoint().intersection(faceGeometry.getBoundary()).isEmpty()) {
+                    intersectionNodePid = link.geteNodePid();
+                    intersectionNodeGeo = linkGeometry.getEndPoint();
+                }
 
 				boolean intersectsMeshLink = false;
 
 				for (LuLink lulink : meshLinks) {
-
-					if (intersectionNodeGeo.intersects(lulink.getGeometry())) {
-
+                    Geometry tmpGeometry = GeoTranslator.transform(lulink.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+					if (intersectionNodeGeo.intersects(tmpGeometry)) {
 						intersectsMeshLink = true;
-
 						break;
 					}
 				}
 
 				// 在假想线上
 				if (intersectsMeshLink) {
-
 					updateLinks.add(link);
-
 					continue;
 				}
 
-				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid,
-						luLinks);
+				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid, luLinks);
 
 				// 交点制作了同一Node
 				if (haveSameNode) {
-
 					updateLinks.add(link);
 				}
 			}
 		}
-
 		return updateLinks;
-
 	}
 
 	/**

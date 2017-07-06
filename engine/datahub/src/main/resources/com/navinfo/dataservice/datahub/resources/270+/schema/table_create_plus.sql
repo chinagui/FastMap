@@ -75,11 +75,11 @@ create table POI_COLUMN_STATUS
   WORK_ITEM_ID       VARCHAR2(50),
   FIRST_WORK_STATUS  NUMBER(1) default 1,
   SECOND_WORK_STATUS NUMBER(1) default 1,
-  HANDLER            NUMBER(10),
-  TASK_ID            NUMBER(10),
+  HANDLER            NUMBER(10) default 0,
+  TASK_ID            NUMBER(10) default 0,
   APPLY_DATE		 TIMESTAMP,
   QC_FLAG            NUMBER(1) default 0,
-  COMMON_HANDLER     NUMBER(10)
+  COMMON_HANDLER     NUMBER(10) default 0
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
@@ -149,20 +149,25 @@ SECOND_WORK_ITEM      VARCHAR2(50),
 WORK_ITEM_ID          VARCHAR2(50),
 OLD_VALUE             VARCHAR2(500),
 NEW_VALUE             VARCHAR2(500),
-ERROR_TYPE            VARCHAR2(50),
-ERROR_LEVEL           VARCHAR2(10),
+ERROR_TYPE            VARCHAR2(100),
+ERROR_LEVEL           VARCHAR2(200),
 PROBLEM_DESC          VARCHAR2(500),
-TECH_GUIDANCE         VARCHAR2(100),
-TECH_SCHEME           VARCHAR2(100),
+TECH_GUIDANCE         VARCHAR2(500),
+TECH_SCHEME           VARCHAR2(500),
 WORK_TIME             TIMESTAMP,
 QC_TIME               TIMESTAMP,
-IS_PROBLEM            NUMBER(1),
+IS_PROBLEM            VARCHAR2(100),
 IS_VALID              NUMBER(1),
 WORKER                NUMBER(10),
 QC_WORKER             NUMBER(10),
 ORIGINAL_INFO         VARCHAR2(200),
     constraint PK_COLUMN_QC_PROBLEM primary key (ID)
 );
+
+create sequence COLUMN_QC_PROBLEM_seq
+increment by 1
+start with 1
+maxvalue 999999999;
   
 /* GDB+ log part */
 CREATE TABLE LOG_ACTION(
@@ -215,6 +220,10 @@ create table LOG_DETAIL (
     constraint PK_LOG_DETAIL primary key (ROW_ID)
 );
 CREATE INDEX IX_LOG_DETAIL_OPID ON LOG_DETAIL(OP_ID);
+CREATE INDEX IX_LOG_DETAIL_OBNM ON LOG_DETAIL(OB_NM);
+CREATE INDEX IX_LOG_DETAIL_OBPID ON LOG_DETAIL(OB_PID);
+CREATE INDEX IX_LOG_DETAIL_TBNM ON LOG_DETAIL(TB_NM);
+CREATE INDEX IX_LOG_DETAIL_TBRID ON LOG_DETAIL(TB_ROW_ID);
 
 create table LOG_DETAIL_GRID (
   LOG_ROW_ID RAW(16) NOT NULL,
@@ -348,4 +357,22 @@ FID VARCHAR2(36),
 START_DATE DATE,
 END_DATE DATE
 );
+
+create table DATA_PLAN
+(
+  pid              NUMBER(10) not null,
+  data_type        NUMBER(1),
+  is_plan_selected NUMBER(1) default 1,
+  task_id          NUMBER(10),
+  is_important     NUMBER(1) default 0
+);
+comment on table DATA_PLAN
+  is '日库外业规划数据表';
+-- Add comments to the columns 
+comment on column DATA_PLAN.data_type
+  is '数据类型，1 poi 2road ';
+comment on column DATA_PLAN.is_plan_selected
+  is '是否规划选中状态 0非选中状态，1选中状态';
+comment on column DATA_PLAN.is_important
+  is '是否重要poi 0非重要poi，1重要poi';
 

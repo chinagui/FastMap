@@ -4,8 +4,5 @@
 .settings
 .git
 .classpath
-.gitignore
 /RemoteSystemsTempFiles
-.recommenders/
-_pasted_code_/
-/web/edit-web/src/main/webapp/.#webclasspath
+.recommenders

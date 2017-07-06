@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import net.sf.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TipsSelectorUtils {
 	
@@ -103,6 +105,17 @@ public class TipsSelectorUtils {
             accessList.add("未调查");
         }
         return accessList;
+    }
+
+    public static Set<String> getMeshesByGrids(List<Integer> grids) {
+        Set<String> meshes = new HashSet<>();
+        for(Integer grid : grids) {
+            String mesh = String.valueOf(grid).substring(0,6);
+            if(!meshes.contains(mesh)) {
+                meshes.add(mesh);
+            }
+        }
+        return meshes;
     }
 
     public static void main(String[] args) {

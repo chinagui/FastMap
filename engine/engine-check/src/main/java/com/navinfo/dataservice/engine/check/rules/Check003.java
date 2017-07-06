@@ -42,9 +42,7 @@ public class Check003 extends baseRule {
             if (CheckGeometryUtils.notContains(OBJ_TYPES, row.objType())) {
                 continue;
             }
-            if (row.status() == ObjStatus.INSERT) {
-                continue;
-            } else if (row.status() == ObjStatus.UPDATE && hasModifyGeo(row)) {
+            if (row.status() != ObjStatus.UPDATE || !hasModifyGeo(row)) {
                 continue;
             }
 
@@ -56,7 +54,7 @@ public class Check003 extends baseRule {
                 logger.debug(String.format("CHECK003 {ObjType: %s, Pid: %d, Geometry: %s}", row.tableName(), row.parentPKValue(),
                         geometry.toString()));
 
-                geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+                geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
                 DatabaseOperator databaseOperator = new DatabaseOperator();
                 if (GeometryTypeName.POINT.equals(geometry.getGeometryType())) {
                     checkGscGeometry(row, geometry.getCoordinate(), databaseOperator);

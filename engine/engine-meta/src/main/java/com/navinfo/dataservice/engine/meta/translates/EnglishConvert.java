@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
+import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -12,13 +14,14 @@ import java.util.regex.Pattern;
  * @Description: 翻译-中文字符串转英文核心类
  * @Author: Crayeres
  * @Date: 2017/3/30
- * @Version: V1.0
+ * @Version: V1.1
  */
 public class EnglishConvert {
 
-    public EnglishConvert() {
-    }
-
+    /**
+     * 日志记录
+     */
+    private Logger logger = Logger.getLogger(EnglishConvert.class);
 
     /**
      * 是否处理多音字标识,与HANDLE_POLYPHONIC_WORD对应
@@ -32,10 +35,33 @@ public class EnglishConvert {
      */
     private String adminCode = "";
 
+    /**
+     * 数组下标偏移量（由于汉字后均后跟随空格）
+     */
+    private final static Integer OFFSET = 2;
+
+    public EnglishConvert() {
+    }
+
+    public EnglishConvert(String adminCode) {
+        if (StringUtils.isNotEmpty(adminCode)) {
+            this.adminCode = adminCode;
+        }
+    }
+
     public EnglishConvert(String convertType, String adminCode) {
         if (TranslateConstant.HANDLE_POLYPHONIC_WORD.equals(convertType)) {
             this.convertPolyhonic = true;
         }
+        this.adminCode = adminCode;
+    }
+
+    /**
+     * Setter method for property <tt>adminCode</tt>.
+     *
+     * @param adminCode value to be assigned to property adminCode
+     */
+    public void setAdminCode(String adminCode) {
         this.adminCode = adminCode;
     }
 
@@ -50,22 +76,27 @@ public class EnglishConvert {
             return sourceText;
         }
 
-        String result = this.replaceKeyWord(sourceText);
+        String result = sourceText;
+        try {
+            result = this.replaceKeyWord(sourceText);
 
-        result = SplitUtil.split(result);
+            result = SplitUtil.split(result);
 
-        result = ConvertUtil.convertNoWord(result);
+            result = ConvertUtil.convertNoWord(result);
 
-        result = ConvertUtil.removeRepeatBackSlash(result);
+            result = ConvertUtil.removeRepeatBackSlash(result);
 
-        result = this.convertKernel(result);
+            result = this.convertKernel(result);
 
-        result = ConvertUtil.removeRepeatSpace(result);
+            result = ConvertUtil.removeRepeatSpace(result);
 
-        result = ConvertUtil.firstCapital(result);
+            result = ConvertUtil.firstCapital(result);
 
-        result = ConvertUtil.trimSymbolSpace(result);
-
+            result = ConvertUtil.trimSymbolSpace(result);
+        } catch (Exception e) {
+            logger.error(String.format("英文翻译过程出错: [sourceText: %s]", sourceText), e);
+            return result;
+        }
         return result;
     }
 
@@ -88,7 +119,8 @@ public class EnglishConvert {
         // 转英文
         sourceText = this.convertEnglishCharacter(sourceText);
 
-        sourceText = ConvertUtil.removeSymbolWord(sourceText);
+        sourceText = this.convertWordSymbol(sourceText);
+        //sourceText = ConvertUtil.removeSymbolWord(sourceText);
 
         sourceText = ConvertUtil.convertFull2Half(sourceText);
 
@@ -99,6 +131,26 @@ public class EnglishConvert {
         }
 
         return sourceText;
+    }
+
+    /**
+     * 处理特殊字符
+     * @param sourceText 待处理文本
+     * @return 处理后字符串
+     */
+    private String convertWordSymbol(String sourceText) {
+        StringBuffer result = new StringBuffer();
+        for (Character character : sourceText.toCharArray()) {
+            String tmpStr = String.valueOf(character);
+            for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
+                if (entry.getKey().equals(tmpStr)) {
+                    tmpStr = StringUtils.isEmpty(entry.getValue()) ? "" : entry.getValue();
+                    break;
+                }
+            }
+            result.append(tmpStr);
+        }
+        return result.toString();
     }
 
     /**
@@ -148,7 +200,7 @@ public class EnglishConvert {
             }
         }
 
-        return sourceText;
+        return result.toString();
     }
 
 
@@ -200,9 +252,13 @@ public class EnglishConvert {
                 for (Map<String, String> map : wordList) {
                     String pinyinOne = map.get("py");
                     String pinyinTwo = map.get("py2");
-                    String curAdminCode = map.get("adminCode");
-                    if (StringUtils.isEmpty(this.adminCode) || this.adminCode.equals(curAdminCode)) {
+                    String curAdminArea = map.get("adminArea");
+
+
+                    if (StringUtils.isNotEmpty(curAdminArea) && adminCode.startsWith(curAdminArea)) {
                         result.append(pinyinOne).append(" ");
+                    } else {
+                        result.append(subText).append(" ");
                     }
                 }
             } else {
@@ -221,11 +277,15 @@ public class EnglishConvert {
     private String convertChineseCharacter(String sourceText) {
         StringBuffer result = new StringBuffer();
 
-        for (Character character : sourceText.toCharArray()) {
+        char[] chars = sourceText.toCharArray();
+
+        // Character[] characters = connChineseCharacter(chars);
+
+        for (Character character : chars) {
             if (ConvertUtil.isChinese(character)) {
                 if (TranslateDictData.getInstance().getDictDictionary().containsKey(String.valueOf(character))) {
                     List<String> pinyins = TranslateDictData.getInstance().getDictDictionary().get(String.valueOf(character));
-                    if (this.convertPolyhonic) {
+                    if (convertPolyhonic) {
                         // TODO 暂不处理多音字
                     } else {
                         result.append(pinyins.iterator().next());
@@ -237,5 +297,61 @@ public class EnglishConvert {
         }
 
         return result.toString();
+    }
+
+    /**
+     * 连接单个汉字（连续出现3个或以下的汉字，连接后再转换拼音）
+     * <br>2017.5.17 企划贾晓晶提供输入
+     * @param array 待转换词组
+     * @return 连接后词组
+     */
+    private Character[] connChineseCharacter(char[] array) {
+        List<Character> characters = new ArrayList<>();
+
+        int index = 0;
+        while (index < array.length) {
+            if (ConvertUtil.isChinese(array[index])) {
+                int count = countChineseCharacter(index, array);
+                int maxIndex = index + count * OFFSET;
+                if (ConvertUtil.isChinese(array[array.length - 1])) {
+                    maxIndex--;
+                }
+
+                if (count <= TranslateConstant.MAX_CONNECTION_CHARACTER) {
+                    for (; index < maxIndex; index += OFFSET) {
+                        characters.add(array[index]);
+                    }
+                    characters.add(' ');
+                } else {
+                    for (; index < maxIndex; index++) {
+                        characters.add(array[index]);
+                    }
+                }
+            } else {
+                characters.add(array[index++]);
+            }
+        }
+
+        return characters.toArray(new Character[]{});
+    }
+
+    /**
+     * 计算连续出现单个汉字的数量
+     * @param index 起始下标
+     * @param array 目标数组
+     * @return 连续汉字数量
+     */
+    private int countChineseCharacter(int index, char[] array) {
+        int count = 0;
+        for (; index < array.length; index++) {
+            if (ConvertUtil.isChinese(array[index])) {
+                count++;
+            } else if (' ' == array[index]) {
+                continue;
+            } else {
+                break;
+            }
+        }
+        return count;
     }
 }

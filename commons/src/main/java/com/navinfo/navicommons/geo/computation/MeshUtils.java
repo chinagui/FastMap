@@ -1,6 +1,5 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -11,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +24,7 @@ public abstract class MeshUtils {
 
     private static Logger log = Logger.getLogger(MeshUtils.class);
 
-    public static void main(String[] args) throws Exception {
+   /* public static void main(String[] args) throws Exception {*/
         //		Set<String> meshes = new HashSet<String>();
         //		meshes.add("595671");
         //		meshes.add("595672");
@@ -215,11 +215,11 @@ public abstract class MeshUtils {
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08345, 116.50022, 40.08333)));
         //System.out.println(Arrays.toString(line2Meshes(116.50032, 40.08341, 116.50049, 40.0835)));
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08328, 116.50007, 40.08333)));
-        Geometry geo1 = GeoTranslator.wkt2Geometry("POLYGON ((116.5 39.75, 116.5 39.833333, 116.625 39.833333, 116.625 39.75, 116.5 39.75))");
+ /*       Geometry geo1 = GeoTranslator.wkt2Geometry("POLYGON ((116.5 39.75, 116.5 39.833333, 116.625 39.833333, 116.625 39.75, 116.5 39.75))");
         Geometry geo2 = GeoTranslator.wkt2Geometry("POLYGON ((116.52351 39.74985, 116.52341 39.74997, 116.52353 39.74997, 116.52365 39.74997, 116.52351 39.74985))");
         System.out.println(geo1.intersects(geo2));
         System.out.println(mesh2Jts("595654").intersects(geo2));
-    }
+    }*/
 
 
     /**
@@ -1028,5 +1028,96 @@ public abstract class MeshUtils {
             }
         }
         return geometry;
+    }
+
+    //rect:[minx,miny,maxx,maxy]
+    /**
+     * @Title: meshs2Rect
+     * @Description: TODO
+     * @param meshes
+     * @return  double[minx,miny,maxx,maxy] [最小经度,最小维度,最大经度,最大维度]
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年6月6日 下午4:20:55 
+     */
+    public static double[] meshs2Rect(Set<Integer> meshes){
+    	Set<Integer> xSet = new HashSet<Integer>();//所有经度集合
+    	Set<Integer> ySet = new HashSet<Integer>();//所有维度集合
+    	
+    	for(Integer mesh : meshes){
+    		String meshStr = mesh.toString();
+    		if(meshStr.length() != 6){
+    			log.info("不能识别图幅号: "+mesh);
+    			continue;
+    		}
+    		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
+    		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
+    		xSet.add(Integer.parseInt(xStr));
+    		ySet.add(Integer.parseInt(yStr));
+    	}
+    	int[] xArr = null;
+    	if(xSet != null && xSet.size() > 0){
+    		xArr = getMinMaxInteger(xSet);
+    	}
+    	int[] yArr = null;
+    	if(ySet != null && ySet.size() > 0){
+    		yArr = getMinMaxInteger(ySet);
+    	}
+    	
+    	String maxMesh = null;
+    	String minMesh = null;
+    	
+    	if(xArr.length == 2 && yArr.length ==2){
+    		String x0Str = xArr[0]+"";
+    		String x1Str = xArr[1]+"";
+    		
+    		String y0Str = yArr[0]+"";
+    		String y1Str = yArr[1]+"";
+    		
+    		minMesh= x0Str.substring(0,2) + y0Str.substring(0, 2)+x0Str.substring(2)+y0Str.substring(2);
+    		
+    		maxMesh= x1Str.substring(0,2) + y1Str.substring(0, 2)+x1Str.substring(2)+y1Str.substring(2);
+    	}
+    	
+    	double[] minPoint = mesh2Rect(minMesh);
+    	
+    	double[] maxPoint = mesh2Rect(maxMesh);
+    	
+//    	System.out.println(minPoint[0]+" , "+minPoint[1]+" , "+maxPoint[2]+" , "+maxPoint[3]);
+    	return new double[]{minPoint[0],minPoint[1],maxPoint[2],maxPoint[3]};
+    }
+    public static int[] getMinMaxInteger(Set<Integer> set){
+    	Integer max = Collections.max(set);
+    	Integer min = Collections.min(set);
+        return new int[]{min, max};
+    }
+
+    public static String[] geometry2Mesh(Geometry geometry) {
+        Set<String> result = new HashSet<>();
+        Coordinate[] coordinates = geometry.getCoordinates();
+        for (Coordinate coordinate : coordinates) {
+            result.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+        }
+        return result.toArray(new String[]{});
+    }
+
+    public static void main(String[] args) throws Exception {
+		Set<Integer> meshes = new HashSet<Integer>();
+		meshes.add(595671);
+		meshes.add(595672);
+		meshes.add(595661);
+		
+		double[] xy = meshs2Rect(meshes);
+		
+		System.out.println(xy);
+		
+		
+		
+    	/*Integer mesh = 595671;
+    	String meshStr = mesh.toString();
+		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
+		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
+		System.out.println(xStr);
+		System.out.println(yStr);*/
     }
 }

@@ -2550,6 +2550,7 @@ public class StaticsService {
 			
 			sb.append("SELECT T.TASK_ID,");
 			sb.append("       T.TYPE,");
+			sb.append("       T.STATUS,");
 			sb.append("       T.PLAN_START_DATE,");
 			sb.append("       T.PLAN_END_DATE,");
 			sb.append("       FT.ACTUAL_START_DATE,");
@@ -2575,6 +2576,7 @@ public class StaticsService {
 						overView.put("taskId", rs.getInt("TASK_ID")); 
 						overView.put("type", rs.getInt("TYPE")); 
 						overView.put("percent", rs.getInt("PERCENT")); 
+						int status=rs.getInt("STATUS");
 						
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
 						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
@@ -2593,12 +2595,16 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", planStartDate);
+							overView.put("actualStartDate", df.format(planStartDate));
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", planEndDate);
+							if(status==0){
+								overView.put("actualEndDate", df.format(planEndDate));
+							}else{
+								overView.put("actualEndDate", null);
+							}	
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");
@@ -2674,6 +2680,7 @@ public class StaticsService {
 			sb.append("       ST.TYPE,");
 			sb.append("       S.PERCENT,S.TOTAL_POI, S.FINISHED_POI, S.TOTAL_ROAD, S.FINISHED_ROAD,");
 			sb.append("       S.DIFF_DATE,");
+			sb.append("       ST.STATUS,");
 			sb.append("       S.PLAN_DATE,");
 			sb.append("       ST.PLAN_START_DATE,");
 			sb.append("       ST.PLAN_END_DATE,");
@@ -2692,6 +2699,7 @@ public class StaticsService {
 					Map<String,Object> overView = new HashMap<String,Object>();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					if (rs.next()) {
+						int status=rs.getInt("STATUS");
 						overView.put("subtaskId", rs.getInt("SUBTASK_ID")); 
 						overView.put("stage", rs.getInt("STAGE")); 
 						overView.put("type", rs.getInt("TYPE")); 
@@ -2719,12 +2727,16 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", null);
+							overView.put("actualStartDate", df.format(planStartDate));
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", null);
+							if(status==0){
+								overView.put("actualEndDate", df.format(planEndDate));
+							}else{
+								overView.put("actualEndDate", null);
+							}							
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");
@@ -2799,7 +2811,7 @@ public class StaticsService {
 	 */
 	public List<Map> getDayTaskTipsStatics(int taskId) throws Exception {
 		List<Map> result = new ArrayList<Map>();
-		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(taskId);
 		//调用fccApi
 		FccApi fccApi = (FccApi) ApplicationContextUtil
 				.getBean("fccApi");

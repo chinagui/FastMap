@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
@@ -8,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.sql.Connection;
@@ -50,35 +50,68 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             return;
         List<LuFace> faces = new LuFaceSelector(conn).loadRelateFaceByGeometry(linkGeometry);
         // 如关联面数量为空或大于一暂不做处理
-        if (faces.isEmpty() || faces.size() > 1) {
-            if (link.getUrban() != IS_NOT_URBAN)
+        if (faces.isEmpty()) {
+            if (link.getUrban() != IS_NOT_URBAN) {
                 link.changedFields().put("urban", IS_NOT_URBAN);
+            }
             return;
         }
         // 取出与link关联的唯一面几何
-        Geometry faceGeometry = shrink(faces.get(0).getGeometry());
+        Geometry faceGeometry = null;
+        if (1 == faces.size()) {
+            faceGeometry = shrink(faces.get(0).getGeometry());
+        } else {
+            for (LuFace face : faces) {
+                faceGeometry = shrink(face.getGeometry());
+                Geometry intersection = linkGeometry.intersection(faceGeometry);
+                if (!GeometryTypeName.POINT.equals(intersection.getGeometryType())) {
+                    break;
+                }
+            }
+        }
         // 判断link是否完全包含于该面
         if (GeoRelationUtils.Interior(linkGeometry, faceGeometry)) {
-            if (null != geometry && link.getUrban() != IS_URBAN)
+            if (null != geometry && link.getUrban() != IS_URBAN) {
                 link.changedFields().put("urban", IS_URBAN);
-            else
+            } else {
                 link.setUrban(IS_URBAN);
+            }
             // 判断link是否包含于面内并有一个端点处于面组成线上
         } else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)) {
             // 判断是否起点处于ring组成线上
             if (isInBoundary(conn, link.getsNodePid(), faceGeometry, result)) {
-                if (isSameNode(conn, result, link.getsNodePid()) && link.getUrban() != IS_URBAN)
+                if (isSameNode(conn, result, link.getsNodePid()) && link.getUrban() != IS_URBAN) {
                     link.changedFields().put("urban", IS_URBAN);
+                } else if (isMeshNode(conn, result, link.getsNodePid())) {
+                    if (null != geometry && link.getUrban() != IS_URBAN) {
+                        link.changedFields().put("urban", IS_URBAN);
+                    } else {
+                        link.setUrban(IS_URBAN);
+                    }
+                }
                 // 判断是否终点处于ring组成线上
             } else if (isInBoundary(conn, link.geteNodePid(), faceGeometry, result))
-                if (isSameNode(conn, result, link.geteNodePid()) && link.getUrban() != IS_URBAN)
+                if (isSameNode(conn, result, link.geteNodePid()) && link.getUrban() != IS_URBAN) {
                     link.changedFields().put("urban", IS_URBAN);
-
+                }  else if (isMeshNode(conn, result, link.geteNodePid())) {
+                    if (null != geometry && link.getUrban() != IS_URBAN) {
+                        link.changedFields().put("urban", IS_URBAN);
+                    } else {
+                        link.setUrban(IS_URBAN);
+                    }
+                }
             // 判断link是否包含于面内并且两个端点处于面组成线上
         } else if (GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, faceGeometry)) {
             // 判断两个端点是否属于同一点
-            if (isSameNode(conn, result, link.getsNodePid(), link.geteNodePid()) && link.getUrban() != IS_URBAN)
+            if (isSameNode(conn, result, link.getsNodePid(), link.geteNodePid()) && link.getUrban() != IS_URBAN) {
                 link.changedFields().put("urban", IS_URBAN);
+            } else if (isMeshNode(conn, result, link.getsNodePid()) && isMeshNode(conn, result, link.geteNodePid())) {
+                if (null != geometry && link.getUrban() != IS_URBAN) {
+                    link.changedFields().put("urban", IS_URBAN);
+                } else {
+                    link.setUrban(IS_URBAN);
+                }
+            }
         } else {
             // 其余情况暂不作处理
         }
@@ -130,26 +163,39 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         // 修形面时,新几何内link的Urban赋1
         links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
-            Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+            Geometry linkGeometry = shrink(link.getGeometry());
             // 判断link是否完全包含于该面
             if (GeoRelationUtils.Interior(linkGeometry, geometry)) {
-                if (link.getUrban() != IS_URBAN)
+                if (link.getUrban() != IS_URBAN) {
                     link.changedFields().put("urban", IS_URBAN);
+                }
                 addMaps.put(link.pid(), link);
                 // 判断link是否包含于面内并有一个端点处于面组成线上
             } else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, geometry)) {
                 // 判断是否起点处于ring组成线上
                 if (isInBoundary(conn, link.getsNodePid(), geometry, result)) {
                     if (isSameNode(conn, result, link.getsNodePid())) {
-                        if (link.getUrban() != IS_URBAN)
+                        if (link.getUrban() != IS_URBAN) {
                             link.changedFields().put("urban", IS_URBAN);
+                        }
+                        addMaps.put(link.pid(), link);
+                    } else if (isMeshNode(conn, result, link.getsNodePid())) {
+                        if (link.getUrban() != IS_URBAN) {
+                            link.changedFields().put("urban", IS_URBAN);
+                        }
                         addMaps.put(link.pid(), link);
                     }
                     // 判断是否终点处于ring组成线上
                 } else if (isInBoundary(conn, link.geteNodePid(), geometry, result))
                     if (isSameNode(conn, result, link.geteNodePid())) {
-                        if (link.getUrban() != IS_URBAN)
+                        if (link.getUrban() != IS_URBAN) {
                             link.changedFields().put("urban", IS_URBAN);
+                        }
+                        addMaps.put(link.pid(), link);
+                    } else if (isMeshNode(conn, result, link.geteNodePid())) {
+                        if (link.getUrban() != IS_URBAN) {
+                            link.changedFields().put("urban", IS_URBAN);
+                        }
                         addMaps.put(link.pid(), link);
                     }
 
@@ -157,8 +203,14 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             } else if (GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, geometry)) {
                 // 判断两个端点是否属于同一点
                 if (isSameNode(conn, result, link.getsNodePid(), link.geteNodePid())) {
-                    if (link.getUrban() != IS_URBAN)
+                    if (link.getUrban() != IS_URBAN) {
                         link.changedFields().put("urban", IS_URBAN);
+                    }
+                    addMaps.put(link.pid(), link);
+                } else if (isMeshNode(conn, result, link.getsNodePid()) && isMeshNode(conn, result, link.geteNodePid())) {
+                    if (link.getUrban() != IS_URBAN) {
+                        link.changedFields().put("urban", IS_URBAN);
+                    }
                     addMaps.put(link.pid(), link);
                 }
             } else {
@@ -167,14 +219,24 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         }
         Set<Integer> addPid = addMaps.keySet();
         for (Entry<Integer, RdLink> entry : deleteMaps.entrySet()) {
-            if (addPid.contains((Object) entry.getKey()))
+            if (isDeleteLink(result, entry.getKey())) {
                 continue;
+            }
+
+            if (addPid.contains((Object) entry.getKey())) {
+                continue;
+            }
             result.insertObject(entry.getValue(), ObjStatus.UPDATE, entry.getValue().pid());
         }
 
         for (RdLink link : addMaps.values()) {
-            if (link.getUrban() == IS_URBAN)
+            if (isDeleteLink(result, link.pid())) {
                 continue;
+            }
+
+            if (link.getUrban() == IS_URBAN) {
+                continue;
+            }
             result.insertObject(link, ObjStatus.UPDATE, link.pid());
         }
     }

@@ -1,0 +1,2098 @@
+<?xml version="1.0"?>
+<DataSource MetaDataVersion="271001">
+    <PrimaryKeys>
+        <RD_LINK PK="LINK_PID"/>
+        <RD_TMCLOCATION PK="GROUP_ID"/>
+        <RD_NODE PK="NODE_PID"/>
+        <RD_SLOPE PK="PID"/>
+        <RD_SPEEDLIMIT PK="PID"/>
+        <RD_TRAFFICSIGNAL PK="PID"/>
+        <RD_WARNINGINFO PK="PID"/>
+        <RD_ELECTRONICEYE PK="PID"/>
+        <RD_ELECEYE_PAIR PK="GROUP_ID"/>
+        <RD_SPEEDBUMP PK="BUMP_PID"/>
+        <RD_GATE PK="PID"/>
+        <RD_RESTRICTION PK="PID"/>
+        <RD_RESTRICTION_DETAIL PK="DETAIL_ID"/>
+        <RD_DIRECTROUTE PK="PID"/>
+        <RD_BRANCH PK="BRANCH_PID"/>
+        <RD_BRANCH_DETAIL PK="DETAIL_ID"/>
+        <RD_BRANCH_NAME PK="NAME_ID"/>
+        <RD_BRANCH_SCHEMATIC PK="SCHEMATIC_ID"/>
+        <RD_SIGNBOARD PK="SIGNBOARD_ID"/>
+        <RD_SIGNBOARD_NAME PK="NAME_ID"/>
+        <RD_SIGNASREAL PK="SIGNBOARD_ID"/>
+        <RD_LANE_CONNEXITY PK="PID"/>
+        <RD_LANE_TOPOLOGY PK="TOPOLOGY_ID"/>
+        <RD_LANE PK="LANE_PID"/>
+        <RD_LANE_TOPO_DETAIL PK="TOPO_ID"/>
+        <RD_TOLLGATE PK="PID"/>
+        <RD_TOLLGATE_NAME PK="NAME_ID"/>
+        <RD_VOICEGUIDE PK="PID"/>
+        <RD_VOICEGUIDE_DETAIL PK="DETAIL_ID"/>
+        <RD_SE PK="PID"/>
+        <RD_VARIABLE_SPEED PK="VSPEED_PID"/>
+        <RD_GSC PK="PID"/>
+        <RD_SAMELINK PK="GROUP_ID"/>
+        <RD_SAMENODE PK="GROUP_ID"/>
+        <RD_HGWG_LIMIT PK="PID"/>
+        <RD_MILEAGEPILE PK="PID"/>
+        <RD_CROSS PK="PID"/>
+        <RD_CROSS_NAME PK="NAME_ID"/>
+        <RD_INTER PK="PID"/>
+        <RD_ROAD PK="PID"/>
+        <RD_OBJECT PK="PID"/>
+        <RW_LINK PK="LINK_PID"/>
+        <RW_NODE PK="NODE_PID"/>
+        <IX_POI PK="PID"/>
+        <IX_POI_NAME PK="NAME_ID"/>
+        <IX_POI_ADDRESS PK="NAME_ID"/>
+        <IX_SAMEPOI PK="GROUP_ID"/>
+        <IX_POI_PARENT PK="GROUP_ID"/>
+        <AD_ADMIN PK="REGION_ID"/>
+        <AD_ADMIN_GROUP PK="GROUP_ID"/>
+        <AD_ADMIN_NAME PK="NAME_ID"/>
+        <AD_FACE PK="FACE_PID"/>
+        <AD_LINK PK="LINK_PID"/>
+        <AD_NODE PK="NODE_PID"/>
+        <ZONE_FACE PK="FACE_PID"/>
+        <ZONE_LINK PK="LINK_PID"/>
+        <ZONE_NODE PK="NODE_PID"/>
+        <LC_FEATURE PK="FEATURE_PID"/>
+        <LC_FACE PK="FACE_PID"/>
+        <LC_FACE_NAME PK="NAME_ID"/>
+        <LC_LINK PK="LINK_PID"/>
+        <LC_NODE PK="NODE_PID"/>
+        <LU_FEATURE PK="FEATURE_PID"/>
+        <LU_FACE PK="FACE_PID"/>
+        <LU_FACE_NAME PK="NAME_ID"/>
+        <LU_LINK PK="LINK_PID"/>
+        <LU_NODE PK="NODE_PID"/>
+        <CMG_BUILDING PK="PID"/>
+        <CMG_BUILDING_3DMODEL PK="MODEL_ID"/>
+        <CMG_BUILDING_NAME PK="NAME_ID"/>
+        <CMG_BUILDFACE PK="FACE_PID"/>
+        <CMG_BUILDLINK PK="LINK_PID"/>
+        <CMG_BUILDNODE PK="NODE_PID"/>
+    </PrimaryKeys>
+
+    <ForeignKeys>
+        <!--RD_LINK-->
+        <Foreign Table="RD_LINK_FORM" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_LIMIT" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_LIMIT_TRUCK" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_SPEEDLIMIT" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_SPEED_TRUCK" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_SIDEWALK" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_WALKSTAIR" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_RTIC" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_INT_RTIC" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_TMCLOCATION_LINK" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_ZONE" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_NAME" FK="LINK_PID" Ref="RD_LINK"/>
+        <Foreign Table="RD_LINK_ADDRESS" FK="LINK_PID" Ref="RD_LINK"/>
+        <!--RD_NODE-->
+        <Foreign Table="RD_NODE_FORM" FK="NODE_PID" Ref="RD_NODE"/>
+        <Foreign Table="RD_NODE_NAME" FK="NODE_PID" Ref="RD_NODE"/>
+        <Foreign Table="RD_NODE_MESH" FK="NODE_PID" Ref="RD_NODE"/>
+        <!--RD_VIRCONNECT-->
+        <Foreign Table="RD_VIRCONNECT_TRANSIT" FK="PID" Ref="RD_VIRCONNECT"/>
+        <Foreign Table="RD_VIRCONNECT_NAME" FK="PID" Ref="RD_VIRCONNECT"/>
+        <!--RD_SLOPE-->
+        <Foreign Table="RD_SLOPE_VIA" FK="SLOPE_PID" Ref="RD_SLOPE"/>
+        <!--RD_CROSSWALK-->
+        <Foreign Table="RD_CROSSWALK_INFO" FK="PID" Ref="RD_CROSSWALK"/>
+        <Foreign Table="RD_CROSSWALK_NODE" FK="PID" Ref="RD_CROSSWALK"/>
+        <!--RD_ELECEYE_PAIR-->
+        <Foreign Table="RD_ELECEYE_PART" FK="GROUP_ID" Ref="RD_ELECEYE_PAIR"/>
+        <!--RD_GATE-->
+        <Foreign Table="RD_GATE_CONDITION" FK="PID" Ref="RD_GATE"/>
+        <!--RD_RESTRICTION-->
+        <Foreign Table="RD_RESTRICTION_DETAIL" FK="RESTRIC_PID" Ref="RD_RESTRICTION"/>
+        <Foreign Table="RD_RESTRICTION_CONDITION" FK="DETAIL_ID" Ref="RD_RESTRICTION_DETAIL"/>
+        <Foreign Table="RD_RESTRICTION_VIA" FK="DETAIL_ID" Ref="RD_RESTRICTION_DETAIL"/>
+        <!--RD_DIRECTROUTE-->
+        <Foreign Table="RD_DIRECTROUTE_VIA" FK="PID" Ref="RD_DIRECTROUTE"/>
+        <!--RD_BRANCH-->
+        <Foreign Table="RD_BRANCH_DETAIL" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_BRANCH_NAME" FK="DETAIL_ID" Ref="RD_BRANCH_DETAIL"/>
+        <Foreign Table="RD_BRANCH_REALIMAGE" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_BRANCH_SCHEMATIC" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_SIGNBOARD" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_SIGNBOARD_NAME" FK="SIGNBOARD_ID" Ref="RD_SIGNBOARD"/>
+        <Foreign Table="RD_SIGNASREAL" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_SERIESBRANCH" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <Foreign Table="RD_BRANCH_VIA" FK="BRANCH_PID" Ref="RD_BRANCH"/>
+        <!--RD_LANE_CONNEXITY-->
+        <Foreign Table="RD_LANE_TOPOLOGY" FK="CONNEXITY_PID" Ref="RD_LANE_CONNEXITY"/>
+        <Foreign Table="RD_LANE_VIA" FK="TOPOLOGY_ID" Ref="RD_LANE_TOPOLOGY"/>
+        <!--RD_LANE-->
+        <Foreign Table="RD_LANE_CONDITION" FK="LANE_PID" Ref="RD_LANE"/>
+        <!--RD_LANE_TOPO_DETAIL-->
+        <Foreign Table="RD_LANE_TOPO_VIA" FK="TOPO_ID" Ref="RD_LANE_TOPO_DETAIL"/>
+        <!--RD_TOLLGATE-->
+        <Foreign Table="RD_TOLLGATE_PASSAGE" FK="PID" Ref="RD_TOLLGATE"/>
+        <Foreign Table="RD_TOLLGATE_NAME" FK="PID" Ref="RD_TOLLGATE"/>
+        <!--RD_VOICEGUIDE-->
+        <Foreign Table="RD_VOICEGUIDE_DETAIL" FK="VOICEGUIDE_PID" Ref="RD_VOICEGUIDE"/>
+        <Foreign Table="RD_VOICEGUIDE_VIA" FK="DETAIL_ID" Ref="RD_VOICEGUIDE_DETAIL"/>
+        <!--RD_VARIABLE_SPEED-->
+        <Foreign Table="RD_VARIABLE_SPEED_VIA" FK="VSPEED_PID" Ref="RD_VARIABLE_SPEED"/>
+        <!--RD_GSC-->
+        <Foreign Table="RD_GSC_LINK" FK="PID" Ref="RD_GSC"/>
+        <!--RD_SAMELINK-->
+        <Foreign Table="RD_SAMELINK_PART" FK="GROUP_ID" Ref="RD_SAMELINK"/>
+        <!--RD_SAMENODE-->
+        <Foreign Table="RD_SAMENODE_PART" FK="GROUP_ID" Ref="RD_SAMENODE"/>
+        <!--RD_NATGUD_JUN-->
+
+        <!--RD_CROSS-->
+        <Foreign Table="RD_CROSS_NODE" FK="PID" Ref="RD_CROSS"/>
+        <Foreign Table="RD_CROSS_LINK" FK="PID" Ref="RD_CROSS"/>
+        <Foreign Table="RD_CROSS_NAME" FK="PID" Ref="RD_CROSS"/>
+        <!--RD_INTER-->
+        <Foreign Table="RD_INTER_LINK" FK="PID" Ref="RD_INTER"/>
+        <Foreign Table="RD_INTER_NODE" FK="PID" Ref="RD_INTER"/>
+        <!--RD_ROAD-->
+        <Foreign Table="RD_ROAD_LINK" FK="PID" Ref="RD_ROAD"/>
+        <!--RD_OBJECT-->
+        <Foreign Table="RD_OBJECT_NODE" FK="PID" Ref="RD_OBJECT"/>
+        <Foreign Table="RD_OBJECT_LINK" FK="PID" Ref="RD_OBJECT"/>
+        <Foreign Table="RD_OBJECT_INTER" FK="PID" Ref="RD_OBJECT"/>
+        <Foreign Table="RD_OBJECT_ROAD" FK="PID" Ref="RD_OBJECT"/>
+        <Foreign Table="RD_OBJECT_NAME" FK="PID" Ref="RD_OBJECT"/>
+        <!--RW_LINK-->
+        <Foreign Table="RW_LINK_NAME" FK="LINK_PID" Ref="RW_LINK"/>
+        <!--RW_NODE-->
+        <Foreign Table="RW_NODE_MESH" FK="NODE_PID" Ref="RW_NODE"/>
+        <!--IX_POI-->
+        <Foreign Table="IX_POI_NAME" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_NAME_FLAG" FK="NAME_ID" Ref="IX_POI_NAME"/>
+        <Foreign Table="IX_POI_ADDRESS" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_CONTACT" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_FLAG" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_ENTRYIMAGE" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_ICON" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_PHOTO" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_AUDIO" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_VIDEO" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_BUILDING" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_DETAIL" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_BUSINESSTIME" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_INTRODUCTION" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_ATTRACTION" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_GASSTATION" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_CHARGINGSTATION" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_CHARGINGPLOT" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_CHARGINGPLOT_PH" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_PARKING" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_HOTEL" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_RESTAURANT" FK="POI_PID" Ref="IX_POI"/>
+        <Foreign Table="IX_POI_CARRENTAL" FK="POI_PID" Ref="IX_POI"/>
+        <!--IX_POI_PARENT-->
+        <Foreign Table="IX_POI_CHILDREN" FK="GROUP_ID" Ref="IX_POI_PARENT"/>
+        <!--IX_SAMEPOI-->
+        <Foreign Table="IX_SAMEPOI_PART" FK="GROUP_ID" Ref="IX_SAMEPOI"/>
+        <!--AD_ADMIN-->
+        <Foreign Table="AD_ADMIN_NAME" FK="REGION_ID" Ref="AD_ADMIN"/>
+        <Foreign Table="AD_ADMIN_GROUP" FK="REGION_ID_UP" Ref="AD_ADMIN"/>
+        <Foreign Table="AD_ADMIN_PART" FK="GROUP_ID" Ref="AD_ADMIN_GROUP"/>
+        <!--AD_FACE-->
+        <Foreign Table="AD_FACE_TOPO" FK="FACE_PID" Ref="AD_FACE"/>
+        <!--AD_LINK-->
+        <Foreign Table="AD_LINK_MESH" FK="LINK_PID" Ref="AD_LINK"/>
+        <!--AD_NODE-->
+        <Foreign Table="AD_NODE_MESH" FK="NODE_PID" Ref="AD_NODE"/>
+        <!--ZONE_FACE-->
+        <Foreign Table="ZONE_FACE_TOPO" FK="FACE_PID" Ref="ZONE_FACE"/>
+        <!--ZONE_LINK-->
+        <Foreign Table="ZONE_LINK_MESH" FK="LINK_PID" Ref="ZONE_LINK"/>
+        <!--ZONE_NODE-->
+        <Foreign Table="ZONE_NODE_MESH" FK="NODE_PID" Ref="ZONE_NODE"/>
+        <!--LC_FACE-->
+        <Foreign Table="LC_FACE_NAME" FK="FACE_PID" Ref="LC_FACE"/>
+        <Foreign Table="LC_FACE_TOPO" FK="FACE_PID" Ref="LC_FACE"/>
+        <!--LC_LINK-->
+        <Foreign Table="LC_LINK_MESH" FK="LINK_PID" Ref="LC_LINK"/>
+        <Foreign Table="LC_LINK_KIND" FK="LINK_PID" Ref="LC_LINK"/>
+        <!--LC_NODE-->
+        <Foreign Table="LC_NODE_MESH" FK="NODE_PID" Ref="LC_NODE"/>
+        <!--LU_FACE-->
+        <Foreign Table="LU_FACE_NAME" FK="FACE_PID" Ref="LU_FACE"/>
+        <Foreign Table="LU_FACE_TOPO" FK="FACE_PID" Ref="LU_FACE"/>
+        <!--LU_LINK-->
+        <Foreign Table="LU_LINK_MESH" FK="LINK_PID" Ref="LU_LINK"/>
+        <Foreign Table="LU_LINK_KIND" FK="LINK_PID" Ref="LU_LINK"/>
+        <!--LU_NODE-->
+        <Foreign Table="LU_NODE_MESH" FK="NODE_PID" Ref="LU_NODE"/>
+        <!--CMG_BUILDING-->
+        <Foreign Table="CMG_BUILDING_POI" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
+        <Foreign Table="CMG_BUILDING_NAME" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
+        <Foreign Table="CMG_BUILDING_3DICON" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
+        <Foreign Table="CMG_BUILDING_3DMODEL" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
+        <!--CMG_BUILDFACE-->
+        <Foreign Table="CMG_BUILDING_TENANT" FK="FACE_PID" Ref="CMG_BUILDFACE"/>
+        <Foreign Table="CMG_BUILDFACE_TOPO" FK="FACE_PID" Ref="CMG_BUILDFACE"/>
+        <!--CMG_BUILDLINK-->
+        <Foreign Table="CMG_BUILDLINK_MESH" FK="LINK_PID" Ref="CMG_BUILDLINK"/>
+        <!--CMG_BUILDNODE-->
+        <Foreign Table="CMG_BUILDNODE_MESH" FK="NODE_PID" Ref="CMG_BUILDNODE"/>
+        <!--RD_TMCLOCATION-->
+        <Foreign Table="RD_TMCLOCATION_LINK" FK="GROUP_ID" Ref="RD_TMCLOCATION"/>
+    </ForeignKeys>
+
+    <TableNameCHI>
+        <RD_LINK Name="道路"/>
+        <RD_LINK_FORM Name="道路属性"/>
+        <RD_LINK_LIMIT Name="道路限制"/>
+        <RD_LINK_LIMIT_TRUCK Name="卡车专用限制"/>
+        <RD_LINK_SPEEDLIMIT Name="线限速"/>
+        <RD_LINK_SPEED_TRUCK Name="卡车专用道路限速"/>
+        <RD_LINK_SIDEWALK Name="人行便道"/>
+        <RD_LINK_WALKSTAIR Name="阶梯"/>
+        <RD_LINK_RTIC Name="道路RTIC"/>
+        <RD_LINK_INT_RTIC Name="道路RTIC(互联网)"/>
+        <RD_TMCLOCATION Name="TMC 匹配信息表"/>
+        <RD_TMCLOCATION_LINK Name="TMC与LINK 匹配关系表"/>
+        <RD_LINK_ZONE Name="道路ZONE信息"/>
+        <RD_LINK_NAME Name="道路名"/>
+        <RD_LINK_ADDRESS Name="线门牌"/>
+
+        <RD_NODE Name="道路点"/>
+        <RD_NODE_FORM Name="道路点属性"/>
+        <RD_NODE_NAME Name="道路点名"/>
+        <RD_NODE_MESH Name="道路点图幅"/>
+
+        <RD_VIRCONNECT Name="虚拟连接"/>
+        <RD_VIRCONNECT_TRANSIT Name="虚拟连接通行信息"/>
+        <RD_VIRCONNECT_NAME Name="虚拟连接名"/>
+
+        <RD_SLOPE Name="坡度"/>
+        <RD_SLOPE_VIA Name="坡度接续 LINK"/>
+
+        <RD_SPEEDLIMIT Name="点限速"/>
+        <RD_SPEEDLIMIT_TRUCK Name="卡车专用限速"/>
+
+        <RD_CROSSWALK Name="人行过道"/>
+        <RD_CROSSWALK_INFO Name="人行过道信息"/>
+        <RD_CROSSWALK_NODE Name="人行过道连接点"/>
+
+        <RD_TRAFFICSIGNAL Name="交通信号灯"/>
+
+        <RD_WARNINGINFO Name="警示信息"/>
+
+        <RD_ELECTRONICEYE Name="电子眼表"/>
+        <RD_ELECEYE_PAIR Name="区间测速电子眼主表"/>
+        <RD_ELECEYE_PART Name="区间测速电子眼组成表"/>
+
+        <RD_SPEEDBUMP Name="减速带表"/>
+
+        <RD_GATE Name="大门表"/>
+        <RD_GATE_CONDITION Name="大门限制表"/>
+
+        <RD_RESTRICTION Name="交限表"/>
+        <RD_RESTRICTION_DETAIL Name="交限详细信息表"/>
+        <RD_RESTRICTION_CONDITION Name="交限限制表"/>
+        <RD_RESTRICTION_VIA Name="交限经过link"/>
+
+        <RD_DIRECTROUTE Name="顺行"/>
+        <RD_DIRECTROUTE_VIA Name="顺行经过link "/>
+
+        <RD_BRANCH Name="分歧"/>
+        <RD_BRANCH_DETAIL Name="分歧模式图"/>
+        <RD_BRANCH_NAME Name="分歧名称"/>
+        <RD_BRANCH_REALIMAGE Name="分歧实景图"/>
+        <RD_BRANCH_SCHEMATIC Name="大路口交叉点图形"/>
+        <RD_SIGNBOARD Name="方向看板"/>
+        <RD_SIGNBOARD_NAME Name="方向看板名"/>
+        <RD_SIGNASREAL Name="实景看板"/>
+        <RD_SERIESBRANCH Name="连续分歧"/>
+        <RDBRANCHVIA Name="分歧经过link"/>
+
+        <RD_LANE_CONNEXITY Name="车信"/>
+        <RD_LANE_VIA Name="车信经过link"/>
+        <RD_LANE_TOPOLOGY Name="车信退出线"/>
+
+        <RD_LANE Name="详细车道"/>
+        <RD_LANE_CONDITION Name="车道限制信息"/>
+        <RD_LANE_TOPO_DETAIL Name="车道联通"/>
+        <RD_LANE_TOPO_VIA Name="车道联通经过link"/>
+
+        <RD_TOLLGATE Name="收费站"/>
+        <RD_TOLLGATE_NAME Name="收费站名"/>
+        <RD_TOLLGATE_PASSAGE Name="收费站通道"/>
+        <RD_TOLLGATE_COST Name="收费站间收费"/>
+
+        <RD_VOICEGUIDE Name="语音引导"/>
+        <RD_VOICEGUIDE_DETAIL Name="语音引导退出线"/>
+        <RD_VOICEGUIDE_VIA Name="语音引导经过线"/>
+
+        <RD_SE Name="分岔口提示"/>
+
+        <RD_VARIABLE_SPEED Name="可变限速"/>
+        <RD_VARIABLE_SPEED_VIA Name="可变限速接续link"/>
+
+        <RD_GSC Name="立交"/>
+        <RD_GSC_LINK Name="立交参与线"/>
+
+        <RD_SAMELINK Name="同一线"/>
+        <RD_SAMELINK_PART Name="同一线信息"/>
+
+        <RD_SAMENODE Name="同一点"/>
+        <RD_SAMENODE_PART Name="同一点信息"/>
+
+        <RD_HGWG_LIMIT Name="限高限重"/>
+
+        <RD_MILEAGEPILE Name="里程桩"/>
+
+        <RD_CROSS Name="路口"/>
+        <RD_CROSS_NODE Name="路口点"/>
+        <RD_CROSS_LINK Name="路口线"/>
+        <RD_CROSS_NAME Name="路口名"/>
+
+        <RD_INTER Name="CRFINTERSECTION"/>
+        <RD_INTER_LINK Name="CRFINTER LINK"/>
+        <RD_INTER_NODE Name="CRFINTER NODE"/>
+
+        <RD_ROAD Name="CRFROAD"/>
+        <RD_ROAD_LINK Name="CRFROAD LINK"/>
+
+        <RD_OBJECT Name="CRFOBJECT"/>
+        <RD_OBJECT_NODE Name="CRFOBJECT NODE"/>
+        <RD_OBJECT_LINK Name="CRFOBJECT LINK"/>
+        <RD_OBJECT_INTER Name="CRFOBJECT INTER"/>
+        <RD_OBJECT_ROAD Name="CRFOBJECT ROAD"/>
+        <RD_OBJECT_NAME Name="CRFOBJECT名"/>
+
+        <RW_LINK Name="铁路线"/>
+        <RW_LINK_NAME Name="铁路线名"/>
+        <RW_NODE Name="铁路点"/>
+        <RW_NODE_MESH Name="铁路点图幅"/>
+        <RW_FEATURE Name="铁路"/>
+
+        <IX_POI Name="兴趣点"/>
+        <IX_POI_NAME Name="兴趣点名"/>
+        <IX_POI_ADDRESS Name="兴趣点地址"/>
+        <IX_POI_CONTACT Name="POI联系方式"/>
+        <IX_POI_FLAG Name="兴趣点FLAG"/>
+        <IX_POI_ENTRYIMAGE Name="POI入口概略图"/>
+        <IX_POI_ICON Name="POI图标"/>
+        <IX_POI_PHOTO Name="POI照片"/>
+        <IX_POI_AUDIO Name="兴趣点音频"/>
+        <IX_POI_VIDEO Name="兴趣点视频"/>
+        <IX_POI_CHILDREN Name="子兴趣点"/>
+        <IX_POI_PARENT Name="父兴趣点"/>
+        <IX_SAMEPOI Name="同一POI"/>
+        <IX_SAMEPOI_PART Name="同一POI信息"/>
+
+        <IX_POI_BUILDING Name="POI建筑物"/>
+        <IX_POI_DETAIL Name="POI通用深度信息"/>
+        <IX_POI_BUSINESSTIME Name="POI营业时间"/>
+        <IX_POI_INTRODUCTION Name="POI深度信息简介"/>
+        <IX_POI_ADVERTISEMENT Name="POI广告"/>
+
+        <IX_POI_ATTRACTION Name="POI景点"/>
+        <IX_POI_HOTEL Name="POI酒店"/>
+        <IX_POI_RESTAURANT Name="POI餐饮"/>
+        <IX_POI_GASSTATION Name="POI加油站"/>
+        <IX_POI_CHARGINGSTATION Name="POI充电站"/>
+        <IX_POI_CHARGINGPLOT Name="POI充电桩"/>
+
+        <AD_ADMIN Name="行政区划"/>
+        <AD_ADMIN_NAME Name="行政区划名"/>
+
+        <AD_ADMIN_GROUP Name="行政区划组"/>
+        <AD_ADMIN_PART Name="行政区划组信息"/>
+        <AD_FACE Name="行政区划面"/>
+        <AD_FACE_TOPO Name="行政区划面组成"/>
+
+        <AD_LINK Name="行政区划线"/>
+        <AD_LINK_MESH Name="行政区划线图幅"/>
+
+        <AD_NODE Name="行政区划点"/>
+        <AD_NODE_MESH Name="行政区划点图幅"/>
+
+        <ZONE_FACE Name="ZONE面"/>
+        <ZONE_FACE_TOPO Name="ZONE面组成"/>
+
+        <ZONE_LINK Name="ZONE线"/>
+        <ZONE_LINK_KIND Name="ZONE线种别"/>
+        <ZONE_LINK_MESH Name="ZONE线图幅"/>
+
+        <ZONE_NODE Name="ZONE点"/>
+        <ZONE_NODE_MESH Name="ZONE点图幅"/>
+
+        <LC_FEATURE Name="土地覆盖"/>
+        <LC_FACE Name="土地覆盖面"/>
+        <LC_LINK Name="土地覆盖线"/>
+        <LC_LINK_MESH Name="土地覆盖线图幅"/>
+        <LC_LINK_KIND Name="土地覆盖线种别"/>
+        <LC_NODE Name="土地覆盖点"/>
+        <LC_NODE_MESH Name="土地覆盖点图幅"/>
+        <LC_FACE_NAME Name="土地覆盖面名"/>
+        <LC_FACE_TOPO Name="土地覆盖面组成"/>
+
+        <LU_FEATURE Name="土地利用"/>
+        <LU_FACE Name="土地利用面"/>
+        <LU_LINK Name="土地利用线"/>
+        <LU_LINK_MESH Name="土地利用线图幅"/>
+        <LU_LINK_KIND Name="土地利用线种别"/>
+        <LU_NODE Name="土地利用点"/>
+        <LU_NODE_MESH Name="土地利用点图幅"/>
+        <LU_FACE_NAME Name="土地利用面名称"/>
+        <LU_FACE_TOPO Name="土地利用面组成"/>
+
+        <CMG_BUILDING Name="G市街图"/>
+        <CMG_BUILDING_POI Name="G市街图POI"/>
+        <CMG_BUILDING_NAME Name="G市街图名"/>
+        <CMG_BUILDING_3DICON Name="G市街图3DLANDMARK图标"/>
+        <CMG_BUILDING_3DMODEL Name="G市街图3DLANDMARK模型"/>
+
+        <CMG_BUILDFACE Name="G市街图面"/>
+        <CMG_BUILDFACE_TOPO Name="G市街图面组成"/>
+        <CMG_BUILDFACE_TENANT Name="G市街图租户信息"/>
+
+        <CMG_BUILDLINK Name="G市街图线"/>
+        <CMG_BUILDLINK_MESH Name="G市街图线图幅"/>
+
+        <CMG_BUILDNODE Name="G市街图点"/>
+        <CMG_BUILDNODE_MESH Name="G市街图点图幅"/>
+    </TableNameCHI>
+
+    <Tables>
+        <RD_LINK>
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起点号码"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终点号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="道路种别"/>
+            <DIRECT FieldType="Integer" Default="1" AlterName="道路方向"/>
+            <APP_INFO FieldType="Integer" Default="1" AlterName="供用信息"/>
+            <TOLL_INFO FieldType="Integer" Default="2" AlterName="收费信息"/>
+            <ROUTE_ADOPT FieldType="Integer" Default="2" AlterName="路径采纳"/>
+            <MULTI_DIGITIZED FieldType="Integer" Default="0" AlterName="上下线分离"/>
+            <DEVELOP_STATE FieldType="Integer" Default="0" AlterName="开发状态"/>
+            <IMI_CODE FieldType="Integer" Default="0" AlterName="IMI代码"/>
+            <SPECIAL_TRAFFIC FieldType="Integer" Default="0" AlterName="特殊交通"/>
+            <FUNCTION_CLASS FieldType="Integer" Default="5" AlterName="功能等级"/>
+            <URBAN FieldType="Integer" Default="0" AlterName="城市道路"/>
+            <PAVE_STATUS FieldType="Integer" Default="0" AlterName="铺设状态"/>
+            <LANE_NUM FieldType="Integer" Default="2" AlterName="总车道数"/>
+            <LANE_LEFT FieldType="Integer" Default="0" AlterName="左车道数"/>
+            <LANE_RIGHT FieldType="Integer" Default="0" AlterName="右车道数"/>
+            <WIDTH FieldType="Integer" Default="0" AlterName="道路幅宽"/>
+            <LANE_CLASS FieldType="Integer" Default="2" AlterName="车道等级"/>
+            <IS_VIADUCT FieldType="Integer" Default="0" AlterName="是否高架"/>
+            <STREET_LIGHT FieldType="Integer" Default="0" AlterName="路灯设施"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <SIDEWALK_FLAG FieldType="Integer" Default="0" AlterName="人行便道标记"/>
+            <WALKSTAIR_FLAG FieldType="Integer" Default="0" AlterName="人行阶梯标记"/>
+            <PARKING_LOT FieldType="Integer" Default="0" AlterName="停车设施"/>
+            <ADAS_FLAG FieldType="Integer" Default="0" AlterName="ADAS标识"/>
+            <LEFT_REGION_ID FieldType="Integer" Default="0" AlterName="左区划号码"/>
+            <RIGHT_REGION_ID FieldType="Integer" Default="0" AlterName="右区划号码"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <DIF_GROUPID FieldType="String" Default="" AlterName="差分产品ID"/>
+            <DICI_Type FieldType="Integer" Default="0" AlterName="DICI城市类型"/>
+            <WALK_FLAG FieldType="Integer" Default="0" AlterName="行人步行属性"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="数据来源"/>
+            <DIGITAL_LEVEL FieldType="Integer" Default="0" AlterName="精度级别"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <ONEWAY_MARK FieldType="Integer" Default="0" AlterName="单方向标注"/>
+            <LANE_WIDTH_LEFT FieldType="Integer" Default="1" AlterName="逆向车道宽度标识"/>
+            <LANE_WIDTH_RIGHT FieldType="Integer" Default="1" AlterName="顺向车道宽度标识"/>
+            <TRUCK_FLAG FieldType="Integer" Default="0" AlterName="卡车验证标识"/>
+            <ORIGIN_LINK_PID FieldType="Integer" Default="0" AlterName="初始版道路线号"/>
+            <CENTER_DIVIDER FieldType="Integer" Default="0" AlterName="道路中心隔离带类型"/>
+            <PARKING_FLAG FieldType="Integer" Default="0" AlterName="是否包含占道停车场"/>
+            <FEE_STD FieldType="Double" Precision="2" Default="0" AlterName="计费标准"/>
+            <FEE_FLAG FieldType="Integer" Default="0" AlterName="计费赋值标识"/>
+            <SYSTEM_ID FieldType="Integer" Default="0" AlterName="区域标识"/>
+            <ADAS_MEMO FieldType="Integer" Default="0" AlterName="ADAS备注"/>
+        </RD_LINK>
+        <RD_LINK_FORM>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <FORM_OF_WAY FieldType="Integer" Default="1" AlterName="道路形态"/>
+            <KG_FLAG FieldType="Integer" Default="0" AlterName="KG标志"/>
+            <EXTENDED_FORM FieldType="Integer" Default="0" AlterName="扩展形态"/>
+            <AUXI_FLAG FieldType="Integer" Default="0" AlterName="辅助标志"/>
+        </RD_LINK_FORM>
+        <RD_LINK_LIMIT>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <Type FieldType="Integer" Default="3" AlterName="限制类型"/>
+            <LIMIT_DIR FieldType="Integer" Default="0" AlterName="限制方向"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <PROCESS_FLAG FieldType="Integer" Default="0" AlterName="赋值方式"/>
+            <TOLL_Type FieldType="Integer" Default="0" AlterName="收费类型"/>
+            <INPUT_TIME FieldType="String" Default="" AlterName="录入时间"/>
+            <WEATHER FieldType="Integer" Default="9" AlterName="天气条件"/>
+        </RD_LINK_LIMIT>
+        <RD_LINK_LIMIT_TRUCK>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <LIMIT_DIR FieldType="Integer" Default="0" AlterName="限制方向"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <RES_TRAILER FieldType="Integer" Default="0" AlterName="拖挂车限制"/>
+            <RES_WEIGH FieldType="Double" Precision="2" Default="0.0" AlterName="车辆限重"/>
+            <RES_AXLE_LOAD FieldType="Double" Precision="2" Default="0.0" AlterName="限制轴重"/>
+            <RES_AXLE_COUNT FieldType="Integer" Default="0" AlterName="限制轴数"/>
+            <RES_OUT FieldType="Integer" Default="0" AlterName="本外埠车辆限制"/>
+        </RD_LINK_LIMIT_TRUCK>
+        <RD_LINK_SPEEDLIMIT>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <FROM_SPEED_LIMIT FieldType="Integer" Default="0" AlterName="顺向限速"/>
+            <TO_SPEED_LIMIT FieldType="Integer" Default="0" AlterName="逆向限速"/>
+            <SPEED_CLASS FieldType="Integer" Default="0" AlterName="限速等级"/>
+            <FROM_LIMIT_SRC FieldType="Integer" Default="1" AlterName="顺向限速来源"/>
+            <TO_LIMIT_SRC FieldType="Integer" Default="1" AlterName="逆向限速来源"/>
+            <SPEED_CLASS_WORK FieldType="Integer" Default="0" AlterName="等级赋值标记"/>
+            <SPEED_Type FieldType="Integer" Default="1" AlterName="限速类型"/>
+            <SPEED_DEPENDENT FieldType="Integer" Default="0" AlterName="限速条件"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+        </RD_LINK_SPEEDLIMIT>
+        <RD_LINK_SPEED_TRUCK>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <FROM_SPEED_LIMIT FieldType="Integer" Default="0" AlterName="顺向限速"/>
+            <TO_SPEED_LIMIT FieldType="Integer" Default="0" AlterName="逆向限速"/>
+        </RD_LINK_SPEED_TRUCK>
+        <RD_LINK_SIDEWALK>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SIDEWALK_LOC FieldType="Integer" Default="1" AlterName="位置关系"/>
+            <DIVIDER_Type FieldType="Integer" Default="0" AlterName="隔离方式"/>
+            <WORK_DIR FieldType="Integer" Default="0" AlterName="作业方向"/>
+            <PROCESS_FLAG FieldType="Integer" Default="0" AlterName="处理标识"/>
+            <CAPTURE_FLAG FieldType="Integer" Default="0" AlterName="采集标识"/>
+        </RD_LINK_SIDEWALK>
+        <RD_LINK_WALKSTAIR>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <STAIR_LOC FieldType="Integer" Default="1" AlterName="位置关系"/>
+            <STAIR_FLAG FieldType="Integer" Default="0" AlterName="升降标识"/>
+            <WORK_DIR FieldType="Integer" Default="0" AlterName="作业方向"/>
+            <CAPTURE_FLAG FieldType="Integer" Default="0" AlterName="采集标识"/>
+        </RD_LINK_WALKSTAIR>
+        <RD_LINK_ADDRESS>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="0" AlterName="名称组号"/>
+            <LEFT_START FieldType="String" Default="" AlterName="左起始门牌"/>
+            <LEFT_END FieldType="String" Default="" AlterName="左终止门牌"/>
+            <LEFT_Type FieldType="Integer" Default="3" AlterName="左门牌类型"/>
+            <RIGHT_START FieldType="String" Default="" AlterName="右起始门牌"/>
+            <RIGHT_END FieldType="String" Default="" AlterName="右终止门牌"/>
+            <RIGHT_Type FieldType="Integer" Default="3" AlterName="右门牌类型"/>
+            <ADDRESS_Type FieldType="Integer" Default="0" AlterName="地址类型"/>
+            <WORK_DIR FieldType="Integer" Default="0" AlterName="作业方向"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="来源标志"/>
+        </RD_LINK_ADDRESS>
+
+        <RD_LINK_NAME>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="名称序号"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="0" AlterName="名称组号码"/>
+            <NAME_CLASS FieldType="Integer" Default="1" AlterName="名称分类"/>
+            <INPUT_TIME FieldType="String" Default="" AlterName="录入时间"/>
+            <NAME_Type FieldType="Integer" Default="0" AlterName="名称类型"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <ROUTE_ATT FieldType="Integer" Default="0" AlterName="路线属性"/>
+            <CODE FieldType="Integer" Default="0" AlterName="主从CODE"/>
+        </RD_LINK_NAME>
+
+        <RD_TMCLOCATION>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="组号码"/>
+            <TMC_ID FieldType="Integer" Default="0" AlterName="位置点代码"/>
+            <LOCTABLE_ID FieldType="Integer" Default="0" AlterName="位置表代码"/>
+        </RD_TMCLOCATION>
+        <RD_TMCLOCATION_LINK>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="组号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="方向关系"/>
+            <LOC_DIRECT FieldType="Integer" Default="0" AlterName="位置方向"/>
+        </RD_TMCLOCATION_LINK>
+        <RD_LINK_RTIC>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <CODE FieldType="Integer" Default="0" AlterName="RTIC代码"/>
+            <RANK FieldType="Integer" Default="0" AlterName="RTIC等级"/>
+            <RTIC_DIR FieldType="Integer" Default="0" AlterName="RTIC方向"/>
+            <UPDOWN_FLAG FieldType="Integer" Default="0" AlterName="上下行标识"/>
+            <RANGE_Type FieldType="Integer" Default="1" AlterName="RTIC域类型"/>
+        </RD_LINK_RTIC>
+        <RD_LINK_INT_RTIC>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <CODE FieldType="Integer" Default="0" AlterName="RTIC代码"/>
+            <RANK FieldType="Integer" Default="0" AlterName="RTIC等级"/>
+            <RTIC_DIR FieldType="Integer" Default="0" AlterName="RTIC方向"/>
+            <UPDOWN_FLAG FieldType="Integer" Default="0" AlterName="上下行标识"/>
+            <RANGE_Type FieldType="Integer" Default="1" AlterName="RTIC域类型"/>
+        </RD_LINK_INT_RTIC>
+        <RD_LINK_ZONE>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <Type FieldType="Integer" Default="0" AlterName="ZONE类型"/>
+            <SIDE FieldType="Integer" Default="0" AlterName="LINK左右"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+        </RD_LINK_ZONE>
+
+        <RD_NODE>
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <KIND FieldType="Integer" Default="1" AlterName="NODE种别"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <ADAS_FLAG FieldType="Integer" Default="0" AlterName="ADAS标识"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DIF_GROUPID FieldType="String" Default="" AlterName="差分产品ID"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="数据来源"/>
+            <DIGITAL_LEVEL FieldType="Integer" Default="0" AlterName="精度级别"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+        </RD_NODE>
+        <RD_NODE_FORM>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <FORM_OF_WAY FieldType="Integer" Default="1" AlterName="NODE形态"/>
+            <AUXI_FLAG FieldType="Integer" Default="0" AlterName="辅助标志"/>
+        </RD_NODE_FORM>
+        <RD_NODE_NAME>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+        </RD_NODE_NAME>
+        <RD_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </RD_NODE_MESH>
+        <RD_CROSS>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="路口号码"/>
+            <SIGNAL FieldType="Integer" Default="0" AlterName="信号灯"/>
+            <ELECTROEYE FieldType="Integer" Default="0" AlterName="电子眼"/>
+            <Type FieldType="Integer" Default="0" AlterName="路口类型"/>
+            <KG_FLAG FieldType="Integer" Default="0" AlterName="KG标志"/>
+        </RD_CROSS>
+        <RD_CROSS_NODE>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="路口号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <IS_MAIN FieldType="Integer" Default="0" AlterName="是否主点"/>
+        </RD_CROSS_NODE>
+        <RD_CROSS_LINK>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="路口号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_CROSS_LINK>
+        <RD_CROSS_NAME>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="路口号码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+        </RD_CROSS_NAME>
+
+        <RD_INTER>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="交叉点号码"/>
+        </RD_INTER>
+        <RD_INTER_NODE>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="交叉点号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+        </RD_INTER_NODE>
+        <RD_INTER_LINK>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="交叉点号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_INTER_LINK>
+        <RD_ROAD>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="道路号码"/>
+        </RD_ROAD>
+        <RD_ROAD_LINK>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="道路号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_ROAD_LINK>
+        <RD_OBJECT>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LANDMARK坐标"/>
+        </RD_OBJECT>
+        <RD_OBJECT_NODE>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+        </RD_OBJECT_NODE>
+        <RD_OBJECT_LINK>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_OBJECT_LINK>
+        <RD_OBJECT_INTER>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <INTER_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="交叉点号码"/>
+        </RD_OBJECT_INTER>
+        <RD_OBJECT_ROAD>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <ROAD_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="道路号码"/>
+        </RD_OBJECT_ROAD>
+        <RD_OBJECT_NAME>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="OBJECT号码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+        </RD_OBJECT_NAME>
+
+        <RD_ELECTRONICEYE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="电子眼号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联LINK号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="电子眼类型"/>
+            <SPEED_LIMIT FieldType="Integer" Default="0" AlterName="限速值"/>
+            <LOCATION FieldType="Integer" Default="0" AlterName="电子眼方位"/>
+            <ANGLE FieldType="Double" Precision="5" Default="0.0" AlterName="照射角度"/>
+            <VERIFIED_FLAG FieldType="Integer" Default="0" AlterName="验证标识"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="电子眼作用方向"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="电子眼坐标"/>
+            <SRC_FLAG FieldType="String" Default="1" AlterName="来源标识"/>
+            <CREATION_DATE FieldType="String" Default="" AlterName="创建日期"/>
+            <HIGH_VIOLATION FieldType="Integer" Default="0" AlterName="是否违章高发地"/>
+        </RD_ELECTRONICEYE>
+        <RD_ELECEYE_PAIR>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="同一组号"/>
+        </RD_ELECEYE_PAIR>
+        <RD_ELECEYE_PART>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="同一组号"/>
+            <ELECEYE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="电子眼号码"/>
+        </RD_ELECEYE_PART>
+
+
+        <RD_CROSSWALK>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="人行过道"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <CURB_RAMP FieldType="Integer" Default="0" AlterName="小斜坡"/>
+        </RD_CROSSWALK>
+        <RD_CROSSWALK_INFO>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="人行过道"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <Type FieldType="Integer" Default="0" AlterName="过道类型"/>
+            <ATTR FieldType="Integer" Default="0" AlterName="连接属性"/>
+            <SIGNAGE FieldType="Integer" Default="0" AlterName="过道标牌"/>
+        </RD_CROSSWALK_INFO>
+        <RD_CROSSWALK_NODE>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="人行过道"/>
+            <FIR_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="节点一"/>
+            <SEN_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="节点二"/>
+        </RD_CROSSWALK_NODE>
+        <RD_SLOPE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="坡度号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <Type FieldType="Integer" Default="1" AlterName="坡度类型"/>
+            <ANGLE FieldType="Integer" Default="0" AlterName="坡度角度"/>
+        </RD_SLOPE>
+        <RD_SLOPE_VIA>
+            <SLOPE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="坡度号码 "/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码 号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </RD_SLOPE_VIA>
+        <RD_SPEEDLIMIT>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="限速号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联LINK号码"/>
+            <SPEED_VALUE FieldType="Integer" Default="0" AlterName="限速值"/>
+            <SPEED_Type FieldType="Integer" Default="1" AlterName="限速类型"/>
+            <SPEED_DEPENDENT FieldType="Integer" Default="0" AlterName="限速条件"/>
+            <SPEED_FLAG FieldType="Integer" Default="0" AlterName="限速标志"/>
+            <CAPTURE_FLAG FieldType="Integer" Default="1" AlterName="采集标志"/>
+            <LIMIT_SRC FieldType="Integer" Default="1" AlterName="限速来源"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="限速标牌作用方向"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <STATUS FieldType="Integer" Default="7" AlterName="标记状态"/>
+            <CK_STATUS FieldType="Integer" Default="6" AlterName="质检状态"/>
+            <ADJA_FLAG FieldType="Integer" Default="0" AlterName="接边标识"/>
+            <REC_STATUS_IN FieldType="Integer" Default="0" AlterName="内业作业状态"/>
+            <REC_STATUS_OUT FieldType="Integer" Default="0" AlterName="外业作业状态"/>
+            <TIME_DESCRIPT FieldType="String" Default="" AlterName="外业时间段描述"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="限速标牌坐标"/>
+            <LANE_SPEED_VALUE FieldType="String" Default="" AlterName="车道限速值"/>
+            <TOLLGATE_FLAG FieldType="Integer" Default="0" AlterName="收费站前标识"/>
+        </RD_SPEEDLIMIT>
+
+        <RD_SPEEDLIMIT_TRUCK  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="限速号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联LINK号码"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="限速标牌作用方向"/>
+            <SPEED_VALUE FieldType="Integer" Default="0" AlterName="限速值"/>
+            <SPEED_FLAG FieldType="Integer" Default="1" AlterName="限速标志"/>
+            <CAPTURE_FLAG FieldType="Integer" Default="1" AlterName="采集标志"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <STATUS FieldType="Integer" Default="7" AlterName="标记状态"/>
+            <CK_STATUS FieldType="Integer" Default="6" AlterName="质检状态"/>
+            <ADJA_FLAG FieldType="Integer" Default="0" AlterName="接边标识"/>
+            <REC_STATUS_IN FieldType="Integer" Default="0" AlterName="内业作业状态"/>
+            <REC_STATUS_OUT FieldType="Integer" Default="0" AlterName="外业作业状态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="限速标牌坐标"/>
+        </RD_SPEEDLIMIT_TRUCK>
+        <RD_WARNINGINFO>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="警示信息"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <VALID_DIS FieldType="Integer" Default="0" AlterName="有效距离(米)"/>
+            <WARN_DIS FieldType="Integer" Default="0" AlterName="预告距离(米)"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
+            <Type_CODE FieldType="String" Default="" AlterName="标牌类型"/>
+        </RD_WARNINGINFO>
+        <RD_TRAFFICSIGNAL>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="信号灯号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="节点号码"/>
+            <Type FieldType="Integer" Default="0" AlterName="信号灯类型"/>
+            <LOCATION FieldType="Integer" Default="0" AlterName="信号灯位置"/>
+            <FLAG FieldType="Integer" Default="0" AlterName="控制标志"/>
+            <KG_FLAG FieldType="Integer" Default="0" AlterName="KG标志"/>
+        </RD_TRAFFICSIGNAL>
+        <RD_GATE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="大门号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <Type FieldType="Integer" Default="2" AlterName="大门类型"/>
+            <FEE FieldType="Integer" Default="0" AlterName="收费标识"/>
+            <DIR FieldType="Integer" Default="2" AlterName="大门方向"/>
+        </RD_GATE>
+        <RD_GATE_CONDITION>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="大门号码"/>
+            <VALID_OBJ FieldType="Integer" Default="0" AlterName="通行对象"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="通行时间"/>
+        </RD_GATE_CONDITION>
+        <RD_SE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="分岔口"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+        </RD_SE>
+        <RD_TOLLGATE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="收费站"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <PASSAGE_NUM FieldType="Integer" Default="0" AlterName="通道总数"/>
+            <Type FieldType="Integer" Default="0" AlterName="收费站类型"/>
+            <ETC_FIGURE_CODE FieldType="String" Default="" AlterName="ETC图标代码"/>
+            <LOCATION_FLAG FieldType="Integer" Default="0" AlterName="是否跨省"/>
+            <TRUCK_FLAG FieldType="Integer" Default="1" AlterName="是否允许卡车"/>
+            <U_FIELDS FieldType="String" Default="1" AlterName="收费标牌照片"/>
+        </RD_TOLLGATE>
+        <RD_TOLLGATE_NAME>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="收费站"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+        </RD_TOLLGATE_NAME>
+        <RD_TOLLGATE_COST>
+            <TOLLCOST_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="收费信息号码"/>
+            <IN_TOLLGATE FieldType="Integer" HasIndex="1" Default="0" AlterName="进入收费站"/>
+            <OUT_TOLLGATE FieldType="Integer" HasIndex="1" Default="0" AlterName="退出收费站"/>
+            <Type FieldType="Integer" Default="0" AlterName="收费类型"/>
+            <CASH FieldType="String" Default="CNY" AlterName="货币类型"/>
+            <VEHICLE_CLASS FieldType="Integer" Default="1" AlterName="车型分类"/>
+            <DISTANCE FieldType="Double" Precision="4" Default="0.0" AlterName="里程"/>
+            <SYSTEM_ID FieldType="Integer" Default="0" AlterName="区域"/>
+        </RD_TOLLGATE_COST>
+        <RD_TOLLGATE_PASSAGE>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="收费站"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="通道序号"/>
+            <TOLL_FORM FieldType="Integer" Default="0" AlterName="收费方式"/>
+            <CARD_Type FieldType="Integer" Default="0" AlterName="领卡类型"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+        </RD_TOLLGATE_PASSAGE>
+        <RD_VARIABLE_SPEED>
+            <VSPEED_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="可变限速号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <LOCATION FieldType="Integer" Default="0" AlterName="标牌位置"/>
+            <SPEED_VALUE FieldType="Integer" Default="0" AlterName="限速值"/>
+            <SPEED_Type FieldType="Integer" Default="1" AlterName="限速类型"/>
+            <SPEED_DEPENDENT FieldType="Integer" Default="0" AlterName="限速条件"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+        </RD_VARIABLE_SPEED>
+
+        <RD_VARIABLE_SPEED_VIA>
+            <VSPEED_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="可变限速号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </RD_VARIABLE_SPEED_VIA>
+        <RD_RESTRICTION>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="交限号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <RESTRIC_INFO FieldType="String" Default="" AlterName="限制信息"/>
+            <KG_FLAG FieldType="Integer" Default="0" AlterName="KG标志"/>
+        </RD_RESTRICTION>
+        <RD_RESTRICTION_DETAIL>
+            <RESTRIC_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="交限号码"/>
+            <DETAIL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="详细交限"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <FLAG FieldType="Integer" HasIndex="1" Default="2" AlterName="交限标志"/>
+            <RESTRIC_INFO FieldType="Integer" Default="0" AlterName="限制信息"/>
+            <Type FieldType="Integer" Default="1" AlterName="限制类型"/>
+            <RELATIONSHIP_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+        </RD_RESTRICTION_DETAIL>
+        <RD_RESTRICTION_CONDITION>
+            <DETAIL_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="详细交限"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <RES_WEIGH FieldType="Double" Precision="2" Default="0.0" AlterName="车辆限重"/>
+            <RES_TRAILER FieldType="Integer" Default="0" AlterName="拖挂车限制"/>
+            <RES_AXLE_LOAD FieldType="Double" Precision="2" Default="0.0" AlterName="限制轴重"/>
+            <RES_AXLE_COUNT FieldType="Integer" Default="0" AlterName="限制轴数"/>
+            <RES_OUT FieldType="Integer" Default="0" AlterName="本外埠车辆限制"/>
+        </RD_RESTRICTION_CONDITION>
+        <RD_RESTRICTION_VIA>
+            <DETAIL_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="详细交限"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LINK组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_RESTRICTION_VIA>
+        <RD_DIRECTROUTE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="顺行号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <FLAG FieldType="Integer" Default="2" AlterName="顺行标志"/>
+            <RELATIONSHIP_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+            <PROCESS_FLAG FieldType="Integer" Default="1" AlterName="处理标志"/>
+        </RD_DIRECTROUTE>
+        <RD_DIRECTROUTE_VIA>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="顺行号码"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LINK组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_DIRECTROUTE_VIA>
+        <RD_VOICEGUIDE>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="语音引导"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+        </RD_VOICEGUIDE>
+        <RD_VOICEGUIDE_DETAIL>
+            <VOICEGUIDE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="语音引导"/>
+            <DETAIL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="详细语音"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <GUIDE_CODE FieldType="Integer" Default="0" AlterName="语音代码"/>
+            <GUIDE_Type FieldType="Integer" Default="0" AlterName="语音类型"/>
+            <RELATIONSHIP_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+            <PROCESS_FLAG FieldType="Integer" Default="1" AlterName="处理标志"/>
+        </RD_VOICEGUIDE_DETAIL>
+        <RD_VOICEGUIDE_VIA>
+            <DETAIL_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="详细语音"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LINK组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_VOICEGUIDE_VIA>
+        <RD_LANE>
+            <LANE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="车道号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <LANE_NUM FieldType="Integer" Default="0" AlterName="单一方向的车道总数"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="车道序号"/>
+            <LANE_FORMING FieldType="Integer" Default="0" AlterName="车道标识"/>
+            <LANE_DIR FieldType="Integer" Default="2" AlterName="车道方向"/>
+            <LANE_Type FieldType="Integer" Default="1" AlterName="车道类型"/>
+            <ARROW_DIR FieldType="String" Default="9" AlterName="导向箭头"/>
+            <LANE_MARK FieldType="Integer" Default="0" AlterName="车道标线"/>
+            <WIDTH FieldType="Double" Precision="2" Default="0.0" AlterName="车道限宽"/>
+            <RESTRICT_HEIGHT FieldType="Double" Precision="2" Default="0.0" AlterName="车道限高"/>
+            <TRANSITION_AREA FieldType="Integer" Default="0" AlterName="交换区域"/>
+            <FROM_MAX_SPEED FieldType="Integer" Default="0" AlterName="顺向最高限速"/>
+            <TO_MAX_SPEED FieldType="Integer" Default="0" AlterName="逆向最高限速"/>
+            <FROM_MIN_SPEED FieldType="Integer" Default="0" AlterName="顺向最低限速"/>
+            <TO_MIN_SPEED FieldType="Integer" Default="0" AlterName="逆向最低限速"/>
+            <ELEC_EYE FieldType="Integer" Default="0" AlterName="电子眼"/>
+            <LANE_DIVIDER FieldType="Integer" Default="0" AlterName="车道分隔带"/>
+            <CENTER_DIVIDER FieldType="Integer" Default="0" AlterName="中央分隔带"/>
+            <TRAVEL_FLAG FieldType="Integer" Default="0" AlterName="通行标志"/>
+            <SPEED_FLAG FieldType="Integer" Default="0" AlterName="车道限速来源标识"/>
+            <SRC_FLAG FieldType="Integer" Default="1" AlterName="车道来源"/>
+        </RD_LANE>
+        <RD_LANE_CONDITION>
+            <LANE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="车道号码"/>
+            <DIRECTION FieldType="Integer" Default="2" AlterName="车道方向"/>
+            <DIRECTION_TIME FieldType="String" Default="" AlterName="方向时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <VEHICLE_TIME FieldType="String" Default="" AlterName="车辆时间段"/>
+        </RD_LANE_CONDITION>
+        <RD_LANE_TOPO_DETAIL>
+            <TOPO_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="连通号码"/>
+            <IN_LANE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入车道"/>
+            <OUT_LANE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出车道"/>
+            <REACH_DIR FieldType="Integer" Default="0" AlterName="通达方向"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <PROCESS_FLAG FieldType="Integer" Default="2" AlterName="处理标志"/>
+            <THROUGH_TURN FieldType="Integer" Default="0" AlterName="是否借道关系"/>
+        </RD_LANE_TOPO_DETAIL>
+        <RD_LANE_TOPO_VIA>
+            <TOPO_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="连通号码"/>
+            <LANE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LANE号码"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LANE组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LANE序号"/>
+            <VIA_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="经过LINK"/>
+        </RD_LANE_TOPO_VIA>
+        <RD_LANE_CONNEXITY>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="车信号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <LANE_NUM FieldType="Integer" Default="0" AlterName="车道总数"/>
+            <LEFT_EXTEND FieldType="Integer" Default="0" AlterName="左附加车道"/>
+            <RIGHT_EXTEND FieldType="Integer" Default="0" AlterName="右附加车道"/>
+            <LANE_INFO FieldType="String" Default="" AlterName="车道信息"/>
+            <KG_FLAG FieldType="Integer" Default="0" AlterName="KG标志"/>
+            <CONFLICT_FLAG FieldType="Integer" Default="0" AlterName="是否与交限矛盾"/>
+        </RD_LANE_CONNEXITY>
+        <RD_LANE_TOPOLOGY>
+            <CONNEXITY_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="车信号码"/>
+            <TOPOLOGY_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="连通号码"/>
+            <IN_LANE_INFO FieldType="Integer" Default="0" AlterName="进入车道信息"/>
+            <BUS_LANE_INFO FieldType="Integer" Default="0" AlterName="公交车道信息"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK号码"/>
+            <REACH_DIR FieldType="Integer" Default="0" AlterName="通达方向"/>
+            <RELATIONSHIP_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+        </RD_LANE_TOPOLOGY>
+        <RD_LANE_VIA>
+            <TOPOLOGY_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="连通号码"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LINK组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_LANE_VIA>
+        <RD_BRANCH>
+            <BRANCH_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <IN_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="进入NODE"/>
+            <OUT_LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="退出LINK"/>
+            <RELATIONSHIP_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+        </RD_BRANCH>
+        <RD_BRANCH_REALIMAGE>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <IMAGE_Type FieldType="Integer" Default="0" AlterName="实景图类型"/>
+            <REAL_CODE FieldType="String" Default="" AlterName="实景图代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+        </RD_BRANCH_REALIMAGE>
+        <RD_BRANCH_VIA>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="LINK组号"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+        </RD_BRANCH_VIA>
+        <RD_BRANCH_DETAIL>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <DETAIL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="详细号码"/>
+            <VOICE_DIR FieldType="Integer" Default="0" AlterName="声音方向"/>
+            <ESTAB_Type FieldType="Integer" Default="0" AlterName="设施类型"/>
+            <NAME_KIND FieldType="Integer" Default="0" AlterName="名称种别"/>
+            <EXIT_NUM FieldType="String" Default="" AlterName="出口编号"/>
+            <BRANCH_Type FieldType="Integer" Default="0" AlterName="分歧类型"/>
+            <PATTERN_CODE FieldType="String" Default="" AlterName="模式图代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+            <GUIDE_CODE FieldType="Integer" Default="0" AlterName="向导代码"/>
+            <ARROW_FLAG FieldType="Integer" Default="0" AlterName="箭头图标志"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="看板位置"/>
+        </RD_BRANCH_DETAIL>
+        <RD_BRANCH_NAME>
+            <DETAIL_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="详细号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="名称序号"/>
+            <NAME_CLASS FieldType="Integer" Default="0" AlterName="名称类型"/>
+            <CODE_Type FieldType="Integer" Default="0" AlterName="编号类型"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="分歧名称"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <VOICE_FILE FieldType="String" Default="" AlterName="名称语音"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+        </RD_BRANCH_NAME>
+        <RD_BRANCH_SCHEMATIC>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="1" AlterName="分歧号码"/>
+            <SCHEMATIC_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="图形号码"/>
+            <SCHEMATIC_CODE FieldType="String" Default="" AlterName="底图代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+            <MEMO FieldType="String" Default="" AlterName="备用信息"/>
+        </RD_BRANCH_SCHEMATIC>
+        <RD_SERIESBRANCH>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <VOICE_DIR FieldType="Integer" Default="0" AlterName="声音方向"/>
+            <Type FieldType="Integer" Default="0" AlterName="分歧类型"/>
+            <PATTERN_CODE FieldType="String" Default="" AlterName="模式图代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+            <ARROW_FLAG FieldType="Integer" Default="0" AlterName="箭头图标志"/>
+        </RD_SERIESBRANCH>
+        <RD_SIGNBOARD>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <SIGNBOARD_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="看板号码"/>
+            <BACKIMAGE_CODE FieldType="String" Default="" AlterName="底图代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="看板位置"/>
+        </RD_SIGNBOARD>
+        <RD_SIGNBOARD_NAME>
+            <SIGNBOARD_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="看板号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="名称序号"/>
+            <NAME_CLASS FieldType="Integer" Default="0" AlterName="名称类型"/>
+            <CODE_Type FieldType="Integer" Default="0" AlterName="编号类型"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="分歧名称"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <VOICE_FILE FieldType="String" Default="" AlterName="名称语音"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+        </RD_SIGNBOARD_NAME>
+        <RD_SIGNASREAL>
+            <BRANCH_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="分歧号码"/>
+            <SIGNBOARD_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="实景看板号码"/>
+            <SVGFILE_CODE FieldType="String" Default="" AlterName="SVG 图形代码"/>
+            <ARROW_CODE FieldType="String" Default="" AlterName="箭头图代码"/>
+            <MEMO FieldType="String" Default="" AlterName="备用信息"/>
+        </RD_SIGNASREAL>
+        <RD_GSC  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="立交号码"/>
+            <PROCESS_FLAG FieldType="Integer" Default="1" AlterName="处理标识"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="点位坐标"/>
+        </RD_GSC>
+        <RD_GSC_LINK>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="立交号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="要素号码"/>
+            <TABLE_NAME FieldType="String" Default="RD_LINK" AlterName="数据表名"/>
+            <SHP_SEQ_NUM FieldType="Integer" Default="0" AlterName="形状点号"/>
+            <ZLEVEL FieldType="Integer" Default="1" AlterName="高度层次"/>
+            <START_END FieldType="Integer" Default="0" AlterName="起终点标识"/>
+        </RD_GSC_LINK>
+        <RD_SAMELINK>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="同一组号"/>
+        </RD_SAMELINK>
+        <RD_SAMELINK_PART>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="同一组号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <TABLE_NAME FieldType="String" Default="" AlterName="数据表名"/>
+        </RD_SAMELINK_PART>
+        <RD_SAMENODE>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="同一组号"/>
+        </RD_SAMENODE>
+        <RD_SAMENODE_PART>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="同一组号"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <TABLE_NAME FieldType="String" Default="" AlterName="数据表名"/>
+        </RD_SAMENODE_PART>
+        <RD_SPEEDBUMP>
+            <BUMP_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="减速带号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </RD_SPEEDBUMP>
+        <IX_POI>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <KIND_CODE FieldType="String" Default="" AlterName="种别代码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="显示坐标"/>
+            <X_GUIDE FieldType="Double" Precision="5" Default="0.0" AlterName="引导X坐标"/>
+            <Y_GUIDE FieldType="Double" Precision="5" Default="0.0" AlterName="引导Y坐标"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="引导LINK"/>
+            <SIDE FieldType="Integer" Default="0" AlterName="位置关系"/>
+            <ADMIN_REAL FieldType="Integer" Default="0" AlterName="真实城市"/>
+            <IMPORTANCE FieldType="Integer" Default="0" AlterName="重要度"/>
+            <CHAIN FieldType="String" Default="" AlterName="连锁品牌"/>
+            <OPEN_24H FieldType="Integer" Default="0" AlterName="全天营业"/>
+            <MESH_ID_5K FieldType="String" Default="" AlterName="详细图幅"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+            <POST_CODE FieldType="String" Default="" AlterName="邮政编号"/>
+            <STATE FieldType="Integer" Default="0" AlterName="记录状态"/>
+            <LABEL FieldType="String" Default="" AlterName="标记"/>
+            <EDITION_FLAG FieldType="String" Default="" AlterName="作业季标识"/>
+            <POI_MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <OLD_BLOCKCODE FieldType="String" Default="" AlterName="OLD乡镇"/>
+            <OLD_NAME FieldType="String" Default="" AlterName="OLD名称"/>
+            <OLD_ADDRESS FieldType="String" Default="" AlterName="OLD地址"/>
+            <NAME_GROUPID FieldType="Integer" Default="0" AlterName="引导LINK名称"/>
+            <POI_NUM FieldType="String" Default="" AlterName="POI编号"/>
+            <LOG FieldType="String" Default="" AlterName="外业LOG"/>
+            <AIRPORT_CODE FieldType="String" Default="" AlterName="机场代码"/>
+            <DATA_VERSION FieldType="String" Default="" AlterName="数据采集版本"/>
+            <FIELD_TASK_ID FieldType="Integer" Default="0" AlterName="外业任务编号"/>
+            <ADDRESS_FLAG FieldType="Integer" Default="0" AlterName="地址标志"/>
+            <OLD_KIND FieldType="String" Default="" AlterName="OLD种别"/>
+            <FIELD_STATE FieldType="String" Default="" AlterName="字段状态"/>
+            <ROAD_FLAG FieldType="Integer" Default="0" AlterName="道路标志"/>
+            <ACCESS_FLAG FieldType="Integer" Default="0" AlterName="出入口标识"/>
+            <Type FieldType="Integer" Default="0" AlterName="POI 类型"/>
+            <TASK_ID FieldType="Integer" Default="0" AlterName="任务编号"/>
+            <PMESH_ID FieldType="Integer" Default="0" AlterName="永久图幅号码"/>
+            <EX_PRIORITY FieldType="String" Default="" AlterName="提取优先级"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DIF_GROUPID FieldType="String" Default="" AlterName="差分产品ID"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <VERIFIED_FLAG FieldType="Integer" Default="9" AlterName="验证标识"/>
+            <COLLECT_TIME FieldType="String" Default="" AlterName="采集更新时间"/>
+            <GEO_ADJUST_FLAG FieldType="Integer" Default="9" AlterName="几何调整标识"/>
+            <FULL_ATTR_FLAG FieldType="Integer" Default="9" AlterName="精编标识"/>
+            <OLD_X_GUIDE FieldType="Double" Precision="5" Default="0.0" AlterName="外业采集引导X坐标"/>
+            <OLD_Y_GUIDE FieldType="Double" Precision="5" Default="0.0" AlterName="外业采集引导Y坐标"/>
+            <TRUCK_FLAG FieldType="Integer" Default="0" AlterName="卡车标识"/>
+            <LEVEL FieldType="String" Default="" AlterName="POI等级"/>
+            <SPORTS_VENUE FieldType="String" Default="" AlterName="运动场馆"/>
+            <INDOOR FieldType="Integer" Default="0" AlterName="内部标识"/>
+            <VIP_FLAG FieldType="String" Default="" AlterName="VIP标识"/>
+        </IX_POI>
+        <IX_POI_PARENT>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="POI组号码"/>
+            <PARENT_POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="父POI号码"/>
+            <TENANT_FLAG FieldType="Integer" Default="0" AlterName="有无租户"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </IX_POI_PARENT>
+        <IX_POI_CHILDREN>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI组号码"/>
+            <CHILD_POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="子POI号码"/>
+            <RELATION_Type FieldType="Integer" Default="0" AlterName="关系类型"/>
+        </IX_POI_CHILDREN>
+        <IX_POI_BUILDING>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <FLOOR_USED FieldType="String" Default="" AlterName="可用楼层"/>
+            <FLOOR_EMPTY FieldType="String" Default="" AlterName="空缺楼层"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </IX_POI_BUILDING>
+        <IX_SAMEPOI>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="同一组号"/>
+            <RELATION_Type FieldType="Integer" Default="1" AlterName="关系类型"/>
+        </IX_SAMEPOI>
+        <IX_SAMEPOI_PART>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="同一组号"/>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+        </IX_SAMEPOI_PART>
+        <IX_POI_CONTACT>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <CONTACT_Type FieldType="Integer" Default="1" AlterName="联系方式类型"/>
+            <CONTACT_DEPART FieldType="Integer" Default="0" AlterName="联系服务部门"/>
+            <CONTACT FieldType="String" Default="" AlterName="联系方式"/>
+            <PRIORITY FieldType="Integer" Default="0" AlterName="优先选择"/>
+        </IX_POI_CONTACT>
+        <IX_POI_VIDEO>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <VIDEO_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="视频号码"/>
+            <STATUS FieldType="String" Default="" AlterName="状态信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <PID FieldType="String" Default="" AlterName="FCC库视频号码"/>
+            <TAG FieldType="Integer" Default="0" AlterName="标识"/>
+        </IX_POI_VIDEO>
+        <IX_POI_AUDIO>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <AUDIO_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="音频号码"/>
+            <STATUS FieldType="String" Default="" AlterName="状态信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <PID FieldType="String" Default="" AlterName="FCC库音频号码"/>
+            <TAG FieldType="Integer" Default="0" AlterName="标识"/>
+        </IX_POI_AUDIO>
+        <IX_POI_NAME>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_CLASS FieldType="Integer" Default="1" AlterName="名称分类"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <NAME_PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <NAME_Type FieldType="Integer" Default="1" AlterName="名称类型"/>
+            <NIDB_PID FieldType="String" Default="" AlterName="现有PID"/>
+            <KEYWORDS FieldType="String" Default="" AlterName="关键字"/>
+        </IX_POI_NAME>
+        <IX_POI_NAME_FLAG>
+            <NAME_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <FLAG_CODE FieldType="String" HasIndex="1" Default="" AlterName="标识代码"/>
+        </IX_POI_NAME_FLAG>
+        <IX_POI_ADDRESS>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <FULLNAME FieldType="String" Default="" AlterName="地址全称"/>
+            <FULLNAME_PHONETIC FieldType="String" Default="" AlterName="地址全称发音"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <PROVINCE FieldType="String" Default="" AlterName="省名"/>
+            <CITY FieldType="String" Default="" AlterName="市名"/>
+            <COUNTY FieldType="String" Default="" AlterName="区县名"/>
+            <TOWN FieldType="String" Default="" AlterName="乡镇街道办"/>
+            <STREET FieldType="String" Default="" AlterName="街巷名"/>
+            <PLACE FieldType="String" Default="" AlterName="地名小区名"/>
+            <LANDMARK FieldType="String" Default="" AlterName="标志物名"/>
+            <PREFIX FieldType="String" Default="" AlterName="前缀"/>
+            <HOUSENUM FieldType="String" Default="" AlterName="门牌号"/>
+            <Type FieldType="String" Default="" AlterName="类型名"/>
+            <SUBNUM FieldType="String" Default="" AlterName="子号"/>
+            <SURFIX FieldType="String" Default="" AlterName="后缀"/>
+            <ESTAB FieldType="String" Default="" AlterName="附属设施名"/>
+            <BUILDING FieldType="String" Default="" AlterName="楼栋号"/>
+            <FLOOR FieldType="String" Default="" AlterName="楼层"/>
+            <UNIT FieldType="String" Default="" AlterName="楼门号"/>
+            <ROOM FieldType="String" Default="" AlterName="房间号"/>
+            <ADDONS FieldType="String" Default="" AlterName="附加信息"/>
+            <PROV_PHONETIC FieldType="String" Default="" AlterName="省名发音"/>
+            <CITY_PHONETIC FieldType="String" Default="" AlterName="市名发音"/>
+            <COUNTY_PHONETIC FieldType="String" Default="" AlterName="区县名发音"/>
+            <TOWN_PHONETIC FieldType="String" Default="" AlterName="乡镇街道办发音"/>
+            <STREET_PHONETIC FieldType="String" Default="" AlterName="街巷名发音"/>
+            <PLACE_PHONETIC FieldType="String" Default="" AlterName="地名小区名发音"/>
+            <LANDMARK_PHONETIC FieldType="String" Default="" AlterName="标志物名发音"/>
+            <PREFIX_PHONETIC FieldType="String" Default="" AlterName="前缀发音"/>
+            <HOUSENUM_PHONETIC FieldType="String" Default="" AlterName="门牌号发音"/>
+            <Type_PHONETIC FieldType="String" Default="" AlterName="类型名发音"/>
+            <SUBNUM_PHONETIC FieldType="String" Default="" AlterName="子号发音"/>
+            <SURFIX_PHONETIC FieldType="String" Default="" AlterName="后缀发音"/>
+            <ESTAB_PHONETIC FieldType="String" Default="" AlterName="附属设施名发音"/>
+            <BUILDING_PHONETIC FieldType="String" Default="" AlterName="楼栋号发音"/>
+            <FLOOR_PHONETIC FieldType="String" Default="" AlterName="楼层发音"/>
+            <UNIT_PHONETIC FieldType="String" Default="" AlterName="楼门号发音"/>
+            <ROOM_PHONETIC FieldType="String" Default="" AlterName="房间号发音"/>
+            <ADDONS_PHONETIC FieldType="String" Default="" AlterName="附加信息发音"/>
+            <ROADNAME FieldType="String" Default="" AlterName="地址道路名"/>
+            <ROADNAME_PHONETIC FieldType="String" Default="" AlterName="地址道路名发音"/>
+            <ADDRNAME FieldType="String" Default="" AlterName="地址门牌号"/>
+            <ADDRNAME_PHONETIC FieldType="String" Default="" AlterName="地址门牌号发音"/>
+        </IX_POI_ADDRESS>
+        <IX_POI_ICON  >
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <REL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="关系号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="点位坐标"/>
+            <ICON_NAME FieldType="String" Default="" AlterName="图标文件名"/>
+            <MANAGE_CODE FieldType="String" Default="" AlterName="管理号"/>
+            <CLIENT_FLAG FieldType="String" Default="" AlterName="客户标识"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </IX_POI_ICON>
+        <IX_POI_ENTRYIMAGE>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <IMAGE_CODE FieldType="String" Default="" AlterName="概略图号码"/>
+            <X_PIXEL_R4 FieldType="Integer" Default="0" AlterName="像素坐标X_R4"/>
+            <Y_PIXEL_R4 FieldType="Integer" Default="0" AlterName="像素坐标Y_R4"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <MAIN_POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="主点POI号码"/>
+            <X_PIXEL_R5 FieldType="Integer" Default="0" AlterName="像素坐标X_R5"/>
+            <Y_PIXEL_R5 FieldType="Integer" Default="0" AlterName="像素坐标Y_R5"/>
+            <X_PIXEL_35 FieldType="Integer" Default="0" AlterName="像素坐标X_35"/>
+            <Y_PIXEL_35 FieldType="Integer" Default="0" AlterName="像素坐标Y_35"/>
+        </IX_POI_ENTRYIMAGE>
+        <IX_POI_PHOTO>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <PHOTO_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="照片号码"/>
+            <STATUS FieldType="String" Default="" AlterName="状态信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <PID FieldType="String" Default="" AlterName="FCC库照片号码"/>
+            <TAG FieldType="Integer" Default="1" AlterName="标识"/>
+        </IX_POI_PHOTO>
+        <IX_POI_FLAG>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <FLAG_CODE FieldType="String" HasIndex="1" Default="" AlterName="标识代码"/>
+        </IX_POI_FLAG>
+        <IX_POI_INTRODUCTION>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <INTRODUCTION_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="简介号码"/>
+            <INTRODUCTION FieldType="String" Default="" AlterName="简介"/>
+            <INTRODUCTION_ENG FieldType="String" Default="" AlterName="英文简介"/>
+            <WEBSITE FieldType="String" Default="" AlterName="官方网址"/>
+            <NEIGHBOR FieldType="String" Default="" AlterName="周围地标"/>
+            <NEIGHBOR_ENG FieldType="String" Default="" AlterName="地标英文"/>
+            <TRAFFIC FieldType="String" Default="" AlterName="交通枢纽"/>
+            <TRAFFIC_ENG FieldType="String" Default="" AlterName="交通枢纽英文"/>
+        </IX_POI_INTRODUCTION>
+        <IX_POI_ATTRACTION>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <ATTRACTION_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="景点号码"/>
+            <SIGHT_LEVEL FieldType="Integer" Default="0" AlterName="景点等级"/>
+            <PARKING FieldType="Integer" Default="0" AlterName="停车服务"/>
+            <LONG_DESCRIPTION FieldType="String" Default="" AlterName="景点介绍"/>
+            <TICKET_PRICE FieldType="String" Default="" AlterName="票价"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="营业时间"/>
+            <TELEPHONE FieldType="String" Default="" AlterName="电话"/>
+            <ADDRESS FieldType="String" Default="" AlterName="地址"/>
+            <CITY FieldType="String" Default="" AlterName="所属城市"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="照片名称"/>
+            <LONG_DESCRIP_ENG FieldType="String" Default="" AlterName="景点英文介绍"/>
+            <TICKET_PRICE_ENG FieldType="String" Default="" AlterName="英文版的详细的票价信息"/>
+            <OPEN_HOUR_ENG FieldType="String" Default="" AlterName="英文版的详细营业时间的文字描述"/>
+            <TRAVELGUIDE_FLAG FieldType="Integer" Default="0" AlterName="是否属于travel guide所需POI"/>
+        </IX_POI_ATTRACTION>
+        <IX_POI_HOTEL>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <HOTEL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="酒店号码"/>
+            <CREDIT_CARD FieldType="String" Default="" AlterName="信用卡类型"/>
+            <RATING FieldType="Integer" Default="0" AlterName="酒店星级"/>
+            <CHECKIN_TIME FieldType="String" Default="14:00" AlterName="订房要求时间"/>
+            <CHECKOUT_TIME FieldType="String" Default="12:00" AlterName="退房要求时间"/>
+            <ROOM_COUNT FieldType="Integer" Default="0" AlterName="拥有客房总数"/>
+            <ROOM_Type FieldType="String" Default="" AlterName="客房类型"/>
+            <ROOM_PRICE FieldType="String" Default="" AlterName="客房价格"/>
+            <BREAKFAST FieldType="Integer" Default="0" AlterName="早餐价格"/>
+            <SERVICE FieldType="String" Default="" AlterName="附属服务"/>
+            <PARKING FieldType="Integer" Default="0" AlterName="停车服务"/>
+            <LONG_DESCRIPTION FieldType="String" Default="" AlterName="酒店介绍"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="营业时间"/>
+            <TELEPHONE FieldType="String" Default="" AlterName="电话"/>
+            <ADDRESS FieldType="String" Default="" AlterName="地址"/>
+            <CITY FieldType="String" Default="" AlterName="所属城市"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="照片名称"/>
+            <LONG_DESCRIP_ENG FieldType="String" Default="" AlterName="酒店英文介绍"/>
+            <OPEN_HOUR_ENG FieldType="String" Default="" AlterName="英文版的详细营业时间的文字描述"/>
+            <TRAVELGUIDE_FLAG FieldType="Integer" Default="0" AlterName="是否属于travel guide所需POI"/>
+        </IX_POI_HOTEL>
+        <IX_POI_RESTAURANT>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <RESTAURANT_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="餐饮号码"/>
+            <FOOD_Type FieldType="String" Default="" AlterName="风味类型"/>
+            <CREDIT_CARD FieldType="String" Default="" AlterName="信用卡类型"/>
+            <AVG_COST FieldType="Integer" Default="0" AlterName="人均消费"/>
+            <PARKING FieldType="Integer" Default="0" AlterName="停车服务"/>
+            <LONG_DESCRIPTION FieldType="String" Default="" AlterName="餐饮描述"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="营业时间"/>
+            <TELEPHONE FieldType="String" Default="" AlterName="电话"/>
+            <ADDRESS FieldType="String" Default="" AlterName="地址"/>
+            <CITY FieldType="String" Default="" AlterName="所属城市"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="照片名称"/>
+            <LONG_DESCRIP_ENG FieldType="String" Default="" AlterName="餐饮英文描述"/>
+            <OPEN_HOUR_ENG FieldType="String" Default="" AlterName="英文版的详细营业时间的文字描述"/>
+            <TRAVELGUIDE_FLAG FieldType="Integer" Default="0" AlterName="是否属于travel guide所需POI"/>
+        </IX_POI_RESTAURANT>
+        <IX_CROSSPOINT  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="索引号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="点位坐标"/>
+            <Type FieldType="Integer" Default="0" AlterName="交叉点类型"/>
+            <NAME_FIR FieldType="String" Default="" AlterName="道路一名称"/>
+            <PINYIN_FIR FieldType="String" Default="" AlterName="道路一拼音"/>
+            <NAME_ENG_FIR FieldType="String" Default="" AlterName="道路一英文"/>
+            <NAME_SEC FieldType="String" Default="" AlterName="道路二名称"/>
+            <PINYIN_SEC FieldType="String" Default="" AlterName="道路二拼音"/>
+            <NAME_ENG_SEC FieldType="String" Default="" AlterName="道路二英文"/>
+            <MESH_ID_5K FieldType="String" Default="" AlterName="详细图幅"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </IX_CROSSPOINT>
+        <IX_TOLLGATE  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="索引号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="点位坐标"/>
+            <KIND_CODE FieldType="String" Default="8400" AlterName="种别代码"/>
+            <NAME FieldType="String" Default="" AlterName="名称"/>
+            <PINYIN FieldType="String" Default="" AlterName="拼音"/>
+            <NAME_ENG FieldType="String" Default="" AlterName="英文名"/>
+            <MESH_ID_5K FieldType="String" Default="" AlterName="详细图幅"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联LINK"/>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联NODE"/>
+            <NAME_POR FieldType="String" Default="" AlterName="葡文名"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="0" AlterName="引导LINK名称"/>
+            <ROAD_FLAG FieldType="Integer" Default="0" AlterName="道路标志"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DIF_GROUPID FieldType="String" Default="" AlterName="差分产品ID"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+        </IX_TOLLGATE>
+        <IX_ANNOTATION  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="文字号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="文字坐标"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="来源标记"/>
+            <SRC_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="来源PID"/>
+            <KIND_CODE FieldType="String" Default="" AlterName="种别代码"/>
+            <RANK FieldType="Integer" Default="1" AlterName="显示等级"/>
+            <CLIENT_FLAG FieldType="String" Default="" AlterName="客户标识"/>
+            <MODIFY_FLAG FieldType="String" Default="" AlterName="修改标识"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+            <EXTRACT_INFO FieldType="String" Default="" AlterName="提取说明"/>
+            <EXTRACT_PRIORITY FieldType="String" Default="" AlterName="提取优先级"/>
+            <REMARK FieldType="String" Default="" AlterName="注释信息"/>
+            <DETAIL_FLAG FieldType="Integer" Default="0" AlterName="详细区域标识"/>
+            <DATA_VERSION FieldType="String" Default="" AlterName="数据采集版本"/>
+            <FIELD_TASK_ID FieldType="Integer" Default="0" AlterName="外业任务编号"/>
+            <TASK_ID FieldType="Integer" Default="0" AlterName="任务编号"/>
+            <SPECTIAL_FLAG FieldType="Integer" Default="0" AlterName="特殊标识"/>
+            <FIELD_MODIFY_FLAG FieldType="String" Default="" AlterName="外业修改标识"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DIF_GROUPID FieldType="String" Default="" AlterName="差分产品ID"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+        </IX_ANNOTATION>
+        <IX_ANNOTATION_NAME>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="文字号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <OLD_NAME FieldType="String" Default="" AlterName="原有名称"/>
+            <NAME_CLASS FieldType="Integer" Default="1" AlterName="名称分类"/>
+        </IX_ANNOTATION_NAME>
+        <IX_ANNOTATION_FLAG>
+            <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="文字号码"/>
+            <FLAG_CODE FieldType="String" HasIndex="1" Default="" AlterName="标识代码"/>
+        </IX_ANNOTATION_FLAG>
+        <IX_POSTCODE  >
+            <POST_CODE FieldType="String" Default="" AlterName="邮编代码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="点位坐标"/>
+            <MESH_ID_5K FieldType="String" Default="" AlterName="详细图幅"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <REGION_ID FieldType="Integer" Default="0" AlterName="区划号码"/>
+            <POST_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="邮编ID"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="引导LINK"/>
+            <SIDE FieldType="Integer" Default="0" AlterName="位置关系"/>
+            <NAME_GROUPID FieldType="Integer" Default="0" AlterName="引导LINK名称"/>
+        </IX_POSTCODE>
+        <RW_LINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起点号码"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终点号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="LINK种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="LINK形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <SCALE FieldType="Integer" Default="0" AlterName="比例尺"/>
+            <FEATURE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="铁路要素"/>
+            <DETAIL_FLAG FieldType="Integer" Default="0" AlterName="详细区域标识"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <COLOR FieldType="String" Default="" AlterName="线路渲染颜色"/>
+        </RW_LINK>
+        <RW_LINK_NAME>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="铁路LINK号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="0" AlterName="名称组号码"/>
+        </RW_LINK_NAME>
+        <RW_NODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="NODE种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </RW_NODE>
+        <RW_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </RW_NODE_MESH>
+        <RW_FEATURE>
+            <FEATURE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="铁路号码"/>
+        </RW_FEATURE>
+        <AD_FACE  >
+            <FACE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="FACE坐标"/>
+            <AREA FieldType="Double" Precision="6" Default="0.0" AlterName="FACE面积"/>
+            <PERIMETER FieldType="Double" Precision="3" Default="0.0" AlterName="FACE周长"/>
+            <REGION_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="区划号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </AD_FACE>
+        <AD_LINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起始节点"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终止节点"/>
+            <KIND FieldType="Integer" Default="1" AlterName="LINK种别"/>
+            <FORM FieldType="Integer" Default="1" AlterName="LINK形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <SCALE FieldType="Integer" Default="0" AlterName="比例尺"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </AD_LINK>
+        <AD_LINK_MESH>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </AD_LINK_MESH>
+        <AD_NODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <KIND FieldType="Integer" Default="1" AlterName="NODE种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </AD_NODE>
+        <AD_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </AD_NODE_MESH>
+        <AD_ADMIN  >
+            <REGION_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="区划号码"/>
+            <ADMIN_ID FieldType="Integer" Default="0" AlterName="行政代码"/>
+            <EXTEND_ID FieldType="Integer" Default="0" AlterName="扩展代码"/>
+            <ADMIN_Type FieldType="Double" Precision="1" Default="0.0" AlterName="行政类型"/>
+            <CAPITAL FieldType="Integer" Default="0" AlterName="代表点标识"/>
+            <POPULATION FieldType="String" Default="" AlterName="人口数量"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="代表点坐标"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="引导LINK"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <SIDE FieldType="Integer" Default="0" AlterName="位置关系"/>
+            <JIS_CODE FieldType="Integer" Default="0" AlterName="JISCODE"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <ROAD_FLAG FieldType="Integer" Default="0" AlterName="道路标志"/>
+            <PMESH_ID FieldType="Integer" Default="0" AlterName="永久图幅号"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </AD_ADMIN>
+        <AD_FACE_TOPO>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </AD_FACE_TOPO>
+        <AD_ADMIN_NAME>
+            <REGION_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="行政区划号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+            <NAME_CLASS FieldType="Integer" Default="1" AlterName="名称分类"/>
+        </AD_ADMIN_NAME>
+        <AD_ADMIN_GROUP>
+            <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="行政组号码"/>
+            <REGION_ID_UP FieldType="Integer" HasIndex="1" Default="0" AlterName="上级区划号码"/>
+        </AD_ADMIN_GROUP>
+        <AD_ADMIN_PART>
+            <GROUP_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="行政组号码"/>
+            <REGION_ID_DOWN FieldType="Integer" HasIndex="1" Default="0" AlterName="下级区划号码"/>
+        </AD_ADMIN_PART>
+        <ZONE_FACE  >
+            <FACE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="FACE坐标"/>
+            <AREA FieldType="Double" Precision="6" Default="0.0" AlterName="FACE面积"/>
+            <PERIMETER FieldType="Double" Precision="3" Default="0.0" AlterName="FACE周长"/>
+            <REGION_ID FieldType="Integer" HasIndex="1" Default="0" AlterName="区划号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </ZONE_FACE>
+        <ZONE_LINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起始节点"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终止节点"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <SCALE FieldType="Integer" Default="0" AlterName="比例尺"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </ZONE_LINK>
+        <ZONE_LINK_KIND>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <KIND FieldType="Integer" Default="1" AlterName="LINK种别"/>
+            <FORM FieldType="Integer" Default="1" AlterName="LINK形态"/>
+        </ZONE_LINK_KIND>
+        <ZONE_NODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <KIND FieldType="Integer" Default="1" AlterName="NODE种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </ZONE_NODE>
+        <ZONE_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </ZONE_NODE_MESH>
+        <ZONE_LINK_MESH>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </ZONE_LINK_MESH>
+        <ZONE_FACE_TOPO>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </ZONE_FACE_TOPO>
+        <LC_FACE  >
+            <FACE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="FACE坐标"/>
+            <AREA FieldType="Double" Precision="6" Default="0.0" AlterName="FACE面积"/>
+            <PERIMETER FieldType="Double" Precision="3" Default="0.0" AlterName="FACE周长"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <FEATURE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LC号码"/>
+            <SCALE FieldType="Integer" Default="0" AlterName="比例尺"/>
+            <KIND FieldType="Integer" Default="0" AlterName="FACE种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="FACE形态"/>
+            <DISPLAY_CLASS FieldType="Integer" Default="0" AlterName="显示等级"/>
+            <DETAIL_FLAG FieldType="Integer" Default="0" AlterName="详细区域标识"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </LC_FACE>
+        <LC_FACE_TOPO>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </LC_FACE_TOPO>
+        <LC_FEATURE>
+            <FEATURE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="要素号码"/>
+        </LC_FEATURE>
+        <LC_LINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起始节点"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终止节点"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </LC_LINK>
+        <LC_LINK_MESH>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </LC_LINK_MESH>
+        <LC_LINK_KIND>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="LINK种别"/>
+            <FORM FieldType="Integer" Default="0" AlterName="LINK形态"/>
+        </LC_LINK_KIND>
+        <LC_NODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </LC_NODE>
+        <LC_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </LC_NODE_MESH>
+        <LC_FACE_NAME>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+        </LC_FACE_NAME>
+        <LU_FACE  >
+            <FACE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="FACE坐标"/>
+            <AREA FieldType="Double" Precision="6" Default="0.0" AlterName="FACE面积"/>
+            <PERIMETER FieldType="Double" Precision="3" Default="0.0" AlterName="FACE周长"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <FEATURE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LU号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="FACE种别"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DETAIL_FLAG FieldType="Integer" Default="0" AlterName="精细化标志"/>
+        </LU_FACE>
+        <LU_FACE_TOPO>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </LU_FACE_TOPO>
+        <LU_FEATURE>
+            <FEATURE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="要素号码"/>
+        </LU_FEATURE>
+        <LU_LINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起始节点"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终止节点"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </LU_LINK>
+        <LU_LINK_MESH>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </LU_LINK_MESH>
+        <LU_LINK_KIND>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <KIND FieldType="Integer" Default="0" AlterName="LINK种别"/>
+        </LU_LINK_KIND>
+        <LU_NODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </LU_NODE>
+        <LU_NODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </LU_NODE_MESH>
+        <LU_FACE_NAME>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <NAME FieldType="String" Default="" AlterName="名称内容"/>
+            <PHONETIC FieldType="String" Default="" AlterName="名称发音"/>
+        </LU_FACE_NAME>
+        <CMG_BUILDFACE  >
+            <FACE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <BUILDING_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <MASSING FieldType="Integer" Default="0" AlterName="能否拔高"/>
+            <HEIGHT FieldType="Double" Precision="1" Default="0.0" AlterName="建筑物高度"/>
+            <HEIGHT_ACURACY FieldType="Double" Precision="1" Default="0.0" AlterName="高度精确度"/>
+            <HEIGHT_SOURCE FieldType="Integer" Default="1" AlterName="高度值来源"/>
+            <DATA_SOURCE FieldType="Integer" Default="1" AlterName="数据来源"/>
+            <WALL_MATERIAL FieldType="Integer" Default="1" AlterName="墙面材料"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="FACE坐标"/>
+            <AREA FieldType="Double" Precision="6" Default="0.0" AlterName="FACE面积"/>
+            <PERIMETER FieldType="Double" Precision="3" Default="0.0" AlterName="FACE周长"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <CREATE_TIME FieldType="String" Default="" AlterName="创建时间"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </CMG_BUILDFACE>
+        <CMG_BUILDFACE_TOPO>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="FACE号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <SEQ_NUM FieldType="Integer" Default="1" AlterName="LINK序号"/>
+        </CMG_BUILDFACE_TOPO>
+        <CMG_BUILDLINK  >
+            <LINK_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <S_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="起始节点"/>
+            <E_NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="终止节点"/>
+            <KIND FieldType="Integer" Default="1" AlterName="LINK种别"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="LINK坐标"/>
+            <LENGTH FieldType="Double" Precision="3" Default="0.0" AlterName="LINK长度"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </CMG_BUILDLINK>
+        <CMG_BUILDLINK_MESH>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </CMG_BUILDLINK_MESH>
+        <CMG_BUILDNODE  >
+            <NODE_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <FORM FieldType="Integer" Default="0" AlterName="NODE形态"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="NODE坐标"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+        </CMG_BUILDNODE>
+        <CMG_BUILDNODE_MESH>
+            <NODE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="NODE号码"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </CMG_BUILDNODE_MESH>
+        <CMG_BUILDING>
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <KIND FieldType="String" Default="" AlterName="建筑物种别"/>
+        </CMG_BUILDING>
+        <CMG_BUILDING_POI>
+            <BUILDING_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+        </CMG_BUILDING_POI>
+        <CMG_BUILDING_NAME>
+            <BUILDING_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <NAME_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="名称号码"/>
+            <NAME_GROUPID FieldType="Integer" HasIndex="1" Default="1" AlterName="名称组号码"/>
+            <LANG_CODE FieldType="String" Default="CHI" AlterName="语言代码"/>
+            <FULL_NAME FieldType="String" Default="" AlterName="建筑物全称"/>
+            <BASE_NAME FieldType="String" Default="" AlterName="建筑物基本名"/>
+            <BUILD_NUMBER FieldType="String" Default="" AlterName="建筑物楼号"/>
+            <FULL_NAME_PHONETIC FieldType="String" Default="" AlterName="建筑物全称发音"/>
+            <BASE_NAME_PHONETIC FieldType="String" Default="" AlterName="建筑物基本名发音"/>
+            <BUILD_NUM_PHONETIC FieldType="String" Default="" AlterName="建筑物楼号发音"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="名称来源"/>
+        </CMG_BUILDING_NAME>
+        <CMG_BUILDFACE_TENANT>
+            <FACE_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <FLAG FieldType="Integer" Default="0" AlterName="租户标识"/>
+            <TEL FieldType="String" Default="" AlterName="电话号码"/>
+            <X FieldType="Double" Precision="5" Default="0.0" AlterName="对应大厦的显示X坐标"/>
+            <Y FieldType="Double" Precision="5" Default="0.0" AlterName="对应大厦的显示Y坐标"/>
+            <NAME FieldType="String" Default="" AlterName="名称"/>
+            <FLOOR FieldType="String" Default="" AlterName="楼层"/>
+            <SRC_FLAG FieldType="Integer" Default="0" AlterName="来源标识"/>
+        </CMG_BUILDFACE_TENANT>
+        <CMG_BUILDING_3DICON>
+            <BUILDING_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <WIDTH FieldType="Integer" Default="64" AlterName="图标宽度"/>
+            <HEIGHT FieldType="Integer" Default="64" AlterName="图标高度"/>
+            <ICON_NAME FieldType="String" HasIndex="1" Default="" AlterName="图标文件名"/>
+            <ALPHA_NAME FieldType="String" HasIndex="1" Default="" AlterName="通道文件名"/>
+        </CMG_BUILDING_3DICON>
+        <CMG_BUILDING_3DMODEL>
+            <BUILDING_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="建筑物号码"/>
+            <MODEL_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="模型号码"/>
+            <RESOLUTION FieldType="Integer" Default="0" AlterName="分辨率"/>
+            <MODEL_NAME FieldType="String" HasIndex="1" Default="" AlterName="模型文件名"/>
+            <MATERIAL_NAME FieldType="String" HasIndex="1" Default="" AlterName="材质文件名"/>
+            <TEXTURE_NAME FieldType="String" HasIndex="1" Default="" AlterName="纹理文件名"/>
+        </CMG_BUILDING_3DMODEL>
+        <RD_HGWG_LIMIT  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="限制号码"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <RES_HIGH FieldType="Double" Precision="2" Default="0.0" AlterName="限高"/>
+            <RES_WEIGH FieldType="Double" Precision="2" Default="0.0" AlterName="限重"/>
+            <RES_AXLE_LOAD FieldType="Double" Precision="2" Default="0.0" AlterName="轴重限制"/>
+            <RES_WIDTH FieldType="Double" Precision="2" Default="0.0" AlterName="限宽"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="作用方向"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="坐标"/>
+        </RD_HGWG_LIMIT>
+        <IX_POI_PARKING>
+            <PARKING_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="停车场号码"/>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <PARKING_Type FieldType="String" Default="" AlterName="停车场类型"/>
+            <TOLL_STD FieldType="String" Default="" AlterName="收费标准"/>
+            <TOLL_DES FieldType="String" Default="" AlterName="收费描述"/>
+            <TOLL_WAY FieldType="String" Default="" AlterName="收费方式"/>
+            <PAYMENT FieldType="String" Default="" AlterName="支付方式"/>
+            <REMARK FieldType="String" Default="" AlterName="收费备注"/>
+            <SOURCE FieldType="String" Default="" AlterName="信息获取源"/>
+            <OPEN_TIIME FieldType="String" Default="" AlterName="开放时间"/>
+            <TOTAL_NUM FieldType="Integer" Default="0" AlterName="车位数量"/>
+            <WORK_TIME FieldType="String" Default="" AlterName="制作时间"/>
+            <RES_HIGH FieldType="Double" Precision="2" Default="0.0" AlterName="限高"/>
+            <RES_WIDTH FieldType="Double" Precision="2" Default="0.0" AlterName="限宽"/>
+            <RES_WEIGH FieldType="Double" Precision="2" Default="0.0" AlterName="限重"/>
+            <CERTIFICATE FieldType="Integer" Default="0" AlterName="入口凭证"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="停放车辆类型"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="全景照片"/>
+            <HAVE_SPECIALPLACE FieldType="String" Default="" AlterName="是否存在特殊类型停车位"/>
+            <WOMEN_NUM FieldType="Integer" Default="0" AlterName="女士停车位数量"/>
+            <HANDICAP_NUM FieldType="Integer" Default="0" AlterName="残障停车位数量"/>
+            <MINI_NUM FieldType="Integer" Default="0" AlterName="迷你停车位数量"/>
+            <VIP_NUM FieldType="Integer" Default="0" AlterName="专用停车位数量"/>
+        </IX_POI_PARKING>
+        <IX_POI_GASSTATION>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <GASSTATION_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="加油站号码"/>
+            <SERVICE_PROV FieldType="String" Default="" AlterName="服务提供商"/>
+            <FUEL_Type FieldType="String" Default="" AlterName="燃料类型"/>
+            <OIL_Type FieldType="String" Default="" AlterName="汽油类型"/>
+            <EG_Type FieldType="String" Default="" AlterName="乙醇汽油类型"/>
+            <MG_Type FieldType="String" Default="" AlterName="甲醇汽油类型"/>
+            <PAYMENT FieldType="String" Default="" AlterName="支付方式"/>
+            <SERVICE FieldType="String" Default="" AlterName="附属服务"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="营业时间"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="全景照片"/>
+        </IX_POI_GASSTATION>
+        <IX_POI_CHARGINGSTATION>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <CHARGING_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="充电站号码"/>
+            <CHARGING_Type FieldType="Integer" Default="3" AlterName="充电站类型"/>
+            <CHARGING_NUM FieldType="Integer" Default="0" AlterName="充电桩总数"/>
+            <SERVICE_PROV FieldType="String" Default="0" AlterName="服务提供商"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="全景照片"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="开放时间"/>
+            <PARKING_FEES FieldType="Integer" Default="0" AlterName="停车收费"/>
+            <PARKING_INFO FieldType="String" Default="" AlterName="停车收费备注"/>
+            <AVAILABLE_STATE FieldType="Integer" Default="0" AlterName="可用状态"/>
+            <CHANGE_BRANDS FieldType="String" Default="" AlterName="换电车品牌"/>
+            <CHANGE_OPEN_Type FieldType="Integer" Default="1" AlterName="换电开放限制"/>
+        </IX_POI_CHARGINGSTATION>
+        <IX_POI_CHARGINGPLOT>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <GROUP_ID FieldType="Integer" Default="1" AlterName="充电桩分组号"/>
+            <COUNT FieldType="Integer" Default="1" AlterName="组内充电桩数"/>
+            <ACDC FieldType="Integer" Default="0" AlterName="交直流电充电"/>
+            <PLUG_Type FieldType="String" Default="9" AlterName="插头类型"/>
+            <POWER FieldType="String" Default="" AlterName="充电功率"/>
+            <VOLTAGE FieldType="String" Default="" AlterName="充电电压"/>
+            <CURRENT FieldType="String" Default="" AlterName="充电电流"/>
+            <MODE FieldType="Integer" Default="0" AlterName="充电模式"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <PLUG_NUM FieldType="Integer" Default="1" AlterName="单个充电桩插孔数量"/>
+            <PRICES FieldType="String" Default="" AlterName="充电价格"/>
+            <OPEN_Type FieldType="String" Default="1" AlterName="开放状态"/>
+            <AVAILABLE_STATE FieldType="Integer" Default="0" AlterName="可用状态"/>
+            <MANUFACTURER FieldType="String" Default="" AlterName="设备生产商"/>
+            <FACTORY_NUM FieldType="String" Default="" AlterName="出厂编号"/>
+            <PLOT_NUM FieldType="String" Default="" AlterName="充电桩编号"/>
+            <PRODUCT_NUM FieldType="String" Default="" AlterName="产品型号"/>
+            <PARKING_NUM FieldType="String" Default="" AlterName="电动车泊位号码"/>
+            <FLOOR FieldType="Integer" Default="1" AlterName="楼层"/>
+            <LOCATION_Type FieldType="Integer" Default="0" AlterName="充电桩位置类型"/>
+            <PAYMENT FieldType="String" Default="4" AlterName="付费方式"/>
+        </IX_POI_CHARGINGPLOT>
+        <IX_POI_CHARGINGPLOT_PH>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="充电桩分组照片"/>
+        </IX_POI_CHARGINGPLOT_PH>
+        <IX_POI_EVENT>
+            <POI_PID FieldType="String" Default="" AlterName="关联 POI"/>
+            <EVENT_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="事件号码"/>
+            <EVENT_NAME FieldType="String" Default="" AlterName="事件名称"/>
+            <EVENT_KIND FieldType="String" Default="" AlterName="事件类型"/>
+            <EVENT_DESC FieldType="String" Default="" AlterName="事件描述"/>
+            <START_DATE FieldType="String" Default="" AlterName="事件开始日期"/>
+            <END_DATE FieldType="String" Default="" AlterName="事件结束日期"/>
+            <DETAIL_TIME FieldType="String" Default="" AlterName="事件详细时间"/>
+            <CITY FieldType="String" Default="" AlterName="所属城市"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="照片名称"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <EVENT_NAME_ENG FieldType="String" Default="" AlterName="事件英文名称"/>
+            <EVENT_KIND_ENG FieldType="String" Default="" AlterName="事件英文类型"/>
+            <EVENT_DESC_ENG FieldType="String" Default="" AlterName="事件英文描述"/>
+            <DETAIL_TIME_ENG FieldType="String" Default="" AlterName="事件详细时间英文描述"/>
+        </IX_POI_EVENT>
+        <IX_POI_DETAIL>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <WEB_SITE FieldType="String" Default="" AlterName="主页网址"/>
+            <FAX FieldType="String" Default="" AlterName="传真号码"/>
+            <STAR_HOTEL FieldType="String" Default="" AlterName="宾馆星级"/>
+            <BRIEF_DESC FieldType="String" Default="" AlterName="简介信息"/>
+            <ADVER_FLAG FieldType="Integer" Default="0" AlterName="付费广告点"/>
+            <PHOTO_NAME FieldType="String" Default="" AlterName="照片名称"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+            <HW_ENTRYEXIT FieldType="Integer" Default="0" AlterName="是否为高速出入口关联POI"/>
+            <PAYCARD FieldType="Integer" Default="0" AlterName="是否支持信用卡支付"/>
+            <CARDType FieldType="String" Default="" AlterName="支持信用卡类型"/>
+            <HOSPITAL_CLASS FieldType="Integer" Default="0" AlterName="医院等级"/>
+        </IX_POI_DETAIL>
+        <IX_POI_BUSINESSTIME>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <MON_SRT FieldType="String" Default="" AlterName="起始月份"/>
+            <MON_END FieldType="String" Default="" AlterName="终止月份"/>
+            <WEEK_IN_YEAR_SRT FieldType="String" Default="" AlterName="一年中的起始周"/>
+            <WEEK_IN_YEAR_END FieldType="String" Default="" AlterName="一年中的结束周"/>
+            <WEEK_IN_MONTH_SRT FieldType="String" Default="" AlterName="指定月份的营业起始周"/>
+            <WEEK_IN_MONTH_END FieldType="String" Default="" AlterName="指定月份的营业结束周"/>
+            <VALID_WEEK FieldType="String" Default="" AlterName="周营业日"/>
+            <DAY_SRT FieldType="String" Default="" AlterName="月营业起始日"/>
+            <DAY_END FieldType="String" Default="" AlterName="月营业结束日"/>
+            <TIME_SRT FieldType="String" Default="" AlterName="营业开始时间"/>
+            <TIME_DUR FieldType="String" Default="" AlterName="营业时长"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </IX_POI_BUSINESSTIME>
+        <IX_POI_TOURROUTE>
+            <TOUR_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="旅游路线号码"/>
+            <TOUR_NAME FieldType="String" Default="" AlterName="旅游路线名称"/>
+            <TOUR_NAME_ENG FieldType="String" Default="" AlterName="旅游路线英文名称"/>
+            <TOUR_INTR FieldType="String" Default="" AlterName="路线介绍"/>
+            <TOUR_INTR_ENG FieldType="String" Default="" AlterName="路线英文介绍"/>
+            <TOUR_Type FieldType="String" Default="" AlterName="路线种类"/>
+            <TOUR_Type_ENG FieldType="String" Default="" AlterName="英文版路线种类"/>
+            <TOUR_X FieldType="Double" Precision="5" Default="0.0" AlterName="路线引导点X坐标"/>
+            <TOUR_Y FieldType="Double" Precision="5" Default="0.0" AlterName="路线引导点Y坐标"/>
+            <TOUR_LEN FieldType="Double" Precision="3" Default="0.0" AlterName="路线总长度"/>
+            <TRAIL_TIME FieldType="String" Default="" AlterName="路线耗时"/>
+            <VISIT_TIME FieldType="String" Default="" AlterName="游览耗时"/>
+            <POI_PID FieldType="String" Default="" AlterName="途径POI"/>
+            <RESERVED FieldType="String" Default="" AlterName="预留信息"/>
+            <MEMO FieldType="String" Default="" AlterName="备注信息"/>
+        </IX_POI_TOURROUTE>
+        <IX_POI_CARRENTAL>
+            <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
+            <OPEN_HOUR FieldType="String" Default="" AlterName="营业时间"/>
+            <ADDRESS FieldType="String" Default="" AlterName="地址描述"/>
+            <HOW_TO_GO FieldType="String" Default="" AlterName="周边交通路线"/>
+            <PHONE_400 FieldType="String" Default="" AlterName="400电话"/>
+            <WEB_SITE FieldType="String" Default="" AlterName="主页网址"/>
+        </IX_POI_CARRENTAL>
+        <RD_LINK_WARNING  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="警示信息"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="标牌作用方向"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="标牌坐标"/>
+            <Type_CODE FieldType="String" Default="" AlterName="标牌类型"/>
+            <VALID_DIS FieldType="Integer" Default="0" AlterName="有效距离"/>
+            <WARN_DIS FieldType="Integer" Default="0" AlterName="预告距离"/>
+            <TIME_DOMAIN FieldType="String" Default="" AlterName="时间段"/>
+            <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+        </RD_LINK_WARNING>
+        <RD_MILEAGEPILE  >
+            <PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="号码"/>
+            <MILEAGE_NUM FieldType="Double" Precision="3" Default="0.0" AlterName="里程桩编号"/>
+            <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="关联LINK号码"/>
+            <ROAD_NAME FieldType="String" Default="" AlterName="道路名称"/>
+            <ROAD_NUM FieldType="String" Default="" AlterName="路线编号"/>
+            <ROAD_Type FieldType="Integer" Default="1" AlterName="道路名称或路线编号类型"/>
+            <SOURCE FieldType="Integer" Default="1" AlterName="来源"/>
+            <DLLX FieldType="String" Default="" AlterName="路段情况"/>
+            <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="坐标"/>
+            <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
+            <DIRECT FieldType="Integer" Default="0" AlterName="里程桩方向"/>
+        </RD_MILEAGEPILE>
+
+    </Tables>
+</DataSource>

@@ -14,7 +14,7 @@
                 <!--ref bean="demonstrationJDBCSearch" /-->
                 
                 <!-- WorkTimePlan定时调度任务： 利用了复杂调度器，每天凌晨2：00启动-->
-                <ref bean="poiDayStatics_Trigger" />
+<!--                 <ref bean="poiDayStatics_Trigger" /> -->
                 <ref bean="poiDayStat_Trigger" />
                 <ref bean="poiMonthStat_Trigger" />
             </list>

@@ -19,6 +19,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Task;
@@ -46,7 +47,10 @@ import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.GeoUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -246,8 +250,8 @@ public class BlockService {
 			String extendSql="";
 			if(json.containsKey("wkt")){
 				String wkt = json.getString("wkt");
-				extendSql=extendSql+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
-				+ "       'TRUE'";
+				extendSql=extendSql+ "   AND sdo_relate(T.GEOMETRY,SDO_GEOMETRY('" + wkt + "',"
+						+ "8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";
 			}
 			if(json.containsKey("planningStatus")){
 				String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
@@ -1634,9 +1638,59 @@ public class BlockService {
 		}
 	}
 	
+	/**
+	 * @param blockId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Block queryByBlockId(Connection conn,int blockId) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY,b.origin_Geo,b.plan_status FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
+			log.info("queryWktByBlockId sql:" + selectSql);
+			
+			ResultSetHandler<Block> rsHandler = new ResultSetHandler<Block>() {
+				public Block handle(ResultSet rs) throws SQLException {
+					Block block = new Block(); 	
+					if (rs.next()) {
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							Geometry json = GeoTranslator.wkt2Geometry(clobStr);
+							block.setGeometry(json);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						STRUCT structOrig = (STRUCT) rs.getObject("ORIGIN_GEO");
+						try {
+							String clobStrOrig = GeoTranslator.struct2Wkt(structOrig);
+							Geometry jsonOrig = GeoTranslator.wkt2Geometry(clobStrOrig);
+							block.setOriginGeo(jsonOrig);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						block.setBlockId(rs.getInt("BLOCK_ID"));
+						block.setPlanStatus(rs.getInt("plan_status"));
+					}
+					return block;
+				}
+
+			};
+			Block block = run.query(conn, selectSql,rsHandler); 
+			return block;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
 	public Map<Integer, Integer> getGridMapByBlockId(Connection conn, int blockId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;

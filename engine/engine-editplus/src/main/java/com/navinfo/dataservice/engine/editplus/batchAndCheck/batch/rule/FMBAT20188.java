@@ -33,8 +33,6 @@ public class FMBAT20188 extends BasicBatchRule {
 
 	private Map<Long,Long> childPidParentPid;
 	private Map<Long, List<Long>> childrenMap;
-	private boolean isParent = false;
-	private boolean isChild = false;
 	private List<String> serviceList = new ArrayList<String>();
 	
 	@Override
@@ -47,20 +45,22 @@ public class FMBAT20188 extends BasicBatchRule {
 		childrenMap = IxPoiSelector.getChildrenPidsByParentPidList(getBatchRuleCommand().getConn(), pidList);
 		
 		Set<Long> parentPids = new HashSet<Long>();
-		
-		if(childPidParentPid.isEmpty()&&childrenMap.isEmpty()){return;}
-		if(!childPidParentPid.isEmpty()&&childrenMap.isEmpty()){
-			isChild=true;
+
+		if(!childPidParentPid.isEmpty()){
 			for (Long childPid:childPidParentPid.keySet()) {
 				parentPids.add(childPidParentPid.get(childPid));
 			}
 		}
-		if(childPidParentPid.isEmpty()&&!childrenMap.isEmpty()){
-			isParent=true;
+		
+		if(!childrenMap.isEmpty()){
 			for (Long childPid:childrenMap.keySet()) {
 				parentPids.addAll(childrenMap.get(childPid));
 			}
 		}
+		if(parentPids.size()==0){
+			return;
+		}
+
 		
 		Set<String> referSubrow =  new HashSet<String>();
 		referSubrow.add("IX_POI_CHARGINGPLOT");
@@ -99,6 +99,47 @@ public class FMBAT20188 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
+		boolean isParent = false;
+		boolean isChild = false;
+		
+		if(!childPidParentPid.isEmpty()){
+			if(childPidParentPid.containsKey(poi.getPid())){
+				isChild = true;
+			}
+		}
+		
+		if(!childrenMap.isEmpty()){
+			if(childrenMap.containsKey(poi.getPid())){
+				isParent = true;
+			}
+		}
+		
+		if(isChild){
+			if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")
+					||poi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
+
+			Long parentPid = childPidParentPid.get(poi.getPid());
+			
+			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if(parentObj==null){return;}
+			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
+			if (!parentPoi.getKindCode().equals("230218") || parentPoi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
+			List<IxPoiChargingstation> chargingStationList = parentPoiObj.getIxPoiChargingstations();
+			if (chargingStationList==null||chargingStationList.isEmpty()) {
+				return;
+			}
+			IxPoiChargingstation chargingStation = chargingStationList.get(0);
+			String serviceProv = chargingStation.getServiceProv();
+			if (serviceProv == null || serviceList.contains(serviceProv)|| serviceProv.length()!=4) {
+				return;
+			}
+			batchChildOpenType(poiObj, poi, serviceProv);
+		}
 		if(isParent){
 			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")
 					||poi.getHisOpType().equals(OperationType.DELETE)) {
@@ -119,37 +160,14 @@ public class FMBAT20188 extends BasicBatchRule {
 			
 			for (Long childPid:childrenList) {
 				BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
+				if(childObj==null){return;}
 				IxPoiObj child = (IxPoiObj) childObj;
 				IxPoi childPoi = (IxPoi)  child.getMainrow();
 				batchChildOpenType(child, childPoi, serviceProv);
 			}
 		
 		}
-		if(isChild){
-			if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")
-					||poi.getHisOpType().equals(OperationType.DELETE)) {
-				return;
-			}
-
-			Long parentPid = childPidParentPid.get(poi.getPid());
-			
-			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
-			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
-			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
-			if (!parentPoi.getKindCode().equals("230218") || parentPoi.getHisOpType().equals(OperationType.DELETE)) {
-				return;
-			}
-			List<IxPoiChargingstation> chargingStationList = parentPoiObj.getIxPoiChargingstations();
-			if (chargingStationList==null||chargingStationList.isEmpty()) {
-				return;
-			}
-			IxPoiChargingstation chargingStation = chargingStationList.get(0);
-			String serviceProv = chargingStation.getServiceProv();
-			if (serviceProv == null || serviceList.contains(serviceProv)|| serviceProv.length()!=4) {
-				return;
-			}
-			batchChildOpenType(poiObj, poi, serviceProv);
-		}
+		
 		
 	}
 	

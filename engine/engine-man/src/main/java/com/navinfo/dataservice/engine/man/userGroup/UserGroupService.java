@@ -348,7 +348,7 @@ public class UserGroupService {
 	}
 	
 	//根据用户组类型获取用户组列表
-	public List<UserGroup> listByType(UserGroup userGroup)throws ServiceException{
+	public List<UserGroup> listByType(int groupType,JSONObject conditionJson)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -359,8 +359,13 @@ public class UserGroupService {
 					+ " from user_group ug"
 					+ " WHERE UG.PARENT_GROUP_ID IS NULL";
 					
-			if(userGroup.getGroupType() != null){	
-				selectSql += " AND ug.group_type =" + userGroup.getGroupType();
+			if(groupType != -1){	
+				selectSql += " AND ug.group_type =" + groupType;
+			}
+			if(conditionJson!=null){
+				if(conditionJson.containsKey("groupSubtype")){
+					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
+				}
 			}
 
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
@@ -392,19 +397,24 @@ public class UserGroupService {
 	
 	
 	//根据用户组类型获取用户组列表及用户组下用户信息
-	public ArrayList<HashMap<?, ?>> listByTypeWithUserInfo(UserGroup userGroup,int snapshot)throws ServiceException{
+	public ArrayList<HashMap<?, ?>> listByTypeWithUserInfo(int groupType,JSONObject conditionJson)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select ug.GROUP_ID, ug.GROUP_NAME, ug.GROUP_TYPE,u.user_id,u.user_real_name "
+			String selectSql = "select ug.GROUP_ID, ug.GROUP_NAME, ug.GROUP_TYPE,u.user_id,u.user_real_name,u.risk "
 					+ " from user_group ug, group_user_mapping gum, user_info u "
 					+ " where ug.group_id = gum.group_id "
 					+ " and gum.user_id = u.user_id ";
 		
-			if(userGroup.getGroupType() != null){	
-				selectSql += " and ug.group_type =" + userGroup.getGroupType();
+			if(groupType != -1){	
+				selectSql += " and ug.group_type =" + groupType;
+			}
+			if(conditionJson!=null){
+				if(conditionJson.containsKey("groupSubtype")){
+					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
+				}
 			}
 			selectSql += " order by ug.group_id";
 			
@@ -418,6 +428,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}else if(group.isEmpty()){
 							group.put("groupId", rs.getInt("GROUP_ID"));
@@ -427,6 +438,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}else if(group.containsKey("groupId")&&((int)group.get("groupId")!=rs.getInt("GROUP_ID"))){
 							group.put("userList", userList);
@@ -439,6 +451,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}
 					}

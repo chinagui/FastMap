@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
@@ -20,6 +22,8 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -259,6 +263,14 @@ public class DefaultObjImportor extends AbstractOperation{
 					continue;
 				}
 				try{
+					//处理geometry
+					if("geometry".equals(attName)){
+						JSONObject geo = (JSONObject) attValue;
+						Geometry geometry = GeoTranslator.geojson2Jts(geo);
+						String newAttName = this.camelToUnderline(attName);
+						mainrow.setAttrByCol(newAttName, geometry);
+						continue;
+					}
 					if(attValue instanceof String
 							||attValue instanceof Integer
 							||attValue instanceof Long
@@ -362,6 +374,14 @@ public class DefaultObjImportor extends AbstractOperation{
 						}
 					}
 					try{
+						//处理geometry
+						if("geometry".equals(attName)){
+							JSONObject geo = (JSONObject) attValue;
+							Geometry geometry = GeoTranslator.geojson2Jts(geo);
+							String newAttName = this.camelToUnderline(attName);
+							subRow.setAttrByCol(newAttName, geometry);
+							continue;
+						}
 						if(attValue instanceof String
 								||attValue instanceof Integer
 								||attValue instanceof Long
@@ -461,6 +481,14 @@ public class DefaultObjImportor extends AbstractOperation{
 						continue;
 					}
 					try{
+						//处理geometry
+						if("geometry".equals(attName)){
+							JSONObject geo = (JSONObject) attValue;
+							Geometry geometry = GeoTranslator.geojson2Jts(geo);
+							String newAttName = this.camelToUnderline(attName);
+							subRow.setAttrByCol(newAttName, geometry);
+							continue;
+						}
 						if(attValue instanceof String
 								||attValue instanceof Integer
 								||attValue instanceof Long

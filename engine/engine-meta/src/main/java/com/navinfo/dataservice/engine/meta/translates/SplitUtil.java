@@ -72,6 +72,13 @@ public class SplitUtil {
                 if(ConvertUtil.isChinese(currentChar)){
                     for(int j = length; j > index; j--){
                         String subStr = subText.substring(index, j);
+                        if (TranslateConstant.SYMBOL_WORD.containsKey(subStr)) {
+                            index = index + subStr.length();
+                            wordValue = subStr + "/";
+                            flag = false;
+                            continue;
+                        }
+
                         for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictChi2Eng().entrySet()) {
                             if (subStr.equals(entry.getKey())) {
                                 wordValue = entry.getValue() + "/";
@@ -85,17 +92,21 @@ public class SplitUtil {
                         wordValue = wordValue + "/";
                     }
                 }else {
-                    if(index++ == length){
-                        wordValue = String.valueOf(currentChar);
+                    if(++index == length){
+                        wordValue = currentChar + "/";
                     }else {
                         char nextChar = charArray[index];
-                        if(' ' == currentChar || ' ' == nextChar) {
+                        if(Character.isSpaceChar(currentChar) || Character.isSpaceChar(nextChar)) {
                             wordValue = String.valueOf(currentChar);
                         } else if(ConvertUtil.isLetter(currentChar) && ConvertUtil.isNotLetter(nextChar)){
                             wordValue = currentChar + "/";
                         } else if(ConvertUtil.isChinese(currentChar) && ConvertUtil.isNotChinese(nextChar)){
                             wordValue = currentChar + "/";
-                        }else if(Character.isDigit(currentChar) && !Character.isDigit(nextChar)) {
+                        } else if(ConvertUtil.isNotChinese(currentChar) && ConvertUtil.isChinese(nextChar)){
+                            wordValue = currentChar + "/";
+                        } else if(Character.isDigit(currentChar) && !Character.isDigit(nextChar)) {
+                            wordValue = currentChar + "/";
+                        } else if(ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";
                         }
                     }

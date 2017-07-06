@@ -5,9 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -237,7 +235,7 @@ public class RdLinkSearch implements ISearch {
 
 		String sql = "with tmp1 as  "
 				+ "("
-					+ " select l.LANE_NUM , l.link_pid,l.direct, l.kind,l.special_traffic,l.function_class, l.s_node_pid, l.e_node_pid,l.length,l.imi_code, l.geometry,p.is_plan_selected  "
+					+ " select /*+ use_nl(L,P)*/ l.LANE_NUM , l.link_pid,l.direct, l.kind,l.special_traffic,l.function_class, l.s_node_pid, l.e_node_pid,l.length,l.imi_code, l.geometry,p.is_plan_selected  "
 					+ "    from rd_link l , data_plan p   "
 					+ " where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' "
 					+ " and l.u_record != 2 "

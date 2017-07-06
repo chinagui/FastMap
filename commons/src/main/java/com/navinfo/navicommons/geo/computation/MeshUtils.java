@@ -1102,14 +1102,16 @@ public abstract class MeshUtils {
     }
 
     public static void main(String[] args) throws Exception {
-		Set<Integer> meshes = new HashSet<Integer>();
-		meshes.add(595671);
-		meshes.add(595672);
-		meshes.add(595661);
+//		Set<Integer> meshes = new HashSet<Integer>();
+//		meshes.add(595671);
+//		meshes.add(595672);
+//		meshes.add(595661);
+//		
+//		double[] xy = meshs2Rect(meshes);\
+    	
+    	
 		
-		double[] xy = meshs2Rect(meshes);
-		
-		System.out.println(xy);
+//		System.out.println(xy);
 		
 		
 		

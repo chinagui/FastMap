@@ -343,82 +343,82 @@ public class BlockService {
 		}
 	}	
 
-	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
-		JSONObject objTmp = JSONObject.fromObject(json);
-		BlockMan beanTmp = (BlockMan) JSONObject.toBean(objTmp, BlockMan.class);
-		if(beanTmp.getBlockManId()==0){return queryByBlockId(json);}
-		Connection conn = null;
-		try {
-			// 鎸佷箙鍖�
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);
-			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
-
-			String selectSql = "select B.BLOCK_MAN_ID,t.CITY_ID, B.BLOCK_MAN_NAME, t.GEOMETRY,"
-					+ " t.PLAN_STATUS, k.name taskName,k.task_type,b.descp,nvl(u.user_real_name, '') USER_REAL_NAME, b.collect_group_id, b.day_edit_group_id,"
-					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
-					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
-					+ " to_char(b.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
-					+ " to_char(b.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
-					+ " to_char(b.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
-					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
-					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
-					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
-					+ " and t.block_id = b.block_id and b.task_id = k.task_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
-				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
-					while (rs.next()) {
-						HashMap<String, Object> map = new HashMap<String, Object>();
-						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
-						map.put("workProperty", rs.getString("WORK_PROPERTY"));
-						map.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
-						map.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
-						
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							String clobStr = GeoTranslator.struct2Wkt(struct);
-							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						map.put("planStatus", rs.getInt("PLAN_STATUS"));
-						map.put("taskName", rs.getString("taskName"));
-						map.put("collectGroupId", rs.getInt("collect_group_id"));
-						map.put("dayEditGroupId", rs.getInt("day_edit_group_id"));
-						map.put("monthEditGroupId", rs.getInt("month_edit_group_id"));
-						map.put("collectPlanStartDate", rs.getString("collect_plan_start_date"));
-						map.put("collectPlanEndDate", rs.getString("collect_plan_end_date"));
-						map.put("dayEditPlanStartDate", rs.getString("day_edit_plan_start_date"));
-						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
-						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
-						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
-						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
-						map.put("dayProducePlanStartDate", rs.getString("day_produce_plan_start_date"));
-						map.put("dayProducePlanEndDate", rs.getString("day_produce_plan_end_date"));
-						map.put("monthProducePlanStartDate", rs.getString("month_produce_plan_start_date"));
-						map.put("monthProducePlanEndDate", rs.getString("month_produce_plan_end_date"));
-						map.put("taskType", rs.getInt("task_type"));
-						map.put("blockDescp", rs.getString("descp"));
-						map.put("createUserName", rs.getString("USER_REAL_NAME"));
-						return map;
-					}
-					return null;
-				}
-
-			};
-			return run.query(conn, selectSql, rsHandler, bean.getBlockManId());
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
+//		JSONObject objTmp = JSONObject.fromObject(json);
+//		BlockMan beanTmp = (BlockMan) JSONObject.toBean(objTmp, BlockMan.class);
+//		if(beanTmp.getBlockManId()==0){return queryByBlockId(json);}
+//		Connection conn = null;
+//		try {
+//			// 鎸佷箙鍖�
+//			QueryRunner run = new QueryRunner();
+//			conn = DBConnector.getInstance().getManConnection();
+//			JSONObject obj = JSONObject.fromObject(json);
+//			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
+//
+//			String selectSql = "select B.BLOCK_MAN_ID,t.CITY_ID, B.BLOCK_MAN_NAME, t.GEOMETRY,"
+//					+ " t.PLAN_STATUS, k.name taskName,k.task_type,b.descp,nvl(u.user_real_name, '') USER_REAL_NAME, b.collect_group_id, b.day_edit_group_id,"
+//					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
+//					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
+//					+ " to_char(b.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
+//					+ " to_char(b.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
+//					+ " to_char(b.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
+//					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
+//					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
+//					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
+//					+ " and t.block_id = b.block_id and b.task_id = k.task_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
+//			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
+//				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
+//					while (rs.next()) {
+//						HashMap<String, Object> map = new HashMap<String, Object>();
+//						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+//						map.put("cityId", rs.getInt("CITY_ID"));
+//						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+//						map.put("workProperty", rs.getString("WORK_PROPERTY"));
+//						map.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+//						map.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+//						
+//						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+//						try {
+//							String clobStr = GeoTranslator.struct2Wkt(struct);
+//							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+//						} catch (Exception e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						}
+//						map.put("planStatus", rs.getInt("PLAN_STATUS"));
+//						map.put("taskName", rs.getString("taskName"));
+//						map.put("collectGroupId", rs.getInt("collect_group_id"));
+//						map.put("dayEditGroupId", rs.getInt("day_edit_group_id"));
+//						map.put("monthEditGroupId", rs.getInt("month_edit_group_id"));
+//						map.put("collectPlanStartDate", rs.getString("collect_plan_start_date"));
+//						map.put("collectPlanEndDate", rs.getString("collect_plan_end_date"));
+//						map.put("dayEditPlanStartDate", rs.getString("day_edit_plan_start_date"));
+//						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
+//						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
+//						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
+//						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+//						map.put("dayProducePlanStartDate", rs.getString("day_produce_plan_start_date"));
+//						map.put("dayProducePlanEndDate", rs.getString("day_produce_plan_end_date"));
+//						map.put("monthProducePlanStartDate", rs.getString("month_produce_plan_start_date"));
+//						map.put("monthProducePlanEndDate", rs.getString("month_produce_plan_end_date"));
+//						map.put("taskType", rs.getInt("task_type"));
+//						map.put("blockDescp", rs.getString("descp"));
+//						map.put("createUserName", rs.getString("USER_REAL_NAME"));
+//						return map;
+//					}
+//					return null;
+//				}
+//
+//			};
+//			return run.query(conn, selectSql, rsHandler, bean.getBlockManId());
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询失败:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 /*
 	public Page listByGroupId(JSONObject json, int currentPageNum, int pageSize) throws ServiceException {
 		Connection conn = null;
@@ -1542,53 +1542,53 @@ public class BlockService {
 		}
 	}
 	
-	/**
-	 * 查询block名称列表
-	 * @author Han Shaoming
-	 * @param userId
-	 * @param blockManName
-	 * @return
-	 * @throws ServiceException 
-	 */
-	public List<Map<String, Object>> queryBlockManNameList(long userId, String blockManName) throws ServiceException {
-		Connection conn = null;
-		QueryRunner queryRunner = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			queryRunner = new QueryRunner();
-			
-			//根据blockManName查询blockMan数据
-			String sql = "SELECT * FROM BLOCK_MAN WHERE BLOCK_MAN_NAME LIKE '%"+blockManName+"%'";
-			Object[] params = {};
-			//处理结果集
-			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
-				@Override
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
-					List<Map<String, Object>> blockManNameList = new ArrayList<Map<String,Object>>();
-					while(rs.next()){
-						Map<String,Object> map = new HashMap<String,Object>();
-						map.put("blockManId",rs.getLong("BLOCK_MAN_ID"));
-						map.put("blockManName",rs.getString("BLOCK_MAN_NAME"));
-						blockManNameList.add(map);
-					}
-					return blockManNameList;
-				}
-			};
-			//获取数据
-			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
-			//日志
-			log.info("查询的blockMan数据的sql"+sql);
-			log.info("查询的blockMan数据"+list.toString());
-			return list;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	/**
+//	 * 查询block名称列表
+//	 * @author Han Shaoming
+//	 * @param userId
+//	 * @param blockManName
+//	 * @return
+//	 * @throws ServiceException 
+//	 */
+//	public List<Map<String, Object>> queryBlockManNameList(long userId, String blockManName) throws ServiceException {
+//		Connection conn = null;
+//		QueryRunner queryRunner = null;
+//		try{
+//			conn = DBConnector.getInstance().getManConnection();
+//			queryRunner = new QueryRunner();
+//			
+//			//根据blockManName查询blockMan数据
+//			String sql = "SELECT * FROM BLOCK_MAN WHERE BLOCK_MAN_NAME LIKE '%"+blockManName+"%'";
+//			Object[] params = {};
+//			//处理结果集
+//			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
+//				@Override
+//				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+//					// TODO Auto-generated method stub
+//					List<Map<String, Object>> blockManNameList = new ArrayList<Map<String,Object>>();
+//					while(rs.next()){
+//						Map<String,Object> map = new HashMap<String,Object>();
+//						map.put("blockManId",rs.getLong("BLOCK_MAN_ID"));
+//						map.put("blockManName",rs.getString("BLOCK_MAN_NAME"));
+//						blockManNameList.add(map);
+//					}
+//					return blockManNameList;
+//				}
+//			};
+//			//获取数据
+//			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
+//			//日志
+//			log.info("查询的blockMan数据的sql"+sql);
+//			log.info("查询的blockMan数据"+list.toString());
+//			return list;
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+//		}finally{
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 
 	/**
 	 * @param blockId

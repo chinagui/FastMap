@@ -220,6 +220,7 @@ public class SubtaskOperation {
 							subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 							subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 							subtask.setStatus(rs.getInt("STATUS"));
+							subtask.setCreateUserId(rs.getInt("create_user_id"));
 							subtask.setTaskId(rs.getInt("TASK_ID"));
 							subtask.setWorkKind(rs.getInt("WORK_KIND"));
 							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -1070,9 +1071,9 @@ public class SubtaskOperation {
 					int poiWaitWork = 0;
 					while(rs.next()){
 						int status = rs.getInt("status");
-						if(status == 1){poiWaitWork += 1;};
-						if(status == 2){poiWorked += 1;};
-						if(status == 3){poiCommit += 1;};
+						if(status == 1){poiWaitWork = rs.getInt("finishNum");};
+						if(status == 2){poiWorked = rs.getInt("finishNum");};
+						if(status == 3){poiCommit = rs.getInt("finishNum");};
 //						if(status==3){finish = rs.getInt("finishNum");}
 //						total+=rs.getInt("finishNum");
 					}

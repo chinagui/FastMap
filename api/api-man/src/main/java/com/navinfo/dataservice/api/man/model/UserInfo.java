@@ -19,11 +19,12 @@ public class UserInfo implements Serializable {
 	private Integer userScore ;
 	private Object userIcon ;
 	private String userGpsid ;
+	private int risk;
 	
 	public UserInfo (){
 	}
 	
-	public UserInfo (Integer userId ,String userRealName,String userNickName,String userPassword,String userEmail,String userPhone,Integer userLevel,Integer userScore,Object userIcon,String userGpsid){
+	public UserInfo (Integer userId ,String userRealName,String userNickName,String userPassword,String userEmail,String userPhone,Integer userLevel,Integer userScore,Object userIcon,String userGpsid,Integer risk){
 		this.userId=userId ;
 		this.userRealName=userRealName ;
 		this.userNickName=userNickName ;
@@ -34,7 +35,16 @@ public class UserInfo implements Serializable {
 		this.userScore=userScore ;
 		this.userIcon=userIcon ;
 		this.userGpsid=userGpsid ;
+		this.risk = risk;
 	}
+	public int getRisk() {
+		return risk;
+	}
+
+	public void setRisk(int risk) {
+		this.risk = risk;
+	}
+
 	public Integer getUserId() {
 		return userId;
 	}

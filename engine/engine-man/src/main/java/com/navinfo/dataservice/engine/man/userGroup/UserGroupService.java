@@ -403,7 +403,7 @@ public class UserGroupService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select ug.GROUP_ID, ug.GROUP_NAME, ug.GROUP_TYPE,u.user_id,u.user_real_name "
+			String selectSql = "select ug.GROUP_ID, ug.GROUP_NAME, ug.GROUP_TYPE,u.user_id,u.user_real_name,u.risk "
 					+ " from user_group ug, group_user_mapping gum, user_info u "
 					+ " where ug.group_id = gum.group_id "
 					+ " and gum.user_id = u.user_id ";
@@ -428,6 +428,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}else if(group.isEmpty()){
 							group.put("groupId", rs.getInt("GROUP_ID"));
@@ -437,6 +438,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}else if(group.containsKey("groupId")&&((int)group.get("groupId")!=rs.getInt("GROUP_ID"))){
 							group.put("userList", userList);
@@ -449,6 +451,7 @@ public class UserGroupService {
 							HashMap user = new HashMap();
 							user.put("userId", rs.getInt("user_id"));
 							user.put("userRealName", rs.getString("user_real_name"));
+							user.put("risk", rs.getInt("risk"));
 							userList.add(user);
 						}
 					}

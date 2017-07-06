@@ -3,6 +3,7 @@ package com.navinfo.dataservice.impcore.flushbylog;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -280,8 +281,17 @@ public class LogWriter {
 			data.put("log", "");
 			return data;
 		} catch (Exception e) {
-			data.put("result", handleFlushException(e));
-			data.put("log", e.getMessage());
+
+			if ((e.getMessage().indexOf("ORA-00001") != -1)) {
+				log.warn("新增已存在 接边作业履历冲突" + e.getMessage(), e);
+				data.put("result", -1);
+				data.put("log", e.getMessage());
+
+			} else {
+				data.put("result", handleFlushException(e));
+				data.put("log", e.getMessage());
+
+			}
 			return data;
 
 		} finally {

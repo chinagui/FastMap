@@ -107,37 +107,6 @@ public class RowCrowdsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
-	/**
-	 * 获取众包数据的电话和区号
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping(value = "/crowds/getTelephone")
-	public ModelAndView getTelephone(HttpServletRequest request) throws Exception {
-		
-		String parameter = request.getParameter("parameter");
-		
-		try {
-			
-			JSONObject reqJson = JSONObject.fromObject(parameter);
-			
-			RowCrowdsControl crowds = new RowCrowdsControl();
-			
-			double x = reqJson.getDouble("geoX");
-			
-			double y = reqJson.getDouble("geoY");
-			
-			JSONObject result = crowds.getTelephone(x, y);
-			
-			return new ModelAndView("jsonView", success(result));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
 	public static void main(String[] argv){
 		long userId = 1086L;
 		

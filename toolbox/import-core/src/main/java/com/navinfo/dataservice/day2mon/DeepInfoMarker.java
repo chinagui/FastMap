@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class DeepInfoMarker {
 	Logger log = LoggerRepos.getLogger(this.getClass());
@@ -78,8 +80,9 @@ public class DeepInfoMarker {
 				if (parkingKindCode.contains(kindCode)) {
 					// 是否符合停车场抓取原则
 					if (isParkingPoi(poiObj, kindCode)) {
-						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
-								+ pid + ",'FM-PARKING',0,0)";
+//						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
+//								+ pid + ",'FM-PARKING',0,0)";
+						String sql = updateColumnStatus(pid,"FM-PARKING",0);
 						stmt.addBatch(sql);
 					}
 					continue;
@@ -89,8 +92,9 @@ public class DeepInfoMarker {
 				if (carrentalKindCode.contains(kindCode)) {
 					// 是否符合汽车租赁抓取原则
 					if (isCarrentalPoi(poiObj, chain)) {
-						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
-								+ pid + ",'FM-CARRENTAL',0,0)";
+						//String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
+						//		+ pid + ",'FM-CARRENTAL',0,0)";
+						String sql = updateColumnStatus(pid,"FM-CARRENTAL",0);
 						stmt.addBatch(sql);
 					}
 					continue;
@@ -100,8 +104,9 @@ public class DeepInfoMarker {
 				if (detailKindCode.contains(kindCode)) {
 					// 是否符合通用抓取原则
 					if (isDetailPoi(poiObj)) {
-						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
-								+ pid + ",'FM-DETAIL',0,0)";
+//						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
+//								+ pid + ",'FM-DETAIL',0,0)";
+						String sql = updateColumnStatus(pid,"FM-DETAIL",0);
 						stmt.addBatch(sql);
 					}
 					continue;
@@ -376,5 +381,19 @@ public class DeepInfoMarker {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	// 更新POI_COLUMN_STATUS 表
+	private String updateColumnStatus(Long pid,String workItem,int handler) throws Exception {
+
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_column_status T1 ");
+		sb.append(" USING (SELECT "+pid+" as b,'" + workItem + "' as c," + handler
+				+ " as d  FROM dual) T2 ");
+		sb.append(" ON ( T1.pid=T2.b and T1.work_item_id=T2.c) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.first_work_status = 1,T1.second_work_status = 1,T1.handler = T2.d,T1.QC_FLAG=0,T1.common_handler=0 ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler) VALUES(T2.b,T2.c,1,1,T2.d)");
+		return sb.toString();
+
 	}
 }

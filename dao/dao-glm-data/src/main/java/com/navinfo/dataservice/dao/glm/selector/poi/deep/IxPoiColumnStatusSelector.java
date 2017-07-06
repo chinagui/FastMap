@@ -1111,6 +1111,9 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			}else if(isQuality==1){//质检任务
 				sb.append("	AND p.COMMON_HANDLER <> "+userId);
 				sb.append("	AND p.QC_FLAG = 1");
+				sb.append(" AND NOT exists (SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
+				sb.append(" WHERE PS.PID = p.pid AND PS.HANDLER <> 0 AND PC.TYPE = 1 AND PC.CHECK_FLAG IN (1, 3) ");
+				sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID AND pc.first_work_item  = p.FIRST_WORK_ITEM)");
 			}
 			sb.append("  GROUP BY p.first_work_item");
 			sb.append(" union all");

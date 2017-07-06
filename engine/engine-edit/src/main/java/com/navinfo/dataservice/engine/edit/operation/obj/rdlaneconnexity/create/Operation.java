@@ -148,7 +148,10 @@ public class Operation implements IOperation {
 
 			Set<Integer> val = (Set<Integer>) entry.getValue();
 
-			busLaneInfo += Math.pow(2, size - 1 - index);
+			if (val.contains(reachDir)) {
+
+				busLaneInfo += Math.pow(2, size - 1 - index);
+			}
 
 		}
 		busLaneInfo = busLaneInfo << (16 - size); // 向 左补位至16位

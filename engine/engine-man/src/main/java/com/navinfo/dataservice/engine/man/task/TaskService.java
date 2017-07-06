@@ -3696,6 +3696,8 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	

@@ -25,18 +25,12 @@ public class BaiduGeocoding {
 		if ("".equals(str)||str== null) {
 			return null;
 		}
-			// 对字符串长度超过84字节的截断，对于特殊字符进行编码处理
-			if(str.length()>42){
-				str = str.substring(0,42);
-			}
+			// 对于特殊字符进行编码处理
 			str = URLEncoder.encode(str, "utf-8");
 			String geocoderUrl=url + str + url2;
-			System.out.println("geocoderUrl" + geocoderUrl);
+//			System.out.println("geocoderUrl" + geocoderUrl);
 			String return_value = Parser_Tool.do_get(geocoderUrl);
-			System.out.println("return_value:" + return_value);
-			if(return_value==null||return_value.equals("")){
-				return null;
-			}
+//			System.out.println("return_value:" + return_value);
 			JSONObject json = JSONObject.fromObject(return_value);
 			if(json.containsKey("result")){
 				JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");

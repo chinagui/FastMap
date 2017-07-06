@@ -2,13 +2,10 @@ package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
 import java.util.*;
-
 import net.sf.json.JSONArray;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -36,7 +33,6 @@ import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
-
 import net.sf.json.JSONObject;
 /*
  * @author mayunfei

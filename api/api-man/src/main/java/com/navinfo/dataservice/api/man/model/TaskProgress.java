@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.api.man.model;
 
-import java.sql.Clob;
 import java.sql.Timestamp;
 
 public class TaskProgress extends BaseObj {

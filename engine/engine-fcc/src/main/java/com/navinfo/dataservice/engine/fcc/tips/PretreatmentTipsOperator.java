@@ -1358,10 +1358,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// 需要判断是原库的还是 情报的，如果是原库的则，修改lifeCycle=2.否则 lifeCyCle=3
 			// 判断是情报的原则：lifeCycle=3且最后一条stage=6
-			int newlifeCycle = getNewLifeCycle(data);
-			JSONObject dataTrack = jsonInfo.getJSONObject("track");
-			dataTrack.put("t_lifecycle", newlifeCycle);
-			jsonInfo.put("track", dataTrack);
+//			int newlifeCycle = getNewLifeCycle(data);
+//			JSONObject dataTrack = jsonInfo.getJSONObject("track");
+//			dataTrack.put("t_lifecycle", newlifeCycle);
+//			jsonInfo.put("track", dataTrack);
 
 			return insertOneTips(COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
@@ -1384,6 +1384,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		JSONObject track = data.getJSONObject("track");
 
+        if(track.containsKey("t_trackInfo")) {
+
+        }
 		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
 				.size() - 1);

@@ -229,7 +229,7 @@ public class IxPoiSearch implements ISearch {
 		sb.append("WITH "
 				+ "TMP1 AS "
 				+ "("
-					+ "SELECT i.PID, i.KIND_CODE, i.INDOOR, i.X_GUIDE, i.Y_GUIDE, i.GEOMETRY, i.ROW_ID,p.is_plan_selected,p.is_important  "
+					+ "SELECT /*+ use_nl(i,p)*/ i.PID, i.KIND_CODE, i.INDOOR, i.X_GUIDE, i.Y_GUIDE, i.GEOMETRY, i.ROW_ID,p.is_plan_selected,p.is_important  "
 					+ "FROM IX_POI i ,data_plan p "
 					+ " WHERE SDO_RELATE(i.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT')= 'TRUE' "
 					+ " AND U_RECORD != 2 "
@@ -253,7 +253,7 @@ public class IxPoiSearch implements ISearch {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
+			log.info("wkt:"+wkt);
 			pstmt.setString(1, wkt);
 			pstmt.setInt(2, taskId);
 

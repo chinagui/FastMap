@@ -11,6 +11,7 @@ import com.navinfo.dataservice.engine.edit.check.CheckService;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.dataservice.jobframework.service.JobService;
+import com.navinfo.dataservice.row.job.PoiRowValidationJob;
 
 import net.sf.json.JSONObject;
 
@@ -49,7 +50,7 @@ public class JobTest {
 			e.printStackTrace();
 		}
 	}*/
-	@Test
+//	@Test
 	public  void JobTest() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();
@@ -72,6 +73,36 @@ public class JobTest {
 			job.run();
 //			job.execute();
 			job.getJobInfo().getResponse();*/
+			
+			System.out.println("Over.");
+			System.exit(0);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+		}
+	
+	@Test
+	public  void JobTest2() throws Exception {
+		//初始化context
+		JobScriptsInterface.initContext();
+
+	    try{
+			//执行job
+//			JSONObject jobPra = new JSONObject();
+//			jobPra.put("pids", null);
+//			jobPra.put("rules", null);
+//			jobPra.put("targetDbId", 13);
+//			  
+//			long jobId = JobService.getInstance().create("poiRowValidation", jobPra, 1664,142, "测试poi检查");
+
+	    	long jobId = 1804;
+			
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo jobInfo=apiService.getJobById(jobId);
+			AbstractJob job = new PoiRowValidationJob(jobInfo);
+			job.execute();
+			job.getJobInfo().getResponse();
 			
 			System.out.println("Over.");
 			System.exit(0);

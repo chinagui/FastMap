@@ -33,7 +33,6 @@ import com.vividsolutions.jts.io.WKTReader;
  */
 public class ImportRenderShape2Oracle {
 
-//	private static QueryRunner runner = new QueryRunner();
 	/**
 	 * @param args
 	 */
@@ -110,9 +109,6 @@ public class ImportRenderShape2Oracle {
 						
 //						System.out.println(count);
 					}
-					/*if(count > 1000){
-						break;
-					}*/
 				}
 				System.out.println("count: "+count);
 			}
@@ -153,6 +149,7 @@ public class ImportRenderShape2Oracle {
             }    
                  
             itertor.close(); 
+            sds.dispose();
                 
         } catch (Exception e) {  
             e.printStackTrace();  

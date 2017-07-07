@@ -42,6 +42,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.PageModelUtils;
 import com.navinfo.dataservice.commons.util.QuikSortListUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -3399,41 +3400,46 @@ public class SubtaskService {
 	 * 
 	 * */
 	@SuppressWarnings("unchecked")
-	public Page unPlanGridList(int taskId, int pageNum, int pageSize) throws Exception{
+	public Map<String, Object> unPlanGridList(int taskId, int pageNum, int pageSize) throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			
-			Page page = new Page();
-			
+			//未规划的gird
 			List<Integer> grids = queryDailySubTaskGrids(conn, taskId);
-			
+			//获取统计量信息
 			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			
 			int gridNum = result.size();
-
+			int totalCount = gridNum;
+			//统计tips总数，包含已规划和未规划
 			List<Map<String, Object>> convertList = new ArrayList();
+			int tipsNum = 0;
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Object> map = result.get(i);
+				tipsNum += Integer.parseInt(map.get("finished").toString());
+				tipsNum += Integer.parseInt(map.get("unfinished").toString());
+			}
+			//从统计信息中移除已规划的gird
 			for(int i = 0; i < result.size(); i++){
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
 				for(int j = 0; j < grids.size(); j++){
 					if(gridId == grids.get(j)){
-						result.remove(j);
+						result.remove(i);
+						break;
 					}
 				}
 			}
 			
-			int unPlanTipsNum = 0;
-			int tipsNum = 0;
-			
-			int totalCount = result.size();
+			//从移除已规划数据的list中统计未规划的grid和tips数量
 			int unPlanGridNum = result.size();
+			int unPlanTipsNum = 0;
 			for(Map<String, Object> map : result){
 				convertList.add(map);
 				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
-				tipsNum += Integer.parseInt(map.get("finished").toString());
-				tipsNum += Integer.parseInt(map.get("unfinished").toString());
+				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());
 			}
-			
+			//根据key倒序排序
 			String key = "gridId";
 			List<Map<String, Object>> sortListByGridId = QuikSortListUtils.sortListInMapByMapKey(convertList, key);
 			key = "unfinished";
@@ -3444,21 +3450,25 @@ public class SubtaskService {
 				map.remove("finished");
 			}
 			
+			//单独处理分页
+			List sublist = new ArrayList();
+			if(pageNum != 0 && pageSize != 0 && sortList.size() > 0){
+				sublist = PageModelUtils.ListSplit(sortList, pageNum, pageSize);
+			}
+	        
 			Map<String, Object> resultMap = new HashMap<>();
 			resultMap.put("unPlanTipsNum", unPlanTipsNum);
 			resultMap.put("tipsNum", tipsNum);
 			resultMap.put("gridNum", gridNum);
 			resultMap.put("totalCount", totalCount);
 			resultMap.put("unPlanGridNum", unPlanGridNum);
-			resultMap.put("detail", sortList);
-			page.setTotalCount(sortList.size());
-			page.setResult(resultMap);
+			resultMap.put("result", sublist);
 			
-			return page;
+			return resultMap;
 		}catch(Exception e){
-			log.error("日编子任务未规划grid接口异常，原因为："+e);
+			log.error("日编子任务未规划grid接口异常，原因为："+e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new Exception("日编子任务未规划grid接口异常:"+e);
+			throw new Exception("日编子任务未规划grid接口异常:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -3490,7 +3500,7 @@ public class SubtaskService {
 			};
 			return run.query(conn, sql, rsHandler);	
 		}catch(Exception e){
-			log.error("获取日编子任务对应的grid异常："+e);
+			log.error("获取日编子任务对应的grid异常："+e.getMessage(),e);
 			throw e;
 		}
 	}

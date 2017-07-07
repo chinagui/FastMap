@@ -786,9 +786,9 @@ public class SubtaskController extends BaseController {
 			}
 			int taskId = dataJson.getInt("taskId");
 			
-			 Page page = SubtaskService.getInstance().unPlanGridList(taskId,pageNum,pageSize);
+			Map<String, Object> result = SubtaskService.getInstance().unPlanGridList(taskId,pageNum,pageSize);
 			
-			return new ModelAndView("jsonView", success(page));
+			return new ModelAndView("jsonView", success(result));
 		}catch(Exception e){
 			log.error("日编子任务未规划grid接口异常，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

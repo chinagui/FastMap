@@ -21,9 +21,7 @@ public class PoiQualityTest {
 	@Test
 	public void initQualityData() throws Exception{
 		PoiQuality poiQuality = new PoiQuality();
-//		int qualityId = 10;
-		Geometry geometry = poiQuality.getGeometryByQualityId(10);
-		System.out.println(geometry);
+		poiQuality.initQualityData(33,13);
 	}
 	
 	//获取质检问题属性值(测试)

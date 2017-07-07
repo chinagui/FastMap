@@ -152,6 +152,8 @@ public interface MetadataApi {
 	public JSONObject getCharacterMap() throws Exception;
 	
 	public JSONObject searchByAdminCode(String admincode) throws Exception;
+	
+	public JSONObject getProvinceAndCityByAdminCode(String admincode) throws Exception;
 	/**
 	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
 	 * 获取sc_Point_Nameck元数据库表中type=1的大陆的记录列表

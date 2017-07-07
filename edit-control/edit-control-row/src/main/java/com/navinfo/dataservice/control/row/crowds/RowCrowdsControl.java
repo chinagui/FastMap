@@ -3,6 +3,7 @@ package com.navinfo.dataservice.control.row.crowds;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,7 +15,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
@@ -27,8 +30,10 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CorwdsSrcPoiDayImportor;
+import com.navinfo.dataservice.engine.editplus.utils.AdFaceSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
 
@@ -306,6 +311,43 @@ public class RowCrowdsControl {
 		CompGridUtil gridUtil = new CompGridUtil();
 		grid = gridUtil.point2Grids(x, y)[0];
 		return grid;
+	}
+	
+	
+	/**
+	 * 根据点位坐标算出区划号和电话号，电话长度
+	 * @param x
+	 * @param y
+	 * @return
+	 * @throws SQLException 
+	 */
+	public JSONObject getTelephone(double x, double y) throws SQLException{
+		JSONObject result = new JSONObject();
+		Connection conn = null;
+		try{
+			String dbId = getDailyDbId(x, y);
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			AdFaceSelector faceSeletor = new AdFaceSelector(conn);
+			Geometry geometry = GeoTranslator.point2Jts(x, y);
+			MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			
+			// 元数据服务，根据点位坐标算出meshid，然后根据meshId在cp_meshlist中算出adminId
+			//int adminCode = metadataApi.queryAdminIdByLocation(x, y);
+			
+			int adminCode = faceSeletor.getAminIdByGeometry(geometry);
+			
+			String adminCodeStr = String.valueOf(adminCode);
+			JSONObject phoneJson = metadataApi.searchByAdminCode(adminCodeStr);
+			if (phoneJson != null && phoneJson.containsKey(adminCodeStr)){
+				result = phoneJson.getJSONObject(adminCodeStr);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			result = null;
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+		return result;
 	}
 
 	public static void main(String[] args) throws Exception {

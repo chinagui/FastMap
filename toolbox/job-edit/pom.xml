@@ -84,5 +84,11 @@
 	       <artifactId>dubbo</artifactId>
 			<scope>test</scope>
 	   </dependency>
+	   
+	   <dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-dealership</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
   </dependencies>
 </project>

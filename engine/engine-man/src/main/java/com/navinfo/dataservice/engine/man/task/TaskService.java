@@ -509,13 +509,11 @@ public class TaskService {
 				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
 			}
-			
 			//modify by songhe 
 			//有组ID的subTask调用子任务发布接口
 			if(subPushMsgIds.size() > 0){
 				SubtaskService.getInstance().pushMsg(conn, userId, subPushMsgIds);
 			}
-			
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -1512,6 +1512,7 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			
 			return pushMsg(conn, userId, subtaskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

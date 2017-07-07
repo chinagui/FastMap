@@ -3437,7 +3437,7 @@ public class SubtaskService {
 			for(Map<String, Object> map : result){
 				convertList.add(map);
 				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
-				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());
+//				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());
 			}
 			//根据key倒序排序
 			String key = "gridId";
@@ -3487,7 +3487,7 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select distinct sgm.grid_id from SUBTASK_GRID_MAPPING sgm, SUBTASK st  where sgm.subtask_id = st.subtask_id "
-					+ "and st.task_id = "+taskId;
+					+ " and st.type = 3 and st.task_id = "+taskId;
 			
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {

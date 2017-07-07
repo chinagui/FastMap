@@ -437,6 +437,7 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -452,7 +453,9 @@ public class TaskService {
 					//modify by songhe 
 					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
 					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
-					subtask.setName(name);//任务名称+_作业组
+					if(StringUtils.isNotBlank(name)){
+						subtask.setName(name);//任务名称+_作业组
+					}
 
 					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
 					

@@ -1679,10 +1679,12 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
-					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-			if (json.getInt("blockId")!=0) {
+			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   ";
+			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
 				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
+			if (json.containsKey("wkt")) {
+				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
@@ -1770,7 +1772,9 @@ public class SubtaskService {
 				}	    		
 	    	}		;
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	if (json.containsKey("wkt")) {
+	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	}else{return run.query(conn, selectSql, rsHandler);}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

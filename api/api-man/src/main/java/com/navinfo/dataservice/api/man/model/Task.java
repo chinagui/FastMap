@@ -21,7 +21,7 @@ public class Task implements Serializable{
 	
 	private Integer taskId ;
 	private String name;
-	private Integer blockId=0 ;
+	private int blockId=0 ;
 	private String blockName;
 	private Integer regionId=0;
 	private Integer programId=0;

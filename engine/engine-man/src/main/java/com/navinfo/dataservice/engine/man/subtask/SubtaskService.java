@@ -1466,6 +1466,42 @@ public class SubtaskService {
 			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
+	
+	/**
+	 * @param userId
+	 * @param subTaskIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public String pushMsg(Connection conn, long userId, JSONArray subtaskIds) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			//查询子任务
+			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
+			
+			Iterator<Subtask> iter = subtaskList.iterator();
+			int success=0;
+			while(iter.hasNext()){
+				Subtask subtask = (Subtask) iter.next();
+				//修改子任务状态
+				if( (int)subtask.getStatus()== 2){
+					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
+				}
+				//采集子任务需要反向维护任务workKind
+				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
+					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
+				}
+				pushMsg2Crowd(conn,userId,subtask);
+				//发送消息
+				SubtaskOperation.pushMessage(conn, subtask, userId);
+				success ++;
+			}
+			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+		}
+	}
 
 	/**
 	 * @param userId

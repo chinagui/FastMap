@@ -385,6 +385,9 @@ public class TaskService {
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
+			//modify by songhe 记录有组ID的subtaskId调用子任务发布接口
+			//月编子任务名称赋值List
+			JSONArray subPushMsgIds = new JSONArray();
 
 			//POI月编任务
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
@@ -434,7 +437,6 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -446,8 +448,20 @@ public class TaskService {
 					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
+					
+					//modify by songhe 
+					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
+					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
+					subtask.setName(name);//任务名称+_作业组
 
-					SubtaskService.getInstance().createSubtask(subtask);
+					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
+					
+					//modify by songhe
+					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
+					//月编子任务名称赋值
+					if(subtask.getExeGroupId() != 0){
+						subPushMsgIds.add(subTaskId);
+					}
 				}
 			}
 			if(cmsTaskList.size()>0){
@@ -492,6 +506,13 @@ public class TaskService {
 				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
 			}
+			
+			//modify by songhe 
+			//有组ID的subTask调用子任务发布接口
+			if(subPushMsgIds.size() > 0){
+				SubtaskService.getInstance().pushMsg(conn, userId, subPushMsgIds);
+			}
+			
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

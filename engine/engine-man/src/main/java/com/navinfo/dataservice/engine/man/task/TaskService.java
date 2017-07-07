@@ -3696,6 +3696,8 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	
@@ -3840,7 +3842,7 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("初始化规划数据列表失败,原因为：" + e);
+			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
 			DbUtils.rollback(con);
 			DbUtils.rollback(dailyConn);
 			throw new Exception("初始化规划数据列表失败");
@@ -3868,7 +3870,7 @@ public class TaskService {
 			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
 			run.update(dailyConn, sql);
 		}catch(Exception e){
-			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage());
+			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -3887,7 +3889,7 @@ public class TaskService {
 			return pids;
 		}catch(Exception e){
 			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage());
+			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -4005,7 +4007,7 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage());
+			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -4045,7 +4047,7 @@ public class TaskService {
 				return run.query(conn, selectSql, rsHandler);	
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error("获取待规划子任务列表，原因为：" + e.getMessage());
+				log.error("获取待规划子任务列表，原因为："+e.getMessage(),e);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
@@ -4062,7 +4064,7 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
-			//Connection dailyConn = null;
+//			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4071,17 +4073,17 @@ public class TaskService {
 //				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
-				//String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
+//				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
-				//run.execute(dailyConn, deletesql);
+//				run.execute(dailyConn, deletesql);
 			}catch(Exception e){
-				log.error("规划上传接口异常，原因为："+e);
+				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollback(con);
-				//DbUtils.rollback(dailyConn);
+//				DbUtils.rollback(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
-				//DbUtils.commitAndCloseQuietly(dailyConn);
+//				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		
@@ -4135,10 +4137,10 @@ public class TaskService {
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
-				log.error("规划数据保存失败，原因为："+e);
+				log.error("规划数据保存失败，原因为："+e.getMessage(),e);
 				DBUtils.rollBack(conn);
 				DBUtils.rollBack(dailyConn);
-				throw new Exception("规划数据保存失败",e);
+				throw new Exception("规划数据保存失败"+e.getMessage(),e);
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				DbUtils.commitAndCloseQuietly(dailyConn);
@@ -4188,7 +4190,7 @@ public class TaskService {
 					run.update(conn, linksql, wkt);
 				}
 			}catch(Exception e){
-				log.info("根据范围修改数据作业状态异常:"+e);
+				log.info("根据范围修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4267,7 +4269,7 @@ public class TaskService {
 				result.put("kindCodes",kindCodes);
 				return result;
 			}catch(Exception e){
-				log.info("处理条件数据异常:"+e);
+				log.info("处理条件数据异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4305,7 +4307,7 @@ public class TaskService {
 					TaskProgressOperation.updateTaskProgress(conn, bean);
 				}
 			}catch(Exception e){
-				log.error("保存数据到taskPrograss表出错："+e);
+				log.error("保存数据到taskPrograss表出错："+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4389,7 +4391,7 @@ public class TaskService {
 				log.info("跟据条件保存数据sql:"+sql);
 				run.execute(conn, sql);
 			}catch(Exception e){
-				log.error("根据条件修改数据作业状态异常:"+e);
+				log.error("根据条件修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4462,7 +4464,7 @@ public class TaskService {
 				};
 				return run.query(conn, sql, rs);
 			}catch(Exception e){
-				log.error("判断task_progress表中是否存在task记录异常:"+e);
+				log.error("判断task_progress表中是否存在task记录异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4484,7 +4486,7 @@ public class TaskService {
 //				return ScQueryReliabilityPid(minNumber,maxNumber);
 			}catch(Exception e){
 				DbUtils.close(conn);
-				log.error("从元数据库中获取重要POI异常："+e);
+				log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
 				throw e;
 			}finally{
 				DbUtils.closeQuietly(conn);
@@ -4544,9 +4546,9 @@ public class TaskService {
 				JSONObject json = JSONObject.fromObject(parameter);
 				return json;
 			}catch(Exception e){
-				log.error("获取条件规划异常，原因为：" + e);
+				log.error("获取条件规划异常，原因为："+e.getMessage(),e);
 				DbUtils.closeQuietly(conn);
-				throw new Exception("获取条件规划异常",e);
+				throw new Exception("获取条件规划异常"+e.getMessage(),e);
 			}finally{
 				DbUtils.closeQuietly(conn);
 			}

@@ -178,11 +178,11 @@ public class ixpoitest {
 	@Test
 	public void testApplyColumnData() throws Exception{
 		JSONObject jsonReq = new JSONObject();
-		jsonReq.put("taskId", 619);
+		jsonReq.put("taskId", 607);
 		jsonReq.put("firstWorkItem","poi_name");
 		jsonReq.put("secondWorkItem", "");
 		 
-		long userId = 4577;
+		long userId = 5178;
 		
 		try {
 			ColumnCoreControl column = new ColumnCoreControl();

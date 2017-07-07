@@ -1,19 +1,15 @@
 package com.navinfo.dataservice.control.row.crowdTest;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.control.row.crowds.RowCrowdsControl;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONObject;
 
 public class TestCrowd {

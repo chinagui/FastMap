@@ -131,15 +131,15 @@ public class RdNameResultsTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void checkResultListByJobId(){
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "fm_meta_trunk", "fm_meta_trunk").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','sortby':'-rank','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
 			
 				NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
@@ -148,7 +148,7 @@ public class RdNameResultsTest {
 				//List<JSONObject> page =null;
 				try {
 					Map adminMap = new HashMap();
-					page = a.listCheckResultsByJobId(jsonReq, 29, "e22f39fb816c471cbaaf914b7bbf38cf");
+					page = a.listCheckResultsByJobId(jsonReq, 29, "2851c8a8173941e3995b362ab4e2e8c8");
 					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
 					 System.out.println("哈哈哈: "+page.getResult());
 					 System.out.println(page.getTotalCount());
@@ -325,7 +325,7 @@ public class RdNameResultsTest {
 			}
 		}
 	
-//	@Test
+	@Test
 	public void checkPoiResultList(){
 		Connection conn =null;
 		try{

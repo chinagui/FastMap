@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.constant;
+package com.navinfo.dataservice.commons.constant;import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 public class PropConstant {
 

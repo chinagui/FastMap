@@ -1347,13 +1347,13 @@ public class SubtaskService {
 				page = SubtaskOperation.getListByUserPage(conn, dataJson,curPageNum,pageSize,platForm);		
 				//返回质检圈
 				List<HashMap<Object,Object>> list=(List<HashMap<Object, Object>>) page.getResult();
+				if(list==null||list.size()==0){return page;}
 				Set<Integer> subtaskIds=new HashSet<Integer>();
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");
 					int isQuality=(int)tmp.get("isQuality");
 					if(isQuality==1){subtaskIds.add(subtaskId);}
 				}
-				
 				Map<Integer, List<SubtaskQuality>> qualityMap = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");

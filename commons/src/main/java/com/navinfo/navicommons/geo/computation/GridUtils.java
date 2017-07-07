@@ -21,13 +21,46 @@ public class GridUtils {
 	
 	public static void main(String[] args) {
 		try{
-			JSONArray grids = JSONArray.fromObject(new Integer[]{60561001,
-			
-					60561100});
-			String wkt = GridUtils.grids2Wkt(grids);
-			System.out.println(wkt);
-			//String grid = getNeighborGridInSameMesh("59567100",TopoLocation.Top);
-			//System.out.println("grid:"+grid);
+//			JSONArray grids = JSONArray.fromObject(new Integer[]{60561001,
+//					60561002,
+//					60561003,
+//					60561101,
+//					60561102,
+//					60561103,
+//					60561201,
+//					60561202,
+//					60561011,
+//					60561012,
+//					60561013,
+//					60561111,
+//					60561112,
+//					60561113,
+//					60561211,
+//					60561212,
+//					60561022,
+//					60561023,
+//					60561121,
+//					60561122,
+//					60561123,
+//					60561221,
+//					60561222,
+//					60560031,
+//					60560032,
+//					60560033,
+//					60560131,
+//					60560132,
+//					60560133,
+//					60560130,
+//					60560230,
+//					60561110,
+//					60561120,
+//					60561210,
+//					60561220,
+//					60561200,
+//					60561100});
+//			String wkt = GridUtils.grids2Wkt(grids);
+			String grid = getNeighborGridInSameMesh("59567100",TopoLocation.Top);
+			System.out.println("grid:"+grid);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

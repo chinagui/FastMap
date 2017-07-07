@@ -1,24 +1,13 @@
 package com.navinfo.dataservice.dao;
 
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
-
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.database.QueryRunner;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

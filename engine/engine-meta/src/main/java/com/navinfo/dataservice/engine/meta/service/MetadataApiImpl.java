@@ -483,6 +483,14 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAdminArea scPoint = new ScPointAdminArea();
 		return scPoint.searchByAdminCode(admincode);
 	}
+	
+	@Override
+	public JSONObject getProvinceAndCityByAdminCode(String admincode) throws Exception {
+		
+		ScPointAdminArea scPoint = new ScPointAdminArea();
+		return scPoint.getProvinceAndCityByAdminCode(admincode);
+	}
+	
 	@Override
 	public String searchKindName(String kindcode) throws Exception {
 		KindCodeSelector kind = new KindCodeSelector();

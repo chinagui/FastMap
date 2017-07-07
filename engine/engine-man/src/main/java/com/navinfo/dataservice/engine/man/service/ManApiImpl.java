@@ -408,4 +408,3 @@ public class ManApiImpl implements ManApi {
 		}
 	}
 }
-

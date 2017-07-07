@@ -7,6 +7,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONObject;
+
 public class PoiQualityTest {
 	@Before
 	public void before() {
@@ -24,4 +26,10 @@ public class PoiQualityTest {
 		System.out.println(geometry);
 	}
 	
+	//获取质检问题属性值(测试)
+	@Test
+	public void testQueryInitValueForProblem() throws Exception{
+		JSONObject queryInitValueForProblem = QualityService.getInstance().queryInitValueForProblem(3964, 51, 71);
+		System.out.println(queryInitValueForProblem);
+	}
 }

@@ -437,7 +437,14 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setTaskId(task.getTaskId());
+					//modify by songhe 
+					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
+					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
+					subtask.setName(name);//任务名称+_作业组
+					if(StringUtils.isBlank(subtask.getName())){
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					}
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -445,17 +452,10 @@ public class TaskService {
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
+
 					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
-					
-					//modify by songhe 
-					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
-					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
-					if(StringUtils.isNotBlank(name)){
-						subtask.setName(name);//任务名称+_作业组
-					}
 
 					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
 					

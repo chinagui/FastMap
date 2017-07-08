@@ -697,6 +697,7 @@ public class SubtaskService {
 			
 			sb.append(" SELECT ST.SUBTASK_ID,                           ");
 			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.QUALITY_METHOD,                       ");
 			sb.append("        ST.STATUS,                               ");
 			sb.append("        ST.STAGE,                                ");
 			sb.append("        ST.DESCP,                                ");
@@ -744,6 +745,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+						subtask.put("qualityMethod", rs.getInt("QUALITY_METHOD"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -1467,18 +1469,15 @@ public class SubtaskService {
 			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
 	 * @param userId
 	 * @param subTaskIds
 	 * @return
 	 * @throws Exception 
 	 */
-	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
-		// TODO Auto-generated method stub
-		Connection conn = null;
+	public String pushMsg(Connection conn, long userId, JSONArray subtaskIds) throws Exception {
 		try{
-			conn = DBConnector.getInstance().getManConnection();
 			//查询子任务
 			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
@@ -1511,6 +1510,24 @@ public class SubtaskService {
 				success ++;
 			}
 			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param userId
+	 * @param subTaskIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			return pushMsg(conn, userId, subtaskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

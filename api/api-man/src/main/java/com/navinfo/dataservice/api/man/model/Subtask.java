@@ -67,6 +67,8 @@ public class Subtask extends BaseObj  implements Serializable{
 	private int workKind;//0无1外业采集，2众包，3情报矢量，4多源
 	//快线中线标识，4快线，1中线
 	private int subType;
+	//添加质检方式字段
+	private int qualityMethod;
 
 	public int getSubType() {
 		return subType;
@@ -550,5 +552,12 @@ public class Subtask extends BaseObj  implements Serializable{
 	}
 	public void setWorkKind(int workKind) {
 		if(this.checkValue("WORK_KIND",this.workKind,workKind)){this.workKind = workKind;}
+	}
+	
+	public int getQualityMethod() {
+		return qualityMethod;
+	}
+	public void setQualityMethod(int qualityMethod) {
+		if(this.checkValue("QUALITY_METHOD",this.qualityMethod,qualityMethod)){this.qualityMethod = qualityMethod;}
 	}
 }

@@ -1694,7 +1694,9 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   ";
+			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
+					+ "  FROM subtask_refer t, subtask s"
+					+ " where s.refer_id(+) = t.id";
 			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
 				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
 			}

@@ -428,69 +428,6 @@ public class LogReader {
 		Map<Integer,Collection<Long>> updatedObjs = getUpdatedObj(objName,mainTabName,grids,date,null,null);
 		return updatedObjs;
 		
-//		StringBuilder sb = new StringBuilder();
-//
-//		sb.append(" WITH A AS                                                                    ");
-//		sb.append("  (SELECT D.OB_PID, MAX(P.OP_DT) DT                                           ");
-//		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
-//		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
-//		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
-//		sb.append("      AND D.OB_NM = ?                                                 ");
-//		if(grids!=null&&grids.size()>0){
-//			sb.append("     AND G.GRID_ID IN ("+StringUtils.join(grids, ",")+") AND G.GRID_TYPE = 1");
-//		}
-//		if(StringUtils.isNotEmpty(date)){
-//			sb.append("     AND P.OP_DT > TO_DATE('"+date+"', 'yyyymmddhh24miss')");
-//		}
-//		sb.append("    GROUP BY OB_PID),                                                         ");
-//		sb.append(" B AS                                                                         ");
-//		sb.append("  (SELECT D.OB_PID, D.OP_TP                                                   ");
-//		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
-//		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
-//		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
-//		if(grids!=null&&grids.size()>0){
-//			sb.append("     AND G.GRID_ID IN ("+StringUtils.join(grids, ",")+") AND G.GRID_TYPE = 1");
-//		}
-//		if(StringUtils.isNotEmpty(date)){
-//			sb.append("     AND P.OP_DT > TO_DATE('"+date+"', 'yyyymmddhh24miss')");
-//		}
-//		sb.append("      AND D.OB_NM = ?                                                 ");
-//		sb.append("      AND D.TB_NM = ?                                                ),");
-//		sb.append(" C AS                                                                         ");
-//		sb.append("  (SELECT DISTINCT A.OB_PID, 3 OP_TP                                          ");
-//		sb.append("     FROM A                                                                   ");
-//		sb.append("    WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)),            ");
-//		sb.append(" D AS                                                                         ");
-//		sb.append("  (SELECT DISTINCT B.OB_PID, 1 OP_TP                                          ");
-//		sb.append("     FROM B                                                                   ");
-//		sb.append("    WHERE B.OP_TP = 1                                                         ");
-//		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
-//		sb.append("             FROM B BB                                                        ");
-//		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
-//		sb.append("              AND BB.OP_TP = 2)),                                              ");
-//		sb.append(" E AS                                                                         ");
-//		sb.append("  (SELECT DISTINCT B.OB_PID, 2 OP_TP                                          ");
-//		sb.append("     FROM B                                                                   ");
-//		sb.append("    WHERE B.OP_TP = 2                                                         ");
-//		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
-//		sb.append("             FROM B BB                                                        ");
-//		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
-//		sb.append("              AND BB.OP_TP = 1)),                                              ");
-//		sb.append(" F AS                                                                         ");
-//		sb.append("  (SELECT DISTINCT B.OB_PID, 3 OP_TP                                          ");
-//		sb.append("     FROM B                                                                   ");
-//		sb.append("    WHERE B.OP_TP = 3                                                         ");
-//		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
-//		sb.append("             FROM B BB                                                        ");
-//		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
-//		sb.append("              AND BB.OP_TP IN (1, 2)))                                         ");
-//		sb.append("                                                                              ");
-//		sb.append(" SELECT * FROM C                                                              ");
-//		sb.append(" UNION ALL SELECT * FROM D                                                    ");
-//		sb.append(" UNION ALL SELECT * FROM E                                                    ");
-//		sb.append(" UNION ALL SELECT * FROM F                                                    ");
-//
-//		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),objName,mainTabName,mainTabName);
 	}
 	
 	/*
@@ -669,12 +606,13 @@ public class LogReader {
 		sb.append(" UNION ALL SELECT * FROM D                                                    ");
 		sb.append(" UNION ALL SELECT * FROM E                                                    ");
 		sb.append(" UNION ALL SELECT * FROM F                                                    ");
-
+		log.info(sb);
 		if(flg){
 			return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),objName,clobPids,clobPids,objName,mainTabName);
 		}else{
 			return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),objName,objName,mainTabName);
 		}
+		
 	}
 	
 

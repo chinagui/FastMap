@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -2079,6 +2080,11 @@ public class Transaction {
         String msg = "";
         try {
             for (AbstractProcess process : processes) {
+            	//TODO 2017.07.08 zl
+            	if(process.getConn() == null){
+            		int dbId = process.getCommand().getDbId();
+            		process.setConn(DBConnector.getInstance().getConnectionById(dbId));
+            	}
                 process.getConn().setAutoCommit(false);
             }
 

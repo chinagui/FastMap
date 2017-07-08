@@ -4387,10 +4387,10 @@ public class TaskService {
 					data_type = String.valueOf(dataType);
 				}
 				
-				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ");
+				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 				//POI查询条件
 				if(dataType == 1 || dataType == 3){
-					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					sb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
 					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						sb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4410,9 +4410,9 @@ public class TaskService {
 						sb.append("or ");
 						sb.append("r.kind in ("+roadKinds+") ");
 					}
-					sb.append(")) ");
+					sb.append(") ");
 				}
-				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
+				sb.append(") and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
 				
 				String sql = sb.toString();
 				log.info("跟据条件保存数据sql:"+sql);

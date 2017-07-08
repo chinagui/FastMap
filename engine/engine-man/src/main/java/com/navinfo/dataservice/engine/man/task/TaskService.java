@@ -4412,7 +4412,7 @@ public class TaskService {
 					}
 					sb.append(")) ");
 				}
-				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
+				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
 				
 				String sql = sb.toString();
 				log.info("跟据条件保存数据sql:"+sql);

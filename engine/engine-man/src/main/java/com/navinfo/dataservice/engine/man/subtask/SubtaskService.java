@@ -464,6 +464,7 @@ public class SubtaskService {
 			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
 		} 
 	}
+		
 	/**
 	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
 	 * 1.质检子任务名称也同样维护
@@ -1484,10 +1485,21 @@ public class SubtaskService {
 			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
+				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
+				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
+					//是否中线子任务
+					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
+					if(task.getBlockId()!=0&&subtask.getReferId()==0){
+						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
+					}
+					int referId = subtask.getReferId();
+					lockSubtaskRefer(conn,referId);
+				}
 				//修改子任务状态
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
+				
 				//采集子任务需要反向维护任务workKind
 				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
 					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
@@ -1699,10 +1711,14 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
-					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-			if (json.getInt("blockId")!=0) {
+			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
+					+ "  FROM subtask_refer t, subtask s"
+					+ " where s.refer_id(+) = t.id";
+			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
 				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
+			if (json.containsKey("wkt")) {
+				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
@@ -1790,7 +1806,9 @@ public class SubtaskService {
 				}	    		
 	    	}		;
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	if (json.containsKey("wkt")) {
+	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	}else{return run.query(conn, selectSql, rsHandler);}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

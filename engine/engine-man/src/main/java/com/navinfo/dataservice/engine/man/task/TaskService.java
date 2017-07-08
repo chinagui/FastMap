@@ -679,16 +679,16 @@ public class TaskService {
 				}
 			}
 			
-			//需要发消息的task列表
-			List<Task> openTaskList = new ArrayList<Task>();
-			Task task1 = queryByTaskId(bean.getTaskId());
-			if(task1.getStatus()==1){
-				openTaskList.add(task1);
+			//需要发消息的task列表		
+			JSONArray openTaskIds=new JSONArray();			
+			//Task task1 = getTaskListWithLeader(conn, taskIds);
+			if(oldTask.getStatus()==1){
+				openTaskIds.add(bean.getTaskId());
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
 			JSONObject json2 = new JSONObject();
-			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
+			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));
 				}
@@ -701,17 +701,22 @@ public class TaskService {
 			}
 			
 			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
+				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
 				for(Task task2:taskList){
 					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);
 						if(task2.getStatus()==1){
-							openTaskList.add(task2);
+							openTaskIds.add(bean.getTaskId());
 						}
 					}
 				}
+			}
+			
+			List<Task> openTaskList = new ArrayList<Task>();
+			if(openTaskIds!=null&&openTaskIds.size()>0){
+				openTaskList = getTaskListWithLeader(conn, openTaskIds);
 			}
 
 			//发送消息

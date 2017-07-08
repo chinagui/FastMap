@@ -131,6 +131,10 @@ public class SubtaskOperation {
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " QUALITY_METHOD= " + bean.getQualityMethod();
+			};
 			if(bean.getGridIds() != null&&bean.getGridIds().size()>0){
 				//前端传入grids修改，需要重新更新子任务的grid
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
@@ -425,6 +429,12 @@ public class SubtaskOperation {
 				column+=" work_kind ";
 				values+=" ? ";
 				value.add(bean.getWorkKind());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" QUALITY_METHOD ";
+				values+=" ? ";
+				value.add(bean.getQualityMethod());
 			};
 			
 			String createSql ="insert into subtask ("+ column+") values("+values+")";

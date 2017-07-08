@@ -696,6 +696,7 @@ public class SubtaskService {
 			
 			sb.append(" SELECT ST.SUBTASK_ID,                           ");
 			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.QUALITY_METHOD,                       ");
 			sb.append("        ST.STATUS,                               ");
 			sb.append("        ST.STAGE,                                ");
 			sb.append("        ST.DESCP,                                ");
@@ -743,6 +744,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+						subtask.put("qualityMethod", rs.getInt("QUALITY_METHOD"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");

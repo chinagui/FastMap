@@ -3396,10 +3396,10 @@ public class SubtaskService {
 	 */
 	public void lockSubtaskRefer(Connection conn, int referId) throws ServiceException {
 		try {
-			int total = 0;
+			int id = 0;
 			QueryRunner run = new QueryRunner();
 			
-			String sql="SELECT count(1) total "
+			String sql="SELECT R.id total "
 					+ "  FROM SUBTASK_REFER R"
 					+ " WHERE 1=1 "
 					+ " and R.ID = ? ";
@@ -3416,8 +3416,8 @@ public class SubtaskService {
 				}	
 			};
 			
-			total = run.query(conn, sql,referId,rsHandler);	
-			log.info("锁定 subtask_refer表id为 "+referId+" 数据,锁定条数: "+total);
+			id = run.query(conn, sql,referId,rsHandler);	
+			log.info("锁定 subtask_refer表id为 "+referId+" 数据 ");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

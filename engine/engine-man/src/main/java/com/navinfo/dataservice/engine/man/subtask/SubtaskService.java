@@ -1360,6 +1360,7 @@ public class SubtaskService {
 					int isQuality=(int)tmp.get("isQuality");
 					if(isQuality==1){subtaskIds.add(subtaskId);}
 				}
+				if(subtaskIds==null||subtaskIds.size()==0){return page;}
 				Map<Integer, List<SubtaskQuality>> qualityMap = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");

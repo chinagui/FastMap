@@ -31,7 +31,7 @@ public class Subtask extends BaseObj  implements Serializable{
 //	private Integer cityId ;
 	private Integer taskId ;
 	private String geometry ;
-	private Integer stage ;
+	private int stage ;
 	private Integer type ;
 	private Integer createUserId ;
 	private Timestamp createDate ;
@@ -63,7 +63,7 @@ public class Subtask extends BaseObj  implements Serializable{
 	private String referGeometry;
 	private JSONObject referGeometryJSON;
 	private JSONArray referSubtasks;
-	private Integer referId;
+	private int referId;
 	private int workKind;//0无1外业采集，2众包，3情报矢量，4多源
 	//快线中线标识，4快线，1中线
 	private int subType;
@@ -137,10 +137,10 @@ public class Subtask extends BaseObj  implements Serializable{
 	public void setGeometry(String geometry) {
 		if(this.checkValue("GEOMETRY",this.geometry,geometry)){this.geometry = geometry;}
 	}
-	public Integer getStage() {
+	public int getStage() {
 		return stage;
 	}
-	public void setStage(Integer stage) {
+	public void setStage(int stage) {
 		if(this.checkValue("STAGE",this.stage,stage)){this.stage = stage;}
 	}
 	public Integer getType() {
@@ -539,10 +539,10 @@ public class Subtask extends BaseObj  implements Serializable{
 	public void setReferSubtasks(JSONArray referSubtasks) {
 		this.referSubtasks = referSubtasks;
 	}
-	public Integer getReferId() {
+	public int getReferId() {
 		return referId;
 	}
-	public void setReferId(Integer referId) {
+	public void setReferId(int referId) {
 		if(this.checkValue("REFER_ID",this.referId,referId)){this.referId = referId;}
 	}
 	public int getWorkKind() {

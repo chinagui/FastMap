@@ -19,32 +19,32 @@ public class Task implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Integer taskId ;
+	private int taskId ;
 	private String name;
 	private int blockId=0 ;
 	private String blockName;
-	private Integer regionId=0;
-	private Integer programId=0;
+	private int regionId=0;
+	private int programId=0;
 	private String programName;
 	private String version;
-	private Integer createUserId ;
+	private int createUserId ;
 	private String createUserName;
 	private Timestamp createDate ;
-	private Integer status ;
+	private int status ;
 	private String descp ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate ;
-	private Integer type;
-	private Integer programType;
+	private int type;
+	private int programType;
 	private Timestamp producePlanStartDate ;
 	private Timestamp producePlanEndDate ;
-	private Integer lot ;
-	private Integer groupId;
+	private int lot ;
+	private int groupId;
 	private String groupName;
-	private Integer roadPlanTotal ;
-	private Integer poiPlanTotal ;
-	private Integer latest ;
-	private Integer groupLeader =0; 
+	private int roadPlanTotal ;
+	private int poiPlanTotal ;
+	private int latest ;
+	private int groupLeader =0; 
 	private String workProperty ;
 	
 	private String workKind;
@@ -108,16 +108,16 @@ public class Task implements Serializable{
 	}
 
 	
-	public Integer getTaskId() {
+	public int getTaskId() {
 		return taskId;
 	}
-	public void setTaskId(Integer taskId) {
+	public void setTaskId(int taskId) {
 		this.taskId = taskId;
 	}
-	public Integer getCreateUserId() {
+	public int getCreateUserId() {
 		return createUserId;
 	}
-	public void setCreateUserId(Integer createUserId) {
+	public void setCreateUserId(int createUserId) {
 		this.createUserId = createUserId;
 	}
 	public Timestamp getCreateDate() {
@@ -126,10 +126,10 @@ public class Task implements Serializable{
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
-	public Integer getStatus() {
+	public int getStatus() {
 		return status;
 	}
-	public void setStatus(Integer status) {
+	public void setStatus(int status) {
 		this.status = status;
 	}
 	public String getDescp() {
@@ -146,10 +146,10 @@ public class Task implements Serializable{
 	public void setPlanEndDate(Timestamp collectPlanEndDate) {
 		this.planEndDate = collectPlanEndDate;
 	}
-	public Integer getLatest() {
+	public int getLatest() {
 		return latest;
 	}
-	public void setLatest(Integer latest) {
+	public void setLatest(int latest) {
 		this.latest = latest;
 	}
 	/* (non-Javadoc)
@@ -290,7 +290,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the blockId
 	 */
-	public Integer getBlockId() {
+	public int getBlockId() {
 		return blockId;
 	}
 
@@ -298,7 +298,7 @@ public class Task implements Serializable{
 	/**
 	 * @param blockId the blockId to set
 	 */
-	public void setBlockId(Integer blockId) {
+	public void setBlockId(int blockId) {
 		this.blockId = blockId;
 	}
 
@@ -306,7 +306,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the regionId
 	 */
-	public Integer getRegionId() {
+	public int getRegionId() {
 		return regionId;
 	}
 
@@ -314,7 +314,7 @@ public class Task implements Serializable{
 	/**
 	 * @param regionId the regionId to set
 	 */
-	public void setRegionId(Integer regionId) {
+	public void setRegionId(int regionId) {
 		this.regionId = regionId;
 	}
 
@@ -322,7 +322,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the type
 	 */
-	public Integer getType() {
+	public int getType() {
 		return type;
 	}
 
@@ -330,7 +330,7 @@ public class Task implements Serializable{
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(Integer type) {
+	public void setType(int type) {
 		this.type = type;
 	}
 
@@ -370,7 +370,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the lot
 	 */
-	public Integer getLot() {
+	public int getLot() {
 		return lot;
 	}
 
@@ -378,7 +378,7 @@ public class Task implements Serializable{
 	/**
 	 * @param lot the lot to set
 	 */
-	public void setLot(Integer lot) {
+	public void setLot(int lot) {
 		this.lot = lot;
 	}
 
@@ -386,7 +386,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the groupId
 	 */
-	public Integer getGroupId() {
+	public int getGroupId() {
 		return groupId;
 	}
 
@@ -394,7 +394,7 @@ public class Task implements Serializable{
 	/**
 	 * @param groupId the groupId to set
 	 */
-	public void setGroupId(Integer groupId) {
+	public void setGroupId(int groupId) {
 		this.groupId = groupId;
 	}
 
@@ -402,7 +402,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the roadPlanTotal
 	 */
-	public Integer getRoadPlanTotal() {
+	public int getRoadPlanTotal() {
 		return roadPlanTotal;
 	}
 
@@ -410,7 +410,7 @@ public class Task implements Serializable{
 	/**
 	 * @param roadPlanTotal the roadPlanTotal to set
 	 */
-	public void setRoadPlanTotal(Integer roadPlanTotal) {
+	public void setRoadPlanTotal(int roadPlanTotal) {
 		this.roadPlanTotal = roadPlanTotal;
 	}
 
@@ -418,7 +418,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the poiPlanTotal
 	 */
-	public Integer getPoiPlanTotal() {
+	public int getPoiPlanTotal() {
 		return poiPlanTotal;
 	}
 
@@ -426,7 +426,7 @@ public class Task implements Serializable{
 	/**
 	 * @param poiPlanTotal the poiPlanTotal to set
 	 */
-	public void setPoiPlanTotal(Integer poiPlanTotal) {
+	public void setPoiPlanTotal(int poiPlanTotal) {
 		this.poiPlanTotal = poiPlanTotal;
 	}
 
@@ -434,7 +434,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the programId
 	 */
-	public Integer getProgramId() {
+	public int getProgramId() {
 		return programId;
 	}
 
@@ -442,7 +442,7 @@ public class Task implements Serializable{
 	/**
 	 * @param programId the programId to set
 	 */
-	public void setProgramId(Integer programId) {
+	public void setProgramId(int programId) {
 		this.programId = programId;
 	}
 
@@ -450,7 +450,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the groupLeader
 	 */
-	public Integer getGroupLeader() {
+	public int getGroupLeader() {
 		return groupLeader;
 	}
 
@@ -458,7 +458,7 @@ public class Task implements Serializable{
 	/**
 	 * @param groupLeader the groupLeader to set
 	 */
-	public void setGroupLeader(Integer groupLeader) {
+	public void setGroupLeader(int groupLeader) {
 		this.groupLeader = groupLeader;
 	}
 
@@ -536,7 +536,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the programType
 	 */
-	public Integer getProgramType() {
+	public int getProgramType() {
 		return programType;
 	}
 
@@ -544,7 +544,7 @@ public class Task implements Serializable{
 	/**
 	 * @param programType the programType to set
 	 */
-	public void setProgramType(Integer programType) {
+	public void setProgramType(int programType) {
 		this.programType = programType;
 	}
 

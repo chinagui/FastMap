@@ -258,8 +258,8 @@ public class TaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			String taskIdStr="TASK_SEQ.NEXTVAL";
-			if(bean.getTaskId()!=null && bean.getTaskId()!=0){
-				taskIdStr=bean.getTaskId().toString();
+			if(bean.getTaskId()!=0){
+				taskIdStr=String.valueOf(bean.getTaskId());
 			}
 			
 			String insertPart="";
@@ -269,12 +269,12 @@ public class TaskOperation {
 				insertPart+=" WORK_KIND ";
 				valuePart+= "'" + bean.getWorkKind() + "'";
 			};
-			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
+			if (bean!=null&& bean.getTaskId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TASK_ID ";
 				valuePart+=bean.getTaskId();
 			};
-			if (bean!=null&&bean.getProgramId()!=null && bean.getProgramId()!=0 && StringUtils.isNotEmpty(bean.getProgramId().toString())){
+			if (bean!=null&& bean.getProgramId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PROGRAM_ID ";
 				valuePart+=bean.getProgramId();
@@ -284,7 +284,7 @@ public class TaskOperation {
 				insertPart+=" NAME ";
 				valuePart+= "'" + bean.getName() + "'";
 			};
-			if (bean!=null&&bean.getBlockId()!=null && bean.getBlockId()!=0 && StringUtils.isNotEmpty(bean.getBlockId().toString())){
+			if (bean!=null&& bean.getBlockId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" BLOCK_ID ";
 				valuePart+=bean.getBlockId();
@@ -307,32 +307,32 @@ public class TaskOperation {
 				insertPart+=" PLAN_END_DATE ";
 				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
+			if (bean!=null&&bean.getType()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TYPE ";
 				valuePart+=bean.getType();
 			};
-			if (bean!=null&&bean.getLot()!=null && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (bean!=null&&bean.getLot()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" LOT";
 				valuePart+= bean.getLot();
 			};
-			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (bean!=null&&bean.getGroupId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" GROUP_ID ";
 				valuePart+=bean.getGroupId();
 			};
-			if (bean!=null&&bean.getRegionId()!=null && bean.getRegionId()!=0 && StringUtils.isNotEmpty(bean.getRegionId().toString())){
+			if (bean!=null&&bean.getRegionId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" REGION_ID ";
 				valuePart+=bean.getRegionId();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (bean!=null&&bean.getRoadPlanTotal()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" ROAD_PLAN_TOTAL ";
 				valuePart+=bean.getRoadPlanTotal();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && bean.getPoiPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (bean!=null&& bean.getPoiPlanTotal()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" POI_PLAN_TOTAL ";
 				valuePart+=bean.getPoiPlanTotal();
@@ -1570,19 +1570,19 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" PRODUCE_PLAN_END_DATE=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=null && bean.getLot()!=0 && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (bean!=null&&bean.getLot()!=0 ){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LOT= " + bean.getLot();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (bean!=null&&bean.getPoiPlanTotal()!=0){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" poi_plan_total= " + bean.getPoiPlanTotal();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (bean!=null&&bean.getRoadPlanTotal()!=0){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" road_plan_total= " + bean.getRoadPlanTotal();
 			};
-			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (bean!=null&&bean.getGroupId()!=0){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GROUP_ID= "+bean.getGroupId();
 			};
@@ -1598,7 +1598,7 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_other_reason='" + bean.getOverdueOtherReason() + "'";
 			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
+			if (bean!=null&&bean.getTaskId()!=0){
 				updateSql+=" where TASK_ID=" + bean.getTaskId();
 			};
 			run.update(conn,baseSql+updateSql);

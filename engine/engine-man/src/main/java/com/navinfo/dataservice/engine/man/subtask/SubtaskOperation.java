@@ -131,6 +131,10 @@ public class SubtaskOperation {
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " QUALITY_METHOD= " + bean.getQualityMethod();
+			};
 			if(bean.getGridIds() != null&&bean.getGridIds().size()>0){
 				//前端传入grids修改，需要重新更新子任务的grid
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
@@ -201,11 +205,10 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
-					+ " NVL(r.id,0) refer_id "
-					+ " FROM SUBTASK S,subtask_refer r"
-					+ " WHERE S.SUBTASK_ID IN " + subtaskIds 
-					+ " AND  s.refer_id  = r.id(+)  ";
+			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.create_user_id,s.work_kind,S.STATUS,S.TASK_ID,"
+					+ " s.refer_id "
+					+ " FROM SUBTASK S"
+					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
@@ -425,6 +428,12 @@ public class SubtaskOperation {
 				column+=" work_kind ";
 				values+=" ? ";
 				value.add(bean.getWorkKind());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" QUALITY_METHOD ";
+				values+=" ? ";
+				value.add(bean.getQualityMethod());
 			};
 			
 			String createSql ="insert into subtask ("+ column+") values("+values+")";

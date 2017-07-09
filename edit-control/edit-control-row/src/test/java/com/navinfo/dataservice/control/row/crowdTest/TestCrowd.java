@@ -1,19 +1,15 @@
 package com.navinfo.dataservice.control.row.crowdTest;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.control.row.crowds.RowCrowdsControl;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONObject;
 
 public class TestCrowd {
@@ -64,11 +60,13 @@ public class TestCrowd {
 	}
 	
 	@Test
-	public void testGetTelephone() throws SQLException{
+	public void testGetTelephone() throws Exception{
 		double x = 116.4300328;
 		double y = 39.85880944;
 		RowCrowdsControl control = new RowCrowdsControl();
-		JSONObject result = control.getTelephone(x, y);
-		System.out.println(result);
+//		JSONObject result = control.getTelephone(x, y);
+//		System.out.println(result);
+		System.out.println(control.getDailyDbId(116.330015199342, 39.9264604897165));
+		
 	}
 }

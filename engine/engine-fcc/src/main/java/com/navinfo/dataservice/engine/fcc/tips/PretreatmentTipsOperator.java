@@ -55,6 +55,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
     public static int PRE_TIPS_STAGE = 5;
     public static int TIP_STATUS_EDIT = 1;
     public static int TIP_STATUS_COMMIT = 2;
+    public static int INFO_TIPS_STAGE = 6;
 	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
@@ -1243,15 +1244,32 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		//打断后的测线tips
 		List<JSONObject> allTips=new ArrayList<JSONObject>();
+		String oldRowkey=jsonInfo.getString("rowkey"); //打断前的rowkey
+		
+		boolean hasModifyGlocation=hasModifyGLocation(command,oldRowkey,gLocation);
 		
 		//跨图幅不需要打断，直接保存
 		if(geoList==null||geoList.size()==0){
 			
 			doInsert(jsonInfo, htab, date); 
 			
-			returnRowkey=jsonInfo.getString("rowkey");
+			returnRowkey=oldRowkey;
 			
-			return returnRowkey;
+			//这个地方需要加 维护测线上关联tips的角度和引导link
+			//2.维护角度的时候，判断一一下测线的显示坐标是否改了，没有改不维护（提高效率）
+			
+			if(hasModifyGlocation){
+				
+			    JSONObject  obj=new JSONObject();
+			    obj.put("id", oldRowkey);
+			    obj.put("g_location", gLocation);
+			    allTips.add(obj);
+			    //allTips就是当前的tips
+				maintainHookTips(oldRowkey,user, allTips,hasModifyGlocation);
+			}
+			
+			
+			return returnRowkey;  
 		    
 		}
 		
@@ -1299,14 +1317,47 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}
 		
 		//如果是修改的，则需要按照打断后的多根测线，维护测线上的tips
-		String rowkey=jsonInfo.getString("rowkey"); //打断前的rowkey
 		if(command==COMMAND_UPADATE){
-			maintainHookTips(rowkey,user, allTips);
-			deleteByRowkey( rowkey,  1,  user); //将旧的rowkey删除（物理删除）
+			maintainHookTips(oldRowkey,user, allTips,hasModifyGlocation);
+			deleteByRowkey( oldRowkey,  1,  user); //将旧的rowkey删除（物理删除）
 		}
 		
 		return returnRowkey;
 		
+	}
+
+	/**
+	 * @Description:判断坐标是否修改
+	 * @param oldRowkey
+	 * @param gLocation
+	 * @return
+	 * @author: y
+	 * @param command 
+	 * @throws Exception 
+	 * @time:2017-7-5 上午9:22:13
+	 */
+	private boolean hasModifyGLocation(int command, String oldRowkey, JSONObject gLocation) throws Exception {
+		
+		//新增的
+		if(command==COMMAND_INSERT){
+			
+			return false;
+		}
+		
+		JSONObject index = solr.getById(oldRowkey);
+		
+		if(index==null){
+			return false;
+		}
+		
+		String oldLocation=index.getString("g_location");
+		
+		if(!oldLocation.equals(gLocation)){
+			
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -1357,10 +1408,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// 需要判断是原库的还是 情报的，如果是原库的则，修改lifeCycle=2.否则 lifeCyCle=3
 			// 判断是情报的原则：lifeCycle=3且最后一条stage=6
-			int newlifeCycle = getNewLifeCycle(data);
-			JSONObject dataTrack = jsonInfo.getJSONObject("track");
-			dataTrack.put("t_lifecycle", newlifeCycle);
-			jsonInfo.put("track", dataTrack);
+//			int newlifeCycle = getNewLifeCycle(data);
+//			JSONObject dataTrack = jsonInfo.getJSONObject("track");
+//			dataTrack.put("t_lifecycle", newlifeCycle);
+//			jsonInfo.put("track", dataTrack);
 
 			return insertOneTips(COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
@@ -1383,6 +1434,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		JSONObject track = data.getJSONObject("track");
 
+        if(track.containsKey("t_trackInfo")) {
+
+        }
 		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
 				.size() - 1);
@@ -1496,18 +1550,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		JSONObject track = jsonInfo.getJSONObject("track");
 
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
-				.size() - 1);
-
-		trackInfoArr.remove(lastTrackInfo);
-
-		lastTrackInfo.put("date", date); // 修改时间，为服务的当前时间
-
-		trackInfoArr.add(lastTrackInfo);
-
-		track.put("t_trackInfo", trackInfoArr);
+//		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+//
+//		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
+//				.size() - 1);
+//
+//		trackInfoArr.remove(lastTrackInfo);
+//
+//		lastTrackInfo.put("date", date); // 修改时间，为服务的当前时间
+//
+//		trackInfoArr.add(lastTrackInfo);
+//
+//		track.put("t_trackInfo", trackInfoArr);
 
 		track.put("t_date", date);// 修改时间，为服务的当前时间
 //       前端维护
@@ -1674,46 +1728,48 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		List<JSONObject> resultArr = breakLine2(rowkey, pointGeo, user);
 		//第二步 ：维护测线上挂接的tips
-		maintainHookTips(rowkey,user, resultArr);
+		maintainHookTips(rowkey,user, resultArr,false);
 
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:维护测线上挂接的tips
 	 * @param user
-	 * @param resultArr
+	 * @param linesAfterCut:打断后的测线(只有id和显示坐标)
 	 * @throws SolrServerException
 	 * @throws IOException
 	 * @throws Exception
 	 * @author: y
 	 * @param oldRowkey 
+	 * @param b 
 	 * @time:2017-6-21 下午9:37:44
 	 */
-	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> resultArr)
+	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> linesAfterCut, boolean hasModifyGlocation)
 			throws SolrServerException, IOException, Exception {
-	/*	JSONObject line1 = resultArr.get(0);
-		
-		JSONObject line2 = resultArr.get(1);
-		
-		logger.debug("打断后line1:"+line1.getString("id"));
-		
-		logger.debug("打断后line2:"+line2.getString("id"));*/
-		
-		// 第二步：更新测线关联的tips
-//		TipsSelector selector = new TipsSelector();
-//		JSONArray souceTypes = new JSONArray();
 
 		// 查询关联Tips
 		//20170615 查询和原测线关联的所有Tips
         String query = "relate_links:*|" + oldRowkey + "|*";
-//		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
-//				souceTypes, subTaskId, jobType);
+        
         List<JSONObject> snapotList = solr.queryTips(query, null);
 		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
 		for (JSONObject json : snapotList) {
 
-			JSONObject result = updateRelateMeasuringLine(oldRowkey,json, resultArr);
+			//1.维护关联的测线
+			JSONObject result = json;
+			
+			//size>1说明跨图幅打断了，进行打断维护
+			if(linesAfterCut.size()>1){
+				
+				result=updateRelateMeasuringLine(oldRowkey,json, linesAfterCut);
+			}
+			
+			//2.维护角度和引导坐标 (修改了坐标的才维护)
+			if(hasModifyGlocation){
+				
+				result=updateGuiderAndAgl(result,linesAfterCut); //若果是跨图幅打断linesAfterCut是多条~~。如果跨图幅没打断 linesAfterCut是一条。就是测线本身	
+			}
 			
 			if(result!=null){
 				
@@ -1721,11 +1777,31 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 		}
-		//更新后的数据进行更新
+		//更新后的数据进行更新（只更新了deep+relate_links+g_location+g_guide+solr还需要更新wkt和wktLocation!!）
 		saveUpdateData(updateArray,user);
 	}
 
 	
+	/**
+	 * @Description:维护tips的引导坐标和角度
+	 * @param result
+	 * @return
+	 * @author: y
+	 * @param linesAfterCut 
+	 * @throws Exception 
+	 * @time:2017-6-26 下午7:00:07
+	 */
+	private JSONObject updateGuiderAndAgl(JSONObject result, List<JSONObject> linesAfterCut) throws Exception {
+		
+		RelateTipsGuideAndAglUpdate up=new RelateTipsGuideAndAglUpdate(result, linesAfterCut);
+		
+		result=up.excute();
+		
+		return result;
+	}
+	
+	
+
 	/**
 	 * 保存测线打断后维护的数据结果
 	 * @param updateArray
@@ -1741,7 +1817,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}
 	}
 
-    public void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
+    private void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
 
         Connection hbaseConn;
 
@@ -1759,19 +1835,34 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
 
                 String rowkey = tipsInfo.getString("id");
+                JSONObject g_location=tipsInfo.getJSONObject("g_location");
+                JSONObject g_guide=tipsInfo.getJSONObject("g_guide");
+                
                 //更新hbase
                 Put put = new Put(rowkey.getBytes());
-                JSONObject deep = tipsInfo.getJSONObject("deep");
+                JSONObject deep = tipsInfo.getJSONObject("deep"); //更新deep
                 put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString()
+                        .getBytes());
+                JSONObject geometry=new JSONObject(); //更新geometry
+                geometry.put("g_location", g_location);
+                geometry.put("g_guide", g_guide);
+                put.addColumn("data".getBytes(), "geometry".getBytes(), geometry.toString()
                         .getBytes());
                 puts.add(put);
 
                 //更新solr
+                JSONObject feedback=tipsInfo.getJSONObject("feedback");
+                String sourceType=tipsInfo.getString("s_sourceType");
                 JSONObject solrIndex = solr.getById(rowkey);
                 solrIndex.put("deep", deep);
-                String sourceType = tipsInfo.getString("s_sourceType");
+                solrIndex.put("g_location",g_location);
+                solrIndex.put("g_guide",g_guide);
+                solrIndex.put("wktLocation",TipsImportUtils.generateSolrWkt(sourceType, deep,g_location, feedback));
+                solrIndex.put("wkt",TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, feedback));
+                
                 Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
                 solrIndex.put("relate_links", relateMap.get("relate_links"));
+                
                 solr.addTips(solrIndex);
 
                 //需要进行tips差分
@@ -2106,8 +2197,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				JSONObject old = getOldTips(rowkey, htab);
 
 				JSONObject oldTrack = old.getJSONObject("track");
-
 				oldTrack.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT);
+
+                JSONArray trackInfoArr = new JSONArray();
+                JSONObject trackInfo = new JSONObject();
+                trackInfo.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
+                trackInfo.put("handler", user);
+                String date = StringUtils.getCurrentTime();
+                trackInfo.put("date", date); // 修改时间，为服务的当前时间
+                trackInfoArr.add(trackInfo);
+                oldTrack.put("t_trackInfo", trackInfoArr);
+                oldTrack.put("t_date", date);
+
+                json.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
+                json.put("handler", user);
+                json.put("t_date", date);
 
 				// put
 				Put put = new Put(rowkey.getBytes());

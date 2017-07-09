@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -44,6 +45,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -61,6 +63,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -382,6 +385,9 @@ public class TaskService {
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
+			//modify by songhe 记录有组ID的subtaskId调用子任务发布接口
+			//月编子任务名称赋值List
+			JSONArray subPushMsgIds = new JSONArray();
 
 			//POI月编任务
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
@@ -431,7 +437,14 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setTaskId(task.getTaskId());
+					//modify by songhe 
+					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
+					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
+					subtask.setName(name);//任务名称+_作业组
+					if(StringUtils.isBlank(subtask.getName())){
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					}
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -439,12 +452,19 @@ public class TaskService {
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
+
 					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
 
-					SubtaskService.getInstance().createSubtask(subtask);
+					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
+					
+					//modify by songhe
+					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
+					//月编子任务名称赋值
+					if(subtask.getExeGroupId() != 0){
+						subPushMsgIds.add(subTaskId);
+					}
 				}
 			}
 			if(cmsTaskList.size()>0){
@@ -488,6 +508,11 @@ public class TaskService {
 					}}
 				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
+			}
+			//modify by songhe 
+			//有组ID的subTask调用子任务发布接口
+			if(subPushMsgIds.size() > 0){
+				SubtaskService.getInstance().pushMsg(conn, userId, subPushMsgIds);
 			}
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
@@ -654,16 +679,16 @@ public class TaskService {
 				}
 			}
 			
-			//需要发消息的task列表
-			List<Task> openTaskList = new ArrayList<Task>();
-			Task task1 = queryByTaskId(bean.getTaskId());
-			if(task1.getStatus()==1){
-				openTaskList.add(task1);
+			//需要发消息的task列表		
+			JSONArray openTaskIds=new JSONArray();			
+			//Task task1 = getTaskListWithLeader(conn, taskIds);
+			if(oldTask.getStatus()==1){
+				openTaskIds.add(bean.getTaskId());
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
 			JSONObject json2 = new JSONObject();
-			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
+			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));
 				}
@@ -676,17 +701,22 @@ public class TaskService {
 			}
 			
 			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
+				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
 				for(Task task2:taskList){
 					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);
 						if(task2.getStatus()==1){
-							openTaskList.add(task2);
+							openTaskIds.add(bean.getTaskId());
 						}
 					}
 				}
+			}
+			
+			List<Task> openTaskList = new ArrayList<Task>();
+			if(openTaskIds!=null&&openTaskIds.size()>0){
+				openTaskList = getTaskListWithLeader(conn, openTaskIds);
 			}
 
 			//发送消息
@@ -3438,8 +3468,10 @@ public class TaskService {
 	
 	/**
 	 * 无任务数据批中线任务号
-	 * @param 
-	 * @param 
+	 * @param Connection dailyConn
+	 * @param int taskID
+	 * @param int subtaskId
+	 * @param String wkt
 	 * @author songhe
 	 */
 	private int batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID,int subtaskId, String wkt) throws SQLException {
@@ -3447,7 +3479,7 @@ public class TaskService {
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
 				 + " and pes.status ！= 0"
-				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
 		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
 		return run.update(dailyConn, updateSql);
@@ -3691,6 +3723,8 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	
@@ -3711,7 +3745,7 @@ public class TaskService {
 			
 			String programId = json.getString("programId");
 
-			sb.append("select t.task_id,t.name from PROGRAM p, TASK t where p.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from PROGRAM p, TASK t where p.program_id = "+programId);
 			//未规划草稿状态
 			sb.append(" and t.data_plan_status = 0 and t.status = 2 ");
 			//中线采集任务
@@ -3734,6 +3768,7 @@ public class TaskService {
 					Map<String, Object> map = new HashMap<>();
 					map.put("taskId", rs.getInt("task_id"));
 					map.put("name", rs.getString("name"));
+					map.put("blockId", rs.getInt("block_id"));
 					result.add(map);
 				}
 				return result;
@@ -3834,13 +3869,13 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("初始化规划数据列表失败,原因为：" + e);
+			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
 			DbUtils.rollback(con);
 			DbUtils.rollback(dailyConn);
 			throw new Exception("初始化规划数据列表失败");
 		}finally{
-			DbUtils.commitAndClose(con);
-			DbUtils.commitAndClose(dailyConn);
+			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	
@@ -3862,7 +3897,7 @@ public class TaskService {
 			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
 			run.update(dailyConn, sql);
 		}catch(Exception e){
-			log.error("根据种药POi数据更新dataPlan异常："+e.getMessage());
+			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -3881,10 +3916,10 @@ public class TaskService {
 			return pids;
 		}catch(Exception e){
 			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage());
+			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
 			throw e;
 		}finally{
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -3999,7 +4034,7 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage());
+			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -4039,7 +4074,7 @@ public class TaskService {
 				return run.query(conn, selectSql, rsHandler);	
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error("获取待规划子任务列表，原因为：" + e.getMessage());
+				log.error("获取待规划子任务列表，原因为："+e.getMessage(),e);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
@@ -4056,18 +4091,496 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
+//			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
+//				Task task = queryByTaskId(con, taskId);
+//				Region region = RegionService.getInstance().query(con,task.getRegionId());
+//				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
+//				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
+//				run.execute(dailyConn, deletesql);
 			}catch(Exception e){
-				log.error("规划上传接口异常，原因为："+e.getMessage());
+				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollback(con);
+//				DbUtils.rollback(dailyConn);
 				throw e;
 			}finally{
-				DbUtils.commitAndClose(con);
+				DbUtils.commitAndCloseQuietly(con);
+//				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
+		
+		/**
+		 *  规划数据保存
+		 *  根据条件规划或者范围规划对数据修改规划状态
+		 *  应用场景：独立工具--外业规划--数据规划
+		 * @param dataJson
+		 * @parame userId
+		 * @throws Exception
+		 * 
+		 * */
+		public void savePlan(JSONObject dataJson, long userId) throws Exception{
+			Connection conn = null;
+			Connection dailyConn = null;
+			try{
+				int taskId =  dataJson.getInt("taskId");
+				conn = DBConnector.getInstance().getManConnection();	
+				Task task = queryByTaskId(conn, taskId);
+				Region region = RegionService.getInstance().query(conn,task.getRegionId());
+				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+				//数据类型
+				int dataType = dataJson.getInt("dataType");
+				//操作类型
+				int isPlanStatus = dataJson.getInt("isPlanStatus");
+				JSONObject condition = dataJson.getJSONObject("condition");
+				String wkt = null;
+				if(condition.containsKey("wkt") && condition.getString("wkt").length() > 1){
+					wkt = condition.getString("wkt");
+					if(StringUtils.isBlank(wkt)){
+						throw new Exception("wkt参数为空");
+					}
+					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt, taskId);
+				}else{
+					log.info("没有上传wkt数据，为条件规划");
+					TaskProgress taskPrograss = taskInPrograssCount(conn, taskId);
+					
+					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
+					
+					int minCount = condition.getInt("poiMultiMinCount");
+					int maxCount = condition.getInt("poiMultiMaxCount");
+					//元数据库中的pid，也需要更新到data_plan表中
+					List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
+					//把不满足条件的数据状态更新为不需要作业
+					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
+					//日库中的dataPlan更新数据
+					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
+					//更新从元数据库中获取的pid到dataPlan表中
+					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
+					//保存到taskPrograss表
+					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
+				}
+			}catch(Exception e){
+				log.error("规划数据保存失败，原因为："+e.getMessage(),e);
+				DBUtils.rollBack(conn);
+				DBUtils.rollBack(dailyConn);
+				throw new Exception("规划数据保存失败"+e.getMessage(),e);
+			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
+				DbUtils.commitAndCloseQuietly(dailyConn);
+			}
+		}
+		
+		/**
+		 * 范围规划，根据wkt范围处理范围内的数据作业状态
+		 * @param isPlanStatus  作业状态
+		 * @param dataType 1 poi 2road 3一体化
+		 * @param wkt  范围
+		 * @parame taskId
+		 * @throws Exception 
+		 * 
+		 * */
+		public void updateDataPlanStatusByWkt(Connection conn, int isPlanStatus, int dataType, String wkt, int taskId) throws Exception{
+			try{
+				String type = null;
+				if(isPlanStatus != 0 && isPlanStatus != 1){
+					throw new Exception("dataPlanStatus数据错误！");
+				}
+				if(dataType != 1 && dataType != 2 && dataType != 3){
+					throw new Exception("dataType数据错误！");
+				}
+				if(dataType == 3){
+					type = "1,2";
+				}else{
+					type = String.valueOf(dataType);
+				}
+				//根据范围更新数据状态
+				QueryRunner run = new QueryRunner();
+				StringBuffer sb = new StringBuffer();
+				StringBuffer poisb = new StringBuffer();
+				StringBuffer linksb = new StringBuffer();
+				String poisql = "";
+				String linksql = "";
+				sb.append("update DATA_PLAN t set t.is_plan_selected = "+isPlanStatus+" where ");
+				sb.append("t.task_id = "+taskId+" and t.data_type in ("+type+") and t.pid in (");
+				if("1".equals(type) || "1,2".equals(type)){
+					poisb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+					poisql = sb.toString()+poisb.toString();
+					run.update(conn, poisql, wkt);
+				}
+				if("2".equals(type) || "1,2".equals(type)){
+					linksb.append("select r.link_pid from RD_LINK r where sdo_relate(r.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
+					linksql = sb.toString()+linksb.toString();
+					run.update(conn, linksql, wkt);
+				}
+			}catch(Exception e){
+				log.info("根据范围修改数据作业状态异常:"+e.getMessage(),e);
+				throw e;
+			}
+		}
+		
+		/**
+		 * 条件规划：处理数据
+		 * 不满足选中条件的数据，为不需要作业；满足条件的数据，为需要作业
+		 * @param JSONObject condition
+		 * @param int dataType
+		 * @return Map<String, Object>
+		 * @throws Exception
+		 * 
+		 * */
+		public Map<String, Object> convertDataPlanCondition(int dataType, JSONObject condition) throws Exception{
+			try{
+				Map<String, Object> result = new HashMap<String, Object>();
+				
+				String kindCode = "";
+				String levels = "";
+				String roadFCs = "";
+				String roadKinds = "";
+				List<String> kindCodes = new ArrayList<>();
+				//dataType等于1或者3的时候进行POI数据处理
+				if(dataType == 1 || dataType == 3){
+					
+					JSONArray poiKind = condition.getJSONArray("poiKind");
+					//这里处理上传的选中状态的POI的kindCode前四位作为检索条件
+					for(int i = 0; i < poiKind.size(); i++){
+						JSONObject kindJson = poiKind.getJSONObject(i);
+						int flag = kindJson.getInt("flag");
+						if(flag == 0){
+							continue;
+						}
+						String classCode = kindJson.getString("classCode");
+						JSONArray subClassCodes = kindJson.getJSONArray("subClassCodes");
+						for(int j = 0; j < subClassCodes.size(); j++){
+							JSONObject subKindJson = subClassCodes.getJSONObject(j);
+							int subFlag = subKindJson.getInt("flag");
+							if(subFlag == 0){
+								continue;
+							}
+							String subClassCode = subKindJson.getString("classCode");
+							kindCode = classCode + subClassCode + "%";
+							kindCodes.add(kindCode);
+						}
+					}
+					
+					JSONArray poiLevel = condition.getJSONArray("poiLevel");
+					StringBuffer level = new StringBuffer();
+					for(int i = 0 ; i < poiLevel.size(); i++){
+						level.append("'" + poiLevel.get(i) + "',");
+					}
+					levels = level.deleteCharAt(level.length() - 1).toString();
+					
+				}
+				//dateType = 2或者 3 时进行道路数据处理
+				if(dataType == 2 || dataType == 3){
+					JSONArray roadKind = condition.getJSONArray("roadKind");
+					StringBuffer kinds = new StringBuffer();
+					for(int i = 0 ; i < roadKind.size(); i++){
+						kinds.append(roadKind.get(i) + ",");
+					}
+					roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					
+					JSONArray roadFC = condition.getJSONArray("roadFC");
+					StringBuffer FCs = new StringBuffer();
+					for(int i = 0 ; i < roadFC.size(); i++){
+						FCs.append(roadFC.get(i) + ",");
+					}
+					roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+				}
+
+				result.put("roadKinds",roadKinds);
+				result.put("roadFCs",roadFCs);
+				result.put("levels",levels);
+				result.put("kindCodes",kindCodes);
+				return result;
+			}catch(Exception e){
+				log.info("处理条件数据异常:"+e.getMessage(),e);
+				throw e;
+			}
+		}
+		
+		/**
+		 * 根据是否taskprograss表中有数据保存数据
+		 * @param TaskProgress
+		 * @param Connection
+		 * @param JSONObject
+		 * @param long userId
+		 * @throws Exception
+		 * 
+		 * */
+		public void maintainTaskPrograss(Connection conn, TaskProgress taskPrograss, JSONObject dataJson, long userId) throws Exception{
+			try{
+				TaskProgress bean = new TaskProgress();
+				int taskId = dataJson.getInt("taskId");
+				String parameter = dataJson.getJSONObject("condition").toString();
+				
+				int phaseId = 0;
+				bean.setTaskId(taskId);
+				bean.setOperator(userId);
+				bean.setParameter(parameter);
+				bean.setPhase(2);
+				bean.setStatus(0);
+				if(taskPrograss == null){
+					phaseId = TaskProgressOperation.getNewPhaseId(conn);
+					bean.setPhaseId(phaseId);
+					Timestamp time = new Timestamp(System.currentTimeMillis()); 
+					bean.setCreatDate(time);
+					TaskProgressOperation.create(conn, bean);
+				}else{
+					phaseId = taskPrograss.getPhaseId();
+					bean.setPhaseId(phaseId);
+					TaskProgressOperation.updateTaskProgress(conn, bean);
+				}
+			}catch(Exception e){
+				log.error("保存数据到taskPrograss表出错："+e.getMessage(),e);
+				throw e;
+			}
+		}
+		
+		/**
+		 * 条件规划：更新不满足条件规划的数据状态为不需要作业
+		 * @param Connection
+		 * @param int dataType
+		 * @param int taskId
+		 * @throws Exception 
+		 * 
+		 * */
+		public void updateDataPlanToNoPlan(Connection dailyConn, int dataType, int taskId) throws Exception{
+			try{
+				QueryRunner run = new QueryRunner();
+				String type = String.valueOf(dataType);
+				if(dataType == 3){
+					type = "1,2";
+				}
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 0 where d.data_type in ("+type+") and d.task_id = "+taskId;
+				run.execute(dailyConn, sql);
+			}catch(Exception e){
+				throw e;
+			}
+		}
+		
+		/**
+		 * 条件规划：跟据条件保存数据到dataPlan表中
+		 * 不满足选中条件的数据，为不需要作业；满足条件的数据，为需要作业
+		 * @param Connection
+		 * @param Map<String, Object>
+		 * @param int dataType
+		 * @parame int taskId
+		 * 
+		 * */
+		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType, int taskId) throws Exception{
+			try{
+				QueryRunner run = new QueryRunner();
+				StringBuffer sb = new StringBuffer();
+				
+				List<String> kindCodes = (List<String>) dataPlan.get("kindCodes");
+				String roadKinds = dataPlan.get("roadKinds").toString();
+				String roadFCs = dataPlan.get("roadFCs").toString();
+				String levels = dataPlan.get("levels").toString();
+				
+				String data_type = "1";
+				if(dataType == 3){
+					data_type = "1,2";
+				}else{
+					data_type = String.valueOf(dataType);
+				}
+				
+				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+				//POI查询条件
+				if(dataType == 1 || dataType == 3){
+					sb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+					for(String kindCode : kindCodes){
+						sb.append(" or t.kind_code like '" + kindCode + "' ");
+					}
+					sb.append(")");
+				}
+				
+				if(dataType == 3){
+					sb.append(" union all ");
+				}
+				
+				//ROAD查询条件
+				if(dataType == 2 || dataType == 3){
+					sb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					sb.append("(r.function_class in ("+roadFCs+") ");
+					if(StringUtils.isNotBlank(roadKinds)){
+						sb.append("or ");
+						sb.append("r.kind in ("+roadKinds+") ");
+					}
+					sb.append(") ");
+				}
+				sb.append(") and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
+				
+				String sql = sb.toString();
+				log.info("跟据条件保存数据sql:"+sql);
+				run.execute(conn, sql);
+			}catch(Exception e){
+				log.error("根据条件修改数据作业状态异常:"+e.getMessage(),e);
+				throw e;
+			}
+		}
+		
+		/**
+		 * 条件规划：从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中
+		 * @param Connection
+		 * @param List<Integer>
+		 * @throws Exception 
+		 * 
+		 * */
+		public void updateDataPlanStatusByReliability(Connection conn, List<Integer> reliabilityPid) throws Exception{
+			try{
+				if(reliabilityPid==null||reliabilityPid.size()==0){return;}
+				QueryRunner run = new QueryRunner();
+				StringBuffer sb = new StringBuffer();
+				for(int i = 0; i < reliabilityPid.size(); i++){
+					sb.append(reliabilityPid.get(i)+",");
+				}
+				
+				String pids = sb.deleteCharAt(sb.length() - 1).toString();
+				String parameter = "d.pid";
+				if(reliabilityPid.size() > 900){
+					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
+				}
+				
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+")";
+				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
+				run.execute(conn, sql);
+			}catch(Exception e){
+				throw e;
+			}
+		}
+		
+		
+		/**
+		 * 条件规划：判断task_progress表中是否存在task记录
+		 * @param taskId
+		 * @param Connection
+		 * @return TaskProgress
+		 * @throws Exception
+		 * 
+		 * */
+		public TaskProgress taskInPrograssCount(Connection conn, int taskId) throws Exception{
+			try{
+				QueryRunner run = new QueryRunner();
+				String sql = "select t.* from TASK_PROGRESS t where t.phase = 2 and t.task_id = "+taskId;
+				ResultSetHandler<TaskProgress> rs = new ResultSetHandler<TaskProgress>(){
+					public TaskProgress handle(ResultSet rs) throws SQLException {
+						if(rs.next()){
+							TaskProgress taskPrograss = new TaskProgress();
+							taskPrograss.setTaskId(rs.getInt("TASK_ID"));
+							taskPrograss.setPhase(rs.getInt("PHASE"));
+							taskPrograss.setStatus(rs.getInt("STATUS"));
+							taskPrograss.setCreatDate(rs.getTimestamp("CREATE_DATE"));
+							taskPrograss.setStartDate(rs.getTimestamp("START_DATE"));
+							taskPrograss.setEndDate(rs.getTimestamp("END_DATE"));
+							taskPrograss.setMessage(rs.getString("MESSAGE"));
+							try {
+								taskPrograss.setParameter(TaskProgressOperation.ClobToString(rs.getClob("PARAMETER")));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							taskPrograss.setOperator(rs.getLong("OPERATOR"));
+							taskPrograss.setPhaseId(rs.getInt("PHASE_ID"));
+							return taskPrograss;
+						}
+						return null;
+					}
+				};
+				return run.query(conn, sql, rs);
+			}catch(Exception e){
+				log.error("判断task_progress表中是否存在task记录异常:"+e.getMessage(),e);
+				throw e;
+			}
+		}
+		
+		/**
+		 * 获取元数据库中重要POI的数据
+		 * @param int minNumber
+		 * @param int maxNumber
+		 * @throws SQLException 
+		 * 
+		 * */
+		public List<Integer> queryReliabilityPid(int minNumber, int maxNumber) throws SQLException{
+			Connection conn = null;
+			try{
+				//通过api调用
+				MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				List<Integer> pids = api.queryReliabilityPid(minNumber, maxNumber);
+				return pids;
+//				return ScQueryReliabilityPid(minNumber,maxNumber);
+			}catch(Exception e){
+				DbUtils.close(conn);
+				log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
+				throw e;
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		}
+		
+//		//这个方法备用，去元数据库查询pid
+//		public List<Integer> ScQueryReliabilityPid(int minNumber, int maxNumber) throws SQLException {
+//
+//			Connection conn = null;
+//			try{
+//				conn = DBConnector.getInstance().getMetaConnection();
+//				QueryRunner run = new QueryRunner();
+//				
+//				String selectSql = "select t.pid from reliability_table t where t.reliability between "+minNumber+" and "+maxNumber;
+//				ResultSetHandler<List<Integer>> rs = new ResultSetHandler<List<Integer>>(){
+//					public List<Integer> handle(ResultSet rs) throws SQLException {
+//					List<Integer> pids = new ArrayList<>();
+//					while(rs.next()){
+//						pids.add(rs.getInt("PID"));
+//					}
+//					return pids;
+//				}
+//			};
+//			return run.query(conn, selectSql, rs);
+//			}catch(Exception e){
+//				DbUtils.close(conn);
+//				log.error("从元数据库依据置信度范围检索PID异常："+e.getMessage());
+//				throw e;
+//			}finally{
+//				DbUtils.closeQuietly(conn);
+//			}
+//		
+//		}
+		
+		/**
+		 *  获取条件规划
+		 *  获取该任务保存的条件规划情况task_progess中phase=2的记录的parameter
+		 *  应用场景：独立工具--外业规划--数据规划
+		 * @param int taskId
+		 * @return String parameter
+		 * @throws Exception
+		 * 
+		 * */
+		public JSONObject getPlan(int taskId) throws Exception{
+			Connection conn = null;
+			try{
+				conn = DBConnector.getInstance().getManConnection();
+				TaskProgress tp = taskInPrograssCount(conn, taskId);
+				if(tp==null){
+					return null;
+				}
+				String parameter = tp.getParameter();
+				if(StringUtils.isEmpty(parameter)){
+					return null;
+				}
+				JSONObject json = JSONObject.fromObject(parameter);
+				return json;
+			}catch(Exception e){
+				log.error("获取条件规划异常，原因为："+e.getMessage(),e);
+				DbUtils.closeQuietly(conn);
+				throw new Exception("获取条件规划异常"+e.getMessage(),e);
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		}
+		
+
+		
 }

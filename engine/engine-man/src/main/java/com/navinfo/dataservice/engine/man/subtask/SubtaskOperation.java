@@ -131,6 +131,10 @@ public class SubtaskOperation {
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " QUALITY_METHOD= " + bean.getQualityMethod();
+			};
 			if(bean.getGridIds() != null&&bean.getGridIds().size()>0){
 				//前端传入grids修改，需要重新更新子任务的grid
 				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
@@ -181,14 +185,28 @@ public class SubtaskOperation {
 		}
 	}
 	
-	//根据subtaskId列表获取包含subtask type,status,gridIds信息的List<Subtask>
+	
+	/**
+	 * @Title: getSubtaskListBySubtaskIdList
+	 * @Description: 根据subtaskId列表获取包含subtask type,status,gridIds信息的List<Subtask>
+	 * @Operation: 修改
+	 * @Old Author: 张晓毅
+	 * @param conn
+	 * @param subtaskIdList
+	 * @return
+	 * @throws Exception  List<Subtask>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月5日 下午3:36:17 
+	 */
 	public static List<Subtask> getSubtaskListBySubtaskIdList(Connection conn,List<Integer> subtaskIdList) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
+			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.create_user_id,s.work_kind,S.STATUS,S.TASK_ID,"
+					+ " s.refer_id "
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -196,27 +214,31 @@ public class SubtaskOperation {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
-						Subtask subtask = new Subtask();
-						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setName(rs.getString("NAME"));
-						subtask.setStage(rs.getInt("STAGE"));
-						subtask.setType(rs.getInt("TYPE"));
-						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
-						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
-						subtask.setStatus(rs.getInt("STATUS"));
-						subtask.setTaskId(rs.getInt("TASK_ID"));
-						subtask.setWorkKind(rs.getInt("WORK_KIND"));
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						String wkt="";
-						try {
-							wkt=GeoTranslator.struct2Wkt(struct);
-							Geometry geometry=GeoTranslator.struct2Jts(struct);
-							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+						if(rs.getInt("refer_id") > 0){
+							Subtask subtask = new Subtask();
+							subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setName(rs.getString("NAME"));
+							subtask.setStage(rs.getInt("STAGE"));
+							subtask.setType(rs.getInt("TYPE"));
+							subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+							subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+							subtask.setStatus(rs.getInt("STATUS"));
+							subtask.setCreateUserId(rs.getInt("create_user_id"));
+							subtask.setTaskId(rs.getInt("TASK_ID"));
+							subtask.setWorkKind(rs.getInt("WORK_KIND"));
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							String wkt="";
+							try {
+								wkt=GeoTranslator.struct2Wkt(struct);
+								Geometry geometry=GeoTranslator.struct2Jts(struct);
+								subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							list.add(subtask);
 						}
-						list.add(subtask);
+						
 					}
 					return list;
 				}
@@ -406,6 +428,12 @@ public class SubtaskOperation {
 				column+=" work_kind ";
 				values+=" ? ";
 				value.add(bean.getWorkKind());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" QUALITY_METHOD ";
+				values+=" ? ";
+				value.add(bean.getQualityMethod());
 			};
 			
 			String createSql ="insert into subtask ("+ column+") values("+values+")";
@@ -1052,9 +1080,9 @@ public class SubtaskOperation {
 					int poiWaitWork = 0;
 					while(rs.next()){
 						int status = rs.getInt("status");
-						if(status == 1){poiWaitWork += 1;};
-						if(status == 2){poiWorked += 1;};
-						if(status == 3){poiCommit += 1;};
+						if(status == 1){poiWaitWork = rs.getInt("finishNum");};
+						if(status == 2){poiWorked = rs.getInt("finishNum");};
+						if(status == 3){poiCommit = rs.getInt("finishNum");};
 //						if(status==3){finish = rs.getInt("finishNum");}
 //						total+=rs.getInt("finishNum");
 					}
@@ -2893,24 +2921,26 @@ public class SubtaskOperation {
 		
 	}
 	
-	/**
-	 * @param conn
-	 * @param subtaskId
-	 * @throws Exception 
-	 */
-	public static void closeBySubtaskId(int subtaskId) throws Exception {
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
-			closedSubtaskList.add(subtaskId);
-			closeBySubtaskList(conn, closedSubtaskList);
-		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}
-		
-	}
+//	20170705未使用方法/**
+//	 * @param conn
+//	 * @param subtaskId
+//	 * @throws Exception 
+//	 */
+//	public static void closeBySubtaskId(int subtaskId) throws Exception {
+//		Connection conn = null;
+//		try{
+//			conn = DBConnector.getInstance().getManConnection();
+//			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
+//			closedSubtaskList.add(subtaskId);
+//			closeBySubtaskList(conn, closedSubtaskList);
+//		}catch(Exception e){
+//			log.error(e.getMessage(), e);
+//			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//		
+//	}
 
 	/*
 	 * 查询大区库履历，获取子任务修改的POI几何列表

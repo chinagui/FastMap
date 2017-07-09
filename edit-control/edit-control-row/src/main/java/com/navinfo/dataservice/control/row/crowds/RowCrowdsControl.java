@@ -258,7 +258,7 @@ public class RowCrowdsControl {
 	 * @return
 	 * @throws Exception
 	 */
-	private static String getDailyDbId(double x,double y) throws Exception {
+	public static String getDailyDbId(double x,double y) throws Exception {
 		String dbId = "";
 		Connection manConn = null;
 		try{
@@ -352,7 +352,7 @@ public class RowCrowdsControl {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println(getDailyDbId("59566232"));
+		System.out.println(getDailyDbId(116.330015199342, 39.9264604897165));
 	}
 
 }

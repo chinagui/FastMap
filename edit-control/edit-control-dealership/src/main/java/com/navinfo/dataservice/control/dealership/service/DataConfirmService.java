@@ -322,6 +322,10 @@ public class DataConfirmService {
 
 			String return_value = Parser_Tool.do_get(urlStr.toString());
 			JSONObject resultObj = JSONObject.fromObject(return_value);
+			
+			if(!resultObj.getString("errmsg").equals("success")){
+				throw new Exception("情报接口未返回文件！");
+			}
 
 			log.info("输入的URL：" + urlStr);
 			log.info("接口返回结果：" + resultObj);

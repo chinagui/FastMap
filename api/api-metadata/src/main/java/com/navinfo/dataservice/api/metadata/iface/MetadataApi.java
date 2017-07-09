@@ -152,6 +152,8 @@ public interface MetadataApi {
 	public JSONObject getCharacterMap() throws Exception;
 	
 	public JSONObject searchByAdminCode(String admincode) throws Exception;
+	
+	public JSONObject getProvinceAndCityByAdminCode(String admincode) throws Exception;
 	/**
 	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
 	 * 获取sc_Point_Nameck元数据库表中type=1的大陆的记录列表
@@ -431,5 +433,12 @@ public interface MetadataApi {
 	
 	 //获取元数据库中重要POI的数据
 	public List<Integer> queryImportantPid() throws SQLException;
+	
+	 /**
+	  * @param reliability范围
+	  * @return List<pid>
+	  * 
+	  * */
+	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 
 }

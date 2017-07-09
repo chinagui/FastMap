@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -115,10 +116,11 @@ public class OpTopo implements IOperation {
 		this.command.getNewLinks().get(1)
 				.setsNodePid(command.getBreakNodePid());
 		for (RdLink link : this.command.getNewLinks()) {
+            // 维护打断后生成线Urban属性
+		    UrbanBatchUtils.updateUrban(link, null, conn, result);
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 			jaDisplayLink.add(link.Serialize(ObjLevel.BRIEF));
 		}
-
 	}
 
 	/***
@@ -230,8 +232,9 @@ public class OpTopo implements IOperation {
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			RdLink link = RdLinkOperateUtils.addLink(g, map.get(g).getInt("s"),
-					map.get(g).getInt("e"), result, this.breakLink);
+			RdLink link = RdLinkOperateUtils.addLink(g, map.get(g).getInt("s"), map.get(g).getInt("e"), result, this.breakLink);
+			// 维护打断后生成线Urban属性
+            UrbanBatchUtils.updateUrban(link, null, conn, result);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			this.command.getNewLinks().add(link);
 			jaDisplayLink.add(link.Serialize(ObjLevel.BRIEF));

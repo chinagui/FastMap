@@ -1046,6 +1046,7 @@ public abstract class MeshUtils {
     	
     	for(Integer mesh : meshes){
     		String meshStr = mesh.toString();
+    		meshStr = StringUtils.leftPad(meshStr, 6, '0');
     		if(meshStr.length() != 6){
     			log.info("不能识别图幅号: "+mesh);
     			continue;
@@ -1103,13 +1104,14 @@ public abstract class MeshUtils {
 
     public static void main(String[] args) throws Exception {
 		Set<Integer> meshes = new HashSet<Integer>();
-		meshes.add(595671);
-		meshes.add(595672);
-		meshes.add(595661);
+		meshes.add(95277);
+//		meshes.add(595672);
+//		meshes.add(595661);
 		
 		double[] xy = meshs2Rect(meshes);
+		String wkt  = mesh2WKT("95671");
 		
-		System.out.println(xy);
+		System.out.println(wkt);
 		
 		
 		

@@ -749,7 +749,7 @@ public class TaskController extends BaseController {
 	}
 	
 	//规划上传接口
-	@RequestMapping(value = "task/uploadPlan")
+	@RequestMapping(value = "/task/uploadPlan")
 	public ModelAndView uploadPlan(HttpServletRequest request){
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -766,6 +766,66 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//规划数据保存接口
+	@RequestMapping(value = "/task/savePlan")
+	public ModelAndView savePlan(HttpServletRequest request){
+		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("dataType") || dataJson.getString("dataType").length() < 1){
+				throw new Exception("缺少dataType");
+			}
+			if(!dataJson.containsKey("isPlanStatus") || dataJson.getString("isPlanStatus").length() < 1){
+				throw new Exception("缺少isPlanStatus");
+			}
+			if(!dataJson.containsKey("condition") || dataJson.getString("condition").length() < 1){
+				throw new Exception("缺少condition");
+			}
+			if(!dataJson.containsKey("taskId") || dataJson.getString("taskId").length() < 1){
+				throw new Exception("缺少taskId");
+			}
+			
+			TaskService.getInstance().savePlan(dataJson, userId);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+		
+	}
+	
+	/**
+	 * 获取条件规划
+	 * @param HttpServletRequest
+	 * @return ModelAndView
+	 * 
+	 * */
+	@RequestMapping(value="/task/getPlan")
+	public ModelAndView getPlan(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId") || dataJson.getString("taskId").length() < 1){
+				throw new Exception("缺少taskId");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONObject result = TaskService.getInstance().getPlan(taskId);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("获取条件规划失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

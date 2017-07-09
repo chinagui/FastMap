@@ -96,9 +96,20 @@ public class PushTest {
 		System.out.println(usedPercent);
 	}
 	
-	
+	/**
+	 * 测试接口超时
+	 * @author Han Shaoming
+	 * @throws Exception
+	 */
 	@Test
 	public void test07() throws Exception{
+		try {
+			String url = "http://192.168.4.188:8090";
+			String result = ServiceInvokeUtil.invokeByGet(url, null, 2000);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("连接超时");
+		}
 		
 	}
 }

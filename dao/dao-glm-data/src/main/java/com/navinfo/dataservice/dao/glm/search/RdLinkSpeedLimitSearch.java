@@ -67,6 +67,8 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 
+		double veritUnit = DisplayUtils.getVerUint(z);
+
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(a) */ A.LINK_PID, A.FROM_SPEED_LIMIT, A.FROM_LIMIT_SRC, A.TO_SPEED_LIMIT, A.TO_LIMIT_SRC, A.SPEED_DEPENDENT, A.SPEED_TYPE, B.GEOMETRY LINK_GEOM FROM RD_LINK_SPEEDLIMIT A, TMP1 B WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 ";
@@ -74,6 +76,8 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 		if (queryType.equals("DEPENDENT")) {
 
 			sql += " AND A.SPEED_TYPE = 3 ";
+
+			veritUnit=veritUnit*2;
 
 		} else {
 
@@ -154,8 +158,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 					
 					if (!jsonM.containsKey("a") && !jsonM.containsKey("b")) {
 
-						double[] position = DisplayUtils.getMid2MPosition(
-								linkWkt, direct, DisplayUtils.getVerUint(z));
+						double[] position = DisplayUtils.getMid2MPosition(linkWkt, direct, veritUnit);
 
 						jsonM.put("a", Geojson.lonlat2Pixel(position[0],
 								position[1], z, px, py));
@@ -172,8 +175,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 					if (!jsonM.containsKey("c") && !jsonM.containsKey("d")) {
 
-						double[] position = DisplayUtils.getMid2MPosition(
-								linkWkt, direct, DisplayUtils.getVerUint(z));
+						double[] position = DisplayUtils.getMid2MPosition(linkWkt, direct, veritUnit);
 
 						jsonM.put("c", Geojson.lonlat2Pixel(position[0],
 								position[1], z, px, py));
@@ -220,7 +222,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 	 * 计算角度
 	 * 
 	 * @param point
-	 * @param resultSet
+	 * @param
 	 * @param direct
 	 * @return
 	 * @throws Exception

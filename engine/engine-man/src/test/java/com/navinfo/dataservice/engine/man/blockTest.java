@@ -29,20 +29,20 @@ public class blockTest extends InitApplication{
 		return service.listByWkt(dataJson);	
 	}
 	
-	@Test
-	public void  testQueryBlockDetail() throws Exception {
-		// TODO Auto-generated constructor stub
-		String parameter = "{\"blockId\":\"130\"}";
-		if (StringUtils.isEmpty(parameter)){
-			throw new IllegalArgumentException("parameter参数不能为空。");
-		}		
-		JSONObject dataJson = JSONObject.fromObject(parameter);			
-		if(dataJson==null){
-			throw new IllegalArgumentException("parameter参数不能为空。");
-		}
-		BlockService service = BlockService.getInstance();
-		System.out.println(service.query(dataJson).toString());	
-	}
+//	@Test
+//	public void  testQueryBlockDetail() throws Exception {
+//		// TODO Auto-generated constructor stub
+//		String parameter = "{\"blockId\":\"130\"}";
+//		if (StringUtils.isEmpty(parameter)){
+//			throw new IllegalArgumentException("parameter参数不能为空。");
+//		}		
+//		JSONObject dataJson = JSONObject.fromObject(parameter);			
+//		if(dataJson==null){
+//			throw new IllegalArgumentException("parameter参数不能为空。");
+//		}
+//		BlockService service = BlockService.getInstance();
+//		System.out.println(service.query(dataJson).toString());	
+//	}
 
 	@Override
 	@Before

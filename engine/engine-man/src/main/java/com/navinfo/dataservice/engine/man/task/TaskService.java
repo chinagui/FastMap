@@ -3845,6 +3845,11 @@ public class TaskService {
 			Region region = RegionService.getInstance().query(con,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
+			int count = queryInitedTaskData(dailyConn, taskId);
+			if(count > 0){
+				throw new Exception("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
+			}
+			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
@@ -3872,13 +3877,40 @@ public class TaskService {
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
 			DbUtils.rollback(con);
 			DbUtils.rollback(dailyConn);
-			throw new Exception("初始化规划数据列表失败");
+			throw new Exception("初始化规划数据列表失败"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	
+	/**
+	 * 先获取对应taskId对应的初始化数据条数
+	 * @throws Exception 
+	 * 
+	 * */
+	public int queryInitedTaskData(Connection dailyConn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select count(*) from DATA_PLAN t where t.task_id = " + taskId;
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int count = 0;
+					if (rs.next()) {
+						count = rs.getInt("count(*)");
+					}
+					return count;
+				}
+			};
+			return run.query(dailyConn, sql, rsHandler);	
+			
+			
+		}catch(Exception e){
+			log.error("获取对应taskId对应的初始化数据条数异常"+e.getMessage(), e);
+			throw e;
+		}
+	}
 	/**
 	 * 根据元数据库中重要数据一览表更新dataPlan中的重要性字段
 	 * @throws SQLException 

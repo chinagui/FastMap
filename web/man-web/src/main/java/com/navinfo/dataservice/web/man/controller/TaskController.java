@@ -802,4 +802,31 @@ public class TaskController extends BaseController {
 		}
 		
 	}
+	
+	/**
+	 * 获取条件规划
+	 * @param HttpServletRequest
+	 * @return ModelAndView
+	 * 
+	 * */
+	@RequestMapping(value="/task/getPlan")
+	public ModelAndView getPlan(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId") || dataJson.getString("taskId").length() < 1){
+				throw new Exception("缺少taskId");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONObject result = TaskService.getInstance().getPlan(taskId);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("获取条件规划失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

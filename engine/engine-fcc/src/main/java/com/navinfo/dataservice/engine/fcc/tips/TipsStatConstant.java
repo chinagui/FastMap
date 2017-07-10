@@ -98,8 +98,8 @@ public class TipsStatConstant {
 		gLocationTipsType.add("2101");
 		gLocationTipsType.add("2102");
 		gLocationTipsType.add("9901");
-		gLocationTipsType.add("8001");
 		gLocationTipsType.add("8002");
+		gLocationTipsType.add("8008");
         gLocationTipsType.add("2203");
         gLocationTipsType.add("2204");
 
@@ -136,12 +136,12 @@ public class TipsStatConstant {
 		gGeoTipsType.add("1901");
 		gGeoTipsType.add("2001");
         gGeoTipsType.add("2002");
+        gGeoTipsType.add("8001");
 		gGeoTipsType.add("8003");
 		gGeoTipsType.add("8004");
         gGeoTipsType.add("8005");
         gGeoTipsType.add("8006");
         gGeoTipsType.add("8007");
-        gGeoTipsType.add("8008");
         gGeoTipsType.add("8009");
         gGeoTipsType.add("8010");
 		gGeoTipsType.add("2201");

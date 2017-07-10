@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -16,6 +17,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
@@ -1417,7 +1423,7 @@ public class Transaction {
         // 计算删除数据
         calcDbIdRefResultList(result.getDelObjects(), dbIds);
 
-        logger.info(String.format("本次跨大区操作涉及数据库ID:[%s]", Arrays.toString(dbIds.toArray())));
+        logger.info(String.format("本次操作涉及数据库ID:[%s]", Arrays.toString(dbIds.toArray())));
 
         JSONObject json = JSONObject.fromObject(requester);
         dbIds.remove(Integer.valueOf(process.getCommand().getDbId()));
@@ -1592,7 +1598,7 @@ public class Transaction {
 
         } else if (row instanceof RdInterNode) {
 
-            return ((RdInterLink) row).getPid();
+            return ((RdInterNode) row).getPid();
 
         } else if (row instanceof RdRoad) {
 
@@ -1750,8 +1756,8 @@ public class Transaction {
                     if (!json.containsKey("data") || !json.getJSONObject("data").containsKey("linkPid")) {
                         return;
                     }
-                    if (json.getJSONObject("data").containsKey("linkType")
-                            && ObjType.RDLINK.toString().equals(json.getJSONObject("data").getString("linkType"))) {
+                    if (json.getJSONObject("data").containsKey("linkType") && ObjType.RDLINK.toString().equals(json.getJSONObject
+                            ("data").getString("linkType"))) {
                         clazz = RdLink.class;
                     }
                     Iterator<Integer> iterator = json.getJSONObject("data").getJSONArray("linkPids").iterator();
@@ -1766,8 +1772,91 @@ public class Transaction {
                     }
                 }
             }
+            if (OperType.DELETE.equals(operType)) {
+                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.LINK_TYPES.entrySet()) {
+                    if (!entry.getKey().equals(objType)) {
+                        continue;
+                    }
+                    int linkPid = json.getInt("objId");
+                    IRow row = new AbstractSelector(entry.getValue(), process.getConn()).loadById(linkPid, false);
+                    Geometry geometry = GeometryUtils.loadGeometry(row);
+                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
+                    if (dbIds.size() > 1) {
+                        assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "sNodePid").toString()));
+                        assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "eNodePid").toString()));
+                    }
+                }
+            }
+            if (OperType.BATCH.equals(operType) && ObjType.RDLINK.equals(objType)) {
+                if (!json.containsKey("data")) {
+                    return;
+                }
+                Iterator<JSONObject> iterator = json.getJSONArray("data").iterator();
+                while (iterator.hasNext()) {
+                    JSONObject obj = iterator.next();
+                    if (!obj.containsKey("pid")) {
+                        continue;
+                    }
+                    int linkPid = obj.getInt("pid");
+                    IRow row = new AbstractSelector(RdLink.class, process.getConn()).loadById(linkPid, false);
+                    Geometry geometry = GeometryUtils.loadGeometry(row);
+                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
+                    if (dbIds.size() > 1) {
+                        throw new Exception("不允许对大区接边LINK进行批量编辑操作...");
+                    }
+                }
+            }
+            if (OperType.BATCHDELETE.equals(operType) && ObjType.RDLINK.equals(objType)) {
+                if (!json.containsKey("objIds")) {
+                    return;
+                }
+                Iterator<Integer> iterator = json.getJSONArray("objIds").iterator();
+                while (iterator.hasNext()) {
+                    Integer linkPid = iterator.next();
+                    IRow row = new AbstractSelector(RdLink.class, process.getConn()).loadById(linkPid, false);
+                    Geometry geometry = GeometryUtils.loadGeometry(row);
+                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
+                    if (dbIds.size() > 1) {
+                        throw new Exception("不允许对大区接边LINK进行批量删除操作...");
+                    }
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 删除接边LINK时判断是否有挂接LINK
+     * @param linkPid
+     * @param nodePid
+     * @throws Exception
+     */
+    private void assertConnectionLink(int linkPid, int nodePid) throws Exception {
+        List<IObj> objs = new ArrayList<>();
+        switch (objType) {
+            case RDLINK:
+                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case LCLINK:
+                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case LULINK:
+                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case ADLINK:
+                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case ZONELINK:
+                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+        }
+
+        for (IObj obj : objs) {
+            if (obj.pid() == linkPid) {
+                continue;
+            }
+
+            Geometry geometry = GeometryUtils.loadGeometry(obj);
+            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
+            if (dbIds.size() == 1) {
+                throw new Exception("删除接边LINK时请优先删除挂接LINK...");
+            }
         }
     }
 
@@ -1790,6 +1879,7 @@ public class Transaction {
 
     /**
      * 删除跨大区无效数据
+     *
      * @param rows
      * @param pids
      */
@@ -1810,6 +1900,7 @@ public class Transaction {
             IRow row = rowIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
+                logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
                 rowIterator.remove();
                 pidIterator.remove();
             }
@@ -1830,10 +1921,10 @@ public class Transaction {
                 try {
                     return method.invoke(row);
                 } catch (IllegalAccessException e) {
-                    logger.error("根据属性名获取IRow的属性值", e);
+                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
-                    logger.error("根据属性名获取IRow的属性值", e);
+                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
                     e.printStackTrace();
                 }
             }
@@ -1913,8 +2004,13 @@ public class Transaction {
     public String run() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -1936,10 +2032,11 @@ public class Transaction {
             // 初始化新增数据RowId，保证接边库数据一致
             initRowid(result.getAddObjects());
 
-            recordData(process, result);
-
             // 操作合法性检查
             assertErrorOperation();
+
+            // 写入数据、履历
+            recordData(process, result);
 
             // 检查操作结果是否产生接边影响
             calcDbIdsRefResult(commands, processes, result);
@@ -1953,12 +2050,15 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            if (!hasOverride("run")) {
+                process.postCheck();
+            }
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
-
-            // 执行后检查
-            process.postCheck();
         } catch (Exception e) {
             logger.error(String.format("%s操作失败，数据库进行回滚，requester: %s", objType, requester), e);
             for (AbstractProcess process : processes) {
@@ -1982,8 +2082,13 @@ public class Transaction {
     public String innerRun() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -2005,10 +2110,11 @@ public class Transaction {
             // 初始化新增数据RowId，保证接边库数据一致
             initRowid(result.getAddObjects());
 
-            recordData(process, result);
-
             // 操作合法性检查
             assertErrorOperation();
+
+            // 写入数据、履历
+            recordData(process, result);
 
             // 检查操作结果是否产生接边影响
             calcDbIdsRefResult(commands, processes, result);
@@ -2019,6 +2125,12 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            if (!hasOverride("innerRun")) {
+                process.postCheck();
+            }
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
@@ -2029,10 +2141,32 @@ public class Transaction {
             }
         } finally {
             for (AbstractProcess process : processes) {
+                if (process.getConn() == conn) {
+                    continue;
+                }
                 DBUtils.closeConnection(process.getConn());
             }
         }
         return msg;
+    }
+
+    /**
+     * 判断子类是否已经重写了methodName方法
+     * 如果重写过了则默认子类进行调用
+     * @param methodName
+     * @return
+     */
+    private boolean hasOverride(String methodName) {
+        Class clazz = process.getClass();
+        boolean flag = false;
+
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (methodName.equals(method.getName()) && method.getParameterTypes().length == 0) {
+                flag =  true;
+            }
+        }
+        return flag;
     }
 
     /**

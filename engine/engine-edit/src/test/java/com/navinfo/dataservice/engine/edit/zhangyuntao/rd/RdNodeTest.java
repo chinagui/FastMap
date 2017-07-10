@@ -26,10 +26,8 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void create(){
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":1005,\"objId\":87669302,\"data\":{\"longitude\":116.37677623850006,\"latitude\":40.03536495436415},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"CREATE\",\"dbId\":84,\"type\":\"RDSAMENODE\"," +
-                "\"data\":{\"nodes\":[{\"nodePid\":506000059,\"type\":\"RDNODE\",\"isMain\":1}," +
-                "{\"nodePid\":505000002,\"type\":\"LUNODE\",\"isMain\":0}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDNODE\",\"dbId\":13,\"subtaskId\":394,\"objId\":520000455," +
+                "\"data\":{\"longitude\":116.83157949657176,\"latitude\":39.9471097788328}}";
 		TestUtil.run(parameter);
 	}
 
@@ -54,4 +52,11 @@ public class RdNodeTest extends InitApplication {
 		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309002394,\"data\":{\"longitude\":116.5178820490837,\"latitude\":40.08373975500465},\"type\":\"RDNODE\"}";
 		TestUtil.run(parameter);
 	}
+
+	@Test
+	public void update(){
+	    String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDNODE\",\"objId\":404000382,\"data\":{\"srcFlag\":3," +
+                "\"rowId\":\"CD6B9C33DD974D88870DDF828217262D\",\"pid\":404000382,\"objStatus\":\"UPDATE\"}}";
+	    TestUtil.run(parameter);
+    }
 }

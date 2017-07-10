@@ -80,4 +80,3 @@ public class DealershipAddChainDataJobRequest extends AbstractJobRequest {
 	}
 	
 }
-

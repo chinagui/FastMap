@@ -55,7 +55,7 @@ public class Operation implements IOperation {
 	 * @param linkPid
 	 * @return
 	 */
-	private JSONObject getBreaksPara(int linkPid) throws Exception{
+	private JSONObject getBreaksPara(int linkPid) throws Exception {
 		JSONObject breakJson = new JSONObject();
 		breakJson.put("objId", linkPid);
 		breakJson.put("dbId", this.command.getDbId());
@@ -68,10 +68,17 @@ public class Operation implements IOperation {
 			data.put("longitude", this.command.getBreakPoint().getX());
 			data.put("latitude", this.command.getBreakPoint().getY());
 
-			RdNode rdNode = (RdNode)nodeSelector.loadById(this.command.getBreakNodePid(), false);
-			Geometry nodeGeo = GeoTranslator.transform(rdNode.getGeometry(), 0.00001, 5);
-			Coordinate coor = nodeGeo.getCoordinate();
-			
+			//输入有nodePid，取nodePid处为打断点；输入无nodePid，第一次打断后记录nodePid，仍取输入点几何为打断点
+			Coordinate coor = null;
+			if (this.command.getIsModifyGeo() == false) {
+				RdNode rdNode = (RdNode) nodeSelector.loadById(this.command.getBreakNodePid(), false);
+				Geometry nodeGeo = GeoTranslator.transform(rdNode.getGeometry(), 0.00001, 5);
+				coor = nodeGeo.getCoordinate();
+			} else {
+				coor = new Coordinate((double) Math.round(this.command.getBreakPoint().getX() * 100000) / 100000,
+						(double) Math.round(this.command.getBreakPoint().getY() * 100000) / 100000);
+			}
+
 			JSONObject breakObj = new JSONObject();
 			breakObj.put("longitude", coor.x);
 			breakObj.put("latitude", coor.y);
@@ -113,6 +120,7 @@ public class Operation implements IOperation {
 			if (firstLinkENode == secondLinkSNode) {
 				this.command.setBreakNodePid(firstLinkENode);
 			}
+			this.command.setIsModifyGeo(true);
 		}
 	}
 }

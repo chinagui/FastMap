@@ -71,10 +71,7 @@ public class PoiGridIncreSearch {
 			gridClob.setString(1, StringUtils.join(gridDateMap.keySet(), ","));
 			
 			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in (select column_value from table(clob_to_table(?))) ";
-			System.out.println(sql);
-			//*********************************
-//			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in ("+StringUtils.join(gridDateMap.keySet(), ",")+")";
-			System.out.println(sql);
+			logger.info(sql);
 			Map<Integer,Collection<String>> dbGridMap = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<Integer,Collection<String>>>(){
 
 				@Override
@@ -159,11 +156,11 @@ public class PoiGridIncreSearch {
 		}
 		
 		if(StringUtils.isEmpty(date)){
-			//load all poi，初始化u_record应为0
+			logger.info("load all poi，初始化u_record应为0");
 			pois = loadIxPoi(grid,conn);
-			//load status
+			logger.info("load status");
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, null);
-			
+			logger.info("begin set poi's u_record with poiStatus mapping");
 			//load 变更poi的状态，设置u_record
 			if(poiStatus!=null&&poiStatus.size()>0){
 				for(Integer status:poiStatus.keySet()){
@@ -175,8 +172,9 @@ public class PoiGridIncreSearch {
 				}
 			}
 		}else{
+			logger.info("load status");
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, date);
-
+			logger.info("begin set poi's u_record with poiStatus mapping");
 			//load 
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){

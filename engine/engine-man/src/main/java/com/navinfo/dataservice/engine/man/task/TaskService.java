@@ -3892,13 +3892,13 @@ public class TaskService {
 	public int queryInitedTaskData(Connection dailyConn, int taskId) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "select count(*) from DATA_PLAN t where t.task_id = " + taskId;
+			String sql = "select count(1) from DATA_PLAN t where t.task_id = " + taskId;
 			
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
 				public Integer handle(ResultSet rs) throws SQLException {
 					int count = 0;
 					if (rs.next()) {
-						count = rs.getInt("count(*)");
+						count = rs.getInt("count(1)");
 					}
 					return count;
 				}
@@ -4411,32 +4411,32 @@ public class TaskService {
 				String roadFCs = dataPlan.get("roadFCs").toString();
 				String levels = dataPlan.get("levels").toString();
 				
-				String data_type = "1";
-				if(dataType == 3){
-					data_type = "1,2";
-				}else{
-					data_type = String.valueOf(dataType);
-				}
+//				String data_type = "1";
+//				if(dataType == 3){
+//					data_type = "1,2";
+//				}else{
+//					data_type = String.valueOf(dataType);
+//				}
 				
-				StringBuffer poiSb = new StringBuffer();
-				poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-				//POI查询条件
+				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
+					StringBuffer poiSb = new StringBuffer();
+					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
 					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String poisql = poiSb.toString();
+					log.info("跟据条件保存POI数据sql:"+poisql);
+					run.execute(conn, poisql);
 				}
-				String poisql = poiSb.toString();
-				log.info("跟据条件保存POI数据sql:"+poisql);
-				run.execute(conn, poisql);
 				
-				StringBuffer linkSb = new StringBuffer();
-				//ROAD查询条件
-				linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+				//更新road
 				if(dataType == 2 || dataType == 3){
+					StringBuffer linkSb = new StringBuffer();
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
@@ -4444,11 +4444,11 @@ public class TaskService {
 						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
 					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String linksql = linkSb.toString();
+					log.info("跟据条件保存LINK数据sql:"+linksql);
+					run.execute(conn, linksql);
 				}
 				
-				String linksql = linkSb.toString();
-				log.info("跟据条件保存LINK数据sql:"+linksql);
-				run.execute(conn, linksql);
 			}catch(Exception e){
 				log.error("根据条件修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;

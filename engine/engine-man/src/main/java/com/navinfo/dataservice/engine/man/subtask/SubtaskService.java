@@ -3581,4 +3581,20 @@ public class SubtaskService {
 			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
 		} 
 	}
+
+	public void qualityCommit(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="update subtask s set s.quality_plan_status=1 where subtask_id="+subtaskId;
+			QueryRunner run=new QueryRunner();
+			run.update(conn, sql);
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

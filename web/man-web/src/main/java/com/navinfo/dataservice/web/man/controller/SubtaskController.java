@@ -795,4 +795,32 @@ public class SubtaskController extends BaseController {
 		}
 		
 	}
+	
+	/**
+	 * 提交质检圈
+	 * 修改subtask表quality_plan_status=1
+	 * 应用场景：独立工具--外业规划--绘制质检圈—完成
+	 * 
+	 * */
+	@RequestMapping(value = "/subtask/qualityCommit")
+	public ModelAndView qualityCommit(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("subtaskId")){
+				throw new Exception("缺少subtaskId");
+			}
+			int subtaskId = dataJson.getInt("subtaskId");
+			
+			SubtaskService.getInstance().qualityCommit(subtaskId);
+			
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+		
+	}
 }

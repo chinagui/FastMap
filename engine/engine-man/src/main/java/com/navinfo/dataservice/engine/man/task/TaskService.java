@@ -382,7 +382,7 @@ public class TaskService {
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
 			int erNum = 0;//二代任务数量
-			List<Integer> cmsTaskList=new ArrayList<Integer>();
+			//List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
 			//modify by songhe 记录有组ID的subtaskId调用子任务发布接口
@@ -399,28 +399,28 @@ public class TaskService {
 //					batchNoTaskMidData(conn, task);
 //				}
 				
-				if(task.getType() == 3){
-					//二代任务发布特殊处理
-					cmsTaskList.add(task.getTaskId());
-				}else{
-					commontaskIds.add(task.getTaskId());
-					commonBlockIds.add(task.getBlockId());
-					updatedTaskList.add(task);
-					updatedTaskIdList.add(task.getTaskId());
-					total ++;
-					//如果为POI月编任务
-					if(task.getType() == 2){
-						poiMonthlyTask.add(task);
+//				if(task.getType() == 3){
+//					//二代任务发布特殊处理
+//					cmsTaskList.add(task.getTaskId());
+//				}else{
+				commontaskIds.add(task.getTaskId());
+				commonBlockIds.add(task.getBlockId());
+				updatedTaskList.add(task);
+				updatedTaskIdList.add(task.getTaskId());
+				total ++;
+				//如果为POI月编任务
+				if(task.getType() == 2){
+					poiMonthlyTask.add(task);
+				}
+				if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
+					if(task.getSubWorkKind(3)==1){
+						createCollectSubtaskByTask(3, task);
 					}
-					if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
-						if(task.getSubWorkKind(3)==1){
-							createCollectSubtaskByTask(3, task);
-						}
-						if(task.getSubWorkKind(4)==1){
-							createCollectSubtaskByTask(4, task);
-						}
+					if(task.getSubWorkKind(4)==1){
+						createCollectSubtaskByTask(4, task);
 					}
 				}
+				//}
 			}
 			if(commontaskIds.size()>0){
 				//更新task状态
@@ -467,48 +467,48 @@ public class TaskService {
 					}
 				}
 			}
-			if(cmsTaskList.size()>0){
-				//获取可发布的cms任务
-				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
-				erNum=pushCmsTask.size();
-				if(pushCmsTask!=null&&pushCmsTask.size()>0){
-					for(Integer taskId:pushCmsTask){
-						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
-						if(phaseList!=null&&phaseList.size()>0){continue;}
-						
-						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
-						Set<Integer> meshIdSet = new HashSet<Integer>();
-						
-						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
-						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
-						log.info("获取tips全图幅"+meshIdSet.toString());
-						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
-						for(Integer gridId:gridIdList){
-							meshIdSet.add(gridId/100);
-						}
-						
-						JSONObject parameter = new JSONObject();
-						parameter.put("meshIds", meshIdSet);
-						
-						createCmsProgress(conn,taskId,1,parameter);
-						createCmsProgress(conn,taskId,2,parameter);
-						createCmsProgress(conn,taskId,3,parameter);
-						createCmsProgress(conn,taskId,4,parameter);
-						conn.commit();
-						
-						phaseList = queryTaskCmsProgress(taskId);
-						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
-						for(Map<String, Integer> phaseTmp:phaseList){
-							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
-						}
-						TaskCmsProgress returnProgress=day2month(conn, phaseIdMap.get(1));
-						updateCmsProgressStatus(conn, phaseIdMap.get(1), returnProgress.getStatus(), returnProgress.getMessage());
-						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
-						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
-					}}
-				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
-				else{return "二代编辑任务发布进行中";}
-			}
+//			if(cmsTaskList.size()>0){
+//				//获取可发布的cms任务
+//				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+//				erNum=pushCmsTask.size();
+//				if(pushCmsTask!=null&&pushCmsTask.size()>0){
+//					for(Integer taskId:pushCmsTask){
+//						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+//						if(phaseList!=null&&phaseList.size()>0){continue;}
+//						
+//						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
+//						Set<Integer> meshIdSet = new HashSet<Integer>();
+//						
+//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+//						log.info("获取tips全图幅"+meshIdSet.toString());
+//						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
+//						for(Integer gridId:gridIdList){
+//							meshIdSet.add(gridId/100);
+//						}
+//						
+//						JSONObject parameter = new JSONObject();
+//						parameter.put("meshIds", meshIdSet);
+//						
+//						createCmsProgress(conn,taskId,1,parameter);
+//						createCmsProgress(conn,taskId,2,parameter);
+//						createCmsProgress(conn,taskId,3,parameter);
+//						createCmsProgress(conn,taskId,4,parameter);
+//						conn.commit();
+//						
+//						phaseList = queryTaskCmsProgress(taskId);
+//						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+//						for(Map<String, Integer> phaseTmp:phaseList){
+//							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+//						}
+//						TaskCmsProgress returnProgress=day2month(conn, phaseIdMap.get(1));
+//						updateCmsProgressStatus(conn, phaseIdMap.get(1), returnProgress.getStatus(), returnProgress.getMessage());
+//						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
+//						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
+//					}}
+//				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
+//				else{return "二代编辑任务发布进行中";}
+//			}
 			//modify by songhe 
 			//有组ID的subTask调用子任务发布接口
 			if(subPushMsgIds.size() > 0){

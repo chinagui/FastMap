@@ -3845,19 +3845,20 @@ public class TaskService {
 			Region region = RegionService.getInstance().query(con,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
+			Map<String, Integer> result = new HashMap<>();
 			int count = queryInitedTaskData(dailyConn, taskId);
 			if(count > 0){
-				throw new Exception("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
+				log.info("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
+				result.put("poiNum", 0);
+				result.put("linkNum", 0);
+				return result;
 			}
-			Map<String, Integer> result = new HashMap();
+			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
 			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
-				log.info("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
-				result.put("poiNum", 0);
-				result.put("linkNum", 0);
-				return result;
+				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
 			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);

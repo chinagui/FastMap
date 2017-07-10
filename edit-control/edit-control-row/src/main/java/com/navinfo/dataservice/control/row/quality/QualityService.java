@@ -95,6 +95,12 @@ public class QualityService {
 			String adminCodeStr = String.valueOf(adminCode);
 			// 省份、城市的json
 			JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
+			if(!resultJson.containsKey("province")){
+				resultJson.put("province", "");
+			}
+			if(!resultJson.containsKey("city")){
+				resultJson.put("city", "");
+			}
 			// 当前poi状态
 			LogReader logRead = new LogReader(regiondbConn);
 			int state = logRead.getObjectState(pid, "IX_POI");

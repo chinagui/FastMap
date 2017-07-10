@@ -127,7 +127,7 @@ public class MissRoadTengXunSearch  implements ISearch{
 	
 					snapshot.setM(m);
 	
-					snapshot.setT(1002);
+					snapshot.setT(1005);
 	
 					snapshot.setI(resultSet.getInt("RID"));
 	

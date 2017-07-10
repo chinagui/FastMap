@@ -19,75 +19,25 @@ import java.util.Map;
  */
 public class VectorTabSuspect implements IObj {
 
-    /**
+	 /**
      * 测线号码
      */
-    private int id;
-    
-    /**
-     * 来源
-     */
-    private String adminCode;
-    
-    private String length;
-    
-    private String confidence;
-    
-    private String data;
-    
-    private String memo;
-    
+    private int rid;
     /**
      * 坐标
      */
     private Geometry geometry;
+    private String label;
+    private int colour;
+    
+    
 
-	public int getId() {
-		return id;
+	public int getRid() {
+		return rid;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getAdminCode() {
-		return adminCode;
-	}
-
-	public void setAdminCode(String adminCode) {
-		this.adminCode = adminCode;
-	}
-
-	public String getLength() {
-		return length;
-	}
-
-	public void setLength(String length) {
-		this.length = length;
-	}
-
-	public String getConfidence() {
-		return confidence;
-	}
-
-	public void setConfidence(String confidence) {
-		this.confidence = confidence;
-	}
-
-	public String getData() {
-		return data;
-	}
-
-	public void setData(String data) {
-		this.data = data;
-	}
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
+	public void setRid(int rid) {
+		this.rid = rid;
 	}
 
 	public Geometry getGeometry() {
@@ -96,6 +46,22 @@ public class VectorTabSuspect implements IObj {
 
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public int getColour() {
+		return colour;
+	}
+
+	public void setColour(int colour) {
+		this.colour = colour;
 	}
 
 	@Override

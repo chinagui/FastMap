@@ -131,7 +131,7 @@ public class MissRoadDiDiSearch  implements ISearch{
 	
 					snapshot.setM(m);
 	
-					snapshot.setT(1002);
+					snapshot.setT(1004);
 	
 					snapshot.setI(resultSet.getInt("RID"));
 	

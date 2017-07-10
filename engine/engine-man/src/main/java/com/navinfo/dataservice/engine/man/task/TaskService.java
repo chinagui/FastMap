@@ -385,6 +385,9 @@ public class TaskService {
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
+			//modify by songhe 记录有组ID的subtaskId调用子任务发布接口
+			//月编子任务名称赋值List
+			JSONArray subPushMsgIds = new JSONArray();
 
 			//POI月编任务
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
@@ -434,7 +437,14 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setTaskId(task.getTaskId());
+					//modify by songhe 
+					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
+					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
+					subtask.setName(name);//任务名称+_作业组
+					if(StringUtils.isBlank(subtask.getName())){
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					}
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -442,12 +452,19 @@ public class TaskService {
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
+
 					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
 
-					SubtaskService.getInstance().createSubtask(subtask);
+					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
+					
+					//modify by songhe
+					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
+					//月编子任务名称赋值
+					if(subtask.getExeGroupId() != 0){
+						subPushMsgIds.add(subTaskId);
+					}
 				}
 			}
 			if(cmsTaskList.size()>0){
@@ -491,6 +508,11 @@ public class TaskService {
 					}}
 				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
+			}
+			//modify by songhe 
+			//有组ID的subTask调用子任务发布接口
+			if(subPushMsgIds.size() > 0){
+				SubtaskService.getInstance().pushMsg(conn, userId, subPushMsgIds);
 			}
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
@@ -657,16 +679,16 @@ public class TaskService {
 				}
 			}
 			
-			//需要发消息的task列表
-			List<Task> openTaskList = new ArrayList<Task>();
-			Task task1 = queryByTaskId(bean.getTaskId());
-			if(task1.getStatus()==1){
-				openTaskList.add(task1);
+			//需要发消息的task列表		
+			JSONArray openTaskIds=new JSONArray();			
+			//Task task1 = getTaskListWithLeader(conn, taskIds);
+			if(oldTask.getStatus()==1){
+				openTaskIds.add(bean.getTaskId());
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
 			JSONObject json2 = new JSONObject();
-			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
+			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));
 				}
@@ -679,17 +701,22 @@ public class TaskService {
 			}
 			
 			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
+				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
 				for(Task task2:taskList){
 					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);
 						if(task2.getStatus()==1){
-							openTaskList.add(task2);
+							openTaskIds.add(bean.getTaskId());
 						}
 					}
 				}
+			}
+			
+			List<Task> openTaskList = new ArrayList<Task>();
+			if(openTaskIds!=null&&openTaskIds.size()>0){
+				openTaskList = getTaskListWithLeader(conn, openTaskIds);
 			}
 
 			//发送消息
@@ -4360,10 +4387,10 @@ public class TaskService {
 					data_type = String.valueOf(dataType);
 				}
 				
-				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ");
+				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 				//POI查询条件
 				if(dataType == 1 || dataType == 3){
-					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					sb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
 					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						sb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4383,9 +4410,9 @@ public class TaskService {
 						sb.append("or ");
 						sb.append("r.kind in ("+roadKinds+") ");
 					}
-					sb.append(")) ");
+					sb.append(") ");
 				}
-				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
+				sb.append(") and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
 				
 				String sql = sb.toString();
 				log.info("跟据条件保存数据sql:"+sql);

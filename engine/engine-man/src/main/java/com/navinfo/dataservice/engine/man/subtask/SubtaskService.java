@@ -464,6 +464,7 @@ public class SubtaskService {
 			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
 		} 
 	}
+		
 	/**
 	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
 	 * 1.质检子任务名称也同样维护
@@ -696,6 +697,7 @@ public class SubtaskService {
 			
 			sb.append(" SELECT ST.SUBTASK_ID,                           ");
 			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.QUALITY_METHOD,                       ");
 			sb.append("        ST.STATUS,                               ");
 			sb.append("        ST.STAGE,                                ");
 			sb.append("        ST.DESCP,                                ");
@@ -743,6 +745,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+						subtask.put("qualityMethod", rs.getInt("QUALITY_METHOD"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -1357,6 +1360,7 @@ public class SubtaskService {
 					int isQuality=(int)tmp.get("isQuality");
 					if(isQuality==1){subtaskIds.add(subtaskId);}
 				}
+				if(subtaskIds==null||subtaskIds.size()==0){return page;}
 				Map<Integer, List<SubtaskQuality>> qualityMap = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");
@@ -1466,18 +1470,15 @@ public class SubtaskService {
 			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
 	 * @param userId
 	 * @param subTaskIds
 	 * @return
 	 * @throws Exception 
 	 */
-	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
-		// TODO Auto-generated method stub
-		Connection conn = null;
+	public String pushMsg(Connection conn, long userId, JSONArray subtaskIds) throws Exception {
 		try{
-			conn = DBConnector.getInstance().getManConnection();
 			//查询子任务
 			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
@@ -1485,10 +1486,21 @@ public class SubtaskService {
 			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
+				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
+				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
+					//是否中线子任务
+					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
+					if(task.getBlockId()!=0&&subtask.getReferId()==0){
+						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
+					}
+					int referId = subtask.getReferId();
+					lockSubtaskRefer(conn,referId);
+				}
 				//修改子任务状态
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
+				
 				//采集子任务需要反向维护任务workKind
 				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
 					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
@@ -1499,6 +1511,24 @@ public class SubtaskService {
 				success ++;
 			}
 			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param userId
+	 * @param subTaskIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			return pushMsg(conn, userId, subtaskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1682,10 +1712,14 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
-					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-			if (json.getInt("blockId")!=0) {
+			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
+					+ "  FROM subtask_refer t, subtask s"
+					+ " where s.refer_id(+) = t.id";
+			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
 				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
+			if (json.containsKey("wkt")) {
+				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
@@ -1773,7 +1807,9 @@ public class SubtaskService {
 				}	    		
 	    	}		;
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	if (json.containsKey("wkt")) {
+	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	}else{return run.query(conn, selectSql, rsHandler);}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

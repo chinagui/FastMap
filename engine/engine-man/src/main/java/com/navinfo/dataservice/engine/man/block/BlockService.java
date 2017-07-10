@@ -1601,17 +1601,26 @@ public class BlockService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
+			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY,b.origin_geo FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
 			log.info("queryWktByBlockId sql:" + selectSql);
 			
-			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					JSONObject json = new JSONObject(); 				
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> json = new HashMap<String,Object>(); 				
 					if (rs.next()) {
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							String clobStr = GeoTranslator.struct2Wkt(struct);
-							json = Geojson.wkt2Geojson(clobStr);
+							json.put("geometry", Geojson.wkt2Geojson(clobStr)) ;
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}						
+						
+						try {
+							STRUCT origStruct = (STRUCT) rs.getObject("origin_geo");
+							String origClobStr = GeoTranslator.struct2Wkt(origStruct);
+							json.put("originGeo", Geojson.wkt2Geojson(origClobStr)) ;
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -1623,9 +1632,7 @@ public class BlockService {
 			};
 			
 			Map<Integer,Integer> gridMap = getGridMapByBlockId(conn,blockId);
-			JSONObject geo = run.query(conn, selectSql,rsHandler); 
-			Map<String,Object> result = new HashMap<String,Object>();
-			result.put("geometry", geo);
+			Map<String, Object> result = run.query(conn, selectSql,rsHandler); 
 			result.put("gridIds", gridMap);
 			return result;
 			

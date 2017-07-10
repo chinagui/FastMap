@@ -803,9 +803,9 @@ public class SysMsgService {
 			// 处理邮件内容
 			String mailTitle = null;
 			if ("OK".equals(statusPre)) {
-				mailTitle = "FM监控异常报警:"+ip+"的"+metric;
-			} else if ("PROBLEM".equals(statusPre)) {
 				mailTitle = "FM监控恢复通知:"+ip+"的"+metric;
+			} else if ("PROBLEM".equals(statusPre)) {
+				mailTitle = "FM监控异常报警:"+ip+"的"+metric;
 			} else {
 				mailTitle = "FM监控("+ip+")";
 			}

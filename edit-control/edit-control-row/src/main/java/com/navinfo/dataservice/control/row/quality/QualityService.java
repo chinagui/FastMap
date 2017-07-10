@@ -127,7 +127,7 @@ public class QualityService {
 				long currentTime = userIdAndTimeJson.getLong("opDt");
 				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
 				// 当usId = 0时，采集员姓名返回字符串null
-				resultJson.put("collectorUser", collectorUser == null ? "null" : collectorUser);
+				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
 				resultJson.put("collectorTime", collectorTime);
 				resultJson.put("usId", usId);
 			} else {
@@ -146,7 +146,7 @@ public class QualityService {
 					currentTime = userIdAndTimeJson.getLong("opDt");
 				}
 				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
-				resultJson.put("collectorUser", collectorUser == null ? "null" : collectorUser);
+				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
 				resultJson.put("collectorTime", collectorTime);
 				resultJson.put("usId", usId);
 			}

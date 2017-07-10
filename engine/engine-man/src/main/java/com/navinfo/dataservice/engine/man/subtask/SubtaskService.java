@@ -1486,16 +1486,16 @@ public class SubtaskService {
 			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
-				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
-				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
-					//是否中线子任务
-					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
-					if(task.getBlockId()!=0&&subtask.getReferId()==0){
-						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
-					}
-					int referId = subtask.getReferId();
-					lockSubtaskRefer(conn,referId);
-				}
+//				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
+//				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
+//					//是否中线子任务
+//					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
+//					if(task.getBlockId()!=0&&subtask.getReferId()==0){
+//						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
+//					}
+//					int referId = subtask.getReferId();
+//					lockSubtaskRefer(conn,referId);
+//				}
 				//修改子任务状态
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
@@ -3580,5 +3580,21 @@ public class SubtaskService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
 		} 
+	}
+
+	public void qualityCommit(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="update subtask s set s.quality_plan_status=1 where subtask_id="+subtaskId;
+			QueryRunner run=new QueryRunner();
+			run.update(conn, sql);
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

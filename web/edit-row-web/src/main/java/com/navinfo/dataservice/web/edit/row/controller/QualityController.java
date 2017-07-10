@@ -28,12 +28,12 @@ public class QualityController extends BaseController {
 	@RequestMapping(value = "/qc/queryInitValueForProblem")
 	public ModelAndView queryInitValueForProblem(HttpServletRequest request){
 		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
-			}		
+			}
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
 			if(dataJson == null){
 				throw new IllegalArgumentException("parameter参数不能为空。");

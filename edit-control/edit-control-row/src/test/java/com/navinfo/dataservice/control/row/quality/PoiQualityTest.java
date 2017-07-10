@@ -27,7 +27,7 @@ public class PoiQualityTest {
 	//获取质检问题属性值(测试)
 	@Test
 	public void testQueryInitValueForProblem() throws Exception{
-		JSONObject queryInitValueForProblem = QualityService.getInstance().queryInitValueForProblem(3964, 51, 71);
+		JSONObject queryInitValueForProblem = QualityService.getInstance().queryInitValueForProblem(3964, 81013999, 74);
 		System.out.println(queryInitValueForProblem);
 	}
 	

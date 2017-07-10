@@ -96,7 +96,7 @@ public class SubtaskTest extends InitApplication{
 		System.out.print(result);
 	}
 	
-//	@Test
+	@Test
 	public void testListByUser() throws Exception {
 		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
 		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");

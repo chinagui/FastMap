@@ -195,17 +195,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
         log.info("recordData use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
 
-        startPostCheckTime = System.currentTimeMillis();
+        //startPostCheckTime = System.currentTimeMillis();
 
-        log.info("BEGIN  POSTCHECK ");
+        //log.info("BEGIN  POSTCHECK ");
 
         //this.postCheck();
 
-        endPostCheckTime = System.currentTimeMillis();
+        //endPostCheckTime = System.currentTimeMillis();
 
-        log.info("BEGIN  POSTCHECK ");
+        //log.info("BEGIN  POSTCHECK ");
 
-        log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+        //log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
 
         log.info("操作成功");
 

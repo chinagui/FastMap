@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Title: VectorTabSuspect
+ * @Title: MissRoadTengXun
  * @Package: com.navinfo.dataservice.dao.glm.model.render
- * @Description: 疑似矢量数据
+ * @Description: 腾讯道路缺失数据
  * @Author: zl
- * @Date: 2017/6/27
+ * @Date: 2017/7/7
  */
-public class VectorTabSuspect implements IObj {
+public class MissRoadTengXun implements IObj {
 
-	 /**
+    /**
      * 测线号码
      */
     private int rid;
@@ -29,8 +29,8 @@ public class VectorTabSuspect implements IObj {
     private Geometry geometry;
     private String label;
     private int colour;
-    
-    
+
+	
 
 	public int getRid() {
 		return rid;
@@ -38,14 +38,6 @@ public class VectorTabSuspect implements IObj {
 
 	public void setRid(int rid) {
 		this.rid = rid;
-	}
-
-	public Geometry getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
 	}
 
 	public String getLabel() {
@@ -62,6 +54,14 @@ public class VectorTabSuspect implements IObj {
 
 	public void setColour(int colour) {
 		this.colour = colour;
+	}
+
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
 	}
 
 	@Override

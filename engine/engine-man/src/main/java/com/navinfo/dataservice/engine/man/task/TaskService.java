@@ -3853,12 +3853,11 @@ public class TaskService {
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
+			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
+				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
+			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
-			
-			if(StringUtils.isBlank(wkt)){
-				throw new Exception("获取block的范围信息为空");
-			}
 			
 			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			

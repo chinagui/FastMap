@@ -126,10 +126,10 @@ public class SubtaskService {
 				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",3);
 				}
-				if(qualityMethod.contains(1)){
+				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",1);
 				}
-				if(qualityMethod.contains(2)){
+				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",2);
 				}
 			}

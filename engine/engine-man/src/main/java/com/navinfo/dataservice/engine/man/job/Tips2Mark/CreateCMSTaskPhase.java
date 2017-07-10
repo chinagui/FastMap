@@ -9,7 +9,7 @@ import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 public class CreateCMSTaskPhase extends JobPhase {
 
     @Override
-    public void initInvokeType(){
+    public void initInvokeType() {
         this.invokeType = InvokeType.SYNC;
     }
 

@@ -11,7 +11,7 @@ public class Job {
     private long jobId;
     private JobType type;
     private long operator;
-    private JobStatus status;
+    private JobStatus status = JobStatus.RUNNING;
     private Date createDate;
     private Date endDate;
     private int lastest = 1;

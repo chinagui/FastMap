@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
-import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
 import com.navinfo.navicommons.database.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
@@ -23,7 +22,13 @@ public class JobProgressOperator {
         this.conn = conn;
     }
 
-    public long getNextId() throws Exception{
+    /**
+     * 获取新的job_progress的id
+     *
+     * @return
+     * @throws SQLException
+     */
+    public long getNextId() throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "select job_progress_seq.nextval from dual";
         return run.queryForLong(conn, sql);
@@ -37,8 +42,8 @@ public class JobProgressOperator {
      */
     public void insert(JobProgress jobProgress) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "insert into job_progress values(?,?,?,?,SYSDATE,NULL,NULL,?,?)";
-        run.update(conn, sql,jobProgress.getPhaseId(), jobProgress.getJobId(), jobProgress.getPhase(), jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getParameter().toJSONString());
+        String sql = "insert into job_progress values(?,?,?,?,SYSDATE,NULL,NULL,?,?,NULL)";
+        run.update(conn, sql, jobProgress.getPhaseId(), jobProgress.getJobId(), jobProgress.getPhase(), jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter().toJSONString());
     }
 
     /**
@@ -62,7 +67,8 @@ public class JobProgressOperator {
                     jobProgress.setPhase(rs.getInt("phase"));
                     jobProgress.setStatus(JobProgressStatus.valueOf(rs.getInt("status")));
                     jobProgress.setMessage(rs.getString("message"));
-                    jobProgress.setParameter(JSONObject.parseObject(rs.getString("parameter")));
+                    jobProgress.setInParameter(JSONObject.parseObject(rs.getString("in_parameter")));
+                    jobProgress.setOutParameter(JSONObject.parseObject(rs.getString("out_parameter")));
                     return jobProgress;
                 }
                 return null;

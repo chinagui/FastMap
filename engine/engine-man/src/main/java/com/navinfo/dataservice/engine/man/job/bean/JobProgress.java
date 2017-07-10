@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.job.bean;
 
 import com.alibaba.fastjson.JSONObject;
-import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 
 import java.util.Date;
 
@@ -18,7 +17,8 @@ public class JobProgress {
     private Date startDate;
     private Date endDate;
     private String message;
-    private JSONObject parameter;
+    private JSONObject inParameter;
+    private JSONObject outParameter;
 
     public long getPhaseId() {
         return phaseId;
@@ -84,12 +84,12 @@ public class JobProgress {
         this.message = message;
     }
 
-    public JSONObject getParameter() {
-        return parameter;
+    public JSONObject getInParameter() {
+        return inParameter;
     }
 
-    public void setParameter(JSONObject parameter) {
-        this.parameter = parameter;
+    public void setInParameter(JSONObject inParameter) {
+        this.inParameter = inParameter;
     }
 
     public long getJobId() {
@@ -98,5 +98,13 @@ public class JobProgress {
 
     public void setJobId(long jobId) {
         this.jobId = jobId;
+    }
+
+    public JSONObject getOutParameter() {
+        return outParameter;
+    }
+
+    public void setOutParameter(JSONObject outParameter) {
+        this.outParameter = outParameter;
     }
 }

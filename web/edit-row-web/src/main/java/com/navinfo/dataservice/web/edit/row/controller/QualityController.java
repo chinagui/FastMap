@@ -23,7 +23,7 @@ public class QualityController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "qc/queryInitValueForProblem")
+	@RequestMapping(value = "/qc/queryInitValueForProblem")
 	public ModelAndView queryInitValueForProblem(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
@@ -43,9 +43,36 @@ public class QualityController extends BaseController {
 			JSONObject data = QualityService.getInstance().queryInitValueForProblem(userId, pid, subtaskId);
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
-			log.error("获取质检问题失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+			log.error("获取质检问题失败，原因："+ e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-		
+	
+	/**
+	 * poi质检问题操作（新增、修改、删除）
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/qc/operateProblem")
+	public ModelAndView operateProblem(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			String parameter = request.getParameter("parameter");
+			
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));		
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			long userId = tokenObj.getUserId();
+			
+			QualityService.getInstance().operateProblem(userId, dataJson);
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("质检问题新增、删除、修改失败，原因："+ e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

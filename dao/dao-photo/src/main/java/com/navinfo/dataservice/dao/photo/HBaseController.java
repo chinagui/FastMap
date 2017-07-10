@@ -54,7 +54,7 @@ public class HBaseController {
 
 	public byte[] getPhotoByRowkey(String rowkey) throws Exception {
 
-		List<KeyValue> list = getByRowkey("photo", rowkey, "data", "origin");
+		List<KeyValue> list = getByRowkey(HBaseConstant.photoTab, rowkey, "data", "origin");
 
 		for (KeyValue kv : list) {
 			return kv.value();
@@ -65,7 +65,7 @@ public class HBaseController {
 
 	public byte[] getPhotoDetailByRowkey(String rowkey) throws Exception {
 
-		List<KeyValue> list = getByRowkey("photo", rowkey, "data", "attribute");
+		List<KeyValue> list = getByRowkey(HBaseConstant.photoTab, rowkey, "data", "attribute");
 
 		for (KeyValue kv : list) {
 			return kv.value();
@@ -118,7 +118,7 @@ public class HBaseController {
 		String stopKey = GeoHash.geoHashStringWithCharacterPrecision(mbr[3],
 				mbr[2], 12);
 
-		ArrayList<ArrayList<KeyValue>> result = scan("photo", startKey,
+		ArrayList<ArrayList<KeyValue>> result = scan(HBaseConstant.photoTab, startKey,
 				stopKey, "data", "brief");
 
 		return result;

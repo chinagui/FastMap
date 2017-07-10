@@ -42,12 +42,15 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.PageModelUtils;
+import com.navinfo.dataservice.commons.util.QuikSortListUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
@@ -461,6 +464,7 @@ public class SubtaskService {
 			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
 		} 
 	}
+		
 	/**
 	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
 	 * 1.质检子任务名称也同样维护
@@ -693,6 +697,7 @@ public class SubtaskService {
 			
 			sb.append(" SELECT ST.SUBTASK_ID,                           ");
 			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.QUALITY_METHOD,                       ");
 			sb.append("        ST.STATUS,                               ");
 			sb.append("        ST.STAGE,                                ");
 			sb.append("        ST.DESCP,                                ");
@@ -740,6 +745,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+						subtask.put("qualityMethod", rs.getInt("QUALITY_METHOD"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -1347,13 +1353,14 @@ public class SubtaskService {
 				page = SubtaskOperation.getListByUserPage(conn, dataJson,curPageNum,pageSize,platForm);		
 				//返回质检圈
 				List<HashMap<Object,Object>> list=(List<HashMap<Object, Object>>) page.getResult();
+				if(list==null||list.size()==0){return page;}
 				Set<Integer> subtaskIds=new HashSet<Integer>();
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");
 					int isQuality=(int)tmp.get("isQuality");
 					if(isQuality==1){subtaskIds.add(subtaskId);}
 				}
-				
+				if(subtaskIds==null||subtaskIds.size()==0){return page;}
 				Map<Integer, List<SubtaskQuality>> qualityMap = SubtaskQualityOperation.queryBySubtaskIds(conn, subtaskIds);
 				for(HashMap<Object,Object> tmp:list){
 					int subtaskId=(int)tmp.get("subtaskId");
@@ -1463,18 +1470,15 @@ public class SubtaskService {
 			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
 	 * @param userId
 	 * @param subTaskIds
 	 * @return
 	 * @throws Exception 
 	 */
-	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
-		// TODO Auto-generated method stub
-		Connection conn = null;
+	public String pushMsg(Connection conn, long userId, JSONArray subtaskIds) throws Exception {
 		try{
-			conn = DBConnector.getInstance().getManConnection();
 			//查询子任务
 			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
@@ -1482,10 +1486,21 @@ public class SubtaskService {
 			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
+				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
+				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
+					//是否中线子任务
+					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
+					if(task.getBlockId()!=0&&subtask.getReferId()==0){
+						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
+					}
+					int referId = subtask.getReferId();
+					lockSubtaskRefer(conn,referId);
+				}
 				//修改子任务状态
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
+				
 				//采集子任务需要反向维护任务workKind
 				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
 					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
@@ -1496,6 +1511,24 @@ public class SubtaskService {
 				success ++;
 			}
 			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param userId
+	 * @param subTaskIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			return pushMsg(conn, userId, subtaskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1679,10 +1712,14 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id,t.geometry,nvl(s.status,0) status FROM subtask_refer t LEFT JOIN subtask s ON s.refer_id = t.id   "
-					+ " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-			if (json.getInt("blockId")!=0) {
+			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
+					+ "  FROM subtask_refer t, subtask s"
+					+ " where s.refer_id(+) = t.id";
+			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
 				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+			}
+			if (json.containsKey("wkt")) {
+				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
@@ -1770,7 +1807,9 @@ public class SubtaskService {
 				}	    		
 	    	}		;
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	if (json.containsKey("wkt")) {
+	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	}else{return run.query(conn, selectSql, rsHandler);}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -3385,6 +3424,124 @@ public class SubtaskService {
 	};
 	
 	/**
+	 * 日编子任务未规划grid接口
+	 * grid及tips完成情况统计
+	 * 筛选出未规划的grid
+	 * 按照tips个数从大到小排序，gridid从大到小排序
+	 * @param int taskId
+	 * @param int pageNum
+	 * @param int pageSize
+	 * @return page
+	 * @throws Exception
+	 * 
+	 * */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> unPlanGridList(int taskId, int pageNum, int pageSize) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//未规划的gird
+			List<Integer> grids = queryDailySubTaskGrids(conn, taskId);
+			//获取统计量信息
+			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			
+			int gridNum = result.size();
+			int totalCount = gridNum;
+			//统计tips总数，包含已规划和未规划
+			List<Map<String, Object>> convertList = new ArrayList();
+			int tipsNum = 0;
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Object> map = result.get(i);
+				tipsNum += Integer.parseInt(map.get("finished").toString());
+				tipsNum += Integer.parseInt(map.get("unfinished").toString());
+			}
+			//从统计信息中移除已规划的gird
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Object> map = result.get(i);
+				int gridId = Integer.parseInt(map.get("gridId").toString());
+				for(int j = 0; j < grids.size(); j++){
+					if(gridId == grids.get(j)){
+						result.remove(i);
+						break;
+					}
+				}
+			}
+			
+			//从移除已规划数据的list中统计未规划的grid和tips数量
+			int unPlanGridNum = result.size();
+			int unPlanTipsNum = 0;
+			for(Map<String, Object> map : result){
+				convertList.add(map);
+				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
+//				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());
+			}
+			//根据key倒序排序
+			String key = "gridId";
+			List<Map<String, Object>> sortListByGridId = QuikSortListUtils.sortListInMapByMapKey(convertList, key);
+			key = "unfinished";
+			List<Map<String, Object>> sortList = QuikSortListUtils.sortListInMapByMapKey(sortListByGridId, key);
+			
+			for(int i = 0; i < sortList.size(); i++){
+				Map<String, Object> map = sortList.get(i);
+				map.remove("finished");
+			}
+			
+			//单独处理分页
+			List sublist = new ArrayList();
+			if(pageNum != 0 && pageSize != 0 && sortList.size() > 0){
+				sublist = PageModelUtils.ListSplit(sortList, pageNum, pageSize);
+			}
+	        
+			Map<String, Object> resultMap = new HashMap<>();
+			resultMap.put("unPlanTipsNum", unPlanTipsNum);
+			resultMap.put("tipsNum", tipsNum);
+			resultMap.put("gridNum", gridNum);
+			resultMap.put("totalCount", totalCount);
+			resultMap.put("unPlanGridNum", unPlanGridNum);
+			resultMap.put("result", sublist);
+			
+			return resultMap;
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("日编子任务未规划grid接口异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取日编子任务对应的grid
+	 * taskid对应的日编子任务（type=3的grid子任务）
+	 * @parame int taskId
+	 * @parame Connection
+	 * @return  List<Integer> gridIds
+	 * @throws Exception
+	 * 
+	 * */
+	public List<Integer> queryDailySubTaskGrids(Connection conn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select distinct sgm.grid_id from SUBTASK_GRID_MAPPING sgm, SUBTASK st  where sgm.subtask_id = st.subtask_id "
+					+ " and st.type = 3 and st.task_id = "+taskId;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gids = new ArrayList<>();
+					while (rs.next()) {
+						gids.add(rs.getInt("grid_id"));
+					}
+					return gids;
+				}
+			};
+			return run.query(conn, sql, rsHandler);	
+		}catch(Exception e){
+			log.error("获取日编子任务对应的grid异常："+e.getMessage(),e);
+			throw e;
+		}
+	}
+	
+	/**
 	 * @Title: lockSubtaskRefer
 	 * @Description: 锁定 subTask_refer 表
 	 * @param conn
@@ -3396,10 +3553,10 @@ public class SubtaskService {
 	 */
 	public void lockSubtaskRefer(Connection conn, int referId) throws ServiceException {
 		try {
-			int total = 0;
+			int id = 0;
 			QueryRunner run = new QueryRunner();
 			
-			String sql="SELECT count(1) total "
+			String sql="SELECT R.id total "
 					+ "  FROM SUBTASK_REFER R"
 					+ " WHERE 1=1 "
 					+ " and R.ID = ? ";
@@ -3416,12 +3573,28 @@ public class SubtaskService {
 				}	
 			};
 			
-			total = run.query(conn, sql,referId,rsHandler);	
-			log.info("锁定 subtask_refer表id为 "+referId+" 数据,锁定条数: "+total);
+			id = run.query(conn, sql,referId,rsHandler);	
+			log.info("锁定 subtask_refer表id为 "+referId+" 数据 ");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
 		} 
+	}
+
+	public void qualityCommit(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="update subtask s set s.quality_plan_status=1 where subtask_id="+subtaskId;
+			QueryRunner run=new QueryRunner();
+			run.update(conn, sql);
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

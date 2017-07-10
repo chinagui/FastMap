@@ -289,6 +289,37 @@ public class ScPointAdminArea {
 		}
 	}
 	
-	
+	/**
+	 * 根据行政区划号查找省份和城市信息
+	 * @param adminCode
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getProvinceAndCityByAdminCode(String adminCode) throws Exception {
+		StringBuilder builder = new StringBuilder();
+		builder.append("SELECT PROVINCE, CITY FROM SC_POINT_ADMINAREA WHERE ADMINAREACODE = ");
+		builder.append(adminCode);
+		Connection metaConn = DBConnector.getInstance().getMetaConnection();
+		try{
+			QueryRunner runner = new QueryRunner();
+		    return runner.query(metaConn,builder.toString(), new ResultSetHandler<JSONObject>(){
+				@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject object  = new JSONObject();
+					if(rs.next()){
+						object.put("province", rs.getString("province"));
+						object.put("city", rs.getString("city") == null ? rs.getString("province") : rs.getString("city"));
+					}
+					return object;
+				}
+			});
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(metaConn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(metaConn);
+		}
+	}
 	
 }

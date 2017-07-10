@@ -382,9 +382,12 @@ public class TaskService {
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
 			int erNum = 0;//二代任务数量
-			List<Integer> cmsTaskList=new ArrayList<Integer>();
+			//List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
+			//modify by songhe 记录有组ID的subtaskId调用子任务发布接口
+			//月编子任务名称赋值List
+			JSONArray subPushMsgIds = new JSONArray();
 
 			//POI月编任务
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
@@ -396,28 +399,28 @@ public class TaskService {
 //					batchNoTaskMidData(conn, task);
 //				}
 				
-				if(task.getType() == 3){
-					//二代任务发布特殊处理
-					cmsTaskList.add(task.getTaskId());
-				}else{
-					commontaskIds.add(task.getTaskId());
-					commonBlockIds.add(task.getBlockId());
-					updatedTaskList.add(task);
-					updatedTaskIdList.add(task.getTaskId());
-					total ++;
-					//如果为POI月编任务
-					if(task.getType() == 2){
-						poiMonthlyTask.add(task);
+//				if(task.getType() == 3){
+//					//二代任务发布特殊处理
+//					cmsTaskList.add(task.getTaskId());
+//				}else{
+				commontaskIds.add(task.getTaskId());
+				commonBlockIds.add(task.getBlockId());
+				updatedTaskList.add(task);
+				updatedTaskIdList.add(task.getTaskId());
+				total ++;
+				//如果为POI月编任务
+				if(task.getType() == 2){
+					poiMonthlyTask.add(task);
+				}
+				if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
+					if(task.getSubWorkKind(3)==1){
+						createCollectSubtaskByTask(3, task);
 					}
-					if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
-						if(task.getSubWorkKind(3)==1){
-							createCollectSubtaskByTask(3, task);
-						}
-						if(task.getSubWorkKind(4)==1){
-							createCollectSubtaskByTask(4, task);
-						}
+					if(task.getSubWorkKind(4)==1){
+						createCollectSubtaskByTask(4, task);
 					}
 				}
+				//}
 			}
 			if(commontaskIds.size()>0){
 				//更新task状态
@@ -434,7 +437,14 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setTaskId(task.getTaskId());
+					//modify by songhe 
+					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
+					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
+					subtask.setName(name);//任务名称+_作业组
+					if(StringUtils.isBlank(subtask.getName())){
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					}
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -442,55 +452,67 @@ public class TaskService {
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
+
 					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
 
-					SubtaskService.getInstance().createSubtask(subtask);
+					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
+					
+					//modify by songhe
+					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
+					//月编子任务名称赋值
+					if(subtask.getExeGroupId() != 0){
+						subPushMsgIds.add(subTaskId);
+					}
 				}
 			}
-			if(cmsTaskList.size()>0){
-				//获取可发布的cms任务
-				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
-				erNum=pushCmsTask.size();
-				if(pushCmsTask!=null&&pushCmsTask.size()>0){
-					for(Integer taskId:pushCmsTask){
-						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
-						if(phaseList!=null&&phaseList.size()>0){continue;}
-						
-						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
-						Set<Integer> meshIdSet = new HashSet<Integer>();
-						
-						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
-						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
-						log.info("获取tips全图幅"+meshIdSet.toString());
-						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
-						for(Integer gridId:gridIdList){
-							meshIdSet.add(gridId/100);
-						}
-						
-						JSONObject parameter = new JSONObject();
-						parameter.put("meshIds", meshIdSet);
-						
-						createCmsProgress(conn,taskId,1,parameter);
-						createCmsProgress(conn,taskId,2,parameter);
-						createCmsProgress(conn,taskId,3,parameter);
-						createCmsProgress(conn,taskId,4,parameter);
-						conn.commit();
-						
-						phaseList = queryTaskCmsProgress(taskId);
-						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
-						for(Map<String, Integer> phaseTmp:phaseList){
-							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
-						}
-						TaskCmsProgress returnProgress=day2month(conn, phaseIdMap.get(1));
-						updateCmsProgressStatus(conn, phaseIdMap.get(1), returnProgress.getStatus(), returnProgress.getMessage());
-						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
-						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
-					}}
-				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
-				else{return "二代编辑任务发布进行中";}
+//			if(cmsTaskList.size()>0){
+//				//获取可发布的cms任务
+//				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+//				erNum=pushCmsTask.size();
+//				if(pushCmsTask!=null&&pushCmsTask.size()>0){
+//					for(Integer taskId:pushCmsTask){
+//						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+//						if(phaseList!=null&&phaseList.size()>0){continue;}
+//						
+//						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
+//						Set<Integer> meshIdSet = new HashSet<Integer>();
+//						
+//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+//						log.info("获取tips全图幅"+meshIdSet.toString());
+//						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
+//						for(Integer gridId:gridIdList){
+//							meshIdSet.add(gridId/100);
+//						}
+//						
+//						JSONObject parameter = new JSONObject();
+//						parameter.put("meshIds", meshIdSet);
+//						
+//						createCmsProgress(conn,taskId,1,parameter);
+//						createCmsProgress(conn,taskId,2,parameter);
+//						createCmsProgress(conn,taskId,3,parameter);
+//						createCmsProgress(conn,taskId,4,parameter);
+//						conn.commit();
+//						
+//						phaseList = queryTaskCmsProgress(taskId);
+//						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+//						for(Map<String, Integer> phaseTmp:phaseList){
+//							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+//						}
+//						TaskCmsProgress returnProgress=day2month(conn, phaseIdMap.get(1));
+//						updateCmsProgressStatus(conn, phaseIdMap.get(1), returnProgress.getStatus(), returnProgress.getMessage());
+//						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
+//						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
+//					}}
+//				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
+//				else{return "二代编辑任务发布进行中";}
+//			}
+			//modify by songhe 
+			//有组ID的subTask调用子任务发布接口
+			if(subPushMsgIds.size() > 0){
+				SubtaskService.getInstance().pushMsg(conn, userId, subPushMsgIds);
 			}
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
@@ -657,16 +679,16 @@ public class TaskService {
 				}
 			}
 			
-			//需要发消息的task列表
-			List<Task> openTaskList = new ArrayList<Task>();
-			Task task1 = queryByTaskId(bean.getTaskId());
-			if(task1.getStatus()==1){
-				openTaskList.add(task1);
+			//需要发消息的task列表		
+			JSONArray openTaskIds=new JSONArray();			
+			//Task task1 = getTaskListWithLeader(conn, taskIds);
+			if(oldTask.getStatus()==1){
+				openTaskIds.add(bean.getTaskId());
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
 			JSONObject json2 = new JSONObject();
-			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
+			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));
 				}
@@ -679,17 +701,22 @@ public class TaskService {
 			}
 			
 			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
+				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
 				for(Task task2:taskList){
 					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);
 						if(task2.getStatus()==1){
-							openTaskList.add(task2);
+							openTaskIds.add(bean.getTaskId());
 						}
 					}
 				}
+			}
+			
+			List<Task> openTaskList = new ArrayList<Task>();
+			if(openTaskIds!=null&&openTaskIds.size()>0){
+				openTaskList = getTaskListWithLeader(conn, openTaskIds);
 			}
 
 			//发送消息
@@ -1222,11 +1249,11 @@ public class TaskService {
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID ) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
@@ -1296,11 +1323,11 @@ public class TaskService {
 			sb.append("                       1 PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID ) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
@@ -3696,6 +3723,8 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	
@@ -3816,17 +3845,25 @@ public class TaskService {
 			Region region = RegionService.getInstance().query(con,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
+			Map<String, Integer> result = new HashMap<>();
+			int count = queryInitedTaskData(dailyConn, taskId);
+			if(count > 0){
+				log.info("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
+				result.put("poiNum", 0);
+				result.put("linkNum", 0);
+				return result;
+			}
+			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
+			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
+				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
+			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
 			
-			if(StringUtils.isBlank(wkt)){
-				throw new Exception("获取block的范围信息为空");
-			}
-			
-			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
+			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
 			StringBuffer sb = new StringBuffer();
@@ -3840,16 +3877,43 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("初始化规划数据列表失败,原因为：" + e);
-			DbUtils.rollback(con);
-			DbUtils.rollback(dailyConn);
-			throw new Exception("初始化规划数据列表失败");
+			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			throw new Exception("初始化规划数据列表失败"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	
+	/**
+	 * 先获取对应taskId对应的初始化数据条数
+	 * @throws Exception 
+	 * 
+	 * */
+	public int queryInitedTaskData(Connection dailyConn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select count(1) from DATA_PLAN t where t.task_id = " + taskId;
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int count = 0;
+					if (rs.next()) {
+						count = rs.getInt("count(1)");
+					}
+					return count;
+				}
+			};
+			return run.query(dailyConn, sql, rsHandler);	
+			
+			
+		}catch(Exception e){
+			log.error("获取对应taskId对应的初始化数据条数异常"+e.getMessage(), e);
+			throw e;
+		}
+	}
 	/**
 	 * 根据元数据库中重要数据一览表更新dataPlan中的重要性字段
 	 * @throws SQLException 
@@ -3868,7 +3932,7 @@ public class TaskService {
 			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
 			run.update(dailyConn, sql);
 		}catch(Exception e){
-			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage());
+			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -3887,7 +3951,7 @@ public class TaskService {
 			return pids;
 		}catch(Exception e){
 			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage());
+			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -4005,7 +4069,7 @@ public class TaskService {
 			
 			return result;
 		}catch(Exception e){
-			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage());
+			log.error("获取block范围内poi和link的数据保存到dataPlan表异常："+e.getMessage(),e);
 			throw e;
 		}
 	}
@@ -4045,7 +4109,7 @@ public class TaskService {
 				return run.query(conn, selectSql, rsHandler);	
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error("获取待规划子任务列表，原因为：" + e.getMessage());
+				log.error("获取待规划子任务列表，原因为："+e.getMessage(),e);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
@@ -4062,7 +4126,7 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
-			//Connection dailyConn = null;
+//			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4071,17 +4135,17 @@ public class TaskService {
 //				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
-				//String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
+//				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
-				//run.execute(dailyConn, deletesql);
+//				run.execute(dailyConn, deletesql);
 			}catch(Exception e){
-				log.error("规划上传接口异常，原因为："+e);
+				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollback(con);
-				//DbUtils.rollback(dailyConn);
+//				DbUtils.rollback(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
-				//DbUtils.commitAndCloseQuietly(dailyConn);
+//				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		
@@ -4135,10 +4199,10 @@ public class TaskService {
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
-				log.error("规划数据保存失败，原因为："+e);
+				log.error("规划数据保存失败，原因为："+e.getMessage(),e);
 				DBUtils.rollBack(conn);
 				DBUtils.rollBack(dailyConn);
-				throw new Exception("规划数据保存失败",e);
+				throw new Exception("规划数据保存失败"+e.getMessage(),e);
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				DbUtils.commitAndCloseQuietly(dailyConn);
@@ -4188,7 +4252,7 @@ public class TaskService {
 					run.update(conn, linksql, wkt);
 				}
 			}catch(Exception e){
-				log.info("根据范围修改数据作业状态异常:"+e);
+				log.info("根据范围修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4230,7 +4294,7 @@ public class TaskService {
 							if(subFlag == 0){
 								continue;
 							}
-							String subClassCode = subKindJson.getString("subClassCode");
+							String subClassCode = subKindJson.getString("classCode");
 							kindCode = classCode + subClassCode + "%";
 							kindCodes.add(kindCode);
 						}
@@ -4267,7 +4331,7 @@ public class TaskService {
 				result.put("kindCodes",kindCodes);
 				return result;
 			}catch(Exception e){
-				log.info("处理条件数据异常:"+e);
+				log.info("处理条件数据异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4305,7 +4369,7 @@ public class TaskService {
 					TaskProgressOperation.updateTaskProgress(conn, bean);
 				}
 			}catch(Exception e){
-				log.error("保存数据到taskPrograss表出错："+e);
+				log.error("保存数据到taskPrograss表出错："+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4344,52 +4408,52 @@ public class TaskService {
 		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
-				StringBuffer sb = new StringBuffer();
 				
 				List<String> kindCodes = (List<String>) dataPlan.get("kindCodes");
 				String roadKinds = dataPlan.get("roadKinds").toString();
 				String roadFCs = dataPlan.get("roadFCs").toString();
 				String levels = dataPlan.get("levels").toString();
 				
-				String data_type = "1";
-				if(dataType == 3){
-					data_type = "1,2";
-				}else{
-					data_type = String.valueOf(dataType);
-				}
+//				String data_type = "1";
+//				if(dataType == 3){
+//					data_type = "1,2";
+//				}else{
+//					data_type = String.valueOf(dataType);
+//				}
 				
-				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ");
-				//POI查询条件
+				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
-					sb.append("(select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
-					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+					StringBuffer poiSb = new StringBuffer();
+					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
-						sb.append(" or t.kind_code like '" + kindCode + "' ");
+						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
-					sb.append(")");
+					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String poisql = poiSb.toString();
+					log.info("跟据条件保存POI数据sql:"+poisql);
+					run.execute(conn, poisql);
 				}
 				
-				if(dataType == 3){
-					sb.append(" union all ");
-				}
-				
-				//ROAD查询条件
+				//更新road
 				if(dataType == 2 || dataType == 3){
-					sb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
-					sb.append("(r.function_class in ("+roadFCs+") ");
+					StringBuffer linkSb = new StringBuffer();
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
-						sb.append("or ");
-						sb.append("r.kind in ("+roadKinds+") ");
+						linkSb.append("or ");
+						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
-					sb.append(")) ");
+					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String linksql = linkSb.toString();
+					log.info("跟据条件保存LINK数据sql:"+linksql);
+					run.execute(conn, linksql);
 				}
-				sb.append("and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
 				
-				String sql = sb.toString();
-				log.info("跟据条件保存数据sql:"+sql);
-				run.execute(conn, sql);
 			}catch(Exception e){
-				log.error("根据条件修改数据作业状态异常:"+e);
+				log.error("根据条件修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4462,7 +4526,7 @@ public class TaskService {
 				};
 				return run.query(conn, sql, rs);
 			}catch(Exception e){
-				log.error("判断task_progress表中是否存在task记录异常:"+e);
+				log.error("判断task_progress表中是否存在task记录异常:"+e.getMessage(),e);
 				throw e;
 			}
 		}
@@ -4484,7 +4548,7 @@ public class TaskService {
 //				return ScQueryReliabilityPid(minNumber,maxNumber);
 			}catch(Exception e){
 				DbUtils.close(conn);
-				log.error("从元数据库中获取重要POI异常："+e);
+				log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
 				throw e;
 			}finally{
 				DbUtils.closeQuietly(conn);
@@ -4544,9 +4608,9 @@ public class TaskService {
 				JSONObject json = JSONObject.fromObject(parameter);
 				return json;
 			}catch(Exception e){
-				log.error("获取条件规划异常，原因为：" + e);
+				log.error("获取条件规划异常，原因为："+e.getMessage(),e);
 				DbUtils.closeQuietly(conn);
-				throw new Exception("获取条件规划异常",e);
+				throw new Exception("获取条件规划异常"+e.getMessage(),e);
 			}finally{
 				DbUtils.closeQuietly(conn);
 			}

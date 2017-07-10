@@ -3,18 +3,10 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 
 public class Check {
@@ -116,9 +108,7 @@ public class Check {
 	}
 
 	/**
-	 * <<<<<<< HEAD 检查：创建或修改link，节点不能到已有的立交点处，请先删除立交关系 =======
-	 * 创建或修改link，节点不能到已有的立交点处，请先删除立交关系 >>>>>>> origin/master
-	 * 
+	 * 检查：创建或修改link，节点不能到已有的立交点处，请先删除立交关系
 	 * @param catchLinks
 	 * @param conn
 	 * @throws Exception
@@ -161,5 +151,4 @@ public class Check {
 	public void postCheck(Connection conn, Result result, int projectId) throws Exception {
 	}
 
-	
 }

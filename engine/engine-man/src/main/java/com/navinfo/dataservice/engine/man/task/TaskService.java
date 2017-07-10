@@ -3849,17 +3849,20 @@ public class TaskService {
 			if(count > 0){
 				throw new Exception("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
 			}
-			
+			Map<String, Integer> result = new HashMap();
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
 			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
-				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
+				log.info("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
+				result.put("poiNum", 0);
+				result.put("linkNum", 0);
+				return result;
 			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
 			
-			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
+			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
 			StringBuffer sb = new StringBuffer();
@@ -3874,8 +3877,8 @@ public class TaskService {
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
-			DbUtils.rollback(con);
-			DbUtils.rollback(dailyConn);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
 			throw new Exception("初始化规划数据列表失败"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);

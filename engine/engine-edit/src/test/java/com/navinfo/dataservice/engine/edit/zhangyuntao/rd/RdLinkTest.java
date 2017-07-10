@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
@@ -13,6 +14,7 @@ import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +37,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"REPAIR\",\"dbId\":84,\"objId\":501000051," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.65184,39.22191]," +
-                "[117.651958912611,39.22178952541354],[117.6521,39.22169]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":401000503,\"data\":{\"kind\":9," +
+                "\"routeAdopt\":0,\"speedlimits\":[{\"fromSpeedLimit\":15,\"toSpeedLimit\":15,\"speedClass\":7," +
+                "\"rowId\":\"5F330AFA59CC4088BD524D779563404E\",\"linkPid\":401000503,\"objStatus\":\"UPDATE\"}]," +
+                "\"rowId\":\"1FC94788D96A4DE18083C83D366F94BE\",\"pid\":401000503,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 
@@ -147,4 +150,12 @@ public class RdLinkTest extends InitApplication {
         TestUtil.run(requester);
     }
 
+    public static void main(String[] args) throws Exception {
+        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"pid\":500000001," +
+                "\"direct\":3,\"linkPid\":49913063,\"longitude\":116.53538352127916,\"latitude\":39.7420088702255," +
+                "\"objStatus\":\"UPDATE\"}}";
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(JSONObject.fromObject(parameter), parameter));
+        Method[] methods = process.getClass().getMethods();
+        methods.getClass().getDeclaredMethods();
+    }
 }

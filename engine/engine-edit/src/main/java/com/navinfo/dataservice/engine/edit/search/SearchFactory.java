@@ -137,12 +137,16 @@ public class SearchFactory {
             case CMGBUILDING:
                 return new CmgBuildingSearch(conn);
             //*** zl 2017.06.27 GPS_RECORD , VECTOR_TAB ,VECTOR_TAB_SUSPECT **
-            case GPSRECORD:
+            case AUGPSRECORD:
             	return new GpsRecordSearch(conn);
             case VECTORTAB:
             	return new VectorTabSearch(conn);
             case VECTORTABSUSPECT:
             	return new VectorTabSuspectSearch(conn);
+            case MISSROADDIDI:
+            	return new MissRoadDiDiSearch(conn);
+            case MISSROADTENGXUN:
+            	return new MissRoadTengXunSearch(conn);
                 
             default:
                 return null;

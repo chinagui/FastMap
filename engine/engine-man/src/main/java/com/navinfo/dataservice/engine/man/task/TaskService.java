@@ -3845,17 +3845,25 @@ public class TaskService {
 			Region region = RegionService.getInstance().query(con,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			
+			Map<String, Integer> result = new HashMap<>();
+			int count = queryInitedTaskData(dailyConn, taskId);
+			if(count > 0){
+				log.info("对应的taskId:" + taskId + "已经初始化了" + count + "条数据，无法重新初始化该条数据");
+				result.put("poiNum", 0);
+				result.put("linkNum", 0);
+				return result;
+			}
+			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
+			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
+				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
+			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
 			
-			if(StringUtils.isBlank(wkt)){
-				throw new Exception("获取block的范围信息为空");
-			}
-			
-			Map<String, Integer> result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
+			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
 			StringBuffer sb = new StringBuffer();
@@ -3870,15 +3878,42 @@ public class TaskService {
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
-			DbUtils.rollback(con);
-			DbUtils.rollback(dailyConn);
-			throw new Exception("初始化规划数据列表失败");
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			throw new Exception("初始化规划数据列表失败"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	
+	/**
+	 * 先获取对应taskId对应的初始化数据条数
+	 * @throws Exception 
+	 * 
+	 * */
+	public int queryInitedTaskData(Connection dailyConn, int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select count(1) from DATA_PLAN t where t.task_id = " + taskId;
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int count = 0;
+					if (rs.next()) {
+						count = rs.getInt("count(1)");
+					}
+					return count;
+				}
+			};
+			return run.query(dailyConn, sql, rsHandler);	
+			
+			
+		}catch(Exception e){
+			log.error("获取对应taskId对应的初始化数据条数异常"+e.getMessage(), e);
+			throw e;
+		}
+	}
 	/**
 	 * 根据元数据库中重要数据一览表更新dataPlan中的重要性字段
 	 * @throws SQLException 
@@ -4373,50 +4408,50 @@ public class TaskService {
 		public void updateDataPlanStatusByCondition(Connection conn, Map<String, Object> dataPlan, int dataType, int taskId) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
-				StringBuffer sb = new StringBuffer();
 				
 				List<String> kindCodes = (List<String>) dataPlan.get("kindCodes");
 				String roadKinds = dataPlan.get("roadKinds").toString();
 				String roadFCs = dataPlan.get("roadFCs").toString();
 				String levels = dataPlan.get("levels").toString();
 				
-				String data_type = "1";
-				if(dataType == 3){
-					data_type = "1,2";
-				}else{
-					data_type = String.valueOf(dataType);
-				}
+//				String data_type = "1";
+//				if(dataType == 3){
+//					data_type = "1,2";
+//				}else{
+//					data_type = String.valueOf(dataType);
+//				}
 				
-				sb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-				//POI查询条件
+				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
-					sb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
-					sb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+					StringBuffer poiSb = new StringBuffer();
+					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
-						sb.append(" or t.kind_code like '" + kindCode + "' ");
+						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
-					sb.append(")");
+					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String poisql = poiSb.toString();
+					log.info("跟据条件保存POI数据sql:"+poisql);
+					run.execute(conn, poisql);
 				}
 				
-				if(dataType == 3){
-					sb.append(" union all ");
-				}
-				
-				//ROAD查询条件
+				//更新road
 				if(dataType == 2 || dataType == 3){
-					sb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
-					sb.append("(r.function_class in ("+roadFCs+") ");
+					StringBuffer linkSb = new StringBuffer();
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
+					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
-						sb.append("or ");
-						sb.append("r.kind in ("+roadKinds+") ");
+						linkSb.append("or ");
+						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
-					sb.append(") ");
+					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					String linksql = linkSb.toString();
+					log.info("跟据条件保存LINK数据sql:"+linksql);
+					run.execute(conn, linksql);
 				}
-				sb.append(") and d.data_type in ("+data_type+") and d.is_plan_selected = 0 and d.task_id = "+taskId);
 				
-				String sql = sb.toString();
-				log.info("跟据条件保存数据sql:"+sql);
-				run.execute(conn, sql);
 			}catch(Exception e){
 				log.error("根据条件修改数据作业状态异常:"+e.getMessage(),e);
 				throw e;

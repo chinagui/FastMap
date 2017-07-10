@@ -126,10 +126,10 @@ public class SubtaskService {
 				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",3);
 				}
-				if(qualityMethod.contains(1)){
+				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",1);
 				}
-				if(qualityMethod.contains(2)){
+				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",2);
 				}
 			}
@@ -786,7 +786,7 @@ public class SubtaskService {
 						if(qualityMethod==3){
 							qualityMethodArray.add(1);
 							qualityMethodArray.add(2);
-						}else{qualityMethodArray.add(qualityMethod);}
+						}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
 						subtask.put("qualityMethod", qualityMethodArray);
 						
 						//作业员/作业组信息

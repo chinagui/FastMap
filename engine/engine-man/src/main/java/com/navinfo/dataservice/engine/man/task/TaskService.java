@@ -1249,11 +1249,11 @@ public class TaskService {
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID ) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
@@ -1323,11 +1323,11 @@ public class TaskService {
 			sb.append("                       1 PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID ) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED,");
+			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"

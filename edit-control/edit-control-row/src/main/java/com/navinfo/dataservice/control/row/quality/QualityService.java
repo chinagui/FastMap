@@ -564,7 +564,7 @@ public class QualityService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(checkConn);
 			DbUtils.rollbackAndCloseQuietly(manConn);
-			log.error("获取质检问题失败，原因为：" + e.getMessage());
+			log.error("poi质检问题操作失败，原因为：" + e.getMessage());
 			e.printStackTrace();
 			throw e;
 		} finally {

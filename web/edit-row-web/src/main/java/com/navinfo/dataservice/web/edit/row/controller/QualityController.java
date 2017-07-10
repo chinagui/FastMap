@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.control.row.quality.QualityService;
 
 import net.sf.json.JSONObject;
 
+@Controller
 public class QualityController extends BaseController {
 
 	private static final Logger log = Logger

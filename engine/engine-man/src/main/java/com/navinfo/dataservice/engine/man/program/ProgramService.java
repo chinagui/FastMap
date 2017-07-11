@@ -1537,7 +1537,7 @@ public class ProgramService {
 					+ "         P.DESCP                    PROGRAM_DESCP,"
 					+ "         P.TYPE,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1569,7 +1569,7 @@ public class ProgramService {
 					+ "         NULL,"
 					+ "         4,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1607,6 +1607,7 @@ public class ProgramService {
 						map.put("type", rs.getInt("TYPE"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
 						
 						map.put("method", rs.getString("METHOD"));	
@@ -1660,6 +1661,7 @@ public class ProgramService {
 			sb.append("          C.CITY_ID,                                       ");
 			sb.append("          I.INFOR_ID,                                      ");
 			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.INFOR_stage,                                    ");
 			sb.append("          I.FEATURE_KIND,                                  ");
 			sb.append("          P.CREATE_USER_ID,                                ");
 			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
@@ -1695,6 +1697,7 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));

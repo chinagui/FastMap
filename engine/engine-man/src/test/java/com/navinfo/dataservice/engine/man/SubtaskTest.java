@@ -76,18 +76,7 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
-	}
-	
-	@Test
-	public void testLockRefer() throws Exception {
-		Connection conn = null;
-			conn = DBConnector.getInstance().getManConnection();
-		// TODO Auto-generated constructor stub
-		
-		SubtaskService service = SubtaskService.getInstance();
-		service.lockSubtaskRefer(conn,1);			
-	}
-	
+	}	
 	
 //	@Test
 	public void testQuery() throws Exception {

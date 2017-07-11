@@ -48,12 +48,16 @@ public class ImportRenderShape2Oracle {
 
 			String shapeFile = args[0];
 			//vector_tab_suspect
+			//MISS_ROAD_DIDI
+			//MISS_ROAD_TENGXUN
 			String tableName = args[1];
 			int deleteFlag = 1;
 			if(args.length == 3 && args[2] != null){
 				deleteFlag = Integer.parseInt(args[2]);
 			}
-//			String shapeFile = "F:\\shapefile\\leshan\\road_out.shp";
+//			int deleteFlag = 1;
+//			String shapeFile = "F:\\shapefile\\shp\\tengxunUGC.shp";
+//			String tableName = "MISS_ROAD_TENGXUN";
 
 			imp(shapeFile,tableName,deleteFlag);
 			
@@ -95,7 +99,7 @@ public class ImportRenderShape2Oracle {
 				//write vtsList
 				String insCitySql = "INSERT INTO "+tableName+" (RID,GEOMETRY) VALUES (?,SDO_GEOMETRY(?,8307))";
 				
-				if(deleteFlag > 0){//当 deleteFlag > 0 则不清除数据库表
+				if(deleteFlag > 0){//当 deleteFlag > 0 则清除数据库表
 					String deleteSql = " delete "+tableName+" ";
 					run.execute(conn, deleteSql);
 					conn.commit();
@@ -130,6 +134,10 @@ public class ImportRenderShape2Oracle {
 						
 //						System.out.println(count);
 					}
+					
+					/*if(count > 1000){
+						break;
+					}*/
 				}
 				System.out.println("count: "+count);
 			}
@@ -161,8 +169,8 @@ public class ImportRenderShape2Oracle {
                 SimpleFeature feature = itertor.next();  
 //                System.out.println("geometry: "+feature.getDefaultGeometryProperty().getValue());
 //                System.out.println(feature.getAttribute("road_ID"));  
-                long idl = (long) feature.getAttribute("road_ID");
-                vts.setId( Integer.parseInt(String.valueOf(idl)) );
+                /*long idl = (long) feature.getAttribute("road_ID");
+                vts.setId( Integer.parseInt(String.valueOf(idl)) );*/
                 String geo = feature.getDefaultGeometryProperty().getValue().toString();
                 vts.setGeometry(geo);
                 vtsList.add(vts);

@@ -17,8 +17,8 @@ public class JobProgress {
     private Date startDate;
     private Date endDate;
     private String message;
-    private JSONObject inParameter;
-    private JSONObject outParameter;
+    private String inParameter;
+    private String outParameter;
 
     public long getPhaseId() {
         return phaseId;
@@ -84,11 +84,11 @@ public class JobProgress {
         this.message = message;
     }
 
-    public JSONObject getInParameter() {
+    public String getInParameter() {
         return inParameter;
     }
 
-    public void setInParameter(JSONObject inParameter) {
+    public void setInParameter(String inParameter) {
         this.inParameter = inParameter;
     }
 
@@ -100,11 +100,11 @@ public class JobProgress {
         this.jobId = jobId;
     }
 
-    public JSONObject getOutParameter() {
+    public String getOutParameter() {
         return outParameter;
     }
 
-    public void setOutParameter(JSONObject outParameter) {
+    public void setOutParameter(String outParameter) {
         this.outParameter = outParameter;
     }
 }

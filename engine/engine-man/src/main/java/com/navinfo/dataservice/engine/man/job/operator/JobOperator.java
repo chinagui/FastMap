@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.Job;
@@ -42,8 +43,8 @@ public class JobOperator {
      */
     public void insert(Job job) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "insert into job values(?,?,?,?,SYSDATE,NULL,?,?)";
-        run.update(conn, sql, job.getJobId(), job.getType(), job.getOperator(), job.getStatus().value(), job.getLastest(), job.getParameter().toJSONString());
+        String sql = "insert into job values(?,?,?,?,?,SYSDATE,NULL,?)";
+        run.update(conn, sql, job.getJobId(), job.getType().value(), job.getStatus().value(), job.getLastest(),job.getOperator(), job.getParameter());
     }
 
     /**
@@ -65,7 +66,7 @@ public class JobOperator {
                     Job job = new Job();
                     job.setJobId(rs.getLong("job_id"));
                     job.setType(jobType);
-                    job.setParameter(JSONObject.parseObject(rs.getString("parameter")));
+                    job.setParameter(rs.getString("parameter"));
                     return job;
                 }
                 return null;
@@ -83,7 +84,7 @@ public class JobOperator {
      */
     public void updateStatus(long jobId, JobStatus status) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "update job set status=? and end_date=SYSDATE where job_id=?";
+        String sql = "update job set status=?, end_date=SYSDATE where job_id=?";
         run.update(conn, sql, status.value(), jobId);
     }
 
@@ -91,5 +92,33 @@ public class JobOperator {
         QueryRunner run = new QueryRunner();
         String sql = "update job set latest=? where job_id=?";
         run.update(conn, sql, latest, jobId);
+    }
+
+    /**
+     * 根据jobId查询每个步骤的执行状态
+     * @param jobId
+     * @return
+     * @throws SQLException
+     */
+    public JSONArray getJobProgressStatus(long jobId) throws SQLException{
+        QueryRunner run = new QueryRunner();
+        String sql = "select phase_id,phase,status,message from job_progress where job_id=? order by phase asc";
+
+        ResultSetHandler<JSONArray> resultSetHandler = new ResultSetHandler<JSONArray>() {
+            @Override
+            public JSONArray handle(ResultSet rs) throws SQLException {
+                JSONArray array = new JSONArray();
+                while(rs.next()){
+                    JSONObject json = new JSONObject();
+                    json.put("phaseId",rs.getLong("phase_id"));
+                    json.put("status",rs.getInt("status"));
+                    json.put("phase",rs.getInt("phase"));
+                    json.put("message",rs.getString("message"));
+                    array.add(json);
+                }
+                return array;
+            }
+        };
+        return run.query(conn, sql, resultSetHandler, jobId);
     }
 }

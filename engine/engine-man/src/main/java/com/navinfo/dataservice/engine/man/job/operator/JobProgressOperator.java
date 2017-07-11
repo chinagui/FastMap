@@ -43,7 +43,7 @@ public class JobProgressOperator {
     public void insert(JobProgress jobProgress) throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "insert into job_progress values(?,?,?,?,SYSDATE,NULL,NULL,?,?,NULL)";
-        run.update(conn, sql, jobProgress.getPhaseId(), jobProgress.getJobId(), jobProgress.getPhase(), jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter().toJSONString());
+        run.update(conn, sql, jobProgress.getPhaseId(), jobProgress.getJobId(), jobProgress.getPhase(), jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter());
     }
 
     /**
@@ -63,12 +63,12 @@ public class JobProgressOperator {
                 if (rs.next()) {
                     JobProgress jobProgress = new JobProgress();
                     jobProgress.setPhaseId(rs.getLong("phase_id"));
-                    jobProgress.setJobId(rs.getInt("phase"));
+                    jobProgress.setJobId(rs.getInt("job_id"));
                     jobProgress.setPhase(rs.getInt("phase"));
                     jobProgress.setStatus(JobProgressStatus.valueOf(rs.getInt("status")));
                     jobProgress.setMessage(rs.getString("message"));
-                    jobProgress.setInParameter(JSONObject.parseObject(rs.getString("in_parameter")));
-                    jobProgress.setOutParameter(JSONObject.parseObject(rs.getString("out_parameter")));
+                    jobProgress.setInParameter(rs.getString("in_parameter"));
+                    jobProgress.setOutParameter(rs.getString("out_parameter"));
                     return jobProgress;
                 }
                 return null;
@@ -84,21 +84,27 @@ public class JobProgressOperator {
      * 2.如果开始执行，则更新start_date
      * 3.如果创建，则清空end_date,start_date
      *
-     * @param phaseId
-     * @param status
      * @throws SQLException
      */
-    public void updateStatus(long phaseId, JobProgressStatus status) throws SQLException {
+    public void updateStatus(JobProgress jobProgress, JobProgressStatus status) throws SQLException {
+        jobProgress.setStatus(status);
+
         QueryRunner run = new QueryRunner();
         String sql;
-        if (status.equals(JobProgressStatus.RUNNING)) {
-            sql = "update job_progress set status=? and start_date=SYSDATE where phase_id=?";
-
-        } else if (status.equals(JobProgressStatus.CREATED)) {
-            sql = "update job_progress set status=? and end_date=NULL and start_date=NULL where phase_id=?";
-        } else {
-            sql = "update job_progress set status=? and end_date=SYSDATE where phase_id=?";
+        if (jobProgress.getStatus().equals(JobProgressStatus.RUNNING)) {
+            sql = "update job_progress set status=?,start_date=SYSDATE where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
+        } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
+            sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
+        } else{
+            sql = "update job_progress set status=?, end_date=SYSDATE, message=? where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
         }
-        run.update(conn, sql, status.value(), phaseId);
+    }
+    public void updateStatus(long phaseId, JobProgressStatus status, String outParameter) throws SQLException {
+        QueryRunner run = new QueryRunner();
+        String sql = "update job_progress set status=?, end_date=SYSDATE, out_parameter=? where phase_id=?";
+        run.update(conn, sql, status.value(), outParameter, phaseId);
     }
 }

@@ -46,6 +46,15 @@ public interface ManApi{
 	 * @throws Exception 
 	 */
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception;
+
+	/**
+	 * 更新job步骤的执行状态
+	 * @param phaseId
+	 * @param status 2成功，3失败，4无数据
+	 * @param message
+	 * @throws Exception
+	 */
+	public void updateJobProgress(long phaseId,int status,String message) throws Exception;
 	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
 	

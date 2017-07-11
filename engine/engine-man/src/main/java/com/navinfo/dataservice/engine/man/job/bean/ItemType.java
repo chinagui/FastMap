@@ -15,6 +15,10 @@ public enum ItemType {
         this.value = value;
     }
 
+    public static ItemType valueOf(int value) {
+        return ItemType.values()[value-1];
+    }
+
     public int value() {
         return this.value;
     }

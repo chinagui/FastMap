@@ -12,6 +12,7 @@ public abstract class JobPhase {
 
     public JobProgress jobProgress;
     public Job job;
+    public JobRelation jobRelation;
     public JobProgress lastJobProgress;
     public InvokeType invokeType;
 
@@ -23,6 +24,7 @@ public abstract class JobPhase {
     public void init(Connection conn, Job job, JobRelation jobRelation, JobProgress lastJobProgress, int phase, boolean isContinue) throws Exception {
         this.job = job;
         this.lastJobProgress = lastJobProgress;
+        this.jobRelation = jobRelation;
         this.initInvokeType();
 
         JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
@@ -32,8 +34,8 @@ public abstract class JobPhase {
             if (jobProgress == null) {
                 throw new Exception("未找到正在执行的步骤，无法继续执行");
             }
-            if (jobProgress.getStatus().equals(JobProgressStatus.FAILURE)) {
-                jobProgressOperator.updateStatus(jobProgress.getPhaseId(), JobProgressStatus.CREATED);
+            if (jobProgress.getStatus()==JobProgressStatus.FAILURE) {
+                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.CREATED);
             }
         } else {
             //新增一条记录
@@ -50,7 +52,7 @@ public abstract class JobPhase {
      *
      * @throws Exception
      */
-    public abstract void run() throws Exception;
+    public abstract JobProgressStatus run() throws Exception;
 
     /**
      * 设置步骤的调用类型（异步、同步）

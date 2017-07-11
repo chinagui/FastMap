@@ -35,6 +35,5 @@ public class InitializeRegionDBPoiFlag {
 					
 	    HbasePoiInfo hbaseInfo = new HbasePoiInfo();
 	    hbaseInfo.getHBaseDataInfo(path, "not_find_pid.txt");
-	    
 	}
 }

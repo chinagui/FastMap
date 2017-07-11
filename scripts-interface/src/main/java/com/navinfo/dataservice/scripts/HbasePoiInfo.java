@@ -154,7 +154,6 @@ public class HbasePoiInfo {
 			break;
 		}
 		return verRecord;
-		
 	}
 
 	/**

@@ -1153,14 +1153,14 @@ public class GeoTranslator {
 			if(sCoors[sCoors.length-1].equals(coord1)||sCoors[sCoors.length-1].equals(coord2)){
 				if(i==1){
 					Geometry orderMidLine=midLine;
-					if(sCoors[sCoors.length-1].equals(coord2)){
+					if(sCoors[sCoors.length-1].equals(orderMidLine.getCoordinates()[orderMidLine.getNumPoints()-1])){
 						orderMidLine=orderMidLine.reverse();
 					}
 					polygonLineTmp.add(orderMidLine);
 					polygonLineTmp=polygonLine2;i=2;
 				}else{
 					Geometry orderMidLine=midLine;
-					if(sCoors[sCoors.length-1].equals(coord2)){
+					if(sCoors[sCoors.length-1].equals(orderMidLine.getCoordinates()[orderMidLine.getNumPoints()-1])){
 						orderMidLine=orderMidLine.reverse();
 					}
 					polygonLineTmp.add(orderMidLine);

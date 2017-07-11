@@ -42,7 +42,7 @@ public class ImportPoiToRegionDb {
 		// 1)调用createDb Job创建空库
 		JSONObject createDbReq = new JSONObject();
 		createDbReq.put("serverType", "ORACLE");
-		createDbReq.put("bizType", "copVersion");
+		createDbReq.put("bizType", "gen2Version");
 		JobInfo jobInfo = new JobInfo(0, UuidUtils.genUuid());
 		jobInfo.setType("createDb");
 		jobInfo.setRequest(createDbReq);

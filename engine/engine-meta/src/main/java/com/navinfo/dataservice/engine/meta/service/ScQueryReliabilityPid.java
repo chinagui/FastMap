@@ -33,7 +33,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			conn = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "select t.pid from reliability_table t where t.reliability between "+minNumber+" and "+maxNumber;
+			String selectSql = "select t.pid from SC_POINT_MULTISRC_RELIABL t where t.reliability between "+minNumber+" and "+maxNumber;
 			ResultSetHandler<List<Integer>> rs = new ResultSetHandler<List<Integer>>(){
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 				List<Integer> pids = new ArrayList<>();

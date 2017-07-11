@@ -80,6 +80,19 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			}else if((day2-day1)>=-6){
 				infor.setMethod("正式采集");
 			}
+			
+			/*
+			 * 1.adminCode：
+			 * 如果前两位为“11(北京)，12(天津)，31(上海)，50(重庆)”，则取前2位+0000
+			 * 如果前两位不为“11(北京)，12(天津)，31(上海)，50(重庆)”，则取前4位+00
+			 */
+			String adminCode=infor.getAdminCode();
+			String before2=adminCode.substring(0, 2);
+			if(before2.equals("11")||before2.equals("12")||before2.equals("31")||before2.equals("50")){
+				infor.setAdminCode(before2+"0000");
+			}else{
+				infor.setAdminCode(adminCode.substring(0, 4)+"00");
+			}			
 
 			createWithBean(conn,infor);
 			

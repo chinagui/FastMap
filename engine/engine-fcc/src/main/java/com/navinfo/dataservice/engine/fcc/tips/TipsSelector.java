@@ -2026,6 +2026,21 @@ public class TipsSelector {
 	}
 
     /**
+     * 情报矢量化提交任务数据筛选
+     * @param taskId
+     * @param taskType
+     * @return
+     * @throws Exception
+     */
+    public List<JSONObject> getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
+
+        List<JSONObject> snapshots=conn.queryTipsByTask(taskId, taskType, 1);
+
+        return snapshots;
+
+    }
+
+    /**
      * 矢量化检查Tips查询
      * @param parameter
      * @return

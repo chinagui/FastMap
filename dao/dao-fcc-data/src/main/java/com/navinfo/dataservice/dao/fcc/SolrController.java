@@ -799,40 +799,32 @@ public class SolrController {
      */
     public List<JSONObject> queryTipsByTask(int taskId, int taskType)
             throws Exception {
-        List<JSONObject> snapshots = new ArrayList<JSONObject>();
-
         StringBuilder builder = new StringBuilder("*:*"); // 默认条件全查，避免后面增加条件，都需要有AND
 
         addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 
-        //20170711 情报矢量化Tips提交增加t_tipstatus
-        builder.append(" AND t_tipStatus=1");
+        List<JSONObject> snapshots = this.queryTips(builder.toString(), null);
 
-        SolrQuery query = new SolrQuery();
+        return snapshots;
+    }
 
-        query.set("q", builder.toString());
+    /**
+     * 按照任务和状态筛选Tips
+     * @param taskId
+     * @param taskType
+     * @param tipStatus
+     * @return
+     * @throws Exception
+     */
+    public List<JSONObject> queryTipsByTask(int taskId, int taskType, int tipStatus)
+            throws Exception {
+        StringBuilder builder = new StringBuilder("*:*"); // 默认条件全查，避免后面增加条件，都需要有AND
 
-        query.set("start", 0);
+        addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 
-        query.set("rows", fetchNum);
+        builder.append(" AND t_tipStatus:" + tipStatus);
 
-        QueryResponse response = client.query(query);
-
-        SolrDocumentList sdList = response.getResults();
-
-        long totalNum = sdList.getNumFound();
-
-        if (totalNum <= fetchNum) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-
-                JSONObject snapshot = JSONObject.fromObject(doc);
-
-                snapshots.add(snapshot);
-            }
-        } else {
-            // 暂先不处理
-        }
+        List<JSONObject> snapshots = this.queryTips(builder.toString(), null);
 
         return snapshots;
     }

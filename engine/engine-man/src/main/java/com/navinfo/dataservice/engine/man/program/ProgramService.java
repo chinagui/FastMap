@@ -1537,7 +1537,7 @@ public class ProgramService {
 					+ "         P.DESCP                    PROGRAM_DESCP,"
 					+ "         P.TYPE,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1569,7 +1569,7 @@ public class ProgramService {
 					+ "         NULL,"
 					+ "         4,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1607,6 +1607,7 @@ public class ProgramService {
 						map.put("type", rs.getInt("TYPE"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
 						
 						map.put("method", rs.getString("METHOD"));	
@@ -1660,6 +1661,7 @@ public class ProgramService {
 			sb.append("          C.CITY_ID,                                       ");
 			sb.append("          I.INFOR_ID,                                      ");
 			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.INFOR_stage,                                    ");
 			sb.append("          I.FEATURE_KIND,                                  ");
 			sb.append("          P.CREATE_USER_ID,                                ");
 			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
@@ -1695,6 +1697,7 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
@@ -1862,6 +1865,7 @@ public class ProgramService {
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> list = new ArrayList<Task>();
 					Map<Integer, Integer> gridMap =new HashMap<Integer, Integer>();
+					Map<Integer, Integer> monthGridMap =new HashMap<Integer, Integer>();
 					int programId=0;
 					int regionId=0;
 					//String regionName="";
@@ -1873,6 +1877,16 @@ public class ProgramService {
 							programId=programIdTmp;
 							regionId=regionIdTmp;
 							//regionName= regionNameTmp;
+						}
+						if(programId!=programIdTmp){
+							//创建月编任务
+					    	Task monthTask=new Task();
+					    	monthTask.setProgramId(programId);
+					    	monthTask.setRegionId(regionId);
+					    	monthTask.setGridIds(monthGridMap);
+					    	monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
+					    	monthTask.setType(2);
+					    	monthGridMap =new HashMap<Integer, Integer>();
 						}
 						if(programId!=programIdTmp||regionId!=regionIdTmp){
 							Task collectTask=new Task();
@@ -1902,6 +1916,7 @@ public class ProgramService {
 							//regionName= regionNameTmp;
 						}
 						gridMap.put(rs.getInt("GRID_ID"), 1);
+						monthGridMap.put(rs.getInt("GRID_ID"), 1);
 					}
 					if(programId!=0){
 						Task collectTask=new Task();
@@ -1924,10 +1939,20 @@ public class ProgramService {
 						dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
 //						dailyTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(dailyTask);
+						
+						//创建月编任务
+				    	Task monthTask=new Task();
+				    	monthTask.setProgramId(programId);
+				    	monthTask.setRegionId(regionId);
+				    	monthTask.setGridIds(monthGridMap);
+				    	monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
+				    	monthTask.setType(2);
+				    	list.add(monthTask);
 					}
 					return list;
 				}
-	    	};			
+	    	};
+	    	
 			QueryRunner run=new QueryRunner();
 			List<Task> list=run.query(conn, selectSql, rsHandler);
 			if(list!=null&&list.size()>0){

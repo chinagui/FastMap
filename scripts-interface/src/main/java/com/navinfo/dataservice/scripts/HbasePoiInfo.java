@@ -32,7 +32,10 @@ public class HbasePoiInfo {
 		Connection hbaseConn = null;
 		Table htab = null;
 
-		// TODO:取到的poi数据<读取hadoop库，遍历，限制阈值，分页遍历10万条数据截取一次，用完之后，内存数据清空>
+		// TODO:取到的poi数据<限制阈值，分页遍历10万条数据截取一次，用完之后，内存数据清空>
+		/**
+		 * 读取hadoop库，遍历，取到hadoop库中的poi数据
+		 */
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf("poi"));
@@ -86,6 +89,11 @@ public class HbasePoiInfo {
 		return poiInfo;
 	}
 	
+	/**
+	 * Hadoop库：verifyFlags.record到poi_flag中VER_RECORD的转换
+	 * @param verifyRecord
+	 * @return
+	 */
 	private int GetVerRecord(String verifyRecord) {
 		int verRecord = 0;
 		switch (verifyRecord) {
@@ -111,6 +119,11 @@ public class HbasePoiInfo {
 		return verRecord;
 	}
 	
+	/**
+	 * Hadoop库：sourceFlags.record到poi_flag中SRC_RECORD的转换
+	 * @param sourceRecord
+	 * @return
+	 */
 	private int GetSrcRecord(String sourceRecord){
 		if(sourceRecord==null||sourceRecord.isEmpty()){
 			return 0;

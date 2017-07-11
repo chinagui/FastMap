@@ -294,9 +294,11 @@ public class TipsSelector {
 						}
 
 						m.put("d", d);
-					} else if (type == 1104) {
+					} else if (type == 1104) {//20170707 第十迭代新增c_array
 						m.put("d", String.valueOf(deep.getInt("tp")));
 						m.put("e", String.valueOf(deep.getInt("dir")));
+                        JSONArray arr = deep.getJSONArray("c_array");
+                        m.put("f", arr);
 					} else if (type == 1111) {
 						m.put("d", String.valueOf(deep.getDouble("value")));
 						m.put("e", String.valueOf(deep.getDouble("se")));
@@ -349,7 +351,6 @@ public class TipsSelector {
                             || type == 1406 || type == 1407 || type == 1409 || type == 1410) {
                         m.put("d", deep.getString("ptn"));
                     }
-
 				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
 				} else if (type == 1102) {
@@ -380,7 +381,8 @@ public class TipsSelector {
 						|| type == 1504 || type == 1505 || type == 1506
 						|| type == 1508 || type == 1513 || type == 1512
 						|| type == 1516 || type == 1507 || type == 1511
-						|| type == 1517 || type == 1509 || type == 1518) {
+						|| type == 1517 || type == 1509 || type == 1518
+                        || type == 1520) {//20170707 第十迭代新增1520
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 					Geojson.coord2Pixel(gSLoc, z, px, py);
 					JSONObject gELoc = deep.getJSONObject("gELoc");
@@ -396,7 +398,7 @@ public class TipsSelector {
                         m.put("e", deep.getInt("grade"));
                     }
 					// 20170207修改，需求来源于：赵航——有个需求是，如果上传的步行街有时间段，我们要渲染不同的图标，现在渲染接口没有时间段这个字段
-					else if (type == 1507) {
+					else if (type == 1507 || type == 1520) {
 						m.put("f", deep.getString("time"));
 					}else if (type == 1517) {
 
@@ -511,7 +513,16 @@ public class TipsSelector {
                         }
                     }
                     m.put("c", cArray);
-				}
+				}else if(type == 1117) {//20170707 第十迭代新增车道限高限宽
+                    double agl = deep.getDouble("agl");
+                    m.put("c", agl);
+
+                    JSONArray htArray = deep.getJSONArray("ht");
+                    m.put("d", htArray);
+
+                    JSONArray wdArray = deep.getJSONArray("wd");
+                    m.put("e", wdArray);
+                }
 
 				// 20170217修改，变更输入：王屯 赵航
 				if (type == 2001) {

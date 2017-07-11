@@ -3187,7 +3187,7 @@ public class SubtaskOperation {
 	 * @throws Exception
 	 * 
 	 * */
-	public static List<Integer> getMonthSubtaskBySubTask(Connection conn, int taskId) throws Exception {
+	public static List<Integer> getMonthSubtaskByTask(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();
 			String sql="  SELECT T.SUBTASK_ID"

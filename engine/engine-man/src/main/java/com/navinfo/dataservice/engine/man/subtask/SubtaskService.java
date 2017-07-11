@@ -2128,7 +2128,7 @@ public class SubtaskService {
 							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
 							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
 							//获取对应采集/日编子任务对应的同任务下的快线月编子任务
-							List<Integer> monthSubtasks = SubtaskOperation.getMonthSubtaskBySubTask(conn, subtask.getTaskId());
+							List<Integer> monthSubtasks = SubtaskOperation.getMonthSubtaskByTask(conn, subtask.getTaskId());
 							for(int subTaskId : monthSubtasks){
 								updateSubtaskGeo(conn, subTaskId);
 							}

@@ -3866,15 +3866,16 @@ public class TaskService {
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
-			StringBuffer sb = new StringBuffer();
-			for(int i = 0; i< pois.size(); i++){
-				sb.append(String.valueOf(pois.get(i))+",");
+			if(pois.size() > 0){
+				StringBuffer sb = new StringBuffer();
+				for(int i = 0; i< pois.size(); i++){
+					sb.append(String.valueOf(pois.get(i))+",");
+				}
+				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
+				log.info("重要POI一览表中的POI_ID为：" + poi);
+				//这里在更新一下对应在重要一览表中存在的数据类型
+				updateIsImportant(poi, taskId, dailyConn);
 			}
-			String poi = sb.deleteCharAt(sb.length()-1).toString(); 
-			log.info("重要POI一览表中的POI_ID为：" + poi);
-			//这里在更新一下对应在重要一览表中存在的数据类型
-			updateIsImportant(poi, taskId, dailyConn);
-			
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);

@@ -847,6 +847,7 @@ public class SubtaskService {
 								subtask.put("exeUserId",exeUserId);
 								subtask.put("executerId",exeUserId);
 								subtask.put("executer",userInfo.getUserRealName());
+								subtask.put("risk",userInfo.getRisk());
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -876,6 +877,7 @@ public class SubtaskService {
 								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
 								subtask.put("qualityExeUserName",userInfo.getUserRealName());
+								subtask.put("qualityRisk",userInfo.getRisk());
 								String groupName=UserGroupService.getInstance().getGroupNameByGroupId(subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupName",groupName);

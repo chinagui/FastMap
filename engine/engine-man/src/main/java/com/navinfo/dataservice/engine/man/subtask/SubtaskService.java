@@ -60,6 +60,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -97,6 +98,21 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			int referId =0;
+			SubtaskRefer myRefer=null;
+			if(dataJson.containsKey("referId")){
+				referId = dataJson.getInt("referId");
+				if(referId!=0){
+					JSONObject condition=new JSONObject();
+					JSONArray ids=new JSONArray();
+					ids.add(referId);
+					condition.put("ids", ids);
+					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
+					if(referObj!=null&&referObj.size()>1){
+						myRefer=referObj.get(0);
+					}
+				}
+			}
 			//处理grid：1list转map;2根据grid计算几何
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
@@ -109,6 +125,15 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}else if(myRefer!=null){
+				Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(myRefer.getGeometry());
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(String gridId:grids){
+					gridIdMap.put(gridId, 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(grids));
+				dataJson.put("geometry",wkt);
 			}else{
 				int taskId = dataJson.getInt("taskId");
 				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
@@ -132,12 +157,6 @@ public class SubtaskService {
 				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",2);
 				}
-			}
-			
-			//锁定 subtask_refer表  2017.07.06 zl
-			if(dataJson.containsKey("referId")){
-				int referId = dataJson.getInt("referId");
-				lockSubtaskRefer(conn,referId);
 			}
 			
 			//创建质检子任务
@@ -310,7 +329,23 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			List<Subtask> subtaskList = new ArrayList<Subtask>();
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-	
+			
+			int referId =0;
+			SubtaskRefer myRefer=null;
+			if(dataJson.containsKey("referId")){
+				referId = dataJson.getInt("referId");
+				if(referId!=0){
+					JSONObject condition=new JSONObject();
+					JSONArray ids=new JSONArray();
+					ids.add(referId);
+					condition.put("ids", ids);
+					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
+					if(referObj!=null&&referObj.size()>1){
+						myRefer=referObj.get(0);
+					}
+				}
+			}
+			
 			//处理grid：1list转map;2根据grid计算几何
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
@@ -323,6 +358,25 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}else if(myRefer!=null){
+				Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(myRefer.getGeometry());
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(String gridId:grids){
+					gridIdMap.put(gridId, 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(grids));
+				dataJson.put("geometry",wkt);
+			}else{
+				int taskId = dataJson.getInt("taskId");
+				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
+				Map<String,Integer> gridIdMap2 = new HashMap<String,Integer>();
+				for(Map.Entry<Integer, Integer> entry:gridIdMap.entrySet()){
+					gridIdMap2.put(entry.getKey().toString(), entry.getValue());
+				}
+				dataJson.put("gridIds",gridIdMap2);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdMap.keySet()));
+				dataJson.put("geometry",wkt);
 			}
 			
 			if(dataJson.containsKey("qualityMethod")){
@@ -336,12 +390,6 @@ public class SubtaskService {
 				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
 					dataJson.put("qualityMethod",2);
 				}
-			}
-			
-			//锁定 subtask_refer表 2017.07.06 zl
-			if(dataJson.containsKey("refer_id")){
-				int referId = dataJson.getInt("refer_id");
-				lockSubtaskRefer(conn,referId);
 			}
 			
 			int qualitySubtaskId = 0;//质检子任务id
@@ -3598,47 +3646,6 @@ public class SubtaskService {
 			log.error("获取日编子任务对应的grid异常："+e.getMessage(),e);
 			throw e;
 		}
-	}
-	
-	/**
-	 * @Title: lockSubtaskRefer
-	 * @Description: 锁定 subTask_refer 表
-	 * @param conn
-	 * @param referId  void
-	 * @throws ServiceException 
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年7月6日 上午10:19:49 
-	 */
-	public void lockSubtaskRefer(Connection conn, int referId) throws ServiceException {
-		try {
-			int id = 0;
-			QueryRunner run = new QueryRunner();
-			
-			String sql="SELECT R.id total "
-					+ "  FROM SUBTASK_REFER R"
-					+ " WHERE 1=1 "
-					+ " and R.ID = ? ";
-			
-				sql=sql+ "   FOR UPDATE NOWAIT " ;
-			log.info("lockSubtaskRefer SQL("+referId+")："+sql);
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					int total = 0;
-					if (rs.next()) {
-						total = rs.getInt("total");
-					}
-					return total;
-				}	
-			};
-			
-			id = run.query(conn, sql,referId,rsHandler);	
-			log.info("锁定 subtask_refer表id为 "+referId+" 数据 ");
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
-		} 
 	}
 
 	public void qualityCommit(int subtaskId) throws Exception {

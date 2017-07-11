@@ -2235,20 +2235,22 @@ public class TaskOperation {
 
 			String sql = "INSERT INTO TASK_GRID_MAPPING"
 					+ "  (TASK_ID, GRID_ID, TYPE)"
-					+ "  SELECT T.PROGRAM_ID, M.GRID_ID, 2"
-					+ "     FROM PROGRAM_GRID_MAPPING M, PROGRAM P, TASK T"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "     FROM PROGRAM_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
 					+ "    WHERE T.TASK_ID = "+taskId
-					+ "     AND M.PROGRAM_ID = T.PROGRAM_ID"
-					+ "     AND T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "     AND T.TYPE = 2"
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND UT.TYPE = 2"
 					+ "     AND P.TYPE = 4"
 					+ "  MINUS"
-					+ "  SELECT T.TASK_ID, GRID_ID, 2"
-					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T"
-					+ "   WHERE M.TASK_ID = "+taskId
-					+ "     AND T.TASK_ID = M.TASK_ID"
-					+ "     AND T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "     AND T.TYPE = 2"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					+ "     AND UT.TYPE = 2"
 					+ "     AND P.TYPE = 4";
 			log.info("根据项目调整月编任务sql："+sql);
 			return run.update(conn, sql);

@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.sql.rowset.serial.SerialClob;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -3863,7 +3865,6 @@ public class TaskService {
 			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
-			
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
@@ -4052,9 +4053,11 @@ public class TaskService {
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
 			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 			String linkSql = linksb.toString();
+			Clob clob = ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, wkt);
 			
 			log.info("linkSql"+linkSql);
-			int linkNum = run.update(dailyConn, linkSql, wkt);
+			int linkNum = run.update(dailyConn, linkSql, clob);
 			
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
@@ -4063,7 +4066,7 @@ public class TaskService {
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);
-			int poiNum = run.update(dailyConn, poiSql, wkt);
+			int poiNum = run.update(dailyConn, poiSql, clob);
 			
 			Map<String, Integer> result = new HashMap<>();
 			result.put("poiNum", poiNum);

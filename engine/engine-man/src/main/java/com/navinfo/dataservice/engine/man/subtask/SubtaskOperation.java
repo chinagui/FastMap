@@ -3179,6 +3179,43 @@ public class SubtaskOperation {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * 获取对应采集/日编子任务对应的同任务下的快线月编子任务
+	 * @param Connection
+	 * @param int
+	 * @throws Exception
+	 * 
+	 * */
+	public static List<Integer> getMonthSubtaskBySubTask(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT T.SUBTASK_ID"
+					+ "    FROM TASK S, TASK UT, SUBTASK T, PROGRAM P"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND T.TASK_ID = UT.TASK_ID"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 
 	/**
 	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
@@ -3194,22 +3231,25 @@ public class SubtaskOperation {
 			QueryRunner run = new QueryRunner();
 			String sql = "INSERT INTO SUBTASK_GRID_MAPPING"
 					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
-					+ "  SELECT T.TASK_ID, GRID_ID, 2"
-					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T"
-					+ "   WHERE M.TASK_ID = "+taskId
-					+ "     AND T.TASK_ID = M.TASK_ID"
-					+ "     AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "  SELECT ST.SUBTASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK T, TASK UT, SUBTASK ST, PROGRAM P"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND ST.TASK_ID = UT.TASK_ID"
+					+ "     AND M.TASK_ID = ST.TASK_ID"
 					+ "     AND P.TYPE = 4"
-					+ "     AND T.TYPE = 2"
+					+ "     AND ST.STAGE = 2"
 					+ "  MINUS"
 					+ "  SELECT T.SUBTASK_ID, T.GRID_ID, 2"
-					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, PROGRAM M"
-					+ "   WHERE S.TASK_ID = "+taskId
+					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, TASK UT, PROGRAM M"
+					+ "   WHERE P.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND S.TASK_ID = UT.TASK_ID"
 					+ "     AND T.SUBTASK_ID = S.SUBTASK_ID"
-					+ "     AND P.TASK_ID = S.TASK_ID"
-					+ "     AND M.PROGRAM_ID = P.PROGRAM_ID"
 					+ "     AND M.TYPE = 4"
-					+ "     AND T.TYPE = 2";
+					+ "     AND S.STAGE = 2";
 			log.info("根据任务调整月编子任务sql："+sql);
 			return run.update(conn, sql);
 		}catch(Exception e){

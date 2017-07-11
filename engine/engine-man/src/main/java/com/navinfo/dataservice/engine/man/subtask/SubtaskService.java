@@ -1973,16 +1973,25 @@ public class SubtaskService {
 			}
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
-			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			//modify by songhe
+			//中线采集子任务不进行范围调整
+			if(programType != 1 || subtask.getStage() != 0){
+				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			}
+			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
-				updateSubtaskGeo(conn,subtask.getSubtaskId());
+				//modify by songhe
+				//中线采集子任务不进行范围调整
+				if(programType != 1 && subtask.getStage() != 0){
+					updateSubtaskGeo(conn,subtask.getSubtaskId());
+				}
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
 				if(taskChangeNum>0){					
 					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 					log.info("调整子任务对应快线项目范围");
-					ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
+					int programCount = ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
 					if(subtask.getStage()==1){
 						//调整区域子任务范围
 						log.info("日编子任务 调整区域子任务范围");
@@ -1994,7 +2003,9 @@ public class SubtaskService {
 						}
 					}else if(subtask.getStage()==0){
 						//调整日编任务，二代编辑任务
-						log.info("采集子任务 调整日编任务，二代编辑任务范围");
+						//modify by songhe
+						//sql里面删除了task.type =3 二代编辑任务的筛选条件，二代编辑任务不进行动态调整
+						log.info("采集子任务 调整日编任务范围");
 						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
 						//调整日编区域子任务范围		
 						log.info("采集子任务 调整日编区域子任务范围");
@@ -2005,7 +2016,19 @@ public class SubtaskService {
 								updateSubtaskGeo(conn,tmpSubtaskId);}
 						}
 					}
-				}					
+					//modify by songhe
+					//原则变更：快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+					//调整快线月编任务以及子任务的范围和项目范围保持一致，根据项目范围调整的个数判断是否执行表便任务的调整操作
+					if(programType == 4 && programCount > 0){
+						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
+						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
+						if(monthChangedTasks > 0){
+							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
+							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
+							updateSubtaskGeo(conn,subtask.getSubtaskId());
+						}
+					}
+				}	
 			}
 		}		
 		

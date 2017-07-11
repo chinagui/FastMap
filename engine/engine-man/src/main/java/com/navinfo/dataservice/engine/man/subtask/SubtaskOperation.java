@@ -3179,6 +3179,43 @@ public class SubtaskOperation {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
+
+	/**
+	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+	 * 根据任务修改月编子任务范围，快线月编子任务的范围和任务范围一致
+	 * @param Connection
+	 * @param taskId
+	 * @return int
+	 * @throws Exception
+	 * 
+	 * */
+	public static int changeMonthSubtaskGridByTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT T.TASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND T.TASK_ID = M.TASK_ID"
+					+ "     AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND P.TYPE = 4"
+					+ "     AND T.TYPE = 2"
+					+ "  MINUS"
+					+ "  SELECT T.SUBTASK_ID, T.GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P,PROGRAM M"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND T.SUBTASK_ID = S.SUBTASK_ID"
+					+ "     AND P.TASK_ID = S.TASK_ID"
+					+ "     AND M.TYPE = 4"
+					+ "     AND T.TYPE = 2";
+			log.info("根据任务调整月编子任务sql："+sql);
+			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
 	
 	
 //

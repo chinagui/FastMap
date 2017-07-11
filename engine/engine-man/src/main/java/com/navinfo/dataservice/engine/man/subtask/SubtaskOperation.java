@@ -3203,10 +3203,11 @@ public class SubtaskOperation {
 					+ "     AND T.TYPE = 2"
 					+ "  MINUS"
 					+ "  SELECT T.SUBTASK_ID, T.GRID_ID, 2"
-					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P,PROGRAM M"
+					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, PROGRAM M"
 					+ "   WHERE S.TASK_ID = "+taskId
 					+ "     AND T.SUBTASK_ID = S.SUBTASK_ID"
 					+ "     AND P.TASK_ID = S.TASK_ID"
+					+ "     AND M.PROGRAM_ID = P.PROGRAM_ID"
 					+ "     AND M.TYPE = 4"
 					+ "     AND T.TYPE = 2";
 			log.info("根据任务调整月编子任务sql："+sql);

@@ -147,9 +147,9 @@ public class JobOperator {
      * @return
      * @throws SQLException
      */
-    public JSONArray getJobProgressStatus(long itemId, ItemType itemType) throws SQLException {
+    public JSONArray getJobProgressStatus(long itemId, ItemType itemType, JobType jobType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select jp.phase_id,jp.phase,jp.status,jp.message from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? order by phase asc";
+        String sql = "select jp.phase_id,jp.phase,jp.status,jp.message from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.job_type=? order by phase asc";
 
         ResultSetHandler<JSONArray> resultSetHandler = new ResultSetHandler<JSONArray>() {
             @Override
@@ -166,6 +166,6 @@ public class JobOperator {
                 return array;
             }
         };
-        return run.query(conn, sql, resultSetHandler, itemId, itemType.value());
+        return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
     }
 }

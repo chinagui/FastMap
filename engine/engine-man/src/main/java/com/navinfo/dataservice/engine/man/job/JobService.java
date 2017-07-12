@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
-import com.navinfo.dataservice.engine.man.job.bean.ItemType;
-import com.navinfo.dataservice.engine.man.job.bean.Job;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
-import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
+import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import org.apache.commons.dbutils.DbUtils;
@@ -56,12 +53,12 @@ public class JobService {
      * @return
      * @throws Exception
      */
-    public JSONArray getJobProgress(long itemId, ItemType itemType) throws Exception {
+    public JSONArray getJobProgress(long itemId, ItemType itemType, JobType jobType) throws Exception {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             JobOperator jobOperator = new JobOperator(conn);
-            return jobOperator.getJobProgressStatus(itemId, itemType);
+            return jobOperator.getJobProgressStatus(itemId, itemType, jobType);
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);

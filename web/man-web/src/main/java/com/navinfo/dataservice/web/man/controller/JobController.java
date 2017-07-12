@@ -31,13 +31,14 @@ public class JobController extends BaseController {
             if (parameter == null) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
             }
-            if (!parameter.containsKey("itemId") || !parameter.containsKey("itemType")){
-                throw new IllegalArgumentException("itemId|itemType不能为空");
+            if (!parameter.containsKey("itemId") || !parameter.containsKey("itemType") || !parameter.containsKey("jobType")){
+                throw new IllegalArgumentException("itemId|itemType|jobType不能为空");
             }
             long itemId = parameter.getLong("itemId");
             int itemType = parameter.getInt("itemType");
+            int jobType = parameter.getInt("jobType");
 
-            JSONArray result = JobService.getInstance().getJobProgress(itemId, ItemType.valueOf(itemType));
+            JSONArray result = JobService.getInstance().getJobProgress(itemId, ItemType.valueOf(itemType), JobType.valueOf(jobType));
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
             log.error("创建失败，原因：" + e.getMessage(), e);

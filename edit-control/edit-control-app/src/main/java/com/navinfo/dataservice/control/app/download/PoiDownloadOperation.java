@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.control.app.download;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Clob;
 import java.text.SimpleDateFormat;
@@ -9,6 +10,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -47,7 +50,7 @@ public class PoiDownloadOperation {
 	 * @return url
 	 * @throws Exception
 	 */
-	public String generateZip(Map<String,String> gridDateMap) throws Exception{
+	public String generateZip(Map<String,String> gridDateMap,int subtaskId) throws Exception{
 		try{
 			Date startTime = new Date();
 			String day = StringUtils.getCurrentDay();
@@ -68,6 +71,9 @@ public class PoiDownloadOperation {
 			}
 			logger.info("export ix_poi to poi.txt--->start");
 			export2Txt(gridDateMap, filePath, "poi.txt");
+			logger.info("export ix_poi to poi.txt--->end");
+			logger.info("export ix_poi to poi.txt--->start");
+			export2TxtBySubtaskId(filePath, subtaskId);
 			logger.info("export ix_poi to poi.txt--->end");
 			
 			String zipFileName = uuid + ".zip";
@@ -93,6 +99,7 @@ public class PoiDownloadOperation {
 		}
 	}
 	
+
 	/**
 	 * 
 	 * @param grids
@@ -118,6 +125,43 @@ public class PoiDownloadOperation {
 			logger.info("begin write json to file");
 			for (int j = 0; j < ja.size(); j++) {
 				pw.println(ja.getJSONObject(j).toString());
+			}
+			logger.info("file write ok");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			pw.close();
+
+		}
+	}
+	
+	public void export2TxtBySubtaskId(String folderName, int subtaskId) throws Exception {
+		if (!folderName.endsWith("/")) {
+			folderName += "/";
+		}
+		PoiGridIncreSearch seach = new PoiGridIncreSearch();
+		int taskId = 0;
+		int dbid = 0;
+		Map<String,Integer> map = seach.getRegionIdTaskIdBySubtaskId(subtaskId);
+		String fileName = map.get("regionId")+"_"+map.get("taskId")+"_"+subtaskId+".txt";
+		fileName = folderName + fileName;
+		logger.info("fileName : "+fileName);
+		if(map.containsKey("taskId")){taskId = map.get("taskId");}
+		if(map.containsKey("dayDbId")){dbid = map.get("dayDbId");}
+		
+		PrintWriter pw = new PrintWriter(fileName);
+		try {
+			if(taskId > 0 && dbid > 0){
+				
+			logger.info("starting load data...");
+			Set<Integer> data = new PoiGridIncreSearch().getPidsByTaskId(taskId,dbid);
+			logger.info("data total:"+data.size());
+			logger.info("begin write json to file");
+			for (int pid : data) {
+				JSONObject jo = new JSONObject();
+				jo.put("pid", pid);
+				pw.println(jo.toString());
+			}
 			}
 			logger.info("file write ok");
 		} catch (Exception e) {

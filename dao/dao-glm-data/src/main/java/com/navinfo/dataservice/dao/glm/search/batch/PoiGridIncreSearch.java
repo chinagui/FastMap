@@ -9,9 +9,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -625,6 +627,65 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setPoiFlag(poiFlags.get(pid));
 		}
 			
+	}
+	public Map<String,Integer> getRegionIdTaskIdBySubtaskId(int subtaskId) throws Exception {
+		Connection manConn = null;
+		try {
+			manConn = DBConnector.getInstance().getManConnection();
+			String sql = " select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id from subtask s,task t,region r where s.task_id = t.task_id and t.region_id = r.region_id  and s.subtask_id = ? ";
+			logger.info(sql);
+			Map<String,Integer> map = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<String,Integer>>(){
+
+				@Override
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> map = new HashMap<String,Integer>();
+					while (rs.next()) {
+						int taskId = rs.getInt("task_id");
+						int regionId = rs.getInt("region_id");
+						int dayDbId = rs.getInt("daily_db_id");
+						map.put("taskId", taskId);
+						map.put("regionId", regionId);
+						map.put("dayDbId", dayDbId);
+					}
+					return map;
+				}
+				
+			},subtaskId);
+			
+			return map;
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DBUtils.closeConnection(manConn);
+		}
+	}
+	
+	public Set<Integer> getPidsByTaskId(int taskId, int dbId) throws Exception {
+		Connection conn = null;
+		try{
+			conn =  DBConnector.getInstance().getConnectionById(dbId);
+			String sql = " select distinct p.pid  from data_plan p where p.data_type = 2  and p.is_plan_selected = 0 and p.task_id = ? ";
+			logger.info(sql);
+			Set<Integer> PidSet = new QueryRunner().query(conn, sql, new ResultSetHandler<Set<Integer>>(){
+				@Override
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> set = new HashSet<Integer>();
+					while (rs.next()) {
+						set.add(rs.getInt("pid"));
+					}
+					return set;
+				}
+				
+			},taskId);
+			return PidSet;
+		}catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(conn);
+		}
 	}
 	
 }

@@ -847,6 +847,7 @@ public class SubtaskService {
 								subtask.put("exeUserId",exeUserId);
 								subtask.put("executerId",exeUserId);
 								subtask.put("executer",userInfo.getUserRealName());
+								subtask.put("risk",userInfo.getRisk());
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -876,6 +877,7 @@ public class SubtaskService {
 								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
 								subtask.put("qualityExeUserName",userInfo.getUserRealName());
+								subtask.put("qualityRisk",userInfo.getRisk());
 								String groupName=UserGroupService.getInstance().getGroupNameByGroupId(subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupName",groupName);
@@ -3025,12 +3027,11 @@ public class SubtaskService {
 			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 			JSONObject conditionQuery2=new JSONObject();
 			conditionQuery2.put("blockId", task.getBlockId());
-			if(StringUtils.isEmpty(lineWkt)){
-				JSONArray ids=new JSONArray();
-				ids.add(id1);
-				if(id2!=0){ids.add(id2);}
-				conditionQuery2.put("ids", ids);
-			}
+			
+			JSONArray ids=new JSONArray();
+			if(id1!=0){ids.add(id1);}
+			if(id2!=0){ids.add(id2);}
+			if(ids.size()!=0){conditionQuery2.put("ids", ids);}
 			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
 
 			JSONObject conditionQuery=new JSONObject();
@@ -3162,7 +3163,9 @@ public class SubtaskService {
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
 				Geometry geo1 = refers.get(0).getGeometry();
 				Geometry geo2 = refers.get(1).getGeometry();
+				
 				Geometry unionGeo=geo1.union(geo2);
+				
 				if(!unionGeo.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
 				//4.保存
 				SubtaskRefer refer=new SubtaskRefer();

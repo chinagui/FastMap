@@ -3045,13 +3045,6 @@ public class SubtaskOperation {
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
 		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>();
-//		//中线采集子任务直接返回grid的集合
-//		if(subtask.getStage() == 0 && programType == 1){
-//			for(int gridId : gridIdList){
-//				gridIdsToInsert.put(gridId,2);
-//			}
-//			return gridIdsToInsert;
-//		}
 		for(Integer gridId:gridIdList){
 			if(gridIdsBefore.containsKey(gridId)){
 				continue;

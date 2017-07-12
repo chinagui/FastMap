@@ -2131,7 +2131,6 @@ public class SubtaskService {
 							for(int subTaskId : monthSubtasks){
 								updateSubtaskGeo(conn, subTaskId);
 							}
-							
 						}
 					}
 				}	

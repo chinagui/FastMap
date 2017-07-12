@@ -2222,6 +2222,36 @@ public class TaskOperation {
 	}
 	
 	/**
+	 * 中线采集任务范围调整
+	 * @param Connection
+	 * @param List<Integer>
+	 * @param Subtask
+	 * @throws Exception 
+	 * 
+	 * */
+	public static void changeTaskGridByGrids(Connection conn, List<Integer> grids, Subtask subtask) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "insert into TASK_GRID_MAPPING (TASK_ID, GRID_ID, TYPE) VALUES (?,?,?)";
+			Object[][] param = new Object[grids.size()][];
+			int i = 0;
+			for(int grid : grids){
+				Object[] temp = new Object[3];
+				temp[0] = subtask.getTaskId();
+				temp[1] = grid;
+				temp[2] = 2;
+				param[i] = temp;
+				i++;
+			}
+			run.batch(conn, sql, param);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("中线采集任务范围更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
 	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
 	 * 根据项目修改对应月编任务范围，快线的月编任务范围和任务对应的项目范围一致
 	 * @param conn

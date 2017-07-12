@@ -2090,6 +2090,14 @@ public class SubtaskService {
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
+				//modify by songhe
+				//添加中线采集任务范围调整，因为中线采集子任务不进行范围调整，所以上一步的根据子任务调整任务范围更新的数据一定为0
+				if(programType == 1 && subtask.getStage() == 0){
+					List<Integer> grids = new ArrayList<>();
+					grids.addAll(gridIdsToInsert.keySet());
+					TaskOperation.changeTaskGridByGrids(conn, grids, subtask);
+				}
+				
 				if(taskChangeNum>0){					
 					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 					log.info("调整子任务对应快线项目范围");

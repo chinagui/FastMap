@@ -9,7 +9,7 @@ import com.navinfo.dataservice.engine.man.job.bean.JobType;
 public class Tips2MarkJobRunner extends JobRunner {
 
     @Override
-    public void initJobType(){
+    public void initJobType() {
         this.jobType = JobType.TiPS2MARK;
     }
 

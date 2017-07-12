@@ -690,11 +690,12 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						if("230218".equals(kindCode)){
 							IxPoiChargingstation chargeStation = poi.createIxPoiChargingstation();
 							chargeStation.setAvailableState(detail.getInt("cs_availableState"));
-							chargeStation.setChargingType(detail.getInt("cs_type"));
+							if(detail.containsKey("cs_type")){
+								chargeStation.setChargingType(detail.getInt("cs_type"));
+							}
 							if(StringUtils.isNotEmpty(detail.getString("cs_servicePro")) && !"null".equals(detail.getString("cs_servicePro"))){
 								chargeStation.setServiceProv(detail.getString("cs_servicePro"));
 							}
-							chargeStation.setServiceProv(StringUtils.isEmpty(detail.getString("cs_servicePro"))?"0":detail.getString("cs_servicePro"));
 							chargeStation.setOpenHour(detail.getString("cs_openHour"));
 							chargeStation.setParkingFees(detail.getInt("cs_parkingFees"));
 							chargeStation.setParkingInfo(detail.getString("cs_parkingInfo"));

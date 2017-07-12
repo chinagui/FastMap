@@ -29,7 +29,7 @@ public class SubtaskTest extends InitApplication{
 		service.update(dataJson,0);			
 	}
 	
-//	@Test
+	@Test
 	public void testPaintRefer() throws Exception {
 		// TODO Auto-generated constructor stub
 		/*
@@ -48,8 +48,8 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"lineWkt\":\"LINESTRING(116.3001 39.7,116.7 39.7)\"}"; 
-		String parameter ="{\"id1\":23,\"id2\":24}"; 
+		String parameter ="{\"id1\":99,\"lineWkt\":\"LINESTRING(116.62673950195314 39.824094732204195,116.60785675048828 39.687110247162934)\"}"; 
+		//String parameter ="{\"id1\":88,\"id2\":89}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -63,10 +63,10 @@ public class SubtaskTest extends InitApplication{
 		System.out.print("end paintRefer");
 	}
 	
-//	@Test
+	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":617;\"name\":\"江苏省宿迁市城区_20170612_多源组test1_me\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
+		String parameter ="{\"taskId\":2357,\"qualityMethod\":[1,2],\"name\":\"20170710\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -76,18 +76,7 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
-	}
-	
-	@Test
-	public void testLockRefer() throws Exception {
-		Connection conn = null;
-			conn = DBConnector.getInstance().getManConnection();
-		// TODO Auto-generated constructor stub
-		
-		SubtaskService service = SubtaskService.getInstance();
-		service.lockSubtaskRefer(conn,1);			
-	}
-	
+	}	
 	
 //	@Test
 	public void testQuery() throws Exception {

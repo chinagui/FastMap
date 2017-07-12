@@ -16,10 +16,13 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.diff.FastPoi;
 import com.navinfo.dataservice.engine.editplus.diff.HandlerDealership;
 import com.navinfo.dataservice.engine.editplus.diff.PoiRecommender;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -124,6 +127,9 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			addDealResultList = (ArrayList) getResultByChain(3,sourceType,chainCodeList,resultIdList);
 
 			dbConMap = queryAllRegionConn();
+			
+			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String, String> mapKindChain = metadataApi.scPointSpecKindCodeType15();
 
 			// 差分完成的结果list
 			List<IxDealershipResult> diffFinishResultList = new ArrayList<IxDealershipResult>();
@@ -155,7 +161,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
-					BasicObj poiObj = HandlerDealership.queryPoiByPid(dealResult, regionConn);
+					FastPoi poiObj = HandlerDealership.queryPoiByPoiNum(dealResult.getCfmPoiNum(),regionConn);
 					// 有pid
 					// 一览表与库是否相同
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
@@ -168,7 +174,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// GEOCODING
 					// 推荐
 					PoiRecommender.conn = regionConn;
-					PoiRecommender.recommenderPoi(dealResult);
+					PoiRecommender.recommenderPoi(dealResult,metadataApi);
 					dealResult.setMatchMethod(2);
 					dealResult.setWorkflowStatus(3); // 需内业录入
 				}
@@ -183,7 +189,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
-					BasicObj poiObj = HandlerDealership.queryPoiByPid(dealResult, regionConn);
+					FastPoi poiObj = HandlerDealership.queryPoiByPoiNum(dealResult.getCfmPoiNum(), regionConn);
 					// 有pid
 					// 一览表与库是否相同
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
@@ -195,7 +201,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 							dealResult.setWorkflowStatus(1); // 无需编辑
 						} else {
 							// 是否为一览表品牌
-							if (HandlerDealership.isDealershipChain(poiObj)) {
+							if (HandlerDealership.isDealershipChain(dealResult,mapKindChain)) {
 								dealResult.setWorkflowStatus(3); // 需内业录入
 							} else {
 								// 分类与品牌是否变更
@@ -212,7 +218,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// GEOCODING
 					// 推荐补充
 					PoiRecommender.conn = regionConn;
-					PoiRecommender.recommenderPoi(dealResult);
+					PoiRecommender.recommenderPoi(dealResult,metadataApi);
 					dealResult.setMatchMethod(2);
 					dealResult.setWorkflowStatus(3); // 需内业录入
 				}
@@ -229,7 +235,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				// GEOCODING 补充
 				// 推荐补充
 				PoiRecommender.conn = regionConn;
-				PoiRecommender.recommenderPoi(dealResult);
+				PoiRecommender.recommenderPoi(dealResult,metadataApi);
 				dealResult.setMatchMethod(2);
 				dealResult.setWorkflowStatus(3); // 需内业录入
 				diffFinishResultList.add(dealResult);
@@ -332,6 +338,8 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 		return null;
 	}
 
+
+
 	public boolean hasValidPoi(IxDealershipResult dealResult, Connection conn) throws Exception {
 		LogReader logRead = new LogReader(conn);
 		int poiState = logRead.getObjectState(HandlerDealership.queryPidByPoiNum(dealResult.getCfmPoiNum(), conn), "IX_POI");
@@ -342,38 +350,16 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 		}
 	}
 
-	public int queryDbIdByregionId(int reginId) throws Exception {
-		try {
-			Connection conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			String sql = "select t.daily_db_id from region t where t.region_id =" + reginId;
-			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
-				@Override
-				public Integer handle(ResultSet rs) throws SQLException {
-					if (rs.next()) {
-						int dbId = rs.getInt("daily_db_id");
-						return dbId;
-					}
-					return -1;
-				}
-			};
-			return run.query(conn, sql, rs);
-		} catch (Exception e) {
-			return 0;
-		}
-	}
-
 
 
 	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
-		Map MapConn = new HashMap();
-		try {
-			String sql = "select t.daily_db_id,region_id from region t";
+		Map<Integer,Connection> MapConn = new HashMap<Integer, Connection>();
+		String sql = "select t.daily_db_id,region_id from region t";
 
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			Connection conn = null;
-			try {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Connection conn = null;
+		try {
 				conn = DBConnector.getInstance().getManConnection();
 				pstmt = conn.prepareStatement(sql);
 				rs = pstmt.executeQuery();
@@ -382,11 +368,13 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					MapConn.put(rs.getInt("region_id"), regionConn);
 				}
 				return MapConn;
-			} finally {
-				DbUtils.closeQuietly(conn, pstmt, rs);
-			}
+
 		} catch (Exception e) {
+			for (Connection value : MapConn.values()) {  
+				DbUtils.commitAndCloseQuietly(value);}  
 			throw new SQLException("加载region失败：" + e.getMessage(), e);
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 	}
 

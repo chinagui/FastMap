@@ -2157,7 +2157,7 @@ public class TaskService {
 					+ "       UG.GROUP_NAME,"
 					+ "       T.REGION_ID,"
 					+ "       I.METHOD,"
-					+ "       I.ADMIN_NAME"
+					+ "       I.ADMIN_NAME,I.INFOR_STAGE"
 					+ "  FROM TASK T, BLOCK B, PROGRAM P, USER_GROUP UG, USER_INFO U, INFOR I"
 					+ " WHERE T.BLOCK_ID = B.BLOCK_ID(+)"
 					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
@@ -2197,7 +2197,8 @@ public class TaskService {
 						task.setGroupName(rs.getString("GROUP_NAME"));
 						task.setRegionId(rs.getInt("REGION_ID"));
 						task.setMethod(rs.getString("METHOD"));
-						task.setAdminName(rs.getString("ADMIN_NAME"));						
+						task.setAdminName(rs.getString("ADMIN_NAME"));	
+						task.setInforStage(rs.getInt("INFOR_STAGE"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;

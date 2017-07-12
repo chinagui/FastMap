@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +31,6 @@ import com.navinfo.dataservice.engine.meta.service.ScRoadnameSplitPrefixService;
 import com.navinfo.dataservice.engine.meta.service.ScRoadnameSuffixService;
 import com.navinfo.dataservice.engine.meta.service.ScRoadnameTypenameService;
 import com.navinfo.dataservice.engine.meta.service.ScVectorMatchService;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -352,13 +350,17 @@ public class MetaEditController extends BaseController {
 			}
 
 			//处理返回的imageBlob 数据
-			InputStream in = imageBlob.getBinaryStream(); // 建立输出流
-            int len = (int) imageBlob.length();
-            byte[] data = new byte[len]; // 建立缓冲区
-            in.read(data);
-            in.close();
-			response.getOutputStream().write(data);
-
+			if(imageBlob != null ){
+				InputStream in = imageBlob.getBinaryStream(); // 建立输出流
+	            int len = (int) imageBlob.length();
+	            byte[] data = new byte[len]; // 建立缓冲区
+	            in.read(data);
+	            in.close();
+				response.getOutputStream().write(data);
+			}else{
+				byte[] data = new byte[0]; // 建立缓冲区
+				response.getOutputStream().write(data);
+			}
 			
 		} catch (Exception e) {
 
@@ -556,5 +558,4 @@ public class MetaEditController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
 }

@@ -419,4 +419,17 @@ public class ManApiImpl implements ManApi {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/**
+	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+	 * key：groupName,province,city,userId,version
+	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+	 * @param qualitySubtaskId 质检子任务号
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getSubtaskInfoByQuality(qualitySubtaskId);
+	}
 }

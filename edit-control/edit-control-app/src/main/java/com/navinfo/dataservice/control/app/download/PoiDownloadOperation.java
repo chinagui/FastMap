@@ -72,9 +72,11 @@ public class PoiDownloadOperation {
 			logger.info("export ix_poi to poi.txt--->start");
 			export2Txt(gridDateMap, filePath, "poi.txt");
 			logger.info("export ix_poi to poi.txt--->end");
-			logger.info("export ix_poi to poi.txt--->start");
-			export2TxtBySubtaskId(filePath, subtaskId);
-			logger.info("export ix_poi to poi.txt--->end");
+			if(subtaskId > 0){
+				logger.info("export pid to --->start");
+				export2TxtBySubtaskId(filePath, subtaskId);
+				logger.info("export pid--->end");
+			}
 			
 			String zipFileName = uuid + ".zip";
 

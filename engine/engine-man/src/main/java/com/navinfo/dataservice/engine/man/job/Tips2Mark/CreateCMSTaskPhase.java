@@ -1,15 +1,20 @@
 package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.Map;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.
@@ -39,7 +44,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             conn.commit();
 
             //业务逻辑
-//            Map<String, Object> cmsInfo = Tips2MarkUtils.getCmsInfo(conn, jobRelation.getItemId());
+//            Map<String, Object> cmsInfo = Tips2MarkUtils.getTaskInfo(conn, jobRelation.getItemId());
 //            JSONObject par=new JSONObject();
 //            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 //                    .getBean("datahubApi");

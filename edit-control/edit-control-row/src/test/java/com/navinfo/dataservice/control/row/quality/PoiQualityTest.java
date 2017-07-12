@@ -20,7 +20,6 @@ public class PoiQualityTest {
 	@Test
 	public void initQualityData() throws Exception{
 		PoiQuality poiQuality = new PoiQuality();
-		poiQuality.initQualityData(33,13);
 	}
 	
 	//获取质检问题属性值(测试)

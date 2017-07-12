@@ -3196,7 +3196,7 @@ public class SubtaskOperation {
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
 					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
 					+ "     AND T.TASK_ID = UT.TASK_ID"
-					+ "     AND UT.TYPE = 2"
+					+ "     AND T.STAGE = 2"
 					+ "     AND P.TYPE = 4";
 			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
 
@@ -3237,11 +3237,11 @@ public class SubtaskOperation {
 					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
 					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
 					+ "     AND ST.TASK_ID = UT.TASK_ID"
-					+ "     AND M.TASK_ID = ST.TASK_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
 					+ "     AND P.TYPE = 4"
 					+ "     AND ST.STAGE = 2"
 					+ "  MINUS"
-					+ "  SELECT T.SUBTASK_ID, T.GRID_ID, 2"
+					+ "  SELECT S.SUBTASK_ID, T.GRID_ID, 2"
 					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, TASK UT, PROGRAM M"
 					+ "   WHERE P.TASK_ID = "+taskId
 					+ "     AND UT.PROGRAM_ID = P.PROGRAM_ID"

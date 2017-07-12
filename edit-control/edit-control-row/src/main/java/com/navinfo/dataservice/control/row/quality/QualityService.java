@@ -123,14 +123,13 @@ public class QualityService {
 				JSONObject userIdAndTimeJson = run.query(regiondbConn, queryUserIdAndOpDtSql.toString(),
 						userIdAndTimeHandler);
 				long usId = userIdAndTimeJson.getLong("usId");
+				// 当usId = 0时，采集员姓名返回空串
+				resultJson.put("usId", usId);
 				UserInfo userInfoByUserId = apiService.getUserInfoByUserId(usId);
 				String collectorUser = userInfoByUserId.getUserRealName();
-				long currentTime = userIdAndTimeJson.getLong("opDt");
-				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
-				// 当usId = 0时，采集员姓名返回空串
 				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				resultJson.put("collectorTime", collectorTime == null ? "" : collectorTime);
-				resultJson.put("usId", usId);
+				long currentTime = userIdAndTimeJson.getLong("opDt");
+				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
 			} else {
 				queryUserIdAndOpDtSql.append("		ORDER BY LO.OP_DT DESC)");
 				queryUserIdAndOpDtSql.append("WHERE ROWNUM = 1");
@@ -146,9 +145,8 @@ public class QualityService {
 					collectorUser = apiService.getUserInfoByUserId(usId).getUserRealName();
 					currentTime = userIdAndTimeJson.getLong("opDt");
 				}
-				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
 				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				resultJson.put("collectorTime", collectorTime == null ? "" : collectorTime);
+				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
 				resultJson.put("usId", usId);
 			}
 			return resultJson;
@@ -175,7 +173,7 @@ public class QualityService {
 				object.put("opDt", rs.getTimestamp("op_dt").getTime());
 			} else {
 				object.put("usId", 0L);
-				object.put("opDt", System.currentTimeMillis());
+				object.put("opDt", 0L);
 			}
 			return object;
 		}

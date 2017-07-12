@@ -20,13 +20,12 @@ public class PoiQualityTest {
 	@Test
 	public void initQualityData() throws Exception{
 		PoiQuality poiQuality = new PoiQuality();
-		poiQuality.initQualityData(33,13);
 	}
 	
 	//获取质检问题属性值(测试)
 	@Test
 	public void testQueryInitValueForProblem() throws Exception{
-		JSONObject queryInitValueForProblem = QualityService.getInstance().queryInitValueForProblem(3964, 81013999, 74);
+		JSONObject queryInitValueForProblem = QualityService.getInstance().queryInitValueForProblem(3964, 22623, 73);
 		System.out.println(queryInitValueForProblem);
 	}
 	
@@ -44,7 +43,7 @@ public class PoiQualityTest {
 	//poi质检问题查看(测试)
 	@Test
 	public void testQueryProblemList() throws Exception {
-		String parameter = "{\"poiNum\":\"0010061025SZT00150\",\"subtaskId\":\"177\"}";
+		String parameter = "{\"poiNum\":\"0010060820MQ100633\",\"classTop\":\"POI\",\"subtaskId\":73}";
 		JSONObject dataJson = JSONObject.fromObject(parameter);
 		System.out.println(QualityService.getInstance().queryProblemList(dataJson));
 	}

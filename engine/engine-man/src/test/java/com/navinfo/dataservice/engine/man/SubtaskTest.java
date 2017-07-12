@@ -29,7 +29,7 @@ public class SubtaskTest extends InitApplication{
 		service.update(dataJson,0);			
 	}
 	
-//	@Test
+	@Test
 	public void testPaintRefer() throws Exception {
 		// TODO Auto-generated constructor stub
 		/*
@@ -48,8 +48,8 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"lineWkt\":\"LINESTRING(116.3001 39.7,116.7 39.7)\"}"; 
-		String parameter ="{\"id1\":23,\"id2\":24}"; 
+		String parameter ="{\"id1\":99,\"lineWkt\":\"LINESTRING(116.62673950195314 39.824094732204195,116.60785675048828 39.687110247162934)\"}"; 
+		//String parameter ="{\"id1\":88,\"id2\":89}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -76,18 +76,7 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
-	}
-	
-	@Test
-	public void testLockRefer() throws Exception {
-		Connection conn = null;
-			conn = DBConnector.getInstance().getManConnection();
-		// TODO Auto-generated constructor stub
-		
-		SubtaskService service = SubtaskService.getInstance();
-		service.lockSubtaskRefer(conn,1);			
-	}
-	
+	}	
 	
 //	@Test
 	public void testQuery() throws Exception {

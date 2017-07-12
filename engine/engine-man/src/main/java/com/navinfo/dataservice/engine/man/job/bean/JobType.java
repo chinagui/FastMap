@@ -15,7 +15,7 @@ public enum JobType {
     }
 
     public static JobType valueOf(int value) {
-        return JobType.values()[value-1];
+        return JobType.values()[value - 1];
     }
 
     public int value() {

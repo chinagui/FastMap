@@ -103,6 +103,7 @@ public class Task implements Serializable{
 	
 	private String method;
 	private String adminName;
+	private int inforStage;
 	
 	public Task (){
 	}
@@ -614,6 +615,14 @@ public class Task implements Serializable{
 
 	public void setOverdueOtherReason(String overdueOtherReason) {
 		this.overdueOtherReason = overdueOtherReason;
+	}
+
+	public int getInforStage() {
+		return inforStage;
+	}
+
+	public void setInforStage(int inforStage) {
+		this.inforStage = inforStage;
 	}
 
 }

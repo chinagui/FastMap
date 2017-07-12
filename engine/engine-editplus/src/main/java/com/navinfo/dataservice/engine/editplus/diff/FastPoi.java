@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.diff;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONObject;
 
 /**
@@ -13,10 +15,33 @@ public class FastPoi {
 	
 	private String name="";
 	private String addr="";
+	private int pid=0;
+	private Double xGuide=0.0; 
+	private Double yGuide=0.0;
+	private Geometry geometry;
+	private String shortName="";
 	/**
 	 * Longitude
 	 */
 	private Double x=0.0; 
+	public Double getxGuide() {
+		return xGuide;
+	}
+	public void setxGuide(Double xGuide) {
+		this.xGuide = xGuide;
+	}
+	public Double getyGuide() {
+		return yGuide;
+	}
+	public void setyGuide(Double yGuide) {
+		this.yGuide = yGuide;
+	}
+	public Geometry getGeometry() {
+		return geometry;
+	}
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
+	}
 	/**
 	 * Latitude
 	 */
@@ -89,12 +114,6 @@ public class FastPoi {
 	public void setPostCode(String postCode) {
 		this.postCode = postCode;
 	}
-//	public String getType() {
-//		return type;
-//	}
-//	public void setType(String type) {
-//		this.type = type;
-//	}
 
 	public String getChain() {
 		return chain;
@@ -111,6 +130,30 @@ public class FastPoi {
 	}
 	public void setPoiNum(String poiNum) {
 		this.poiNum = poiNum;
+	}
+	/**
+	 * @return the pid
+	 */
+	public int getPid() {
+		return pid;
+	}
+	/**
+	 * @param pid the pid to set
+	 */
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+	/**
+	 * @return the shortName
+	 */
+	public String getShortName() {
+		return shortName;
+	}
+	/**
+	 * @param shortName the shortName to set
+	 */
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
 	}
 
 }

@@ -92,12 +92,18 @@ public class VectorTabSuspectSearch  implements ISearch{
         
     	List<SearchSnapshot> list = new ArrayList<>();
         
-    	String sql = "SELECT A.ID,A.SOURCE, A.ADMIN_CODE,A.LENGTH,A.CONFIDENCE,A.DATA,A.GEOMETRY  " 
+    	/*String sql = "SELECT A.ID,A.SOURCE, A.ADMIN_CODE,A.LENGTH,A.CONFIDENCE,A.DATA,A.GEOMETRY  " 
     					+" FROM VECTOR_TAB_SUSPECT A "
     					+"    WHERE  "
 						+"  sdo_relate(A.GEOMETRY, "
 						+"            SDO_GEOMETRY(:1, 8307), "
-						+"            'mask=anyinteract') = 'TRUE'";
+						+"            'mask=anyinteract') = 'TRUE'";*/
+    	String sql = "SELECT A.RID, A.GEOMETRY,A.LABEL,A.COLOUR  " 
+				+" FROM VECTOR_TAB_SUSPECT A "
+				+"    WHERE  "
+				+"  sdo_relate(A.GEOMETRY, "
+				+"            SDO_GEOMETRY(:1, 8307), "
+				+"            'mask=anyinteract') = 'TRUE'";
 
         PreparedStatement pstmt = null;
 
@@ -121,7 +127,7 @@ public class VectorTabSuspectSearch  implements ISearch{
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("SOURCE"));
+				/*m.put("a", resultSet.getString("SOURCE"));
 
 				m.put("b", resultSet.getString("ADMIN_CODE"));
 
@@ -129,18 +135,21 @@ public class VectorTabSuspectSearch  implements ISearch{
 
 				m.put("d", resultSet.getString("CONFIDENCE"));
 
-				m.put("e", resultSet.getString("DATA"));
+				m.put("e", resultSet.getString("DATA"));*/
+				
+				m.put("a", resultSet.getString("LABEL"));
+				
+				m.put("b", resultSet.getInt("COLOUR"));
 
-//				m.put("f", resultSet.getString("GEOMETRY"));
-
-//				m.put("i", resultSet.getString("Width"));
 
 
 				snapshot.setM(m);
 
 				snapshot.setT(1003);
 
-				snapshot.setI(resultSet.getInt("ID"));
+//				snapshot.setI(resultSet.getInt("ID"));
+				
+				snapshot.setI(resultSet.getInt("RID"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

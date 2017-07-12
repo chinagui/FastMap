@@ -2220,6 +2220,76 @@ public class TaskOperation {
 		}
 		
 	}
+	
+	/**
+	 * 中线采集任务范围调整
+	 * @param Connection
+	 * @param List<Integer>
+	 * @param Subtask
+	 * @throws Exception 
+	 * 
+	 * */
+	public static void changeTaskGridByGrids(Connection conn, List<Integer> grids, Subtask subtask) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "insert into TASK_GRID_MAPPING (TASK_ID, GRID_ID, TYPE) VALUES (?,?,?)";
+			Object[][] param = new Object[grids.size()][];
+			int i = 0;
+			for(int grid : grids){
+				Object[] temp = new Object[3];
+				temp[0] = subtask.getTaskId();
+				temp[1] = grid;
+				temp[2] = 2;
+				param[i] = temp;
+				i++;
+			}
+			run.batch(conn, sql, param);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("中线采集任务范围更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+	 * 根据项目修改对应月编任务范围，快线的月编任务范围和任务对应的项目范围一致
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception 
+	 * 
+	 */
+	public static int changeMonthTaskGridByProgram(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "     FROM PROGRAM_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "    WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4";
+			log.info("根据项目调整月编任务sql："+sql);
+			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 
 	/**
 	 * @param conn
@@ -2465,7 +2535,8 @@ public class TaskOperation {
 	public static void changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-
+			//modify by songhe
+			//删除task.type对应=3的二代编辑任务
 			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
 					+ "  (TASK_ID, GRID_ID, TYPE)"
 					+ "  SELECT UT.TASK_ID, GRID_ID, 2"
@@ -2474,7 +2545,7 @@ public class TaskOperation {
 					+ "     AND S.TASK_ID = M.TASK_ID"
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
-					+ "     AND UT.TYPE IN (1, 3)"
+					+ "     AND UT.TYPE = 1"
 					+ "  MINUS"
 					+ "  SELECT UT.TASK_ID, T.GRID_ID, 2"
 					+ "    FROM TASK_GRID_MAPPING T, TASK S, TASK UT"
@@ -2482,7 +2553,7 @@ public class TaskOperation {
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
 					+ "     AND UT.TASK_ID = T.TASK_ID"
-					+ "     AND UT.TYPE IN (1, 3)";
+					+ "     AND UT.TYPE = 1";
 			run.update(conn, createMappingSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

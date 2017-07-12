@@ -24,16 +24,18 @@ import com.navinfo.dataservice.impcore.exception.DataErrorException;
 public class DeepInfoImporter {
 
 	private Logger logger = LoggerRepos.getLogger(this.getClass());
-	
-	private String[] tables = new String[]{"IX_POI_PARKING","IX_POI_GASSTATION","IX_POI_BUSINESSTIME","IX_POI_CARRENTAL","IX_POI_HOTEL","IX_POI_DETAIL","IX_POI_RESTAURANT"};
+
+	private String[] tables = new String[] { "IX_POI_PARKING",
+			"IX_POI_GASSTATION", "IX_POI_BUSINESSTIME", "IX_POI_CARRENTAL",
+			"IX_POI_DETAIL" };
 
 	private void clearDeepInfoTables(Connection conn) throws SQLException {
 
 		Statement stmt = conn.createStatement();
-		
-		for(String table:tables){
 
-			stmt.executeUpdate("TRUNCATE TABLE "+table);
+		for (String table : tables) {
+
+			stmt.executeUpdate("TRUNCATE TABLE " + table);
 		}
 
 		stmt.close();
@@ -42,10 +44,10 @@ public class DeepInfoImporter {
 	private void resetUrecord(Connection conn) throws SQLException {
 
 		Statement stmt = conn.createStatement();
-		
-		for(String table:tables){
 
-			stmt.executeUpdate("UPDATE "+table+" SET U_RECORD=0");
+		for (String table : tables) {
+
+			stmt.executeUpdate("UPDATE " + table + " SET U_RECORD=0");
 		}
 
 		stmt.close();
@@ -65,7 +67,7 @@ public class DeepInfoImporter {
 
 		conn.setAutoCommit(false);
 
-//		clearDeepInfoTables(conn);
+		// clearDeepInfoTables(conn);
 
 		String querySql = "select 1 from ix_poi where pid=?";
 
@@ -80,19 +82,18 @@ public class DeepInfoImporter {
 		int parkingCount = 0;
 
 		int gasCount = 0;
-		
+
 		int businessTimeCount = 0;
-		int carRentalCount=0;
-		int hotelCount=0;
-		int detailCount=0;
-		int restaurantCount=0;
+		int carRentalCount = 0;
+		// int hotelCount = 0;
+		int detailCount = 0;
+		// int restaurantCount = 0;
 
 		int total = 0;
 
 		int notfound = 0;
 
 		int cache = 0;
-		
 
 		while ((line = reader.readLine()) != null) {
 
@@ -119,57 +120,53 @@ public class DeepInfoImporter {
 
 			rs.close();
 
-
 			try {
-				//gas
+				// gas
 				int res = GasStationImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
 					gasCount++;
 				}
-				//parking
+				// parking
 				res = ParkingImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
 					parkingCount++;
 				}
-				
-				//business time
-				res = BusinessTimeImporter.run(conn,stmt,poi);
-				if(res>0){
+
+				// business time
+				res = BusinessTimeImporter.run(conn, stmt, poi);
+				if (res > 0) {
 					cache++;
 					businessTimeCount++;
 				}
-				
-				//car rental
-				res = CarRentalImporter.run(conn,stmt,poi);
-				if(res>0){
+
+				// car rental
+				res = CarRentalImporter.run(conn, stmt, poi);
+				if (res > 0) {
 					cache++;
 					carRentalCount++;
 				}
-				
-				//hotel
-				res = HotelImporter.run(conn,stmt,poi);
-				if(res>0){
-					cache++;
-					hotelCount++;
-				}
-				
-				//detail
-				res = DetailImporter.run(conn,stmt,poi);
-				if(res>0){
+
+				// hotel
+				/*
+				 * res = HotelImporter.run(conn,stmt,poi); if(res>0){ cache++;
+				 * hotelCount++; }
+				 */
+				// detail
+				res = DetailImporter.run(conn, stmt, poi);
+				if (res > 0) {
 					cache++;
 					detailCount++;
 				}
-				
-				//restaurant
-				res = RestaurantImporter.run(conn,stmt,poi);
-				if(res>0){
-					cache++;
-					restaurantCount++;
-				}
+
+				// restaurant
+				/*
+				 * res = RestaurantImporter.run(conn,stmt,poi); if(res>0){
+				 * cache++; restaurantCount++; }
+				 */
 
 			} catch (DataErrorException ex) {
 				logger.error("pid " + pid + ":" + ex.getMessage());
@@ -215,14 +212,14 @@ public class DeepInfoImporter {
 
 		logger.info("IX_POI_CARRENTAL count:" + carRentalCount);
 
-		logger.info("IX_POI_HOTEL count:" + hotelCount);
+		// logger.info("IX_POI_HOTEL count:" + hotelCount);
 
 		logger.info("IX_POI_DETAIL count:" + detailCount);
 
-		logger.info("IX_POI_RESTAURANT count:" + restaurantCount);
+		// logger.info("IX_POI_RESTAURANT count:" + restaurantCount);
 
 		logger.info("DONE.");
-		
+
 		reader.close();
 	}
 }

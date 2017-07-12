@@ -97,8 +97,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void move() {
-        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,"
-                + "\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
+        String parameter = "{\"command\":\"MOVE\",\"type\":\"IXPOI\",\"dbId\":13,\"subtaskId\":363," +
+                "\"data\":{\"longitude\":116.7500004172325,\"latitude\":39.94688288877364,\"x_guide\":116.7500004172325," +
+                "\"y_guide\":39.946950746269664,\"linkPid\":409000447},\"objId\":501000119}";
         TestUtil.run(parameter);
     }
 

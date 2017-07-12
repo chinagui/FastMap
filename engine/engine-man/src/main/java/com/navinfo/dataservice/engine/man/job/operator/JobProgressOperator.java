@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
-import com.alibaba.fastjson.JSONObject;
-import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -49,33 +47,26 @@ public class JobProgressOperator {
     /**
      * 读取已有的记录
      *
-     * @param itemId
-     * @param itemType
+     * @param jobId
      * @param phase
      * @return
      * @throws SQLException
      */
-    public JobProgress load(long itemId, ItemType itemType, int phase) throws SQLException {
-        String sql = "select * from job_relation jr,job_progress jp,job j where jr.job_id=jp.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and jr.phase=?";
+    public JobProgress getByJobId(long jobId, int phase) throws SQLException {
+        String sql = "select jp.* from job_progress jp where jp.job_id=? and jr.phase=?";
         ResultSetHandler<JobProgress> rsHandler = new ResultSetHandler<JobProgress>() {
             @Override
             public JobProgress handle(ResultSet rs) throws SQLException {
                 if (rs.next()) {
                     JobProgress jobProgress = new JobProgress();
-                    jobProgress.setPhaseId(rs.getLong("phase_id"));
-                    jobProgress.setJobId(rs.getInt("job_id"));
-                    jobProgress.setPhase(rs.getInt("phase"));
-                    jobProgress.setStatus(JobProgressStatus.valueOf(rs.getInt("status")));
-                    jobProgress.setMessage(rs.getString("message"));
-                    jobProgress.setInParameter(rs.getString("in_parameter"));
-                    jobProgress.setOutParameter(rs.getString("out_parameter"));
+
                     return jobProgress;
                 }
                 return null;
             }
         };
         QueryRunner run = new QueryRunner();
-        return run.query(conn, sql, rsHandler, itemId, itemType.value(), phase);
+        return run.query(conn, sql, rsHandler, jobId, phase);
     }
 
     /**
@@ -97,11 +88,12 @@ public class JobProgressOperator {
         } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
-        } else{
+        } else {
             sql = "update job_progress set status=?, end_date=SYSDATE, message=? where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
         }
     }
+
     public void updateStatus(long phaseId, JobProgressStatus status, String outParameter) throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "update job_progress set status=?, end_date=SYSDATE, out_parameter=? where phase_id=?";

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.impcore.deepinfo;
+package com.navinfo.dataservice.impcore.charge;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,26 +21,24 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
-public class DeepInfoImporter {
+public class CharingInfoImporter {
 
 	private Logger logger = LoggerRepos.getLogger(this.getClass());
 
-	private String[] tables = new String[] { "IX_POI_PARKING",
-			"IX_POI_GASSTATION", "IX_POI_BUSINESSTIME", "IX_POI_CARRENTAL",
-			"IX_POI_DETAIL" };
+	private String[] tables = new String[] { "IX_POI_CHARGINGPLOT",
+			"IX_POI_CHARGINGSTATION" };
 
-	private void clearDeepInfoTables(Connection conn) throws SQLException {
-
-		Statement stmt = conn.createStatement();
-
-		for (String table : tables) {
-
-			stmt.executeUpdate("TRUNCATE TABLE " + table);
-		}
-
-		stmt.close();
-	}
-
+	/*
+	 * private void clearDeepInfoTables(Connection conn) throws SQLException {
+	 * 
+	 * Statement stmt = conn.createStatement();
+	 * 
+	 * for (String table : tables) {
+	 * 
+	 * stmt.executeUpdate("TRUNCATE TABLE " + table); }
+	 * 
+	 * stmt.close(); }
+	 */
 	private void resetUrecord(Connection conn) throws SQLException {
 
 		Statement stmt = conn.createStatement();
@@ -79,15 +77,9 @@ public class DeepInfoImporter {
 
 		List<Integer> pids = new ArrayList<Integer>();
 
-		int parkingCount = 0;
+		int plotCount = 0;
 
-		int gasCount = 0;
-
-		int businessTimeCount = 0;
-		int carRentalCount = 0;
-		// int hotelCount = 0;
-		int detailCount = 0;
-		// int restaurantCount = 0;
+		int stationCount = 0;
 
 		int total = 0;
 
@@ -121,52 +113,20 @@ public class DeepInfoImporter {
 			rs.close();
 
 			try {
-				// gas
-				int res = GasStationImporter.run(conn, stmt, poi);
+				// plot
+				int res = CharingPlotImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
-					gasCount++;
+					plotCount++;
 				}
-				// parking
-				res = ParkingImporter.run(conn, stmt, poi);
+				// station
+				res = CharingStationImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
-					parkingCount++;
+					stationCount++;
 				}
-
-				// business time
-				res = BusinessTimeImporter.run(conn, stmt, poi);
-				if (res > 0) {
-					cache++;
-					businessTimeCount++;
-				}
-
-				// car rental
-				res = CarRentalImporter.run(conn, stmt, poi);
-				if (res > 0) {
-					cache++;
-					carRentalCount++;
-				}
-
-				// hotel
-				/*
-				 * res = HotelImporter.run(conn,stmt,poi); if(res>0){ cache++;
-				 * hotelCount++; }
-				 */
-				// detail
-				res = DetailImporter.run(conn, stmt, poi);
-				if (res > 0) {
-					cache++;
-					detailCount++;
-				}
-
-				// restaurant
-				/*
-				 * res = RestaurantImporter.run(conn,stmt,poi); if(res>0){
-				 * cache++; restaurantCount++; }
-				 */
 
 			} catch (DataErrorException ex) {
 				logger.error("pid " + pid + ":" + ex.getMessage());
@@ -204,19 +164,9 @@ public class DeepInfoImporter {
 
 		logger.info("total:" + total + ",not found:" + notfound);
 
-		logger.info("IX_POI_PARKING count:" + parkingCount);
+		logger.info("IX_POI_CHARGINGPLOT  count:" + plotCount);
 
-		logger.info("IX_POI_GASSTATION count:" + gasCount);
-
-		logger.info("IX_POI_BUSINESSTIME count:" + businessTimeCount);
-
-		logger.info("IX_POI_CARRENTAL count:" + carRentalCount);
-
-		// logger.info("IX_POI_HOTEL count:" + hotelCount);
-
-		logger.info("IX_POI_DETAIL count:" + detailCount);
-
-		// logger.info("IX_POI_RESTAURANT count:" + restaurantCount);
+		logger.info("IX_POI_CHARGINGSTATION count:" + stationCount);
 
 		logger.info("DONE.");
 

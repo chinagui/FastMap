@@ -3692,4 +3692,56 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+	 * key：groupName,province,city,userId,version
+	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+	 * @param qualitySubtaskId 质检子任务号
+	 * @returngetSubtaskInfoByQuality
+	 * @throws Exception
+	 */
+	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="SELECT G.GROUP_NAME,"
+					+ "       C.PROVINCE_NAME,"
+					+ "       C.CITY_NAME,"
+					+ "       S.EXE_USER_ID,"
+					+ "       QS.QUALITY_METHOD"
+					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
+					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
+					+ "   AND QS.TASK_ID = T.TASK_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.CITY_ID = C.CITY_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID";
+			QueryRunner run=new QueryRunner();
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						Map<String, Object> returnObj=new HashMap<String, Object>();
+						returnObj.put("groupName", rs.getString("GROUP_NAME"));
+						returnObj.put("province", rs.getString("PROVINCE_NAME"));
+						returnObj.put("city", rs.getString("CITY_NAME"));
+						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return returnObj;
+					}
+					return null;
+				}
+				
+			});
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

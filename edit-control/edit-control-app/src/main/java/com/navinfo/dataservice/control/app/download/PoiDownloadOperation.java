@@ -30,9 +30,10 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
+import com.navinfo.dataservice.dao.glm.model.poi.index.PoiFlag;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEditStatusHandler;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -623,6 +624,20 @@ public class PoiDownloadOperation {
 			jsonObj.put("commitHisStatus", poi.getPoiEditStatus());
 				
 			//*****************************************
+			
+			jsonObj.put("evaluPlan", poi.getEvaluPlan());
+			
+			PoiFlag poiFlag = new PoiFlag();
+			List<IRow> poiFlagList = poi.getPoiFlag();
+			if (poiFlagList.size()>0) {
+				poiFlag = (PoiFlag)poiFlagList.get(0);
+			}
+			jsonObj.put("srcRecord",poiFlag.getSrcRecord());
+			jsonObj.put("fdVerified",poiFlag.getFieldVerified());
+			
+			
+			
+			
 			retList.add(jsonObj);
 		}
 		return retList;

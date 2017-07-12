@@ -39,7 +39,9 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEditStatusHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEvaluPlanHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiFlagHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -593,9 +595,34 @@ public class PoiGridIncreSearch {
 							+ " and t.pid is not null");
 		logger.debug("editstatus sql :" + sbEditStatus.toString());
 		
-		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);
+		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new PoiEditStatusHandler(),pidsClob);
 		for(Long pid:editStatus.keySet()){
 			pois.get(pid).setPoiEditStatus(editStatus.get(pid));
+		}
+		
+		//*************
+		logger.info("设置 字段 evaluPlan");
+		StringBuilder sbEvaluPlan = new StringBuilder();
+		sbEvaluPlan.append("SELECT * FROM (");
+		sbEvaluPlan.append(" SELECT ROW_NUMBER() OVER(PARTITION BY p.pid ORDER BY p.is_plan_selected DESC) rn, "
+				+ " p.pid,p.is_plan_selected,p.is_important   FROM data_plan p where p.data_type = 1 and p.pid in (select to_number(column_value) from table(clob_to_table(?)))  ");
+		sbEvaluPlan.append("  )  WHERE rn = 1 ");
+		logger.debug("sbEvaluPlan sql :" + sbEvaluPlan.toString());
+		
+		Map<Long,Integer> evaluPlan = run.query(conn, sbEvaluPlan.toString(), new PoiEvaluPlanHandler(),pidsClob);
+		for(Long pid:evaluPlan.keySet()){
+			pois.get(pid).setEvaluPlan(evaluPlan.get(pid));
+		}
+		
+		logger.info("设置子表POI_flag");
+		
+		 sql = "select p.pid ,p.src_record,p.field_verified from poi_flag p where  "
+		 		+ " pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		 Map<Long,List<IRow>> poiFlags = run.query(conn, sql, new PoiFlagHandler(),pidsClob);
+
+		for(Long pid:poiFlags.keySet()){
+			pois.get(pid).setPoiFlag(poiFlags.get(pid));
 		}
 			
 	}

@@ -108,7 +108,7 @@ public class SubtaskService {
 					ids.add(referId);
 					condition.put("ids", ids);
 					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
-					if(referObj!=null&&referObj.size()>1){
+					if(referObj!=null&&referObj.size()>0){
 						myRefer=referObj.get(0);
 					}
 				}
@@ -340,7 +340,7 @@ public class SubtaskService {
 					ids.add(referId);
 					condition.put("ids", ids);
 					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
-					if(referObj!=null&&referObj.size()>1){
+					if(referObj!=null&&referObj.size()>0){
 						myRefer=referObj.get(0);
 					}
 				}
@@ -2066,25 +2066,33 @@ public class SubtaskService {
 
 		//动态调整子任务范围
 		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
-		if(subtask.getStage()==0||subtask.getStage()==1){
+		//这里修改为快线才调整，中线不调整
+		int programType = getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+		if(programType == 4 && (subtask.getStage() == 0 || subtask.getStage() == 1)){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");
-			int programType=1;
-			if(subtask.getStage()==0){
-				programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
-			}
+
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
+//				//modify by songhe
+//				//添加中线采集任务范围调整，因为中线采集子任务不进行范围调整，所以上一步的根据子任务调整任务范围更新的数据一定为0
+//				if(programType == 1 && subtask.getStage() == 0){
+//					List<Integer> grids = new ArrayList<>();
+//					grids.addAll(gridIdsToInsert.keySet());
+//					TaskOperation.changeTaskGridByGrids(conn, grids, subtask);
+//				}
+				
 				if(taskChangeNum>0){					
 					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 					log.info("调整子任务对应快线项目范围");
-					ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
+					int programCount = ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
 					if(subtask.getStage()==1){
 						//调整区域子任务范围
 						log.info("日编子任务 调整区域子任务范围");
@@ -2096,7 +2104,9 @@ public class SubtaskService {
 						}
 					}else if(subtask.getStage()==0){
 						//调整日编任务，二代编辑任务
-						log.info("采集子任务 调整日编任务，二代编辑任务范围");
+						//modify by songhe
+						//sql里面删除了task.type =3 二代编辑任务的筛选条件，二代编辑任务不进行动态调整
+						log.info("采集子任务 调整日编任务范围");
 						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
 						//调整日编区域子任务范围		
 						log.info("采集子任务 调整日编区域子任务范围");
@@ -2107,9 +2117,25 @@ public class SubtaskService {
 								updateSubtaskGeo(conn,tmpSubtaskId);}
 						}
 					}
-				}					
+					//modify by songhe
+					//原则变更：快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+					//调整快线月编任务以及子任务的范围和项目范围保持一致，根据项目范围调整的个数判断是否执行表便任务的调整操作
+					if(programCount > 0){
+						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
+						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
+						if(monthChangedTasks > 0){
+							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
+							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
+							//获取对应采集/日编子任务对应的同任务下的快线月编子任务
+							List<Integer> monthSubtasks = SubtaskOperation.getMonthSubtaskByTask(conn, subtask.getTaskId());
+							for(int subTaskId : monthSubtasks){
+								updateSubtaskGeo(conn, subTaskId);
+							}
+						}
+					}
+				}	
 			}
-		}		
+		}	
 		
 		//记录关闭时间
 		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
@@ -3658,6 +3684,58 @@ public class SubtaskService {
 			String sql="update subtask s set s.quality_plan_status=1 where subtask_id="+subtaskId;
 			QueryRunner run=new QueryRunner();
 			run.update(conn, sql);
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+	 * key：groupName,province,city,userId,version
+	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+	 * @param qualitySubtaskId 质检子任务号
+	 * @returngetSubtaskInfoByQuality
+	 * @throws Exception
+	 */
+	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="SELECT G.GROUP_NAME,"
+					+ "       C.PROVINCE_NAME,"
+					+ "       C.CITY_NAME,"
+					+ "       S.EXE_USER_ID,"
+					+ "       QS.QUALITY_METHOD"
+					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
+					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
+					+ "   AND QS.TASK_ID = T.TASK_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.CITY_ID = C.CITY_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID";
+			QueryRunner run=new QueryRunner();
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						Map<String, Object> returnObj=new HashMap<String, Object>();
+						returnObj.put("groupName", rs.getString("GROUP_NAME"));
+						returnObj.put("province", rs.getString("PROVINCE_NAME"));
+						returnObj.put("city", rs.getString("CITY_NAME"));
+						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return returnObj;
+					}
+					return null;
+				}
+				
+			});
 		}catch(Exception e){
 			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -9,7 +9,6 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
@@ -18,10 +17,10 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 public class ParkingImporter {
-	public static String[] kcs = new String[]{"230210","230213","230214"}; 
-	
-	public static int run(Connection conn, Statement stmt,
-			JSONObject poi) throws Exception {
+	public static String[] kcs = new String[] { "230210", "230213", "230214" };
+
+	public static int run(Connection conn, Statement stmt, JSONObject poi)
+			throws Exception {
 
 		JSONObject parkings = poi.getJSONObject("parkings");
 
@@ -31,7 +30,7 @@ public class ParkingImporter {
 		Set<String> kcSets = new HashSet<String>();
 		CollectionUtils.addAll(kcSets, kcs);
 		String kindCode = poi.getString("kindCode");
-		if(!kcSets.contains(kindCode)){
+		if (!kcSets.contains(kindCode)) {
 			return 0;
 		}
 

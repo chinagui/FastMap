@@ -62,6 +62,10 @@ public class RdCRFOperateUtils {
 
 			// 根据nodePids查询组成的CRF交叉点
 			rdInters = interSelector.loadInterByNodePid(StrNodePids, true);
+
+		} else if (CollectionUtils.isNotEmpty(this.linkPids)) {
+			// 根据linkPids查询组成的CRF交叉点
+			rdInters = interSelector.loadRdInterByOutLinkPid(this.linkPids, true);
 		}
 
 		return rdInters;

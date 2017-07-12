@@ -27,6 +27,7 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -2026,6 +2027,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2104,6 +2108,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2139,6 +2146,7 @@ public class Transaction {
             for (AbstractProcess process : processes) {
                 DBUtils.rollBack(process.getConn());
             }
+            throw e;
         } finally {
             for (AbstractProcess process : processes) {
                 if (process.getConn() == conn) {

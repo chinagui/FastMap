@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.man.job.bean;
 
-import com.alibaba.fastjson.JSONObject;
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 /**
@@ -106,5 +106,15 @@ public class JobProgress {
 
     public void setOutParameter(String outParameter) {
         this.outParameter = outParameter;
+    }
+
+    public void load(ResultSet rs) throws SQLException {
+        this.setPhaseId(rs.getLong("phase_id"));
+        this.setJobId(rs.getInt("job_id"));
+        this.setPhase(rs.getInt("phase"));
+        this.setStatus(JobProgressStatus.valueOf(rs.getInt("status")));
+        this.setMessage(rs.getString("message"));
+        this.setInParameter(rs.getString("in_parameter"));
+        this.setOutParameter(rs.getString("out_parameter"));
     }
 }

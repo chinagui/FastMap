@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.man.service;
 import java.sql.Connection;
 import java.util.*;
 
+import com.navinfo.dataservice.engine.man.job.JobService;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -60,7 +62,7 @@ public class ManApiImpl implements ManApi {
 	}
 
 	/**
-	 * 更新job步骤的执行状态
+	 * 更新job步骤的执行状态, 如果是成功和无数据，继续执行job
 	 * @param phaseId
 	 * @param status 2成功，3失败，4无数据
 	 * @param message
@@ -68,7 +70,7 @@ public class ManApiImpl implements ManApi {
 	 */
 	@Override
 	public void updateJobProgress(long phaseId,int status,String message) throws Exception {
-		//TODO
+		JobService.getInstance().updateJobProgress(phaseId, JobProgressStatus.valueOf(status), message);
 	}
 	
 	@Override

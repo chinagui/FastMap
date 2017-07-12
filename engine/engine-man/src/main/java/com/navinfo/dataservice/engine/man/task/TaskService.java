@@ -1258,7 +1258,9 @@ public class TaskService {
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1291,7 +1293,8 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
-			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
+			sb.append("	                          -1 job_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1332,7 +1335,9 @@ public class TaskService {
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -1394,14 +1399,35 @@ public class TaskService {
 						int other2mediumStatus=rs.getInt("other2medium_Status");
 						
 						task.put("hasNoTaskData", 0);
+
+						int type = rs.getInt("TYPE");
+						int status = rs.getInt("STATUS");
 						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
-						if(rs.getInt("STATUS")==1&&rs.getInt("BLOCK_ID")!=0&&rs.getInt("TYPE")==0){
+						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
 							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
 								task.put("hasNoTaskData", 2);
 							}else{
 								task.put("hasNoTaskData", 1);
 							}
 						}
+
+						JSONArray jobs = new JSONArray();
+						int jobStatus = rs.getInt("job_status");
+						if(jobStatus!=-1){
+							JSONObject job = new JSONObject();
+							job.put("status",jobStatus);
+							job.put("type", 1);
+							jobs.add(job);
+						}else {
+							//关闭的采集任务可执行tips转mark
+							if (status == 0 && type == 0) {
+								JSONObject job = new JSONObject();
+								job.put("status",0);
+								job.put("type", 1);
+								jobs.add(job);
+							}
+						}
+						task.put("jobs",jobs);
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
 						if(rs.getString("GROUP_NAME")==null){

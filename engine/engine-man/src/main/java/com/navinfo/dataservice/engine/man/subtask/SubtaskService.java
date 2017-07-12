@@ -2075,11 +2075,7 @@ public class SubtaskService {
 			}
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
-			//modify by songhe
-			//中线采集子任务不进行范围调整
-			if(programType != 1 || subtask.getStage() != 0){
-				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			}
+			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				//modify by songhe

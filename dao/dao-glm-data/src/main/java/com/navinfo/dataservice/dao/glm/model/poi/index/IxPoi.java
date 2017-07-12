@@ -209,6 +209,29 @@ public class IxPoi implements IObj {
 	//卡车标识
 	private int truckFlag = 0;
 	
+	//评估规划
+	private int evaluPlan = 2;
+	//记录级来源//源是否已被外业环节验证
+//	private PoiFlag poiFlag;
+	private List<IRow> poiFlag = new ArrayList<IRow>();
+
+	
+	public int getEvaluPlan() {
+		return evaluPlan;
+	}
+
+	public void setEvaluPlan(int evaluPlan) {
+		this.evaluPlan = evaluPlan;
+	}
+
+	public List<IRow> getPoiFlag() {
+		return poiFlag;
+	}
+
+	public void setPoiFlag(List<IRow> poiFlag) {
+		this.poiFlag = poiFlag;
+	}
+
 	//app修改标识
 	protected String rawFields;
 	
@@ -1111,6 +1134,7 @@ public class IxPoi implements IObj {
 		//children.add(this.getSamepois());
 		children.add(this.getSamepoiParts());
 		//************zl 2016.11.29 *************
+		children.add(this.getPoiFlag());
 		// deep
 		children.add(this.getParkings());
 		children.add(this.getTourroutes());

@@ -43,6 +43,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiTourroute;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiVideo;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.PoiFlag;
 
 
 
@@ -122,7 +123,26 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_ADDRESS", ixPoiAddressList);
 		}
 		return ixPoiAddress;
-//		return (IxPoiAddress)(ObjFactory.getInstance().createRow("IX_POI_ADDRESS", this.objPid()));
+	}
+	public List<PoiFlag> getPoiFlags(){
+		return (List)subrows.get("POI_FLAG");
+	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建PoiFlag
+	 * 创建一个PoiFlag对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 */
+	public PoiFlag createPoiFlag()throws Exception{
+		PoiFlag poiFlag = (PoiFlag)(ObjFactory.getInstance().createRow("POI_FLAG", this.objPid()));
+		if(subrows.containsKey("POI_FLAG")){
+			subrows.get("POI_FLAG").add(poiFlag);
+		}else{
+			List<BasicRow> poiFlagList = new ArrayList<BasicRow>();
+			poiFlagList.add(poiFlag);
+			subrows.put("POI_FLAG", poiFlagList);
+		}
+		return poiFlag;
 	}
 	public List<IxPoiContact> getIxPoiContacts(){
 		return (List)subrows.get("IX_POI_CONTACT");
@@ -1408,6 +1428,8 @@ catch (Exception e) {
 			return this.createIxPoiRestaurant();
 		}else if(IX_POI_CARRENTAL.equals(tableName)){
 			return this.createIxPoiCarrental();
+		}else if(POI_FLAG.equals(tableName)){
+			return this.createPoiFlag();
 		}else{
 			throw new Exception("未知的子表名:"+tableName);
 		}
@@ -1473,5 +1495,7 @@ catch (Exception e) {
 	public static final String IX_POI_TOURROUTE = "IX_POI_TOURROUTE";
 	public static final String IX_POI_EVENT = "IX_POI_EVENT";
 	public static final String IX_POI_CARRENTAL = "IX_POI_CARRENTAL";
+	public static final String POI_FLAG = "POI_FLAG";
+	
 
 }

@@ -1608,12 +1608,20 @@ public class TaskService {
 	 */
 	public String close(int taskId, long userId,String overdueReason,String overdueOtherReason)throws Exception{
 		Connection conn = null;
+		Connection dailyConn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(conn,taskId);
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
+			//任务关闭清空该任务的规划数据
+			Region region = RegionService.getInstance().query(conn,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			String updateSql="DELETE FROM data_plan t where t.task_id="+ taskId;
+			QueryRunner run=new QueryRunner();
+			run.execute(dailyConn, updateSql);
+			//若有延迟原因，需更新进入任务表
 			if(!StringUtils.isEmpty(overdueReason)){
 				Task beanTask=new Task();
 				beanTask.setTaskId(taskId);
@@ -1740,10 +1748,13 @@ public class TaskService {
 			return "";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	/**
@@ -4130,7 +4141,7 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
-//			Connection dailyConn = null;
+			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4141,15 +4152,20 @@ public class TaskService {
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
 //				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
-//				run.execute(dailyConn, deletesql);
+				//任务规划结果批最后的规划时间
+				Task task = queryByTaskId(con, taskId);
+				Region region = RegionService.getInstance().query(con,task.getRegionId());
+				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+				String updateSql="update data_plan t set t.operate_date=sysdate where t.task_id="+ taskId;
+				run.execute(dailyConn, updateSql);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
-				DbUtils.rollback(con);
-//				DbUtils.rollback(dailyConn);
+				DbUtils.rollbackAndCloseQuietly(con);
+				DbUtils.rollbackAndCloseQuietly(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
-//				DbUtils.commitAndCloseQuietly(dailyConn);
+				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		

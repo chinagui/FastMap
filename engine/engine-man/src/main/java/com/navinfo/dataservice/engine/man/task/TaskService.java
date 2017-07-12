@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -3863,19 +3864,19 @@ public class TaskService {
 			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
-			
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
-			StringBuffer sb = new StringBuffer();
-			for(int i = 0; i< pois.size(); i++){
-				sb.append(String.valueOf(pois.get(i))+",");
+			if(pois.size() > 0){
+				StringBuffer sb = new StringBuffer();
+				for(int i = 0; i< pois.size(); i++){
+					sb.append(String.valueOf(pois.get(i))+",");
+				}
+				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
+				log.info("重要POI一览表中的POI_ID为：" + poi);
+				//这里在更新一下对应在重要一览表中存在的数据类型
+				updateIsImportant(poi, taskId, dailyConn);
 			}
-			String poi = sb.deleteCharAt(sb.length()-1).toString(); 
-			log.info("重要POI一览表中的POI_ID为：" + poi);
-			//这里在更新一下对应在重要一览表中存在的数据类型
-			updateIsImportant(poi, taskId, dailyConn);
-			
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
@@ -4051,9 +4052,11 @@ public class TaskService {
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
 			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 			String linkSql = linksb.toString();
+			Clob clob = ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, wkt);
 			
 			log.info("linkSql"+linkSql);
-			int linkNum = run.update(dailyConn, linkSql, wkt);
+			int linkNum = run.update(dailyConn, linkSql, clob);
 			
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
@@ -4062,7 +4065,7 @@ public class TaskService {
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);
-			int poiNum = run.update(dailyConn, poiSql, wkt);
+			int poiNum = run.update(dailyConn, poiSql, clob);
 			
 			Map<String, Integer> result = new HashMap<>();
 			result.put("poiNum", poiNum);

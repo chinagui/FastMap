@@ -2335,7 +2335,7 @@ public class ProgramService {
 	 * @param taskId
 	 * @throws Exception
 	 */
-	public void changeProgramGridByTask(Connection conn, int taskId) throws Exception {
+	public int changeProgramGridByTask(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();
 			String sql="INSERT INTO PROGRAM_GRID_MAPPING"
@@ -2355,7 +2355,7 @@ public class ProgramService {
 					+ "           FROM PROGRAM_GRID_MAPPING M, TASK T"
 					+ "          WHERE M.PROGRAM_ID = T.PROGRAM_ID"
 					+ "            AND T.TASK_ID = "+taskId+")";
-			run.update(conn, sql);	
+			return run.update(conn, sql);	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

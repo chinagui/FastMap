@@ -57,7 +57,19 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
 		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status,message);
-	}	
+	}
+
+	/**
+	 * 更新job步骤的执行状态
+	 * @param phaseId
+	 * @param status 2成功，3失败，4无数据
+	 * @param message
+	 * @throws Exception
+	 */
+	@Override
+	public void updateJobProgress(long phaseId,int status,String message) throws Exception {
+		//TODO
+	}
 	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {

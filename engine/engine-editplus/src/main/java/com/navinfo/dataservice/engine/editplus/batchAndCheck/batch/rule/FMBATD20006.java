@@ -66,6 +66,8 @@ public class FMBATD20006 extends BasicBatchRule {
 
         List<PoiFlag> poiFlags = poiObj.getPoiFlags();
 
+        IxPoi poi = (IxPoi) obj.getMainrow();
+
         if (poiFlags == null || poiFlags.isEmpty()) {
 
             poiObj.createPoiFlag();
@@ -75,7 +77,7 @@ public class FMBATD20006 extends BasicBatchRule {
 
         for (PoiFlag flag : poiObj.getPoiFlags()) {
 
-            if (flag.getHisOpType().equals(OperationType.INSERT)) {
+            if (poi.getHisOpType().equals(OperationType.INSERT)) {
 
                 if (flag.getSrcRecord() == 0) {
 
@@ -91,8 +93,8 @@ public class FMBATD20006 extends BasicBatchRule {
                     hadSrcRecord5 = true;
                 }
 
-            } else if (flag.getHisOpType().equals(OperationType.DELETE)
-                    || flag.getHisOpType().equals(OperationType.UPDATE)) {
+            } else if (poi.getHisOpType().equals(OperationType.DELETE)
+                    || poi.getHisOpType().equals(OperationType.UPDATE)) {
 
                 flag.setVerRecord(5);
             }

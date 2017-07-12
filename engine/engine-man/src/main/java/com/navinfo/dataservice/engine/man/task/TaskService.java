@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -1257,7 +1258,9 @@ public class TaskService {
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1290,7 +1293,8 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
-			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
+			sb.append("	                          -1 job_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1331,7 +1335,9 @@ public class TaskService {
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status");
+					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -1393,14 +1399,35 @@ public class TaskService {
 						int other2mediumStatus=rs.getInt("other2medium_Status");
 						
 						task.put("hasNoTaskData", 0);
+
+						int type = rs.getInt("TYPE");
+						int status = rs.getInt("STATUS");
 						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
-						if(rs.getInt("STATUS")==1&&rs.getInt("BLOCK_ID")!=0&&rs.getInt("TYPE")==0){
+						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
 							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
 								task.put("hasNoTaskData", 2);
 							}else{
 								task.put("hasNoTaskData", 1);
 							}
 						}
+
+						JSONArray jobs = new JSONArray();
+						int jobStatus = rs.getInt("job_status");
+						if(jobStatus!=-1){
+							JSONObject job = new JSONObject();
+							job.put("status",jobStatus);
+							job.put("type", 1);
+							jobs.add(job);
+						}else {
+							//关闭的采集任务可执行tips转mark
+							if (status == 0 && type == 0) {
+								JSONObject job = new JSONObject();
+								job.put("status",0);
+								job.put("type", 1);
+								jobs.add(job);
+							}
+						}
+						task.put("jobs",jobs);
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
 						if(rs.getString("GROUP_NAME")==null){
@@ -1607,12 +1634,20 @@ public class TaskService {
 	 */
 	public String close(int taskId, long userId,String overdueReason,String overdueOtherReason)throws Exception{
 		Connection conn = null;
+		Connection dailyConn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(conn,taskId);
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
+			//任务关闭清空该任务的规划数据
+			Region region = RegionService.getInstance().query(conn,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			String updateSql="DELETE FROM data_plan t where t.task_id="+ taskId;
+			QueryRunner run=new QueryRunner();
+			run.execute(dailyConn, updateSql);
+			//若有延迟原因，需更新进入任务表
 			if(!StringUtils.isEmpty(overdueReason)){
 				Task beanTask=new Task();
 				beanTask.setTaskId(taskId);
@@ -1739,10 +1774,13 @@ public class TaskService {
 			return "";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 	/**
@@ -3863,19 +3901,19 @@ public class TaskService {
 			}
 			String wktJson = wktMap.get("geometry").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
-			
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
-			StringBuffer sb = new StringBuffer();
-			for(int i = 0; i< pois.size(); i++){
-				sb.append(String.valueOf(pois.get(i))+",");
+			if(pois.size() > 0){
+				StringBuffer sb = new StringBuffer();
+				for(int i = 0; i< pois.size(); i++){
+					sb.append(String.valueOf(pois.get(i))+",");
+				}
+				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
+				log.info("重要POI一览表中的POI_ID为：" + poi);
+				//这里在更新一下对应在重要一览表中存在的数据类型
+				updateIsImportant(poi, taskId, dailyConn);
 			}
-			String poi = sb.deleteCharAt(sb.length()-1).toString(); 
-			log.info("重要POI一览表中的POI_ID为：" + poi);
-			//这里在更新一下对应在重要一览表中存在的数据类型
-			updateIsImportant(poi, taskId, dailyConn);
-			
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
@@ -4051,9 +4089,11 @@ public class TaskService {
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
 			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 			String linkSql = linksb.toString();
+			Clob clob = ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, wkt);
 			
 			log.info("linkSql"+linkSql);
-			int linkNum = run.update(dailyConn, linkSql, wkt);
+			int linkNum = run.update(dailyConn, linkSql, clob);
 			
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
@@ -4062,7 +4102,7 @@ public class TaskService {
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);
-			int poiNum = run.update(dailyConn, poiSql, wkt);
+			int poiNum = run.update(dailyConn, poiSql, clob);
 			
 			Map<String, Integer> result = new HashMap<>();
 			result.put("poiNum", poiNum);
@@ -4127,7 +4167,7 @@ public class TaskService {
 		 * */
 		public void uploadPlan(int taskId) throws Exception{
 			Connection con = null;
-//			Connection dailyConn = null;
+			Connection dailyConn = null;
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4138,15 +4178,20 @@ public class TaskService {
 				String sql = "update TASK t set t.data_plan_status = 1 where t.task_id = " + taskId;
 //				String deletesql = "delete DATA_PLAN t where t.task_id = "+taskId+" and t.is_plan_selected = 0";
 				run.execute(con, sql);
-//				run.execute(dailyConn, deletesql);
+				//任务规划结果批最后的规划时间
+				Task task = queryByTaskId(con, taskId);
+				Region region = RegionService.getInstance().query(con,task.getRegionId());
+				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+				String updateSql="update data_plan t set t.operate_date=sysdate where t.task_id="+ taskId;
+				run.execute(dailyConn, updateSql);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
-				DbUtils.rollback(con);
-//				DbUtils.rollback(dailyConn);
+				DbUtils.rollbackAndCloseQuietly(con);
+				DbUtils.rollbackAndCloseQuietly(dailyConn);
 				throw e;
 			}finally{
 				DbUtils.commitAndCloseQuietly(con);
-//				DbUtils.commitAndCloseQuietly(dailyConn);
+				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
 		}
 		

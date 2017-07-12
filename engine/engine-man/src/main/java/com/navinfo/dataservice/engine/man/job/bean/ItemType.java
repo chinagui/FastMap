@@ -16,7 +16,7 @@ public enum ItemType {
     }
 
     public static ItemType valueOf(int value) {
-        return ItemType.values()[value-1];
+        return ItemType.values()[value - 1];
     }
 
     public int value() {

@@ -37,6 +37,8 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckRuleFac
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 /**
  * poi行编检查
  * @author zhangxiaoyi
@@ -110,8 +112,10 @@ public class PoiRowValidationJob extends AbstractJob {
 			//查询检查结果数量
 			int resultCount = 0;
 			resultCount = getListPoiResultCount(conn,myRequest);
-			
-			this.exeResultMsg=" 有错误: "+resultCount+" 条";
+			JSONObject data =new JSONObject();
+			data.put("type", "检查");
+			data.put("resNum", resultCount);
+			this.exeResultMsg=" #"+data.toString()+"#";
 			log.info("查询poi检查结果数量:" +resultCount);
 			log.info("end PoiRowValidationJob");
 		}catch(Exception e){

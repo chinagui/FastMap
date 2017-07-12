@@ -18,8 +18,8 @@ import java.util.Map;
 public class Tips2MarkUtils {
     private static Logger log = LoggerRepos.getLogger(Tips2MarkUtils.class);
 
-    public static Map<String, Object> getCmsInfo(Connection conn, long itemId) throws Exception{
-        try{
+    public static Map<String, Object> getCmsInfo(Connection conn, long itemId) throws Exception {
+        try {
             QueryRunner run = new QueryRunner();
             String selectSql = "SELECT CMST.NAME CMS_NAME,"
                     + "       CMST.TASK_ID CMS_ID,"
@@ -45,8 +45,8 @@ public class Tips2MarkUtils {
                     + "   AND B.CITY_ID = C.CITY_ID";
             ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
                 public Map<String, Object> handle(ResultSet rs) throws SQLException {
-                    Map<String, Object> result=new HashMap<String, Object>();
-                    if(rs.next()) {
+                    Map<String, Object> result = new HashMap<String, Object>();
+                    if (rs.next()) {
                         result.put("cmsId", rs.getInt("CMS_ID"));
                         result.put("cmsName", rs.getString("CMS_NAME"));
                         result.put("createUserId", rs.getInt("CREATE_USER_ID"));
@@ -65,10 +65,10 @@ public class Tips2MarkUtils {
                 }
             };
             return run.query(conn, selectSql, rsHandler, itemId);
-        }catch(Exception e){
+        } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);
-            throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+            throw new Exception("查询task下grid列表失败，原因为:" + e.getMessage(), e);
         }
     }
 }

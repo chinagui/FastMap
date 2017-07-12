@@ -2013,7 +2013,7 @@ public class SpecialMapUtils {
             return 4;
         }
         if (infos.size() == 2 && infos.containsKey(1) && infos.containsKey(0)) {
-            if (infos.get(0) == infos.get(1)) {
+            if (infos.get(0).equals(infos.get(1)) ) {
                 return 1;
             } else {
                 return 2;

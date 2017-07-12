@@ -3044,7 +3044,7 @@ public class SubtaskOperation {
 		
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
-		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>() ;
+		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>();
 		for(Integer gridId:gridIdList){
 			if(gridIdsBefore.containsKey(gridId)){
 				continue;
@@ -3177,6 +3177,84 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 获取对应采集/日编子任务对应的同任务下的快线月编子任务
+	 * @param Connection
+	 * @param int
+	 * @throws Exception
+	 * 
+	 * */
+	public static List<Integer> getMonthSubtaskByTask(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT T.SUBTASK_ID"
+					+ "    FROM TASK S, TASK UT, SUBTASK T, PROGRAM P"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND T.TASK_ID = UT.TASK_ID"
+					+ "     AND T.STAGE = 2"
+					+ "     AND P.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+	 * 根据任务修改月编子任务范围，快线月编子任务的范围和任务范围一致
+	 * @param Connection
+	 * @param taskId
+	 * @return int
+	 * @throws Exception
+	 * 
+	 * */
+	public static int changeMonthSubtaskGridByTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT ST.SUBTASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK T, TASK UT, SUBTASK ST, PROGRAM P"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND ST.TASK_ID = UT.TASK_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					+ "     AND P.TYPE = 4"
+					+ "     AND ST.STAGE = 2"
+					+ "  MINUS"
+					+ "  SELECT S.SUBTASK_ID, T.GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, TASK UT, PROGRAM M"
+					+ "   WHERE P.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND S.TASK_ID = UT.TASK_ID"
+					+ "     AND T.SUBTASK_ID = S.SUBTASK_ID"
+					+ "     AND M.TYPE = 4"
+					+ "     AND S.STAGE = 2";
+			log.info("根据任务调整月编子任务sql："+sql);
+			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

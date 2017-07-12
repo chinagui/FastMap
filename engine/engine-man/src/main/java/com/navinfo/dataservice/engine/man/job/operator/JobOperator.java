@@ -44,7 +44,7 @@ public class JobOperator {
     public void insert(Job job) throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "insert into job values(?,?,?,?,?,SYSDATE,NULL,?)";
-        run.update(conn, sql, job.getJobId(), job.getType().value(), job.getStatus().value(), job.getLastest(),job.getOperator(), job.getParameter());
+        run.update(conn, sql, job.getJobId(), job.getType().value(), job.getStatus().value(), job.getLastest(), job.getOperator(), job.getParameter());
     }
 
     /**
@@ -64,15 +64,47 @@ public class JobOperator {
             public Job handle(ResultSet rs) throws SQLException {
                 if (rs.next()) {
                     Job job = new Job();
-                    job.setJobId(rs.getLong("job_id"));
-                    job.setType(jobType);
-                    job.setParameter(rs.getString("parameter"));
+                    job.load(rs);
                     return job;
                 }
                 return null;
             }
         };
         return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+    }
+
+    public Job getByJobId(long jobId) throws SQLException {
+        QueryRunner run = new QueryRunner();
+        String sql = "select j.* from job j where j.job_id=?";
+        ResultSetHandler<Job> resultSetHandler = new ResultSetHandler<Job>() {
+            @Override
+            public Job handle(ResultSet rs) throws SQLException {
+                if (rs.next()) {
+                    Job job = new Job();
+                    job.load(rs);
+                    return job;
+                }
+                return null;
+            }
+        };
+        return run.query(conn, sql, resultSetHandler, jobId);
+    }
+
+    public Job getByPhaseId(long phaseId) throws SQLException {
+        QueryRunner run = new QueryRunner();
+        String sql = "select j.* from job j,job_progress jp where j.job_id=jp.job_id and jp.phase_id=?";
+        ResultSetHandler<Job> resultSetHandler = new ResultSetHandler<Job>() {
+            @Override
+            public Job handle(ResultSet rs) throws SQLException {
+                if (rs.next()) {
+                    Job job = new Job();
+                    job.load(rs);
+                    return job;
+                }
+                return null;
+            }
+        };
+        return run.query(conn, sql, resultSetHandler, phaseId);
     }
 
     /**
@@ -82,10 +114,23 @@ public class JobOperator {
      * @param status
      * @throws SQLException
      */
-    public void updateStatus(long jobId, JobStatus status) throws SQLException {
+    public void updateStatusByJobId(long jobId, JobStatus status) throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "update job set status=?, end_date=SYSDATE where job_id=?";
         run.update(conn, sql, status.value(), jobId);
+    }
+
+    /**
+     * 更新job的执行状态
+     *
+     * @param phaseId
+     * @param status
+     * @throws SQLException
+     */
+    public void updateStatusByPhaseId(long phaseId, JobStatus status) throws SQLException {
+        QueryRunner run = new QueryRunner();
+        String sql = "update job j set j.status=? where exists(select null from job_progress jp where jp.phase_id=? and jp.job_id=j.job_id)";
+        run.update(conn, sql, status.value(), phaseId);
     }
 
     public void updateLatest(long jobId, int latest) throws SQLException {
@@ -95,30 +140,32 @@ public class JobOperator {
     }
 
     /**
-     * 根据jobId查询每个步骤的执行状态
-     * @param jobId
+     * 根据项目id，任务id，子任务id查询每个步骤的执行状态
+     *
+     * @param itemId
+     * @param itemType
      * @return
      * @throws SQLException
      */
-    public JSONArray getJobProgressStatus(long jobId) throws SQLException{
+    public JSONArray getJobProgressStatus(long itemId, ItemType itemType, JobType jobType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select phase_id,phase,status,message from job_progress where job_id=? order by phase asc";
+        String sql = "select jp.phase_id,jp.phase,jp.status,jp.message from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.job_type=? order by phase asc";
 
         ResultSetHandler<JSONArray> resultSetHandler = new ResultSetHandler<JSONArray>() {
             @Override
             public JSONArray handle(ResultSet rs) throws SQLException {
                 JSONArray array = new JSONArray();
-                while(rs.next()){
+                while (rs.next()) {
                     JSONObject json = new JSONObject();
-                    json.put("phaseId",rs.getLong("phase_id"));
-                    json.put("status",rs.getInt("status"));
-                    json.put("phase",rs.getInt("phase"));
-                    json.put("message",rs.getString("message"));
+                    json.put("phaseId", rs.getLong("phase_id"));
+                    json.put("status", rs.getInt("status"));
+                    json.put("phase", rs.getInt("phase"));
+                    json.put("message", rs.getString("message"));
                     array.add(json);
                 }
                 return array;
             }
         };
-        return run.query(conn, sql, resultSetHandler, jobId);
+        return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
     }
 }

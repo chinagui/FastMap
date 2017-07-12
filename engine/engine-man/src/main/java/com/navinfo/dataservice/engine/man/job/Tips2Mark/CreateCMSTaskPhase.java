@@ -1,34 +1,15 @@
 package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 
-import com.alibaba.fastjson.JSONObject;
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.fcc.iface.FccApi;
-import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
-import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-import com.navinfo.dataservice.engine.man.task.TaskService;
-import com.navinfo.navicommons.database.QueryRunner;
-import net.sf.json.JSONArray;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.
@@ -42,13 +23,13 @@ public class CreateCMSTaskPhase extends JobPhase {
     }
 
     @Override
-    public JobProgressStatus run() throws Exception{
+    public JobProgressStatus run() throws Exception {
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             jobProgressOperator = new JobProgressOperator(conn);
-            if(lastJobProgress.getStatus()==JobProgressStatus.NODATA){
+            if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
                 return jobProgress.getStatus();
             }
@@ -57,7 +38,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
             conn.commit();
 
-             //业务逻辑
+            //业务逻辑
 //            Map<String, Object> cmsInfo = Tips2MarkUtils.getCmsInfo(conn, jobRelation.getItemId());
 //            JSONObject par=new JSONObject();
 //            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
@@ -128,7 +109,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
-                jobProgress.setMessage(jobProgress.getMessage()+ex.getMessage());
+                jobProgress.setMessage(jobProgress.getMessage() + ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

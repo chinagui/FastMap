@@ -21,4 +21,5 @@ public class JobRelationOperator {
         String sql = "insert into job_relation values(?,?,?)";
         run.update(conn, sql, jobRelation.getJobId(), jobRelation.getItemId(), jobRelation.getItemType().value());
     }
+
 }

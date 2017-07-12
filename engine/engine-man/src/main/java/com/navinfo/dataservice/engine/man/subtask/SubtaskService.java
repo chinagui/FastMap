@@ -2067,10 +2067,7 @@ public class SubtaskService {
 		//动态调整子任务范围
 		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 		//这里修改为快线才调整，中线不调整
-		int programType=1;
-		if(subtask.getStage()==0){
-			programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
-		}
+		int programType = getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
 		if(programType == 4 && (subtask.getStage() == 0 || subtask.getStage() == 1)){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");

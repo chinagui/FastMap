@@ -789,7 +789,7 @@ public class SubtaskOperation {
 
 						int subtaskId = rs.getInt("SUBTASK_ID");
 						subtask.put("subtaskId", subtaskId);
-						subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
+						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
 
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -968,7 +968,7 @@ public class SubtaskOperation {
 
 						int subtaskId = rs.getInt("SUBTASK_ID");
 						subtask.put("subtaskId", subtaskId);
-						subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
+						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
 
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -3301,6 +3301,8 @@ public class SubtaskOperation {
      * @return 出现错误时返回空列表
      */
     private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
+        List<Integer> meshes;
+
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT CM.MESH AS MESH_ID ");
         sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
@@ -3313,7 +3315,7 @@ public class SubtaskOperation {
 
         QueryRunner run = new QueryRunner();
         try {
-            return run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
+            meshes = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
 
                 private List<Integer> meshes = new ArrayList<>();
 
@@ -3326,22 +3328,12 @@ public class SubtaskOperation {
                     return meshes;
                 }
             }, subtaskId);
+            log.info(String.format("根据子任务查询所属大区库图幅，%s任务涉及图幅%s个", subtaskId, meshes.size()));
+            return meshes;
         } catch (SQLException e) {
             log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s, subtaskId: %s]", sb.toString(), subtaskId), e);
         }
 
         return new ArrayList<>();
-    }
-
-    public static void main(String[] args) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT CM.MESH AS MESH_ID ");
-        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
-        sb.append("WHERE S.SUBTASK_ID = :1 ");
-        sb.append("AND S.TASK_ID = T.TASK_ID ");
-        sb.append("AND T.REGION_ID = C.REGION_ID ");
-        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
-        sb.append("ORDER BY CM.MESH");
-        System.out.println(sb.toString());
     }
 }

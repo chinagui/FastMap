@@ -28,12 +28,16 @@ public class InitializeRegionDBPoiFlag {
 	private static QueryRunner run = new QueryRunner();
 
 	public static void main(String[] args) throws Exception{
-		//String path = args[0];
+		try {
+			String path = args[0];
 
-		String path = "C:/Users/fhx/Desktop/poi_info.txt";
-		JobScriptsInterface.initContext();
-					
-	    HbasePoiInfo hbaseInfo = new HbasePoiInfo();
-	    hbaseInfo.getHBaseDataInfo(path, "not_find_pid.txt");
+			//String path = "C:/Users/fhx/Desktop/poi_info.txt";
+			JobScriptsInterface.initContext();
+
+			HbasePoiInfo hbaseInfo = new HbasePoiInfo();
+			hbaseInfo.getHBaseDataInfo(path, "not_find_pid.txt");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

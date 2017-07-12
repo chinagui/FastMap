@@ -51,16 +51,17 @@ public class JobService {
     /**
      * 获取JOB每个步骤的执行状态
      *
-     * @param jobId
+     * @param itemId
+     * @param itemType
      * @return
      * @throws Exception
      */
-    public JSONArray getJobProgress(long jobId) throws Exception {
+    public JSONArray getJobProgress(long itemId, ItemType itemType) throws Exception {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             JobOperator jobOperator = new JobOperator(conn);
-            return jobOperator.getJobProgressStatus(jobId);
+            return jobOperator.getJobProgressStatus(itemId, itemType);
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);

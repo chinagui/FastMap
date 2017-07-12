@@ -140,15 +140,16 @@ public class JobOperator {
     }
 
     /**
-     * 根据jobId查询每个步骤的执行状态
+     * 根据项目id，任务id，子任务id查询每个步骤的执行状态
      *
-     * @param jobId
+     * @param itemId
+     * @param itemType
      * @return
      * @throws SQLException
      */
-    public JSONArray getJobProgressStatus(long jobId) throws SQLException {
+    public JSONArray getJobProgressStatus(long itemId, ItemType itemType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select phase_id,phase,status,message from job_progress where job_id=? order by phase asc";
+        String sql = "select jp.phase_id,jp.phase,jp.status,jp.message from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? order by phase asc";
 
         ResultSetHandler<JSONArray> resultSetHandler = new ResultSetHandler<JSONArray>() {
             @Override
@@ -165,6 +166,6 @@ public class JobOperator {
                 return array;
             }
         };
-        return run.query(conn, sql, resultSetHandler, jobId);
+        return run.query(conn, sql, resultSetHandler, itemId, itemType.value());
     }
 }

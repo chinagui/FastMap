@@ -36,5 +36,9 @@
     	<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>engine-statics</artifactId>
     </dependency>
+    <dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-row</artifactId>
+	</dependency>
   </dependencies>
 </project>

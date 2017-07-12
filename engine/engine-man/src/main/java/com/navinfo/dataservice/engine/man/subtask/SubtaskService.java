@@ -108,7 +108,7 @@ public class SubtaskService {
 					ids.add(referId);
 					condition.put("ids", ids);
 					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
-					if(referObj!=null&&referObj.size()>1){
+					if(referObj!=null&&referObj.size()>0){
 						myRefer=referObj.get(0);
 					}
 				}
@@ -340,7 +340,7 @@ public class SubtaskService {
 					ids.add(referId);
 					condition.put("ids", ids);
 					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
-					if(referObj!=null&&referObj.size()>1){
+					if(referObj!=null&&referObj.size()>0){
 						myRefer=referObj.get(0);
 					}
 				}

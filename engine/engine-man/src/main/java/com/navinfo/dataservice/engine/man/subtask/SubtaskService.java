@@ -2080,11 +2080,7 @@ public class SubtaskService {
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
-				//modify by songhe
-				//中线采集子任务不进行范围调整
-				if(programType != 1 && subtask.getStage() != 0){
-					updateSubtaskGeo(conn,subtask.getSubtaskId());
-				}
+				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());

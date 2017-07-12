@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.api.man.model;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 /** 
 * @ClassName:  Infor
@@ -45,11 +47,8 @@ public class Infor  {
 	private String method;
 	private Integer roadLength;
 	private Integer sourceCode;
-
-
-
-
-
+	private int inforStage;
+	//private Map<String, Object> changeColumns=new HashMap<String, Object>();
 	
 	public Infor (){
 	}
@@ -60,15 +59,6 @@ public class Infor  {
 	public void setInforId(int inforId) {
 		this.inforId = inforId;
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Infor [inforId=" + inforId +",inforName="+inforName+",geometry="+geometry+",inforLevel="+inforLevel+",planStatus="+planStatus+",taskId="+taskId+",insertTime="+insertTime+"]";
-	}
-
 
 	public String getInforName() {
 		return inforName;
@@ -116,38 +106,6 @@ public class Infor  {
 
 	public void setInsertTime(Timestamp insertTime) {
 		this.insertTime = insertTime;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((inforId == null) ? 0 : inforId.hashCode());
-		return result;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Infor other = (Infor) obj;
-		if (inforId == null) {
-			if (other.inforId != null)
-				return false;
-		} else if (!inforId.equals(other.inforId))
-			return false;
-		return true;
 	}
 
 	/**
@@ -325,7 +283,13 @@ public class Infor  {
 	public void setAdminCode(String adminCode) {
 		this.adminCode = adminCode;
 	}
-	
-	
+
+	public int getInforStage() {
+		return inforStage;
+	}
+
+	public void setInforStage(int inforStage) {
+		this.inforStage = inforStage;
+	}
 	
 }

@@ -96,11 +96,13 @@ public class RowCrowdsController extends BaseController {
 			
 			RowCrowdsControl crowds = new RowCrowdsControl();
 			
-			String msg = crowds.release(reqJson);
+			JSONObject res = crowds.release(reqJson);
+			String msg = res.getString("msg");
 			if (StringUtils.isEmpty(msg)){
-				return new ModelAndView("jsonView", success(msg));
+				JSONObject data = new JSONObject();
+				data.put("subtaskId", res.getInt("subtaskId"));
+				return new ModelAndView("jsonView", success(data));
 			}
-			
 			return new ModelAndView("jsonView", fail(msg));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

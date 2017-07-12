@@ -18,6 +18,7 @@ public class ScPointSpecKindcode {
 	private Map<String,ScPointSpecKindcodeNewObj> typeMap2= new HashMap<String,ScPointSpecKindcodeNewObj>();
 	private Map<String, String> typeMap8= new HashMap<String, String>();
 	private Map<String, String> typeMap15= new HashMap<String, String>();
+	private Map<String, String> typeMap7= new HashMap<String, String>();
 	
 	private Map<String, List<String>> typeMap14= new HashMap<String, List<String>>();
 
@@ -175,6 +176,38 @@ public class ScPointSpecKindcode {
 				}
 			}
 			return typeMap15;
+	}
+
+	public Map<String, String> scPointSpecKindCodeType7() throws Exception {
+		if (typeMap7 == null || typeMap7.isEmpty()) {
+			synchronized (this) {
+				if (typeMap7 == null || typeMap7.isEmpty()) {
+					try {
+						String sql = "select POI_KIND,CHAIN from sc_point_spec_kindcode_new t WHERE TYPE=7";
+
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+
+								String chain = rs.getString("CHAIN");
+
+								typeMap7.put(rs.getString("POI_KIND"), chain == null ? "" : chain);
+							}
+						} finally {
+							DbUtils.closeQuietly(conn, pstmt, rs);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载sc_point_spec_kindcode_new失败：" + e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return typeMap7;
 	}
 
 }

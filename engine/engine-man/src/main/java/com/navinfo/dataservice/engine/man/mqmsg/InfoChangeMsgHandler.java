@@ -75,70 +75,6 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		}
 	}
 
-//	public void save(String message) throws Exception {
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			Clob c = ConnectionUtil.createClob(conn);
-//			JSONObject dataJson = JSONObject.fromObject(message);
-//			String inforGeo = dataJson.getString("geometry");
-//			String inforId = dataJson.getString("rowkey");
-//			c.setString(1, inforGeo);
-//			List<Object> values = new ArrayList<Object>();
-//			values.add(inforId);
-//			values.add(dataJson.getString("INFO_NAME"));
-//			values.add(c);
-//			values.add(dataJson.getString("i_level"));
-//			String content=dataJson.getString("INFO_CONTENT");
-//			if(content.length()>=400){
-//				content=content.substring(0, 350);
-//			}
-//			values.add(content);
-//			values.add(dataJson.getString("b_featureKind"));
-//			
-//			String method = dataJson.getString("method");
-//			
-//			QueryRunner run = new QueryRunner();
-//			run.update(conn, sql, values.toArray());
-//			
-//			//初始化infor_grid_mapping关系表
-//			String insertSql = "INSERT INTO infor_grid_mapping(infor_id,grid_id) VALUES(?,?)";
-//			String[] inforGeoList = inforGeo.split(";");
-//			for (String geoTmp : inforGeoList) {
-//				Geometry inforTmp = GeoTranslator.wkt2Geometry(geoTmp);
-//				Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(inforTmp);
-//				Iterator<String> it = (Iterator<String>) grids.iterator();
-//				Object[][] inforGridValues=new Object[grids.size()][2];
-//				int num=0;
-//				while (it.hasNext()) {
-//					List<Object> tmpObjects = new ArrayList<Object>();
-//					tmpObjects.add(inforId);
-//					tmpObjects.add(Integer.parseInt(it.next()));
-//					run.update(conn, insertSql, tmpObjects.toArray());
-//					//inforGridValues[num]=tmpObjects;
-//					num=num+1;
-//				}
-//				
-//			}
-//			
-//			//"情报对应方式”字段不为空时，自动创建项目、任务、子任务
-//			if(method!=null){
-//				generateManAccount(conn,inforId);
-//			}
-//			
-//			//发送消息
-//			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0,inforId);	
-//			
-//			conn.commit();
-//			
-//		} catch (SQLException e) {
-//			log.error(e.getMessage(), e);
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			throw e;
-//		} finally {
-//			DbUtils.closeQuietly(conn);
-//		}
-//	}
 	public void save(String message) throws Exception {
 		log.info("get infor:"+message);
 		Connection conn = null;
@@ -212,9 +148,11 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		List<Task> taskListToPublish = new ArrayList<Task>();
 		List<Integer> commontaskIds=new ArrayList<Integer>();
 		for(Task task:taskList){//配置表正确的情况下，所有非矢量制作任务均应该能找到对应的组id，此处不做二次判断
-			//if(task.getGroupId()!=0){
-			taskListToPublish.add(task);
-			commontaskIds.add(task.getTaskId());
+			if(task.getType()!=2){
+				taskListToPublish.add(task);
+				commontaskIds.add(task.getTaskId());
+			}
+			
 			if(task.getType()==0){
 				collectTaskList.add(task);
 			}

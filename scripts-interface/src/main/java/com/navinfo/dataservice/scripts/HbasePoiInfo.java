@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -217,8 +218,8 @@ public class HbasePoiInfo {
 		RegionService.getInstance().queryRegionWithMeshes(this.getPoiCollectionByMesh().keySet());
 
 		if (regions == null || regions.size() == 0) {
-			log.error("根据图幅未查询到所属大区库信息");
-			throw new Exception("根据图幅未查询到所属大区库信息");
+			log.error(String.format("根据图幅%s未查询到所属大区库信息",StringUtils.join(this.getPoiCollectionByMesh().keySet(),",")));
+			return;
 		}
 
 		// 以图幅为主键的数据，更新为以dbId为主键

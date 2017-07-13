@@ -772,6 +772,13 @@ public class MetadataApiImpl implements MetadataApi {
 		return scPartitionMeshlist.getCloseMeshs(meshs);
 	}
 	
+	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getMeshsFromPartition(List<Integer> meshs,int openFlag,int action)throws Exception{
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.getMeshsFromPartition(meshs,openFlag,action);
+	}
 	
 	/**
      * sc_point_poicode_new.KIND_USE= 1

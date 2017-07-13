@@ -1969,7 +1969,9 @@ public class DataEditService {
 			}
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			updateStatusByChain(conn, chainCodeList);
+			if(chainCodeList.size() > 0){
+				updateStatusByChain(conn, chainCodeList);
+			}
 			updateReulteData(conn, resultIdList);
 			resultMap.put("resultIdList", resultIdList);
 			resultMap.put("chainCodeList", chainCodeList);

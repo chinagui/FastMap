@@ -919,27 +919,19 @@ public class PoiQuality {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void releaseUpdateCountTable(JobInfo jobInfo,Connection conn) throws Exception {
+	public void releaseUpdateCountTable(JobInfo jobInfo,Connection conn,List<Integer> pidList) throws Exception {
 		Connection checkConn = null;
 		IxPoiSelector poiSelector = new IxPoiSelector(conn);
 		try {
+			logger.debug("start releaseUpdateCountTable");
 			checkConn = DBConnector.getInstance().getCheckConnection();
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			long subtaskId = jobInfo.getTaskId();
+			logger.debug("subtaskId----------"+subtaskId);
 			Subtask subtask = apiService.queryBySubtaskId((int)subtaskId);
 			if(subtask==null||subtask.getIsQuality()==0){return;}
 			long userId = jobInfo.getUserId();
-			
-/*			long subtaskId = 73;
-			int userId  = 1683;*/
-			
-			List<Integer> pidList = getPidListBySubTaskId(subtaskId, conn);
-			
-/*			List<Integer> pidList = new ArrayList<>();
-			pidList.add(46662);
-			pidList.add(64133122);
-			pidList.add(29997);*/
-			
+			logger.debug("pidList----------"+pidList);
 			
 			for (Integer pid : pidList) {
 
@@ -1031,10 +1023,10 @@ public class PoiQuality {
 					qualityInsertPoiCountTable(jsonObject, poi.getPoiNum(),subtaskId);
 				}
 				
-				logger.info(pid+"---------"+jsonObject);
-				
+				logger.debug(pid+"---------"+jsonObject);
 				
 			}
+			logger.debug("end releaseUpdateCountTable");
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			throw e;
@@ -1160,7 +1152,7 @@ public class PoiQuality {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT PID FROM POI_EDIT_STATUS E WHERE E.STATUS = 2 AND NOT EXISTS (");
 			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R WHERE R.TABLE_NAME = 'IX_POI' AND R.PID = E.PID)");
-			sb.append( " AND (E.QUICK_SUBTASK_ID="+subtaskId+" or E.MEDIUM_SUBTASK_ID="+subtaskId+")");
+			sb.append( " AND (E.QUICK_SUBTASK_ID='"+subtaskId+"' or E.MEDIUM_SUBTASK_ID='"+subtaskId+"')");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 			rs = pstmt.executeQuery();
@@ -1168,7 +1160,6 @@ public class PoiQuality {
 			List<Integer> pidList = new ArrayList<>();
 			while (rs.next()){
 				pidList.add(rs.getInt(1));
-				return pidList;
 			}
 			
 			return pidList;

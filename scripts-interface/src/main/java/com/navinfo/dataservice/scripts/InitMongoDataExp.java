@@ -27,6 +27,7 @@ import com.mongodb.QueryOperators;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Projections;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -168,7 +169,15 @@ public class InitMongoDataExp {
 					for (String col : collectionNm) {
 						collection = db.getCollection(col);
 						MongoCursor<Document> curDeep = collection
-								.find(condition).projection(fields).iterator();
+								.find(condition)
+								.projection(
+										Projections.include("pid", "kindCode",
+												"businessTime", "gasStation",
+												"parkings", "rental",
+												"website", "contacts",
+												"attachments", "hwEntryExit",
+												"hotel", "hospital"))
+								.iterator();
 						while (curDeep.hasNext()) {
 							count++;
 
@@ -180,8 +189,12 @@ public class InitMongoDataExp {
 					String fileName = admimcode + "_poi_charging.txt";
 					pw = new PrintWriter(fileName);
 					collection = db.getCollection("poi");
-					MongoCursor<Document> cur = collection.find(condition)
-							.projection(fields).iterator();
+					MongoCursor<Document> cur = collection
+							.find(condition)
+							.projection(
+									Projections.include("pid", "kindCode",
+											"chargingPole", "chargingStation"))
+							.iterator();
 					while (cur.hasNext()) {
 						count++;
 

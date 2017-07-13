@@ -47,7 +47,8 @@ public class CharingStationImporter {
 		station.setChangeOpenType(JsonUtils.getString(stationObj,
 				"changeOpenType"));
 		station.setChargingNum(JsonUtils.getInt(stationObj, "chargingNum"));
-		station.setParkingInfo(JsonUtils.getString(stationObj, "servicePro"));
+		station.setServiceProv(JsonUtils.getString(stationObj, "servicePro"));
+		station.setParkingInfo(JsonUtils.getString(stationObj, "parkingInfo"));
 		station.setOpenHour(JsonUtils.getString(stationObj, "openHour"));
 		station.setParkingFees(JsonUtils.getInt(stationObj, "parkingFees"));
 		station.setAvailableState(JsonUtils

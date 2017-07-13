@@ -53,6 +53,7 @@ public class PoiQuality {
 	public void initQualityData() throws Exception {
 
 		List<Map<String, Object>>  list = getGeometryAndSubtaskId();//根据质检圈的的qualityId,获取质检圈geometry
+		logger.info("开始初始化poi_count_table表----");
 		for (Map<String, Object> map : list) {
 			Connection conn = null;
 			try {
@@ -117,10 +118,11 @@ public class PoiQuality {
 					
 					updateSubtaskQualityDbstat(qualityId);//更新subtask_quality DB统计状态为1
 
-					System.out.println(pid+"-------------"+jsonObject);
+					logger.info(pid+"-------------"+jsonObject);
 				}
 				
 				
+				logger.info("初始化poi_count_table表完成----");
 			}catch (Exception e) {
 				logger.error(e.getMessage(), e);
 				throw e;
@@ -233,7 +235,7 @@ public class PoiQuality {
         	sb.append(sb1).append(")VALUES(");
         	sb.append(sb2).append(")");
         	
-        	System.out.println("sql----------"+sb.toString());
+        	logger.info("sql----------"+sb.toString());
 
             pstmt = conn.prepareStatement(sb.toString());
 
@@ -1029,7 +1031,7 @@ public class PoiQuality {
 					qualityInsertPoiCountTable(jsonObject, poi.getPoiNum(),subtaskId);
 				}
 				
-				System.out.println(pid+"---------"+jsonObject);
+				logger.info(pid+"---------"+jsonObject);
 				
 				
 			}
@@ -1107,7 +1109,7 @@ public class PoiQuality {
         	sb.deleteCharAt(sb.length() - 1);
         	sb.append(" WHERE FID = '"+poiNum+"'");
         	
-        	System.out.println("sql----------"+sb.toString());
+        	logger.info("sql----------"+sb.toString());
 
             pstmt = checkConn.prepareStatement(sb.toString());
 

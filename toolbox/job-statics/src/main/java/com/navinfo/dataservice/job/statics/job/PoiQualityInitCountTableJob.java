@@ -15,8 +15,10 @@ public class PoiQualityInitCountTableJob extends AbstractStatJob {
 	public String stat() throws JobException {
 		PoiQualityInitCountTableJobRequest req = (PoiQualityInitCountTableJobRequest) this.request;
 		try {
+			log.info("开始初始化poi_count_table表----");
 			PoiQuality poiQuality = new PoiQuality();
 			poiQuality.initQualityData();
+			log.info("初始化poi_count_table表完成----");
 			return "初始化成功";
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

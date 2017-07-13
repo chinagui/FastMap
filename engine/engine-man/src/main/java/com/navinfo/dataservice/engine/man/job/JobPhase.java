@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.engine.man.job;
 
-import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
-import com.navinfo.dataservice.engine.man.job.bean.Job;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
+import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 
 import java.sql.Connection;
@@ -17,15 +14,17 @@ public abstract class JobPhase {
     public Job job;
     public JobProgress lastJobProgress;
     public InvokeType invokeType;
+    public JobRelation jobRelation;
 
     /**
      * 初始化phase
      * 1.如果是新执行的任务，则在库中新增一条phase记录
      * 2.如果是重新执行的任务，则读取库中已有的记录，如果状态为失败，更新状态为已创建
      */
-    public void init(Connection conn, Job job, JobProgress lastJobProgress, int phase, boolean isContinue) throws Exception {
+    public void init(Connection conn, Job job, JobRelation jobRelation, JobProgress lastJobProgress, int phase, boolean isContinue) throws Exception {
         this.job = job;
         this.lastJobProgress = lastJobProgress;
+        this.jobRelation = jobRelation;
         this.initInvokeType();
 
         JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);

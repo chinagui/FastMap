@@ -29,6 +29,8 @@ public abstract class JobRunner {
     public JobType jobType;
     public Job job;
     public String parameter;
+    public JobRelation jobRelation;
+    public Connection conn;
 
     /**
      * 添加phase到列表
@@ -49,11 +51,11 @@ public abstract class JobRunner {
     /**
      * 初始化Job，JobPhase
      */
-    private void init(Connection conn, boolean isContinue) throws Exception {
+    private void init(boolean isContinue) throws Exception {
 
         JobOperator jobOperator = new JobOperator(conn);
         JobRelationOperator jobRelationOperator = new JobRelationOperator(conn);
-        JobRelation jobRelation = new JobRelation();
+        jobRelation = new JobRelation();
         jobRelation.setItemId(itemId);
         jobRelation.setItemType(itemType);
 
@@ -91,7 +93,7 @@ public abstract class JobRunner {
             if (lastJobPhase != null) {
                 lastProgress = lastJobPhase.jobProgress;
             }
-            phase.init(conn, job, lastProgress, index++, isContinue);
+            phase.init(conn, job, jobRelation, lastProgress, index++, isContinue);
             lastJobPhase = phase;
         }
     }
@@ -99,16 +101,20 @@ public abstract class JobRunner {
     /**
      * 加载job信息
      */
-    private void loadPhases(Connection conn) throws Exception {
+    private void loadPhases() throws Exception {
 
         int index = 1;
         JobPhase lastJobPhase = null;
+
+        JobRelationOperator jobRelationOperator = new JobRelationOperator(conn);
+        jobRelation = jobRelationOperator.getByJobId(job.getJobId());
+
         for (JobPhase phase : phaseList) {
             JobProgress lastProgress = null;
             if (lastJobPhase != null) {
                 lastProgress = lastJobPhase.jobProgress;
             }
-            phase.init(conn, job, lastProgress, index++, true);
+            phase.init(conn, job, jobRelation, lastProgress, index++, true);
             lastJobPhase = phase;
         }
     }
@@ -116,10 +122,9 @@ public abstract class JobRunner {
     /**
      * 依次执行所有步骤
      *
-     * @param conn
      * @throws Exception
      */
-    public void runPhases(Connection conn) throws Exception {
+    public void runPhases() throws Exception {
         boolean finish = true;
         for (JobPhase phase : phaseList) {
             if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS ||
@@ -160,7 +165,6 @@ public abstract class JobRunner {
      * 执行入口
      */
     public long run(long itemId, ItemType itemType, boolean isContinue, long operator, String parameter) throws Exception {
-        Connection conn = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             this.itemId = itemId;
@@ -171,10 +175,10 @@ public abstract class JobRunner {
             conn.setAutoCommit(false);
             this.prepare();
             this.initJobType();
-            this.init(conn, isContinue);
+            this.init(isContinue);
             DbUtils.commitAndCloseQuietly(conn);
 
-            runPhases(conn);
+            runPhases();
 
             return job.getJobId();
         } catch (Exception ex) {
@@ -200,17 +204,16 @@ public abstract class JobRunner {
      * 继续执行入口
      */
     public long resume(Job job) throws Exception {
-        Connection conn = null;
         try {
             this.job = job;
             conn = DBConnector.getInstance().getManConnection();
             conn.setAutoCommit(false);
             this.prepare();
             this.initJobType();
-            this.loadPhases(conn);
+            this.loadPhases();
             DbUtils.commitAndCloseQuietly(conn);
 
-            runPhases(conn);
+            runPhases();
 
             return job.getJobId();
         } catch (Exception ex) {

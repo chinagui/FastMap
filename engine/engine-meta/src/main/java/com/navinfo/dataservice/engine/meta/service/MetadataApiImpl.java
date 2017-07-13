@@ -581,7 +581,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public Map<String, String> scPointSpecKindCodeType7() throws Exception {
+	public Map<String, List<String>> scPointSpecKindCodeType7() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType7();
 	}

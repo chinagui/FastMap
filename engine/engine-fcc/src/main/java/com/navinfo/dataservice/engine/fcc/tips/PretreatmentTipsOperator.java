@@ -49,7 +49,7 @@ import java.util.Date;
 public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 	static String FC_SOURCE_TYPE = "8001"; // FC预处理理tips
-	static int FC_DEFAULT_STAGE = 2;
+//	static int FC_DEFAULT_STAGE = 2;
 	public static int COMMAND_INSERT = 0;
 	public static int COMMAND_UPADATE = 1;
     public static int PRE_TIPS_STAGE = 5;
@@ -110,7 +110,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             track.setT_lifecycle(t_lifecycle);
             track.setT_date(currentDate);
             track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
-            track.addTrackInfo(PretreatmentTipsOperator.PRE_TIPS_STAGE, currentDate, user);
+//            track.addTrackInfo(PretreatmentTipsOperator.PRE_TIPS_STAGE, currentDate, user);
 
             JSONObject trackJson = JSONObject.fromObject(track);
 
@@ -285,7 +285,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.getValue("data".getBytes(), "track".getBytes())));
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
-			track = addTrackInfo(user, track, date);
+			track.put("t_date", date);
+//			track = addTrackInfo(user, track, date);
 			track.put("t_lifecycle", 2);
 
 			// 2.update geometry
@@ -382,8 +383,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
-
-			track = addTrackInfo(user, track, date);
+            track.put("t_date", date);
+//			track = addTrackInfo(user, track, date);
 
 			// 2.update deep.geo(用户挪动后的点)
 
@@ -523,7 +524,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.getValue("data".getBytes(), "track".getBytes())));
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
-			track = addTrackInfo(user, track, date);
+            track.put("t_date", date);
+//			track = addTrackInfo(user, track, date);
 			JSONObject newTrack = JSONObject.fromObject(track);
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
@@ -544,6 +546,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solrIndex.put("t_date", date);
 			solrIndex.put("handler", user);
 
+            newSolrIndex.put("t_date", date);
+            newSolrIndex.put("handler", user);
+
 			solr.addTips(solrIndex);
 			solr.addTips(newSolrIndex);
 
@@ -560,29 +565,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}
 	}
 
-	/**
-	 * @Description:TOOD
-	 * @param user
-	 * @param track
-	 * @return
-	 * @author: y
-	 * @time:2016-11-18 下午8:03:59
-	 */
-	private JSONObject addTrackInfo(int user, JSONObject track, String date) {
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-		// 1.1 new trackInfo
-		JSONObject jsonTrackInfo = TipsUtils.newTrackInfo(FC_DEFAULT_STAGE,
-				date, user);
-
-		trackInfoArr.add(jsonTrackInfo);
-
-		track.put("t_trackInfo", trackInfoArr);
-
-		track.put("t_date", date);
-
-		return track;
-	}
+//	/**
+//	 * @Description:TOOD
+//	 * @param user
+//	 * @param track
+//	 * @return
+//	 * @author: y
+//	 * @time:2016-11-18 下午8:03:59
+//	 */
+//	private JSONObject addTrackInfo(int user, JSONObject track, String date) {
+//		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+//
+//		// 1.1 new trackInfo
+//		JSONObject jsonTrackInfo = TipsUtils.newTrackInfo(FC_DEFAULT_STAGE,
+//				date, user);
+//
+//		trackInfoArr.add(jsonTrackInfo);
+//
+//		track.put("t_trackInfo", trackInfoArr);
+//
+//		track.put("t_date", date);
+//
+//		return track;
+//	}
 
 	/**
 	 * @Description:TOOD
@@ -1564,8 +1569,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 //		track.put("t_trackInfo", trackInfoArr);
 
 		track.put("t_date", date);// 修改时间，为服务的当前时间
-//       前端维护
-//        track.put("t_tipStatus", 1);
+//       20170711维护
+        track.put("t_tipStatus", 1);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 				.getBytes());
@@ -1601,7 +1606,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		if (jsonInfo.containsKey("old")) {
 
 			put.addColumn("data".getBytes(), "old".getBytes(), jsonInfo
-					.getJSONObject("old").toString().getBytes());
+					.getJSONArray("old").toString().getBytes());
 		}
 		return put;
 	}
@@ -1740,8 +1745,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws IOException
 	 * @throws Exception
 	 * @author: y
-	 * @param oldRowkey 
-	 * @param b 
+	 * @param oldRowkey
 	 * @time:2017-6-21 下午9:37:44
 	 */
 	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> linesAfterCut, boolean hasModifyGlocation)
@@ -2067,7 +2071,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
 
-			track = addTrackInfo(user, track, date);
+//			track = addTrackInfo(user, track, date);
+            track.put("t_date", date);
 
 			JSONObject newTrack = JSONObject.fromObject(track);
 
@@ -2080,8 +2085,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			// update solr
 
 			solrIndex.put("t_date", date);
-
 			solrIndex.put("handler", user);
+
+            newSolrIndex.put("t_date", date);
+            newSolrIndex.put("handler", user);
 
 			solr.addTips(solrIndex);
 
@@ -2185,6 +2192,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				throw new Exception("不支持的任务类型：" + taskType);
 			}
 
+            //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
 			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
 					taskType);
 
@@ -2199,7 +2207,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				JSONObject oldTrack = old.getJSONObject("track");
 				oldTrack.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT);
 
-                JSONArray trackInfoArr = new JSONArray();
+                JSONArray trackInfoArr = oldTrack.getJSONArray("t_trackInfo");
                 JSONObject trackInfo = new JSONObject();
                 trackInfo.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
                 trackInfo.put("handler", user);

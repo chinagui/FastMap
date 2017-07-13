@@ -11,6 +11,8 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.nirobot.business.Tips2AuMarkApi;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.hadoop.hbase.master.snapshot.TakeSnapshotHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -129,7 +131,9 @@ public class FccApiImpl implements FccApi{
         List<Integer> collectTaskIds =new ArrayList<Integer>(); //中线任务号
         JSONObject taskInfo =null;
         String types=null;
-        int phaseId =0;
+        long phaseId =0;
+        
+        int taskType=0;
 
         Tips2Aumark(JSONObject parameter){
             this.parameter=parameter;
@@ -194,16 +198,29 @@ public class FccApiImpl implements FccApi{
              if (gridList.isEmpty()||gridList.size()==0) {
                  throw new IllegalArgumentException("参数错误:grids不能为空");
              }*/
-
-            if(!parameter.containsKey("collectTaskIds")){
-                throw new IllegalArgumentException("参数错误:collectTaskIds不能为空");
+            
+            if(!parameter.containsKey("task_type")){
+                throw new IllegalArgumentException("参数错误:task_type不能为空");
             }
-            JSONArray collectArray = parameter.getJSONArray("collectTaskIds");
+            
+            taskType=parameter.getInt("task_type");
+            
+            //如果是快线任务号，则需要出传递快线项目下的所有采集任务号
+            if(taskType==TaskType.Q_TASK_TYPE){
+            	
+            	  if(!parameter.containsKey("collectTaskIds")){
+                      throw new IllegalArgumentException("参数错误:快线任务，collectTaskIds不能为空");
+                  }
+                  JSONArray collectArray = parameter.getJSONArray("collectTaskIds");
+                  
+                  if(collectArray==null|| collectArray.size()==0){
+                	  
+                	  throw new IllegalArgumentException("参数错误:快线任务，collectTaskIds不能为空");
+                  }
 
-            // collectTaskIds = JSONArray.toList(collectArray,new String(),new JsonConfig());
-
-            for (Object object : collectArray) {
-                collectTaskIds.add(Integer.valueOf(object.toString()));
+                  for (Object object : collectArray) {
+                      collectTaskIds.add(Integer.valueOf(object.toString()));
+                  }
             }
 
 
@@ -211,17 +228,15 @@ public class FccApiImpl implements FccApi{
                 throw new IllegalArgumentException("参数错误:collectTaskIds不能为空");
             }
 
-
             types = parameter.getString("types");
 
-            taskInfo = parameter.getJSONObject("taskid");
+            taskInfo = parameter.getJSONObject("taskInfo");
 
             if (taskInfo==null||taskInfo.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:任务信息参数不能为空");
             }else{
-                String managerId = taskInfo.getString("manager_id");
-                if (managerId==null||managerId.isEmpty()) {
-                    throw new IllegalArgumentException("参数错误:中线采集任务ID不能为空");
+                if (!taskInfo.containsKey("manager_id")) {
+                    throw new IllegalArgumentException("参数错误:manager_id不能为空");
                 }
                 String taskName = taskInfo.getString("imp_task_name");
                 if (taskName==null||taskName.isEmpty()) {
@@ -250,7 +265,7 @@ public class FccApiImpl implements FccApi{
             }
 
             //phaseId
-            phaseId = parameter.getInt("phaseId");
+            phaseId = parameter.getLong("phaseId");
 
             logger.info("API,参数验证通过！");
             logger.debug("API,参数验证通过！");
@@ -269,18 +284,17 @@ public class FccApiImpl implements FccApi{
                 int count=0;
 
                 Tips2AuMarkApi api=new Tips2AuMarkApi();
-                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
-
+                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo,taskType);
 
                 if(count!=0){
-                    apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
-                    logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
-                    logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
+                    apiService.updateJobProgress(phaseId,2,"转mark执行成功");
+                    logger.debug("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功)");
+                    logger.info("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功)");
 
                 }else{
-                    apiService.taskUpdateCmsProgress(phaseId,4,"转mark执行成功,转出0条");
-                    logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
-                    logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
+                    apiService.updateJobProgress(phaseId,4,"转mark执行成功,转出0条");
+                    logger.debug("回调用manApi:updateJobProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
+                    logger.info("回调用manApi:updateJobProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
 
 
                 }
@@ -290,10 +304,10 @@ public class FccApiImpl implements FccApi{
 
             }catch(Exception e){
                 logger.error("转mark出错："+e.getMessage(),e);
-                logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+3+",转mark出错："+e.getMessage()+")");
-                logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+3+",转mark出错："+e.getMessage()+")");
+                logger.info("回调用manApi:updateJobProgress（"+phaseId+","+3+",转mark出错："+e.getMessage()+")");
+                logger.debug("回调用manApi:updateJobProgress（"+phaseId+","+3+",转mark出错："+e.getMessage()+")");
                 try {
-                    apiService.taskUpdateCmsProgress(phaseId,3,"转mark出错："+e.getMessage());
+                    apiService.updateJobProgress(phaseId,3,"转mark出错："+e.getMessage());
                 } catch (Exception e1) {
                     logger.error("回掉接口出错："+e.getMessage(),e);
                 }

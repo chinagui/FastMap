@@ -290,7 +290,7 @@ public class RdLinkSearch implements ISearch {
 				+ " where a.link_pid = b.link_pid(+)"
 				+ "   and a.link_pid = c.link_pid(+)"
 				+ "   and a.link_pid = d.link_pid(+)"
-				+ "   and a.link_pid = e.pid(+);";
+				+ "   and a.link_pid = e.pid(+)";
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

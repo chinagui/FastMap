@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import net.sf.json.JSONObject;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.common.SolrInputDocument;
@@ -11,17 +12,23 @@ import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
+
 
 public class SolrBulkUpdater {
 
-	private ConcurrentUpdateSolrClient client;
+//	private ConcurrentUpdateSolrClient client;
+	
+	private SolrClient client;
 	
 	public SolrBulkUpdater(int queueSize, int threadCount) {
 
-		String address = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.solrAddress);
+//		String address = SystemConfigFactory.getSystemConfig().getValue(
+//				PropConstant.solrAddress);
 
-		client = new ConcurrentUpdateSolrClient(address, queueSize, threadCount);
+//		client = new ConcurrentUpdateSolrClient(address, queueSize, threadCount);
+		
+		client = SolrClientFactory.getInstance().getClient();
 
 	}
 

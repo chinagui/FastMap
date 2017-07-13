@@ -616,15 +616,16 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setEvaluPlan(evaluPlan.get(pid));
 		}
 		
-		logger.info("设置子表POI_flag");
+		logger.info("设置子表IX_POI_FLAG_METHOD");
 		
-		 sql = "select p.pid ,p.src_record,p.field_verified from poi_flag p where  "
-		 		+ " pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		 sql = "select p.poi_pid  ,p.src_record,p.field_verified from IX_POI_FLAG_METHOD p where  "
+		 		+ " p.poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
+		 logger.info(" IX_POI_FLAG_METHOD sql: "+sql);
 		 Map<Long,List<IRow>> poiFlags = run.query(conn, sql, new PoiFlagHandler(),pidsClob);
 
 		for(Long pid:poiFlags.keySet()){
-			pois.get(pid).setPoiFlag(poiFlags.get(pid));
+			pois.get(pid).setIxPoiFlagMethod(poiFlags.get(pid));
 		}
 			
 	}

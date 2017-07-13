@@ -35,9 +35,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.PoiFlag;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEditStatusHandler;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -141,6 +138,7 @@ public class PoiDownloadOperation {
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
 		}
+		logger.info("subtaskId : "+subtaskId);
 		PoiGridIncreSearch seach = new PoiGridIncreSearch();
 		int taskId = 0;
 		int dbid = 0;

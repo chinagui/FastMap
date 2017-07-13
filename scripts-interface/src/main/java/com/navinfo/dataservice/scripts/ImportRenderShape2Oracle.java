@@ -47,7 +47,8 @@ public class ImportRenderShape2Oracle {
 			}
 
 			String shapeFile = args[0];
-			//vector_tab_suspect
+			//VECTOR_TAB
+			//VECTOR_TAB_SUSPECT
 			//MISS_ROAD_DIDI
 			//MISS_ROAD_TENGXUN
 			String tableName = args[1];

@@ -23,12 +23,12 @@ public class SolrBulkUpdater {
 	
 	public SolrBulkUpdater(int queueSize, int threadCount) {
 
-//		String address = SystemConfigFactory.getSystemConfig().getValue(
-//				PropConstant.solrAddress);
+		String address = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.solrAddress);
 
-//		client = new ConcurrentUpdateSolrClient(address, queueSize, threadCount);
+		client = new ConcurrentUpdateSolrClient(address, queueSize, threadCount);
 		
-		client = SolrClientFactory.getInstance().getClient();
+//		client = SolrClientFactory.getInstance().getClient();
 
 	}
 

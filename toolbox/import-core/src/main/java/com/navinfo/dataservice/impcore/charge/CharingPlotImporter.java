@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
 
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
@@ -22,9 +23,12 @@ public class CharingPlotImporter {
 	public static int run(Connection conn, Statement stmt, JSONObject poi)
 			throws Exception {
 
-		JSONObject plotObj = poi.getJSONObject("chargingPole");
+		JSONArray plotArray = poi.getJSONArray("chargingPole");
 
-		if (JSONUtils.isNull(plotObj)) {
+		if (JSONUtils.isNull(plotArray)) {
+			return 0;
+		}
+		if (plotArray.size() == 0) {
 			return 0;
 		}
 		Set<String> kcSets = new HashSet<String>();
@@ -33,38 +37,45 @@ public class CharingPlotImporter {
 		if (!kcSets.contains(kindCode)) {
 			return 0;
 		}
+		for (Object charging : plotArray) {
+			JSONObject plotObj = (JSONObject) charging;
 
-		IxPoiChargingPlot chargingPlot = new IxPoiChargingPlot();
+			IxPoiChargingPlot chargingPlot = new IxPoiChargingPlot();
 
-		chargingPlot.setPoiPid(poi.getInt("pid"));
-		chargingPlot.setGroupId(JsonUtils.getInt(plotObj, "groupId"));
-		chargingPlot.setCount(JsonUtils.getInt(plotObj, "count"));
-		chargingPlot.setAcdc(JsonUtils.getInt(plotObj, "acdc"));
-		chargingPlot.setPlugType(JsonUtils.getString(plotObj, "plugType"));
-		chargingPlot.setPower(JsonUtils.getString(plotObj, "power"));
-		chargingPlot.setVoltage(JsonUtils.getString(plotObj, "voltage"));
-		chargingPlot.setCurrent(JsonUtils.getString(plotObj, "current"));
-		chargingPlot.setMode(JsonUtils.getInt(plotObj, "mode"));
-		chargingPlot.setPlugNum(JsonUtils.getInt(plotObj, "plugNum"));
-		chargingPlot.setPrices(JsonUtils.getString(plotObj, "prices"));
-		chargingPlot.setOpenType(JsonUtils.getString(plotObj, "openType"));
-		chargingPlot.setAvailableState(JsonUtils.getInt(plotObj,
-				"availableState"));
-		chargingPlot.setManufacturer(JsonUtils.getString(plotObj,
-				"manufacturer"));
-		chargingPlot.setFactoryNum(JsonUtils.getString(plotObj, "factoryNum"));
-		chargingPlot.setPlotNum(JsonUtils.getString(plotObj, "plotNum"));
-		chargingPlot.setProductNum(JsonUtils.getString(plotObj, "productNum"));
-		chargingPlot.setParkingNum(JsonUtils.getString(plotObj, "parkingNum"));
-		chargingPlot.setFloor(JsonUtils.getInt(plotObj, "floor"));
-		chargingPlot.setLocationType(JsonUtils.getInt(plotObj, "locationType"));
+			chargingPlot.setPoiPid(poi.getInt("pid"));
+			chargingPlot.setGroupId(JsonUtils.getInt(plotObj, "groupId"));
+			chargingPlot.setCount(JsonUtils.getInt(plotObj, "count"));
+			chargingPlot.setAcdc(JsonUtils.getInt(plotObj, "acdc"));
+			chargingPlot.setPlugType(JsonUtils.getString(plotObj, "plugType"));
+			chargingPlot.setPower(JsonUtils.getString(plotObj, "power"));
+			chargingPlot.setVoltage(JsonUtils.getString(plotObj, "voltage"));
+			chargingPlot.setCurrent(JsonUtils.getString(plotObj, "current"));
+			chargingPlot.setMode(JsonUtils.getInt(plotObj, "mode"));
+			chargingPlot.setPlugNum(JsonUtils.getInt(plotObj, "plugNum"));
+			chargingPlot.setPrices(JsonUtils.getString(plotObj, "prices"));
+			chargingPlot.setOpenType(JsonUtils.getString(plotObj, "openType"));
+			chargingPlot.setAvailableState(JsonUtils.getInt(plotObj,
+					"availableState"));
+			chargingPlot.setManufacturer(JsonUtils.getString(plotObj,
+					"manufacturer"));
+			chargingPlot.setFactoryNum(JsonUtils.getString(plotObj,
+					"factoryNum"));
+			chargingPlot.setPlotNum(JsonUtils.getString(plotObj, "plotNum"));
+			chargingPlot.setProductNum(JsonUtils.getString(plotObj,
+					"productNum"));
+			chargingPlot.setParkingNum(JsonUtils.getString(plotObj,
+					"parkingNum"));
+			chargingPlot.setFloor(JsonUtils.getInt(plotObj, "floor"));
+			chargingPlot.setLocationType(JsonUtils.getInt(plotObj,
+					"locationType"));
 
-		chargingPlot.setPayment(JsonUtils.getString(plotObj, "payment"));
+			chargingPlot.setPayment(JsonUtils.getString(plotObj, "payment"));
 
-		BasicOperator operator = new BasicOperator(conn, chargingPlot);
+			BasicOperator operator = new BasicOperator(conn, chargingPlot);
 
-		operator.insertRow2Sql(stmt);
+			operator.insertRow2Sql(stmt);
 
+		}
 		return 1;
 	}
 }

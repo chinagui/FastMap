@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
@@ -71,19 +72,15 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":393,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.84898771782545,39.96174335570689]," +
-                "[116.84908658266068,39.96160227623062],[116.84916809967535,39.961754852631344]]}," +
-                "\"catchLinks\":[{\"linkPid\":508000543,\"lon\":116.84898771782545,\"lat\":39.96174335570689},{\"linkPid\":508000543," +
-                "\"lon\":116.84916809967535,\"lat\":39.961754852631344}]}}";
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.85005083680153,39.96127128417874]," +
+                "[116.85031503438948,39.96148303704254]]},\"catchLinks\":[]}}";
         TestUtil.run(parameter);
     }
 
     @Test
-    public void depart() {
-        String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":302002751,\"data\":{\"catchNodePid\":0," +
-                "\"catchLinkPid\":0,\"linkPid\":300003552,\"longitude\":116.3114833831787," +
-                "\"latitude\":40.11762904792049},\"type\":\"RDLINK\"}";
-        TestUtil.run(parameter);
+    public void depart() throws Exception {
+        RdLinkSearch search = new RdLinkSearch(DBConnector.getInstance().getConnectionById(13));
+        search.searchDataByTileWithGap(108069, 49640, 17, 10);
     }
 
     @Test

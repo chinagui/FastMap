@@ -214,32 +214,32 @@ public class SubtaskOperation {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
-						if(rs.getInt("refer_id") > 0){
-							Subtask subtask = new Subtask();
-							subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setName(rs.getString("NAME"));
-							subtask.setStage(rs.getInt("STAGE"));
-							subtask.setType(rs.getInt("TYPE"));
-							subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
-							subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
-							subtask.setStatus(rs.getInt("STATUS"));
-							subtask.setCreateUserId(rs.getInt("create_user_id"));
-							subtask.setTaskId(rs.getInt("TASK_ID"));
-							subtask.setWorkKind(rs.getInt("WORK_KIND"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							String wkt="";
-							try {
-								wkt=GeoTranslator.struct2Wkt(struct);
-								Geometry geometry=GeoTranslator.struct2Jts(struct);
-								subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							list.add(subtask);
+						//if(rs.getInt("refer_id") > 0){
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setCreateUserId(rs.getInt("create_user_id"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
+						try {
+							wkt=GeoTranslator.struct2Wkt(struct);
+							Geometry geometry=GeoTranslator.struct2Jts(struct);
+							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-						
+						list.add(subtask);
 					}
+						
+					//}
 					return list;
 				}
 	    	};

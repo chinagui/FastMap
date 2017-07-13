@@ -49,6 +49,8 @@ public class Photo {
 	
 	private String a_version;
 
+    private String a_refUuid;
+
 	public String getRowkey() {
 		return rowkey;
 	}
@@ -221,5 +223,12 @@ public class Photo {
 	public void setA_version(String a_version) {
 		this.a_version = a_version;
 	}
-	
+
+    public String getA_refUuid() {
+        return a_refUuid;
+    }
+
+    public void setA_refUuid(String a_refUuid) {
+        this.a_refUuid = a_refUuid;
+    }
 }

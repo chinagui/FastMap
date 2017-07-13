@@ -3,8 +3,11 @@ package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -14,6 +17,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -44,54 +48,65 @@ public class CreateCMSTaskPhase extends JobPhase {
             conn.commit();
 
             //业务逻辑
-//            Map<String, Object> cmsInfo = Tips2MarkUtils.getTaskInfo(conn, jobRelation.getItemId());
-//            JSONObject par=new JSONObject();
+//            Map<String, Object> cmsInfo = Tips2MarkUtils.getItemInfo(conn, jobRelation.getItemId(), jobRelation.getItemType());
+//            JSONObject parameter=new JSONObject();
 //            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 //                    .getBean("datahubApi");
 //            DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
-//            par.put("metaIp", metaDb.getDbServer().getIp());
-//            par.put("metaUserName", metaDb.getDbUserName());
+//            parameter.put("metaIp", metaDb.getDbServer().getIp());
+//            parameter.put("metaUserName", metaDb.getDbUserName());
 //
 //            DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
-//            par.put("fieldDbIp", auDb.getDbServer().getIp());
-//            par.put("fieldDbName", auDb.getDbUserName());
+//            parameter.put("fieldDbIp", auDb.getDbServer().getIp());
+//            parameter.put("fieldDbName", auDb.getDbUserName());
 //
 //            JSONObject taskPar=new JSONObject();
-//            taskPar.put("taskName", cmsInfo.get("cmsName"));
+//            taskPar.put("taskName", cmsInfo.get("collectName"));
 //            taskPar.put("fieldTaskId", cmsInfo.get("collectId"));
-//            taskPar.put("taskId", cmsInfo.get("cmsId"));
+//            taskPar.put("taskId", cmsInfo.get("collectId"));
 //            taskPar.put("province", cmsInfo.get("provinceName"));
 //            taskPar.put("city", cmsInfo.get("cityName"));
 //            taskPar.put("town", cmsInfo.get("blockName"));
-//            Object workProperty=cmsInfo.get("workProperty");
-//            if(workProperty==null){workProperty="更新";}
-//            taskPar.put("workType", workProperty);
-//            Object workType=cmsInfo.get("workType");
-//            if(workType==null){workType="行人导航";}
-//            taskPar.put("area",workType);
+//
+//            String jobType="中线一体化作业";
+//            String jobNature = "更新";
+//            int taskType=1;
+//            switch (jobRelation.getItemType()) {
+//                case PROJECT:
+//                    jobType = "快线一体化作业";
+//                    jobNature = "快速更新";
+//                    taskType = 4;
+//                    break;
+//                case SUBTASK:
+//                    taskType = 2;
+////                if(type!=0){
+////                    throw new Exception("非采集子任务不允许执行tips转mark");
+////                }
+//                case TASK:
+////                if(type!=0){
+////                    throw new Exception("非采集任务不允许执行tips转mark");
+////                }
+//                    break;
+//            }
+//            taskPar.put("workType", jobNature);
+//            taskPar.put("area", jobType);
+//
 //            taskPar.put("userId", cmsInfo.get("userNickName"));
 //            taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-//            TaskCmsProgress phase = TaskService.getInstance().queryCmsProgreeByPhaseId(conn, (int)job.getJobId());
-//            taskPar.put("meshs",phase.getMeshIds());
+//            taskPar.put("markTaskType",jobRelation.getItemType().value());
 //
-//            //判断之前tip2aumark的过程，是有tips还是没有tips
-//            if(lastJobProgress.getStatus()==JobProgressStatus.NODATA) {
-//                taskPar.put("hasAumark", false);
-//            }else{
-//                taskPar.put("hasAumark", true);
-//            }
-//            par.put("taskInfo", taskPar);
+//            parameter.put("taskInfo", taskPar);
 //
 //            String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
 //            Map<String,String> parMap = new HashMap<String,String>();
-//            parMap.put("parameter", par.toString());
-//            log.info(par.toString());
-//            jobProgress.setMessage(par.toString());
+//            parMap.put("parameter", parameter.toString());
+//            log.info(parameter.toString());
+//            jobProgress.setMessage(parameter.toString());
 //            String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
 //            //result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
 //            JSONObject res = null;
 //            try {
-//                res = JSONObject.parseObject(result);
+//                res = JSONObject.fromObject(result);
 //            }catch (Exception ex){
 //                res=null;
 //                jobProgress.setStatus(JobProgressStatus.FAILURE);

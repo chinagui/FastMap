@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -1074,7 +1075,14 @@ public class ProgramService {
 					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
 					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
 					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
-					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1114,7 +1122,14 @@ public class ProgramService {
 					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
 					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
 					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
-					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1165,6 +1180,8 @@ public class ProgramService {
 						map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 						map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						map.put("jobs", getJobArray(rs));
+
 						total=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -1242,7 +1259,14 @@ public class ProgramService {
 					+ "                P.PLAN_START_DATE,"
 					+ "                P.PLAN_END_DATE,"
 					+ "                F.ACTUAL_START_DATE,"
-					+ "                F.ACTUAL_END_DATE"
+					+ "                F.ACTUAL_END_DATE,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F, TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1304,6 +1328,7 @@ public class ProgramService {
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1372,7 +1397,14 @@ public class ProgramService {
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
 					+ "       F.ACTUAL_START_DATE,"
-					+ "       F.ACTUAL_END_DATE"
+					+ "       F.ACTUAL_END_DATE,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1426,6 +1458,7 @@ public class ProgramService {
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 					map.put("version", version);
+					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1435,6 +1468,42 @@ public class ProgramService {
 			}
     	};
     	return rsHandler;
+	}
+
+	private static JSONArray getJobArray(ResultSet rs) throws SQLException{
+		JSONArray jobs = new JSONArray();
+		int tips2markStatus = rs.getInt("TIPS2MARK");
+		int day2monthStatus = rs.getInt("DAY2MONTH");
+		int opentaskCount = rs.getInt("OPEN_TASK");
+		if(tips2markStatus==-1){
+			//所有采集任务都关闭才能执行tips转mark
+			if(opentaskCount==0){
+				JSONObject job = new JSONObject();
+				job.put("status", 0);
+				job.put("type", JobType.TiPS2MARK.value());
+				jobs.add(job);
+			}
+		}else{
+			JSONObject job = new JSONObject();
+			job.put("status", tips2markStatus);
+			job.put("type", JobType.TiPS2MARK.value());
+			jobs.add(job);
+		}
+		if(day2monthStatus==-1){
+			//所有采集任务都关闭才能执行日落月
+			if(opentaskCount==0){
+				JSONObject job = new JSONObject();
+				job.put("status", 0);
+				job.put("type", JobType.DAY2MONTH.value());
+				jobs.add(job);
+			}
+		}else{
+			JSONObject job = new JSONObject();
+			job.put("status", day2monthStatus);
+			job.put("type", JobType.DAY2MONTH.value());
+			jobs.add(job);
+		}
+		return jobs;
 	}
 	
 	public Page commonList(Connection conn,int planningStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{

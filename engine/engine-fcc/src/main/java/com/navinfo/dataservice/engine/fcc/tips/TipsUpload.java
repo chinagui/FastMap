@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -12,20 +15,30 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.navinfo.nirobot.common.utils.JsonUtil;
+import com.navinfo.nirobot.common.utils.MeshUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -86,6 +99,8 @@ public class TipsUpload {
 	private int s_qSubTaskId = 0; // 快线子任务号
 	private int s_mTaskId = 0;// 中线任务号
 	private int s_mSubTaskId = 0; // 中线子任务号
+    private Subtask subtask = null;
+    private int qcTotal = 0;
 
 	/**
 	 * @param subtaskid
@@ -137,6 +152,8 @@ public class TipsUpload {
                     s_mTaskId = 0;
                     s_mSubTaskId = 0;
                 }
+
+                subtask = manApi.queryBySubtaskId(subTaskId);
 			}else{
 				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+subTaskId);
 			}
@@ -1040,6 +1057,180 @@ public class TipsUpload {
 
 		return json;
 	}
+
+    public void runQuality(String fileName) throws Exception {
+        java.sql.Connection checkConn = null;
+        PreparedStatement deletePstmt = null;
+        PreparedStatement insertPstmt = null;
+        Connection hbaseConn = null;
+        Table htab = null;
+        try {
+            if (subtask != null && subtask.getIsQuality() == 1) {//是质检子任务
+                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
+                String groupName = (String)subTaskMap.get("groupName");
+                String province = (String)subTaskMap.get("province");
+                String city = (String)subTaskMap.get("city");
+                int userId = (Integer)subTaskMap.get("userId");
+                String version = (String)subTaskMap.get("version");
+
+                String deleteSql = "delete from FIELD_RD_QCRECORD " +
+                        "where PROBLEM_NUM in (select to_char(column_value) from table(clob_to_table(?)))";
+
+                String insertSql = "INSERT INTO FIELD_RD_QCRECORD(UUID, AREA, FIELD_GROUP, LINK_PID, PROVINCE, " +
+                        "CITY, ROWKEY, QC_SUBTASK, QC_SUBTASK_NAME, ROUTE_NUM, ESTAB_LEVEL, PROBLEM_NUM, " +
+                        "PHOTO_NUM, MESH_ID, GROUP_NAME, POI_FID, KIND_CODE, CLASS_TOP, CLASS_MEDIUM, " +
+                        "CLASS_BOTTOM, PROBLEM_TYPE, PROBLEM_PHENOMENON, PROBLEM_DESCRIPTION, INITIAL_CAUSE, " +
+                        "ROOT_CAUSE, CHECK_USERID, CHECK_TIME, COLLECTOR_USERID, COLLECTOR_TIME, " +
+                        "CHECK_DEPARTMENT, CHECK_MODE, MODIFY_DATE, MODIFY_USERID, CONFIRM_USERID, " +
+                        "VERSION, PROBLEM_LEVEL, PHOTO_EXIST, KIND, FC, MEMO_USERID, CLASS_WEIGHT, " +
+                        "PROBLEM_WEIGHT, TOTAL_WEIGHT, WORD_YEAR)" +
+                        "values (SEQ_FIELD_RD_QCRECORD.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
+                        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                checkConn = DBConnector.getInstance().getCheckConnection();
+                deletePstmt = checkConn.prepareStatement(deleteSql);
+                insertPstmt = checkConn.prepareStatement(insertSql);
+
+                List<FieldRoadQCRecord> records = loadQualityContent(fileName);
+                StringBuilder builder = new StringBuilder();
+                hbaseConn = HBaseConnector.getInstance().getConnection();
+
+                htab = hbaseConn.getTable(TableName
+                        .valueOf(HBaseConstant.tipTab));
+
+                for(FieldRoadQCRecord record : records) {
+                    String problem_num = record.getProblem_num();
+
+                    //根据problem_num删除上传记录的问题记录
+                    if(builder.length() > 0) {
+                        builder.append(",");
+                    }
+                    builder.append(problem_num);
+                    JSONObject solrObj = solr.getById(record.getRowkey());
+                    JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, record.getRowkey(), new String[]{"track"});
+                    JSONObject track = oldTip.getJSONObject("track");
+                    JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
+                    for (int i = trackInfoArr.size()-1; i >-1; i--) {
+
+                    }
+                    insertPstmt.setString(1, "");
+                    insertPstmt.setString(2, groupName);
+                    insertPstmt.setString(3, record.getLink_pid());
+                    insertPstmt.setString(4, province);
+                    insertPstmt.setString(5, city);
+                    insertPstmt.setString(6, record.getRowkey());
+                    insertPstmt.setInt(7, subTaskId);
+                    insertPstmt.setString(8, subtask.getName());
+                    insertPstmt.setInt(9, 0);
+                    insertPstmt.setString(10, "");
+                    insertPstmt.setString(11, problem_num);
+                    insertPstmt.setString(12, "");
+                    //TODO 按照Tips统计坐标所在图幅统计
+                    String wkt = solrObj.getString("wkt");
+                    Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+                    String mesh = MeshUtils.location2Mesh(geo.getCoordinates()[0].x, geo.getCoordinates()[0].y);
+                    insertPstmt.setInt(13, Integer.valueOf(mesh));
+                    insertPstmt.setString(14, "");
+                    insertPstmt.setString(15, "");
+                    insertPstmt.setString(16, "");
+                    insertPstmt.setString(17, record.getClass_top());
+                    insertPstmt.setString(18, record.getClass_bottom());
+                    insertPstmt.setString(19, record.getClass_bottom());
+                    insertPstmt.setString(20, record.getProblem_type());
+                    insertPstmt.setString(21, record.getProblem_phenomenon());
+                    insertPstmt.setString(22, record.getProblem_description());
+                    insertPstmt.setString(23, record.getInitial_cause());
+                    insertPstmt.setString(24, record.getRoot_cause());
+                    insertPstmt.setString(25, record.getCheck_userid());
+                    insertPstmt.setString(26, record.getCheck_time());
+                    //当抽取的范围没有采集数据(根据stage=1,handler=常规采集子任务userid判断）时，
+                    // 记录为AAA，如果有采集数据则记录常规采集任务的user_id
+                    String collecorUserId = "AAA";
+                    JSONArray jsonArray = oldTip.getJSONArray("t_trackInfo");
+                    for (int i = 0; i< jsonArray.size(); i++) {
+                        JSONObject trackInfoObj = jsonArray.getJSONObject(i);
+                        int stage = trackInfoObj.getInt("stage");
+                        int handler = trackInfoObj.getInt("handler");
+                        if(stage == 1 && handler == userId) {
+                            collecorUserId = String.valueOf(userId);
+                        }
+                    }
+                    insertPstmt.setString(27, collecorUserId);
+                    //读取常规采集子任务的date
+                    insertPstmt.setString(28, COLLECTOR_TIME);
+                    insertPstmt.setString(29, "外业采集部");
+                    insertPstmt.setInt(30, subtask.getQualityMethod());
+                    insertPstmt.setString(31, record.getCheck_time());
+                    insertPstmt.setString(32, record.getCheck_userid());
+                    insertPstmt.setString(33, record.getConfirm_userid());
+                    //读取当前版本号
+                    insertPstmt.setString(34, version);
+                    insertPstmt.setString(35, "C");
+                    insertPstmt.setInt(36, 0);
+                    insertPstmt.setInt(37, KIND);
+                    insertPstmt.setInt(38, FC);
+                    String memoUserId = "";
+                    if(collecorUserId.equals("AAA")) {
+                        memoUserId = String.valueOf(userId);
+                    }
+                    insertPstmt.setString(39, memoUserId);
+                    insertPstmt.setString(40, "");
+                    insertPstmt.setString(41, "");
+                    insertPstmt.setString(42, "");
+                    insertPstmt.setString(43, "");
+
+                    insertPstmt.addBatch();
+                }
+                Clob clob = ConnectionUtil.createClob(checkConn);
+                clob.setString(1, builder.toString());
+                deletePstmt.setClob(1, clob);
+                deletePstmt.execute();
+                checkConn.commit();
+                DBUtils.closeStatement(deletePstmt);
+
+
+
+            }
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(checkConn);
+            logger.error("质检问题上传失败，原因为：" + e.getMessage());
+            e.printStackTrace();
+        }finally {
+            DBUtils.closeStatement(deletePstmt);
+            DbUtils.commitAndCloseQuietly(checkConn);
+        }
+
+    }
+
+    /**
+     * 读取Tips文件，组装Get列表
+     *
+     * @param fileName
+     * @return
+     * @throws Exception
+     */
+    private List<FieldRoadQCRecord> loadQualityContent(String fileName)
+            throws Exception {
+        Scanner scanner = new Scanner(new FileInputStream(fileName));
+        List<FieldRoadQCRecord> records = new ArrayList<>();
+        qcTotal = 0;
+        while (scanner.hasNextLine()) {
+            qcTotal ++;
+            String problem_num = "";
+            try {
+                String line = scanner.nextLine();
+                FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(line, FieldRoadQCRecord.class);
+                problem_num = record.getProblem_num();
+                records.add(record);
+            } catch (Exception e) {
+                logger.error("质检问题上传解析JSON失败" + problem_num + "，原因为：" + e.getMessage());
+            }
+
+        }
+
+        return records;
+    }
 
 	public static void main(String[] args) throws Exception {
 

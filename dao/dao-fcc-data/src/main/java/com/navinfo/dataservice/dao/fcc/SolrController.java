@@ -810,6 +810,9 @@ public class SolrController {
 
         addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 
+        //20170711 情报矢量化Tips提交增加t_tipstatus
+        builder.append(" AND t_tipStatus=1");
+
         SolrQuery query = new SolrQuery();
 
         query.set("q", builder.toString());

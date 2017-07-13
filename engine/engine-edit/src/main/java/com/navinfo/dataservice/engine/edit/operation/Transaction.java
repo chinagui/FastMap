@@ -27,6 +27,7 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -1886,7 +1887,7 @@ public class Transaction {
     private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
         StringBuffer patter = new StringBuffer("^(");
 
-        patter.append("RD_LINK|RD_NODE");
+        patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
         patter.append("|RD_WARINGINFO|RD_LINK_WARING");
@@ -1898,6 +1899,7 @@ public class Transaction {
         Iterator<Integer> pidIterator = pids.iterator();
         while (rowIterator.hasNext()) {
             IRow row = rowIterator.next();
+            int pid = pidIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
                 logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
@@ -2026,6 +2028,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2104,6 +2109,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2139,6 +2147,7 @@ public class Transaction {
             for (AbstractProcess process : processes) {
                 DBUtils.rollBack(process.getConn());
             }
+            throw e;
         } finally {
             for (AbstractProcess process : processes) {
                 if (process.getConn() == conn) {

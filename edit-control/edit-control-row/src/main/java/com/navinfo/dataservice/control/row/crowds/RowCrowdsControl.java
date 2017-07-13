@@ -98,14 +98,17 @@ public class RowCrowdsControl {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String release(JSONObject reqJson) throws Exception{
-		String msg = null;
+	public JSONObject release(JSONObject reqJson) throws Exception{
+		String msg = "";
+		String resStr = "{\"subtaskId\":0,\"msg\":\"\"}";
+		JSONObject resJson = JSONObject.fromObject(resStr);
 		Connection dayConn = null;
 		String dataFid = "";
 		try{
 			JSONObject tPoi = reqJson.getJSONObject("data");
 			if (tPoi == null || tPoi.isNullObject() || tPoi.isEmpty()){
-				return "参数data数据错误！！";
+				resJson.put("msg", "参数data数据错误！！");
+				return resJson;
 			}
 			// 从POI或者充电桩提交的json中获取分类
 			String kindCode = "";
@@ -114,7 +117,8 @@ public class RowCrowdsControl {
 			}else if(tPoi.containsKey("KINDCODE")){
 				kindCode = tPoi.getString("KINDCODE");
 			}else{
-				return "参数data中没有KINDCODE，错误！！";
+				resJson.put("msg", "参数data中没有KINDCODE，错误！！");
+				return resJson;
 			}
 			List<String> fields = new ArrayList<String>();
 			if("230218".equals(kindCode) || "230227".equals(kindCode)){
@@ -134,13 +138,15 @@ public class RowCrowdsControl {
 				}
 			}
 			if (StringUtils.isNotEmpty(keyNotExists)){
-				return "当前字段在提交数据中不存在! key:"+ keyNotExists;
+				resJson.put("msg", "当前字段在提交数据中不存在! key:"+ keyNotExists);
+				return resJson;
 			}
 			String fid = tPoi.getString("FID");
 			dataFid = fid;
 			// 验证FID是否非法
 			if (StringUtils.isEmpty(fid)){
-				return "当前数据FID为空！tPoi:"+ tPoi.toString();
+				resJson.put("msg", "当前数据FID为空！");
+				return resJson;
 			}
 			logger.info("crowds fid:" + fid);
 			// 判断数据状态
@@ -165,7 +171,8 @@ public class RowCrowdsControl {
 				if (state != 3){
 					//判断有无常规子任务(且状态为待作业或待提交)
 					if (HasComSubtask(dayConn, fid, apiService)){
-						return "常规子任务FID:" + fid + " 正在作业！";
+						resJson.put("msg", "常规子任务FID:" + fid + " 正在作业！");
+						return resJson;
 					}
 				}
 				// 默认为无众包子任务，任务号赋0，状态为待作业
@@ -180,6 +187,7 @@ public class RowCrowdsControl {
 					subTaskId = subTask.getSubtaskId();
 					taskId = subTask.getTaskId();
 					subtaskType = subTask.getSubType();
+					resJson.put("subtaskId", subTaskId);
 				}
 				// 根据fid获取pid
 				List<String> fids = Arrays.asList(fid);
@@ -195,7 +203,8 @@ public class RowCrowdsControl {
 				// 判断在日库中存在否
 				if(pid == 0){
 					if(state != 3){
-						return "非新增FID为"+ fid +"的POI数据在日库中不存在！";
+						resJson.put("msg", "非新增FID为"+ fid +"的POI数据在日库中不存在！");
+						return resJson;
 					}else{
 						// 生成新增数据
 						if(!"230218".equals(kindCode) && !"230227".equals(kindCode)){
@@ -206,7 +215,8 @@ public class RowCrowdsControl {
 					}
 				}else{
 					if(state == 3){
-						return "新增数据FID为"+ fid +"的POI数据在日库中存在！";
+						resJson.put("msg", "新增数据FID为"+ fid +"的POI数据在日库中存在！");
+						return resJson;
 					}else{
 						if (state == 2){
 							// 生成修改数据
@@ -242,16 +252,18 @@ public class RowCrowdsControl {
 				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType);
 				
 			}else{
-				return "FID:" + fid + "数据未获取到大区库信息，不入库！";
+				resJson.put("msg", "FID:" + fid + "数据未获取到大区库信息，不入库！");
+				return resJson;
 			}
 		}catch (Exception e){
 			DbUtils.rollback(dayConn);
 			logger.error(e.getMessage(), e);
 			msg = "入库错误："+ e.getMessage() + "fid:" + dataFid;
+			resJson.put("msg", msg);
 		}finally{
 			DbUtils.commitAndCloseQuietly(dayConn);
 		}
-		return msg;
+		return resJson;
 		
 	}
 	

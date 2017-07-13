@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -703,6 +704,7 @@ public class ProgramService {
 						map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 						map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						map.put("jobs", new JSONArray());
 						total=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -931,7 +933,10 @@ public class ProgramService {
 					+ "         0 STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS"
+					+ "         C.PLAN_STATUS,"
+					+ "         1 OPEN_TASK,"
+					+ "         -1 TIPS2MARK,"
+					+ "         -1 DAY2MONTH,"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS = 0"
 					+ "  UNION ALL"
@@ -942,7 +947,14 @@ public class ProgramService {
 					+ "         P.STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS"
+					+ "         C.PLAN_STATUS,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "    FROM PROGRAM P, INFOR C"
 					+ "   WHERE P.INFOR_ID = C.INFOR_ID"
 					+ "     AND P.LATEST = 1"
@@ -991,6 +1003,7 @@ public class ProgramService {
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1074,7 +1087,14 @@ public class ProgramService {
 					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
 					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
 					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
-					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1114,7 +1134,14 @@ public class ProgramService {
 					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
 					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
 					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
-					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1165,6 +1192,8 @@ public class ProgramService {
 						map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 						map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						map.put("jobs", getJobArray(rs));
+
 						total=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -1242,7 +1271,14 @@ public class ProgramService {
 					+ "                P.PLAN_START_DATE,"
 					+ "                P.PLAN_END_DATE,"
 					+ "                F.ACTUAL_START_DATE,"
-					+ "                F.ACTUAL_END_DATE"
+					+ "                F.ACTUAL_END_DATE,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F, TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1304,6 +1340,7 @@ public class ProgramService {
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1372,7 +1409,14 @@ public class ProgramService {
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
 					+ "       F.ACTUAL_START_DATE,"
-					+ "       F.ACTUAL_END_DATE"
+					+ "       F.ACTUAL_END_DATE,"
+					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
+					+ "       NVL((SELECT J.STATUS"
+					+ "            FROM JOB_RELATION JR,JOB J"
+					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1426,6 +1470,7 @@ public class ProgramService {
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
 					map.put("version", version);
+					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1435,6 +1480,47 @@ public class ProgramService {
 			}
     	};
     	return rsHandler;
+	}
+
+	private static JSONArray getJobArray(ResultSet rs) throws SQLException{
+		JSONArray jobs = new JSONArray();
+
+		if(rs.getInt("TYPE")!=4){
+			return jobs;
+		}
+
+		int tips2markStatus = rs.getInt("TIPS2MARK");
+		int day2monthStatus = rs.getInt("DAY2MONTH");
+		int opentaskCount = rs.getInt("OPEN_TASK");
+		if(tips2markStatus==-1){
+			//所有采集任务都关闭才能执行tips转mark
+			if(opentaskCount==0){
+				JSONObject job = new JSONObject();
+				job.put("status", 0);
+				job.put("type", JobType.TiPS2MARK.value());
+				jobs.add(job);
+			}
+		}else{
+			JSONObject job = new JSONObject();
+			job.put("status", tips2markStatus);
+			job.put("type", JobType.TiPS2MARK.value());
+			jobs.add(job);
+		}
+		if(day2monthStatus==-1){
+			//所有采集任务都关闭才能执行日落月
+			if(opentaskCount==0){
+				JSONObject job = new JSONObject();
+				job.put("status", 0);
+				job.put("type", JobType.DAY2MONTH.value());
+				jobs.add(job);
+			}
+		}else{
+			JSONObject job = new JSONObject();
+			job.put("status", day2monthStatus);
+			job.put("type", JobType.DAY2MONTH.value());
+			jobs.add(job);
+		}
+		return jobs;
 	}
 	
 	public Page commonList(Connection conn,int planningStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
@@ -1537,7 +1623,7 @@ public class ProgramService {
 					+ "         P.DESCP                    PROGRAM_DESCP,"
 					+ "         P.TYPE,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1569,7 +1655,7 @@ public class ProgramService {
 					+ "         NULL,"
 					+ "         4,"
 					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
+					+ "         I.INFOR_NAME,I.INFOR_STAGE,"
 					+ "         I.FEATURE_KIND,"
 					+ "         I.METHOD,"
 					+ "         I.ADMIN_NAME,"
@@ -1607,6 +1693,7 @@ public class ProgramService {
 						map.put("type", rs.getInt("TYPE"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
 						
 						map.put("method", rs.getString("METHOD"));	
@@ -1660,6 +1747,7 @@ public class ProgramService {
 			sb.append("          C.CITY_ID,                                       ");
 			sb.append("          I.INFOR_ID,                                      ");
 			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.INFOR_stage,                                    ");
 			sb.append("          I.FEATURE_KIND,                                  ");
 			sb.append("          P.CREATE_USER_ID,                                ");
 			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
@@ -1695,6 +1783,7 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforStage", rs.getInt("INFOR_STAGE"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
@@ -1862,6 +1951,7 @@ public class ProgramService {
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> list = new ArrayList<Task>();
 					Map<Integer, Integer> gridMap =new HashMap<Integer, Integer>();
+					Map<Integer, Integer> monthGridMap =new HashMap<Integer, Integer>();
 					int programId=0;
 					int regionId=0;
 					//String regionName="";
@@ -1873,6 +1963,16 @@ public class ProgramService {
 							programId=programIdTmp;
 							regionId=regionIdTmp;
 							//regionName= regionNameTmp;
+						}
+						if(programId!=programIdTmp){
+							//创建月编任务
+					    	Task monthTask=new Task();
+					    	monthTask.setProgramId(programId);
+					    	monthTask.setRegionId(regionId);
+					    	monthTask.setGridIds(monthGridMap);
+					    	monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
+					    	monthTask.setType(2);
+					    	monthGridMap =new HashMap<Integer, Integer>();
 						}
 						if(programId!=programIdTmp||regionId!=regionIdTmp){
 							Task collectTask=new Task();
@@ -1902,6 +2002,7 @@ public class ProgramService {
 							//regionName= regionNameTmp;
 						}
 						gridMap.put(rs.getInt("GRID_ID"), 1);
+						monthGridMap.put(rs.getInt("GRID_ID"), 1);
 					}
 					if(programId!=0){
 						Task collectTask=new Task();
@@ -1924,10 +2025,20 @@ public class ProgramService {
 						dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
 //						dailyTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(dailyTask);
+						
+						//创建月编任务
+				    	Task monthTask=new Task();
+				    	monthTask.setProgramId(programId);
+				    	monthTask.setRegionId(regionId);
+				    	monthTask.setGridIds(monthGridMap);
+				    	monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
+				    	monthTask.setType(2);
+				    	list.add(monthTask);
 					}
 					return list;
 				}
-	    	};			
+	    	};
+	    	
 			QueryRunner run=new QueryRunner();
 			List<Task> list=run.query(conn, selectSql, rsHandler);
 			if(list!=null&&list.size()>0){
@@ -2310,7 +2421,7 @@ public class ProgramService {
 	 * @param taskId
 	 * @throws Exception
 	 */
-	public void changeProgramGridByTask(Connection conn, int taskId) throws Exception {
+	public int changeProgramGridByTask(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();
 			String sql="INSERT INTO PROGRAM_GRID_MAPPING"
@@ -2330,7 +2441,7 @@ public class ProgramService {
 					+ "           FROM PROGRAM_GRID_MAPPING M, TASK T"
 					+ "          WHERE M.PROGRAM_ID = T.PROGRAM_ID"
 					+ "            AND T.TASK_ID = "+taskId+")";
-			run.update(conn, sql);	
+			return run.update(conn, sql);	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

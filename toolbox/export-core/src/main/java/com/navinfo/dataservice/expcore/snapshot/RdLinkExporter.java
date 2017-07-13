@@ -63,13 +63,15 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add names Blob;");
 		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
 		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
-		//********zl 2017.04.11 *************
 		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		//********zl 2017.07.10 *************
+		stmt.execute("alter table gdb_rdLine add scenario integer;");
+		stmt.execute("alter table gdb_rdLine add evaluPlan integer;");
 		//***********************************
 
 		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -77,7 +79,7 @@ public class RdLinkExporter {
 		//**********zl 2016.12.27 *************
 		
 		String sql = "select a.*, display_text.name, styleFactors1.types,styleFactors2.lane_types,"
-				+ "speedlimits.from_speed_limit,speedlimits.to_speed_limit,forms.forms   "
+				+ "speedlimits.from_speed_limit,speedlimits.to_speed_limit,forms.forms,NVL(p.scenario,2) scenario     "
 				+ "from rd_link a,"
 				+ "(select a.link_pid,listagg(B.NAME,'/') within group(order by name_class,seq_num) name "
 					+ "from rd_link_name a, rd_name b "
@@ -95,9 +97,9 @@ public class RdLinkExporter {
 					+ "(select link_pid, listagg(lane_type, ',') within group(order by lane_type) lane_types  from rd_lane a "
 							+ "where a.u_record != 2 group by link_pid) styleFactors2,"
 						+ "(select link_pid, from_speed_limit, to_speed_limit from rd_link_speedlimit a  where speed_type = 0 and a.u_record != 2) speedlimits, "
-						+ "(select link_pid, listagg(form_of_way, ',') within group(order by form_of_way) forms  from rd_link_form "
-							+ "where u_record != 2  group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+) "
-							+ " and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+) "
+						+ "(select link_pid, listagg(form_of_way, ',') within group(order by form_of_way) forms   from rd_link_form "
+							+ "where u_record != 2  group by link_pid) forms,link_edit_pre p  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+) "
+							+ " and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+) and a.link_pid = p.pid(+) "
 							+ " and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 		//*************************************
 		Clob clob = conn.createClob();
@@ -191,6 +193,10 @@ public class RdLinkExporter {
 			prep.setLong(25, json.getLong("eNodePid"));
 			
 			prep.setInt(26, json.getInt("isADAS"));
+			
+			prep.setInt(27, json.getInt("scenario"));
+			
+			prep.setInt(28, json.getInt("evaluPlan"));
 
 			prep.executeUpdate();
 
@@ -469,7 +475,11 @@ public class RdLinkExporter {
 //				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 			}
 		}
+		
 		json.put("isADAS", isADAS);
+		json.put("scenario", rs.getInt("scenario"));
+		
+		json.put("evaluPlan", 2);
 
 		return json;
 	}

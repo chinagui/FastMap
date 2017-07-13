@@ -214,32 +214,32 @@ public class SubtaskOperation {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
-						if(rs.getInt("refer_id") > 0){
-							Subtask subtask = new Subtask();
-							subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setName(rs.getString("NAME"));
-							subtask.setStage(rs.getInt("STAGE"));
-							subtask.setType(rs.getInt("TYPE"));
-							subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
-							subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
-							subtask.setStatus(rs.getInt("STATUS"));
-							subtask.setCreateUserId(rs.getInt("create_user_id"));
-							subtask.setTaskId(rs.getInt("TASK_ID"));
-							subtask.setWorkKind(rs.getInt("WORK_KIND"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							String wkt="";
-							try {
-								wkt=GeoTranslator.struct2Wkt(struct);
-								Geometry geometry=GeoTranslator.struct2Jts(struct);
-								subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							list.add(subtask);
+						//if(rs.getInt("refer_id") > 0){
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setCreateUserId(rs.getInt("create_user_id"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
+						try {
+							wkt=GeoTranslator.struct2Wkt(struct);
+							Geometry geometry=GeoTranslator.struct2Jts(struct);
+							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-						
+						list.add(subtask);
 					}
+						
+					//}
 					return list;
 				}
 	    	};
@@ -742,7 +742,7 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type");
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -786,7 +786,7 @@ public class SubtaskOperation {
 							total=rs.getInt("TOTAL_RECORD_NUM_");
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
-						
+
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -826,6 +826,8 @@ public class SubtaskOperation {
 								subtaskObj.setGeometry(wkt);
 								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
 								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
+								subtaskObj.setIsQuality(rs.getInt("IS_QUALITY"));
+								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
 
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
@@ -898,7 +900,7 @@ public class SubtaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			StringBuilder sb = new StringBuilder();
+			final StringBuilder sb = new StringBuilder();
 			
 			String groupSql="";
 			if(dataJson.containsKey("exeGroupId")&&!dataJson.getJSONArray("exeGroupId").isEmpty()){
@@ -962,7 +964,7 @@ public class SubtaskOperation {
 							total=rs.getInt("TOTAL_RECORD_NUM_");
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
-						
+
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -1100,7 +1102,7 @@ public class SubtaskOperation {
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));
@@ -3044,7 +3046,7 @@ public class SubtaskOperation {
 		
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
-		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>() ;
+		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>();
 		for(Integer gridId:gridIdList){
 			if(gridIdsBefore.containsKey(gridId)){
 				continue;
@@ -3180,6 +3182,84 @@ public class SubtaskOperation {
 		}
 	}
 	
+	/**
+	 * 获取对应采集/日编子任务对应的同任务下的快线月编子任务
+	 * @param Connection
+	 * @param int
+	 * @throws Exception
+	 * 
+	 * */
+	public static List<Integer> getMonthSubtaskByTask(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT T.SUBTASK_ID"
+					+ "    FROM TASK S, TASK UT, SUBTASK T, PROGRAM P"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND T.TASK_ID = UT.TASK_ID"
+					+ "     AND T.STAGE = 2"
+					+ "     AND P.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+	 * 根据任务修改月编子任务范围，快线月编子任务的范围和任务范围一致
+	 * @param Connection
+	 * @param taskId
+	 * @return int
+	 * @throws Exception
+	 * 
+	 * */
+	public static int changeMonthSubtaskGridByTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT ST.SUBTASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK T, TASK UT, SUBTASK ST, PROGRAM P"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND ST.TASK_ID = UT.TASK_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					+ "     AND P.TYPE = 4"
+					+ "     AND ST.STAGE = 2"
+					+ "  MINUS"
+					+ "  SELECT S.SUBTASK_ID, T.GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING T, SUBTASK S, TASK P, TASK UT, PROGRAM M"
+					+ "   WHERE P.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND S.TASK_ID = UT.TASK_ID"
+					+ "     AND T.SUBTASK_ID = S.SUBTASK_ID"
+					+ "     AND M.TYPE = 4"
+					+ "     AND S.STAGE = 2";
+			log.info("根据任务调整月编子任务sql："+sql);
+			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 	
 //
 //	/**
@@ -3209,5 +3289,4 @@ public class SubtaskOperation {
 //		}
 //		
 //	}
-
 }

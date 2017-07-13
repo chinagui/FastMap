@@ -1,13 +1,14 @@
 package com.navinfo.dataservice.control.row.quality;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -15,7 +16,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Strings;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -30,6 +30,7 @@ import com.navinfo.dataservice.engine.editplus.utils.AdFaceSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -122,14 +123,13 @@ public class QualityService {
 				JSONObject userIdAndTimeJson = run.query(regiondbConn, queryUserIdAndOpDtSql.toString(),
 						userIdAndTimeHandler);
 				long usId = userIdAndTimeJson.getLong("usId");
+				// 当usId = 0时，采集员姓名返回空串
+				resultJson.put("usId", usId);
 				UserInfo userInfoByUserId = apiService.getUserInfoByUserId(usId);
 				String collectorUser = userInfoByUserId.getUserRealName();
-				long currentTime = userIdAndTimeJson.getLong("opDt");
-				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
-				// 当usId = 0时，采集员姓名返回字符串null
 				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				resultJson.put("collectorTime", collectorTime);
-				resultJson.put("usId", usId);
+				long currentTime = userIdAndTimeJson.getLong("opDt");
+				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
 			} else {
 				queryUserIdAndOpDtSql.append("		ORDER BY LO.OP_DT DESC)");
 				queryUserIdAndOpDtSql.append("WHERE ROWNUM = 1");
@@ -145,9 +145,8 @@ public class QualityService {
 					collectorUser = apiService.getUserInfoByUserId(usId).getUserRealName();
 					currentTime = userIdAndTimeJson.getLong("opDt");
 				}
-				String collectorTime = DateUtils.longToString(currentTime, "yyyy.MM.dd");
 				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				resultJson.put("collectorTime", collectorTime);
+				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
 				resultJson.put("usId", usId);
 			}
 			return resultJson;
@@ -174,7 +173,7 @@ public class QualityService {
 				object.put("opDt", rs.getTimestamp("op_dt").getTime());
 			} else {
 				object.put("usId", 0L);
-				object.put("opDt", System.currentTimeMillis());
+				object.put("opDt", 0L);
 			}
 			return object;
 		}
@@ -579,4 +578,116 @@ public class QualityService {
 		}
 	}
 
+	/**
+	 * poi质检问题查看
+	 * @param dataJson
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryProblemList(JSONObject dataJson) throws Exception {
+		Connection checkConn = null;
+		Connection manConn = null;
+		PreparedStatement preparedStatementCheck = null;
+		ResultSet resultSetCheck = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			checkConn = DBConnector.getInstance().getCheckConnection();
+			manConn = DBConnector.getInstance().getManConnection();
+			
+			List<Object> params = new ArrayList<>();
+			String poiNum = dataJson.getString("poiNum");
+			int subtaskId = dataJson.getInt("subtaskId");
+			params.add(poiNum);
+			params.add(subtaskId);
+			
+			StringBuilder builder = new StringBuilder();
+			builder.append("SELECT PROBLEM_NUM, PROVINCE, CITY, \"GROUP\", KIND_CODE, MESH_ID, PROBLEM_LEVEL, PROBLEM_DESCRIPTION, ");
+			builder.append("INITIAL_CAUSE, ROOT_CAUSE, COLLECTOR_USER, COLLECTOR_TIME, MEMO, \"VERSION\", CONFIRM_USER, CHECK_USER, ");
+			builder.append("CHECK_TIME, CHECK_MODE, CLASS_MEDIUM, CLASS_BOTTOM, PROBLEM_TYPE, PROBLEM_PHENOMENON  FROM POI_PROBLEM_SUMMARY WHERE POI_NUM = ? AND SUBTASK_ID = ? ");
+			
+			String classTop = "";
+			String classMedium = "";
+			if(dataJson.containsKey("classTop")){
+				classTop = dataJson.getString("classTop");
+			}
+			if(dataJson.containsKey("classMedium")){
+				classMedium = dataJson.getString("classMedium");
+			}
+			if(!StringUtils.isEmpty(classTop)){
+				builder.append("AND CLASS_TOP = ? ");
+				params.add(classTop);
+			}
+			if(!StringUtils.isEmpty(classMedium)){
+				builder.append("AND CLASS_MEDIUM = ? ");
+				params.add(classMedium);
+			}
+			
+			preparedStatementCheck = checkConn.prepareStatement(builder.toString());
+			for(int i = 0 ; i < params.size(); i ++){
+				preparedStatementCheck.setObject(i + 1, params.get(i));
+			}
+			resultSetCheck = preparedStatementCheck.executeQuery();
+			JSONArray resultJson = new JSONArray();
+			Map<String, String> map = metadataApi.getKindNameByKindCode();
+			while (resultSetCheck.next()) {
+				JSONObject jo = new JSONObject();
+				jo.put("problemNum", resultSetCheck.getString("PROBLEM_NUM") != null ? resultSetCheck.getString("PROBLEM_NUM") : "");
+				jo.put("province", resultSetCheck.getString("PROVINCE")  != null ? resultSetCheck.getString("PROVINCE") : "");
+				jo.put("city", resultSetCheck.getString("CITY")  != null ? resultSetCheck.getString("CITY") : "");
+				jo.put("group", resultSetCheck.getString("GROUP")  != null ? resultSetCheck.getString("GROUP") : "");
+				String kindCode = resultSetCheck.getString("KIND_CODE");
+				jo.put("kindCode", kindCode != null ? kindCode : "");
+				String kindName = null;
+				kindName = map.get(kindCode);
+				jo.put("kindName", kindName != null ? kindName : "");
+				jo.put("meshId", resultSetCheck.getInt("MESH_ID"));
+				jo.put("problemLevel", resultSetCheck.getString("PROBLEM_LEVEL") != null ? resultSetCheck.getString("PROBLEM_LEVEL") : "");
+				jo.put("problemDescription", resultSetCheck.getString("PROBLEM_DESCRIPTION") != null ? resultSetCheck.getString("PROBLEM_DESCRIPTION") : "");
+				jo.put("intialCause", resultSetCheck.getString("INITIAL_CAUSE") != null ? resultSetCheck.getString("INITIAL_CAUSE") : "");
+				jo.put("rootCause", resultSetCheck.getString("ROOT_CAUSE") != null ? resultSetCheck.getString("ROOT_CAUSE") : "");
+				jo.put("collectorUser", resultSetCheck.getString("COLLECTOR_USER") != null ? resultSetCheck.getString("COLLECTOR_USER") : "");
+				Timestamp ts = resultSetCheck.getTimestamp("COLLECTOR_TIME");
+				if(ts != null){
+					jo.put("collectorTime", DateUtils.longToString(ts.getTime(), "yyyy.MM.dd"));
+				} else {
+					jo.put("collectorTime", "");
+				}
+				jo.put("memo", resultSetCheck.getString("MEMO") != null ? resultSetCheck.getString("MEMO") : "");
+				jo.put("version", resultSetCheck.getString("VERSION") != null ? resultSetCheck.getString("VERSION") : "");
+				jo.put("confirmUser", resultSetCheck.getString("CONFIRM_USER") != null ? resultSetCheck.getString("CONFIRM_USER") : "");
+				int checkUserId = resultSetCheck.getInt("CHECK_USER");
+				StringBuilder sb = new StringBuilder();
+				sb.append("SELECT USER_REAL_NAME FROM USER_INFO WHERE USER_ID = ").append(checkUserId);
+				preparedStatement = manConn.prepareStatement(sb.toString());
+				resultSet = preparedStatement.executeQuery();
+				String checkUser = null;
+				if(resultSet.next()){
+					checkUser = resultSet.getString(1);
+				}
+				jo.put("checkUser", checkUser != null ? checkUser : "");
+				jo.put("checkTime", DateUtils.longToString(resultSetCheck.getTimestamp("CHECK_TIME").getTime(), "yyyy.MM.dd"));
+				jo.put("checkMode", resultSetCheck.getString("CHECK_MODE") != null ? resultSetCheck.getString("CHECK_MODE") : "");
+				jo.put("classMedium", resultSetCheck.getString("CLASS_MEDIUM") != null ? resultSetCheck.getString("CLASS_MEDIUM") : "");
+				jo.put("classBottom", resultSetCheck.getString("CLASS_BOTTOM") != null ? resultSetCheck.getString("CLASS_BOTTOM") : "");
+				jo.put("problemType", resultSetCheck.getString("PROBLEM_TYPE") != null ? resultSetCheck.getString("PROBLEM_TYPE") : "");
+				jo.put("problemPhenomenon", resultSetCheck.getString("PROBLEM_PHENOMENON") != null ? resultSetCheck.getString("PROBLEM_PHENOMENON") : "");
+				resultJson.add(jo);
+			}
+			return resultJson;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(checkConn);
+			DbUtils.rollbackAndCloseQuietly(manConn);
+			log.error("获取poi质检问题失败，原因为：" + e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(checkConn);
+			DbUtils.commitAndCloseQuietly(manConn);
+			DbUtils.closeQuietly(preparedStatementCheck);
+			DbUtils.closeQuietly(resultSetCheck);
+			DbUtils.closeQuietly(preparedStatement);
+			DbUtils.closeQuietly(resultSet);
+		}
+	}
 }

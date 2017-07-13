@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.man.job.bean;
 
-import com.alibaba.fastjson.JSONObject;
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 /**
@@ -11,11 +11,11 @@ public class Job {
     private long jobId;
     private JobType type;
     private long operator;
-    private JobStatus status;
+    private JobStatus status = JobStatus.RUNNING;
     private Date createDate;
     private Date endDate;
     private int lastest = 1;
-    private JSONObject parameter;
+    private String parameter;
 
     public long getJobId() {
         return jobId;
@@ -73,11 +73,20 @@ public class Job {
         this.lastest = lastest;
     }
 
-    public JSONObject getParameter() {
+    public String getParameter() {
         return parameter;
     }
 
-    public void setParameter(JSONObject parameter) {
+    public void setParameter(String parameter) {
         this.parameter = parameter;
+    }
+
+    public void load(ResultSet rs) throws SQLException {
+        this.setJobId(rs.getLong("job_id"));
+        this.setStatus(JobStatus.valueOf(rs.getInt("status")));
+        this.setType(JobType.valueOf(rs.getInt("type")));
+        this.setOperator(rs.getLong("operator"));
+        this.setLastest(rs.getInt("latest"));
+        this.setParameter(rs.getString("parameter"));
     }
 }

@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -60,6 +62,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -72,7 +75,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 
 public class SubtaskService {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private static final Logger log = LoggerRepos.getLogger(SubtaskService.class);
 
 	private SubtaskService() {
 	}
@@ -97,6 +100,21 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			int referId =0;
+			SubtaskRefer myRefer=null;
+			if(dataJson.containsKey("referId")){
+				referId = dataJson.getInt("referId");
+				if(referId!=0){
+					JSONObject condition=new JSONObject();
+					JSONArray ids=new JSONArray();
+					ids.add(referId);
+					condition.put("ids", ids);
+					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
+					if(referObj!=null&&referObj.size()>0){
+						myRefer=referObj.get(0);
+					}
+				}
+			}
 			//处理grid：1list转map;2根据grid计算几何
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
@@ -109,6 +127,15 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}else if(myRefer!=null){
+				Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(myRefer.getGeometry());
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(String gridId:grids){
+					gridIdMap.put(gridId, 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(grids));
+				dataJson.put("geometry",wkt);
 			}else{
 				int taskId = dataJson.getInt("taskId");
 				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
@@ -121,10 +148,17 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
-			//锁定 subtask_refer表  2017.07.06 zl
-			if(dataJson.containsKey("referId")){
-				int referId = dataJson.getInt("referId");
-				lockSubtaskRefer(conn,referId);
+			if(dataJson.containsKey("qualityMethod")){
+				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
+				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",3);
+				}
+				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",1);
+				}
+				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",2);
+				}
 			}
 			
 			//创建质检子任务
@@ -297,7 +331,23 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			List<Subtask> subtaskList = new ArrayList<Subtask>();
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-	
+			
+			int referId =0;
+			SubtaskRefer myRefer=null;
+			if(dataJson.containsKey("referId")){
+				referId = dataJson.getInt("referId");
+				if(referId!=0){
+					JSONObject condition=new JSONObject();
+					JSONArray ids=new JSONArray();
+					ids.add(referId);
+					condition.put("ids", ids);
+					List<SubtaskRefer> referObj = queryReferByTaskId(conn,condition,true);
+					if(referObj!=null&&referObj.size()>0){
+						myRefer=referObj.get(0);
+					}
+				}
+			}
+			
 			//处理grid：1list转map;2根据grid计算几何
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
@@ -310,12 +360,38 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}else if(myRefer!=null){
+				Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(myRefer.getGeometry());
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(String gridId:grids){
+					gridIdMap.put(gridId, 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(grids));
+				dataJson.put("geometry",wkt);
+			}else{
+				int taskId = dataJson.getInt("taskId");
+				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
+				Map<String,Integer> gridIdMap2 = new HashMap<String,Integer>();
+				for(Map.Entry<Integer, Integer> entry:gridIdMap.entrySet()){
+					gridIdMap2.put(entry.getKey().toString(), entry.getValue());
+				}
+				dataJson.put("gridIds",gridIdMap2);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdMap.keySet()));
+				dataJson.put("geometry",wkt);
 			}
 			
-			//锁定 subtask_refer表 2017.07.06 zl
-			if(dataJson.containsKey("refer_id")){
-				int referId = dataJson.getInt("refer_id");
-				lockSubtaskRefer(conn,referId);
+			if(dataJson.containsKey("qualityMethod")){
+				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
+				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",3);
+				}
+				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",1);
+				}
+				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
+					dataJson.put("qualityMethod",2);
+				}
 			}
 			
 			int qualitySubtaskId = 0;//质检子任务id
@@ -650,6 +726,13 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			Map<String,Object> subtaskMap= queryBySubtaskId(conn,subtaskId); 
 			//增加平台参数。0：采集端，1：编辑平台2管理平台（grids返回值不一样）
+			if(platform==2){//管理平台有不规则圈的子任务，则不返回其自身的坐标和grid
+				if(subtaskMap.containsKey("referGeometry")){
+					subtaskMap.remove("geometry");
+					subtaskMap.remove("geometryJSON");
+					subtaskMap.remove("gridIds");
+				}
+			}
 			if(platform==0||platform==1){
 				if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
 					Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
@@ -672,6 +755,10 @@ public class SubtaskService {
 					}
 				}
 			}
+			// 计算子任务对应大区库所包含图幅号，用于判定接边作业
+			List<Integer> meshes = listDbMeshesBySubtask(conn, subtaskId);
+			subtaskMap.put("meshes", meshes);
+
 			return subtaskMap;	
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -711,6 +798,7 @@ public class SubtaskService {
 			sb.append("        ST.EXE_GROUP_ID,                         ");
 			sb.append("        ST.QUALITY_SUBTASK_ID,                   ");
 			sb.append("        ST.IS_QUALITY,                           ");
+			sb.append("        sr.geometry refer_GEOMETRY,                             ");
 			sb.append("        T.TASK_ID,                               ");
 			sb.append("        T.TYPE                TASK_TYPE,         ");
 			sb.append("        R.DAILY_DB_ID,                           ");
@@ -718,9 +806,10 @@ public class SubtaskService {
 			sb.append("        T.NAME                TASK_NAME,         ");
 			sb.append("        T.TASK_ID,                               ");
 			sb.append("        P.TYPE PROGRAM_TYPE                      ");
-			sb.append("   FROM SUBTASK ST, TASK T, REGION R,PROGRAM P   ");
+			sb.append("   FROM SUBTASK ST, TASK T, REGION R,PROGRAM P,subtask_refer sr ");
 			sb.append("  WHERE ST.TASK_ID = T.TASK_ID                   ");
 			sb.append("    AND T.REGION_ID = R.REGION_ID                ");
+			sb.append("    AND st.refer_id = sr.id(+)                ");
 			sb.append("    AND T.PROGRAM_ID = P.PROGRAM_ID              ");
 			sb.append("    AND ST.SUBTASK_ID = " + subtaskId);
 
@@ -740,12 +829,19 @@ public class SubtaskService {
 						subtask.put("descp",rs.getString("DESCP"));
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));
-						subtask.put("referId",rs.getInt("REFER_ID"));
+						int referId=rs.getInt("REFER_ID");
+						subtask.put("referId",referId);
 						subtask.put("taskId",rs.getInt("TASK_ID"));
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
-						subtask.put("qualityMethod", rs.getInt("QUALITY_METHOD"));
+						int qualityMethod=rs.getInt("QUALITY_METHOD");
+						JSONArray qualityMethodArray=new JSONArray();
+						if(qualityMethod==3){
+							qualityMethodArray.add(1);
+							qualityMethodArray.add(2);
+						}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
+						subtask.put("qualityMethod", qualityMethodArray);
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -757,6 +853,7 @@ public class SubtaskService {
 								subtask.put("exeUserId",exeUserId);
 								subtask.put("executerId",exeUserId);
 								subtask.put("executer",userInfo.getUserRealName());
+								subtask.put("risk",userInfo.getRisk());
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -786,6 +883,7 @@ public class SubtaskService {
 								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
 								subtask.put("qualityExeUserName",userInfo.getUserRealName());
+								subtask.put("qualityRisk",userInfo.getRisk());
 								String groupName=UserGroupService.getInstance().getGroupNameByGroupId(subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
 								subtask.put("qualityExeGroupName",groupName);
@@ -801,6 +899,16 @@ public class SubtaskService {
 							subtask.put("geometry",GeoTranslator.struct2Wkt(struct));
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							subtask.put("geometryJSON",Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//refer_GEOMETRY
+						STRUCT referStruct = (STRUCT) rs.getObject("refer_GEOMETRY");
+						try {
+							subtask.put("referGeometry",GeoTranslator.struct2Wkt(referStruct));
+							String referClobStr = GeoTranslator.struct2Wkt(referStruct);
+							subtask.put("referGeometryJSON",Geojson.wkt2Geojson(referClobStr));
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -1486,16 +1594,16 @@ public class SubtaskService {
 			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
-				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
-				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
-					//是否中线子任务
-					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
-					if(task.getBlockId()!=0&&subtask.getReferId()==0){
-						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
-					}
-					int referId = subtask.getReferId();
-					lockSubtaskRefer(conn,referId);
-				}
+//				//20170708 by zhangxiaoyi 快线采集子任务需判断是否有对应的不规则圈，并锁子任务表，没有则不发布
+//				if(subtask.getStage()==0&&(int)subtask.getStatus()== 2){
+//					//是否中线子任务
+//					Task task = TaskService.getInstance().queryByTaskId(conn, subtask.getTaskId());
+//					if(task.getBlockId()!=0&&subtask.getReferId()==0){
+//						throw new Exception("发布失败：请选择中线采集子任务对应的不规则圈。");
+//					}
+//					int referId = subtask.getReferId();
+//					lockSubtaskRefer(conn,referId);
+//				}
 				//修改子任务状态
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
@@ -1964,25 +2072,33 @@ public class SubtaskService {
 
 		//动态调整子任务范围
 		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
-		if(subtask.getStage()==0||subtask.getStage()==1){
+		//这里修改为快线才调整，中线不调整
+		int programType = getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+		if(programType == 4 && (subtask.getStage() == 0 || subtask.getStage() == 1)){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");
-			int programType=1;
-			if(subtask.getStage()==0){
-				programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
-			}
+
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
+//				//modify by songhe
+//				//添加中线采集任务范围调整，因为中线采集子任务不进行范围调整，所以上一步的根据子任务调整任务范围更新的数据一定为0
+//				if(programType == 1 && subtask.getStage() == 0){
+//					List<Integer> grids = new ArrayList<>();
+//					grids.addAll(gridIdsToInsert.keySet());
+//					TaskOperation.changeTaskGridByGrids(conn, grids, subtask);
+//				}
+				
 				if(taskChangeNum>0){					
 					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 					log.info("调整子任务对应快线项目范围");
-					ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
+					int programCount = ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
 					if(subtask.getStage()==1){
 						//调整区域子任务范围
 						log.info("日编子任务 调整区域子任务范围");
@@ -1994,7 +2110,9 @@ public class SubtaskService {
 						}
 					}else if(subtask.getStage()==0){
 						//调整日编任务，二代编辑任务
-						log.info("采集子任务 调整日编任务，二代编辑任务范围");
+						//modify by songhe
+						//sql里面删除了task.type =3 二代编辑任务的筛选条件，二代编辑任务不进行动态调整
+						log.info("采集子任务 调整日编任务范围");
 						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
 						//调整日编区域子任务范围		
 						log.info("采集子任务 调整日编区域子任务范围");
@@ -2005,9 +2123,25 @@ public class SubtaskService {
 								updateSubtaskGeo(conn,tmpSubtaskId);}
 						}
 					}
-				}					
+					//modify by songhe
+					//原则变更：快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+					//调整快线月编任务以及子任务的范围和项目范围保持一致，根据项目范围调整的个数判断是否执行表便任务的调整操作
+					if(programCount > 0){
+						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
+						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
+						if(monthChangedTasks > 0){
+							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
+							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
+							//获取对应采集/日编子任务对应的同任务下的快线月编子任务
+							List<Integer> monthSubtasks = SubtaskOperation.getMonthSubtaskByTask(conn, subtask.getTaskId());
+							for(int subTaskId : monthSubtasks){
+								updateSubtaskGeo(conn, subTaskId);
+							}
+						}
+					}
+				}	
 			}
-		}		
+		}	
 		
 		//记录关闭时间
 		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
@@ -2205,7 +2339,11 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
+			
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status,");
+			sb.append("NVL((SELECT J.STATUS");
+			sb.append(" FROM JOB_RELATION JR,JOB J");
+			sb.append(" WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=S.SUBTASK_ID AND JR.ITEM_TYPE=3 ),-1) TIPS2MARK");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2280,6 +2418,25 @@ public class SubtaskService {
 						
 						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));
 						subtask.put("qualityExeUserName", rs.getString("quality_Exe_User_Name"));
+
+						JSONArray jobs = new JSONArray();
+						int tips2markStatus = rs.getInt("TIPS2MARK");
+						if(tips2markStatus==-1){
+							//关闭的采集子任务才能执行tips转mark
+							if(rs.getInt("STATUS")==0 && rs.getInt("STAGE")==0){
+								JSONObject job = new JSONObject();
+								job.put("type", JobType.TiPS2MARK.value());
+								job.put("status", 0);
+								jobs.add(job);
+							}
+						}else{
+							JSONObject job = new JSONObject();
+							job.put("type", JobType.TiPS2MARK.value());
+							job.put("status", tips2markStatus);
+							jobs.add(job);
+						}
+						subtask.put("jobs", jobs);
+
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(subtask);
 					}					
@@ -2913,8 +3070,11 @@ public class SubtaskService {
 			}
 			if(condition.containsKey("id1")){
 				id1=condition.getInt("id1");
+			}
+			if(condition.containsKey("id2")){
 				id2=condition.getInt("id2");
 			}
+			log.info("paintRefer taskId="+taskId+";condition="+condition.toString());
 			
 			conn=DBConnector.getInstance().getManConnection();
 			
@@ -2922,12 +3082,11 @@ public class SubtaskService {
 			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 			JSONObject conditionQuery2=new JSONObject();
 			conditionQuery2.put("blockId", task.getBlockId());
-			if(StringUtils.isEmpty(lineWkt)){
-				JSONArray ids=new JSONArray();
-				ids.add(id1);
-				ids.add(id2);
-				conditionQuery2.put("ids", ids);
-			}
+			
+			JSONArray ids=new JSONArray();
+			if(id1!=0){ids.add(id1);}
+			if(id2!=0){ids.add(id2);}
+			if(ids.size()!=0){conditionQuery2.put("ids", ids);}
 			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
 
 			JSONObject conditionQuery=new JSONObject();
@@ -2941,7 +3100,7 @@ public class SubtaskService {
 			//若没有子任务，则直接拆分block；否则拆分子任务圈，并删除采集子任务与不规则圈的关联
 				 */
 				Geometry lineGeo=GeoTranslator.wkt2Geometry(lineWkt);
-				if(refers==null||refers.size()==0){//切分block
+				if(id1==0){//切分block
 					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
 					Geometry referGeo = block.getOriginGeo();
 					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
@@ -2963,12 +3122,14 @@ public class SubtaskService {
 					List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
 					//5.保存信息
 					for(Geometry g:addGeo){
+						if(!g.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
 						SubtaskRefer referNew=new SubtaskRefer();
 						referNew.setBlockId(task.getBlockId());
 						referNew.setGeometry(g);
 						SubtaskReferOperation.create(conn, referNew);
 					}
 				}else{
+					if(refers==null||refers.size()==0){throw new ServiceException("不规则面不存在，请重新选择:id="+id1);}
 					String msg=null; 
 					int referNum=0;
 					for(SubtaskRefer refer:refers){
@@ -3014,6 +3175,7 @@ public class SubtaskService {
 						
 						//5.保存信息
 						for(Geometry g:addGeo){
+							if(!g.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
 							SubtaskRefer referNew=new SubtaskRefer();
 							referNew.setBlockId(refer.getBlockId());
 							referNew.setGeometry(g);
@@ -3056,7 +3218,10 @@ public class SubtaskService {
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
 				Geometry geo1 = refers.get(0).getGeometry();
 				Geometry geo2 = refers.get(1).getGeometry();
+				
 				Geometry unionGeo=geo1.union(geo2);
+				
+				if(!unionGeo.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
 				//4.保存
 				SubtaskRefer refer=new SubtaskRefer();
 				refer.setBlockId(refers.get(0).getBlockId());
@@ -3540,47 +3705,6 @@ public class SubtaskService {
 			throw e;
 		}
 	}
-	
-	/**
-	 * @Title: lockSubtaskRefer
-	 * @Description: 锁定 subTask_refer 表
-	 * @param conn
-	 * @param referId  void
-	 * @throws ServiceException 
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年7月6日 上午10:19:49 
-	 */
-	public void lockSubtaskRefer(Connection conn, int referId) throws ServiceException {
-		try {
-			int id = 0;
-			QueryRunner run = new QueryRunner();
-			
-			String sql="SELECT R.id total "
-					+ "  FROM SUBTASK_REFER R"
-					+ " WHERE 1=1 "
-					+ " and R.ID = ? ";
-			
-				sql=sql+ "   FOR UPDATE NOWAIT " ;
-			log.info("lockSubtaskRefer SQL("+referId+")："+sql);
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					int total = 0;
-					if (rs.next()) {
-						total = rs.getInt("total");
-					}
-					return total;
-				}	
-			};
-			
-			id = run.query(conn, sql,referId,rsHandler);	
-			log.info("锁定 subtask_refer表id为 "+referId+" 数据 ");
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("锁定 subtask_refer表失败，原因为:" + e.getMessage(), e);
-		} 
-	}
 
 	public void qualityCommit(int subtaskId) throws Exception {
 		Connection conn = null;
@@ -3597,4 +3721,104 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+	 * key：groupName,province,city,userId,version
+	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+	 * @param qualitySubtaskId 质检子任务号
+	 * @returngetSubtaskInfoByQuality
+	 * @throws Exception
+	 */
+	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="SELECT G.GROUP_NAME,"
+					+ "       C.PROVINCE_NAME,"
+					+ "       C.CITY_NAME,"
+					+ "       S.EXE_USER_ID,"
+					+ "       QS.QUALITY_METHOD"
+					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
+					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
+					+ "   AND QS.TASK_ID = T.TASK_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.CITY_ID = C.CITY_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID";
+			QueryRunner run=new QueryRunner();
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						Map<String, Object> returnObj=new HashMap<String, Object>();
+						returnObj.put("groupName", rs.getString("GROUP_NAME"));
+						returnObj.put("province", rs.getString("PROVINCE_NAME"));
+						returnObj.put("city", rs.getString("CITY_NAME"));
+						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return returnObj;
+					}
+					return null;
+				}
+				
+			});
+		}catch(Exception e){
+			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+    /**
+     * 计算子任务所属大区库的所有图幅信息
+     * 用于限制接边作业时的跨大区作业操作
+     * @param subtaskId 子任务ID
+     * @return 出现错误时返回空列表
+     */
+    private static List<Integer> listDbMeshesBySubtask(Connection conn, int subtaskId) {
+        //private static Map<String,List<Integer>> listDbMeshesBySubtask() {
+        final List<Integer> result;
+
+        final StringBuffer sb = new StringBuffer();
+        sb.append("SELECT S.SUBTASK_ID, CM.MESH AS MESH_ID ");
+        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
+        sb.append("WHERE S.SUBTASK_ID = :1 ");
+        sb.append("AND S.TASK_ID = T.TASK_ID ");
+        //sb.append("WHERE S.TASK_ID = T.TASK_ID ");
+        sb.append("AND T.REGION_ID = C.REGION_ID ");
+        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
+        sb.append("ORDER BY S.SUBTASK_ID, CM.MESH");
+
+
+        QueryRunner run = new QueryRunner();
+        try {
+            result = run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>() {
+
+                private List<Integer> result = new ArrayList<>();
+
+                @Override
+                public List<Integer> handle(ResultSet rs) throws SQLException {
+                    rs.setFetchSize(3000);
+
+                    while (rs.next()) {
+                        int subtaskId = rs.getInt("SUBTASK_ID");
+                        result.add(rs.getInt("MESH_ID"));
+                    }
+
+                    return result;
+                }
+            }, subtaskId);
+            log.info(String.format("查询子任务所属大区库图幅，子任务ID: %s, 图幅数量: %s", subtaskId, result.size()));
+            return result;
+        } catch (SQLException e) {
+            log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s]", sb.toString()), e);
+        }
+
+        return new ArrayList<>();
+    }
 }

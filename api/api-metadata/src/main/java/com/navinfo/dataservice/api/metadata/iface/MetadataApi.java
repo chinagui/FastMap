@@ -68,25 +68,25 @@ public interface MetadataApi {
 	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception;
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 */
 	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception;
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=5
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 */
 	public List<Map<String, String>> scPointKindNewChainKind5Map() throws Exception;
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=6
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 */
 	public List<Map<String, String>> scPointKindNewChainKind6Map() throws Exception;
 	/**
 	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 */
 	public List<Map<String, String>> scPointKindNew5List() throws Exception;
@@ -105,8 +105,8 @@ public interface MetadataApi {
 
 	public int queryAdminIdByLocation(double longitude, double latitude)
 			throws Exception;
-	
-	
+
+
 	/**
 	 * @Description:名称导入，将名称写入元数据库
 	 * @param name
@@ -115,18 +115,18 @@ public interface MetadataApi {
 	 * @author: y
 	 * @time:2016-6-28 下午2:49:30
 	 */
-	
+
 	public void nameImport(String name,JSONObject gLocation,String rowkey, String sourceType)throws Exception ;
-	
+
 	public MetadataMap getMetadataMap() throws Exception;
-	
+
 	public JSONObject getMetadataMap2() throws Exception;
-	
+
 	public String searchKindName(String kindcode) throws Exception;
-	
+
 	public String[] pyConvert(String word) throws Exception;
-	
-	
+
+
 	/**
 	 * 根据瓦片渲染TMC_POINT
 	 * @param x
@@ -137,7 +137,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONArray queryTmcPoint(int x, int y, int z, int gap) throws Exception;
-	
+
 	/**
 	 * 根据瓦片渲染TMC_LINE
 	 * @param x
@@ -148,11 +148,11 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONArray queryTmcLine(int x, int y, int z, int gap) throws Exception;
-	
+
 	public JSONObject getCharacterMap() throws Exception;
-	
+
 	public JSONObject searchByAdminCode(String admincode) throws Exception;
-	
+
 	public JSONObject getProvinceAndCityByAdminCode(String admincode) throws Exception;
 	/**
 	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
@@ -161,26 +161,26 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD10() throws Exception;
-	
+
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY
 	 * @return Map<String,String> key:PRE_KEY,value:RESULT_KEY
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointNameckTypeD4() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD3() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD7() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeHM6() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD1_2_3_4_8_11() throws Exception;
-	
+
 	public Map<String, String> scPointNameckTypeD4_10() throws Exception;
 	/**
 	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
@@ -198,18 +198,20 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public String convertEng(String word, String admin);
-	
+
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
-	
+
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=9的PRE_KEY
 	 * @return List<String> pre_key列表
 	 * @throws Exception
 	 */
 	public List<String> scPointNameckType9() throws Exception;
-	
+
 	public Map<String, List<String>> scPointSpecKindCodeType14() throws Exception;
-	
+
+	public Map<String, List<String>> scPointSpecKindCodeType7() throws Exception;
+
 	/**
 	 * 重要分类判断方法
 	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
@@ -221,11 +223,11 @@ public interface MetadataApi {
 	public boolean judgeScPointKind(String kindCode,String chain) throws Exception;
 
 	public Map<String, String> scPointEngKeyWordsType1() throws Exception;
-	
+
 	public Map<String, String> scEngshortListMap() throws Exception;
 
 	public String convFull2Half(String word) throws Exception;
-	
+
 	public String wordKind(String kindCode,String chain) throws Exception;
 
 	/**
@@ -245,14 +247,14 @@ public interface MetadataApi {
 	 * @return List<String> 返回合法的所有半角字符列表
 	 */
 	public List<String> halfCharList() throws Exception;
-	
+
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
 	 * @return Map<String, JSONObject> key:ft value:对应其它
 	 * @throws Exception
 	 */
 	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
-	
+
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
 	 * @return Map<Integer,Map<String, String>> key:convert value:Map<String, String> ft:jt
@@ -277,13 +279,13 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2() throws Exception;
-	
+
 	public JSONObject tyCharacterEgalcharExt() throws Exception;
-	
+
 	public Map<String, Map<String, String>> scPointNameckTypeD6() throws Exception;
-	
+
 	public List<String> getAddrck(int type,String hmFlag) throws Exception;
-	
+
 	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception;
 	/**
 	 * SELECT DISTINCT KIND_CODE FROM SC_POINT_POICODE_NEW WHERE MHM_DES LIKE '%D%' AND KIND_USE=1
@@ -326,7 +328,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointChainBrandKeyDMap() throws Exception;
-	
+
 	/**
 	 * 简体字查询
 	 * @param conn
@@ -334,7 +336,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception;
-	
+
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
@@ -343,12 +345,17 @@ public interface MetadataApi {
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception;
-	
+
 	/**
 	 * sc_partition_meshlist查询关闭的图幅
 	 */
 	public List<Integer> getCloseMeshs(List<Integer> admincodes)throws Exception;
 	
+	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getMeshsFromPartition(List<Integer> meshes,int openFlag,int action)throws Exception;
+
 	/**
 	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录
 	 * @param name
@@ -357,7 +364,7 @@ public interface MetadataApi {
 	 */
 	public List<String> searchByErrorName(String name) throws Exception;
     public List<String> queryAdRack(int type) throws Exception;
-    
+
     /**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
@@ -365,7 +372,7 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScPointPoiCodeNew() throws Exception;
-    
+
     /**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
@@ -380,7 +387,7 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScPointFocus(String poiNum) throws Exception;
-    
+
     /**
      * SC_FM_CONTROL
      * @author Han Shaoming
@@ -388,23 +395,23 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScFmControl(String kindCode) throws Exception;
-    
+
     /**
 	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(1,2,3)
-	 * @return 
+	 * @return
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> scPointKindRule() throws Exception;
 	/**
 	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(5)
-	 * 
+	 *
 	 * @return Map<String, String> key:POI_KIND;value:POI_KIND_NAME
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointKindRule5() throws Exception;
 	/**
 	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
-	 * 
+	 *
 	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
 	 * @throws Exception
 	 */
@@ -422,22 +429,21 @@ public interface MetadataApi {
 	public List<Map<String, Object>> getScPointTruckList() throws Exception;
 
 	public String pyConvert(String word,String adminId,String isRdName) throws Exception ;
-	
+
 	public String voiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
-	
+
 	public String[] pyVoiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
-	
+
 	public String engConvert(String word,String adminId) throws Exception ;
 	public int getCrowdTruck(String kindCode) throws Exception;
 	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
-	
 	 //获取元数据库中重要POI的数据
 	public List<Integer> queryImportantPid() throws SQLException;
-	
+
 	 /**
 	  * @param reliability范围
 	  * @return List<pid>
-	  * 
+	  *
 	  * */
 	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 

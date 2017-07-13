@@ -18,6 +18,8 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
+import com.navinfo.dataservice.control.row.quality.PoiQuality;
+import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -62,6 +64,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		EditPoiBaseReleaseJobRequest myRequest=(EditPoiBaseReleaseJobRequest) request;
 		Connection conn=null;
 		try{
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 			conn=DBConnector.getInstance().getConnectionById(myRequest.getTargetDbId());
 			log.info("check exception1");
 			//1对grids提取数据执行gdb检查
@@ -90,6 +93,11 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);
 			log.info("EditPoiBaseReleaseJob:执行检查");
+			
+			Subtask subtask = manApi.queryBySubtaskId((int)jobInfo.getTaskId());
+			Map<String,Object> parameter=new HashMap<String,Object>();
+			parameter.put("subTaskWorkKind", subtask.getWorkKind());
+			
 			//构造检查参数，执行批处理检查
 			OperationResult operationResult=new OperationResult();
 			OperationResult changeReferData=new OperationResult();
@@ -101,6 +109,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("执行批处理");
 			BatchCommand batchCommand=new BatchCommand();		
 			batchCommand.setOperationName("BATCH_POI_RELEASE");
+			batchCommand.setParameter(parameter);
 			Batch batch=new Batch(conn,operationResult);
 			batch.operate(batchCommand);
 			changeReferData= batch.getChangeReferData();
@@ -151,11 +160,21 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
+			PoiQuality poiQuality = new PoiQuality();
+			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
 			int count=commitPoi(conn);
+			
+			log.info("开始执行poi质检提交修改count_table 任务");
+			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
+			log.info("poi质检提交修改count_table 任务完成");
+			
 			log.info("end change poi_edit_status=3 commit ："+count+" 条");
 			JSONObject response =new JSONObject();
 			response.put("count", count);
-			this.exeResultMsg=" 提交成功："+count+" 条数据；";
+			JSONObject data =new JSONObject();
+			data.put("type", "提交");
+			data.put("resNum", count);
+			this.exeResultMsg=" #"+data.toString()+"#";
 			super.response("POI行编提交成功！",response);
 			
 		}catch(Exception e){
@@ -229,7 +248,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
 					+ "   AND ps.status =2"
-					+ "   AND ps.FRESH_VERIFIED=0"
+					//20170713 与凤琴、晓毅，讨论，放进来鲜度验证的数据，有两个批处理需要批鲜度验证的数据
+					//+ "   AND ps.FRESH_VERIFIED=0"
 					//+ "   and ip.u_record!=2"
 					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			QueryRunner run=new QueryRunner();
@@ -267,6 +287,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
 					+ "           AND R.PID = E.PID)"
 					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
+			
 			
 			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		

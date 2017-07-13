@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.man.job.bean;
 
-import com.alibaba.fastjson.JSONObject;
-import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 /**
@@ -18,7 +17,8 @@ public class JobProgress {
     private Date startDate;
     private Date endDate;
     private String message;
-    private JSONObject parameter;
+    private String inParameter;
+    private String outParameter;
 
     public long getPhaseId() {
         return phaseId;
@@ -84,12 +84,12 @@ public class JobProgress {
         this.message = message;
     }
 
-    public JSONObject getParameter() {
-        return parameter;
+    public String getInParameter() {
+        return inParameter;
     }
 
-    public void setParameter(JSONObject parameter) {
-        this.parameter = parameter;
+    public void setInParameter(String inParameter) {
+        this.inParameter = inParameter;
     }
 
     public long getJobId() {
@@ -98,5 +98,23 @@ public class JobProgress {
 
     public void setJobId(long jobId) {
         this.jobId = jobId;
+    }
+
+    public String getOutParameter() {
+        return outParameter;
+    }
+
+    public void setOutParameter(String outParameter) {
+        this.outParameter = outParameter;
+    }
+
+    public void load(ResultSet rs) throws SQLException {
+        this.setPhaseId(rs.getLong("phase_id"));
+        this.setJobId(rs.getInt("job_id"));
+        this.setPhase(rs.getInt("phase"));
+        this.setStatus(JobProgressStatus.valueOf(rs.getInt("status")));
+        this.setMessage(rs.getString("message"));
+        this.setInParameter(rs.getString("in_parameter"));
+        this.setOutParameter(rs.getString("out_parameter"));
     }
 }

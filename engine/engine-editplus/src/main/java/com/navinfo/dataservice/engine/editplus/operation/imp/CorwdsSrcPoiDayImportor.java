@@ -218,31 +218,41 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 							
 						}
 						if(newValue.containsKey("address")){
-							String newAddress = ExcelReader.h2f(tPoi.getString("REAUDITADDRESS"));
-							IxPoiAddress ixPoiAddress = ixPoi.getCHIAddress();
-							if (ixPoiAddress != null){
-								ixPoiAddress.setFullname(newAddress);
-							}else{
-								IxPoiAddress newPoiAddress = ixPoi.createIxPoiAddress();
-								newPoiAddress.setFullname(newAddress);
-								newPoiAddress.setLangCode(langCode);
+							String newAddress = "";
+							if(StringUtils.isNotEmpty(tPoi.getString("REAUDITADDRESS")) && !"null".equals(tPoi.getString("REAUDITADDRESS"))){
+								newAddress = ExcelReader.h2f(tPoi.getString("REAUDITADDRESS"));
+							}
+							if(StringUtils.isNotEmpty(newAddress)){
+								IxPoiAddress ixPoiAddress = ixPoi.getCHIAddress();
+								if (ixPoiAddress != null){
+									ixPoiAddress.setFullname(newAddress);
+								}else{
+									IxPoiAddress newPoiAddress = ixPoi.createIxPoiAddress();
+									newPoiAddress.setFullname(newAddress);
+									newPoiAddress.setLangCode(langCode);
+								}
 							}
 						}
 						if(newValue.containsKey("contacts")){
-							String newAllPhone = tPoi.getString("REAUDITPHONE");
-							String[] phones = newAllPhone.split("\\|");
-							ixPoi.deleteSubrows("IX_POI_CONTACT");
-							for(int j=0;j<phones.length;j++){
-								int type = 1;
-								String tmpPhone = phones[j];
-								// 判断为固话还是移动电话
-								if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
-									type = 2;
+							String newAllPhone = "";
+							if(StringUtils.isNotEmpty(tPoi.getString("REAUDITPHONE")) && !"null".equals(tPoi.getString("REAUDITPHONE"))){
+								newAllPhone = tPoi.getString("REAUDITPHONE");
+							}
+							if(StringUtils.isNotEmpty(newAllPhone)){
+								String[] phones = newAllPhone.split("\\|");
+								ixPoi.deleteSubrows("IX_POI_CONTACT");
+								for(int j=0;j<phones.length;j++){
+									int type = 1;
+									String tmpPhone = phones[j];
+									// 判断为固话还是移动电话
+									if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
+										type = 2;
+									}
+									IxPoiContact ixPoiContact = ixPoi.createIxPoiContact();
+									ixPoiContact.setContact(tmpPhone);
+									ixPoiContact.setContactType(type);
+									ixPoiContact.setPriority(j+1);
 								}
-								IxPoiContact ixPoiContact = ixPoi.createIxPoiContact();
-								ixPoiContact.setContact(tmpPhone);
-								ixPoiContact.setContactType(type);
-								ixPoiContact.setPriority(j+1);
 							}
 						}
 						if(newValue.containsKey("location")){
@@ -360,7 +370,10 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					// POI主表
 					IxPoi ixPoi = (IxPoi) poi.getMainrow();
 					// NAME 转全角
-					String name = ExcelReader.h2f(tPoi.getString("REAUDITNAME"));
+					String name = "";
+					if(StringUtils.isNotEmpty(tPoi.getString("REAUDITNAME")) && !"null".equals(tPoi.getString("REAUDITNAME"))){
+						name = ExcelReader.h2f(tPoi.getString("REAUDITNAME"));
+					}
 					// PID
 					long pid = poi.objPid();
 					// POI_NUM
@@ -423,28 +436,33 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						throw new Exception("名称name字段为空");
 					}
 					// IX_POI_ADDRESS
-					String address = ExcelReader.h2f(tPoi.getString("REAUDITADDRESS"));
-					if(StringUtils.isNotEmpty(address)){
-						IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
-						ixPoiAddress.setFullname(address);
-						ixPoiAddress.setLangCode(langCode);
-					}else{
-						throw new Exception("地址address字段为空");
+					if(!"null".equals(tPoi.getString("REAUDITADDRESS"))){
+						String address = ExcelReader.h2f(tPoi.getString("REAUDITADDRESS"));
+						if(StringUtils.isNotEmpty(address)){
+							IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
+							ixPoiAddress.setFullname(address);
+							ixPoiAddress.setLangCode(langCode);
+						}
 					}
 					// IX_POI_CONTACT
-					String phoneAll = tPoi.getString("REAUDITPHONE");
-					String[] phones = phoneAll.split("\\|");
-					for(int i=0;i<phones.length;i++){
-						int type = 1;
-						String tmpPhone = phones[i];
-						// 判断为固话还是移动电话
-						if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
-							type = 2;
+					String phoneAll = "";
+					if(StringUtils.isNotEmpty(tPoi.getString("REAUDITPHONE")) && !"null".equals(tPoi.getString("REAUDITPHONE"))){
+						phoneAll = tPoi.getString("REAUDITPHONE");
+					}
+					if(StringUtils.isNotEmpty(phoneAll)){
+						String[] phones = phoneAll.split("\\|");
+						for(int i=0;i<phones.length;i++){
+							int type = 1;
+							String tmpPhone = phones[i];
+							// 判断为固话还是移动电话
+							if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
+								type = 2;
+							}
+							IxPoiContact ixPoiContact = poi.createIxPoiContact();
+							ixPoiContact.setContact(tmpPhone);
+							ixPoiContact.setContactType(type);
+							ixPoiContact.setPriority(i+1);
 						}
-						IxPoiContact ixPoiContact = poi.createIxPoiContact();
-						ixPoiContact.setContact(tmpPhone);
-						ixPoiContact.setContactType(type);
-						ixPoiContact.setPriority(i+1);
 					}
 					// IX_POI_FLAG
 					// 新增数据取消掉IX_POI_FLAG表
@@ -525,7 +543,10 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					// POI主表
 					IxPoi ixPoi = (IxPoi) poi.getMainrow();
 					// NAME 转全角
-					String name = ExcelReader.h2f(tPoi.getString("NAME"));
+					String name = "";
+					if(StringUtils.isNotEmpty(tPoi.getString("NAME")) && !"null".equals(tPoi.getString("NAME"))){
+						name = ExcelReader.h2f(tPoi.getString("NAME"));
+					}
 					// PID
 					long pid = poi.objPid();
 					// POI_NUM
@@ -582,26 +603,33 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						ixPoiName.setLangCode(langCode);
 					}
 					// IX_POI_ADDRESS
-					String address = ExcelReader.h2f(tPoi.getString("ADDRESS"));
-					if(StringUtils.isNotEmpty(address)){
-						IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
-						ixPoiAddress.setFullname(address);
-						ixPoiAddress.setLangCode(langCode);
+					if(!"null".equals(tPoi.getString("ADDRESS"))){
+						String address = ExcelReader.h2f(tPoi.getString("ADDRESS"));
+						if(StringUtils.isNotEmpty(address)){
+							IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
+							ixPoiAddress.setFullname(address);
+							ixPoiAddress.setLangCode(langCode);
+						}
 					}
 					// IX_POI_CONTACT
-					String phoneAll = tPoi.getString("TELEPHONE");
-					String[] phones = phoneAll.split("\\|");
-					for(int i=0;i<phones.length;i++){
-						int type = 1;
-						String tmpPhone = phones[i];
-						// 判断为固话还是移动电话
-						if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
-							type = 2;
+					String phoneAll = "";
+					if(StringUtils.isNotEmpty(tPoi.getString("TELEPHONE")) && !"null".equals(tPoi.getString("TELEPHONE"))){
+						phoneAll = tPoi.getString("TELEPHONE");
+					}
+					if(StringUtils.isNotEmpty(phoneAll)){
+						String[] phones = phoneAll.split("\\|");
+						for(int i=0;i<phones.length;i++){
+							int type = 1;
+							String tmpPhone = phones[i];
+							// 判断为固话还是移动电话
+							if(tmpPhone.startsWith("1") && !tmpPhone.startsWith("0") && !tmpPhone.contains("-")){
+								type = 2;
+							}
+							IxPoiContact ixPoiContact = poi.createIxPoiContact();
+							ixPoiContact.setContact(tmpPhone);
+							ixPoiContact.setContactType(type);
+							ixPoiContact.setPriority(i+1);
 						}
-						IxPoiContact ixPoiContact = poi.createIxPoiContact();
-						ixPoiContact.setContact(tmpPhone);
-						ixPoiContact.setContactType(type);
-						ixPoiContact.setPriority(i+1);
 					}
 					// IX_POI_PHOTO
 					JSONObject photos = tPoi.getJSONObject("PHOTO");
@@ -690,11 +718,12 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 						if("230218".equals(kindCode)){
 							IxPoiChargingstation chargeStation = poi.createIxPoiChargingstation();
 							chargeStation.setAvailableState(detail.getInt("cs_availableState"));
-							chargeStation.setChargingType(detail.getInt("cs_type"));
+							if(detail.containsKey("cs_type")){
+								chargeStation.setChargingType(detail.getInt("cs_type"));
+							}
 							if(StringUtils.isNotEmpty(detail.getString("cs_servicePro")) && !"null".equals(detail.getString("cs_servicePro"))){
 								chargeStation.setServiceProv(detail.getString("cs_servicePro"));
 							}
-							chargeStation.setServiceProv(StringUtils.isEmpty(detail.getString("cs_servicePro"))?"0":detail.getString("cs_servicePro"));
 							chargeStation.setOpenHour(detail.getString("cs_openHour"));
 							chargeStation.setParkingFees(detail.getInt("cs_parkingFees"));
 							chargeStation.setParkingInfo(detail.getString("cs_parkingInfo"));

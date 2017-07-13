@@ -24,6 +24,9 @@ public class SysMsgType {
 	 * 发给个人申请消息
 	 */
 	public static final String MSG_PERSONAL_APPLY="apply_personal_msg";
-	
 
+	/**
+	 * 发给个人JOB状态消息
+	 */
+	public static final String MSG_PERSONAL_MANJOB="manjob_personal_msg";
 }

@@ -62,21 +62,22 @@ public class Tips2MarkUtils {
         }
     }
 
-    private static Map<String, Object> getProgramInfo(Connection conn, long projectId) throws Exception {
+    private static Map<String, Object> getProgramInfo(Connection conn, final long projectId) throws Exception {
         try {
             QueryRunner run = new QueryRunner();
-            String selectSql = "SELECT P.PROGRAM_ID     COLLECT_ID," +
+            String selectSql = "SELECT DISTINCT P.PROGRAM_ID     COLLECT_ID," +
                     "       P.NAME              COLLECT_NAME," +
                     "       P.TYPE," +
                     "       P.STATUS," +
                     "       R.MONTHLY_DB_ID," +
-                    "       C.PROVINCE_NAME," +
-                    "       C.CITY_NAME" +
+                    "       I.ADMIN_NAME" +
                     "  FROM PROGRAM           P," +
-                    "       CITY              C," +
-                    "       REGION            R" +
-                    " WHERE P.CITY_ID = C.CITY_ID" +
-                    "   AND C.REGION_ID = R.REGION_ID" +
+                    "       TASK              T," +
+                    "       REGION            R," +
+                    "       INFOR             I"  +
+                    " WHERE P.PROGRAM_ID = T.PROGRAM_ID" +
+                    "   AND T.REGION_ID = R.REGION_ID" +
+                    "   AND P.INFOR_ID  = I.INFOR_ID" +
                     "   AND P.PROGRAM_ID = ?";
             ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
                 public Map<String, Object> handle(ResultSet rs) throws SQLException {
@@ -85,11 +86,27 @@ public class Tips2MarkUtils {
                         result.put("collectId", rs.getInt("COLLECT_ID"));
                         result.put("collectName", rs.getString("COLLECT_NAME"));
                         result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
-                        result.put("provinceName", rs.getString("PROVINCE_NAME"));
-                        result.put("cityName", rs.getString("CITY_NAME"));
-                        result.put("blockName", "");
                         result.put("status", rs.getInt("status"));
                         result.put("type", rs.getInt("type"));
+                        String adminName = rs.getString("adminName");
+                        String provinceName = "";
+                        String cityName="";
+                        String blockName="";
+                        if(adminName!=null){
+                            String[] names = adminName.split("\\|");
+                            if(names.length>0){
+                                provinceName = names[0];
+                            }
+                            if(names.length>1){
+                                cityName = names[1];
+                            }
+                            if(names.length>2){
+                                blockName = names[2];
+                            }
+                        }
+                        result.put("provinceName", provinceName);
+                        result.put("cityName", cityName);
+                        result.put("blockName", blockName);
                     }
                     return result;
                 }

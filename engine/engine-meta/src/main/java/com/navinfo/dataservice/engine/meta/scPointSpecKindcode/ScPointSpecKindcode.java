@@ -18,8 +18,9 @@ public class ScPointSpecKindcode {
 	private Map<String,ScPointSpecKindcodeNewObj> typeMap2= new HashMap<String,ScPointSpecKindcodeNewObj>();
 	private Map<String, String> typeMap8= new HashMap<String, String>();
 	private Map<String, String> typeMap15= new HashMap<String, String>();
-	private Map<String, String> typeMap7= new HashMap<String, String>();
-	
+	private Map<String, List<String>> typeMap7= new HashMap<String, List<String>>();
+
+
 	private Map<String, List<String>> typeMap14= new HashMap<String, List<String>>();
 
 	private static class SingletonHolder {
@@ -178,12 +179,12 @@ public class ScPointSpecKindcode {
 			return typeMap15;
 	}
 
-	public Map<String, String> scPointSpecKindCodeType7() throws Exception {
-		if (typeMap7 == null || typeMap7.isEmpty()) {
+	public Map<String, List<String>> scPointSpecKindCodeType7() throws Exception{
+		if (typeMap7==null||typeMap7.isEmpty()) {
 			synchronized (this) {
-				if (typeMap7 == null || typeMap7.isEmpty()) {
+				if (typeMap7==null||typeMap7.isEmpty()) {
 					try {
-						String sql = "select POI_KIND,CHAIN from sc_point_spec_kindcode_new t WHERE TYPE=7";
+						String sql = "SELECT POI_KIND, CHAIN FROM SC_POINT_SPEC_KINDCODE_NEW T WHERE TYPE = 7";
 
 						PreparedStatement pstmt = null;
 						ResultSet rs = null;
@@ -194,15 +195,31 @@ public class ScPointSpecKindcode {
 							rs = pstmt.executeQuery();
 							while (rs.next()) {
 
+								String poiKind = rs.getString("POI_KIND");
+
+								if (poiKind == null || poiKind.isEmpty()) {
+
+									continue;
+								}
+
 								String chain = rs.getString("CHAIN");
 
-								typeMap7.put(rs.getString("POI_KIND"), chain == null ? "" : chain);
+								if (!typeMap7.containsKey(poiKind)) {
+
+									typeMap7.put(poiKind, new ArrayList<String>());
+								}
+
+								List<String> chains = typeMap7.get(poiKind);
+
+								chains.add(chain == null ? "" : chain);
+
+								typeMap7.put(rs.getString("POI_KIND"), chains);
 							}
 						} finally {
 							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
-						throw new SQLException("加载sc_point_spec_kindcode_new失败：" + e.getMessage(), e);
+						throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);
 					}
 				}
 			}

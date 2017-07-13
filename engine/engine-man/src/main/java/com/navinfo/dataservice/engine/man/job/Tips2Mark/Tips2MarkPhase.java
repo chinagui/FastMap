@@ -43,7 +43,37 @@ public class Tips2MarkPhase extends JobPhase {
             conn.commit();
 
             //业务逻辑
-//            Map<String, Object> cmsInfo = Tips2MarkUtils.getTaskInfo(conn, jobRelation.getItemId());
+//            Map<String, Object> cmsInfo = Tips2MarkUtils.getItemInfo(conn, jobRelation.getItemId(), jobRelation.getItemType());
+//            int status = Integer.valueOf(cmsInfo.get("status").toString());
+//            int type = Integer.valueOf(cmsInfo.get("type").toString());
+//
+////            if(status!=0){
+////                throw new Exception("未关闭的子任务/任务/项目不允许执行tips转mark");
+////            }
+//            String jobType="中线一体化作业";
+//            String jobNature = "更新";
+//            int taskType=1;
+//            switch (jobRelation.getItemType()) {
+//                case PROJECT:
+//                    jobType = "快线一体化作业";
+//                    jobNature = "快速更新";
+//                    taskType = 4;
+////                if(type!=4){
+////                    throw new Exception("非快速更新项目不允许执行tips转mark");
+////                }
+//                    break;
+//                case SUBTASK:
+//                    taskType = 2;
+////                if(type!=0){
+////                    throw new Exception("非采集子任务不允许执行tips转mark");
+////                }
+//                case TASK:
+////                if(type!=0){
+////                    throw new Exception("非采集任务不允许执行tips转mark");
+////                }
+//                    break;
+//            }
+//
 //            JSONObject parameter=new JSONObject();
 //            parameter.put("gdbid", cmsInfo.get("dbId"));
 //            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
@@ -68,16 +98,6 @@ public class Tips2MarkPhase extends JobPhase {
 //            taskPar.put("city", cmsInfo.get("cityName"));
 //            taskPar.put("district", cmsInfo.get("blockName"));
 //
-//            String jobType="中线一体化作业";
-//            String jobNature = "更新";
-//            int taskType=1;
-//            if(jobRelation.getItemType()==ItemType.PROJECT){
-//                jobType="快线一体化作业";
-//                jobNature="快速更新";
-//                taskType=4;
-//            }else if(jobRelation.getItemType()==ItemType.SUBTASK){
-//                taskType=2;
-//            }
 //            taskPar.put("job_nature", jobNature);
 //            taskPar.put("job_type", jobType);
 //            parameter.put("task_type", taskType);

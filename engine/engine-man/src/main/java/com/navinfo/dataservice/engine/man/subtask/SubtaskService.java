@@ -756,7 +756,7 @@ public class SubtaskService {
 				}
 			}
 			// 计算子任务对应大区库所包含图幅号，用于判定接边作业
-			List<Integer> meshes = listDbMeshesBySubtask(subtaskId);
+			List<Integer> meshes = listDbMeshesBySubtask(conn, subtaskId);
 			subtaskMap.put("meshes", meshes);
 
 			return subtaskMap;	
@@ -3780,7 +3780,7 @@ public class SubtaskService {
      * @param subtaskId 子任务ID
      * @return 出现错误时返回空列表
      */
-    private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
+    private static List<Integer> listDbMeshesBySubtask(Connection conn, int subtaskId) {
         //private static Map<String,List<Integer>> listDbMeshesBySubtask() {
         final List<Integer> result;
 
@@ -3797,7 +3797,7 @@ public class SubtaskService {
 
         QueryRunner run = new QueryRunner();
         try {
-            result = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
+            result = run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>() {
 
                 private List<Integer> result = new ArrayList<>();
 

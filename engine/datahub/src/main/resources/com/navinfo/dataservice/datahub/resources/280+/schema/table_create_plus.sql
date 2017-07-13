@@ -402,3 +402,16 @@ comment on column POI_FLAG.SRC_NAME_POR is '0	无;1	采集（大陆与港澳）;
 comment on column POI_FLAG.FIELD_VERIFIED is '0	否;1	是';
 comment on column POI_FLAG.REFRESH_CYCLE is '0	否;1	是';
 comment on column POI_FLAG.REFRESH_DATE is '格式： YYYYMMDDHHMMSS 如 20140812152100；24小时制。	空';
+
+create table LINK_EDIT_PRE
+(
+  pid          NUMBER(10) not null,
+  scenario     NUMBER(1),
+  operate_date TIMESTAMP(6)
+);
+-- Add comments to the table 
+comment on table LINK_EDIT_PRE
+  is '采集场景专题图表';
+-- Add comments to the columns 
+comment on column LINK_EDIT_PRE.scenario
+  is '0 不参与计算道路1 步采一体化2 车采一体化3 图像工艺（预留暂不开放）4 1+0工艺（预留暂不开放）';

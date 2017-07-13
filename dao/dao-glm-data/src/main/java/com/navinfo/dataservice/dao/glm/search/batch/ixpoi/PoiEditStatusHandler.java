@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-public class poiEditStatusHandler implements ResultSetHandler<Map<Long,Integer>>{
+public class PoiEditStatusHandler implements ResultSetHandler<Map<Long,Integer>>{
 
 	@Override
 	public Map<Long,Integer> handle(ResultSet rs) throws SQLException {

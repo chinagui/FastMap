@@ -59,7 +59,7 @@ public class JobProgressOperator {
             public JobProgress handle(ResultSet rs) throws SQLException {
                 if (rs.next()) {
                     JobProgress jobProgress = new JobProgress();
-
+                    jobProgress.load(rs);
                     return jobProgress;
                 }
                 return null;

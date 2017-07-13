@@ -112,6 +112,7 @@ public enum ObjType {
     IXPOIUPLOAD,
     IXSAMEPOI,
     IXSAMEPOIPART,
+    POIFLAG,
 
     ZONEFACE,
     ZONEFACETOPO,

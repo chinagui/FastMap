@@ -73,7 +73,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 
 public class SubtaskService {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private static final Logger log = LoggerRepos.getLogger(SubtaskService.class);
 
 	private SubtaskService() {
 	}
@@ -753,6 +753,10 @@ public class SubtaskService {
 					}
 				}
 			}
+			// 计算子任务对应大区库所包含图幅号，用于判定接边作业
+			List<Integer> meshes = listDbMeshesBySubtask(subtaskId);
+			subtaskMap.put("meshes", meshes);
+
 			return subtaskMap;	
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -3744,4 +3748,52 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+    /**
+     * 计算子任务所属大区库的所有图幅信息
+     * 用于限制接边作业时的跨大区作业操作
+     * @param subtaskId 子任务ID
+     * @return 出现错误时返回空列表
+     */
+    private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
+        //private static Map<String,List<Integer>> listDbMeshesBySubtask() {
+        final List<Integer> result;
+
+        final StringBuffer sb = new StringBuffer();
+        sb.append("SELECT S.SUBTASK_ID, CM.MESH AS MESH_ID ");
+        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
+        sb.append("WHERE S.SUBTASK_ID = :1 ");
+        sb.append("AND S.TASK_ID = T.TASK_ID ");
+        //sb.append("WHERE S.TASK_ID = T.TASK_ID ");
+        sb.append("AND T.REGION_ID = C.REGION_ID ");
+        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
+        sb.append("ORDER BY S.SUBTASK_ID, CM.MESH");
+
+
+        QueryRunner run = new QueryRunner();
+        try {
+            result = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
+
+                private List<Integer> result = new ArrayList<>();
+
+                @Override
+                public List<Integer> handle(ResultSet rs) throws SQLException {
+                    rs.setFetchSize(3000);
+
+                    while (rs.next()) {
+                        int subtaskId = rs.getInt("SUBTASK_ID");
+                        result.add(rs.getInt("MESH_ID"));
+                    }
+
+                    return result;
+                }
+            }, subtaskId);
+            log.info(String.format("查询子任务所属大区库图幅，子任务ID: %s, 图幅数量: %s", subtaskId, result.size()));
+            return result;
+        } catch (SQLException e) {
+            log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s]", sb.toString()), e);
+        }
+
+        return new ArrayList<>();
+    }
 }

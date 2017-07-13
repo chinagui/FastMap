@@ -4351,7 +4351,9 @@ public class TaskService {
 					for(int i = 0 ; i < poiLevel.size(); i++){
 						level.append("'" + poiLevel.get(i) + "',");
 					}
-					levels = level.deleteCharAt(level.length() - 1).toString();
+					if(level.length() > 0){
+						levels = level.deleteCharAt(level.length() - 1).toString();
+					}
 					
 				}
 				//dateType = 2或者 3 时进行道路数据处理

@@ -45,14 +45,22 @@ public class TipsRequestParam {
         
         //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
         int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
-        StringBuilder taskTypeBuilder = new StringBuilder();
         
-        if(subTaskType!=3&&subTaskType!=4){
+        if(subTaskType!=3&&subTaskType!=4&&taskBuilder!=null){
         	
         	 builder.append(" AND "+taskBuilder);
         }
         else if(subTaskType == 3) {//3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
-            taskTypeBuilder.append("AND (( s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)  OR  "+taskBuilder+" )");//接边Tips
+        	
+        	if(taskBuilder==null){
+        		
+        		builder.append("AND ( s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)  ");//接边Tips
+        	}else{
+        		
+        		builder.append("AND (( s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)  OR  "+taskBuilder+" )");//接边Tips
+        	}
+        	
+        	
         }else if(subTaskType == 4) {//4 区域粗编
         	//20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
         	builder.append(" AND s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2 ");//预处理提交
@@ -263,11 +271,18 @@ public class TipsRequestParam {
 
         builder.append("wkt:\"intersects(" + wkt + ")\"");
 
+        //任务过滤,疑问taskBuilder为什么会为空？？？ 其实为空是有问题的
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        StringBuilder taskBuilder = null;
+        if (taskSet != null && taskSet.size() > 0) {
+            taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
+        }
+        
         ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
         Subtask subtask = apiService.queryBySubtaskId(subtaskId);
         //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
         int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
-        StringBuilder taskTypeBuilder = new StringBuilder();
+ /*       StringBuilder taskTypeBuilder = new StringBuilder();
         if(subTaskType == 3) {//3 grid粗编
             taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
         }else if(subTaskType == 4) {//4 区域粗编
@@ -275,13 +290,31 @@ public class TipsRequestParam {
             taskTypeBuilder.append(" OR ");
             taskTypeBuilder.append("(s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2)");//预处理提交
         }
-
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        StringBuilder taskBuilder = null;
-        if (taskSet != null && taskSet.size() > 0) {
-            taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
+        */
+        
+        if(subTaskType!=3&subTaskType!=4){
+        	
+        	builder.append( " AND "+taskBuilder);
         }
-
+       //3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+        else if(subTaskType == 3) {
+        	if(taskBuilder==null){
+        		builder.append("AND (s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
+        	}else{
+        		
+        		builder.append("AND (( s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)  OR  "+taskBuilder+" )");//接边Tips
+        	}
+        	
+        }
+       //4 区域粗编
+        else if(subTaskType == 4) {
+        	//20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
+        	builder.append(" AND s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2 ");//预处理提交
+            
+        }
+        
+        
+/*
         builder.append(" AND ");
         builder.append("(");
         builder.append(taskTypeBuilder);
@@ -293,7 +326,9 @@ public class TipsRequestParam {
             builder.append(taskBuilder);
             builder.append(")");
         }
-        builder.append(")");
+        builder.append(")");*/
+        
+        
 
         //315过滤
         this.getFilter315(builder);

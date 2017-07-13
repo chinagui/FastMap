@@ -117,9 +117,9 @@
 			class="com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiCarrental">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
-		<table name="POI_FLAG" pk=""
-			class="com.navinfo.dataservice.dao.plus.model.ixpoi.PoiFlag">
-			<objRef col="PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
+		<table name="IX_POI_FLAG_METHOD" pk=""
+			class="com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod">
+			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
     </object>
     <object name="IX_SAMEPOI" type="RELATION" mainTable="IX_SAMEPOI"

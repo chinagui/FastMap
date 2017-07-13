@@ -115,7 +115,7 @@ public class GLM60228 extends BasicCheckRule {
             pstmt.setLong(1, poi.getPid());
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
-                setCheckResult(poi.getGeometry(), String.format("[IX_POI]", poi.getPid()), poi.getMeshId());
+                setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
             }
         } catch (SQLException e) {
             throw e;

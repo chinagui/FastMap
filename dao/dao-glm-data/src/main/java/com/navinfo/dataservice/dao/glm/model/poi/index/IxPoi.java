@@ -213,7 +213,7 @@ public class IxPoi implements IObj {
 	private int evaluPlan = 2;
 	//记录级来源//源是否已被外业环节验证
 //	private PoiFlag poiFlag;
-	private List<IRow> poiFlag = new ArrayList<IRow>();
+	private List<IRow> ixPoiFlagMethod = new ArrayList<IRow>();
 
 	
 	public int getEvaluPlan() {
@@ -224,12 +224,12 @@ public class IxPoi implements IObj {
 		this.evaluPlan = evaluPlan;
 	}
 
-	public List<IRow> getPoiFlag() {
-		return poiFlag;
+	public List<IRow> getIxPoiFlagMethod() {
+		return ixPoiFlagMethod;
 	}
 
-	public void setPoiFlag(List<IRow> poiFlag) {
-		this.poiFlag = poiFlag;
+	public void setIxPoiFlagMethod(List<IRow> ixPoiFlagMethod) {
+		this.ixPoiFlagMethod = ixPoiFlagMethod;
 	}
 
 	//app修改标识
@@ -1134,7 +1134,7 @@ public class IxPoi implements IObj {
 		//children.add(this.getSamepois());
 		children.add(this.getSamepoiParts());
 		//************zl 2016.11.29 *************
-		children.add(this.getPoiFlag());
+		children.add(this.getIxPoiFlagMethod());
 		// deep
 		children.add(this.getParkings());
 		children.add(this.getTourroutes());

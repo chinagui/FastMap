@@ -10,7 +10,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.PoiFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -64,7 +64,7 @@ public class FMBATD20006 extends BasicBatchRule {
 
         IxPoiObj poiObj = (IxPoiObj) obj;
 
-        List<PoiFlag> poiFlags = poiObj.getPoiFlags();
+        List<IxPoiFlagMethod> poiFlags = poiObj.getPoiFlags();
 
         IxPoi poi = (IxPoi) obj.getMainrow();
 
@@ -75,7 +75,7 @@ public class FMBATD20006 extends BasicBatchRule {
 
         boolean hadSrcRecord5 = false;
 
-        for (PoiFlag flag : poiObj.getPoiFlags()) {
+        for (IxPoiFlagMethod flag : poiObj.getPoiFlags()) {
 
             if (poi.getHisOpType().equals(OperationType.INSERT)) {
 

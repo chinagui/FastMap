@@ -97,8 +97,8 @@ public class RdLinkExporter {
 					+ "(select link_pid, listagg(lane_type, ',') within group(order by lane_type) lane_types  from rd_lane a "
 							+ "where a.u_record != 2 group by link_pid) styleFactors2,"
 						+ "(select link_pid, from_speed_limit, to_speed_limit from rd_link_speedlimit a  where speed_type = 0 and a.u_record != 2) speedlimits, "
-						+ "(select link_pid, listagg(form_of_way, ',') within group(order by form_of_way) forms,link_edit_pre p   from rd_link_form "
-							+ "where u_record != 2  group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+) "
+						+ "(select link_pid, listagg(form_of_way, ',') within group(order by form_of_way) forms   from rd_link_form "
+							+ "where u_record != 2  group by link_pid) forms,link_edit_pre p  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+) "
 							+ " and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+) and a.link_pid = p.pid(+) "
 							+ " and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 		//*************************************
@@ -475,6 +475,8 @@ public class RdLinkExporter {
 //				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 			}
 		}
+		
+		json.put("isADAS", isADAS);
 		json.put("scenario", rs.getInt("scenario"));
 		
 		json.put("evaluPlan", 2);

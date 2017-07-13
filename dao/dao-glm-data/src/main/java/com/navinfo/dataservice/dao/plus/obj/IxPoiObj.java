@@ -43,7 +43,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiTourroute;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiVideo;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.PoiFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 
 
 
@@ -124,25 +124,25 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return ixPoiAddress;
 	}
-	public List<PoiFlag> getPoiFlags(){
-		return (List)subrows.get("POI_FLAG");
+	public List<IxPoiFlagMethod> getIxPoiFlagMethods(){
+		return (List)subrows.get("IX_POI_FLAG_METHOD");
 	}
 	/**
 	 * @return
 	 * @throws Exception
-	 * 创建PoiFlag
-	 * 创建一个PoiFlag对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 创建IxPoiFlagMethod
+	 * 创建一个IxPoiFlagMethod对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
 	 */
-	public PoiFlag createPoiFlag()throws Exception{
-		PoiFlag poiFlag = (PoiFlag)(ObjFactory.getInstance().createRow("POI_FLAG", this.objPid()));
-		if(subrows.containsKey("POI_FLAG")){
-			subrows.get("POI_FLAG").add(poiFlag);
+	public IxPoiFlagMethod createIxPoiFlagMethod()throws Exception{
+		IxPoiFlagMethod ixPoiFlagMethod = (IxPoiFlagMethod)(ObjFactory.getInstance().createRow("POI_FLAG", this.objPid()));
+		if(subrows.containsKey("IX_POI_FLAG_METHOD")){
+			subrows.get("IX_POI_FLAG_METHOD").add(ixPoiFlagMethod);
 		}else{
-			List<BasicRow> poiFlagList = new ArrayList<BasicRow>();
-			poiFlagList.add(poiFlag);
-			subrows.put("POI_FLAG", poiFlagList);
+			List<BasicRow> ixPoiFlagMethodList = new ArrayList<BasicRow>();
+			ixPoiFlagMethodList.add(ixPoiFlagMethod);
+			subrows.put("IX_POI_FLAG_METHOD", ixPoiFlagMethodList);
 		}
-		return poiFlag;
+		return ixPoiFlagMethod;
 	}
 	public List<IxPoiContact> getIxPoiContacts(){
 		return (List)subrows.get("IX_POI_CONTACT");
@@ -1428,8 +1428,8 @@ catch (Exception e) {
 			return this.createIxPoiRestaurant();
 		}else if(IX_POI_CARRENTAL.equals(tableName)){
 			return this.createIxPoiCarrental();
-		}else if(POI_FLAG.equals(tableName)){
-			return this.createPoiFlag();
+		}else if(IX_POI_FLAG_METHOD.equals(tableName)){
+			return this.createIxPoiFlagMethod();
 		}else{
 			throw new Exception("未知的子表名:"+tableName);
 		}
@@ -1495,7 +1495,7 @@ catch (Exception e) {
 	public static final String IX_POI_TOURROUTE = "IX_POI_TOURROUTE";
 	public static final String IX_POI_EVENT = "IX_POI_EVENT";
 	public static final String IX_POI_CARRENTAL = "IX_POI_CARRENTAL";
-	public static final String POI_FLAG = "POI_FLAG";
+	public static final String IX_POI_FLAG_METHOD = "IX_POI_FLAG_METHOD";
 	
 
 }

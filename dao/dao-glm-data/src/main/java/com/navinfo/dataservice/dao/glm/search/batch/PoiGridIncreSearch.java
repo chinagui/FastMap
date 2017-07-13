@@ -616,15 +616,16 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setEvaluPlan(evaluPlan.get(pid));
 		}
 		
-		logger.info("设置子表POI_flag");
+		logger.info("设置子表IX_POI_FLAG_METHOD");
 		
-		 sql = "select p.pid ,p.src_record,p.field_verified from poi_flag p where  "
-		 		+ " pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		 sql = "select p.poi_pid  ,p.src_record,p.field_verified from IX_POI_FLAG_METHOD p where  "
+		 		+ " p.poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
+		 logger.info(" IX_POI_FLAG_METHOD sql: "+sql);
 		 Map<Long,List<IRow>> poiFlags = run.query(conn, sql, new PoiFlagHandler(),pidsClob);
 
 		for(Long pid:poiFlags.keySet()){
-			pois.get(pid).setPoiFlag(poiFlags.get(pid));
+			pois.get(pid).setIxPoiFlagMethod(poiFlags.get(pid));
 		}
 			
 	}
@@ -632,7 +633,8 @@ public class PoiGridIncreSearch {
 		Connection manConn = null;
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
-			String sql = " select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id from subtask s,task t,region r where s.task_id = t.task_id and t.region_id = r.region_id  and s.subtask_id = ? ";
+			//String sql = " select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id from subtask s,task t,region r where s.task_id = t.task_id and t.region_id = r.region_id  and s.subtask_id = ? ";
+			String sql =" select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id ,c.admin_id from subtask s,task t,program p,city c,region r  where s.task_id =t.task_id and  t.program_id  = p.program_id and p.city_id = c.city_id and t.region_id = r.region_id  and s.subtask_id= ? ";
 			logger.info(sql);
 			Map<String,Integer> map = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<String,Integer>>(){
 
@@ -641,8 +643,13 @@ public class PoiGridIncreSearch {
 					Map<String,Integer> map = new HashMap<String,Integer>();
 					while (rs.next()) {
 						int taskId = rs.getInt("task_id");
-						int regionId = rs.getInt("region_id");
+						int regionId = 0;//rs.getInt("region_id");
 						int dayDbId = rs.getInt("daily_db_id");
+						String adminId = rs.getString("admin_id");
+						if(adminId.length() > 2){
+							adminId = adminId.substring(0,2);
+						}
+						regionId = Integer.parseInt(adminId);
 						map.put("taskId", taskId);
 						map.put("regionId", regionId);
 						map.put("dayDbId", dayDbId);
@@ -687,5 +694,4 @@ public class PoiGridIncreSearch {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
 }

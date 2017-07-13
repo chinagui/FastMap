@@ -787,10 +787,7 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
-						int subtaskId = rs.getInt("SUBTASK_ID");
-						subtask.put("subtaskId", subtaskId);
-						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
-
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 
@@ -966,10 +963,7 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
-						int subtaskId = rs.getInt("SUBTASK_ID");
-						subtask.put("subtaskId", subtaskId);
-						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
-
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
@@ -3293,47 +3287,4 @@ public class SubtaskOperation {
 //		}
 //		
 //	}
-
-    /**
-     * 计算子任务所属大区库的所有图幅信息
-     * 用于限制接边作业时的跨大区作业操作
-     * @param subtaskId 子任务ID
-     * @return 出现错误时返回空列表
-     */
-    private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
-        List<Integer> meshes;
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT CM.MESH AS MESH_ID ");
-        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
-        sb.append("WHERE S.SUBTASK_ID = :1 ");
-        sb.append("AND S.TASK_ID = T.TASK_ID ");
-        sb.append("AND T.REGION_ID = C.REGION_ID ");
-        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
-        sb.append("ORDER BY CM.MESH");
-
-
-        QueryRunner run = new QueryRunner();
-        try {
-            meshes = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
-
-                private List<Integer> meshes = new ArrayList<>();
-
-                @Override
-                public List<Integer> handle(ResultSet rs) throws SQLException {
-                    while (rs.next()) {
-                        meshes.add(rs.getInt("MESH_ID"));
-                    }
-
-                    return meshes;
-                }
-            }, subtaskId);
-            log.info(String.format("根据子任务查询所属大区库图幅，%s任务涉及图幅%s个", subtaskId, meshes.size()));
-            return meshes;
-        } catch (SQLException e) {
-            log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s, subtaskId: %s]", sb.toString(), subtaskId), e);
-        }
-
-        return new ArrayList<>();
-    }
 }

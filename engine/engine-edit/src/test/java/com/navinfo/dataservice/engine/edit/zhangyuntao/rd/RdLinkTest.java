@@ -70,8 +70,11 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":13,\"subtaskId\":64,\"data\":{\"direct\":2," +
-                "\"linkPid\":404000369,\"longitude\":113.3587695658207,\"latitude\":36.49999785780438}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":393,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.84898771782545,39.96174335570689]," +
+                "[116.84908658266068,39.96160227623062],[116.84916809967535,39.961754852631344]]}," +
+                "\"catchLinks\":[{\"linkPid\":508000543,\"lon\":116.84898771782545,\"lat\":39.96174335570689},{\"linkPid\":508000543," +
+                "\"lon\":116.84916809967535,\"lat\":39.961754852631344}]}}";
         TestUtil.run(parameter);
     }
 

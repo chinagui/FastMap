@@ -42,7 +42,12 @@ public class FMYW20075 extends BasicCheckRule {
                 return;
             }
 
-            RdLink link = (RdLink) new RdLinkSelector(getCheckRuleCommand().getConn()).loadById((int) poi.getLinkPid(), false);
+            int linkPid = (int) poi.getLinkPid();
+            if (linkPid == 0) {
+                return;
+            }
+
+            RdLink link = (RdLink) new RdLinkSelector(getCheckRuleCommand().getConn()).loadById(linkPid, false);
             if (!RULE_ONE.contains(kindCode)) {
                 List<IRow> forms = link.getForms();
                 for (IRow row : forms) {

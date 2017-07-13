@@ -84,7 +84,7 @@ public class Job {
     public void load(ResultSet rs) throws SQLException {
         this.setJobId(rs.getLong("job_id"));
         this.setStatus(JobStatus.valueOf(rs.getInt("status")));
-        this.setType(JobType.valueOf(rs.getInt("job_type")));
+        this.setType(JobType.valueOf(rs.getInt("type")));
         this.setOperator(rs.getLong("operator"));
         this.setLastest(rs.getInt("latest"));
         this.setParameter(rs.getString("parameter"));

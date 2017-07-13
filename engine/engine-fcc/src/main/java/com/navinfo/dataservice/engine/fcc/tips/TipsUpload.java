@@ -947,6 +947,8 @@ public class TipsUpload {
 
 		photo.setA_content(1);
 
+        photo.setA_refUuid(id);
+
 		return photo;
 	}
 

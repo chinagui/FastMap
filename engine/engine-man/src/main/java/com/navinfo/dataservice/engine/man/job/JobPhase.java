@@ -12,9 +12,9 @@ public abstract class JobPhase {
 
     public JobProgress jobProgress;
     public Job job;
-    public JobRelation jobRelation;
     public JobProgress lastJobProgress;
     public InvokeType invokeType;
+    public JobRelation jobRelation;
 
     /**
      * 初始化phase
@@ -30,11 +30,11 @@ public abstract class JobPhase {
         JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
         if (isContinue) {
             //重复执行的，读取库中记录
-            jobProgress = jobProgressOperator.load(jobRelation.getItemId(), jobRelation.getItemType(), phase);
+            jobProgress = jobProgressOperator.getByJobId(job.getJobId(), phase);
             if (jobProgress == null) {
                 throw new Exception("未找到正在执行的步骤，无法继续执行");
             }
-            if (jobProgress.getStatus()==JobProgressStatus.FAILURE) {
+            if (jobProgress.getStatus() == JobProgressStatus.FAILURE) {
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.CREATED);
             }
         } else {

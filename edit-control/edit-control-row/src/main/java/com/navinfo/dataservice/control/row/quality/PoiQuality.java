@@ -50,89 +50,162 @@ import oracle.sql.STRUCT;
 public class PoiQuality {
 	private static final Logger logger = Logger.getLogger(PoiQuality.class);
 
-	public void initQualityData(int qualityId, int dbId) throws Exception {
+	public void initQualityData() throws Exception {
 
-		Connection conn = null;
-		try {
-			
-			Map<String, String>  map = getGeometryByQualityId(qualityId);//根据质检圈的的qualityId,获取质检圈geometry
-			String geometry = map.get("geometry");
-			String subtaskId = map.get("subtaskId");
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-			List<Integer> pidList = getPidList(geometry,conn);//查询质检圈内的所有poi
-//			List<Integer> pidList = new ArrayList<>();
-			/*pidList.add(11942);
-			pidList.add(5838);
-			pidList.add(83276925);
-			pidList.add(152133);
-			pidList.add(56554713);
-			pidList.add(4658944);
-			pidList.add(29997);*/
-			IxPoiSelector poiSelector = new IxPoiSelector(conn);
-			
-			for (Integer pid : pidList) {
-
-				IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("FID", poi.getPoiNum());
-				jsonObject.put("\"LEVEL\"", "null");
-				jsonObject.put("POI_NAME", "null");
-				jsonObject.put("MESH_ID", "null");
-				jsonObject.put("AREA", "null");
-				jsonObject.put("CATEGORY", "null");
+		List<Map<String, Object>>  list = getGeometryAndSubtaskId();//根据质检圈的的qualityId,获取质检圈geometry
+		logger.info("开始初始化poi_count_table表----");
+		for (Map<String, Object> map : list) {
+			Connection conn = null;
+			try {
 				
-				LogReader logReader = new LogReader(conn);
-				int state = logReader.getObjectState(poi.pid(), "IX_POI");
-				if(state==2){
-					jsonObject.put("EXTRA", "DB统计");
-				}else{
-					jsonObject.put("EXTRA", "0");
+				String geometry = (String) map.get("geometry");
+				String subtaskId =(String) map.get("subtaskId");
+				int qualityId = (int)map.get("qualityId");
+				int dbId = (int)map.get("dbId");
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+				List<Integer> pidList = getPidList(geometry,conn);//查询质检圈内的所有poi
+				IxPoiSelector poiSelector = new IxPoiSelector(conn);
+				
+				for (Integer pid : pidList) {
+
+					IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
+					JSONObject jsonObject = new JSONObject();
+					jsonObject.put("FID", poi.getPoiNum());
+					jsonObject.put("\"LEVEL\"", "null");
+					jsonObject.put("POI_NAME", "null");
+					jsonObject.put("MESH_ID", "null");
+					jsonObject.put("AREA", "null");
+					jsonObject.put("CATEGORY", "null");
+					
+					LogReader logReader = new LogReader(conn);
+					int state = logReader.getObjectState(poi.pid(), "IX_POI");
+					if(state==2){
+						jsonObject.put("EXTRA", "DB统计");
+					}else{
+						jsonObject.put("EXTRA", "0");
+					}
+					jsonObject.put("MISSING","0");
+					
+					/**
+					 * 统计项相关信息赋值
+					 */
+					setNameStatisticsByPoi(jsonObject, poi,null,true);//赋值名称统计项
+					setPositionStatisticsByPoi(jsonObject, poi,null,true);//赋值点位统计项
+					setCategoryStatisticsByPoi(jsonObject, poi,null,true);//赋值分类统计项
+					setAddressStatisticsByPoi(jsonObject, poi,null,true);//赋值地址统计项
+					setPhoteStatisticsByPoi(jsonObject, poi,null,true);//赋值电话统计项
+					setFatherSonStatisticsByPoi(jsonObject, poi,conn,null,true);//赋值父子关系统计项
+					setDeepStatisticsByPoi(jsonObject, poi,conn,null,true);//赋值深度信息统计项
+					setLebelStatisticsByPoi(jsonObject, poi,null,true);//赋值Lebel统计项
+					setResturantStatisticsByPoi(jsonObject, poi,null,true);//赋值餐厅统计项
+					setLinkStatisticsByPoi(jsonObject, poi,null,true);//赋值LINK_PID统计项
+					setLevelStatisticsByPoi(jsonObject, poi,null,true);//赋值Level统计项
+					
+					
+					jsonObject.put("COLLECTOR_USERID","null");
+					jsonObject.put("COLLECTOR_TIME","null");
+					jsonObject.put("INPUT_USERID","null");
+					jsonObject.put("INPUT_TIME","null");
+					jsonObject.put("QC_USERID","null");
+					jsonObject.put("QC_TIME","null");
+					jsonObject.put("QC_SUB_TASKID",subtaskId);
+					jsonObject.put("VISION", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					jsonObject.put("MEMO","null");
+					jsonObject.put("MEMO_USERID","null");
+					jsonObject.put("HAS_EXPORT", "0");
+					
+					initPoiColumnTable(jsonObject);//初始化poi_count_table
+					
+					updateSubtaskQualityDbstat(qualityId);//更新subtask_quality DB统计状态为1
+
+					logger.info(pid+"-------------"+jsonObject);
 				}
-				jsonObject.put("MISSING","0");
-				
-				/**
-				 * 统计项相关信息赋值
-				 */
-				setNameStatisticsByPoi(jsonObject, poi,null,true);//赋值名称统计项
-				setPositionStatisticsByPoi(jsonObject, poi,null,true);//赋值点位统计项
-				setCategoryStatisticsByPoi(jsonObject, poi,null,true);//赋值分类统计项
-				setAddressStatisticsByPoi(jsonObject, poi,null,true);//赋值地址统计项
-				setPhoteStatisticsByPoi(jsonObject, poi,null,true);//赋值电话统计项
-				setFatherSonStatisticsByPoi(jsonObject, poi,conn,null,true);//赋值父子关系统计项
-				setDeepStatisticsByPoi(jsonObject, poi,conn,null,true);//赋值深度信息统计项
-				setLebelStatisticsByPoi(jsonObject, poi,null,true);//赋值Lebel统计项
-				setResturantStatisticsByPoi(jsonObject, poi,null,true);//赋值餐厅统计项
-				setLinkStatisticsByPoi(jsonObject, poi,null,true);//赋值LINK_PID统计项
-				setLevelStatisticsByPoi(jsonObject, poi,null,true);//赋值Level统计项
 				
 				
-				jsonObject.put("COLLECTOR_USERID","null");
-				jsonObject.put("COLLECTOR_TIME","null");
-				jsonObject.put("INPUT_USERID","null");
-				jsonObject.put("INPUT_TIME","null");
-				jsonObject.put("QC_USERID","null");
-				jsonObject.put("QC_TIME","null");
-				jsonObject.put("QC_SUB_TASKID",subtaskId);
-				jsonObject.put("VISION", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-				jsonObject.put("MEMO","null");
-				jsonObject.put("MEMO_USERID","null");
-				jsonObject.put("HAS_EXPORT", "0");
-				
-				initPoiColumnTable(jsonObject);
-
-				System.out.println(pid+"-------------"+jsonObject);
+				logger.info("初始化poi_count_table表完成----");
+			}catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				throw e;
+			} finally {
+				DbUtils.commitAndCloseQuietly(conn);
 			}
+		}
+		
+	}
+	
+	/**
+	 * 初始化完成后更新DB统计状态
+	 * @param qualityId
+	 * @throws Exception 
+	 */
+	private void updateSubtaskQualityDbstat(int qualityId) throws Exception {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+        try {
+        	
+        	conn = DBConnector.getInstance().getManConnection();
+        	
+        	String sql="UPDATE SUBTASK_QUALITY SET DB_STAT = '1' WHERE QUALITY_ID = "+qualityId;
+
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+        	logger.error(e.getMessage(), e);
+			throw e;
+		} finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+
+	/**
+	 * 查询已发布未统计的质检圈
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> getGeometryAndSubtaskId() throws Exception {
+		Connection conn = null;
+		
+		try{
+			conn = DBConnector.getInstance().getManConnection();
 			
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			StringBuffer sb = new StringBuffer();
+			sb.append("SELECT ST.SUBTASK_ID,R.DAILY_DB_ID,sq.geometry,sq.quality_id FROM SUBTASK ST,TASK T,REGION R,subtask_quality sq ");
+			sb.append(" WHERE ST.TASK_ID = T.TASK_ID AND T.REGION_ID = R.REGION_ID AND sq.subtask_id = st.subtask_id ");
+			sb.append(" AND st.quality_plan_status = 1 AND st.is_quality = 1 AND sq.db_stat = 0");
 			
-		}catch (Exception e) {
+			pstmt = conn.prepareStatement(sb.toString());
+			rs = pstmt.executeQuery();
+			
+			List<Map<String, Object>> list = new ArrayList<>();
+			while (rs.next()) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("subtaskId", rs.getString("SUBTASK_ID"));
+				map.put("dbId", rs.getInt("DAILY_DB_ID"));
+				String geometry = "";
+				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+				try {
+					geometry =  GeoTranslator.struct2Wkt(struct);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				map.put("geometry", geometry);
+				map.put("qualityId", rs.getInt("QUALITY_ID"));
+				list.add(map);
+			}
+			return list;
+		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			throw e;
-		} finally {
+		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 初始化POI_COUNT_TABLE表
 	 * @param conn
@@ -162,7 +235,7 @@ public class PoiQuality {
         	sb.append(sb1).append(")VALUES(");
         	sb.append(sb2).append(")");
         	
-        	System.out.println("sql----------"+sb.toString());
+        	logger.info("sql----------"+sb.toString());
 
             pstmt = conn.prepareStatement(sb.toString());
 
@@ -912,10 +985,15 @@ public class PoiQuality {
 					jsonObject.put("EXTRA", "0");
 				}
 				
+				JSONObject jo = QualityService.getInstance().queryInitValueForProblem(userId, pid, (int)subtaskId);
+				long usId = jo.getLong("usId");
+				String collectorTimeString = jo.getString("collectorTime");
+				Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
+				String collectorTime =  DateUtils.format(date, "yyyyMMddHHmmss");
 				boolean existRecord = true;
-				if(state==0){
+				if(state==1){
 					int count = existRecordInPoiCountTable(poi.getPoiNum(), checkConn);
-					if(count==0){
+					if(count==0&&usId==0){
 						existRecord = false;
 					}
 				}
@@ -936,12 +1014,6 @@ public class PoiQuality {
 				setLinkStatisticsByPoi(jsonObject, poi,linkDataUnmodified,false);//赋值LINK_PID统计项
 				setLevelStatisticsByPoi(jsonObject, poi,levelDataUnmodified,false);//赋值Level统计项
 				
-				JSONObject jo = QualityService.getInstance().queryInitValueForProblem(userId, pid, (int)subtaskId);
-				long usId = jo.getLong("usId");
-				String collectorTimeString = jo.getString("collectorTime");
-				Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
-				String collectorTime =  DateUtils.format(date, "yyyyMMddHHmmss");
-				
 				
 				jsonObject.put("COLLECTOR_USERID", usId==0?"AAA":usId+"");
 				jsonObject.put("COLLECTOR_TIME", collectorTime);
@@ -959,7 +1031,7 @@ public class PoiQuality {
 					qualityInsertPoiCountTable(jsonObject, poi.getPoiNum(),subtaskId);
 				}
 				
-				System.out.println(pid+"---------"+jsonObject);
+				logger.info(pid+"---------"+jsonObject);
 				
 				
 			}
@@ -1037,7 +1109,7 @@ public class PoiQuality {
         	sb.deleteCharAt(sb.length() - 1);
         	sb.append(" WHERE FID = '"+poiNum+"'");
         	
-        	System.out.println("sql----------"+sb.toString());
+        	logger.info("sql----------"+sb.toString());
 
             pstmt = checkConn.prepareStatement(sb.toString());
 

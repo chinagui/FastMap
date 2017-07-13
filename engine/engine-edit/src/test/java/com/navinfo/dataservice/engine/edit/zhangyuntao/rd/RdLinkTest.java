@@ -1,14 +1,21 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
+import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
+import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
@@ -97,8 +104,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void move() {
-        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,"
-                + "\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
+        String parameter = "{\"command\":\"MOVE\",\"type\":\"IXPOI\",\"dbId\":13,\"subtaskId\":363," +
+                "\"data\":{\"longitude\":116.7500004172325,\"latitude\":39.94688288877364,\"x_guide\":116.7500004172325," +
+                "\"y_guide\":39.946950746269664,\"linkPid\":409000447},\"objId\":501000119}";
         TestUtil.run(parameter);
     }
 
@@ -139,15 +147,26 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testCreateSideRoad() throws Exception {
-        Geometry geometry = GeoTranslator.wkt2Geometry("POLYGON ((124.11183536052704 32.252855302834995,124.11257565021515 32.252855302834995," +
-                "124.11257565021515 32.25348136457513,124.11183536052704 32.25348136457513,124.11183536052704 32.252855302834995))");
-        DbMeshInfoUtil.calcDbIds(geometry);
+        ZoneFace face1 = (ZoneFace) new AbstractSelector(ZoneFace.class, DBConnector.getInstance().getConnectionById(13)).loadById(401000016, false);
+        Geometry geometry1 = GeoTranslator.transform(face1.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+        ZoneFace face2 = (ZoneFace) new AbstractSelector(ZoneFace.class, DBConnector.getInstance().getConnectionById(13)).loadById(510000026, false);
+        Geometry geometry2 = GeoTranslator.transform(face2.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+        RdLink link = (RdLink) new AbstractSelector(RdLink.class, DBConnector.getInstance().getConnectionById(13)).loadById(505000501, false);
+        Geometry geometry = GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry1));
+        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry2));
+
+        System.out.println(GeometryRelationUtils.IsLinkOnLeftOfRing(geometry1, geometry));
+        System.out.println(GeometryRelationUtils.IsLinkOnLeftOfRing(geometry2, geometry));
     }
 
     @Test
     public void delete() throws Exception {
-        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":506000437,\"infect\":0}";
-        TestUtil.run(requester);
+        MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+        metadataApi.scPointSpecKindCodeType14();
     }
 
     public static void main(String[] args) throws Exception {

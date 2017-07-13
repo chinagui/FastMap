@@ -9,6 +9,8 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.Page;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class SubtaskTest extends InitApplication{
@@ -76,6 +78,19 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
+	}	
+	
+	@Test
+	public void testPushMsg() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter ="[572]";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONArray subtaskIds = JSONArray.fromObject(parameter);		
+		SubtaskService service = SubtaskService.getInstance();
+		String mString=service.pushMsg(Long.valueOf(0), subtaskIds);	
+		System.out.print(mString);
 	}	
 	
 //	@Test

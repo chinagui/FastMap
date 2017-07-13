@@ -121,7 +121,7 @@ public class TipsSelector {
                 mdFlag = jsonReq.getString("mdFlag");
             }
             TipsRequestParam param = new TipsRequestParam();
-            String query = param.getByTileWithGap(parameter);
+            String query = param.getByTileWithGap(parameter); //在这里组装查询语句
             List<JSONObject> snapshots = conn.queryTips(query, null);
 			for (JSONObject json : snapshots) {
 				rowkey = json.getString("id");
@@ -1300,16 +1300,21 @@ public class TipsSelector {
 	 *
 	 * @param wkt
 	 * @param collectTaskIds
+	 * @param collectTaskIds
+	 * @param statType 统计类型：total，prepared 
+	 * @param taskType  质检任务、作业任务
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsDayTotal(String wkt, Set<Integer> collectTaskIds, String statType)
+	public int getTipsDayTotal(String wkt, Set<Integer> collectTaskIds, String statType, int taskType, int handler)
 			throws Exception {
 		TipsRequestParam param = new TipsRequestParam();
         JSONObject paramObj = new JSONObject();
         paramObj.put("statType", statType);
         paramObj.put("wkt", wkt);
-        paramObj.put("taskIds", collectTaskIds);
+        paramObj.put("collectTaskIds", collectTaskIds);
+        paramObj.put("taskType", taskType);
+        paramObj.put("handler", handler);
         String parameter = paramObj.toString();
         String query = param.getTipsDayTotal(parameter);
 

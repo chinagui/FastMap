@@ -1,5 +1,16 @@
 package com.navinfo.dataservice.engine.fcc.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -9,17 +20,6 @@ import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.nirobot.business.Tips2AuMarkApi;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.hadoop.hbase.master.snapshot.TakeSnapshotHandler;
-import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
@@ -64,7 +64,7 @@ public class FccApiImpl implements FccApi{
 //    }
 
     @Override
-    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception {
+    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception {
         JSONObject result = new JSONObject();
 
         if (wkt == null || wkt.isEmpty()) {
@@ -74,15 +74,16 @@ public class FccApiImpl implements FccApi{
 
         TipsSelector selector = new TipsSelector();
 
-        //统计日编总量 stage=1
-        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total");
+        //统计日编总量
+        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total",taskType,handler);
 
-        //统计日编已完成量stage=2 and t_dStatus=1
-        int finished = selector.getTipsDayTotal(wkt, collectTaskIds, "dFinished");
+        //统计日编待作业
+        int finished = selector.getTipsDayTotal(wkt, collectTaskIds, "prepared",taskType,handler);
 
         result.put("total", total);
 
-        result.put("finished", finished);
+        result.put("prepared", finished);
+
 
         return result;
     }
@@ -221,12 +222,11 @@ public class FccApiImpl implements FccApi{
                   for (Object object : collectArray) {
                       collectTaskIds.add(Integer.valueOf(object.toString()));
                   }
+                  
             }
 
 
-            if(collectTaskIds==null||collectTaskIds.isEmpty()){
-                throw new IllegalArgumentException("参数错误:collectTaskIds不能为空");
-            }
+           
 
             types = parameter.getString("types");
 

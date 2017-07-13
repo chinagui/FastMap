@@ -37,24 +37,29 @@ public class TipsRequestParam {
 
         ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
         Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-        //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
-        int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
-        StringBuilder taskTypeBuilder = new StringBuilder();
-        if(subTaskType == 3) {//3 grid粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
-        }else if(subTaskType == 4) {//4 区域粗编
-            taskTypeBuilder.append("(s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)");//接边Tips
-            taskTypeBuilder.append(" OR ");
-            taskTypeBuilder.append("(s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2)");//预处理提交
-        }
-
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         StringBuilder taskBuilder = null;
         if (taskSet != null && taskSet.size() > 0) {
             taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
         }
+        
+        //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+        int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
+        StringBuilder taskTypeBuilder = new StringBuilder();
+        
+        if(subTaskType!=3&&subTaskType!=4){
+        	
+        	 builder.append(" AND "+taskBuilder);
+        }
+        else if(subTaskType == 3) {//3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+            taskTypeBuilder.append("AND (( s_sourceType:8002 AND stage:(2 7) AND t_tipStatus:2)  OR  "+taskBuilder+" )");//接边Tips
+        }else if(subTaskType == 4) {//4 区域粗编
+        	//20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
+        	builder.append(" AND s_sourceType:8001 AND stage:(2 5 7) AND t_tipStatus:2 ");//预处理提交
+            
+        }
 
-        builder.append(" AND ");
+/*        builder.append(" AND ");
         builder.append("(");
         builder.append(taskTypeBuilder);
         if(taskBuilder != null) {
@@ -65,7 +70,7 @@ public class TipsRequestParam {
             builder.append(taskBuilder);
             builder.append(")");
         }
-        builder.append(")");
+        builder.append(")");*/
 
         //315过滤
         this.getFilter315(builder);
@@ -349,15 +354,18 @@ public class TipsRequestParam {
 
     public String getTipsDayTotal(String parameter) throws Exception {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-
+        
+        int taskType=jsonReq.getInt("taskType");
+        int handler=jsonReq.getInt("handler");
+        
         //solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        if(jsonReq.containsKey("grids")) {
+/*        if(jsonReq.containsKey("grids")) {
             JSONArray grids = jsonReq.getJSONArray("grids");
             String wkt = GridUtils.grids2Wkt(grids);
             builder.append("wkt:\"intersects(" + wkt + ")\"");
-        }
+        }*/
 
         if(jsonReq.containsKey("wkt")) {
             String wkt = jsonReq.getString("wkt");
@@ -368,14 +376,17 @@ public class TipsRequestParam {
             }
         }
 
-        if(jsonReq.containsKey("subtaskId")) {
+/*        if(jsonReq.containsKey("subtaskId")) {
             int subtaskId = jsonReq.getInt("subtaskId");
             Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
             if (taskSet != null && taskSet.size() > 0) {
                 this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
             }
-        }else if(jsonReq.containsKey("taskIds")) {
-            JSONArray taskSet = jsonReq.getJSONArray("taskIds");
+        }
+        
+        else */
+        if(jsonReq.containsKey("collectTaskIds")) {
+            JSONArray taskSet = jsonReq.getJSONArray("collectTaskIds");
             if (taskSet != null && taskSet.size() > 0) {
                 this.getSolrIntArrayQuery(builder, taskSet, "s_qTaskId");
             }
@@ -385,21 +396,56 @@ public class TipsRequestParam {
         this.getFilter315(builder);
 
         String statType = jsonReq.getString("statType");
-        if(statType.equals("total")) {//日编所有Tips
-            if(builder.length() > 0) {
-                builder.append(" AND ");
+        
+        //作业任务 ???任务类型取值 待确认
+        if(taskType==1){
+        	
+        	  //Tips总量：根据子任务grid范围、项目ID、且stage=1，2，5，6，7， 且t_tipStatus=2；
+            if(statType.equals("total")) {
+            	
+                if(builder.length() > 0) {
+                    builder.append(" AND ");
+                }
+                builder.append(" stage:(1 2 5 6 7) AND t_tipStatus:2");
+       /*         builder.append("(");
+                builder.append("(stage:(1 5 6) AND t_tipStatus:2)");
+                builder.append(" OR ");
+                builder.append("stage:2");
+                builder.append(")");*/
             }
-            builder.append("(");
-            builder.append("(stage:(1 5 6) AND t_tipStatus:2)");
-            builder.append(" OR ");
-            builder.append("stage:2");
-            builder.append(")");
-        }else if(statType.equals("dFinished")) {//日编已完成
-            if(builder.length() > 0) {
-                builder.append(" AND ");
+            //Tips待作业量：根据子任务grid范围、项目ID、且stage=1、2、5、6且t_tipStatus=2 && t_dEditStatus不等于2；
+            else if(statType.equals("prepared")) {
+                if(builder.length() > 0) {
+                    builder.append(" AND ");
+                }
+                builder.append("stage:(1 2 5 6 ) AND t_tipStatus:2   -t_dEditStatus:2");
+         
             }
-            builder.append("stage:2 AND t_dEditStatus:2");
+        	
         }
+        //质检任务
+        else if(taskType==2){
+        	
+        	  //Tips 总量：显示抽取到的质检Tips总量（stage= 7且handler=质检子任务对应分配的质检员ID的tips）
+            if(statType.equals("total")) {
+            	
+                if(builder.length() > 0) {
+                    builder.append(" AND ");
+                }
+                builder.append(" stage:7 AND handler:"+handler);
+            }
+            
+            //Tips 待作业量：显示抽取到的未质检作业的tips量（stage= 7且handler=质检子任务对应分配的质检员ID的tips 且t_dEditStatus不等于2）
+            else if(statType.equals("prepared")) {
+                if(builder.length() > 0) {
+                    builder.append(" AND ");
+                }
+                builder.append(" stage:7 AND handler:"+handler+"  -t_dEditStatus:2 ");
+            }
+        	
+        }
+        
+     
 
         logger.info("getTipsDayTotal:" + builder.toString());
         return builder.toString();
@@ -423,12 +469,27 @@ public class TipsRequestParam {
 //        return builder.toString();
 //    }
 
-    public String getByTileWithGap(String parameter) {
+    public String getByTileWithGap(String parameter) throws Exception {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
         int x = jsonReq.getInt("x");
         int y = jsonReq.getInt("y");
         int z = jsonReq.getInt("z");
         int gap = jsonReq.getInt("gap");
+        
+
+        int subtaskId=0; //web编辑才有
+     
+        Subtask subtask = null;
+        int subTaskType = 0;//3 grid粗编 4 区域粗编
+        
+        if(jsonReq.containsKey("subtaskId")){
+        	ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+        	subtaskId=jsonReq.getInt("subtaskId");
+        	subtask=apiService.queryBySubtaskId(subtaskId);
+        	subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
+        }
+        
+
 
         String mdFlag = null;
         if(jsonReq.containsKey("mdFlag")) {
@@ -522,7 +583,8 @@ public class TipsRequestParam {
                 if(jsonReq.containsKey("workStatus")) {
                     workStatus = jsonReq.getJSONArray("workStatus");
                 }
-
+           
+                //状态过滤
                 if(workStatus == null || workStatus.contains(9)
                         || (workStatus.contains(0) && workStatus.contains(1) && workStatus.contains(2))) {
                     if(webBuilder.length() > 0) {
@@ -531,6 +593,7 @@ public class TipsRequestParam {
                     webBuilder.append("(t_tipStatus:2)");
                 }else {
                     if (workStatus.contains(0)) {
+                    	
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
@@ -539,12 +602,6 @@ public class TipsRequestParam {
                         webBuilder.append("(");
                         webBuilder.append("t_tipStatus:2 AND t_dEditStatus:0 AND stage:(1 2 5 6)");
                         webBuilder.append(")");
-
-//                        webBuilder.append("(((t_tipStatus:2");
-//                        webBuilder.append(" AND stage:(1 5 6)");
-//                        webBuilder.append(")");
-//                        //接边Tips
-//                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
 
                         //待质检的tips
                         webBuilder.append(" OR (stage:7 AND t_dEditStatus:0 AND t_tipStatus:2)");
@@ -575,6 +632,18 @@ public class TipsRequestParam {
                     builder.append(webBuilder);
                     builder.append(")");
                 }
+                
+                //类型过滤
+                //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+                //3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+                if(subTaskType == 3) {
+                	builder.append("-s_sourceType:8001 ");//接边Tips
+                }
+                else if(subTaskType == 4) {//4 区域粗编
+                	builder.append(" AND s_sourceType:8001  ");//预处理提交
+                    
+                }
+                
             }
         }
 

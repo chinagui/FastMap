@@ -742,7 +742,7 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type");
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -826,6 +826,8 @@ public class SubtaskOperation {
 								subtaskObj.setGeometry(wkt);
 								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
 								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
+								subtaskObj.setIsQuality(rs.getInt("IS_QUALITY"));
+								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
 
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
@@ -1100,7 +1102,7 @@ public class SubtaskOperation {
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));

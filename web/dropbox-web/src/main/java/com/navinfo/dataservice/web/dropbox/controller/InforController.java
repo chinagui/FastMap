@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -47,6 +48,10 @@ public class InforController extends BaseController {
 			}
 			logger.info(subtaskId);
 
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			logger.info("userId:"+userId);
+
 			UploadService upload = UploadService.getInstance();
 
 			String filePath = upload.unzipByJobId(jobId);
@@ -54,7 +59,7 @@ public class InforController extends BaseController {
 			String url = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.inforUploadUrl);
 
-			String result = upload.uploadInfoFile(url, "infor.json", filePath,subtaskId);
+			String result = upload.uploadInfoFile(url, "infor.json", filePath,subtaskId,userId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(JSONObject

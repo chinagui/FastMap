@@ -27,6 +27,8 @@ public class PropConstant {
 	public static final String linkTileTableName = "hbase.tablename.linktile";
 
 	public static final String solrAddress = "solr.address";
+	
+	public static final String solrCloudAddress = "solr.cloud.address";
 
 	public static final String pidManagerIp = "pid_manager_ip";
 

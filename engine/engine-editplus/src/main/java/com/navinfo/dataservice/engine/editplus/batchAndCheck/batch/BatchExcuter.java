@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import com.alibaba.druid.support.logging.Log;
@@ -10,6 +13,12 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRule;
 
 public class BatchExcuter {
 	private static Logger log = Logger.getLogger(BatchExcuter.class);
+	//删除数据,也要执行批处理的规则
+	private static Set<String>  batchDelReules=new HashSet<String>(){{
+		add("FM-BAT-D20-004");
+		add("FM-BAT-D20-006");
+		add("FM-BAT-20-187-1");
+	}};
 	public BatchExcuter() {
 		// TODO Auto-generated constructor stub
 	}
@@ -26,6 +35,9 @@ public class BatchExcuter {
 		BasicBatchRule ruleObj=(BasicBatchRule) batchRule.getAccessorClass().newInstance();
 		ruleObj.setBatchRuleCommand(batchRuleCommand);
 		ruleObj.setBatchRule(batchRule);
+		if(batchDelReules.contains(batchRule.getRuleId())){
+			ruleObj.setBatchDelData(true);
+		}
 		ruleObj.run();
 	}
 

@@ -155,8 +155,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("start change poi_edit_status=3 commit");
 			int count=commitPoi(conn);
 			
+			log.info("开始执行poi质检提交修改count_table 任务");
 			PoiQuality poiQuality = new PoiQuality();
 			poiQuality.releaseUpdateCountTable(jobInfo, conn);
+			log.info("poi质检提交修改count_table 任务完成");
 			
 			log.info("end change poi_edit_status=3 commit ："+count+" 条");
 			JSONObject response =new JSONObject();

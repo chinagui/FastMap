@@ -53,13 +53,13 @@ public class JobProgressOperator {
      * @throws SQLException
      */
     public JobProgress getByJobId(long jobId, int phase) throws SQLException {
-        String sql = "select jp.* from job_progress jp where jp.job_id=? and jr.phase=?";
+        String sql = "select jp.* from job_progress jp where jp.job_id=? and jp.phase=?";
         ResultSetHandler<JobProgress> rsHandler = new ResultSetHandler<JobProgress>() {
             @Override
             public JobProgress handle(ResultSet rs) throws SQLException {
                 if (rs.next()) {
                     JobProgress jobProgress = new JobProgress();
-
+                    jobProgress.load(rs);
                     return jobProgress;
                 }
                 return null;

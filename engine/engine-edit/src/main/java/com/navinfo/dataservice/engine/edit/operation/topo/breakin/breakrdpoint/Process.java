@@ -336,7 +336,7 @@ public class Process extends AbstractProcess<Command> {
             log.info("END RECORD  ");
             log.info("RECODE USE TIME  " + String.valueOf(recordTime - attrrelationTime));
             log.info("POST CHECK BEGIN");
-            this.postCheck();
+            //this.postCheck();
             log.info("POST CHECK BEGIN");
             //this.getConn().commit();
             log.info("END BEGIN BREAK RDLINK");

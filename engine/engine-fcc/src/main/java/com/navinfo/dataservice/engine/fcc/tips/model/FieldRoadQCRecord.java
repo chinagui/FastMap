@@ -1,17 +1,20 @@
 package com.navinfo.dataservice.engine.fcc.tips.model;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by zhangjunfang on 2017/7/12.
  */
 public class FieldRoadQCRecord {
     private String rowkey;
     private String link_pid;
-    private String problem_num;
+    private String id;
     private String class_top;
+    @SerializedName("class")
     private String class_bottom;
-    private String problem_type;
-    private String problem_phenomenon;
-    private String problem_description;
+    private String type;
+    private String phenomenon;
+    private String description;
     private String initial_cause;
     private String root_cause;
     private String check_userid;
@@ -36,12 +39,12 @@ public class FieldRoadQCRecord {
         this.link_pid = link_pid;
     }
 
-    public String getProblem_num() {
-        return problem_num;
+    public String getId() {
+        return id;
     }
 
-    public void setProblem_num(String problem_num) {
-        this.problem_num = problem_num;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getClass_top() {
@@ -60,28 +63,28 @@ public class FieldRoadQCRecord {
         this.class_bottom = class_bottom;
     }
 
-    public String getProblem_type() {
-        return problem_type;
+    public String getType() {
+        return type;
     }
 
-    public void setProblem_type(String problem_type) {
-        this.problem_type = problem_type;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getProblem_phenomenon() {
-        return problem_phenomenon;
+    public String getPhenomenon() {
+        return phenomenon;
     }
 
-    public void setProblem_phenomenon(String problem_phenomenon) {
-        this.problem_phenomenon = problem_phenomenon;
+    public void setPhenomenon(String phenomenon) {
+        this.phenomenon = phenomenon;
     }
 
-    public String getProblem_description() {
-        return problem_description;
+    public String getDescription() {
+        return description;
     }
 
-    public void setProblem_description(String problem_description) {
-        this.problem_description = problem_description;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getInitial_cause() {

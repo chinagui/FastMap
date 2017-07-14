@@ -274,7 +274,10 @@ public class TipsController extends BaseController {
 
 
             //20170712 Tips上传增加外业质检问题记录上传
+            logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
             tipsUploader.runQuality(filePath + "/"+ "rd_qcRecord.txt");
+            result.put("qcTotal", tipsUploader.getQcTotal());
+            result.put("qcReasons", tipsUploader.getQcReasons());
 
             return new ModelAndView("jsonView", success(result));
 

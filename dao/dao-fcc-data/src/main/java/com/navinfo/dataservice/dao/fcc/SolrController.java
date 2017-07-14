@@ -1121,7 +1121,7 @@ public class SolrController {
         SolrDocumentList sdList = response.getResults();
         long totalNum = sdList.getNumFound();
         if (totalNum <= fetchNum) {
-            for (int i = 0; i < limit; i++) {
+            for (int i = 0; i < totalNum; i++) {
                 SolrDocument doc = sdList.get(i);
                 JSONObject snapshot = JSONObject.fromObject(doc);
                 snapshots.add(snapshot);

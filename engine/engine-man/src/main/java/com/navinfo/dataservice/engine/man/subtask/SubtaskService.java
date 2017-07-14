@@ -3740,7 +3740,7 @@ public class SubtaskService {
 					+ "       C.CITY_NAME,"
 					+ "       S.EXE_USER_ID,"
 					+ "       QS.QUALITY_METHOD,s.plan_start_date"
-					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G,"
+					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
 					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
 					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
 					+ "   AND QS.TASK_ID = T.TASK_ID"

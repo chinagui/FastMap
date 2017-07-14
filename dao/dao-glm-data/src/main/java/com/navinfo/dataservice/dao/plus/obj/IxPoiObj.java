@@ -134,7 +134,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 创建一个IxPoiFlagMethod对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
 	 */
 	public IxPoiFlagMethod createIxPoiFlagMethod()throws Exception{
-		IxPoiFlagMethod ixPoiFlagMethod = (IxPoiFlagMethod)(ObjFactory.getInstance().createRow("POI_FLAG", this.objPid()));
+		IxPoiFlagMethod ixPoiFlagMethod = (IxPoiFlagMethod)(ObjFactory.getInstance().createRow("IX_POI_FLAG_METHOD", this.objPid()));
 		if(subrows.containsKey("IX_POI_FLAG_METHOD")){
 			subrows.get("IX_POI_FLAG_METHOD").add(ixPoiFlagMethod);
 		}else{

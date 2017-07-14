@@ -841,14 +841,14 @@ public class SubtaskOperation {
 //									}
 									if(subtaskStat.containsKey("tipsPrepared")){
 										//subtask.put("tipsPrepared",subtaskStat.get("tipsPrepared"));
-										subtask.put("tipsFinish",subtaskStat.get("tipsPrepared"));
+										subtask.put("tipsPrepared",subtaskStat.get("tipsPrepared"));
 										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
 								}else{
 									subtask.put("poiWaitWork",0);
 									subtask.put("poiWorked",0);
 									subtask.put("poiCommit",0);
-									subtask.put("tipsFinish",0);
+									subtask.put("tipsPrepared",0);
 									subtask.put("tipsTotal",0);
 								}
 								log.info("end stat");

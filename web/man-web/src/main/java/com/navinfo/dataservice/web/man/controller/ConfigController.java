@@ -101,9 +101,8 @@ public class ConfigController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空");
 			}
 			JSONObject dataJson=JSONObject.fromObject(URLDecode(parameter));
-			String password=dataJson.getString("password");
-			boolean result=ConfigService.getInstance().verify(password);
-			return new ModelAndView("jsonView",success(result));
+			ConfigService.getInstance().mangeMesh(dataJson);
+			return new ModelAndView("jsonView",success());
 		}catch(Exception e){
 			log.error("查询列表错误", e);
 			return new ModelAndView("jsonView",exception(e));

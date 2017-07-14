@@ -151,4 +151,18 @@ public class ConfigService {
 		if(passwordMan.equals(password)){return true;}
 		else{return false;}
 	}
+	/**
+	 * 图幅闸开关接口
+	 * 原则：
+	 * 1.	根据openFlag，对图幅进行开关操作
+	 * 2.	Action有值，则对action对应的图幅操作
+	 * 3.	mediumAction有值，则对meshList图幅操作开关+mediumAction对应的MEDIUM1_FLAG/MEDIUM2_FLAG=1
+	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
+	 * 5.	仅openFlag有值，对全部图幅进行操作
+	 * @param dataJson
+	 */
+	public void mangeMesh(JSONObject dataJson) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -381,6 +381,11 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			//modify by songhe
+			//这里添加了一个质检方式上传的为空的判断，上传了这个字段，但是内容为空的时候直接不处理
+			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
+				dataJson.remove("qualityMethod");
+			}
 			if(dataJson.containsKey("qualityMethod")){
 				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
 				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
@@ -1659,6 +1664,7 @@ public class SubtaskService {
 		if(program==null){throw new Exception("众包子任务发布，通知mapsppotor失败：数据错误，未找到子任务对应项目");}
 		JSONObject par=new JSONObject();
 		par.put("subTaskId", subtask.getSubtaskId());
+		par.put("subTaskName", subtask.getName());
 		par.put("userId", subtask.getCreateUserId());
 		if(program.getType()==1){
 			par.put("priority", 2);
@@ -3738,8 +3744,8 @@ public class SubtaskService {
 					+ "       C.PROVINCE_NAME,"
 					+ "       C.CITY_NAME,"
 					+ "       S.EXE_USER_ID,"
-					+ "       QS.QUALITY_METHOD"
-					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+					+ "       QS.QUALITY_METHOD,s.plan_start_date"
+					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G,"
 					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
 					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
 					+ "   AND QS.TASK_ID = T.TASK_ID"
@@ -3758,6 +3764,8 @@ public class SubtaskService {
 						returnObj.put("city", rs.getString("CITY_NAME"));
 						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
 						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+						SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+						returnObj.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return returnObj;
 					}

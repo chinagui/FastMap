@@ -56,5 +56,57 @@ public class ConfigController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-
+	/**
+	 * 图幅闸权限验证接口
+	 * 原则：
+	 * 1.	验证输入的密码是否与sys库配置的man.password相同；相同返回true，不同false
+	 * 应用场景：管理平台—图幅管理
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/config/verify")
+	public ModelAndView verify(HttpServletRequest request){
+		try{
+			String parameter=request.getParameter("parameter");
+			if(StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空");
+			}
+			JSONObject dataJson=JSONObject.fromObject(URLDecode(parameter));
+			String password=dataJson.getString("password");
+			boolean result=ConfigService.getInstance().verify(password);
+			return new ModelAndView("jsonView",success(result));
+		}catch(Exception e){
+			log.error("查询列表错误", e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 图幅闸开关接口
+	 * 原则：
+	 * 1.	根据openFlag，对图幅进行开关操作
+	 * 2.	Action有值，则对action对应的图幅操作
+	 * 3.	mediumAction有值，则对meshList图幅操作开关+mediumAction对应的MEDIUM1_FLAG/MEDIUM2_FLAG=1
+	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
+	 * 5.	仅openFlag有值，对全部图幅进行操作
+	 * 应用场景：管理平台—图幅管理
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/config/mangeMesh")
+	public ModelAndView mangeMesh(HttpServletRequest request){
+		try{
+			String parameter=request.getParameter("parameter");
+			if(StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空");
+			}
+			JSONObject dataJson=JSONObject.fromObject(URLDecode(parameter));
+			String password=dataJson.getString("password");
+			boolean result=ConfigService.getInstance().verify(password);
+			return new ModelAndView("jsonView",success(result));
+		}catch(Exception e){
+			log.error("查询列表错误", e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 }

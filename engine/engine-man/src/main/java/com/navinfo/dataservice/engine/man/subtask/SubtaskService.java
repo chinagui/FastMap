@@ -381,6 +381,11 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			//modify by songhe
+			//这里添加了一个质检方式上传的为空的判断，上传了这个字段，但是内容为空的时候直接不处理
+			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
+				dataJson.remove("qualityMethod");
+			}
 			if(dataJson.containsKey("qualityMethod")){
 				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
 				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){

@@ -24,7 +24,7 @@ public class androidtest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-//	@Test
+	@Test
 	public void test() {
 		Date startTime = new Date();
 		JSONArray gridDateList = new JSONArray();

@@ -72,7 +72,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
 			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
-//			String localUnzipDir = "F:\\mul\\20170623160807_day";
+			//String localUnzipDir = "F:\\mul\\20170623160807_day";
 			response("下载文件完成",null);
 			//执行导入
 			imp(syncApi,localUnzipDir);
@@ -283,7 +283,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Map<String,String> parMap = new HashMap<String,String>();
 			parMap.put("parameter", jso.toString());
 			parMap.put("operate", "downloadFastMapFeedBack");
-			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+//			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDayNotifyUrl);
 			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());

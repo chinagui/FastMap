@@ -36,7 +36,7 @@ public class JobRelation {
         this.itemType = itemType;
     }
 
-    public void load(ResultSet rs) throws SQLException{
+    public void load(ResultSet rs) throws SQLException {
         this.setJobId(rs.getLong("job_id"));
         this.setItemId(rs.getLong("item_id"));
         this.setItemType(ItemType.valueOf(rs.getInt("item_type")));

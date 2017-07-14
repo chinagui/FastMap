@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.man.job.Day2Month;
 
 import com.navinfo.dataservice.engine.man.job.JobRunner;
-import com.navinfo.dataservice.engine.man.job.Tips2Mark.CreateCMSTaskPhase;
-import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkPhase;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 
 /**

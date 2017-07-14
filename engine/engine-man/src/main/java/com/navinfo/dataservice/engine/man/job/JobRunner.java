@@ -135,7 +135,7 @@ public abstract class JobRunner {
                 continue;
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
-            } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA){
+            } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
                 break;
             }
 
@@ -148,8 +148,8 @@ public abstract class JobRunner {
                 if (status != JobProgressStatus.RUNNING && status != JobProgressStatus.CREATED) {
                     SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
                 }
-            }catch (Exception ex){
-                log.error("public_msg_error:"+ExceptionUtils.getStackTrace(ex));
+            } catch (Exception ex) {
+                log.error("public_msg_error:" + ExceptionUtils.getStackTrace(ex));
             }
 
             if (status == JobProgressStatus.FAILURE) {

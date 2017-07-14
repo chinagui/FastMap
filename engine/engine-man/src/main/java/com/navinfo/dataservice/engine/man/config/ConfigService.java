@@ -16,6 +16,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 
@@ -134,5 +136,33 @@ public class ConfigService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 图幅闸权限验证接口
+	 * 原则：
+	 * 1.	验证输入的密码是否与sys库配置的man.password相同；相同返回true，不同false
+	 * 应用场景：管理平台—图幅管理
+	 * @param password
+	 * @return
+	 */
+	public boolean verify(String password) {
+		String passwordMan=SystemConfigFactory.getSystemConfig().getValue(PropConstant.manPassword);
+		if(passwordMan.equals(password)){return true;}
+		else{return false;}
+	}
+	/**
+	 * 图幅闸开关接口
+	 * 原则：
+	 * 1.	根据openFlag，对图幅进行开关操作
+	 * 2.	Action有值，则对action对应的图幅操作
+	 * 3.	mediumAction有值，则对meshList图幅操作开关+mediumAction对应的MEDIUM1_FLAG/MEDIUM2_FLAG=1
+	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
+	 * 5.	仅openFlag有值，对全部图幅进行操作
+	 * @param dataJson
+	 */
+	public void mangeMesh(JSONObject dataJson) {
+		// TODO Auto-generated method stub
+		
 	}
 }

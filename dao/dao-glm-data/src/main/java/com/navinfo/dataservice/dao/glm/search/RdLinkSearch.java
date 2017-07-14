@@ -234,7 +234,7 @@ public class RdLinkSearch implements ISearch {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		String sql = "with tmp1 as"
-				+ " (select /*+ use_nl(L,P)*/"
+				+ " (select"
 				+ "   l.LANE_NUM,"
 				+ "   l.link_pid,"
 				+ "   l.direct,"
@@ -245,15 +245,11 @@ public class RdLinkSearch implements ISearch {
 				+ "   l.e_node_pid,"
 				+ "   l.length,"
 				+ "   l.imi_code,"
-				+ "   l.geometry,"
-				+ "   p.is_plan_selected"
-				+ "    from rd_link l, data_plan p"
-				+ "   where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') ="
-				+ "         'TRUE'"
+				+ "   l.geometry"
+				+ "    from rd_link l"
+				+ "   where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE'"
 				+ "     and l.u_record != 2"
-				+ "     and l.link_pid = p.pid"
-				+ "     and p.data_type = 2"
-				+ "     and p.task_id = :2),"
+				+ "    ),"
 				+ " tmp2 as"
 				+ " (select /*+ index(a) */"
 				+ "   a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits"
@@ -273,12 +269,20 @@ public class RdLinkSearch implements ISearch {
 				+ " (select /*+ index(a) */"
 				+ "   a.pid, a.scenario"
 				+ "    from link_edit_pre a, tmp1 b"
-				+ "   where a.pid = b.link_pid)"
-				+ " select a.*, b.limits, c.forms, d.name,e.scenario"
+				+ "   where a.pid = b.link_pid),"
+				+ " tmp5 as"
+				+ " (select /*+ index(p) */"
+				+ "   p.pid, p.is_plan_selected"
+				+ "    from data_plan p, tmp1 b"
+				+ "   where b.link_pid = p.pid"
+				+ "     and p.data_type = 2"
+				+ "     and p.task_id = :2)"
+				+ " select a.*, b.limits, c.forms, d.name, e.scenario,f.is_plan_selected"
 				+ "  from tmp1 a,"
 				+ "       tmp2 b,"
 				+ "       tmp3 c,"
 				+ "       tmp4 e,"
+				+ "       tmp5 f,"
 				+ "       (select /*+ index(b) */"
 				+ "         b.link_pid, c.name"
 				+ "          from rd_link_name b, rd_name c"
@@ -290,7 +294,8 @@ public class RdLinkSearch implements ISearch {
 				+ " where a.link_pid = b.link_pid(+)"
 				+ "   and a.link_pid = c.link_pid(+)"
 				+ "   and a.link_pid = d.link_pid(+)"
-				+ "   and a.link_pid = e.pid(+)";
+				+ "   and a.link_pid = e.pid(+)"
+				+ "   and a.link_pid = f.pid";
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -303,6 +308,8 @@ public class RdLinkSearch implements ISearch {
 
 			pstmt.setString(1, wkt);
 			pstmt.setInt(2, taskId);
+			log.info(wkt);
+			log.info(taskId);
 
 			resultSet = pstmt.executeQuery();
 

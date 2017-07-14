@@ -77,6 +77,16 @@
 			<bean class="com.navinfo.dataservice.web.sys.websocket.ManWebSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
+
+	<bean id="msgManJobWebSocketHandler" class="com.navinfo.dataservice.engine.sys.msg.websocket.MsgManJobWebSocketHandler"/>
+
+	<websocket:handlers	allowed-origins="*">
+		<websocket:mapping 	path="/message/manJobWebSocketServer" handler="msgManJobWebSocketHandler"/>
+		<!-- 握手协议接口 -->
+		<websocket:handshake-interceptors>
+			<bean class="com.navinfo.dataservice.web.sys.websocket.ManWebSocketHandshakeInterceptor"></bean>
+		</websocket:handshake-interceptors>
+	</websocket:handlers>
 	
 	<!-- test begin -->
 	<!-- 

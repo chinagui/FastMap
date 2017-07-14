@@ -110,7 +110,8 @@ public class ScPartitionMeshlistSelector {
 	 * @throws Exception
 	 */
 	public List<Integer> getMeshsFromPartition(List<Integer> meshs,int openFlag,int action) throws Exception{
-		
+		List<Integer> meshList= new ArrayList<Integer>();
+		if(meshs==null||meshs.size()==0){return meshList;}
 		Connection conn = null;
 		
 		String sql = "SELECT spm.MESH FROM SC_PARTITION_MESHLIST spm WHERE spm.MESH IN  ("+StringUtils.join(meshs.toArray(), ",")+")";
@@ -118,13 +119,11 @@ public class ScPartitionMeshlistSelector {
 			sql=sql+" and spm.action ="+action;
 		}
 		if(openFlag!=3){
-			sql=sql+" spm.open_flag ="+openFlag;
+			sql=sql+" and spm.open_flag ="+openFlag;
 		}
 		ResultSet rs = null;
 		
 		PreparedStatement pstmt = null;
-		
-		List<Integer> meshList= new ArrayList<Integer>();
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();

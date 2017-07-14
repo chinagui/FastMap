@@ -78,6 +78,11 @@ public class PushTest {
 		System.out.println(flag);
 	}
 	
+	/**
+	 * 获取项目的根目录
+	 * @author Han Shaoming
+	 * @throws Exception
+	 */
 	@Test
 	public void test06() throws Exception{
 		String url1 = PushTest.class.getClassLoader().getResource(".").getPath();
@@ -88,6 +93,16 @@ public class PushTest {
 		System.out.println(url3);
 		String url4 = PushTest.class.getResource("").getPath();
 		System.out.println(url4);
+		
+	}
+	
+	/**
+	 * 百分比20.23%
+	 * @author Han Shaoming
+	 * @throws Exception
+	 */
+	@Test
+	public void test08() throws Exception{
 		double usedMemory = 23;
 		double maxMemory = 88;
 		double usedPercent = (double)Math.round((usedMemory/maxMemory)*10000)/100;

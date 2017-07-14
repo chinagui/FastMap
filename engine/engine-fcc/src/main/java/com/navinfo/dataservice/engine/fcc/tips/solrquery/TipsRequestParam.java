@@ -432,8 +432,8 @@ public class TipsRequestParam {
 
         String statType = jsonReq.getString("statType");
         
-        //作业任务 ???任务类型取值 待确认
-        if(taskType==1){
+        //任务类型，1是质检任务
+        if(taskType!=1){
         	
         	  //Tips总量：根据子任务grid范围、项目ID、且stage=1，2，5，6，7， 且t_tipStatus=2；
             if(statType.equals("total")) {
@@ -459,7 +459,7 @@ public class TipsRequestParam {
         	
         }
         //质检任务
-        else if(taskType==2){
+        else if(taskType==1){
         	
         	  //Tips 总量：显示抽取到的质检Tips总量（stage= 7且handler=质检子任务对应分配的质检员ID的tips）
             if(statType.equals("total")) {

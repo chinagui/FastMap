@@ -1366,6 +1366,8 @@ catch (Exception e) {
 			return (List)subrows.get("IX_SAMEPOI");
 		}else if("nameTones".equals(subRowName)){
 			return (List)subrows.get("IX_POI_NAME_TONE");
+		}else if("nameTones".equals(subRowName)){
+			return (List)subrows.get("IX_POI_FLAG_METHOD");
 		}else{
 			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}

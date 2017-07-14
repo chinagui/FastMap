@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.dao.mq.sys;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
 
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -12,7 +14,7 @@ import net.sf.json.JSONObject;
  * @Description 发送消息
  */
 public class SysMsgPublisher {
-	
+	private static Logger log = LoggerRepos.getLogger(SysMsgPublisher.class);
 	/**
 	 * 发送消息到消息队列
 	 * @param msgTitle
@@ -86,7 +88,21 @@ public class SysMsgPublisher {
 		//发送申请消息
 		MsgPublisher.publish2WorkQueue("apply_personal_msg", applyMsg.toString());
 	}
-	
-	
+
+	/**
+	 * 发送JOB状态消息到消息队列
+	 * @param jobMessage
+	 * @param auditor
+	 * @throws Exception
+	 */
+	public static void publishManJobMsg(String jobMessage,long auditor) throws Exception{
+		JSONObject message = new JSONObject();
+		message.put("auditor", auditor);
+		message.put("jobMessage", jobMessage);
+
+		//发送申请消息
+		MsgPublisher.publish2WorkQueue(SysMsgType.MSG_PERSONAL_MANJOB, message.toString());
+		log.info("published msg:"+message);
+	}
 
 }

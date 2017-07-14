@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.fcc;
+package com.navinfo.dataservice.dao.fcc.connection;
 
 import java.io.IOException;
 

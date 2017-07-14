@@ -2,9 +2,12 @@ package com.navinfo.dataservice.dao.fcc;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -27,10 +30,12 @@ public class SolrController {
 
     private int fetchNum = Integer.MAX_VALUE;
 
-    private HttpSolrClient client;
+//    private HttpSolrClient client;
+    private SolrClient client;
 
     public SolrController() {
-        client = SolrConnector.getInstance().getClient();
+//        client = SolrConnector.getInstance().getClient();
+    	client = SolrClientFactory.getInstance().getClient();
     }
 
     public void addTips(JSONObject json) throws JSONException,

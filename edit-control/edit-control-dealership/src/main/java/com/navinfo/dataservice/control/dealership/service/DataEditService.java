@@ -1345,8 +1345,11 @@ public class DataEditService {
 		String sql="";
 		if (dealershipInfo.getInt("workflowStatus")==4||dealershipInfo.getInt("workflowStatus")==5){
 			sql = "UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo=:1,R.cfm_status=1 WHERE r.RESULT_ID=:2 ";
-		}else{
+		}else if(dealershipInfo.getInt("workflowStatus")==3){
 			sql="UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,r.cfm_Memo=:1,r.cfm_poi_num=:2,r.CFM_IS_ADOPTED=:3,r.POI_KIND_CODE=:4,r.POI_CHAIN=:5,r.POI_NAME=:6,r.POI_NAME_SHORT=:7,r.POI_ADDRESS=:8,r.POI_TEL=:9,r.POI_POST_CODE=:10,r.POI_X_DISPLAY=:11,r.POI_Y_DISPLAY=:12,r.POI_X_GUIDE=:13,r.POI_Y_GUIDE=:14,r.GEOMETRY=sdo_geometry(:15  , 8307) WHERE r.RESULT_ID=:16 ";
+		}else{
+			String dealCfmDate = DateUtils.longToString(System.currentTimeMillis(), DateUtils.DATE_COMPACTED_FORMAT);
+			sql="UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,r.match_method=0,r.deal_cfm_date=" + dealCfmDate +",r.cfm_Memo=:1,r.cfm_poi_num=:2,r.CFM_IS_ADOPTED=:3,r.POI_KIND_CODE=:4,r.POI_CHAIN=:5,r.POI_NAME=:6,r.POI_NAME_SHORT=:7,r.POI_ADDRESS=:8,r.POI_TEL=:9,r.POI_POST_CODE=:10,r.POI_X_DISPLAY=:11,r.POI_Y_DISPLAY=:12,r.POI_X_GUIDE=:13,r.POI_Y_GUIDE=:14,r.GEOMETRY=sdo_geometry(:15  , 8307) WHERE r.RESULT_ID=:16 ";
 		}
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -1446,15 +1449,19 @@ public class DataEditService {
 			
 	/**
 	 * 提交时更新poi状态从0改为为3
+	 * 如果没有对应的poi_edit_status记录，则插入一条
 	 * @param poiNum
 	 * @param conn
 	 * @throws Exception
 	 */
 	private void updatePoiStatusByPoiNum(String poiNum,Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE POI_EDIT_STATUS SET STATUS = 3 WHERE STATUS = 0");
-		sb.append(" AND PID = (SELECT PID FROM IX_POI WHERE POI_NUM = :1)");
-
+		sb.append(" MERGE INTO poi_edit_status t1 ");
+		sb.append(" USING (SELECT p.pid FROM ix_poi p,poi_edit_status pe  WHERE p.pid = pe.pid(+) AND p.POI_NUM = :1) T2 ");
+		sb.append(" ON (t1.pid = t2.pid ) ");
+		sb.append(" WHEN MATCHED THEN  UPDATE SET STATUS = 3 WHERE STATUS  = 0 ");
+		sb.append(" WHEN NOT MATCHED THEN INSERT (pid,status) VALUES(t2.pid,3)");
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
@@ -1463,7 +1470,6 @@ public class DataEditService {
 			pstmt.setString(1, poiNum);
 			pstmt.executeUpdate();
 
-			
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -1966,7 +1972,9 @@ public class DataEditService {
 			}
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			updateStatusByChain(conn, chainCodeList);
+			if(chainCodeList.size() > 0){
+				updateStatusByChain(conn, chainCodeList);
+			}
 			updateReulteData(conn, resultIdList);
 			resultMap.put("resultIdList", resultIdList);
 			resultMap.put("chainCodeList", chainCodeList);

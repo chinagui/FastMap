@@ -233,25 +233,64 @@ public class RdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  "
-				+ "("
-					+ " select /*+ use_nl(L,P)*/ l.LANE_NUM , l.link_pid,l.direct, l.kind,l.special_traffic,l.function_class, l.s_node_pid, l.e_node_pid,l.length,l.imi_code, l.geometry,p.is_plan_selected  "
-					+ "    from rd_link l , data_plan p   "
-					+ " where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' "
-					+ " and l.u_record != 2 "
-					+ " and l.link_pid = p.pid and p.data_type = 2 and p.task_id = :2 "
-				+ "), "
-				+ "tmp2 as  "
-				+ "("
-					+ "select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits  from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid"
-				+ "), "
-				+ "tmp3 as  "
-				+ "("
-					+ "select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid"
-				+ ") "
-					
-				+ "select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */    b.link_pid, c.name  from rd_link_name b, rd_name c   where b.name_groupid = c.name_groupid   and b.name_class = 1    and b.seq_num = 1   and c.lang_code = 'CHI'  and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
-
+		String sql = "with tmp1 as"
+				+ " (select /*+ use_nl(L,P)*/"
+				+ "   l.LANE_NUM,"
+				+ "   l.link_pid,"
+				+ "   l.direct,"
+				+ "   l.kind,"
+				+ "   l.special_traffic,"
+				+ "   l.function_class,"
+				+ "   l.s_node_pid,"
+				+ "   l.e_node_pid,"
+				+ "   l.length,"
+				+ "   l.imi_code,"
+				+ "   l.geometry,"
+				+ "   p.is_plan_selected"
+				+ "    from rd_link l, data_plan p"
+				+ "   where sdo_relate(l.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') ="
+				+ "         'TRUE'"
+				+ "     and l.u_record != 2"
+				+ "     and l.link_pid = p.pid"
+				+ "     and p.data_type = 2"
+				+ "     and p.task_id = :2),"
+				+ " tmp2 as"
+				+ " (select /*+ index(a) */"
+				+ "   a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits"
+				+ "    from rd_link_limit a, tmp1 b"
+				+ "   where a.u_record != 2"
+				+ "     and a.link_pid = b.link_pid"
+				+ "   group by a.link_pid),"
+				+ " tmp3 as"
+				+ " (select /*+ index(a) */"
+				+ "   a.link_pid,"
+				+ "   listagg(a.form_of_way, ';') within group(order by a.link_pid) forms"
+				+ "    from rd_link_form a, tmp1 b"
+				+ "   where a.u_record != 2"
+				+ "     and a.link_pid = b.link_pid"
+				+ "   group by a.link_pid),"
+				+ " tmp4 as"
+				+ " (select /*+ index(a) */"
+				+ "   a.pid, a.scenario"
+				+ "    from link_edit_pre a, tmp1 b"
+				+ "   where a.pid = b.link_pid)"
+				+ " select a.*, b.limits, c.forms, d.name,e.scenario"
+				+ "  from tmp1 a,"
+				+ "       tmp2 b,"
+				+ "       tmp3 c,"
+				+ "       tmp4 e,"
+				+ "       (select /*+ index(b) */"
+				+ "         b.link_pid, c.name"
+				+ "          from rd_link_name b, rd_name c"
+				+ "         where b.name_groupid = c.name_groupid"
+				+ "           and b.name_class = 1"
+				+ "           and b.seq_num = 1"
+				+ "           and c.lang_code = 'CHI'"
+				+ "           and b.u_record != 2) d"
+				+ " where a.link_pid = b.link_pid(+)"
+				+ "   and a.link_pid = c.link_pid(+)"
+				+ "   and a.link_pid = d.link_pid(+)"
+				+ "   and a.link_pid = e.pid(+)";
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -300,6 +339,8 @@ public class RdLinkSearch implements ISearch {
 				m.put("m", resultSet.getInt("LANE_NUM"));
 				
 				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
+				
+				m.put("n", resultSet.getInt("scenario"));
 
 				snapshot.setM(m);
 

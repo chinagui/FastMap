@@ -24,26 +24,26 @@ public class androidtest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	@Test
+//	@Test
 	public void test() {
 		Date startTime = new Date();
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
-		grid.put("grid", "595643");//60562422//60562203//60560233
+		grid.put("grid", "32407312");//60562422//60562203//60560233
 		grid.put("date", "");
 		gridDateList.add(grid);
 		
-		
 		JSONObject grid1 = new JSONObject();
-		grid1.put("grid", "60562422");//60562422//60562203//60560233
+		grid1.put("grid", "47600512");//60562422//60562203//60560233
 		grid1.put("date", "");
 		gridDateList.add(grid1);
 
 		
+		/*
 		JSONObject grid2 = new JSONObject();
 		grid2.put("grid", "60562203");//60562422//60562203//60560233
 		grid2.put("date", "");
-		gridDateList.add(grid2);
+		gridDateList.add(grid2);*/
 		
 		try {
 			Map<String,String> gridDateMap = new HashMap<String,String>();
@@ -54,9 +54,27 @@ public class androidtest {
 			}
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			operation.export2Txt(gridDateMap, "f://poidownload", "poi02.txt");
+			operation.export2Txt(gridDateMap, "f://poidownload", "poi222.txt");
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
+//			download.export(gridList, "f://poidownload", "poi.txt");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+//		JSONObject test = new JSONObject();
+//		test.put("test", JSONNull.getInstance());
+//		test.put("test1", "");
+//		test.put("123", new ArrayList<JSONObject>());
+//		System.out.println(test);
+	}
+	
+	@Test
+	public void testbysubtask() {
+		
+		try {
+			
+			PoiDownloadOperation operation = new PoiDownloadOperation();
+			operation.export2TxtBySubtaskId("f://poidownload", 572);
 //			download.export(gridList, "f://poidownload", "poi.txt");
 		} catch (Exception e) {
 			e.printStackTrace();

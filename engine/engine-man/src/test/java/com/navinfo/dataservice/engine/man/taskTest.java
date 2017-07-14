@@ -38,46 +38,21 @@ import net.sf.json.JSONObject;
 public class taskTest extends InitApplication{
 
 	@Test
-//	public void taskTestCreate() throws Exception {
-//		try {
-//			// TODO Auto-generated constructor stub
-//			String parameter = "{\"blockId\":151,\"stage\":1,\"type\":2,\"descp\":\"开发sp6开发sp6_2\",\"planStartDate\":\"20160905\",\"planEndDate\":\"20160927\",\"exeUserId\":\"1573\",\"gridIds\":[60566232,60566231,60566230,60566222,60566221,60566220],\"name\":\"开发sp6_2\"}";
-//			JSONObject dataJson = JSONObject.fromObject(parameter);
-//			if(dataJson==null){
-//				throw new IllegalArgumentException("parameter参数不能为空。");
-//			}
-//			
-//			JSONArray gridIds = new JSONArray();
-//			
-//			//创建区域专项子任务
-//			if(dataJson.containsKey("taskId")){
-//				List<Integer> gridIdList = GridService.getInstance().getGridListByTaskId(dataJson.getInt("taskId"));
-//				gridIds.addAll(gridIdList);
-//			}else{
-//				gridIds = dataJson.getJSONArray("gridIds");
-//			}
-//			//根据gridIds获取wkt
-//			String wkt = GridUtils.grids2Wkt(gridIds);
-//			if(wkt.contains("MULTIPOLYGON")){
-//				throw new IllegalArgumentException("请输入符合条件的grids");
-//			}
-//			
-//			Object[] gridIdList = gridIds.toArray();
-//			dataJson.put("gridIds",gridIdList);
-//			
-//			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
-//			bean.setGeometry(wkt);
-//				
-//			SubtaskService.getInstance().create(bean);	
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//				
-//	}
-	
+	public void taskTestCreate() throws Exception {
+		try {
+			// TODO Auto-generated constructor stub
+			String parameter = "{\"tasks\":[{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"workKind\":[],\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":0},{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":2}]}";
+			JSONObject dataJson = JSONObject.fromObject(parameter);				
+			TaskService.getInstance().create(0, dataJson);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+				
+	}
+	@Test
 	public void taskTestUpdate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter = "";
+		String parameter = "{\"taskId\":2366,\"descp\":\"\",\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"workKind\":[],\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":0}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -85,8 +60,7 @@ public class taskTest extends InitApplication{
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		//TaskService service = new TaskService();
-		//service.update(dataJson);			
+		TaskService.getInstance().update(0, dataJson);			
 	}
 	
 	@Test

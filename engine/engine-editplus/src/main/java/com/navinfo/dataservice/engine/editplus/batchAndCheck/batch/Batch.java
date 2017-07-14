@@ -75,6 +75,7 @@ public class Batch extends AbstractOperation{
 		BatchRuleCommand batchRuleCommand=new BatchRuleCommand();
 		batchRuleCommand.setConn(conn);
 		batchRuleCommand.setAllDatas(result.getAllObjsMap());
+		batchRuleCommand.setParameter(batchCommand.getParameter());
 		log.info("start run batch rule");
 		//顺序执行批处理规则
 		BatchExcuter excuter=new BatchExcuter();

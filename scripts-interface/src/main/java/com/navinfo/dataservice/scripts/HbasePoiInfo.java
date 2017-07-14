@@ -3,7 +3,6 @@ package com.navinfo.dataservice.scripts;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -16,11 +15,13 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -35,6 +36,8 @@ public class HbasePoiInfo {
 	private Map<String, List<PoiInfo>> poiCollectionByMesh = new HashMap<>();
 
 	private Set<Integer> notFindPoi = new HashSet<>();
+	
+	private Map<Integer,String> poiPidToRowId = new HashMap<>();
 
 	public Map<String, List<PoiInfo>> getPoiCollectionByMesh() {
 		return this.poiCollectionByMesh;
@@ -199,6 +202,7 @@ public class HbasePoiInfo {
 	public void clearCollection() {
 		poiCollectionByMesh.clear();
 		notFindPoi.clear();
+		poiPidToRowId.clear();
 	}
 
 	/**
@@ -210,15 +214,14 @@ public class HbasePoiInfo {
 	 */
 	private void createMapBetweenPoiAndDbId() throws Exception {
 		Map<Integer, List<PoiInfo>> poiDataByDailyDbId = new HashMap<>();
+		Map<Integer,List<PoiInfo>> poiDataByMonthlyDbId = new HashMap<>();
 
-		/*ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-		List<RegionMesh> regions = manApi.queryRegionWithMeshes(this.getPoiCollectionByMesh().keySet());*/
-		List<RegionMesh> regions =
-		RegionService.getInstance().queryRegionWithMeshes(this.getPoiCollectionByMesh().keySet());
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		List<RegionMesh> regions = manApi.queryRegionWithMeshes(this.getPoiCollectionByMesh().keySet());
 
 		if (regions == null || regions.size() == 0) {
-			log.error("根据图幅未查询到所属大区库信息");
-			throw new Exception("根据图幅未查询到所属大区库信息");
+			log.error(String.format("根据图幅%s未查询到所属大区库信息",StringUtils.join(this.getPoiCollectionByMesh().keySet(),",")));
+			return;
 		}
 
 		// 以图幅为主键的数据，更新为以dbId为主键
@@ -228,15 +231,29 @@ public class HbasePoiInfo {
 					continue;
 				}
 
+				//日库
 				if (poiDataByDailyDbId.containsKey(region.getDailyDbId())) {
 					poiDataByDailyDbId.get(region.getDailyDbId()).addAll(entry.getValue());
 				} else {
 					poiDataByDailyDbId.put(region.getDailyDbId(), entry.getValue());
 				}
+				
+				//月库
+				if (poiDataByMonthlyDbId.containsKey(region.getMonthlyDbId())) {
+					poiDataByMonthlyDbId.get(region.getMonthlyDbId()).addAll(entry.getValue());
+				} else {
+					poiDataByMonthlyDbId.put(region.getMonthlyDbId(), entry.getValue());
+				}
 			} // for
 		} // for
 
+		//日库
 		for (Map.Entry<Integer, List<PoiInfo>> entry : poiDataByDailyDbId.entrySet()) {
+			createPoiFlagTable(entry.getKey(), entry.getValue());
+		}
+		
+		//月库
+		for (Map.Entry<Integer, List<PoiInfo>> entry : poiDataByMonthlyDbId.entrySet()) {
 			createPoiFlagTable(entry.getKey(), entry.getValue());
 		}
 	}
@@ -252,43 +269,50 @@ public class HbasePoiInfo {
 		Connection dailyConn = null;
 		try {
 			dailyConn = DBConnector.getInstance().getConnectionById(dailyDbId);
-			String existPoiFlag = String.format("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = 'POI_FLAG'");
+			String existPoiFlag = String.format("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = 'IX_POI_FLAG_METHOD'");
 
 			int PoiFlagCount = run.queryForInt(dailyConn, existPoiFlag);
 			if (PoiFlagCount == 1) {
-				log.info(String.format("该库%d已存在POI_FLAG", dailyDbId));
+				log.info(String.format("大区库<%d>已存在IX_POI_FLAG_METHOD子表", dailyDbId));
 			} else {
-				String createPoiFlag = String
-						.format("CREATE TABLE POI_FLAG(PID NUMBER(10),VER_RECORD NUMBER(1),SRC_RECORD NUMBER(1),SRC_NAME_CH NUMBER(1),SRC_ADDRESS NUMBER(1),"
-								+ "SRC_TELEPHONE NUMBER(1),SRC_COORDINATE NUMBER(1),SRC_NAME_ENG NUMBER(1),SRC_NAME_POR NUMBER(1),FIELD_VERIFIED NUMBER(1),"
-								+ "RELIABILITY NUMBER(3),REFRESH_CYCLE NUMBER(3),REFRESH_DATE VARCHAR2(14))");
+				String createPoiFlag = createTable;
 				run.execute(dailyConn, createPoiFlag);
-				log.info(String.format("日库%d创建POI_FLAG:成功", dailyDbId));
+				log.info(String.format("大区库<%d>创建IX_POI_FLAG_METHOD:成功", dailyDbId));
 			}
 
-			log.info("开始插入POI_FLAG数据：");
+			log.info("IX_POI_FLAG_METHOD插入数据：");
 			for (PoiInfo poiInfo : values) {
 				String isExistPoi = String.format("SELECT COUNT(*) FROM IX_POI WHERE PID = %d", poiInfo.getPid());
 				int count = run.queryForInt(dailyConn, isExistPoi);
 
 				if (count == 0) {
-					log.info("IX_POI表中不存在pid = " + poiInfo.getPid() + "索引，不插入POI_FLAG表中");
+					log.info("IX_POI表中不存在pid = " + poiInfo.getPid() + "索引，不插入IX_POI_FLAG_METHOD表中");
 					notFindPoi.add(poiInfo.getPid());
 					continue;
 				}
 
-				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM POI_FLAG WHERE PID = %d", poiInfo.getPid());
+				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM IX_POI_FLAG_METHOD WHERE POI_PID = %d",
+						poiInfo.getPid());
 				int poiFlagCount = run.queryForInt(dailyConn, isExistPoiFlag);
+				
+				//保持日库月库row_id一致
+				String rowId = "";
+				if (this.poiPidToRowId.containsKey(poiInfo.getPid())) {
+					rowId = this.poiPidToRowId.get(poiInfo.getPid());
+				} else {
+					rowId = UuidUtils.genUuid();
+					this.poiPidToRowId.put(poiInfo.getPid(), rowId);
+				}
 
 				String insertItemToPoiFlag = "";
 				if (poiFlagCount == 0) {
 					insertItemToPoiFlag = String.format(
-							"INSERT INTO POI_FLAG VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, 0, null)",
+							"INSERT INTO IX_POI_FLAG_METHOD VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, null, 0, null, null, '%s')",
 							poiInfo.getPid(), poiInfo.getVerifyRecord(), poiInfo.getSourceRecord(),
-							poiInfo.getFieldVerification());
+							poiInfo.getFieldVerification(),rowId);
 				} else {
 					insertItemToPoiFlag = String.format(
-							"UPDATE POI_FLAG SET VER_RECORD = %d,SRC_RECORD = %d, FIELD_VERIFIED = %d WHERE PID = %d",
+							"UPDATE IX_POI_FLAG_METHOD SET VER_RECORD = %d,SRC_RECORD = %d, FIELD_VERIFIED = %d WHERE POI_PID = %d",
 							poiInfo.getVerifyRecord(), poiInfo.getSourceRecord(), poiInfo.getFieldVerification(),
 							poiInfo.getPid());
 				}
@@ -304,4 +328,8 @@ public class HbasePoiInfo {
 			}
 		}
 	}// end
+	
+	private String createTable = "CREATE TABLE IX_POI_FLAG_METHOD(POI_PID NUMBER(10),VER_RECORD NUMBER(1),SRC_RECORD NUMBER(1),SRC_NAME_CH NUMBER(1),"
+			+ "SRC_ADDRESS NUMBER(1),SRC_TELEPHONE NUMBER(1),SRC_COORDINATE NUMBER(1),SRC_NAME_ENG NUMBER(1),SRC_NAME_POR NUMBER(1),FIELD_VERIFIED NUMBER(1),"
+			+ "REFRESH_CYCLE NUMBER(3),REFRESH_DATE VARCHAR2(14),U_RECORD NUMBER(3),U_FIELDS VARCHAR(200),U_DATA VARCHAR(14),ROW_ID RAW(16))";
 }

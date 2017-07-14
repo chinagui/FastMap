@@ -742,6 +742,12 @@ public class SysMsgService {
 				metric = "系统负载";
 			}else if ("mem.memused.percent".equals(metricPre)) {
 				metric = "内存使用率";
+			}else if ("gc.throughput".equals(metricPre)) {
+				metric = "Jobserver垃圾回收的总吞吐率";
+			}else if ("psscavenge.gc.avg.time".equals(metricPre)) {
+				metric = "Jobserver垃圾回收的平均耗时时间";
+			}else if ("thread.active.count".equals(metricPre)) {
+				metric = "Jobserver当前活跃线程数";
 			} else {
 				metric = metricPre;
 			}
@@ -778,7 +784,9 @@ public class SysMsgService {
 				tag = "collector服务(" + tagPre + ")";
 			} else if ("port=8096".equals(tagPre)) {
 				tag = "dealership服务(" + tagPre + ")";
-			} else{
+			} else if ("port=8050".equals(tagPre)) {
+				tag = "Jobserver服务(" + tagPre + ")";
+			}else{
 				tag = tagPre;
 			}
 			// 报警值及监控值

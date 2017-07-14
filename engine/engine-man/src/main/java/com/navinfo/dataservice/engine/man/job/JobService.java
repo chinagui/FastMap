@@ -79,6 +79,7 @@ public class JobService {
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
         try {
+            log.info("updateJobProgress:phaseId:"+phaseId+",status:"+status.value()+",message:"+outParameter);
             conn = DBConnector.getInstance().getManConnection();
             JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
@@ -88,7 +89,7 @@ public class JobService {
                 JobOperator jobOperator = new JobOperator(conn);
                 jobOperator.updateStatusByPhaseId(phaseId, JobStatus.FAILURE);
             } else {
-                //步骤成果，进行执行job
+                //步骤成功，继续执行job
                 JobOperator jobOperator = new JobOperator(conn);
                 Job job = jobOperator.getByPhaseId(phaseId);
                 if (job == null) {

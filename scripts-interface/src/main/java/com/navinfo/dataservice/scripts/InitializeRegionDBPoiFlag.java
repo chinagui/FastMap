@@ -1,22 +1,10 @@
 package com.navinfo.dataservice.scripts;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.RegionMesh;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
-import net.sf.json.JSONObject;
 
 /**
  * @des hadoop库初始化大区库

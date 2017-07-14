@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.poi.index.PoiFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlagMethod;
 
 public class PoiFlagHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
 	
@@ -18,12 +18,12 @@ public class PoiFlagHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
 		try {
 			while (rs.next()){
 				List<IRow> poiFlagList = new ArrayList<IRow>();
-				PoiFlag poiFlag = new PoiFlag();
-				poiFlag.setPid(rs.getInt("pid"));
+				IxPoiFlagMethod poiFlag = new IxPoiFlagMethod();
+				poiFlag.setPoiPid(rs.getInt("poi_pid"));
 				poiFlag.setSrcRecord(rs.getInt("src_record"));
 				poiFlag.setFieldVerified(rs.getInt("field_verified"));
 				poiFlagList.add(poiFlag);
-				poiFlagMap.put(rs.getLong("pid"), poiFlagList);
+				poiFlagMap.put(rs.getLong("poi_pid"), poiFlagList);
 			}
 			return poiFlagMap;
 		} catch (Exception e) {

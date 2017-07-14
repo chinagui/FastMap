@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -1260,7 +1261,7 @@ public class TaskService {
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1412,18 +1413,18 @@ public class TaskService {
 						}
 
 						JSONArray jobs = new JSONArray();
-						int jobStatus = rs.getInt("job_status");
-						if(jobStatus!=-1){
+						int tisp2markStatus = rs.getInt("TISP2MARK");
+						if(tisp2markStatus!=-1){
 							JSONObject job = new JSONObject();
-							job.put("status",jobStatus);
-							job.put("type", 1);
+							job.put("status",tisp2markStatus);
+							job.put("type", JobType.TiPS2MARK.value());
 							jobs.add(job);
 						}else {
 							//关闭的采集任务可执行tips转mark
 							if (status == 0 && type == 0) {
 								JSONObject job = new JSONObject();
 								job.put("status",0);
-								job.put("type", 1);
+								job.put("type", JobType.TiPS2MARK.value());
 								jobs.add(job);
 							}
 						}

@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -759,7 +761,7 @@ public class SubtaskService {
 				}
 			}
 			// 计算子任务对应大区库所包含图幅号，用于判定接边作业
-			List<Integer> meshes = listDbMeshesBySubtask(subtaskId);
+			List<Integer> meshes = listDbMeshesBySubtask(conn, subtaskId);
 			subtaskMap.put("meshes", meshes);
 
 			return subtaskMap;	
@@ -2342,7 +2344,11 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
+			
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status,");
+			sb.append("NVL((SELECT J.STATUS");
+			sb.append(" FROM JOB_RELATION JR,JOB J");
+			sb.append(" WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=S.SUBTASK_ID AND JR.ITEM_TYPE=3 ),-1) TIPS2MARK");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2417,6 +2423,25 @@ public class SubtaskService {
 						
 						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));
 						subtask.put("qualityExeUserName", rs.getString("quality_Exe_User_Name"));
+
+						JSONArray jobs = new JSONArray();
+						int tips2markStatus = rs.getInt("TIPS2MARK");
+						if(tips2markStatus==-1){
+							//关闭的采集子任务才能执行tips转mark
+							if(rs.getInt("STATUS")==0 && rs.getInt("STAGE")==0){
+								JSONObject job = new JSONObject();
+								job.put("type", JobType.TiPS2MARK.value());
+								job.put("status", 0);
+								jobs.add(job);
+							}
+						}else{
+							JSONObject job = new JSONObject();
+							job.put("type", JobType.TiPS2MARK.value());
+							job.put("status", tips2markStatus);
+							jobs.add(job);
+						}
+						subtask.put("jobs", jobs);
+
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(subtask);
 					}					
@@ -3760,7 +3785,7 @@ public class SubtaskService {
      * @param subtaskId 子任务ID
      * @return 出现错误时返回空列表
      */
-    private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
+    private static List<Integer> listDbMeshesBySubtask(Connection conn, int subtaskId) {
         //private static Map<String,List<Integer>> listDbMeshesBySubtask() {
         final List<Integer> result;
 
@@ -3777,7 +3802,7 @@ public class SubtaskService {
 
         QueryRunner run = new QueryRunner();
         try {
-            result = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
+            result = run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>() {
 
                 private List<Integer> result = new ArrayList<>();
 

@@ -15,10 +15,13 @@ import com.navinfo.dataservice.engine.man.task.TaskService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.
@@ -47,9 +50,6 @@ public class Tips2MarkPhase extends JobPhase {
             int status = Integer.valueOf(cmsInfo.get("status").toString());
             int type = Integer.valueOf(cmsInfo.get("type").toString());
 
-            if(status!=0){
-                throw new Exception("未关闭的子任务/任务/项目不允许执行tips转mark");
-            }
             String jobType="中线一体化作业";
             String jobNature = "更新";
             int taskType=1;
@@ -59,17 +59,23 @@ public class Tips2MarkPhase extends JobPhase {
                     jobNature = "快速更新";
                     taskType = 4;
                     if(type!=4){
-                        throw new Exception("非快速更新项目不允许执行tips转mark");
+                        throw new Exception("非快速更新项目不能执行tips转mark");
                     }
                     break;
                 case SUBTASK:
                     taskType = 2;
                     if(type!=0){
-                        throw new Exception("非采集子任务不允许执行tips转mark");
+                        throw new Exception("非采集子任务不能执行tips转mark");
+                    }
+                    if(status!=0) {
+                        throw new Exception("未关闭的子任务不能执行tips转mark");
                     }
                 case TASK:
                     if(type!=0){
-                        throw new Exception("非采集任务不允许执行tips转mark");
+                        throw new Exception("非采集任务不能执行tips转mark");
+                    }
+                    if(status!=0) {
+                        throw new Exception("未关闭的任务不能执行tips转mark");
                     }
                     break;
             }
@@ -87,7 +93,18 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("types","");
             parameter.put("phaseId",jobProgress.getPhaseId());
             if(jobRelation.getItemType()== ItemType.PROJECT) {
-                parameter.put("collectTaskIds", TaskService.getInstance().getCollectTaskIdsByTaskId((int) cmsInfo.get("cmsId")));
+                Set<Integer> taskIds = new HashSet<>();
+                Object tasks = cmsInfo.get("tasks");
+                if(tasks!=null){
+                    String[] split = tasks.toString().split(",");
+                    for(String task : split){
+                        taskIds.add(Integer.valueOf(task));
+                    }
+                }
+                if(taskIds.size()==0){
+                    throw new Exception("快线项目没有关闭的采集任务，不能执行tips转mark");
+                }
+                parameter.put("collectTaskIds", taskIds);
             }else{
                 parameter.put("collectTaskIds", new JSONArray());
             }
@@ -115,7 +132,7 @@ public class Tips2MarkPhase extends JobPhase {
             //有异常，更新状态为执行失败
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
-                jobProgress.setMessage(jobProgress.getMessage()+"error:"+ ex.getMessage());
+                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

@@ -131,11 +131,12 @@ public abstract class JobRunner {
     public void runPhases() throws Exception {
         boolean finish = true;
         for (JobPhase phase : phaseList) {
-            if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS ||
-                    phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+            if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS) {
                 continue;
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
+            } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA){
+                break;
             }
 
             JobProgressStatus status = phase.run();

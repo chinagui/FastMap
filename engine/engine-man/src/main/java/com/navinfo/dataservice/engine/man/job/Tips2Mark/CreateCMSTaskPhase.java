@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -110,7 +111,7 @@ public class CreateCMSTaskPhase extends JobPhase {
                 } else {
                     log.error("cms error msg" + res.get("msg"));
                     jobProgress.setStatus(JobProgressStatus.FAILURE);
-                    jobProgress.setMessage(jobProgress.getMessage() + "cms error:" + res.get("msg").toString());
+                    jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
@@ -120,7 +121,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
-                jobProgress.setMessage(jobProgress.getMessage() + ex.getMessage());
+                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

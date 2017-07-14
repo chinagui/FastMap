@@ -70,7 +70,9 @@ public class Tips2MarkUtils {
                     "       P.TYPE," +
                     "       P.STATUS," +
                     "       R.MONTHLY_DB_ID," +
-                    "       I.ADMIN_NAME" +
+                    "       I.ADMIN_NAME," +
+                    "       (select listagg(task_id,',') within GROUP (order by task_id) " +
+                    "        from TASK T1 where T1.status=0 and T1.type=0 and T1.program_id=P.program_id) TASKS" +
                     "  FROM PROGRAM           P," +
                     "       TASK              T," +
                     "       REGION            R," +
@@ -86,9 +88,10 @@ public class Tips2MarkUtils {
                         result.put("collectId", rs.getInt("COLLECT_ID"));
                         result.put("collectName", rs.getString("COLLECT_NAME"));
                         result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
-                        result.put("status", rs.getInt("status"));
-                        result.put("type", rs.getInt("type"));
-                        String adminName = rs.getString("adminName");
+                        result.put("status", rs.getInt("STATUS"));
+                        result.put("type", rs.getInt("TYPE"));
+                        result.put("tasks", rs.getString("TASKS"));
+                        String adminName = rs.getString("ADMIN_NAME");
                         String provinceName = "";
                         String cityName="";
                         String blockName="";

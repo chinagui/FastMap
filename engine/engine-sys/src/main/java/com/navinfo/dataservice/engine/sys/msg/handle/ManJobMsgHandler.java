@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.sys.msg.handle;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
+import com.navinfo.dataservice.engine.sys.msg.websocket.MsgManJobWebSocketHandler;
 import com.navinfo.dataservice.engine.sys.msg.websocket.MsgManWebSocketHandler;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -24,7 +25,7 @@ public class ManJobMsgHandler implements MsgHandler {
 		long auditor = (Integer) jo.get("auditor");
 		String jobMessage =  jo.getJSONObject("jobMessage").toString();
 		//websocket实时发送消息
-		MsgManWebSocketHandler.getInstance().sendMessageToUser(Long.toString(auditor), new TextMessage(jobMessage));
+		MsgManJobWebSocketHandler.getInstance().sendMessageToUser(Long.toString(auditor), new TextMessage(jobMessage));
 	}
 
 }

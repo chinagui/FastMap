@@ -36,18 +36,26 @@ public class Process extends AbstractProcess<Command> {
         this.getCommand().setEleceye((RdElectroniceye) new RdElectroniceyeSelector(this.getConn()).loadById(this
                 .getCommand().getPid(), true));
         this.getCommand().setLink((RdLink) selector.loadById(getCommand().getContent().getInt("linkPid"), true));
-        RdLink sourceLink = (RdLink) selector.loadById(getCommand().getEleceye().getLinkPid(), true);
-        RdLink targetLink = getCommand().getLink();
 
-        Geometry sourceGeometry =  GeoTranslator.transform(
-                getCommand().getEleceye().getGeometry(), Constant.BASE_SHRINK,Constant.BASE_PRECISION);
-        Geometry targetGeometry = GeoTranslator.geojson2Jts(getCommand().getContent().getJSONObject("geometry"));
-
-        CheckConnectivity checkConnectivity =
-                new CheckConnectivity(getConn(), "电子眼", sourceLink, sourceGeometry, targetLink, targetGeometry);
-        checkConnectivity.check();
+        check(selector);
 
         return false;
+    }
+
+    private void check(RdLinkSelector selector)  throws Exception
+    {
+        if (getCommand().getEleceye().getLinkPid() != 0) {
+            RdLink sourceLink = (RdLink) selector.loadById(getCommand().getEleceye().getLinkPid(), true);
+            RdLink targetLink = getCommand().getLink();
+
+            Geometry sourceGeometry = GeoTranslator.transform(
+                    getCommand().getEleceye().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+            Geometry targetGeometry = GeoTranslator.geojson2Jts(getCommand().getContent().getJSONObject("geometry"));
+
+            CheckConnectivity checkConnectivity =
+                    new CheckConnectivity(getConn(), "电子眼", sourceLink, sourceGeometry, targetLink, targetGeometry);
+            checkConnectivity.check();
+        }
     }
 
     @Override

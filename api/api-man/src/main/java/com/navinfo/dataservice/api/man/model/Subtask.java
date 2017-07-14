@@ -125,7 +125,7 @@ public class Subtask implements Serializable{
 		return subtaskId;
 	}
 	public void setSubtaskId(Integer subtaskId) {
-		changeFields.put("SUBTASK_ID", name);
+		changeFields.put("SUBTASK_ID", subtaskId);
 		this.subtaskId = subtaskId;
 	}
 //	public Integer getBlockId() {

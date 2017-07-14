@@ -87,32 +87,39 @@ public class FMBATD20004 extends BasicBatchRule {
 					if(subTaskWorkKind==0){
 						if(poi.getHisOpType().equals(OperationType.INSERT)){
 							if(poiFlag.getSrcRecord()==0){poiFlag.setSrcRecord(1);}
-							if(!flagCode1){
+							if(poiFlag.getVerRecord()!=1){poiFlag.setVerRecord(1);}
+							if(poiFlag.getFieldVerified()!=1){poiFlag.setFieldVerified(1);}
+							if(poiFlag.getSrcRecord()==1&&!flagCode1){
 								addIxPoiFlag(poiObj,"110000260000");
 							}
+						}else{
+							if(poiFlag.getVerRecord()!=1){poiFlag.setVerRecord(1);}
+							if(poiFlag.getFieldVerified()!=1){poiFlag.setFieldVerified(1);}
 						}
-						if(poiFlag.getVerRecord()!=1){poiFlag.setVerRecord(1);}
-						if(poiFlag.getFieldVerified()!=1){poiFlag.setFieldVerified(1);}
 					}
 					//众包子任务
 					if(subTaskWorkKind==2){
 						if(poi.getHisOpType().equals(OperationType.INSERT)){
 							if(poiFlag.getSrcRecord()==0){poiFlag.setSrcRecord(4);}
-							if(!flagCode4){
+							if(poiFlag.getVerRecord()!=4){poiFlag.setVerRecord(4);}
+							if(poiFlag.getSrcRecord()==4&&!flagCode4){
 								addIxPoiFlag(poiObj,"110000290000");
 							}
+						}else{
+							if(poiFlag.getVerRecord()!=4){poiFlag.setVerRecord(4);}
 						}
-						if(poiFlag.getVerRecord()!=4){poiFlag.setVerRecord(4);}
 					}
 					//多源子任务
 					if(subTaskWorkKind==4){
 						if(poi.getHisOpType().equals(OperationType.INSERT)){
 							if(poiFlag.getSrcRecord()==0){poiFlag.setSrcRecord(3);}
-							if(!flagCode3){
+							if(poiFlag.getVerRecord()!=3){poiFlag.setVerRecord(3);}
+							if(poiFlag.getSrcRecord()==3&&!flagCode3){
 								addIxPoiFlag(poiObj,"110000270000");
 							}
+						}else{
+							if(poiFlag.getVerRecord()!=3){poiFlag.setVerRecord(3);}
 						}
-						if(poiFlag.getVerRecord()!=3){poiFlag.setVerRecord(3);}
 					}
 				}
 			}else{

@@ -36,6 +36,8 @@ public class HbasePoiInfo {
 	private Map<String, List<PoiInfo>> poiCollectionByMesh = new HashMap<>();
 
 	private Set<Integer> notFindPoi = new HashSet<>();
+	
+	private Map<Integer,String> poiPidToRowId = new HashMap<>();
 
 	public Map<String, List<PoiInfo>> getPoiCollectionByMesh() {
 		return this.poiCollectionByMesh;
@@ -200,6 +202,7 @@ public class HbasePoiInfo {
 	public void clearCollection() {
 		poiCollectionByMesh.clear();
 		notFindPoi.clear();
+		poiPidToRowId.clear();
 	}
 
 	/**
@@ -288,15 +291,25 @@ public class HbasePoiInfo {
 					continue;
 				}
 
-				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM IX_POI_FLAG_METHOD WHERE POI_PID = %d", poiInfo.getPid());
+				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM IX_POI_FLAG_METHOD WHERE POI_PID = %d",
+						poiInfo.getPid());
 				int poiFlagCount = run.queryForInt(dailyConn, isExistPoiFlag);
+				
+				//保持日库月库row_id一致
+				String rowId = "";
+				if (this.poiPidToRowId.containsKey(poiInfo.getPid())) {
+					rowId = this.poiPidToRowId.get(poiInfo.getPid());
+				} else {
+					rowId = UuidUtils.genUuid();
+					this.poiPidToRowId.put(poiInfo.getPid(), rowId);
+				}
 
 				String insertItemToPoiFlag = "";
 				if (poiFlagCount == 0) {
 					insertItemToPoiFlag = String.format(
-							"INSERT INTO POI_FLAG VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, null, 0, null, null, %s)",
+							"INSERT INTO IX_POI_FLAG_METHOD VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, null, 0, null, null, '%s')",
 							poiInfo.getPid(), poiInfo.getVerifyRecord(), poiInfo.getSourceRecord(),
-							poiInfo.getFieldVerification(),UuidUtils.genUuid());
+							poiInfo.getFieldVerification(),rowId);
 				} else {
 					insertItemToPoiFlag = String.format(
 							"UPDATE IX_POI_FLAG_METHOD SET VER_RECORD = %d,SRC_RECORD = %d, FIELD_VERIFIED = %d WHERE POI_PID = %d",

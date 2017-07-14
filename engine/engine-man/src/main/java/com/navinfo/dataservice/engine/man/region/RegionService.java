@@ -295,7 +295,7 @@ public class RegionService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("with temp as (\n");
 			sb.append("SELECT R.REGION_ID,R.DAILY_DB_ID,R.MONTHLY_DB_ID,M.GN/100 MESH FROM REGION R,GRID G,(SELECT TO_NUMBER(COLUMN_VALUE)*100 GN FROM TABLE(clob_to_table(?))) M WHERE R.REGION_ID=G.REGION_ID AND G.GRID_ID=M.GN\n");
-			sb.append(" ) select REGION_ID,DAILY_DB_ID,LISTAGG(MESH,',') WITHIN GROUP (ORDER BY MESH) MESHES FROM TEMP GROUP BY REGION_ID,DAILY_DB_ID");
+			sb.append(" ) select REGION_ID,DAILY_DB_ID,MONTHLY_DB_ID,LISTAGG(MESH,',') WITHIN GROUP (ORDER BY MESH) MESHES FROM TEMP GROUP BY REGION_ID,DAILY_DB_ID,MONTHLY_DB_ID");
 			
 			return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<List<RegionMesh>>(){
 

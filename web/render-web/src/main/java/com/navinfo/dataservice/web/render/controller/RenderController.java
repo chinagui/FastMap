@@ -67,10 +67,9 @@ public class RenderController extends BaseController {
 
 			JSONObject data = null;
 
-			if (z <= 16) {
+			if (z <= 14) {
 
 				List<ObjType> tileTypes = new ArrayList<ObjType>();
-
 
 				for (ObjType t : types) {
 					if (t == ObjType.RDLINK || t == ObjType.ADLINK
@@ -90,27 +89,27 @@ public class RenderController extends BaseController {
 				}
 
 			} else {
-				if(jsonReq.containsKey("platform") && jsonReq.getString("platform") != null 
-						&& jsonReq.getString("platform").equals("dataPlan")){
+				if (jsonReq.containsKey("platform")
+						&& jsonReq.getString("platform") != null
+						&& jsonReq.getString("platform").equals("dataPlan")) {
 					int taskId = jsonReq.getInt("taskId");
-					
-					//当 大于等于 17 级时  且 含platform = dataPlan
+
+					// 当 大于等于 17 级时 且 含platform = dataPlan
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 
 					SearchProcess p = new SearchProcess();
 					p.setArray(array);
 					p.setDbId(dbId);
-					data = p.searchDataByTileWithGap(types, x, y, z, gap, taskId);
-					
-				}else{
+					data = p.searchDataByTileWithGap(types, x, y, z, gap,
+							taskId);
+
+				} else {
 					SearchProcess p = new SearchProcess();
 					p.setArray(array);
 					p.setDbId(dbId);
 					data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 				}
-				
-				
 
 			}
 			response.getWriter().println(

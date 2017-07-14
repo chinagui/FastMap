@@ -794,7 +794,7 @@ public class DataPrepareService {
 		excelHeader.put("厂商提供简称", "nameShort");
 		excelHeader.put("厂商提供地址", "address");
 		excelHeader.put("厂商提供电话（销售）", "telSale");
-		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（维修）", "telService");
 		excelHeader.put("厂商提供电话（其他）", "telOther");		
 		excelHeader.put("厂商提供邮编", "postCode");
 		excelHeader.put("厂商提供英文名称", "nameEng");

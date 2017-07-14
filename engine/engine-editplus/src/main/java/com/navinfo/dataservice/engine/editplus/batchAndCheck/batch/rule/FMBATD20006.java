@@ -64,18 +64,18 @@ public class FMBATD20006 extends BasicBatchRule {
 
         IxPoiObj poiObj = (IxPoiObj) obj;
 
-        List<IxPoiFlagMethod> poiFlags = poiObj.getPoiFlags();
+        List<IxPoiFlagMethod> poiFlags = poiObj.getIxPoiFlagMethods();
 
         IxPoi poi = (IxPoi) obj.getMainrow();
 
         if (poiFlags == null || poiFlags.isEmpty()) {
 
-            poiObj.createPoiFlag();
+            poiObj.createIxPoiFlagMethod();
         }
 
         boolean hadSrcRecord5 = false;
 
-        for (IxPoiFlagMethod flag : poiObj.getPoiFlags()) {
+        for (IxPoiFlagMethod flag : poiObj.getIxPoiFlagMethods()) {
 
             if (poi.getHisOpType().equals(OperationType.INSERT)) {
 
@@ -93,7 +93,7 @@ public class FMBATD20006 extends BasicBatchRule {
                     hadSrcRecord5 = true;
                 }
 
-            } else if (poi.getHisOpType().equals(OperationType.DELETE)
+            } else if (poi.getHisOpType().equals(OperationType.PRE_DELETED)
                     || poi.getHisOpType().equals(OperationType.UPDATE)) {
 
                 flag.setVerRecord(5);

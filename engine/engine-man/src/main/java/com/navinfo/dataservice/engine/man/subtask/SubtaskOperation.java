@@ -839,8 +839,9 @@ public class SubtaskOperation {
 										subtask.put("poiWaitWork",subtaskStat.get("poiWaitWork"));
 									}
 //									}
-									if(subtaskStat.containsKey("tipsFinish")){
-										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
+									if(subtaskStat.containsKey("tipsPrepared")){
+										//subtask.put("tipsPrepared",subtaskStat.get("tipsPrepared"));
+										subtask.put("tipsFinish",subtaskStat.get("tipsPrepared"));
 										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
 								}else{
@@ -1104,7 +1105,7 @@ public class SubtaskOperation {
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
-				stat.put("tipsFinish", resultRoad.getInt("finished"));
+				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));
 				/*if(0 != tips){
 					percentRoad = resultRoad.getInt("finished")*100/tips;

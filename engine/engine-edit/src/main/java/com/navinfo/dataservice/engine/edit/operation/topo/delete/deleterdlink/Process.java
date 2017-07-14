@@ -184,7 +184,7 @@ public class Process extends AbstractProcess<Command> {
 
 			// recordData();
 
-			postCheck();
+			//postCheck();
 
 			// this.getConn().commit();
 		} else {

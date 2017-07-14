@@ -33,11 +33,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
-import com.navinfo.dataservice.dao.glm.model.poi.index.PoiFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEditStatusHandler;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -141,6 +138,7 @@ public class PoiDownloadOperation {
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
 		}
+		logger.info("subtaskId : "+subtaskId);
 		PoiGridIncreSearch seach = new PoiGridIncreSearch();
 		int taskId = 0;
 		int dbid = 0;
@@ -673,10 +671,10 @@ public class PoiDownloadOperation {
 			
 			jsonObj.put("evaluPlan", poi.getEvaluPlan());
 			
-			PoiFlag poiFlag = new PoiFlag();
-			List<IRow> poiFlagList = poi.getPoiFlag();
+			IxPoiFlagMethod poiFlag = new IxPoiFlagMethod();
+			List<IRow> poiFlagList = poi.getIxPoiFlagMethod();
 			if (poiFlagList.size()>0) {
-				poiFlag = (PoiFlag)poiFlagList.get(0);
+				poiFlag = (IxPoiFlagMethod)poiFlagList.get(0);
 			}
 			jsonObj.put("srcRecord",poiFlag.getSrcRecord());
 			jsonObj.put("fdVerified",poiFlag.getFieldVerified());

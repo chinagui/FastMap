@@ -885,7 +885,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		String insertSql = "insert into SC_POINT_CHARGE_MANU(serial_id,full_name,simply_name,product_model,product_type,voltate, "
 				+"current,power,memo ) values(?,?,?,?,?,?,?,?,?)";
 		String selectSql = "select serial_id,full_name,simply_name,product_model,product_type,voltate, "
-				+"current,power,memo  "
+				+"\"CURRENT"+"\",\"POWER\",memo  "
 				+"from SC_POINT_CHARGE_MANU";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
@@ -1216,10 +1216,10 @@ public class ExpMeta2SqliteScriptsInterface {
 			//初始化context
 			JobScriptsInterface.initContext();
 			
-			String dir = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.downloadFilePathRoot);  //服务器部署路径
+//			String dir = SystemConfigFactory.getSystemConfig().getValue(
+//					PropConstant.downloadFilePathRoot);  //服务器部署路径
 			
-//			String dir = "f:";
+			String dir = "f:";
 			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
 				metaSqliteFile.delete();

@@ -45,6 +45,8 @@ public class HBaseConnector {
 				if (connection == null) {
 					String hbaseAddress = SystemConfigFactory.getSystemConfig()
 							.getValue(PropConstant.hbaseAddress);
+					
+//					String hbaseAddress = "192.168.3.156";
 
 					Configuration conf = new Configuration();
 

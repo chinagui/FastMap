@@ -235,11 +235,6 @@ public class Process extends AbstractProcess<Command> {
             operation = new OpTopo(this.getCommand(), this.getConn(), this.rdLinkBreakpoint, jaDisplayLink);
             msg = operation.run(this.getResult());
 
-            String preCheckMsg = this.preCheck();
-
-            if (preCheckMsg != null) {
-                throw new Exception(preCheckMsg);
-            }
 
             updataRelationObj();
         } catch (Exception e) {

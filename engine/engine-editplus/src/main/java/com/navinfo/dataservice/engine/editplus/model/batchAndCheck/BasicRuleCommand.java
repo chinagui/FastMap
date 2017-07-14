@@ -24,6 +24,8 @@ public class BasicRuleCommand {
 	 * 若修改参考数据，那么需要在框架最外面，增加轮训referDatas的过程，
 	 * 将所有修改的数据put仅OperationResult(batch,check入口的时候会传这个参数)中*/
 	private Map<String,Map<Long,BasicObj>> referDatas=new HashMap<String,Map<Long,BasicObj>>();
+	//根据业务需要，添加各种参数。例如，有规则需要子任务的业务类型，则 key:"subTaskWorkKind",value:0(0,2,4)
+	private Map<String,Object> parameter;
 
 	public BasicRuleCommand() {
 		// TODO Auto-generated constructor stub
@@ -53,6 +55,14 @@ public class BasicRuleCommand {
 		this.referDatas = referDatas;
 	}
 	
+	public Map<String, Object> getParameter() {
+		return parameter;
+	}
+
+	public void setParameter(Map<String, Object> parameter) {
+		this.parameter = parameter;
+	}
+
 	/**
 	 * 根据pid集合加载非删除数据
 	 * @param objPids 要加载数据的集合

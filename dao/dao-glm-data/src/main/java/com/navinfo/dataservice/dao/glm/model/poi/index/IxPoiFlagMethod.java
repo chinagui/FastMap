@@ -10,21 +10,20 @@ import org.springframework.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
- * POI_FLAG
+ * IxPoiFlagMethod
  * @author ZL
  *
  */
-public class PoiFlag implements IObj {
-	private Logger logger = Logger.getLogger(PoiFlag.class);
+public class IxPoiFlagMethod implements IRow {
+	private Logger logger = Logger.getLogger(IxPoiFlagMethod.class);
 
-	private int pid;
+	private int poiPid;
 	
 	private int verRecord;
 	
@@ -48,16 +47,34 @@ public class PoiFlag implements IObj {
 	
 	private String refreshDate;
 	
+	private int uRecord;
+	
+	private String uFields;
+	
+	private String uDate;
+	
+	
 	private String rowId;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public int getPid() {
-		return pid;
+	
+	
+
+	public Logger getLogger() {
+		return logger;
 	}
 
-	public void setPid(int pid) {
-		this.pid = pid;
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
+	public int getPoiPid() {
+		return poiPid;
+	}
+
+	public void setPoiPid(int poiPid) {
+		this.poiPid = poiPid;
 	}
 
 	public int getVerRecord() {
@@ -148,6 +165,42 @@ public class PoiFlag implements IObj {
 		this.refreshDate = refreshDate;
 	}
 
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuFields() {
+		return uFields;
+	}
+
+	public void setuFields(String uFields) {
+		this.uFields = uFields;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
+	public Map<String, Object> getChangedFields() {
+		return changedFields;
+	}
+
+	public void setChangedFields(Map<String, Object> changedFields) {
+		this.changedFields = changedFields;
+	}
+
+	public String getRowId() {
+		return rowId;
+	}
+
 	@Override
 	public String rowId() {
 		return this.rowId;
@@ -195,7 +248,7 @@ public class PoiFlag implements IObj {
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
@@ -311,33 +364,5 @@ public class PoiFlag implements IObj {
 		return true;
 	}
 
-	@Override
-	public List<IRow> relatedRows() {
-		return null;
-	}
-
-	@Override
-	public int pid() {
-		return this.pid;
-	}
-
-	@Override
-	public String primaryKey() {
-		return "pid";
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
-	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

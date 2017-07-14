@@ -1,10 +1,9 @@
 package com.navinfo.dataservice.scripts;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+
 import com.navinfo.dataservice.impcore.charge.CharingInfoImporter;
-import com.navinfo.dataservice.impcore.deepinfo.DeepInfoImporter;
+
 
 public class InitFmgdbcharingFromMongoScriptsInterface {
 

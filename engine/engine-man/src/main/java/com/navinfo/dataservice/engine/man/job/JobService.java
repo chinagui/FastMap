@@ -1,13 +1,17 @@
 package com.navinfo.dataservice.engine.man.job;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -79,16 +83,25 @@ public class JobService {
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
         try {
+            log.info("updateJobProgress:phaseId:"+phaseId+",status:"+status.value()+",message:"+outParameter);
             conn = DBConnector.getInstance().getManConnection();
             JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
+            conn.commit();
+
+            try {
+                JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
+                SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
+            }catch (Exception ex){
+                log.error("public_msg_error:"+ExceptionUtils.getStackTrace(ex));
+            }
 
             if (status == JobProgressStatus.FAILURE) {
                 //步骤失败，更新job状态为失败，停止执行
                 JobOperator jobOperator = new JobOperator(conn);
                 jobOperator.updateStatusByPhaseId(phaseId, JobStatus.FAILURE);
             } else {
-                //步骤成果，进行执行job
+                //步骤成功，继续执行job
                 JobOperator jobOperator = new JobOperator(conn);
                 Job job = jobOperator.getByPhaseId(phaseId);
                 if (job == null) {

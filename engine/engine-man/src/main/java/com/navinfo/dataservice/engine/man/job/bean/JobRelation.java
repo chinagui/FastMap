@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.man.job.bean;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Created by wangshishuai3966 on 2017/7/8.
  */
@@ -31,5 +34,11 @@ public class JobRelation {
 
     public void setItemType(ItemType itemType) {
         this.itemType = itemType;
+    }
+
+    public void load(ResultSet rs) throws SQLException{
+        this.setJobId(rs.getLong("job_id"));
+        this.setItemId(rs.getLong("item_id"));
+        this.setItemType(ItemType.valueOf(rs.getInt("item_type")));
     }
 }

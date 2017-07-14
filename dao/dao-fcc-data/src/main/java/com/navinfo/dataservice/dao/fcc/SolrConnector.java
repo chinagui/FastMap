@@ -5,6 +5,8 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
+
+@Deprecated
 public class SolrConnector {
 
 	private static class SingletonHolder {

@@ -1,15 +1,25 @@
 package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
+import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.
@@ -29,79 +39,80 @@ public class CreateCMSTaskPhase extends JobPhase {
         try {
             conn = DBConnector.getInstance().getManConnection();
             jobProgressOperator = new JobProgressOperator(conn);
-            if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
-                return jobProgress.getStatus();
-            }
-
             //更新状态为进行中
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
             conn.commit();
 
+            if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
+                //如果无数据，不需要创建cms任务
+                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
+                return jobProgress.getStatus();
+            }
+
             //业务逻辑
-//            Map<String, Object> cmsInfo = Tips2MarkUtils.getCmsInfo(conn, jobRelation.getItemId());
-//            JSONObject par=new JSONObject();
-//            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-//                    .getBean("datahubApi");
-//            DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
-//            par.put("metaIp", metaDb.getDbServer().getIp());
-//            par.put("metaUserName", metaDb.getDbUserName());
-//
-//            DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
-//            par.put("fieldDbIp", auDb.getDbServer().getIp());
-//            par.put("fieldDbName", auDb.getDbUserName());
-//
-//            JSONObject taskPar=new JSONObject();
-//            taskPar.put("taskName", cmsInfo.get("cmsName"));
-//            taskPar.put("fieldTaskId", cmsInfo.get("collectId"));
-//            taskPar.put("taskId", cmsInfo.get("cmsId"));
-//            taskPar.put("province", cmsInfo.get("provinceName"));
-//            taskPar.put("city", cmsInfo.get("cityName"));
-//            taskPar.put("town", cmsInfo.get("blockName"));
-//            Object workProperty=cmsInfo.get("workProperty");
-//            if(workProperty==null){workProperty="更新";}
-//            taskPar.put("workType", workProperty);
-//            Object workType=cmsInfo.get("workType");
-//            if(workType==null){workType="行人导航";}
-//            taskPar.put("area",workType);
-//            taskPar.put("userId", cmsInfo.get("userNickName"));
-//            taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-//            TaskCmsProgress phase = TaskService.getInstance().queryCmsProgreeByPhaseId(conn, (int)job.getJobId());
-//            taskPar.put("meshs",phase.getMeshIds());
-//
-//            //判断之前tip2aumark的过程，是有tips还是没有tips
-//            if(lastJobProgress.getStatus()==JobProgressStatus.NODATA) {
-//                taskPar.put("hasAumark", false);
-//            }else{
-//                taskPar.put("hasAumark", true);
-//            }
-//            par.put("taskInfo", taskPar);
-//
-//            String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
-//            Map<String,String> parMap = new HashMap<String,String>();
-//            parMap.put("parameter", par.toString());
-//            log.info(par.toString());
-//            jobProgress.setMessage(par.toString());
-//            String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
-//            //result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
-//            JSONObject res = null;
-//            try {
-//                res = JSONObject.parseObject(result);
-//            }catch (Exception ex){
-//                res=null;
-//                jobProgress.setStatus(JobProgressStatus.FAILURE);
-//                jobProgress.setMessage(jobProgress.getMessage()+result);
-//            }
-//            if(res!=null) {
-//                boolean success = res.getBoolean("success");
-//                if (success) {
-//                    jobProgress.setStatus(JobProgressStatus.SUCCESS);
-//                } else {
-//                    log.error("cms error msg" + res.get("msg"));
-//                    jobProgress.setStatus(JobProgressStatus.FAILURE);
-//                    jobProgress.setMessage(jobProgress.getMessage() + "cms error:" + res.get("msg").toString());
-//                }
-//            }
+            Map<String, Object> cmsInfo = Tips2MarkUtils.getItemInfo(conn, jobRelation.getItemId(), jobRelation.getItemType());
+            JSONObject parameter=new JSONObject();
+            DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+                    .getBean("datahubApi");
+            DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+            parameter.put("metaIp", metaDb.getDbServer().getIp());
+            parameter.put("metaUserName", metaDb.getDbUserName());
+
+            DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
+            parameter.put("fieldDbIp", auDb.getDbServer().getIp());
+            parameter.put("fieldDbName", auDb.getDbUserName());
+
+            JSONObject taskPar=new JSONObject();
+            taskPar.put("taskName", cmsInfo.get("collectName"));
+            taskPar.put("fieldTaskId", cmsInfo.get("collectId"));
+            taskPar.put("taskId", cmsInfo.get("collectId"));
+            taskPar.put("province", cmsInfo.get("provinceName"));
+            taskPar.put("city", cmsInfo.get("cityName"));
+            taskPar.put("town", cmsInfo.get("blockName"));
+
+            String area="中线一体化作业";
+            String workType = "更新";
+            String workSeason = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+            if(jobRelation.getItemType()== ItemType.PROJECT) {
+                area = "快线一体化作业";
+                workType = "快速更新";
+                workSeason += "FM快速";
+            }else{
+                workSeason += "FM";
+            }
+            taskPar.put("workType", workType);
+            taskPar.put("area", area);
+            taskPar.put("userId", cmsInfo.get("userNickName"));
+            taskPar.put("workSeason", workSeason);
+            taskPar.put("markTaskType",jobRelation.getItemType().value());
+            parameter.put("taskInfo", taskPar);
+
+            String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
+            Map<String,String> parMap = new HashMap<>();
+            parMap.put("parameter", parameter.toString());
+            log.info(parameter.toString());
+            jobProgress.setMessage(parameter.toString());
+            String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
+            //result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
+            jobProgress.setOutParameter(result);
+            JSONObject res = null;
+            try {
+                res = JSONObject.fromObject(result);
+            }catch (Exception ex){
+                res=null;
+                jobProgress.setStatus(JobProgressStatus.FAILURE);
+                jobProgress.setMessage(jobProgress.getMessage()+ex.getMessage());
+            }
+            if(res!=null) {
+                boolean success = res.getBoolean("success");
+                if (success) {
+                    jobProgress.setStatus(JobProgressStatus.SUCCESS);
+                } else {
+                    log.error("cms error msg" + res.get("msg"));
+                    jobProgress.setStatus(JobProgressStatus.FAILURE);
+                    jobProgress.setMessage(jobProgress.getMessage() + "cms error:" + res.get("msg").toString());
+                }
+            }
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
             return jobProgress.getStatus();
         } catch (Exception ex) {

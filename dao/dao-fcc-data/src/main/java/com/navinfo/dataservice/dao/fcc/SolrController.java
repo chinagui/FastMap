@@ -2,9 +2,12 @@ package com.navinfo.dataservice.dao.fcc;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -27,10 +30,12 @@ public class SolrController {
 
     private int fetchNum = Integer.MAX_VALUE;
 
-    private HttpSolrClient client;
+//    private HttpSolrClient client;
+    private SolrClient client;
 
     public SolrController() {
-        client = SolrConnector.getInstance().getClient();
+//        client = SolrConnector.getInstance().getClient();
+    	client = SolrClientFactory.getInstance().getClient();
     }
 
     public void addTips(JSONObject json) throws JSONException,
@@ -804,6 +809,9 @@ public class SolrController {
         StringBuilder builder = new StringBuilder("*:*"); // 默认条件全查，避免后面增加条件，都需要有AND
 
         addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
+
+        //20170711 情报矢量化Tips提交增加t_tipstatus
+        builder.append(" AND t_tipStatus=1");
 
         SolrQuery query = new SolrQuery();
 

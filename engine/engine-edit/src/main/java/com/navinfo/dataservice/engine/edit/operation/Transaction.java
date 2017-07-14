@@ -1887,7 +1887,7 @@ public class Transaction {
     private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
         StringBuffer patter = new StringBuffer("^(");
 
-        patter.append("RD_LINK|RD_NODE");
+        patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
         patter.append("|RD_WARINGINFO|RD_LINK_WARING");
@@ -1899,6 +1899,7 @@ public class Transaction {
         Iterator<Integer> pidIterator = pids.iterator();
         while (rowIterator.hasNext()) {
             IRow row = rowIterator.next();
+            int pid = pidIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
                 logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));

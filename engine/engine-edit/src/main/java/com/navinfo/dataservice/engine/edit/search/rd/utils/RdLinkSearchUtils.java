@@ -212,13 +212,13 @@ public class RdLinkSearchUtils {
 	 *            关联link
 	 * @param direct
 	 *            限速方向
-	 * @param queryType
+	 * @param speedDependent
 	 *            限速类型：1:RDSPEEDLIMIT(普通点限速);2：RDSPEEDLIMIT_DEPENDENT(条件点限速)
 	 * @return
 	 * @throws Exception
 	 */
 	public List<Integer> getConnectLinks(int linkPid, int direct,
-			int speedDependnt) throws Exception {
+			int speedDependent) throws Exception {
 
 		List<Integer> nextLinkPids = new ArrayList<Integer>();
 
@@ -243,13 +243,13 @@ public class RdLinkSearchUtils {
 			nodePid = targetLink.getsNodePid();
 		}
 
-		getConnectLink(targetLink, nodePid, nextLinkPids,  speedDependnt);
+		getConnectLink(targetLink, nodePid, nextLinkPids,  speedDependent);
 
 		return nextLinkPids;
 	}	
 	
 	private void getConnectLink(RdLink targetLink, int connectNodePid,
-			List<Integer> linkPids, int speedDependnt) throws Exception {
+			List<Integer> linkPids, int speedDependent) throws Exception {
 
 		if (!linkPids.contains(targetLink.getPid())) {
 
@@ -264,7 +264,7 @@ public class RdLinkSearchUtils {
 
 		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2) SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3)))) ";
 
-		if (speedDependnt >= 0) {
+		if (speedDependent >= 0) {
 
 			sql += " AND S.SPEED_TYPE = 3 ";
 		}
@@ -345,7 +345,7 @@ public class RdLinkSearchUtils {
 					
 					.geteNodePid() : nextLink.getsNodePid();
 
-			getConnectLink(nextLink, targetNodePid, linkPids, speedDependnt);
+			getConnectLink(nextLink, targetNodePid, linkPids, speedDependent);
 
 		} catch (Exception e) {
 
@@ -358,7 +358,7 @@ public class RdLinkSearchUtils {
 	}
 
 	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids,
-			int speedDependnt) throws Exception {
+			int speedDependent) throws Exception {
 
 		AbstractSelector speedlimitSelector = new AbstractSelector(
 				RdLinkSpeedlimit.class, conn);
@@ -372,7 +372,7 @@ public class RdLinkSearchUtils {
 
 			RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
 
-			if (speedDependnt < 0) {
+			if (speedDependent < 0) {
 				
 				if (speedlimit.getSpeedType() == 0) {
 
@@ -383,7 +383,7 @@ public class RdLinkSearchUtils {
 			}
 
 			if (speedlimit.getSpeedType() == 3
-					&& speedlimit.getSpeedDependent() == speedDependnt) {
+					&& speedlimit.getSpeedDependent() == speedDependent) {
 
 				array.add(speedlimit.Serialize(ObjLevel.FULL));
 			}
@@ -481,7 +481,7 @@ public class RdLinkSearchUtils {
 	 * @author zhaokk
 	 * @param cuurentLinkPid
 	 * @param cruuentNodePidDir
-	 * @param maxNum
+	 * @param
 	 * @param length
 	 *            退出线的长度
 	 * @return 查找所有联通link

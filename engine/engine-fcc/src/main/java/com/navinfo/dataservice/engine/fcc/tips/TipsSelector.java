@@ -1313,7 +1313,7 @@ public class TipsSelector {
 	 * @param collectTaskIds
 	 * @param collectTaskIds
 	 * @param statType 统计类型：total，prepared 
-	 * @param taskType  质检任务、作业任务
+	 * @param taskType 1是 质检任务、作业任务
 	 * @return
 	 * @throws Exception
 	 */

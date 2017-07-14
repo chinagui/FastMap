@@ -25,7 +25,7 @@ public interface FccApi {
 	 * @Description:根据wkt+collectTaskIds，查询子tips的数据总量和待作业量，web编辑卡片统计
 	 * @param wkt: 任务wkt
 	 * @param collectTaskIds:采集子任务号（目前默认都是快线）
-	 * @param taskType：任务类型：作业任务，质检任务
+	 * @param taskType：任务类型：作业任务，1.是质检任务
 	 * @param handler：质检员id(作业任务不用，可以传递0)
 	 * @return
 	 * @throws Exception

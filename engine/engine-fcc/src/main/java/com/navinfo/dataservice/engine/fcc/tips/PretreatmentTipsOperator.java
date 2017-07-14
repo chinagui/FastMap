@@ -2193,7 +2193,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
             //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
-			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
+			List<JSONObject> tipsList = selector.getTipsByTaskIdAndStatus(taskId,
 					taskType);
 
 			for (JSONObject json : tipsList) {

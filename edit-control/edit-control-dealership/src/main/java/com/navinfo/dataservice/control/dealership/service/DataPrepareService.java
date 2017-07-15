@@ -1725,19 +1725,21 @@ public class DataPrepareService {
 
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "select rownum,s.source_id,s.cfm_poi_num,c.chain_name,s.kind_code,s.chain,"
+			String sql = "select distinct s.source_id,s.cfm_poi_num,c.chain_name,s.kind_code,s.chain,"
 					+ "s.province,s.city,s.name,s.poi_name,s.name_eng,s.address,s.poi_address,"
 					+ "s.address_eng,s.tel_sale,s.tel_service,s.tel_other,s.poi_tel,s.post_code,"
 					+ "s.poi_chain,s.poi_post_code,s.poi_name_short,s.name_short,s.is_deleted,s.project,"
 					+ "s.fb_content,s.fb_audit_remark,s.fb_date,s.deal_cfm_date,s.cfm_memo "
-					+ "from IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_RESULT r,IX_DEALERSHIP_CHAIN c where r.chain in("+chainCode+") and s.source_id = r.source_id and r.chain = c.chain_code";
+					+ "from IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_RESULT r,IX_DEALERSHIP_CHAIN c where r.chain in("+chainCode+") and s.source_id = r.source_id and r.chain = c.chain_code "
+					+ " order by s.source_id";
 			ResultSetHandler<List<exportWorkResultEntity>> rs = new ResultSetHandler<List<exportWorkResultEntity>>() {
 				@Override
 				public List<exportWorkResultEntity> handle(ResultSet rs) throws SQLException {
 					List<exportWorkResultEntity> excelBodyList = new ArrayList();
+					int id = 1;
 					while(rs.next()){
 						exportWorkResultEntity entity = new exportWorkResultEntity();
-						entity.setId(rs.getInt("rownum"));
+						entity.setId(id);
 						entity.setSourceId(rs.getInt("source_id"));
 						entity.setCfmPoiNum(rs.getString("cfm_poi_num"));
 						entity.setChainName(rs.getString("chain_name"));
@@ -1772,7 +1774,7 @@ public class DataPrepareService {
 						entity.setFbDate(rs.getString("fb_date"));
 						entity.setDealCfmDate(rs.getString("deal_cfm_date"));
 						entity.setCfmMemo(rs.getString("cfm_memo"));
-						
+						id++;
 						excelBodyList.add(entity);
 					}
 					return excelBodyList;

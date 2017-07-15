@@ -75,63 +75,64 @@ public class SubtaskOperation {
 	 */
 	public static void updateSubtask(Connection conn,Subtask bean) throws Exception{
 		try{
+			Map<String, Object> changeFields = bean.getChangeFields();
 			String baseSql = "update SUBTASK set ";
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
 			List<Object> value = new ArrayList<Object>();
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
+			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " NAME= " + "'" + bean.getName() + "'";
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DESCP")){
+			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " DESCP= " + "'" + bean.getDescp() + "'";
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_START_DATE")){
+			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " PLAN_START_DATE= " + "to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_USER_ID")){
+			if (changeFields.containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " EXE_USER_ID= " + bean.getExeUserId();
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_GROUP_ID")){
+			if (changeFields.containsKey("EXE_GROUP_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " EXE_GROUP_ID= " + bean.getExeGroupId();
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_END_DATE")){
+			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
+			if (changeFields.containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " STATUS= " + bean.getStatus();
 			};
 			//修改新增的两个字段
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_SUBTASK_ID")){
+			if (changeFields.containsKey("QUALITY_SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " QUALITY_SUBTASK_ID= " + bean.getQualitySubtaskId();
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_QUALITY")){
+			if (changeFields.containsKey("IS_QUALITY")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " IS_QUALITY= " + bean.getIsQuality();
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REFER_ID")){
+			if (changeFields.containsKey("REFER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " REFER_ID= " + bean.getReferId();
 			};
 			
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORK_KIND")){
+			if (changeFields.containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " work_kind= " + bean.getWorkKind();
 			};
 			
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
+			if (changeFields.containsKey("GEOMETRY")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GEOMETRY=? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};	
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+			if (changeFields.containsKey("QUALITY_METHOD")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " QUALITY_METHOD= " + bean.getQualityMethod();
 			};
@@ -214,32 +215,32 @@ public class SubtaskOperation {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
-						if(rs.getInt("refer_id") > 0){
-							Subtask subtask = new Subtask();
-							subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setName(rs.getString("NAME"));
-							subtask.setStage(rs.getInt("STAGE"));
-							subtask.setType(rs.getInt("TYPE"));
-							subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
-							subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
-							subtask.setStatus(rs.getInt("STATUS"));
-							subtask.setCreateUserId(rs.getInt("create_user_id"));
-							subtask.setTaskId(rs.getInt("TASK_ID"));
-							subtask.setWorkKind(rs.getInt("WORK_KIND"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							String wkt="";
-							try {
-								wkt=GeoTranslator.struct2Wkt(struct);
-								Geometry geometry=GeoTranslator.struct2Jts(struct);
-								subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							list.add(subtask);
+						//if(rs.getInt("refer_id") > 0){
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setCreateUserId(rs.getInt("create_user_id"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
+						try {
+							wkt=GeoTranslator.struct2Wkt(struct);
+							Geometry geometry=GeoTranslator.struct2Jts(struct);
+							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-						
+						list.add(subtask);
 					}
+						
+					//}
 					return list;
 				}
 	    	};
@@ -315,41 +316,41 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			
+			Map<String, Object> changeFields = bean.getChangeFields();
 			String column = "";
 			String values = "";
 			List<Object> value = new ArrayList<Object>();
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SUBTASK_ID")){
+			if (changeFields.containsKey("SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" SUBTASK_ID ";
 				values+=" ? ";
 				value.add(bean.getSubtaskId());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
+			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" NAME ";
 				values+=" ? ";
 				value.add(bean.getName());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
+			if (changeFields.containsKey("GEOMETRY")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" GEOMETRY ";
 				values+=" ? ";
 				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STAGE")){
+			if (changeFields.containsKey("STAGE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" STAGE ";
 				values+=" ? ";
 				value.add(bean.getStage());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TYPE")){
+			if (changeFields.containsKey("TYPE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" TYPE ";
 				values+=" ? ";
 				value.add(bean.getType());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CREATE_USER_ID")){
+			if (changeFields.containsKey("CREATE_USER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" CREATE_USER_ID ";
 				values+=" ? ";
@@ -361,75 +362,75 @@ public class SubtaskOperation {
 			values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
 			
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("STATUS")){
+			if (changeFields.containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" STATUS ";
 				values+=" ? ";
 				value.add(bean.getStatus());
 			};
 			
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_START_DATE")){
+			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_START_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getPlanStartDate().toString().substring(0, 10));
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PLAN_END_DATE")){
+			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_END_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getPlanEndDate().toString().substring(0, 10));
 			};			
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DESCP")){
+			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" DESCP ";
 				values+=" ? ";
 				value.add(bean.getDescp());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TASK_ID")){
+			if (changeFields.containsKey("TASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" TASK_ID ";
 				values+=" ? ";
 				value.add(bean.getTaskId());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_SUBTASK_ID")){
+			if (changeFields.containsKey("QUALITY_SUBTASK_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" QUALITY_SUBTASK_ID ";
 				values+=" ? ";
 				value.add(bean.getQualitySubtaskId());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_QUALITY")){
+			if (changeFields.containsKey("IS_QUALITY")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" IS_QUALITY ";
 				values+=" ? ";
 				value.add(bean.getIsQuality());
 			}
 			//外业参考任务圈
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REFER_ID")){
+			if (changeFields.containsKey("REFER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" REFER_ID ";
 				values+=" ? ";
 				value.add(bean.getReferId());
 			}
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_GROUP_ID")){
+			if (changeFields.containsKey("EXE_GROUP_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" EXE_GROUP_ID ";
 				values+=" ? ";
 				value.add(bean.getExeGroupId());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("EXE_USER_ID")){
+			if (changeFields.containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" EXE_USER_ID ";
 				values+=" ? ";
 				value.add(bean.getExeUserId());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORK_KIND")){
+			if (changeFields.containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" work_kind ";
 				values+=" ? ";
 				value.add(bean.getWorkKind());
 			};
-			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("QUALITY_METHOD")){
+			if (changeFields.containsKey("QUALITY_METHOD")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" QUALITY_METHOD ";
 				values+=" ? ";
@@ -742,7 +743,7 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type");
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -787,10 +788,7 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
-						int subtaskId = rs.getInt("SUBTASK_ID");
-						subtask.put("subtaskId", subtaskId);
-						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
-
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 
@@ -829,6 +827,8 @@ public class SubtaskOperation {
 								subtaskObj.setGeometry(wkt);
 								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
 								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
+								subtaskObj.setIsQuality(rs.getInt("IS_QUALITY"));
+								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
 
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
@@ -840,15 +840,16 @@ public class SubtaskOperation {
 										subtask.put("poiWaitWork",subtaskStat.get("poiWaitWork"));
 									}
 //									}
-									if(subtaskStat.containsKey("tipsFinish")){
-										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
+									if(subtaskStat.containsKey("tipsPrepared")){
+										//subtask.put("tipsPrepared",subtaskStat.get("tipsPrepared"));
+										subtask.put("tipsPrepared",subtaskStat.get("tipsPrepared"));
 										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
 								}else{
 									subtask.put("poiWaitWork",0);
 									subtask.put("poiWorked",0);
 									subtask.put("poiCommit",0);
-									subtask.put("tipsFinish",0);
+									subtask.put("tipsPrepared",0);
 									subtask.put("tipsTotal",0);
 								}
 								log.info("end stat");
@@ -966,10 +967,7 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
-						int subtaskId = rs.getInt("SUBTASK_ID");
-						subtask.put("subtaskId", subtaskId);
-						//subtask.put("meshes", SubtaskOperation.listDbMeshesBySubtask(subtaskId));
-
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
@@ -1106,9 +1104,9 @@ public class SubtaskOperation {
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
-				stat.put("tipsFinish", resultRoad.getInt("finished"));
+				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));
 				/*if(0 != tips){
 					percentRoad = resultRoad.getInt("finished")*100/tips;
@@ -3293,47 +3291,4 @@ public class SubtaskOperation {
 //		}
 //		
 //	}
-
-    /**
-     * 计算子任务所属大区库的所有图幅信息
-     * 用于限制接边作业时的跨大区作业操作
-     * @param subtaskId 子任务ID
-     * @return 出现错误时返回空列表
-     */
-    private static List<Integer> listDbMeshesBySubtask(int subtaskId) {
-        List<Integer> meshes;
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT CM.MESH AS MESH_ID ");
-        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
-        sb.append("WHERE S.SUBTASK_ID = :1 ");
-        sb.append("AND S.TASK_ID = T.TASK_ID ");
-        sb.append("AND T.REGION_ID = C.REGION_ID ");
-        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
-        sb.append("ORDER BY CM.MESH");
-
-
-        QueryRunner run = new QueryRunner();
-        try {
-            meshes = run.query(DBConnector.getInstance().getManConnection(), sb.toString(), new ResultSetHandler<List<Integer>>() {
-
-                private List<Integer> meshes = new ArrayList<>();
-
-                @Override
-                public List<Integer> handle(ResultSet rs) throws SQLException {
-                    while (rs.next()) {
-                        meshes.add(rs.getInt("MESH_ID"));
-                    }
-
-                    return meshes;
-                }
-            }, subtaskId);
-            log.info(String.format("根据子任务查询所属大区库图幅，%s任务涉及图幅%s个", subtaskId, meshes.size()));
-            return meshes;
-        } catch (SQLException e) {
-            log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s, subtaskId: %s]", sb.toString(), subtaskId), e);
-        }
-
-        return new ArrayList<>();
-    }
 }

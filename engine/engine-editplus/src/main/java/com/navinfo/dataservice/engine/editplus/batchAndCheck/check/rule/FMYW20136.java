@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,8 +39,7 @@ public class FMYW20136 extends BasicCheckRule {
         }
 
         MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-
-        Map<String, String> mapKindChain = metadataApi.scPointSpecKindCodeType7();
+        Map<String, List<String>> mapKindChain = metadataApi.scPointSpecKindCodeType7();
 
         String kindCode = poi.getKindCode() == null ? "" : poi.getKindCode();
 
@@ -50,7 +50,7 @@ public class FMYW20136 extends BasicCheckRule {
 
         String chain =  poi.getChain() == null ? "" : poi.getChain();
 
-        if (mapKindChain.get(kindCode).equals(chain)) {
+        if (mapKindChain.get(kindCode).contains(chain)) {
 
             String strLog = "PID=" + poi.getPid() + "等级标识错误";
 

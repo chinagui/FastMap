@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
@@ -53,9 +54,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"pid\":500000001," +
-                "\"direct\":3,\"linkPid\":49913063,\"longitude\":116.53538352127916,\"latitude\":39.7420088702255," +
-                "\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":400000505,\"data\":{\"kind\":2," +
+                "\"routeAdopt\":5,\"rowId\":\"5DAF09FEDCDE4A569418F7E93FF20D22\",\"pid\":400000505,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 
@@ -70,17 +70,16 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":13,\"subtaskId\":64,\"data\":{\"direct\":2," +
-                "\"linkPid\":404000369,\"longitude\":113.3587695658207,\"latitude\":36.49999785780438}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":393,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.85005083680153,39.96127128417874]," +
+                "[116.85031503438948,39.96148303704254]]},\"catchLinks\":[]}}";
         TestUtil.run(parameter);
     }
 
     @Test
-    public void depart() {
-        String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":302002751,\"data\":{\"catchNodePid\":0," +
-                "\"catchLinkPid\":0,\"linkPid\":300003552,\"longitude\":116.3114833831787," +
-                "\"latitude\":40.11762904792049},\"type\":\"RDLINK\"}";
-        TestUtil.run(parameter);
+    public void depart() throws Exception {
+        RdLinkSearch search = new RdLinkSearch(DBConnector.getInstance().getConnectionById(13));
+        search.searchDataByTileWithGap(108069, 49640, 17, 10);
     }
 
     @Test

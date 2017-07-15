@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -73,7 +75,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 
 public class SubtaskService {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private static final Logger log = LoggerRepos.getLogger(SubtaskService.class);
 
 	private SubtaskService() {
 	}
@@ -379,6 +381,11 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			//modify by songhe
+			//这里添加了一个质检方式上传的为空的判断，上传了这个字段，但是内容为空的时候直接不处理
+			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
+				dataJson.remove("qualityMethod");
+			}
 			if(dataJson.containsKey("qualityMethod")){
 				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
 				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
@@ -753,6 +760,10 @@ public class SubtaskService {
 					}
 				}
 			}
+			// 计算子任务对应大区库所包含图幅号，用于判定接边作业
+			List<Integer> meshes = listDbMeshesBySubtask(conn, subtaskId);
+			subtaskMap.put("meshes", meshes);
+
 			return subtaskMap;	
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1653,6 +1664,7 @@ public class SubtaskService {
 		if(program==null){throw new Exception("众包子任务发布，通知mapsppotor失败：数据错误，未找到子任务对应项目");}
 		JSONObject par=new JSONObject();
 		par.put("subTaskId", subtask.getSubtaskId());
+		par.put("subTaskName", subtask.getName());
 		par.put("userId", subtask.getCreateUserId());
 		if(program.getType()==1){
 			par.put("priority", 2);
@@ -2333,7 +2345,11 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
+			
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status,");
+			sb.append("NVL((SELECT J.STATUS");
+			sb.append(" FROM JOB_RELATION JR,JOB J");
+			sb.append(" WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=S.SUBTASK_ID AND JR.ITEM_TYPE=3 ),-1) TIPS2MARK");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2408,6 +2424,25 @@ public class SubtaskService {
 						
 						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));
 						subtask.put("qualityExeUserName", rs.getString("quality_Exe_User_Name"));
+
+						JSONArray jobs = new JSONArray();
+						int tips2markStatus = rs.getInt("TIPS2MARK");
+						if(tips2markStatus==-1){
+							//关闭的采集子任务才能执行tips转mark
+							if(rs.getInt("STATUS")==0 && rs.getInt("STAGE")==0){
+								JSONObject job = new JSONObject();
+								job.put("type", JobType.TiPS2MARK.value());
+								job.put("status", 0);
+								jobs.add(job);
+							}
+						}else{
+							JSONObject job = new JSONObject();
+							job.put("type", JobType.TiPS2MARK.value());
+							job.put("status", tips2markStatus);
+							jobs.add(job);
+						}
+						subtask.put("jobs", jobs);
+
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(subtask);
 					}					
@@ -3709,7 +3744,7 @@ public class SubtaskService {
 					+ "       C.PROVINCE_NAME,"
 					+ "       C.CITY_NAME,"
 					+ "       S.EXE_USER_ID,"
-					+ "       QS.QUALITY_METHOD"
+					+ "       QS.QUALITY_METHOD,s.plan_start_date"
 					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
 					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
 					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
@@ -3729,6 +3764,8 @@ public class SubtaskService {
 						returnObj.put("city", rs.getString("CITY_NAME"));
 						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
 						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+						SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+						returnObj.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return returnObj;
 					}
@@ -3744,4 +3781,52 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+    /**
+     * 计算子任务所属大区库的所有图幅信息
+     * 用于限制接边作业时的跨大区作业操作
+     * @param subtaskId 子任务ID
+     * @return 出现错误时返回空列表
+     */
+    private static List<Integer> listDbMeshesBySubtask(Connection conn, int subtaskId) {
+        //private static Map<String,List<Integer>> listDbMeshesBySubtask() {
+        final List<Integer> result;
+
+        final StringBuffer sb = new StringBuffer();
+        sb.append("SELECT S.SUBTASK_ID, CM.MESH AS MESH_ID ");
+        sb.append("FROM SUBTASK S, TASK T, CP_REGION_PROVINCE C, CP_MESHLIST@METADB_LINK CM ");
+        sb.append("WHERE S.SUBTASK_ID = :1 ");
+        sb.append("AND S.TASK_ID = T.TASK_ID ");
+        //sb.append("WHERE S.TASK_ID = T.TASK_ID ");
+        sb.append("AND T.REGION_ID = C.REGION_ID ");
+        sb.append("AND C.ADMINCODE = CM.ADMINCODE ");
+        sb.append("ORDER BY S.SUBTASK_ID, CM.MESH");
+
+
+        QueryRunner run = new QueryRunner();
+        try {
+            result = run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>() {
+
+                private List<Integer> result = new ArrayList<>();
+
+                @Override
+                public List<Integer> handle(ResultSet rs) throws SQLException {
+                    rs.setFetchSize(3000);
+
+                    while (rs.next()) {
+                        int subtaskId = rs.getInt("SUBTASK_ID");
+                        result.add(rs.getInt("MESH_ID"));
+                    }
+
+                    return result;
+                }
+            }, subtaskId);
+            log.info(String.format("查询子任务所属大区库图幅，子任务ID: %s, 图幅数量: %s", subtaskId, result.size()));
+            return result;
+        } catch (SQLException e) {
+            log.error(String.format("根据子任务查询所属大区库图幅出错[sql: %s]", sb.toString()), e);
+        }
+
+        return new ArrayList<>();
+    }
 }

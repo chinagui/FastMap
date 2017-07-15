@@ -27,6 +27,8 @@ public class PropConstant {
 	public static final String linkTileTableName = "hbase.tablename.linktile";
 
 	public static final String solrAddress = "solr.address";
+	
+	public static final String solrCloudAddress = "solr.cloud.address";
 
 	public static final String pidManagerIp = "pid_manager_ip";
 
@@ -111,4 +113,6 @@ public class PropConstant {
 	
 	public static final String mapspotterInfoPass="mapspotter.info.pass.url";
 	public static final String mapspotterInfoFeedBack="mapspotter.info.feedback.url";
+	
+	public static final String manPassword="man.password";
 }

@@ -69,16 +69,11 @@ public class Process extends AbstractProcess<Command> {
 			OpRefLcFace opRefLcFace = new OpRefLcFace(this.getCommand(),
 					this.getConn());
 			opRefLcFace.run(this.getResult());
-			
+
 			// 打断线对立交影响
 			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
 			opRefRdGsc.run(this.getResult());
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
 		} catch (Exception e) {
 			this.getConn().rollback();
 			throw e;

@@ -41,7 +41,13 @@ public class GLM60225 extends BasicCheckRule {
                 return;
             }
 
-            RdLink link = (RdLink) new RdLinkSelector(getCheckRuleCommand().getConn()).loadById((int) poi.getLinkPid(), false);
+
+            int linkPid = (int) poi.getLinkPid();
+            if (linkPid == 0) {
+                return;
+            }
+
+            RdLink link = (RdLink) new RdLinkSelector(getCheckRuleCommand().getConn()).loadById(linkPid, false);
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), GeoTranslator.dPrecisionMap, 5);
             Coordinate poiCoordinate = GeoTranslator.transform(poi.getGeometry(), GeoTranslator.dPrecisionMap, 5).getCoordinate();
 

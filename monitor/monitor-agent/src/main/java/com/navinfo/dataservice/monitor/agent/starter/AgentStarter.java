@@ -20,6 +20,8 @@ public class AgentStarter {
 	 */
 	public static void main(String[] args) {
 		try {
+			//获取监控信息
+			ConfigFileHandle.handleConfigFile();
 			//开始定时服务
 			JobServer.run();
 

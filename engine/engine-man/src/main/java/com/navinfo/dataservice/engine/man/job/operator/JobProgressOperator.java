@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.man.job.operator;
 
 import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
+import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.navicommons.database.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
@@ -53,13 +55,13 @@ public class JobProgressOperator {
      * @throws SQLException
      */
     public JobProgress getByJobId(long jobId, int phase) throws SQLException {
-        String sql = "select jp.* from job_progress jp where jp.job_id=? and jr.phase=?";
+        String sql = "select jp.* from job_progress jp where jp.job_id=? and jp.phase=?";
         ResultSetHandler<JobProgress> rsHandler = new ResultSetHandler<JobProgress>() {
             @Override
             public JobProgress handle(ResultSet rs) throws SQLException {
                 if (rs.next()) {
                     JobProgress jobProgress = new JobProgress();
-
+                    jobProgress.load(rs);
                     return jobProgress;
                 }
                 return null;
@@ -89,8 +91,8 @@ public class JobProgressOperator {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
         } else {
-            sql = "update job_progress set status=?, end_date=SYSDATE, message=? where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
+            sql = "update job_progress set status=?, end_date=SYSDATE, message=?, OUT_PARAMETER=? where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getOutParameter(), jobProgress.getPhaseId());
         }
     }
 
@@ -98,5 +100,46 @@ public class JobProgressOperator {
         QueryRunner run = new QueryRunner();
         String sql = "update job_progress set status=?, end_date=SYSDATE, out_parameter=? where phase_id=?";
         run.update(conn, sql, status.value(), outParameter, phaseId);
+    }
+
+    public JobMessage getJobMessage(long phaseId) throws SQLException{
+        QueryRunner run = new QueryRunner();
+        String sql = "SELECT J.OPERATOR,JP.PHASE,JP.STATUS,JR.ITEM_ID,JR.ITEM_TYPE,(SELECT COUNT(1) FROM JOB_PROGRESS JP2 WHERE JP2.JOB_ID=JP.JOB_ID ) TOTAL FROM JOB_PROGRESS JP, JOB_RELATION JR, JOB J WHERE J.JOB_ID=JP.JOB_ID AND JP.JOB_ID=JR.JOB_ID AND JP.PHASE_ID=?";
+
+        ResultSetHandler<JobMessage> rsHandler = new ResultSetHandler<JobMessage>() {
+            @Override
+            public JobMessage handle(ResultSet rs) throws SQLException {
+                if (rs.next()) {
+                    JobMessage jobMessage = new JobMessage();
+                    int phase = rs.getInt("phase");
+                    int status = rs.getInt("status");
+                    long itemId = rs.getLong("item_id");
+                    int itemType = rs.getInt("item_type");
+                    int total = rs.getInt("total");
+                    long operator = rs.getLong("operator");
+
+                    jobMessage.setItemId(itemId);
+                    jobMessage.setItemType(itemType);
+                    jobMessage.setPhase(phase);
+                    jobMessage.setStatus(status);
+                    jobMessage.setOperator(operator);
+                    jobMessage.setJobStatus(JobStatus.RUNNING.value());
+
+                    if(status == JobProgressStatus.FAILURE.value()){
+                        jobMessage.setJobStatus(JobStatus.FAILURE.value());
+                    }else if(status == JobProgressStatus.NODATA.value()){
+                        jobMessage.setJobStatus(JobStatus.SUCCESS.value());
+                    }else if(status == JobProgressStatus.SUCCESS.value()){
+                        if(total == phase){
+                            jobMessage.setJobStatus(JobStatus.SUCCESS.value());
+                        }
+                    }
+
+                    return jobMessage;
+                }
+                return null;
+            }
+        };
+        return run.query(conn, sql, rsHandler, phaseId);
     }
 }

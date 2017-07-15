@@ -158,18 +158,18 @@ public class PoiRowValidationJob extends AbstractJob {
 		try{
 			List<Long> pids = myRequest.getPids();
 			if(pids!=null&&pids.size()>0){return;}
-			ManApi apiService = (ManApi) ApplicationContextUtil
-					.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			//ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			//Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
 			//行编有针对删除数据进行的检查，此处要把删除数据也加载出来
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
 					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
 					//+ "   and ip.u_record!=2"
-					+ "   AND sdo_within_distance(ip.geometry,"
-					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
-					+ "                           'mask=anyinteract') = 'TRUE'";
+					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
+					//+ "   AND sdo_within_distance(ip.geometry,"
+					//+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
+					//+ "                           'mask=anyinteract') = 'TRUE'";
 			QueryRunner run=new QueryRunner();
 			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
 

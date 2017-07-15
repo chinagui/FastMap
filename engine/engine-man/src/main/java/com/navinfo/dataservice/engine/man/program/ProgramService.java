@@ -2648,8 +2648,8 @@ public class ProgramService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT DISTINCT P.PROGRAM_ID,P.NAME FROM PROGRAM P, TASK T, SUBTASK S");
-			sb.append(" WHERE P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
+			sb.append("SELECT DISTINCT R.DAILY_DB_ID, P.PROGRAM_ID,P.NAME FROM REGION R, CITY C, PROGRAM P, TASK T, SUBTASK S");
+			sb.append(" WHERE P.CITY_ID = C.CITY_ID AND C.REGION_ID = R.REGION_ID AND P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
 			sb.append(" AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1 ");
 			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
 			
@@ -2662,8 +2662,9 @@ public class ProgramService {
 					JSONArray jsonArray = new JSONArray();
 					while (rs.next()) {
 						JSONObject jo = new JSONObject();
-						jo.put("programId", rs.getInt(1));
-						jo.put("name", rs.getString(2));
+						jo.put("programId", rs.getInt("PROGRAM_ID"));
+						jo.put("name", rs.getString("NAME"));
+						jo.put("dailyDbId", rs.getString("DAILY_DB_ID"));
 						jsonArray.add(jo);
 					}
 					jsonObject.put("result", jsonArray);
@@ -2688,8 +2689,8 @@ public class ProgramService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT DISTINCT P.PROGRAM_ID, P.NAME FROM TASK T, PROGRAM P ");
-			sb.append("WHERE T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
+			sb.append("SELECT DISTINCT R.DAILY_DB_ID, P.PROGRAM_ID, P.NAME FROM REGION R, TASK T, PROGRAM P, CITY C ");
+			sb.append("WHERE P.CITY_ID = C.CITY_ID AND C.REGION_ID = R.REGION_ID AND T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
 			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
 			
 			String selectSql= sb.toString();
@@ -2701,8 +2702,9 @@ public class ProgramService {
 					JSONArray jsonArray = new JSONArray();
 					while(rs.next()){
 						JSONObject jo = new JSONObject();
-						jo.put("programId", rs.getInt(1));
-						jo.put("name", rs.getString(2));
+						jo.put("programId", rs.getInt("PROGRAM_ID"));
+						jo.put("name", rs.getString("NAME"));
+						jo.put("dailyDbId", rs.getInt("DAILY_DB_ID"));
 						jsonArray.add(jo);
 					}
 					jsonObject.put("result", jsonArray);

@@ -214,7 +214,7 @@ public class IxPoi implements IObj {
 	//记录级来源//源是否已被外业环节验证
 //	private PoiFlag poiFlag;
 	private List<IRow> ixPoiFlagMethod = new ArrayList<IRow>();
-
+	public Map<String, IxPoiFlagMethod> ixPoiFlagMethodMap = new HashMap<String, IxPoiFlagMethod>();
 	
 	public int getEvaluPlan() {
 		return evaluPlan;
@@ -1944,7 +1944,9 @@ public class IxPoi implements IObj {
 		childMap.put(IxSamepoiPart.class, samepoiPartMap);
 		
 		//************zl 2016.11.29 *************
-
+		//设置子表IxPoiFlagMethod
+		childMap.put(IxPoiFlagMethod.class, ixPoiFlagMethodMap);
+		
 		return childMap;
 	}
 

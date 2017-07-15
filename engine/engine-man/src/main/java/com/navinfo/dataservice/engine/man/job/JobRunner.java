@@ -70,6 +70,10 @@ public abstract class JobRunner {
             throw new JobRunningException();
         }
 
+        if(job != null && job.getStatus() == JobStatus.SUCCESS && jobType == JobType.TiPS2MARK){
+           throw new Exception("Tips转mark不能重复执行!");
+        }
+
         if (isContinue) {
             if (job == null) {
                 throw new Exception("未找到正在执行的任务，无法继续执行！");
@@ -131,11 +135,12 @@ public abstract class JobRunner {
     public void runPhases() throws Exception {
         boolean finish = true;
         for (JobPhase phase : phaseList) {
-            if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS ||
-                    phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+            if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS) {
                 continue;
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
+            } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+                break;
             }
 
             JobProgressStatus status = phase.run();
@@ -147,8 +152,8 @@ public abstract class JobRunner {
                 if (status != JobProgressStatus.RUNNING && status != JobProgressStatus.CREATED) {
                     SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
                 }
-            }catch (Exception ex){
-                log.error("public_msg_error:"+ExceptionUtils.getStackTrace(ex));
+            } catch (Exception ex) {
+                log.error("public_msg_error:" + ExceptionUtils.getStackTrace(ex));
             }
 
             if (status == JobProgressStatus.FAILURE) {

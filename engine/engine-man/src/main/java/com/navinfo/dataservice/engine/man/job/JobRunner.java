@@ -70,6 +70,10 @@ public abstract class JobRunner {
             throw new JobRunningException();
         }
 
+        if(job != null && job.getStatus() == JobStatus.SUCCESS && jobType == JobType.TiPS2MARK){
+           throw new Exception("Tips转mark不能重复执行!");
+        }
+
         if (isContinue) {
             if (job == null) {
                 throw new Exception("未找到正在执行的任务，无法继续执行！");

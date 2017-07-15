@@ -1,11 +1,6 @@
 package com.navinfo.dataservice.engine.man.job.message;
 
 
-import com.alibaba.fastjson.JSONObject;
-
-
-import java.io.IOException;
-
 /**
  * Created by wangshishuai3966 on 2017/7/13.
  */

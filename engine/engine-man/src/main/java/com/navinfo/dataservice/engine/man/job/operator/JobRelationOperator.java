@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
-import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobRelation;
 import com.navinfo.navicommons.database.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -40,8 +39,8 @@ public class JobRelationOperator {
         };
         QueryRunner run = new QueryRunner();
         JobRelation jobRelation = run.query(conn, sql, rsHandler, jobId);
-        if(jobRelation==null){
-            throw new Exception("未找到jobId"+jobId+"对应的job_relation");
+        if (jobRelation == null) {
+            throw new Exception("未找到jobId" + jobId + "对应的job_relation");
         }
         return jobRelation;
     }

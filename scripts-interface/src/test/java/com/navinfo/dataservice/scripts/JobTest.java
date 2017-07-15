@@ -50,7 +50,7 @@ public class JobTest {
 			e.printStackTrace();
 		}
 	}*/
-//	@Test
+	@Test
 	public  void JobTest() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();
@@ -82,7 +82,7 @@ public class JobTest {
 		}
 		}
 	
-	@Test
+//	@Test
 	public  void JobTest2() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();

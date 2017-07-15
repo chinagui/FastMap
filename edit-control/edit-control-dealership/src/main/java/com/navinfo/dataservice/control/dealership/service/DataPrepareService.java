@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -15,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,8 +40,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExportExcel;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -53,7 +48,6 @@ import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirm
 import com.navinfo.dataservice.control.dealership.service.model.ExpDbDiffResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -61,7 +55,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -801,7 +794,7 @@ public class DataPrepareService {
 		excelHeader.put("厂商提供简称", "nameShort");
 		excelHeader.put("厂商提供地址", "address");
 		excelHeader.put("厂商提供电话（销售）", "telSale");
-		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（维修）", "telService");
 		excelHeader.put("厂商提供电话（其他）", "telOther");		
 		excelHeader.put("厂商提供邮编", "postCode");
 		excelHeader.put("厂商提供英文名称", "nameEng");
@@ -1554,6 +1547,7 @@ public class DataPrepareService {
 		String poiName = null;
 		String poiAddress = null;
 		String poiTel = null;
+		String poiTelSort = null;
 		String poiPostCode = ixPoi.getPostCode();
 		String poiKindCode = ixPoi.getKindCode();
 		String poiChain = ixPoi.getChain();
@@ -1586,8 +1580,21 @@ public class DataPrepareService {
 		}
 		Collections.sort(contacts);
 		poiTel = StringUtils.join(contacts.toArray(),"|");
-		result.put("poiTel", poiTel);
+//		result.put("poiTel", poiTel);
 		
+//==========================================================================================		
+		//增加导出poi电话多条时，考虑电话优先级问题
+		Map<Integer, String> map = new TreeMap<>();
+		for(IxPoiContact ixPoiContact:ixPoiContactList){
+			map.put(ixPoiContact.getPriority(), ixPoiContact.getContact());
+		}
+		List<String> list = new ArrayList<String>();
+		for (Map.Entry<Integer, String> entry : map.entrySet()) {
+			list.add(entry.getValue());
+		}
+		poiTelSort = StringUtils.join(list.toArray(),"|");
+		result.put("poiTel", poiTelSort);
+//==========================================================================================		
 				
 		List<String> diffs = new ArrayList<String>();
 		if(expDbDiffResult.getName()==null){

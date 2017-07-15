@@ -2056,9 +2056,9 @@ public class Transaction {
             }
 
             // 执行后检查
-            if (!hasOverride("run")) {
+            //if (!hasOverride("run")) {
                 process.postCheck();
-            }
+            //}
 
             // 数据入库
             for (AbstractProcess process : processes) {

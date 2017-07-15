@@ -211,7 +211,6 @@ public class HbasePoiInfo {
 	 */
 	private void createMapBetweenPoiAndDbId() throws Exception {
 		Map<Integer, List<PoiInfo>> poiDataByDailyDbId = new HashMap<>();
-		Map<Integer,List<PoiInfo>> poiDataByMonthlyDbId = new HashMap<>();
 
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		List<RegionMesh> regions = manApi.queryRegionWithMeshes(this.getPoiCollectionByMesh().keySet());
@@ -234,23 +233,11 @@ public class HbasePoiInfo {
 				} else {
 					poiDataByDailyDbId.put(region.getDailyDbId(), entry.getValue());
 				}
-				
-				//月库
-				if (poiDataByMonthlyDbId.containsKey(region.getMonthlyDbId())) {
-					poiDataByMonthlyDbId.get(region.getMonthlyDbId()).addAll(entry.getValue());
-				} else {
-					poiDataByMonthlyDbId.put(region.getMonthlyDbId(), entry.getValue());
-				}
 			} // for
 		} // for
 
 		//日库
 		for (Map.Entry<Integer, List<PoiInfo>> entry : poiDataByDailyDbId.entrySet()) {
-			createPoiFlagTable(entry.getKey(), entry.getValue());
-		}
-		
-		//月库
-		for (Map.Entry<Integer, List<PoiInfo>> entry : poiDataByMonthlyDbId.entrySet()) {
 			createPoiFlagTable(entry.getKey(), entry.getValue());
 		}
 	}
@@ -288,13 +275,14 @@ public class HbasePoiInfo {
 					continue;
 				}
 
-				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM IX_POI_FLAG_METHOD WHERE POI_PID = %d", poiInfo.getPid());
+				String isExistPoiFlag = String.format("SELECT COUNT(*) FROM IX_POI_FLAG_METHOD WHERE POI_PID = %d",
+						poiInfo.getPid());
 				int poiFlagCount = run.queryForInt(dailyConn, isExistPoiFlag);
 
 				String insertItemToPoiFlag = "";
 				if (poiFlagCount == 0) {
 					insertItemToPoiFlag = String.format(
-							"INSERT INTO POI_FLAG VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, null, 0, null, null, %s)",
+							"INSERT INTO IX_POI_FLAG_METHOD VALUES(%d, %d, %d, 0, 0, 0, 0, 0, 0, %d, 0, null, 0, null, null, '%s')",
 							poiInfo.getPid(), poiInfo.getVerifyRecord(), poiInfo.getSourceRecord(),
 							poiInfo.getFieldVerification(),UuidUtils.genUuid());
 				} else {

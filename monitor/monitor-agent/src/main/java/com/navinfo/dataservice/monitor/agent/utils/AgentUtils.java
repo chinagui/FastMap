@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.monitor.agent.utils;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -12,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.monitor.agent.model.StatInfo;
+import com.navinfo.dataservice.monitor.agent.starter.ConfigFileHandle;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -60,7 +62,13 @@ public class AgentUtils {
 			log.debug("监控系统推送的数据:"+jsa.toString());
 			client = ClientBuilder.newClient();
 			Entity<String> payload = Entity.json(jsa.toString());
-			String url = "http://192.168.4.110:1988/v1/push";
+			//获取推送地址
+			Map<String, String> agentServer = ConfigFileHandle.getAgentServer();
+			String host = agentServer.get("host");
+			String port = agentServer.get("port");
+//			String url = "http://192.168.4.110:1988/v1/push";
+			String url = "http://"+host+":"+port+"/v1/push";
+			log.info("监控系统推送:"+url);
 			Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).post(payload);
 			
 //			System.out.println("status: " + response.getStatus());

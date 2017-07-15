@@ -1,10 +1,14 @@
 package com.navinfo.dataservice.engine.man.job;
 
+import com.alibaba.fastjson.JSON;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.exception.JobRunningException;
+import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
+import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobRelationOperator;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -136,6 +140,17 @@ public abstract class JobRunner {
 
             JobProgressStatus status = phase.run();
 
+            //发送步骤状态消息
+            try {
+                JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
+                JobMessage jobMessage = jobProgressOperator.getJobMessage(phase.jobProgress.getPhaseId());
+                if (status != JobProgressStatus.RUNNING && status != JobProgressStatus.CREATED) {
+                    SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
+                }
+            }catch (Exception ex){
+                log.error("public_msg_error:"+ExceptionUtils.getStackTrace(ex));
+            }
+
             if (status == JobProgressStatus.FAILURE) {
                 job.setStatus(JobStatus.FAILURE);
                 finish = false;
@@ -155,7 +170,6 @@ public abstract class JobRunner {
 
         if (job.getStatus() == JobStatus.FAILURE ||
                 job.getStatus() == JobStatus.SUCCESS) {
-            conn = DBConnector.getInstance().getManConnection();
             JobOperator jobOperator = new JobOperator(conn);
             jobOperator.updateStatusByJobId(job.getJobId(), job.getStatus());
         }
@@ -172,11 +186,10 @@ public abstract class JobRunner {
             this.operator = operator;
             this.parameter = parameter;
 
-            conn.setAutoCommit(false);
             this.prepare();
             this.initJobType();
             this.init(isContinue);
-            DbUtils.commitAndCloseQuietly(conn);
+            conn.commit();
 
             runPhases();
 
@@ -186,7 +199,6 @@ public abstract class JobRunner {
             DbUtils.rollbackAndCloseQuietly(conn);
             try {
                 if (job != null) {
-                    conn = DBConnector.getInstance().getManConnection();
                     JobOperator jobOperator = new JobOperator(conn);
                     jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.FAILURE);
                 }
@@ -207,27 +219,25 @@ public abstract class JobRunner {
         try {
             this.job = job;
             conn = DBConnector.getInstance().getManConnection();
-            conn.setAutoCommit(false);
             this.prepare();
             this.initJobType();
             this.loadPhases();
-            DbUtils.commitAndCloseQuietly(conn);
+            conn.commit();
 
             runPhases();
 
             return job.getJobId();
         } catch (Exception ex) {
             log.error(ExceptionUtils.getStackTrace(ex));
-            DbUtils.rollbackAndCloseQuietly(conn);
+            DbUtils.rollback(conn);
             try {
                 if (job != null) {
-                    conn = DBConnector.getInstance().getManConnection();
                     JobOperator jobOperator = new JobOperator(conn);
                     jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.FAILURE);
                 }
             } catch (Exception e) {
                 log.error(ExceptionUtils.getStackTrace(e));
-                DbUtils.rollbackAndCloseQuietly(conn);
+                DbUtils.rollback(conn);
             }
             throw ex;
         } finally {

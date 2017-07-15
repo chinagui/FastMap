@@ -235,11 +235,6 @@ public class Process extends AbstractProcess<Command> {
             operation = new OpTopo(this.getCommand(), this.getConn(), this.rdLinkBreakpoint, jaDisplayLink);
             msg = operation.run(this.getResult());
 
-            String preCheckMsg = this.preCheck();
-
-            if (preCheckMsg != null) {
-                throw new Exception(preCheckMsg);
-            }
 
             updataRelationObj();
         } catch (Exception e) {
@@ -341,7 +336,7 @@ public class Process extends AbstractProcess<Command> {
             log.info("END RECORD  ");
             log.info("RECODE USE TIME  " + String.valueOf(recordTime - attrrelationTime));
             log.info("POST CHECK BEGIN");
-            this.postCheck();
+            //this.postCheck();
             log.info("POST CHECK BEGIN");
             //this.getConn().commit();
             log.info("END BEGIN BREAK RDLINK");

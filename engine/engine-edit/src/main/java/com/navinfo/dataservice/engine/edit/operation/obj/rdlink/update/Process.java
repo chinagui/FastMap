@@ -61,7 +61,7 @@ public class Process extends AbstractProcess<Command> {
 
             updateRdLane();
 
-            postCheck();
+            //postCheck();
 
         } else {
             String preCheckMsg = this.preCheck();

@@ -1449,15 +1449,19 @@ public class DataEditService {
 			
 	/**
 	 * 提交时更新poi状态从0改为为3
+	 * 如果没有对应的poi_edit_status记录，则插入一条
 	 * @param poiNum
 	 * @param conn
 	 * @throws Exception
 	 */
 	private void updatePoiStatusByPoiNum(String poiNum,Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE POI_EDIT_STATUS SET STATUS = 3 WHERE STATUS = 0");
-		sb.append(" AND PID = (SELECT PID FROM IX_POI WHERE POI_NUM = :1)");
-
+		sb.append(" MERGE INTO poi_edit_status t1 ");
+		sb.append(" USING (SELECT p.pid FROM ix_poi p,poi_edit_status pe  WHERE p.pid = pe.pid(+) AND p.POI_NUM = :1) T2 ");
+		sb.append(" ON (t1.pid = t2.pid ) ");
+		sb.append(" WHEN MATCHED THEN  UPDATE SET STATUS = 3 WHERE STATUS  = 0 ");
+		sb.append(" WHEN NOT MATCHED THEN INSERT (pid,status) VALUES(t2.pid,3)");
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
@@ -1466,7 +1470,6 @@ public class DataEditService {
 			pstmt.setString(1, poiNum);
 			pstmt.executeUpdate();
 
-			
 		} catch (Exception e) {
 			throw e;
 		} finally {

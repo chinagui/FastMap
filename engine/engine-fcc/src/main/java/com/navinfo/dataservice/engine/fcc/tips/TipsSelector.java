@@ -1313,7 +1313,7 @@ public class TipsSelector {
 	 * @param collectTaskIds
 	 * @param collectTaskIds
 	 * @param statType 统计类型：total，prepared 
-	 * @param taskType  质检任务、作业任务
+	 * @param taskType 1是 质检任务、作业任务
 	 * @return
 	 * @throws Exception
 	 */
@@ -2029,6 +2029,21 @@ public class TipsSelector {
 		return snapshots;
 
 	}
+
+    /**
+     * 情报矢量化提交任务数据筛选
+     * @param taskId
+     * @param taskType
+     * @return
+     * @throws Exception
+     */
+    public List<JSONObject> getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
+
+        List<JSONObject> snapshots=conn.queryTipsByTask(taskId, taskType, 1);
+
+        return snapshots;
+
+    }
 
     /**
      * 矢量化检查Tips查询

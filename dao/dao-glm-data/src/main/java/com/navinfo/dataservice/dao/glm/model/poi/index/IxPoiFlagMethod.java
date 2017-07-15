@@ -215,7 +215,7 @@ public class IxPoiFlagMethod implements IRow {
 
 	@Override
 	public String tableName() {
-		return "poi_flag";
+		return "ix_poi_flag_method";
 	}
 
 	@Override
@@ -229,7 +229,7 @@ public class IxPoiFlagMethod implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.POIFLAG;
+		return ObjType.IXPOIFLAGMETHOD;
 	}
 
 	@Override

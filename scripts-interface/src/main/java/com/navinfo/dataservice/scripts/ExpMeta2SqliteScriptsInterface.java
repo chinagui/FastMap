@@ -1216,10 +1216,10 @@ public class ExpMeta2SqliteScriptsInterface {
 			//初始化context
 			JobScriptsInterface.initContext();
 			
-//			String dir = SystemConfigFactory.getSystemConfig().getValue(
-//					PropConstant.downloadFilePathRoot);  //服务器部署路径
+			String dir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadFilePathRoot);  //服务器部署路径
 			
-			String dir = "f:";
+//			String dir = "f:";
 			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
 				metaSqliteFile.delete();

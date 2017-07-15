@@ -94,7 +94,7 @@ public class GpsRecordSearch  implements ISearch{
     	List<SearchSnapshot> list = new ArrayList<>();
         
     	String sql = "SELECT A.GPSRECORD_ID, A.GEOMETRY,A.SOURCE,A.NAME,A.TABLE_NAME,A.LANE_NUM,A.KIND,A.MESH_ID,A.FIELD_SOURCE " 
-    					+" FROM GPS_RECORD A "
+    					+" FROM AU_GPSRECORD A "
     					+"    WHERE  "
 						+"  sdo_relate(A.GEOMETRY, "
 						+"            SDO_GEOMETRY(:1, 8307), "

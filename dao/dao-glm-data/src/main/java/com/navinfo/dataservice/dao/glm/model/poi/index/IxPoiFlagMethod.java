@@ -58,17 +58,6 @@ public class IxPoiFlagMethod implements IRow {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	
-	
-
-	public Logger getLogger() {
-		return logger;
-	}
-
-	public void setLogger(Logger logger) {
-		this.logger = logger;
-	}
-
 	public int getPoiPid() {
 		return poiPid;
 	}

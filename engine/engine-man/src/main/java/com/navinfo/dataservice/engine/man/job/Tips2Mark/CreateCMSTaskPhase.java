@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -51,7 +52,7 @@ public class CreateCMSTaskPhase extends JobPhase {
 
             //业务逻辑
             Map<String, Object> cmsInfo = Tips2MarkUtils.getItemInfo(conn, jobRelation.getItemId(), jobRelation.getItemType());
-            JSONObject parameter=new JSONObject();
+            JSONObject parameter = new JSONObject();
             DatahubApi datahub = (DatahubApi) ApplicationContextUtil
                     .getBean("datahubApi");
             DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
@@ -62,7 +63,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             parameter.put("fieldDbIp", auDb.getDbServer().getIp());
             parameter.put("fieldDbName", auDb.getDbUserName());
 
-            JSONObject taskPar=new JSONObject();
+            JSONObject taskPar = new JSONObject();
             taskPar.put("taskName", cmsInfo.get("collectName"));
             taskPar.put("fieldTaskId", cmsInfo.get("collectId"));
             taskPar.put("taskId", cmsInfo.get("collectId"));
@@ -70,25 +71,25 @@ public class CreateCMSTaskPhase extends JobPhase {
             taskPar.put("city", cmsInfo.get("cityName"));
             taskPar.put("town", cmsInfo.get("blockName"));
 
-            String area="中线一体化作业";
+            String area = "中线一体化作业";
             String workType = "更新";
             String workSeason = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
-            if(jobRelation.getItemType()== ItemType.PROJECT) {
+            if (jobRelation.getItemType() == ItemType.PROJECT) {
                 area = "快线一体化作业";
                 workType = "快速更新";
                 workSeason += "FM快速";
-            }else{
+            } else {
                 workSeason += "FM";
             }
             taskPar.put("workType", workType);
             taskPar.put("area", area);
             taskPar.put("userId", cmsInfo.get("userNickName"));
             taskPar.put("workSeason", workSeason);
-            taskPar.put("markTaskType",jobRelation.getItemType().value());
+            taskPar.put("markTaskType", jobRelation.getItemType().value());
             parameter.put("taskInfo", taskPar);
 
             String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
-            Map<String,String> parMap = new HashMap<>();
+            Map<String, String> parMap = new HashMap<>();
             parMap.put("parameter", parameter.toString());
             log.info(parameter.toString());
             jobProgress.setMessage(parameter.toString());
@@ -98,19 +99,19 @@ public class CreateCMSTaskPhase extends JobPhase {
             JSONObject res = null;
             try {
                 res = JSONObject.fromObject(result);
-            }catch (Exception ex){
-                res=null;
+            } catch (Exception ex) {
+                res = null;
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
-                jobProgress.setMessage(jobProgress.getMessage()+ex.getMessage());
+                jobProgress.setMessage(jobProgress.getMessage() + ex.getMessage());
             }
-            if(res!=null) {
+            if (res != null) {
                 boolean success = res.getBoolean("success");
                 if (success) {
                     jobProgress.setStatus(JobProgressStatus.SUCCESS);
                 } else {
                     log.error("cms error msg" + res.get("msg"));
                     jobProgress.setStatus(JobProgressStatus.FAILURE);
-                    jobProgress.setMessage(jobProgress.getMessage() + "cms error:" + res.get("msg").toString());
+                    jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
@@ -120,7 +121,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
-                jobProgress.setMessage(jobProgress.getMessage() + ex.getMessage());
+                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

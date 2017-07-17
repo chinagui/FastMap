@@ -78,7 +78,7 @@ public class EditIxDealershipResult {
 			addChainDataEntity.setIsDeleted(0);
 			int matchMethod = 0;
 			String cfmPoiNum = "";
-			if(sourceMap.get("cfmPoiNum") != null && StringUtils.isNotBlank(sourceMap.get("cfmPoiNum").toString())){
+			if(sourceMap.containsKey("cfmPoiNum") && sourceMap.get("cfmPoiNum") != null && StringUtils.isNotBlank(sourceMap.get("cfmPoiNum").toString())){
 				matchMethod = 1;
 				cfmPoiNum = sourceMap.get("cfmPoiNum").toString();
 			}

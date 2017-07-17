@@ -103,6 +103,8 @@ public class PropConstant {
 	public static final String multisrcDayNotifyUrl="multisrc.day.notify.url";
 	public static final String seasonVersion="SEASON.VERSION";
 	public static final String productConvert="product.convert";
+	public static final String day2mounthGetLock="day2mounth.getLock";
+	public static final String day2mounthReleaseLock="product.releaseLock";
 	
 	public static final String valueSmtp="VALUE_SMTP";
 	public static final String sendEmail="SEND_EMAil";

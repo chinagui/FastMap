@@ -69,7 +69,7 @@ public class FmPoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector
 				"   AND P.OP_ID = R.OP_ID\r\n" +
 				"	AND EXISTS (SELECT 1 FROM POI_EDIT_STATUS E WHERE E.PID=L.OB_PID AND E.STATUS = 3)\r\n"); 
 		sb.append(" AND R.REL_POI_STA=0");
-		sb.append(" AND P.com_sta=1");
+		//sb.append(" AND P.com_sta=1");
 		if (this.stopTime!=null){
 			String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
 			sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;

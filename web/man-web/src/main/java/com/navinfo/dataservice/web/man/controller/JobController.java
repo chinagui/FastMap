@@ -72,4 +72,31 @@ public class JobController extends BaseController {
             return new ModelAndView("jsonView", exception(e));
         }
     }
+
+    @RequestMapping(value = "/job/run/day2month")
+    public ModelAndView day2month(HttpServletRequest request) {
+        try {
+            JSONObject data = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+            if (data == null) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+            if (!data.containsKey("itemType")||!data.containsKey("itemId")||!data.containsKey("isContinue")){
+                throw new IllegalArgumentException("itemId|itemType|isContinue不能为空");
+            }
+            AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+            long operator = tokenObj.getUserId();
+
+            long itemId = data.getLong("itemId");
+            ItemType itemType = ItemType.valueOf(data.getInt("itemType"));
+            boolean isContinue = data.getBoolean("isContinue");
+
+            long jobId = JobService.getInstance().day2month(itemId,itemType,operator,isContinue,null);
+            JSONObject result = new JSONObject();
+            result.put("jobId",jobId);
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+            log.error("创建日落月任务失败，原因：" + e.getMessage(), e);
+            return new ModelAndView("jsonView", exception(e));
+        }
+    }
 }

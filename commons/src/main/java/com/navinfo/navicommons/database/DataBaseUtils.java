@@ -17,8 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
-
-import oracle.jdbc.OracleTypes;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -26,9 +24,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import com.navinfo.navicommons.pid.PidResponse;
-import com.navinfo.navicommons.pid.PidResponse.PidSeg;
 
 /**
  * @author liuqing
@@ -46,7 +41,6 @@ public abstract class DataBaseUtils {
 	public static void gatherStats(Connection conn, String tableName) throws Exception {
 	        tableName = tableName.toUpperCase();
 	        CallableStatement cs = null;
-	        List<PidResponse.PidSeg> result = new ArrayList<PidResponse.PidSeg>();
 	        String sqlStr = "{call dbms_stats.gather_table_stats(USER,?)}";
 	        try {
 

@@ -32,13 +32,23 @@ import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
+import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -185,7 +195,9 @@ public class DataEditService {
 			poiconn = DBConnector.getInstance().getConnectionById(dbId);
 			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
 			int poiPid = run.queryForInt(poiconn, queryPoiPid);
-			checkErrorNum = GetCheckResultCount(poiPid, poiconn);
+			NiValExceptionSelector selector = new NiValExceptionSelector(poiconn);
+			JSONArray checkResultsArr = selector.poiCheckResultList(poiPid);
+			checkErrorNum = checkResultsArr.size();
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -194,18 +206,6 @@ public class DataEditService {
 			}
 		}
 		return checkErrorNum;
-	}
-	
-	private Integer GetCheckResultCount(Integer poiPid, Connection conn) throws Exception {
-		if (poiPid == 0)
-			return 0;
-
-		String checkSqlStr = String.format(
-				"SELECT COUNT(*) FROM NI_VAL_EXCEPTION NE,CK_RESULT_OBJECT CK WHERE NE.MD5_CODE = CK.MD5_CODE AND CK.PID = %d",
-				poiPid);
-		int count = run.queryForInt(conn, checkSqlStr);
-
-		return count;
 	}
 
 	/**
@@ -245,9 +245,11 @@ public class DataEditService {
 			List<Object> adoptedPoiNum = new ArrayList<>();
 			List<Integer> adoptedPoiPid = new ArrayList<>();
 			List<String> repeatedPoiNum = new ArrayList<>();
+			int cfmPoiPid=0;
 			if (matchPoiNums.size() != 0) {
 				adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 			}
+			
 
 			for (String poiNum : matchPoiNums) {
 				if(repeatedPoiNum.contains(poiNum)){
@@ -263,7 +265,11 @@ public class DataEditService {
 						&& !corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))) {
 					adoptedPoiPid.add(poiPid);
 				}
-
+				
+				if(corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
+					cfmPoiPid=poiPid;
+				}
+				
 				if (poiPid < 0)
 					continue;
 
@@ -273,6 +279,18 @@ public class DataEditService {
 
 			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
 			JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
+			
+			//返回cfm_poi_num检查log
+			JSONObject log=new JSONObject();
+			
+			if(cfmPoiPid!=0){
+				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
+				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid);
+				log.put("data", checkResultsArr);
+				log.put("total", checkResultsArr.size());
+			}
+			result.put("log", log);
+			
 			return result;
 		} catch (Exception e) {
 			log.error("详细数据：" + e.toString());
@@ -1205,12 +1223,11 @@ public class DataEditService {
 	 * @param parameter
 	 * @param userId
 	 */
-	public String saveDataService(JSONObject parameter, long userId) throws Exception {
+	public void saveDataService(JSONObject parameter, long userId) throws Exception {
 	
         Connection poiConn = null;
         Connection dealershipConn = null;
         JSONObject result = null;
-        String log="";
         
         List<Integer> pids = new ArrayList<Integer>();
         
@@ -1306,7 +1323,6 @@ public class DataEditService {
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
         	}
  
-            return log;
 		}catch(Exception e){
             DbUtils.rollback(dealershipConn);
             DbUtils.rollback(poiConn);
@@ -2259,5 +2275,82 @@ public class DataEditService {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	
+	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
+		log.info("start runDealershipCheck");
+		Connection conn=null;
+    	try{
+    		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
+        	int poiDbId = poiData.getInt("dbId");
+        	int objPid = poiData.getInt("objId");
+    	conn=DBConnector.getInstance().getConnectionById(poiDbId);
+		log.info("要检查的数据pid:"+objPid);
+		log.info("获取要检查的数据的履历");
+		Collection<Long> objPids = new ArrayList<Long>();
+		objPids.add(Long.parseLong(String.valueOf(objPid)));
+		Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, objPids);
+		Set<String> tabNames=getChangeTableSet(logs);
+		log.info("加载检查对象");		
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
+				objPids, false, false);
+		log.info("加载将poi对象与履历合并起来对象");
+		ObjHisLogParser.parse(objs, logs);
+		log.info("执行检查");
+		//构造检查参数，执行检查
+		OperationResult operationResult=new OperationResult();
+		Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
+		objsMap.put(ObjectName.IX_POI, objs);
+		operationResult.putAll(objsMap);
+	
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setOperationName("DEALERSHIP_SAVE");
+		
+		// 清理检查结果
+		log.info("start 清理检查结果");
+		DeepCoreControl deepControl = new DeepCoreControl();
+		List<Integer> pidIntList=new ArrayList<Integer>();
+		pidIntList.add(objPid);
+		deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+		log.info("end 清理检查结果");
+		
+		Check check=new Check(conn, operationResult);
+		check.operate(checkCommand);
+		
+		//查询检查结果数量
+		int resultCount=0;
+		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+		JSONArray checkResultsArr = selector.poiCheckResultList(objPid);
+		resultCount=checkResultsArr.size();
+		log.info("查询poi检查结果数量:" +resultCount);
+		log.info("end runDealershipCheck");
+		return resultCount;	
+    	}
+    	catch (Exception e) {
+    		log.error("执行代理店检查发生错误", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 分析履历，将履历中涉及的变更过的子表集合返回
+	 * @param logs
+	 * @return [IX_POI_NAME,IX_POI_ADDRESS]
+	 */
+	private Set<String> getChangeTableSet(Map<Long, List<LogDetail>> logs) {
+		Set<String> subtables=new HashSet<String>();
+		if(logs==null || logs.size()==0){return subtables;}
+		String mainTable="IX_POI";
+		for(Long objId:logs.keySet()){
+			List<LogDetail> logList = logs.get(objId);
+			for(LogDetail logTmp:logList){
+				String tableName = logTmp.getTbNm();
+				if(!mainTable.equals(tableName)){subtables.add(tableName);}
+			}
+		}
+		return subtables;
 	}
 }

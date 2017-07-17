@@ -63,6 +63,10 @@ public class FccApiImpl implements FccApi{
 //        return result;
 //    }
 
+    
+    /**
+     * 任务卡片统计：taskType=1是质检任务
+     */
     @Override
     public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception {
         JSONObject result = new JSONObject();
@@ -78,11 +82,11 @@ public class FccApiImpl implements FccApi{
         int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total",taskType,handler);
 
         //统计日编待作业
-        int finished = selector.getTipsDayTotal(wkt, collectTaskIds, "prepared",taskType,handler);
+        int prepared = selector.getTipsDayTotal(wkt, collectTaskIds, "prepared",taskType,handler);
 
         result.put("total", total);
 
-        result.put("prepared", finished);
+        result.put("prepared", prepared);
 
 
         return result;

@@ -4475,7 +4475,7 @@ public class TaskService {
 					StringBuffer poiSb = new StringBuffer();
 					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
-					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
+					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ('"+levels+"') ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}

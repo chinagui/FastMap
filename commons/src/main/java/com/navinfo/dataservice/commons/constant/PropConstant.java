@@ -100,6 +100,7 @@ public class PropConstant {
 	public static final String mongoPort="mongo_port";
 	
 	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
+	public static final String multisrcDayNotifyUrl="multisrc.day.notify.url";
 	public static final String seasonVersion="SEASON.VERSION";
 	public static final String productConvert="product.convert";
 	

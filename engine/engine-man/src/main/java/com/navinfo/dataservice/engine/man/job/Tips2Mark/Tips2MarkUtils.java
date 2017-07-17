@@ -70,11 +70,13 @@ public class Tips2MarkUtils {
                     "       P.TYPE," +
                     "       P.STATUS," +
                     "       R.MONTHLY_DB_ID," +
-                    "       I.ADMIN_NAME" +
+                    "       I.ADMIN_NAME," +
+                    "       (select listagg(task_id,',') within GROUP (order by task_id) " +
+                    "        from TASK T1 where T1.status=0 and T1.type=0 and T1.program_id=P.program_id) TASKS" +
                     "  FROM PROGRAM           P," +
                     "       TASK              T," +
                     "       REGION            R," +
-                    "       INFOR             I"  +
+                    "       INFOR             I" +
                     " WHERE P.PROGRAM_ID = T.PROGRAM_ID" +
                     "   AND T.REGION_ID = R.REGION_ID" +
                     "   AND P.INFOR_ID  = I.INFOR_ID" +
@@ -86,21 +88,22 @@ public class Tips2MarkUtils {
                         result.put("collectId", rs.getInt("COLLECT_ID"));
                         result.put("collectName", rs.getString("COLLECT_NAME"));
                         result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
-                        result.put("status", rs.getInt("status"));
-                        result.put("type", rs.getInt("type"));
-                        String adminName = rs.getString("adminName");
-                        String provinceName = "";
-                        String cityName="";
-                        String blockName="";
-                        if(adminName!=null){
+                        result.put("status", rs.getInt("STATUS"));
+                        result.put("type", rs.getInt("TYPE"));
+                        result.put("tasks", rs.getString("TASKS"));
+                        String adminName = rs.getString("ADMIN_NAME");
+                        String provinceName = "测试";
+                        String cityName = "测试";
+                        String blockName = "测试";
+                        if (adminName != null) {
                             String[] names = adminName.split("\\|");
-                            if(names.length>0){
+                            if (names.length > 0) {
                                 provinceName = names[0];
                             }
-                            if(names.length>1){
+                            if (names.length > 1) {
                                 cityName = names[1];
                             }
-                            if(names.length>2){
+                            if (names.length > 2) {
                                 blockName = names[2];
                             }
                         }
@@ -118,6 +121,7 @@ public class Tips2MarkUtils {
             throw new Exception("查询项目信息失败，原因为:" + e.getMessage(), e);
         }
     }
+
     private static Map<String, Object> getSubTaskInfo(Connection conn, long subtaskId) throws Exception {
         try {
             QueryRunner run = new QueryRunner();
@@ -135,7 +139,7 @@ public class Tips2MarkUtils {
                     "       CITY              C," +
                     "       REGION            R" +
                     " WHERE ST.TASK_ID = T.TASK_ID" +
-                    "       T.REGION_ID = R.REGION_ID" +
+                    "   AND T.REGION_ID = R.REGION_ID" +
                     "   AND T.BLOCK_ID = B.BLOCK_ID" +
                     "   AND B.CITY_ID = C.CITY_ID" +
                     "   AND ST.SUBTASK_ID = ?";
@@ -149,8 +153,8 @@ public class Tips2MarkUtils {
                         result.put("provinceName", rs.getString("PROVINCE_NAME"));
                         result.put("cityName", rs.getString("CITY_NAME"));
                         result.put("blockName", rs.getString("BLOCK_NAME"));
-                        result.put("status", rs.getInt("status"));
-                        result.put("type", rs.getInt("type"));
+                        result.put("status", rs.getInt("STATUS"));
+                        result.put("type", rs.getInt("STAGE"));
                     }
                     return result;
                 }
@@ -164,7 +168,7 @@ public class Tips2MarkUtils {
     }
 
     public static Map<String, Object> getItemInfo(Connection conn, long itemId, ItemType itemType) throws Exception {
-        switch (itemType){
+        switch (itemType) {
             case PROJECT:
                 return Tips2MarkUtils.getProgramInfo(conn, itemId);
             case TASK:

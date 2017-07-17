@@ -39,6 +39,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
 
 /**
  * POI基础信息表
@@ -210,11 +211,11 @@ public class IxPoi implements IObj {
 	private int truckFlag = 0;
 	
 	//评估规划
-	private int evaluPlan = 2;
+	protected int evaluPlan = 2;
 	//记录级来源//源是否已被外业环节验证
 //	private PoiFlag poiFlag;
 	private List<IRow> ixPoiFlagMethod = new ArrayList<IRow>();
-
+	public Map<String, IxPoiFlagMethod> ixPoiFlagMethodMap = new HashMap<String, IxPoiFlagMethod>();
 	
 	public int getEvaluPlan() {
 		return evaluPlan;
@@ -1249,15 +1250,14 @@ public class IxPoi implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
-		
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("rawFields");
 			json.remove("status");
 			json.remove("poiEditStatus");
 			json.remove("sameFid");
 			json.remove("freshVerified");
+			json.remove("evaluPlan");
 		}
 
 		return json;
@@ -1700,6 +1700,23 @@ public class IxPoi implements IObj {
 						restaurants.add(row);
 					}
 					break;
+				case "ixPoiFlagMethod":
+
+					ixPoiFlagMethod.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						IxPoiFlagMethod row = new IxPoiFlagMethod();
+
+						row.Unserialize(jo);
+
+						ixPoiFlagMethod.add(row);
+					}
+					break;	
+					
 				default:
 					break;
 				}
@@ -1831,6 +1848,8 @@ public class IxPoi implements IObj {
 		childMap.put(IxSamepoiPart.class,samepoiParts);
 		
 		//************zl 2016.11.29 *************
+		//设置子表IxPoiFlagMethod
+		childMap.put(IxPoiFlagMethod.class,ixPoiFlagMethod);
 		return childMap;
 	}
 
@@ -1924,7 +1943,9 @@ public class IxPoi implements IObj {
 		childMap.put(IxSamepoiPart.class, samepoiPartMap);
 		
 		//************zl 2016.11.29 *************
-
+		//设置子表IxPoiFlagMethod
+		childMap.put(IxPoiFlagMethod.class, ixPoiFlagMethodMap);
+		
 		return childMap;
 	}
 

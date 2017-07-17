@@ -2279,8 +2279,14 @@ public class DataEditService {
 	
 	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
 		log.info("start runDealershipCheck");
+		int resultCount=0;
 		Connection conn=null;
     	try{
+    		 JSONObject dealershipInfo = JSONObject.fromObject(jsonReq.getString("dealershipInfo"));
+             int wkfStatus= dealershipInfo.getInt("workflowStatus");
+             if (wkfStatus!=3){
+            	 return resultCount;
+             }
     		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
         	int poiDbId = poiData.getInt("dbId");
         	int objPid = poiData.getInt("objId");
@@ -2318,7 +2324,6 @@ public class DataEditService {
 		check.operate(checkCommand);
 		
 		//查询检查结果数量
-		int resultCount=0;
 		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 		JSONArray checkResultsArr = selector.poiCheckResultList(objPid);
 		resultCount=checkResultsArr.size();

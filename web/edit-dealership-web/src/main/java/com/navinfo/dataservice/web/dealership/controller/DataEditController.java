@@ -155,7 +155,6 @@ public class DataEditController extends BaseController {
   
   @RequestMapping(value = "/saveData")
 	public ModelAndView saveData(HttpServletRequest request) throws Exception {
-		Connection conn = null;
 
 		try {
 			JSONObject parameter = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -168,10 +167,13 @@ public class DataEditController extends BaseController {
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}
 			long userId = tokenObj.getUserId();
-
-			String data = dealerShipEditService.saveDataService(parameter,userId);
-			Map<String, String> result = new HashMap<>();
-			result.put("data", data);
+			//保存数据
+			dealerShipEditService.saveDataService(parameter,userId);
+			//执行检查
+			int resultCount=dealerShipEditService.runDealershipCheck(parameter);
+			
+			Map<String,Integer> result = new HashMap<>();
+			result.put("data", resultCount);
 
 			return new ModelAndView("jsonView", success(result));
 
@@ -179,11 +181,7 @@ public class DataEditController extends BaseController {
 			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			if (conn != null) {
-				conn.close();
-			}
-		}
+		} 
 	}
 	
 	@RequestMapping(value = "/commitDealership")

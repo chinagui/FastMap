@@ -1,6 +1,7 @@
 package com.navinfo.navicommons.database;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -17,12 +18,17 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import oracle.jdbc.OracleTypes;
 import oracle.sql.CLOB;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.navinfo.navicommons.pid.PidResponse;
+import com.navinfo.navicommons.pid.PidResponse.PidSeg;
 
 /**
  * @author liuqing
@@ -30,6 +36,31 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public abstract class DataBaseUtils {
 
 	private static Logger log = Logger.getLogger(DataBaseUtils.class);
+	
+	/**
+	 * 收集统计信息
+	 * @param conn
+	 * @param tableName
+	 * @throws Exception
+	 */
+	public static void gatherStats(Connection conn, String tableName) throws Exception {
+	        tableName = tableName.toUpperCase();
+	        CallableStatement cs = null;
+	        List<PidResponse.PidSeg> result = new ArrayList<PidResponse.PidSeg>();
+	        String sqlStr = "{call dbms_stats.gather_table_stats(USER,?)}";
+	        try {
+
+	            cs = conn.prepareCall(sqlStr);
+	            cs.setString(1, tableName);
+	            cs.execute();
+
+	        } catch (Exception e) {
+	            log.error(e.getMessage(), e);
+	            throw e;
+	        } finally {
+	            DbUtils.closeQuietly(cs);
+	        }
+	    }
 
 	/**
 	 * 获取表的MetaData

@@ -31,11 +31,11 @@ public class IxPoiSearchTest {
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "regiondb_staging_d_9", "regiondb_staging_d_9").getConnection();
 
 			IxPoiSearch rdLinkSearch = new IxPoiSearch(conn);
 			//"taskId":0,"x":107889,"y":49697,"z":17}
-			Object list = rdLinkSearch.searchDataByTileWithGap(108407, 49441, 17, 10,2224);
+			Object list = rdLinkSearch.searchDataByTileWithGap(103489, 56781, 17, 10,482);
 			log.info("end");
 		}catch(Exception e){
 			e.printStackTrace();

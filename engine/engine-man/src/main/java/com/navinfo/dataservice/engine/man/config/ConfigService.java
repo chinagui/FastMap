@@ -160,9 +160,35 @@ public class ConfigService {
 	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
 	 * 5.	仅openFlag有值，对全部图幅进行操作
 	 * @param dataJson
+	 * @throws Exception 
 	 */
-	public void mangeMesh(JSONObject dataJson) {
-		// TODO Auto-generated method stub
-		
+	public void mangeMesh(JSONObject dataJson) throws Exception {
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getManConnection();
+//			QueryRunner runner=new QueryRunner();
+//			String sql="SELECT CONF_VALUE"
+//					+ "  FROM MAN_CONFIG C"
+//					+ " WHERE c.conf_key='"+confKey+"'";
+//			String result=runner.query(conn, sql, new ResultSetHandler<String>(){
+//
+//				@Override
+//				public String handle(ResultSet rs)
+//						throws SQLException {
+//					while (rs.next()) {
+//						return rs.getString("CONF_VALUE");
+//					}
+//					return null;
+//				}
+//				
+//			});
+//			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("查询配置错误", e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

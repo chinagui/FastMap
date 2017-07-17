@@ -63,6 +63,7 @@ import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -3915,6 +3916,8 @@ public class TaskService {
 				//这里在更新一下对应在重要一览表中存在的数据类型
 				updateIsImportant(poi, taskId, dailyConn);
 			}
+			log.info("DATA_PLAN收集统计信息");
+			DataBaseUtils.gatherStats(dailyConn, "DATA_PLAN");
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);

@@ -4243,7 +4243,7 @@ public class TaskService {
 						//元数据库中的pid，也需要更新到data_plan表中
 						List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
 						//更新从元数据库中获取的pid到dataPlan表中
-						updateDataPlanStatusByReliability(dailyConn, reliabilityPid, dataType);
+						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					}
 					//保存到taskPrograss表
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
@@ -4567,7 +4567,7 @@ public class TaskService {
 		 * @throws Exception 
 		 * 
 		 * */
-		public void updateDataPlanStatusByReliability(Connection conn, List<Integer> reliabilityPid, int dataType) throws Exception{
+		public void updateDataPlanStatusByReliability(Connection conn, List<Integer> reliabilityPid) throws Exception{
 			try{
 				if(reliabilityPid==null||reliabilityPid.size()==0){return;}
 				QueryRunner run = new QueryRunner();
@@ -4582,13 +4582,7 @@ public class TaskService {
 					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
 				}
 				
-				String type = "";
-				if(dataType == 3){
-					type = "1,2";
-				}else{
-					type = String.valueOf(dataType);
-				}
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type in ("+type+")";
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
 				run.execute(conn, sql);
 			}catch(Exception e){

@@ -23,7 +23,7 @@ import net.sf.json.JSONObject;
  * @author zhangli5174
  *
  */
-public class Subtask extends BaseObj  implements Serializable{
+public class Subtask implements Serializable{
 	private Integer subtaskId ;
 	private String name ;
 //	private Integer blockId;
@@ -69,11 +69,18 @@ public class Subtask extends BaseObj  implements Serializable{
 	private int subType;
 	//添加质检方式字段
 	private int qualityMethod;
+	
+	private Map<String, Object> changeFields=new HashMap<String, Object>();
+	
+	public Map<String, Object> getChangeFields() {
+		return changeFields;
+	}
 
 	public int getSubType() {
 		return subType;
 	}
 	public void setSubType(int subType) {
+		//changeFields.put("WORK_KIND", workKind);
 		this.subType = subType;
 	}
 	public Subtask (){
@@ -82,14 +89,16 @@ public class Subtask extends BaseObj  implements Serializable{
 		return groupId;
 	}
 	public void setGroupId(int groupId) {
-		if(this.checkValue("GROUP_ID",this.groupId,groupId)){this.groupId = groupId;}
+		//changeFields.put("GROUP_ID", groupId);
+		this.groupId = groupId;
 	}
 	public String getName(){
 		if(null==name){return "";}
 		return name;
 	}
 	public void setName(String name) {
-		if(this.checkValue("NAME",this.name,name)){this.name = name;}
+		changeFields.put("NAME", name);
+		this.name = name;
 	}
 	public int getDbId(){
 		return dbId;
@@ -116,7 +125,8 @@ public class Subtask extends BaseObj  implements Serializable{
 		return subtaskId;
 	}
 	public void setSubtaskId(Integer subtaskId) {
-		if(this.checkValue("SUBTASK_ID",this.subtaskId,subtaskId)){this.subtaskId = subtaskId;}
+		changeFields.put("SUBTASK_ID", subtaskId);
+		this.subtaskId = subtaskId;
 	}
 //	public Integer getBlockId() {
 //		if(null==blockId){return 0;}
@@ -130,77 +140,89 @@ public class Subtask extends BaseObj  implements Serializable{
 		return taskId;
 	}
 	public void setTaskId(Integer taskId) {
-		if(this.checkValue("TASK_ID",this.taskId,taskId)){this.taskId = taskId;}
+		changeFields.put("TASK_ID", taskId);
+		this.taskId = taskId;
 	}
 	public String getGeometry() {
 		if(null==geometry){return "";}
 		return geometry;
 	}
 	public void setGeometry(String geometry) {
-		if(this.checkValue("GEOMETRY",this.geometry,geometry)){this.geometry = geometry;}
+		changeFields.put("GEOMETRY", geometry);
+		this.geometry = geometry;
 	}
 	public int getStage() {
 		return stage;
 	}
 	public void setStage(int stage) {
-		if(this.checkValue("STAGE",this.stage,stage)){this.stage = stage;}
+		changeFields.put("STAGE", stage);
+		this.stage = stage;
 	}
 	public Integer getType() {
 		return type;
 	}
 	public void setType(Integer type) {
-		if(this.checkValue("TYPE",this.type,type)){this.type = type;}
+		changeFields.put("TYPE", type);
+		this.type = type;
 	}
 	public Integer getCreateUserId() {
 		if(null==createUserId){return 0;}
 		return createUserId;
 	}
 	public void setCreateUserId(Integer createUserId) {
-		if(this.checkValue("CREATE_USER_ID",this.createUserId,createUserId)){this.createUserId = createUserId;}
+		changeFields.put("CREATE_USER_ID", createUserId);
+		this.createUserId = createUserId;
 	}
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
 	public void setCreateDate(Timestamp createDate) {
-		if(this.checkValue("CREATE_DATE",this.createDate,createDate)){this.createDate = createDate;}
+		changeFields.put("CREATE_DATE", createDate);
+		this.createDate = createDate;
 	}
 	public Integer getExeUserId() {
 		if(null==exeUserId){return 0;}
 		return exeUserId;
 	}
 	public void setExeUserId(Integer exeUserId) {
-		if(this.checkValue("EXE_USER_ID",this.exeUserId,exeUserId)){this.exeUserId = exeUserId;}
+		changeFields.put("EXE_USER_ID", exeUserId);
+		this.exeUserId = exeUserId;
 	}
 	public Integer getExeGroupId() {
 		if(null==exeGroupId){return 0;}
 		return exeGroupId;
 	}
 	public void setExeGroupId(Integer exeGroupId) {
-		if(this.checkValue("EXE_GROUP_ID",this.exeGroupId,exeGroupId)){this.exeGroupId = exeGroupId;}
+		changeFields.put("EXE_GROUP_ID", exeGroupId);
+		this.exeGroupId = exeGroupId;
 	}
 	public Integer getStatus() {
 		return status;
 	}
 	public void setStatus(Integer status) {
-		if(this.checkValue("STATUS",this.status,status)){this.status = status;}
+		changeFields.put("STATUS", status);
+		this.status = status;
 	}
 	public Timestamp getPlanStartDate() {
 		return planStartDate;
 	}
 	public void setPlanStartDate(Timestamp planStartDate) {
-		if(this.checkValue("PLAN_START_DATE",this.planStartDate,planStartDate)){this.planStartDate = planStartDate;}
+		changeFields.put("PLAN_START_DATE", planStartDate);
+		this.planStartDate = planStartDate;
 	}
 	public Timestamp getPlanEndDate() {
 		return planEndDate;
 	}
 	public void setPlanEndDate(Timestamp planEndDate) {
-		if(this.checkValue("PLAN_END_DATE",this.planEndDate,planEndDate)){this.planEndDate = planEndDate;}
+		changeFields.put("PLAN_END_DATE", planEndDate);
+		this.planEndDate = planEndDate;
 	}
 	public String getDescp() {
 		return descp;
 	}
 	public void setDescp(String descp) {
-		if(this.checkValue("DESCP",this.descp,descp)){this.descp = descp;}
+		changeFields.put("DESCP", descp);
+		this.descp = descp;
 	}
 	//***************zl 2016.11.03*****************
 	//新增质检子任务字段
@@ -209,7 +231,8 @@ public class Subtask extends BaseObj  implements Serializable{
 	}
 
 	public void setQualitySubtaskId(Integer qualitySubtaskId) {
-		if(this.checkValue("QUALITY_SUBTASK_ID",this.qualitySubtaskId,qualitySubtaskId)){this.qualitySubtaskId = qualitySubtaskId;}
+		changeFields.put("QUALITY_SUBTASK_ID", qualitySubtaskId);
+		this.qualitySubtaskId = qualitySubtaskId;
 	}
 	//是否是质检子任务
 	public Integer getIsQuality() {
@@ -217,7 +240,8 @@ public class Subtask extends BaseObj  implements Serializable{
 	}
 
 	public void setIsQuality(Integer isQuality) {
-		if(this.checkValue("IS_QUALITY",this.isQuality,isQuality)){this.isQuality = isQuality;}
+		changeFields.put("IS_QUALITY", isQuality);
+		this.isQuality = isQuality;
 	}
 	//增质检子任务执行人字段(只在实体中使用,数据库表中无此字段)
 	public Integer getQualityExeUserId() {
@@ -545,19 +569,22 @@ public class Subtask extends BaseObj  implements Serializable{
 		return referId;
 	}
 	public void setReferId(int referId) {
-		if(this.checkValue("REFER_ID",this.referId,referId)){this.referId = referId;}
+		changeFields.put("REFER_ID", referId);
+		this.referId = referId;
 	}
 	public int getWorkKind() {
 		return workKind;
 	}
 	public void setWorkKind(int workKind) {
-		if(this.checkValue("WORK_KIND",this.workKind,workKind)){this.workKind = workKind;}
+		changeFields.put("WORK_KIND", workKind);
+		this.workKind = workKind;
 	}
 	
 	public int getQualityMethod() {
 		return qualityMethod;
 	}
 	public void setQualityMethod(int qualityMethod) {
-		if(this.checkValue("QUALITY_METHOD",this.qualityMethod,qualityMethod)){this.qualityMethod = qualityMethod;}
+		changeFields.put("QUALITY_METHOD", qualityMethod);
+		this.qualityMethod = qualityMethod;
 	}
 }

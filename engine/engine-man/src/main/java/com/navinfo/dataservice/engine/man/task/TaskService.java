@@ -63,6 +63,7 @@ import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -3915,6 +3916,8 @@ public class TaskService {
 				//这里在更新一下对应在重要一览表中存在的数据类型
 				updateIsImportant(poi, taskId, dailyConn);
 			}
+			log.info("DATA_PLAN收集统计信息");
+			DataBaseUtils.gatherStats(dailyConn, "DATA_PLAN");
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
@@ -4232,16 +4235,19 @@ public class TaskService {
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
-					int minCount = condition.getInt("poiMultiMinCount");
-					int maxCount = condition.getInt("poiMultiMaxCount");
-					//元数据库中的pid，也需要更新到data_plan表中
-					List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
 					//把不满足条件的数据状态更新为不需要作业
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
 					//日库中的dataPlan更新数据
 					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
-					//更新从元数据库中获取的pid到dataPlan表中
-					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
+					
+					if(dataType == 1 || dataType == 3){
+						int minCount = condition.getInt("poiMultiMinCount");
+						int maxCount = condition.getInt("poiMultiMaxCount");
+						//元数据库中的pid，也需要更新到data_plan表中
+						List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
+						//更新从元数据库中获取的pid到dataPlan表中
+						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
+					}
 					//保存到taskPrograss表
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
@@ -4355,6 +4361,9 @@ public class TaskService {
 					if(level.length() > 0){
 						levels = level.deleteCharAt(level.length() - 1).toString();
 					}
+					if(poiLevel.size() == 0 || StringUtils.isBlank(levels)){
+						levels = "''";
+					}
 					
 				}
 				//dateType = 2或者 3 时进行道路数据处理
@@ -4364,14 +4373,24 @@ public class TaskService {
 					for(int i = 0 ; i < roadKind.size(); i++){
 						kinds.append(roadKind.get(i) + ",");
 					}
-					roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					if(kinds.length() > 1){
+						roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					}
+					if(roadKind.size() == 0 || StringUtils.isBlank(roadKinds)){
+						roadKinds = "''";
+					}
 					
 					JSONArray roadFC = condition.getJSONArray("roadFC");
 					StringBuffer FCs = new StringBuffer();
 					for(int i = 0 ; i < roadFC.size(); i++){
 						FCs.append(roadFC.get(i) + ",");
 					}
-					roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					if(FCs.length() > 0){
+						roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					}
+					if(roadFC.size() == 0 || StringUtils.isBlank(roadFCs)){
+						roadFCs = "''";
+					}
 				}
 
 				result.put("roadKinds",roadKinds);
@@ -4399,20 +4418,24 @@ public class TaskService {
 				TaskProgress bean = new TaskProgress();
 				int taskId = dataJson.getInt("taskId");
 				String parameter = dataJson.getJSONObject("condition").toString();
+				int dataType = dataJson.getInt("dataType");
 				
 				int phaseId = 0;
 				bean.setTaskId(taskId);
 				bean.setOperator(userId);
-				bean.setParameter(parameter);
 				bean.setPhase(2);
 				bean.setStatus(0);
 				if(taskPrograss == null){
+					bean.setParameter(parameter);
 					phaseId = TaskProgressOperation.getNewPhaseId(conn);
 					bean.setPhaseId(phaseId);
 					Timestamp time = new Timestamp(System.currentTimeMillis()); 
 					bean.setCreatDate(time);
 					TaskProgressOperation.create(conn, bean);
 				}else{
+					//这里针对poi和道路需要只处理对应的数据，未选中的数据保持原有内容不变
+					String taskParameter = convertParameter(taskPrograss.getParameter(), parameter, dataType);
+					bean.setParameter(taskParameter);
 					phaseId = taskPrograss.getPhaseId();
 					bean.setPhaseId(phaseId);
 					TaskProgressOperation.updateTaskProgress(conn, bean);
@@ -4423,6 +4446,39 @@ public class TaskService {
 			}
 		}
 		
+		/**
+		 * 处理要保存到task_prograss表内的parameter数据
+		 * 根据操作类型增量更新parameter中的内容
+		 * @param String原来表中存储的parameter
+		 * @param 上传的parameter
+		 * @param int 要修改的数据类型
+		 * @return String 处理后的parameter
+		 * 
+		 * */
+		public String convertParameter(String parameter, String json, int dateType){
+			//原数据库存的parameter
+			JSONObject jsonParameter = JSONObject.fromObject(parameter);
+			//新上传的parameter的conditon内容
+			JSONObject condition = JSONObject.fromObject(json);
+			
+			if(dateType == 1 || dateType == 3){
+				String poiLevel = condition.getJSONArray("poiLevel").toString();
+				String poiKind = condition.getJSONArray("poiKind").toString();
+				String poiMultiMinCount = condition.getString("poiMultiMinCount");
+				String poiMultiMaxCount = condition.getString("poiMultiMaxCount");
+				jsonParameter.put("poiLevel", poiLevel);
+				jsonParameter.put("poiKind", poiKind);
+				jsonParameter.put("poiMultiMinCount", poiMultiMinCount);
+				jsonParameter.put("poiMultiMaxCount", poiMultiMaxCount);
+			}
+			if(dateType == 2 || dateType == 3){
+				String roadKind = condition.getJSONArray("roadKind").toString();
+				String roadFC = condition.getJSONArray("roadFC").toString();
+				jsonParameter.put("roadKind", roadKind);
+				jsonParameter.put("roadFC", roadFC);
+			}
+			return jsonParameter.toString();
+		}
 		/**
 		 * 条件规划：更新不满足条件规划的数据状态为不需要作业
 		 * @param Connection
@@ -4529,7 +4585,7 @@ public class TaskService {
 					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
 				}
 				
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+")";
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
 				run.execute(conn, sql);
 			}catch(Exception e){

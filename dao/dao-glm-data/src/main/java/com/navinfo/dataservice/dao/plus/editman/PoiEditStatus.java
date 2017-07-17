@@ -417,7 +417,7 @@ public class PoiEditStatus {
 			Clob clobPids = conn.createClob();
 			clobPids.setString(1, StringUtils.join(fids, ","));
 			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
-			
+			logger.info("poiUnderSubtask sql:" + sb.toString());
 			Object[] pra = new Object[3];
 			pra[0] = clobSubtaskIds;
 			pra[1] = clobSubtaskIds;
@@ -441,7 +441,7 @@ public class PoiEditStatus {
 			};
 			
 			QueryRunner run = new QueryRunner();
-			logger.info("poiUnderSubtask sql:" + sb.toString());
+			
 			return run.query(conn,sb.toString(),pra,rsHandler);
 			
 		}catch(Exception e){

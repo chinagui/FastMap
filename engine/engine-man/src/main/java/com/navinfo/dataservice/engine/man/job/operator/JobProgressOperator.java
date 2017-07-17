@@ -85,8 +85,8 @@ public class JobProgressOperator {
         QueryRunner run = new QueryRunner();
         String sql;
         if (jobProgress.getStatus().equals(JobProgressStatus.RUNNING)) {
-            sql = "update job_progress set status=?,start_date=SYSDATE where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
+            sql = "update job_progress set status=?,start_date=SYSDATE,message=? where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
         } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
@@ -102,7 +102,7 @@ public class JobProgressOperator {
         run.update(conn, sql, status.value(), outParameter, phaseId);
     }
 
-    public JobMessage getJobMessage(long phaseId) throws SQLException{
+    public JobMessage getJobMessage(long phaseId) throws SQLException {
         QueryRunner run = new QueryRunner();
         String sql = "SELECT J.OPERATOR,JP.PHASE,JP.STATUS,JR.ITEM_ID,JR.ITEM_TYPE,(SELECT COUNT(1) FROM JOB_PROGRESS JP2 WHERE JP2.JOB_ID=JP.JOB_ID ) TOTAL FROM JOB_PROGRESS JP, JOB_RELATION JR, JOB J WHERE J.JOB_ID=JP.JOB_ID AND JP.JOB_ID=JR.JOB_ID AND JP.PHASE_ID=?";
 
@@ -125,12 +125,12 @@ public class JobProgressOperator {
                     jobMessage.setOperator(operator);
                     jobMessage.setJobStatus(JobStatus.RUNNING.value());
 
-                    if(status == JobProgressStatus.FAILURE.value()){
+                    if (status == JobProgressStatus.FAILURE.value()) {
                         jobMessage.setJobStatus(JobStatus.FAILURE.value());
-                    }else if(status == JobProgressStatus.NODATA.value()){
+                    } else if (status == JobProgressStatus.NODATA.value()) {
                         jobMessage.setJobStatus(JobStatus.SUCCESS.value());
-                    }else if(status == JobProgressStatus.SUCCESS.value()){
-                        if(total == phase){
+                    } else if (status == JobProgressStatus.SUCCESS.value()) {
+                        if (total == phase) {
                             jobMessage.setJobStatus(JobStatus.SUCCESS.value());
                         }
                     }

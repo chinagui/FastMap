@@ -2604,9 +2604,10 @@ public class ProgramService {
 			
 			StringBuffer sb = new StringBuffer();
 			//未规划草稿状态
-			sb.append("select distinct p.name, t.program_id from PROGRAM p, TASK t where t.data_plan_status = 0 and t.status = 2 ");
+			sb.append("select distinct p.name, t.program_id,r.daily_db_id from PROGRAM p, TASK t,region r where t.data_plan_status = 0 and t.status = 2 ");
 			//中线采集任务
 			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and r.region_id = t.region_id ");
 			sb.append("and t.program_id = p.program_id");
 			if(json.containsKey("name") && json.getString("name").length() > 0){
 				String name = json.getString("name");
@@ -2621,6 +2622,7 @@ public class ProgramService {
 					Map<String, Object> map = new HashMap<>();
 					map.put("programId", rs.getInt("program_id"));
 					map.put("name", rs.getString("name"));
+					map.put("dbId",rs.getInt("daily_db_id"));
 					result.add(map);
 				}
 				return result;
@@ -2648,8 +2650,8 @@ public class ProgramService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT DISTINCT P.PROGRAM_ID,P.NAME FROM PROGRAM P, TASK T, SUBTASK S");
-			sb.append(" WHERE P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
+			sb.append("SELECT DISTINCT R.DAILY_DB_ID, P.PROGRAM_ID,P.NAME FROM REGION R, PROGRAM P, TASK T, SUBTASK S");
+			sb.append(" WHERE t.REGION_ID = R.REGION_ID AND P.TYPE = 1 AND P.PROGRAM_ID = T.PROGRAM_ID  AND T.TASK_ID = S.TASK_ID");
 			sb.append(" AND T.TYPE = 0 AND T.DATA_PLAN_STATUS = 1 AND S.STATUS IN (1, 2) AND S.IS_QUALITY = 1 ");
 			sb.append(" AND S.REFER_ID != 0 AND S.QUALITY_PLAN_STATUS = 0 ");
 			
@@ -2662,8 +2664,9 @@ public class ProgramService {
 					JSONArray jsonArray = new JSONArray();
 					while (rs.next()) {
 						JSONObject jo = new JSONObject();
-						jo.put("programId", rs.getInt(1));
-						jo.put("name", rs.getString(2));
+						jo.put("programId", rs.getInt("PROGRAM_ID"));
+						jo.put("name", rs.getString("NAME"));
+						jo.put("dbId", rs.getString("DAILY_DB_ID"));
 						jsonArray.add(jo);
 					}
 					jsonObject.put("result", jsonArray);
@@ -2688,8 +2691,8 @@ public class ProgramService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT DISTINCT P.PROGRAM_ID, P.NAME FROM TASK T, PROGRAM P ");
-			sb.append("WHERE T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
+			sb.append("SELECT DISTINCT R.DAILY_DB_ID, P.PROGRAM_ID, P.NAME FROM REGION R, TASK T, PROGRAM P ");
+			sb.append("WHERE t.REGION_ID = R.REGION_ID AND T.PROGRAM_ID = P.PROGRAM_ID AND P.TYPE = 1 AND T.TYPE = 0 ");
 			sb.append("AND T.STATUS IN (1, 2) AND T.DATA_PLAN_STATUS = 1");
 			
 			String selectSql= sb.toString();
@@ -2701,8 +2704,9 @@ public class ProgramService {
 					JSONArray jsonArray = new JSONArray();
 					while(rs.next()){
 						JSONObject jo = new JSONObject();
-						jo.put("programId", rs.getInt(1));
-						jo.put("name", rs.getString(2));
+						jo.put("programId", rs.getInt("PROGRAM_ID"));
+						jo.put("name", rs.getString("NAME"));
+						jo.put("dbId", rs.getInt("DAILY_DB_ID"));
 						jsonArray.add(jo);
 					}
 					jsonObject.put("result", jsonArray);

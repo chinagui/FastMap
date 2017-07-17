@@ -1071,20 +1071,32 @@ public class GeoTranslator {
 				continue;
 			}
 			//不是第一个点，判断交点是否在两点中间
-			if(isIntersection(coorBefore, linePoint, coord1)){
+			if(isIntersection(coorBefore, linePoint, coord1)&&!isIntersection(coorBefore, coord1, coord2)){
 				tmpLine.add(coord1);
 				subLines.add(GeoTranslator.createLineString(tmpLine));
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord1);
+				if(isIntersection(coord1, linePoint, coord2)){
+					tmpLine.add(coord2);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+					tmpLine.add(coord2);
+				}
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;
 			}
-			if(isIntersection(coorBefore, linePoint, coord2)){
+			if(isIntersection(coorBefore, linePoint, coord2)&&!isIntersection(coorBefore, coord2, coord1)){
 				tmpLine.add(coord2);
 				subLines.add(GeoTranslator.createLineString(tmpLine));
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord2);
+				if(isIntersection(coord2, linePoint, coord1)){
+					tmpLine.add(coord1);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+					tmpLine.add(coord1);
+				}
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;

@@ -145,7 +145,7 @@ public class PoiQuality {
         	
         	conn = DBConnector.getInstance().getManConnection();
         	
-        	String sql="UPDATE SUBTASK_QUALITY SET DB_STAT = '1' WHERE QUALITY_ID = "+qualityId;
+        	String sql="UPDATE SUBTASK_QUALITY SET POI_DB_STAT = 1 WHERE QUALITY_ID = "+qualityId;
 
             pstmt = conn.prepareStatement(sql);
 
@@ -175,7 +175,7 @@ public class PoiQuality {
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT ST.SUBTASK_ID,R.DAILY_DB_ID,sq.geometry,sq.quality_id FROM SUBTASK ST,TASK T,REGION R,subtask_quality sq ");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID AND T.REGION_ID = R.REGION_ID AND sq.subtask_id = st.subtask_id ");
-			sb.append(" AND st.quality_plan_status = 1 AND st.is_quality = 1 AND sq.db_stat = 0");
+			sb.append(" AND st.quality_plan_status = 1 AND st.is_quality = 1 AND sq.poi_db_stat = 0");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 			rs = pstmt.executeQuery();

@@ -86,7 +86,7 @@ public class JobProgressOperator {
         String sql;
         if (jobProgress.getStatus().equals(JobProgressStatus.RUNNING)) {
             sql = "update job_progress set status=?,start_date=SYSDATE,message=? where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId(), jobProgress.getMessage());
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
         } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());

@@ -4379,7 +4379,12 @@ public class TaskService {
 					for(int i = 0 ; i < roadFC.size(); i++){
 						FCs.append(roadFC.get(i) + ",");
 					}
-					roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					if(FCs.length() > 0){
+						roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					}
+					if(roadFC.size() == 0 || StringUtils.isBlank(roadFCs)){
+						roadFCs = "''";
+					}
 				}
 
 				result.put("roadKinds",roadKinds);

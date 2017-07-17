@@ -118,10 +118,11 @@ public class CreateCMSTaskPhase extends JobPhase {
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
+            log.error(ExceptionUtils.getStackTrace(ex));
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
-                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
+                jobProgress.setOutParameter(ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

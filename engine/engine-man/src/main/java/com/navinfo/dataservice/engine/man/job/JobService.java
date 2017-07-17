@@ -27,7 +27,7 @@ public class JobService {
     }
 
     public static JobService getInstance() {
-        return JobService.SingletonHolder.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     /**
@@ -42,6 +42,9 @@ public class JobService {
      */
     public long tips2Mark(long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
         try {
+            if(itemType == ItemType.LOT){
+                throw new Exception("不支持的对象类型 "+itemType);
+            }
             Tips2MarkJobRunner runner = new Tips2MarkJobRunner();
             return runner.run(itemId, itemType, isContinue, operator, parameter);
         } catch (Exception e) {
@@ -62,6 +65,9 @@ public class JobService {
      */
     public long day2month(long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
         try {
+            if(itemType != ItemType.LOT && itemType != ItemType.PROJECT){
+                throw new Exception("不支持的对象类型 "+itemType);
+            }
             Day2MonthJobRunner runner = new Day2MonthJobRunner();
             return runner.run(itemId, itemType, isContinue, operator, parameter);
         } catch (Exception e) {
@@ -133,10 +139,13 @@ public class JobService {
                     case TiPS2MARK:
                         runner = new Tips2MarkJobRunner();
                         break;
+                    case DAY2MONTH:
+                        runner = new Day2MonthJobRunner();
+                        break;
                 }
 
                 if (runner == null) {
-                    throw new Exception("不支持的任务类型：jobid" + job.getJobId() + ",type" + job.getType().value());
+                    throw new Exception("不支持的任务类型：jobid " + job.getJobId() + ",type " + job.getType().value());
                 }
                 runner.resume(job);
             }

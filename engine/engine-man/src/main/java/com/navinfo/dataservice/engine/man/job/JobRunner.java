@@ -140,6 +140,14 @@ public abstract class JobRunner {
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+                //如果第一步的状态是无数据，不需要执行第二步,创建CMS任务
+                break;
+            }
+
+            //如果按批次日落月，不需要执行第二步，关闸
+            if(job.getType()==JobType.DAY2MONTH &&
+                    jobRelation.getItemType()==ItemType.LOT &&
+                    phase.jobProgress.getPhase()==2){
                 break;
             }
 

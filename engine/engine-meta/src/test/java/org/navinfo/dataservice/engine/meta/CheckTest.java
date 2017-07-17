@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
+import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
@@ -127,6 +128,17 @@ public class CheckTest {
 			System.out.println(scPointKindNew5List.toString());
 			System.out.println(chainNameMap.toString());
 			System.out.println(foodtypeNameMap.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test08() {
+		try {
+			Map<String, Map<String, String>> data = ScPointAdminarea.getInstance().scPointAdminareaByAdminId();
+			System.out.println(data.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();

@@ -457,9 +457,9 @@ public class SelectorTest {
 	public void test16(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(13);
 			Set<Long> pids = new HashSet<Long>();
-			pids.add(204000038L);
+			pids.add(5792054L);
 //			pids.add(292L);
 //			pids.add(364L);
 //			pids.add(1023L);

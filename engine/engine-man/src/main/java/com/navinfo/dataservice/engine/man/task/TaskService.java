@@ -4355,6 +4355,9 @@ public class TaskService {
 					if(level.length() > 0){
 						levels = level.deleteCharAt(level.length() - 1).toString();
 					}
+					if(poiLevel.size() == 0 || StringUtils.isBlank(levels)){
+						levels = "''";
+					}
 					
 				}
 				//dateType = 2或者 3 时进行道路数据处理
@@ -4364,14 +4367,24 @@ public class TaskService {
 					for(int i = 0 ; i < roadKind.size(); i++){
 						kinds.append(roadKind.get(i) + ",");
 					}
-					roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					if(kinds.length() > 1){
+						roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					}
+					if(roadKind.size() == 0 || StringUtils.isBlank(roadKinds)){
+						roadKinds = "''";
+					}
 					
 					JSONArray roadFC = condition.getJSONArray("roadFC");
 					StringBuffer FCs = new StringBuffer();
 					for(int i = 0 ; i < roadFC.size(); i++){
 						FCs.append(roadFC.get(i) + ",");
 					}
-					roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					if(FCs.length() > 0){
+						roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					}
+					if(roadFC.size() == 0 || StringUtils.isBlank(roadFCs)){
+						roadFCs = "''";
+					}
 				}
 
 				result.put("roadKinds",roadKinds);
@@ -4475,7 +4488,7 @@ public class TaskService {
 					StringBuffer poiSb = new StringBuffer();
 					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
 					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
-					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ('"+levels+"') ");
+					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}

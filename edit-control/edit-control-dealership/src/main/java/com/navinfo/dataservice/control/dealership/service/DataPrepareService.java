@@ -1180,9 +1180,13 @@ public class DataPrepareService {
 			sb.append("        S.POST_CODE OLD_POST_CODE,                       ");
 			sb.append("        S.NAME_ENG OLD_NAME_ENG,                         ");
 			sb.append("        S.ADDRESS_ENG OLD_ADDRESS_ENG                    ");
-			sb.append("   FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S   ");
-			sb.append("  WHERE R.SOURCE_ID = S.SOURCE_ID                        ");
-			sb.append("    AND R.CHAIN = '" + chainCode + "'");
+//			sb.append("   FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S   ");
+//			sb.append("  WHERE R.SOURCE_ID = S.SOURCE_ID                        ");
+//			sb.append("    AND R.CHAIN = '" + chainCode + "'");
+			//代码修改：数据导出，导出数据量同界面显示数据量不一致（7102）
+			sb.append("   FROM IX_DEALERSHIP_RESULT R LEFT JOIN IX_DEALERSHIP_SOURCE S   ");
+			sb.append("  ON R.SOURCE_ID = S.SOURCE_ID                        ");
+			sb.append("    WHERE R.CHAIN = '" + chainCode + "'");
 			
 			log.info("searchDbDiff sql: "+sb.toString());
 			ResultSetHandler<List<ExpDbDiffResult>> rs = new ResultSetHandler<List<ExpDbDiffResult>>() {

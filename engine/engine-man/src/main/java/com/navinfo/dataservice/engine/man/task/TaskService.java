@@ -4367,7 +4367,12 @@ public class TaskService {
 					for(int i = 0 ; i < roadKind.size(); i++){
 						kinds.append(roadKind.get(i) + ",");
 					}
-					roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					if(kinds.length() > 1){
+						roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					}
+					if(roadKind.size() == 0 || StringUtils.isBlank(roadKinds)){
+						roadKinds = "''";
+					}
 					
 					JSONArray roadFC = condition.getJSONArray("roadFC");
 					StringBuffer FCs = new StringBuffer();

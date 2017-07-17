@@ -50,7 +50,7 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		String parameter ="{\"id1\":99,\"lineWkt\":\"LINESTRING(116.62673950195314 39.824094732204195,116.60785675048828 39.687110247162934)\"}"; 
+		String parameter ="{\"id1\":143,\"lineWkt\":\"LINESTRING(116.53369903564453 39.90980207146212,116.52820587158203 39.90822196779971,116.53172492980957 39.90624678696849)\"}"; 
 		//String parameter ="{\"id1\":88,\"id2\":89}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -60,7 +60,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=135;
+		int taskId=2368;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}
@@ -127,7 +127,7 @@ public class SubtaskTest extends InitApplication{
 		}
 		if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
 			//dataJson.put("exeUserId", (int)tokenObj.getUserId());
-			dataJson.put("exeUserId", 1664);
+			dataJson.put("exeUserId", 1674);
 		}
         Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
         System.out.print(page.getResult());			

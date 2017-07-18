@@ -799,34 +799,34 @@ public class DataPrepareService {
 			DbUtils.closeQuietly(dealershipConn);
 		}
 		
-		for (Map<String, Object> map : list) {
-			String province = map.get("province").toString();
-			String city = map.get("city").toString();
-			String project = map.get("project").toString();
-			String kindCode = map.get("kindCode").toString();
-			String chain = map.get("chain").toString();
-			String name = map.get("name").toString();
-			String address = map.get("address").toString();
+		for (int i = 0; i < list.size(); i++) {
+			String province = list.get(i).get("province").toString();
+			String city = list.get(i).get("city").toString();
+			String project = list.get(i).get("project").toString();
+			String kindCode = list.get(i).get("kindCode").toString();
+			String chain = list.get(i).get("chain").toString();
+			String name = list.get(i).get("name").toString();
+			String address = list.get(i).get("address").toString();
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
-				throw new ServiceException("省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
+				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
 			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
-				throw new ServiceException("城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+				throw new ServiceException("第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
 			}
 			if(StringUtils.isEmpty(project)){
-				throw new ServiceException("项目为空");
+				throw new ServiceException("第" + (i+2) + "行中：项目为空");
 			}
 			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
-				throw new ServiceException("代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
+				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
 			}
 			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 0){
-				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是未开启");
+				throw new ServiceException("第" + (i+2) + "行中：代理店品牌为空或代理店品牌表中状态不是未开启");
 			}
 			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
-				throw new ServiceException("厂商提供名称为空或不是全角");
+				throw new ServiceException("第" + (i+2) +"行中：厂商提供名称为空或不是全角");
 			}
 			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
-				throw new ServiceException("厂商提供地址为空或不是全角");
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
 			}
 		}
 	}

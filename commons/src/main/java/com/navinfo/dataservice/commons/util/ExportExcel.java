@@ -27,10 +27,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellRangeAddress;
 import org.apache.poi.hssf.util.HSSFCellUtil;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.Region;
-import org.apache.poi.ss.util.RegionUtil;
   
 /** 
  * 利用开源组件POI3.0.2动态导出EXCEL文档 转载时请保留以下信息，注明出处！ 
@@ -42,6 +39,7 @@ import org.apache.poi.ss.util.RegionUtil;
  *            注意这里为了简单起见，boolean型的属性xxx的get器方式为getXxx(),而不是isXxx() 
  *            byte[]表jpg格式的图片数据 
  */  
+@SuppressWarnings("deprecation")
 public class ExportExcel<T>  
 {  
     public void exportExcel(Collection<T> dataset, OutputStream out)  

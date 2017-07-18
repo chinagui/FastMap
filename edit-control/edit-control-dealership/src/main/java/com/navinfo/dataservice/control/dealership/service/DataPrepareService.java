@@ -403,6 +403,10 @@ public class DataPrepareService {
 					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
 				}
 				resultObj = resultObjSet.get(resultId);
+				if(resultObj.getName()!=diffSub.getName()||resultObj.getAddress()!=diffSub.getAddress()){
+					log.info("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
+				}
 				resultMap.get("UPDATE").add(resultObj);
 			}else{
 				resultObj = new IxDealershipResult();

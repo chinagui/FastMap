@@ -1481,7 +1481,7 @@ public class SubtaskService {
 						int subtaskId=(int)tmp.get("subtaskId");
 						int isQuality=(int)tmp.get("isQuality");
 						if(isQuality==1&&commonMap.containsKey(subtaskId)){
-							String commonStatus = commonMap.get(subtaskId).get("STATUS");
+							String commonStatus = commonMap.get(subtaskId).get("status");
 							tmp.put("commonStatus", commonStatus);
 						}
 					}

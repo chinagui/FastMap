@@ -3293,7 +3293,7 @@ public class SubtaskOperation {
 					+ "   AND S.EXE_USER_ID = I.USER_ID"
 					+ "   AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
 					+ "   AND S.QUALITY_SUBTASK_ID = SQ.SUBTASK_ID"
-					+ "   AND SQ.SUBTASK_ID IN ("+qualitySets.toString().replace("[", "(").replace("]", ")")+")";
+					+ "   AND SQ.SUBTASK_ID IN "+qualitySets.toString().replace("[", "(").replace("]", ")");
 			log.info("getCommonSubtaskByQualitySubtask SQL："+selectSql);
 			
 

@@ -26,7 +26,6 @@ public class JobController extends BaseController {
     @RequestMapping(value = "/job/get")
     public ModelAndView getProgress(HttpServletRequest request) {
         try {
-
             JSONObject parameter = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
             if (parameter == null) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
@@ -41,7 +40,7 @@ public class JobController extends BaseController {
             JSONArray result = JobService.getInstance().getJobProgress(itemId, ItemType.valueOf(itemType), JobType.valueOf(jobType));
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
-            log.error("创建失败，原因：" + e.getMessage(), e);
+            log.error("查询进度失败，原因：" + e.getMessage(), e);
             return new ModelAndView("jsonView", exception(e));
         }
     }

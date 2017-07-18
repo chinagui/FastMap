@@ -766,20 +766,20 @@ public class DataPrepareService {
 		}
 		
 		for (Map<String, Object> map : list) {
-			String province = (String) map.get("province");
-			String city = (String) map.get("city");
-			String item = (String) map.get("project");
-			String kindCode = (String) map.get("kindCode");
-			String chain = (String) map.get("chain");
-			String title = (String) map.get("name");
-			String address = (String) map.get("address");
+			String province = map.get("province").toString();
+			String city = map.get("city").toString();
+			String project = map.get("project").toString();
+			String kindCode = map.get("kindCode").toString();
+			String chain = map.get("chain").toString();
+			String name = map.get("name").toString();
+			String address = map.get("address").toString();
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
 				throw new ServiceException("省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
 			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
 				throw new ServiceException("城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
 			}
-			if(StringUtils.isEmpty(item)){
+			if(StringUtils.isEmpty(project)){
 				throw new ServiceException("项目为空");
 			}
 			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
@@ -788,7 +788,7 @@ public class DataPrepareService {
 			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 0){
 				throw new ServiceException("代理店品牌为空或代理店品牌表中不是未开启");
 			}
-			if(StringUtils.isEmpty(title) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(title).equals(title)){
+			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
 				throw new ServiceException("厂商提供名称为空或不是全角");
 			}
 			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){

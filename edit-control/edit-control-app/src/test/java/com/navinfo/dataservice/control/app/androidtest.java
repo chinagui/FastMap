@@ -74,7 +74,7 @@ public class androidtest {
 		try {
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			operation.export2TxtBySubtaskId("f://poidownload", 572);
+			operation.export2TxtBySubtaskId("f://poidownload", 26);
 //			download.export(gridList, "f://poidownload", "poi.txt");
 		} catch (Exception e) {
 			e.printStackTrace();

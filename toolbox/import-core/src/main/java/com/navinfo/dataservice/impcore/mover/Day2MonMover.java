@@ -24,6 +24,10 @@ public class Day2MonMover extends DefaultLogMover {
 	public Day2MonMover(OracleSchema logSchema, OracleSchema tarSchema, String tempTable, String tempFailLogTable) {
 		super(logSchema, tarSchema, tempTable, tempFailLogTable);
 	}
+	public Day2MonMover(OracleSchema logSchema, OracleSchema tarSchema, String tempTable, String tempFailLogTable,Connection moveConn,boolean autoCommit) {
+		super(logSchema, tarSchema, tempTable, tempFailLogTable,moveConn,false);
+	}
+	
 
 	@Override
 	protected void doMove(Connection conn, LogMoveResult result) throws SQLException {

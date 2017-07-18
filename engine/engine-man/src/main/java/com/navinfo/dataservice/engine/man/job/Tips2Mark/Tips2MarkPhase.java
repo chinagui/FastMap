@@ -11,14 +11,16 @@ import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.
@@ -33,6 +35,7 @@ public class Tips2MarkPhase extends JobPhase {
 
     @Override
     public JobProgressStatus run() throws Exception {
+        log.info("Tips2MarkPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
         try {
@@ -47,34 +50,37 @@ public class Tips2MarkPhase extends JobPhase {
             int status = Integer.valueOf(cmsInfo.get("status").toString());
             int type = Integer.valueOf(cmsInfo.get("type").toString());
 
-            if(status!=0){
-                throw new Exception("未关闭的子任务/任务/项目不允许执行tips转mark");
-            }
-            String jobType="中线一体化作业";
+            String jobType = "中线一体化作业";
             String jobNature = "更新";
-            int taskType=1;
+            int taskType = 1;
             switch (jobRelation.getItemType()) {
                 case PROJECT:
                     jobType = "快线一体化作业";
                     jobNature = "快速更新";
                     taskType = 4;
-                    if(type!=4){
-                        throw new Exception("非快速更新项目不允许执行tips转mark");
+                    if (type != 4) {
+                        throw new Exception("非快速更新项目不能执行tips转mark");
                     }
                     break;
                 case SUBTASK:
                     taskType = 2;
-                    if(type!=0){
-                        throw new Exception("非采集子任务不允许执行tips转mark");
+                    if (type != 0) {
+                        throw new Exception("非采集子任务不能执行tips转mark");
+                    }
+                    if (status != 0) {
+                        throw new Exception("未关闭的子任务不能执行tips转mark");
                     }
                 case TASK:
-                    if(type!=0){
-                        throw new Exception("非采集任务不允许执行tips转mark");
+                    if (type != 0) {
+                        throw new Exception("非采集任务不能执行tips转mark");
+                    }
+                    if (status != 0) {
+                        throw new Exception("未关闭的任务不能执行tips转mark");
                     }
                     break;
             }
 
-            JSONObject parameter=new JSONObject();
+            JSONObject parameter = new JSONObject();
             parameter.put("gdbid", cmsInfo.get("dbId"));
             DatahubApi datahub = (DatahubApi) ApplicationContextUtil
                     .getBean("datahubApi");
@@ -82,16 +88,27 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("au_db_ip", auDb.getDbServer().getIp());
             parameter.put("au_db_username", auDb.getDbUserName());
             parameter.put("au_db_password", auDb.getDbUserPasswd());
-            parameter.put("au_db_sid",auDb.getDbServer().getServiceName());
-            parameter.put("au_db_port",auDb.getDbServer().getPort());
-            parameter.put("types","");
-            parameter.put("phaseId",jobProgress.getPhaseId());
-            if(jobRelation.getItemType()== ItemType.PROJECT) {
-                parameter.put("collectTaskIds", TaskService.getInstance().getCollectTaskIdsByTaskId((int) cmsInfo.get("cmsId")));
-            }else{
+            parameter.put("au_db_sid", auDb.getDbServer().getServiceName());
+            parameter.put("au_db_port", auDb.getDbServer().getPort());
+            parameter.put("types", "");
+            parameter.put("phaseId", jobProgress.getPhaseId());
+            if (jobRelation.getItemType() == ItemType.PROJECT) {
+                Set<Integer> taskIds = new HashSet<>();
+                Object tasks = cmsInfo.get("tasks");
+                if (tasks != null) {
+                    String[] split = tasks.toString().split(",");
+                    for (String task : split) {
+                        taskIds.add(Integer.valueOf(task));
+                    }
+                }
+                if (taskIds.size() == 0) {
+                    throw new Exception("快线项目没有关闭的采集任务，不能执行tips转mark");
+                }
+                parameter.put("collectTaskIds", taskIds);
+            } else {
                 parameter.put("collectTaskIds", new JSONArray());
             }
-            JSONObject taskPar=new JSONObject();
+            JSONObject taskPar = new JSONObject();
             taskPar.put("manager_id", cmsInfo.get("collectId"));
             taskPar.put("imp_task_name", cmsInfo.get("collectName"));
             taskPar.put("province", cmsInfo.get("provinceName"));
@@ -103,23 +120,24 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("task_type", taskType);
 
             parameter.put("taskInfo", taskPar);
-            log.info("tips2Aumark:"+parameter);
+            log.info("tips2mark fccApi:" + parameter);
 
             FccApi fccApi = (FccApi) ApplicationContextUtil
                     .getBean("fccApi");
             fccApi.tips2Aumark(parameter);
 
-//            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
-                jobProgress.setMessage(jobProgress.getMessage()+"error:"+ ex.getMessage());
+                jobProgress.setOutParameter(ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;
         } finally {
+            log.info("Tips2MarkPhase end:phaseId "+jobProgress.getPhaseId()+",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
     }

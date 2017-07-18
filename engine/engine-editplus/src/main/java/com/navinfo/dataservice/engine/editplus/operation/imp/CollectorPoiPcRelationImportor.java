@@ -72,7 +72,7 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 					pSet.add(fidPidMap.get(f));
 				}else{
 					log.info("poi(pid:"+en.getKey()+")的子(fid:"+f+")库中不存在");
-					errLogs.add(new ErrorLog("pid"+en.getKey(),"poi(pid:"+en.getKey()+")的子(fid:"+f+")库中不存在"));
+					errLogs.add(new ErrorLog("pid"+en.getKey(),0,"poi(pid:"+en.getKey()+")的子(fid:"+f+")库中不存在"));
 					break;
 				}
 			}
@@ -97,7 +97,7 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 			IxPoiObj poiObj = (IxPoiObj)pois.get(parentPid);
 			if(poiObj==null){
 				log.info("poi(pid:"+en.getKey()+"在库中不存在");
-				errLogs.add(new ErrorLog("pid"+en.getKey(),"poi在库中不存在"));
+				errLogs.add(new ErrorLog("pid"+en.getKey(),0,"poi在库中不存在"));
 				continue;
 			}
 			//先判断是否存在父子关系

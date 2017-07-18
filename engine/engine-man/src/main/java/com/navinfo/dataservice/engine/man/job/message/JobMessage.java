@@ -1,11 +1,6 @@
 package com.navinfo.dataservice.engine.man.job.message;
 
 
-import com.alibaba.fastjson.JSONObject;
-
-
-import java.io.IOException;
-
 /**
  * Created by wangshishuai3966 on 2017/7/13.
  */
@@ -17,6 +12,7 @@ public class JobMessage {
     private long itemId;
     private int itemType;
     private long operator;
+    private int jobType;
 
     public int getPhase() {
         return phase;
@@ -64,5 +60,13 @@ public class JobMessage {
 
     public void setOperator(long operator) {
         this.operator = operator;
+    }
+
+    public int getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(int jobType) {
+        this.jobType = jobType;
     }
 }

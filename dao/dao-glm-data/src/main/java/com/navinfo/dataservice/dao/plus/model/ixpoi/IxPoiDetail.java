@@ -22,6 +22,10 @@ public class IxPoiDetail extends BasicRow {
 	protected int paycard ;
 	protected String cardtype ;
 	protected int hospitalClass ;
+	//********2017.07.18********
+	protected int michelinStar ;
+	protected int establishment ;
+	protected int services ;
 	
 	public IxPoiDetail (long objPid){
 		super(objPid);
@@ -132,7 +136,31 @@ public class IxPoiDetail extends BasicRow {
 			this.hospitalClass = hospitalClass;
 		}
 	}
-	
+	//********2017.07.18********
+	public int getMichelinStar() {
+		return michelinStar;
+	}
+
+	public void setMichelinStar(int michelinStar) {
+		this.michelinStar = michelinStar;
+	}
+
+	public int getEstablishment() {
+		return establishment;
+	}
+
+	public void setEstablishment(int establishment) {
+		this.establishment = establishment;
+	}
+
+	public int getServices() {
+		return services;
+	}
+
+	public void setServices(int services) {
+		this.services = services;
+	}
+
 	@Override
 	public String tableName() {
 		return "IX_POI_DETAIL";
@@ -151,5 +179,9 @@ public class IxPoiDetail extends BasicRow {
 	public static final String PAYCARD = "PAYCARD";
 	public static final String CARDTYPE = "CARDTYPE";
 	public static final String HOSPITAL_CLASS = "HOSPITAL_CLASS";
+	//********2017.07.18**********
+	public static final String MICHELIN_STAR = "MICHELIN_STAR";
+	public static final String ESTABLISHMENT = "ESTABLISHMENT";
+	public static final String SERVICES = "SERVICES";
 
 }

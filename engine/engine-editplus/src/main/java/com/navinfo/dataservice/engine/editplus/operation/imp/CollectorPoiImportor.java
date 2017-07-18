@@ -163,7 +163,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 						poiObj = (IxPoiObj)objs.get(fid);
 						if(poiObj.opType().equals(OperationType.PRE_DELETED)){
 							log.info("fid:"+fid+"在库中已删除");
-							errLogs.add(new ErrorLog(fid,"poi在库中已删除"));
+							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
 							continue;
 						}else{
 							log.info("fid:"+fid+"在库中存在，作为修改处理");
@@ -198,7 +198,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 						sps.addUpdatePoiSp(entry.getValue().getString("fid"),sFid);
 					}
 				}catch(Exception e){
-					errLogs.add(new ErrorLog(fid,"未分类错误："+e.getMessage()));
+					errLogs.add(new ErrorLog(fid,0,"未分类错误："+e.getMessage()));
 					log.warn("fid（"+fid+"）入库发生错误："+e.getMessage());
 					log.warn(e.getMessage(),e);
 				}
@@ -230,14 +230,14 @@ public class CollectorPoiImportor extends AbstractOperation {
 					if(!keys.contains(fid)){
 						log.info("删除的poi在库中未找到。fid:"+fid);
 						//
-						errLogs.add(new ErrorLog(fid,"删除的poi在库中未找到"));
+						errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
 					}
 				}
 			}else{
 				log.info("删除的poi在库中均没找到。pids:"+StringUtils.join(deletePois.keySet(),","));
 				//err log
 				for(String fid:deletePois.keySet()){
-					errLogs.add(new ErrorLog(fid,"删除的poi在库中未找到"));
+					errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
 				}
 			}
 		}else{

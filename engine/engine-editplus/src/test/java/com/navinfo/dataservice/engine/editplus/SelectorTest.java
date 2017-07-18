@@ -474,4 +474,19 @@ public class SelectorTest {
 		}
 	}
 	
+	@Test
+	public void test17(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(13);
+			String kindCode = "230218";
+			List<Long> pids = IxPoiSelector.getPidsByKindCode(conn, kindCode);
+			System.out.println(pids.toString());
+			System.out.println(pids.size());
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
 }

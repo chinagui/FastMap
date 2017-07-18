@@ -24,13 +24,9 @@ import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.CellRangeAddress;
 import org.apache.poi.hssf.util.HSSFCellUtil;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.util.Region;
-import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.ss.util.CellRangeAddress;
   
 /** 
  * 利用开源组件POI3.0.2动态导出EXCEL文档 转载时请保留以下信息，注明出处！ 
@@ -42,6 +38,7 @@ import org.apache.poi.ss.util.RegionUtil;
  *            注意这里为了简单起见，boolean型的属性xxx的get器方式为getXxx(),而不是isXxx() 
  *            byte[]表jpg格式的图片数据 
  */  
+@SuppressWarnings("deprecation")
 public class ExportExcel<T>  
 {  
     public void exportExcel(Collection<T> dataset, OutputStream out)  
@@ -401,15 +398,6 @@ public class ExportExcel<T>
        
     }
     
-    public static void setRegionStyle(HSSFSheet sheet, Region region, HSSFCellStyle cs) {
-    	 for (int i = region.getRowFrom(); i <= region.getRowTo(); i++) {
-    	  HSSFRow row = HSSFCellUtil.getRow(i, sheet);
-    	  for (int j = region.getColumnFrom(); j <= region.getColumnTo(); j++) {
-    	   HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
-    	   cell.setCellStyle(cs);
-    	  }
-    	 }
-   }
     
     public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
 		 for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {

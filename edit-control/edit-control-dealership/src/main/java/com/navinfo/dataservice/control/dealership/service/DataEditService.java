@@ -507,7 +507,7 @@ public class DataEditService {
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
 						clearRelevancePoi(resultId, con);
-						//为了启动录入作业中赋值9单独写一个方法！！！！！！
+						//workflow_status=2需删除状态时，workflow_status赋值为9，deal_status赋值为3，change by jch 20170717
 						updateWorkFlowStatus(resultId, con);
 						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
@@ -1115,7 +1115,7 @@ public class DataEditService {
 	public void updateWorkFlowStatus(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.WORKFLOW_STATUS = 9 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.WORKFLOW_STATUS = 9,t.DEAL_STATUS=3 where t.RESULT_ID = "+ resultId;
 			log.info("清空关联poiSQL："+sql);
 			run.execute(con, sql);
 		}catch(Exception e){

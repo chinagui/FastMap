@@ -3138,8 +3138,7 @@ public class SubtaskService {
 					}
 				}else{
 					if(refers==null||refers.size()==0){throw new ServiceException("不规则面不存在，请重新选择:id="+id1);}
-					String msg=null; 
-					int referNum=0;
+					
 					//交点
 					Geometry interGeo=null;
 					List<Geometry> addGeo=null;
@@ -3181,7 +3180,6 @@ public class SubtaskService {
 							subtaskRelates.add(s);
 						}
 					}
-					referNum++;
 					addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
 					log.info("end 切割选定面");
 					
@@ -3266,10 +3264,6 @@ public class SubtaskService {
 				Geometry geo1 = refers.get(0).getGeometry();
 				Geometry geo2 = refers.get(1).getGeometry();
 				
-				Geometry geoLine1=GeoTranslator.createLineString(geo1.getCoordinates());
-				Geometry geoLine2=GeoTranslator.createLineString(geo2.getCoordinates());
-				Geometry midLine=geoLine1.intersection(geoLine2);
-				
 				Geometry unionGeo=geo1.union(geo2);
 				
 				if(!unionGeo.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
@@ -3286,6 +3280,17 @@ public class SubtaskService {
 				
 				for(Subtask s:subtaskRelates){
 					SubtaskOperation.updateSubtask(conn, s);
+				}
+				
+				//若合并后，该block下只有一个不规则圈，则直接将block的不规则圈赋值给该不规则圈
+				JSONObject conditionQuery3=new JSONObject();
+				conditionQuery3.put("blockId", task.getBlockId());
+				List<SubtaskRefer> refersAll = queryReferByTaskId(conn,conditionQuery3,true);
+				if(refersAll.size()==1){
+					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
+					SubtaskRefer oneRefer=refersAll.get(0);
+					oneRefer.setGeometry(block.getOriginGeo());
+					SubtaskReferOperation.updateGeo(conn, oneRefer);
 				}
 			}			
 		} catch (Exception e) {

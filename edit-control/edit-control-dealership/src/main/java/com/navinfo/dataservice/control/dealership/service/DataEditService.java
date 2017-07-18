@@ -1959,8 +1959,8 @@ public class DataEditService {
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
 					continue;
 				}
-				resultId = Integer.parseInt(map.get("number").toString());
-				resultIdList.add(resultId);
+//				resultId = Integer.parseInt(map.get("number").toString());
+//				resultIdList.add(resultId);
 				String history = map.get("history").toString();
 				addChainDataEntity.setResultId(resultId);
 				//新增
@@ -1986,6 +1986,12 @@ public class DataEditService {
 				
 				chainCodeList.add(chainCode);
 			}
+			HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+			Iterator<Integer> it = resultIds.iterator();
+			while (it.hasNext()){
+				resultIdList.add(it.next());
+			}
+			
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
 			if(chainCodeList.size() > 0){
@@ -2000,6 +2006,33 @@ public class DataEditService {
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询无序号数据当前事物插入的resultIds
+	 * @param Connection
+	 * @throws Exception 
+	 * 
+	 * */
+	public HashSet<Integer> queryResultIdsForNoNumber(Connection conn) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			String sql = "select RESULT_SEQ.currval as id from IX_DEALERSHIP_RESULT";
+			ResultSetHandler<HashSet<Integer>> rs = new ResultSetHandler<HashSet<Integer>>() {
+				@Override
+				public HashSet<Integer> handle(ResultSet rs) throws SQLException {
+					HashSet<Integer> hs = new HashSet<Integer>();
+					while(rs.next()){
+						hs.add(rs.getInt("id"));
+					}
+					return hs;
+				}
+			};
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
 		}
 	}
 	

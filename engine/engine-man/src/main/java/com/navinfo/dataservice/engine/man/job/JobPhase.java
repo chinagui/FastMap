@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.man.job;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 
@@ -9,7 +11,7 @@ import java.sql.Connection;
  * Created by wangshishuai3966 on 2017/7/6.
  */
 public abstract class JobPhase {
-
+    private static Logger log = LoggerRepos.getLogger(JobPhase.class);
     public JobProgress jobProgress;
     public Job job;
     public JobProgress lastJobProgress;
@@ -22,6 +24,7 @@ public abstract class JobPhase {
      * 2.如果是重新执行的任务，则读取库中已有的记录，如果状态为失败，更新状态为已创建
      */
     public void init(Connection conn, Job job, JobRelation jobRelation, JobProgress lastJobProgress, int phase, boolean isContinue) throws Exception {
+        log.info("JobPhase init start:jobId "+job.getJobId()+",phase "+phase);
         this.job = job;
         this.lastJobProgress = lastJobProgress;
         this.jobRelation = jobRelation;
@@ -45,6 +48,7 @@ public abstract class JobPhase {
             jobProgress.setPhase(phase);
             jobProgressOperator.insert(jobProgress);
         }
+        log.info("JobPhase init end:jobId "+job.getJobId()+",phase "+phase);
     }
 
     /**

@@ -108,7 +108,11 @@ public class DataConfirmController extends BaseController {
 			long userId = tokenObj.getUserId();
 			JSONObject obj = JSONObject.fromObject(request.getParameter("parameter"));
 			
-			String filePath = confirmService.expInfoFeedbackService(userId,obj,request);
+			String filePath = confirmService.expInfoFeedbackService(userId, obj, request);
+			if(filePath.contains("未查到符合条件的情报信息")){
+				return new ModelAndView("jsonView",fail(filePath));
+			}
+
 			return new ModelAndView("jsonView",success(filePath));
 		}
 		catch(Exception e){

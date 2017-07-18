@@ -1464,6 +1464,28 @@ public class SubtaskService {
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){
 				page = SubtaskOperation.getListByUserSnapshotPage(conn, dataJson,curPageNum,pageSize,platForm);
+				if(platForm==1){//编辑端子任务列表需要返回常规子任务状态，以控制抽取按钮
+					List<HashMap<Object,Object>> list=(List<HashMap<Object, Object>>) page.getResult();
+					if(list==null||list.size()==0){return page;}
+					Set<Integer> subtaskIds=new HashSet<Integer>();
+					for(HashMap<Object,Object> tmp:list){
+						int subtaskId=(int)tmp.get("subtaskId");
+						int isQuality=(int)tmp.get("isQuality");
+						if(isQuality==1){subtaskIds.add(subtaskId);}
+					}
+					if(subtaskIds==null||subtaskIds.size()==0){return page;}
+					Map<Integer, Map<String, String>> commonMap = SubtaskOperation.getCommonByQuality(conn, subtaskIds);
+					if(commonMap==null||commonMap.size()==0){return page;}
+					
+					for(HashMap<Object,Object> tmp:list){
+						int subtaskId=(int)tmp.get("subtaskId");
+						int isQuality=(int)tmp.get("isQuality");
+						if(isQuality==1&&commonMap.containsKey(subtaskId)){
+							String commonStatus = commonMap.get(subtaskId).get("STATUS");
+							tmp.put("commonStatus", commonStatus);
+						}
+					}
+				}
 			}else{
 				page = SubtaskOperation.getListByUserPage(conn, dataJson,curPageNum,pageSize,platForm);		
 				//返回质检圈
@@ -2973,50 +2995,11 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-	
-			String selectSql = "SELECT S.SUBTASK_ID,"
-					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
-					+ "       I.USER_REAL_NAME,"
-					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
-					+ "       G.GROUP_NAME,"
-					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
-					+ "       S.NAME           SUBTASK_NAME,"
-					+ "       T.NAME           TASK_NAME"
-					+ "  FROM TASK                     T,"
-					+ "       SUBTASK                  S,"
-					+ "       USER_GROUP               G,"
-					+ "       SUBTASK                  SQ,"
-					+ "       USER_INFO                I,"
-					+ "       FM_STAT_OVERVIEW_SUBTASK F"
-					+ " WHERE S.TASK_ID = T.TASK_ID"
-					+ "   AND T.GROUP_ID = G.GROUP_ID"
-					+ "   AND S.EXE_USER_ID = I.USER_ID"
-					+ "   AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
-					+ "   AND S.QUALITY_SUBTASK_ID = SQ.SUBTASK_ID"
-					+ "   AND SQ.SUBTASK_ID = "+qualitySubtaskId;
-			log.info("getCommonSubtaskByQualitySubtask SQL："+selectSql);
-			
-
-			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
-				public Map<String, String> handle(ResultSet rs) throws SQLException {
-					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-					if (rs.next()) {
-						Map<String, String> returnMap=new HashMap<String, String>();
-						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
-						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
-						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
-						returnMap.put("groupId", rs.getString("GROUP_ID"));
-						returnMap.put("groupName", rs.getString("GROUP_NAME"));
-						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
-						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
-						returnMap.put("taskName", rs.getString("TASK_NAME"));
-						return returnMap;
-					}
-					return null;
-				}	
-			};
-			return run.query(conn, selectSql,rsHandler);			
+			Set<Integer> qualitySets=new HashSet<Integer>();
+			qualitySets.add(qualitySubtaskId);
+			Map<Integer, Map<String, String>> map = SubtaskOperation.getCommonByQuality(conn, qualitySets);
+			if(map!=null&&map.size()>0){return map.get(qualitySubtaskId);}
+			return null;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -283,10 +284,12 @@ public class DataPrepareService {
 			Set<Integer> resultIdSet=new HashSet<Integer>();
 			Set<Integer> sourceIdSet=new HashSet<Integer>();
 			List<DiffTableExcel> excelSet=new ArrayList<DiffTableExcel>();
+			List<Integer> excelOldSourceIdList=new ArrayList<Integer>();
 			for(Map<String,Object> source:sourceMaps){
 				JSONObject json = JSONObject.fromObject(source);
 				DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
 				excelSet.add(diffSub);
+				excelOldSourceIdList.add(diffSub.getOldSourceId());
 				resultIdSet.add(diffSub.getResultId());
 				sourceIdSet.add(diffSub.getOldSourceId());
 				//导入时，判断导入文件中“代理店品牌”是否跟作业品牌一致，如果一致，则可以导入，否则不可以导入
@@ -296,8 +299,8 @@ public class DataPrepareService {
 			}
 				if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=2
 						&&diffSub.getDealSrcDiff()!=3&&diffSub.getDealSrcDiff()!=4){
-					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
-					throw new Exception("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
+					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内，uuid="+diffSub.getResultId());
+					throw new Exception("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内，uuid="+diffSub.getResultId());
 				}
 			}
 			//加载IX_DEALERSHIP_RESULT中的数据
@@ -305,7 +308,7 @@ public class DataPrepareService {
 			//Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
 			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
 			//根据导入原则，获取需要修改的数据
-			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet);
+			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet,excelOldSourceIdList);
 			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
 			deleteResult(conn,chainCode,resultIdSet);
 			//数据持久化到数据库
@@ -377,7 +380,7 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	private Map<String, Set<IxDealershipResult>> importMain(
-			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) throws Exception {
+			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet,List<Integer> excelOldSourceIdList) throws Exception {
 		log.info("start 表表差分修改result表记录");
 		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
 		resultMap.put("ADD", new HashSet<IxDealershipResult>());
@@ -390,6 +393,12 @@ public class DataPrepareService {
 			cpRegionMap.put(region.getProvince(), region.getRegionId());
 		}
 		
+		for(Entry<Integer, IxDealershipSource> entry : sourceObjSet.entrySet()) {  
+			if (!excelOldSourceIdList.contains(entry.getKey())){
+				log.info("全国一览表IX_DEALERSHIP_RESULT.SOURCE_ID在表表差分结果中“旧一览表ID”不存在：旧一览表ID="+entry.getKey());
+				throw new Exception("全国一览表IX_DEALERSHIP_RESULT.SOURCE_ID在表表差分结果中“旧一览表ID”不存在：旧一览表ID="+entry.getKey());
+			}		  
+		}  
 		for (DiffTableExcel diffSub:excelSet){
 			int resultId=diffSub.getResultId();
 			IxDealershipResult resultObj = null;
@@ -404,11 +413,36 @@ public class DataPrepareService {
 					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
 				}
 				resultObj = resultObjSet.get(resultId);
+				if(resultObj.getName()!=diffSub.getName()||resultObj.getAddress()!=diffSub.getAddress()){
+					log.info("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+					throw new Exception("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+				}
 				resultMap.get("UPDATE").add(resultObj);
 			}else{
 				resultObj = new IxDealershipResult();
 				//resultObj.setSourceId(oldSourceId);
 				resultMap.get("ADD").add(resultObj);
+			}
+			
+			if (diffSub.getName()!=null&&!"".equals(diffSub.getName())){
+				if(diffSub.getOldSourceId()!=0){
+					if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=4){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{1,4}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{1,4}:uuid="+resultId);
+					}
+				}else{
+					if(diffSub.getDealSrcDiff()!=3){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{3}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{3}:uuid="+resultId);
+					}
+				}
+			}else{
+				if(diffSub.getOldSourceId()!=0){
+					if(diffSub.getDealSrcDiff()!=2){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{2}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{2}:uuid="+resultId);
+					}
+				}
 			}
 			
 			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());

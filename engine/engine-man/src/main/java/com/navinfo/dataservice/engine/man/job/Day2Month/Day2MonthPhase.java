@@ -30,6 +30,7 @@ public class Day2MonthPhase extends JobPhase {
 
     @Override
     public JobProgressStatus run() throws Exception {
+        log.info("Day2MonthPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
         try {
@@ -52,7 +53,7 @@ public class Day2MonthPhase extends JobPhase {
             jobDataJson.put("taskInfo", Day2MonthUtils.getTaskInfo(conn, jobRelation.getItemId(), jobRelation.getItemType()));
             jobDataJson.put("lot", lot);
             jobDataJson.put("phaseId", jobProgress.getPhaseId());
-            log.info("day2MonSync:"+jobDataJson.toString());
+            log.info("phaseId:"+jobProgress.getPhaseId()+",day2MonSync:"+jobDataJson.toString());
             JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
             long jobId = jobApi.createJob("day2MonSync", jobDataJson, job.getOperator(), jobRelation.getItemId(), "日落月");
             jobProgress.setMessage("jobId:" + jobId);
@@ -60,7 +61,7 @@ public class Day2MonthPhase extends JobPhase {
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
-            log.error(ExceptionUtils.getStackTrace(ex));
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setOutParameter(ex.getMessage());
@@ -68,6 +69,7 @@ public class Day2MonthPhase extends JobPhase {
             }
             throw ex;
         } finally {
+            log.info("Day2MonthPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
     }

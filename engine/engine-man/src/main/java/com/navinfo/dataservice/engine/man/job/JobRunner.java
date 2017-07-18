@@ -56,7 +56,7 @@ public abstract class JobRunner {
      * 初始化Job，JobPhase
      */
     private void init(boolean isContinue) throws Exception {
-
+        log.info("job init start");
         JobOperator jobOperator = new JobOperator(conn);
         JobRelationOperator jobRelationOperator = new JobRelationOperator(conn);
         jobRelation = new JobRelation();
@@ -70,8 +70,20 @@ public abstract class JobRunner {
             throw new JobRunningException();
         }
 
-        if(job != null && job.getStatus() == JobStatus.SUCCESS && jobType == JobType.TiPS2MARK){
-           throw new Exception("Tips转mark不能重复执行!");
+        if(job != null){
+            if(job.getStatus() == JobStatus.SUCCESS) {
+                if (jobType == JobType.TiPS2MARK) {
+                    throw new Exception("Tips转mark不能重复执行!");
+                }
+
+                if (jobType == JobType.DAY2MONTH && itemType == ItemType.PROJECT) {
+                    throw new Exception("快线项目的日落月不能重复执行!");
+                }
+            }else if(job.getStatus() == JobStatus.FAILURE){
+                if(!isContinue){
+                    throw new Exception("有未执行完的任务，不能重新执行!");
+                }
+            }
         }
 
         if (isContinue) {
@@ -104,13 +116,14 @@ public abstract class JobRunner {
             phase.init(conn, job, jobRelation, lastProgress, index++, isContinue);
             lastJobPhase = phase;
         }
+        log.info("job init end: jobId "+job.getJobId());
     }
 
     /**
      * 加载job信息
      */
     private void loadPhases() throws Exception {
-
+        log.info("loadPhases start: jobId "+job.getJobId());
         int index = 1;
         JobPhase lastJobPhase = null;
 
@@ -125,6 +138,7 @@ public abstract class JobRunner {
             phase.init(conn, job, jobRelation, lastProgress, index++, true);
             lastJobPhase = phase;
         }
+        log.info("loadPhases end: jobId "+job.getJobId());
     }
 
     /**
@@ -133,6 +147,7 @@ public abstract class JobRunner {
      * @throws Exception
      */
     public void runPhases() throws Exception {
+        log.info("runPhases start: jobId "+job.getJobId());
         boolean finish = true;
         for (JobPhase phase : phaseList) {
             if (phase.jobProgress.getStatus() == JobProgressStatus.SUCCESS) {
@@ -140,11 +155,11 @@ public abstract class JobRunner {
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
-                //如果第一步的状态是无数据，不需要执行第二步,创建CMS任务
+                //如果第一步的状态是无数据，不需要执行创建CMS任务
                 break;
             }
 
-            //如果按批次日落月，不需要执行第二步，关闸
+            //如果按批次日落月，不需要执行关闸
             if(job.getType()==JobType.DAY2MONTH &&
                     jobRelation.getItemType()==ItemType.LOT &&
                     phase.jobProgress.getPhase()==2){
@@ -161,7 +176,7 @@ public abstract class JobRunner {
                     SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
                 }
             } catch (Exception ex) {
-                log.error("public_msg_error:" + ExceptionUtils.getStackTrace(ex));
+                log.error("runPhasesPublishMsgError:" + ExceptionUtils.getStackTrace(ex));
             }
 
             if (status == JobProgressStatus.FAILURE) {
@@ -186,6 +201,7 @@ public abstract class JobRunner {
             JobOperator jobOperator = new JobOperator(conn);
             jobOperator.updateStatusByJobId(job.getJobId(), job.getStatus());
         }
+        log.info("runPhases end: jobId "+job.getJobId());
     }
 
     /**
@@ -193,6 +209,7 @@ public abstract class JobRunner {
      */
     public long run(long itemId, ItemType itemType, boolean isContinue, long operator, String parameter) throws Exception {
         try {
+            log.info("run job start: itemId:"+itemId+",itemType:"+itemType+",isContinue:"+isContinue+",operator:"+operator+",parameter:"+parameter);
             conn = DBConnector.getInstance().getManConnection();
             this.itemId = itemId;
             this.itemType = itemType;
@@ -206,9 +223,10 @@ public abstract class JobRunner {
 
             runPhases();
 
+            log.info("run job end: jobId "+job.getJobId());
             return job.getJobId();
         } catch (Exception ex) {
-            log.error(ExceptionUtils.getStackTrace(ex));
+            log.error(ex.getMessage(), ex);
             DbUtils.rollbackAndCloseQuietly(conn);
             try {
                 if (job != null) {
@@ -216,7 +234,7 @@ public abstract class JobRunner {
                     jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.FAILURE);
                 }
             } catch (Exception e) {
-                log.error(ExceptionUtils.getStackTrace(e));
+                log.error(e.getMessage(), e);
                 DbUtils.rollbackAndCloseQuietly(conn);
             }
             throw ex;
@@ -230,6 +248,7 @@ public abstract class JobRunner {
      */
     public long resume(Job job) throws Exception {
         try {
+            log.info("resume job start:"+job.getJobId());
             this.job = job;
             conn = DBConnector.getInstance().getManConnection();
             this.prepare();
@@ -239,9 +258,10 @@ public abstract class JobRunner {
 
             runPhases();
 
+            log.info("resume job end:"+job.getJobId());
             return job.getJobId();
         } catch (Exception ex) {
-            log.error(ExceptionUtils.getStackTrace(ex));
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             try {
                 if (job != null) {
@@ -249,7 +269,7 @@ public abstract class JobRunner {
                     jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.FAILURE);
                 }
             } catch (Exception e) {
-                log.error(ExceptionUtils.getStackTrace(e));
+                log.error(e.getMessage(), e);
                 DbUtils.rollback(conn);
             }
             throw ex;

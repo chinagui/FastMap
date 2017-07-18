@@ -54,6 +54,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public static int COMMAND_UPADATE = 1;
     public static int PRE_TIPS_STAGE = 5;
     public static int TIP_STATUS_EDIT = 1;
+    public static int TIP_STATUS_INIT = 0;
     public static int TIP_STATUS_COMMIT = 2;
     public static int INFO_TIPS_STAGE = 6;
 	
@@ -109,7 +110,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             TipsTrack track = new TipsTrack();
             track.setT_lifecycle(t_lifecycle);
             track.setT_date(currentDate);
+            //20170718 预处理新增维护t_tipStatus=1，t_dEditStatus=0，
+            //t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
             track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
+            track.setT_dEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+            track.setT_mEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+            track.setT_dEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
+            track.setT_mEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
 //            track.addTrackInfo(PretreatmentTipsOperator.PRE_TIPS_STAGE, currentDate, user);
 
             JSONObject trackJson = JSONObject.fromObject(track);

@@ -20,7 +20,6 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
-import com.graphbuilder.geom.Geom;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -934,6 +933,46 @@ public class GeoTranslator {
 		
 
 		if (line.distance(point) < dPrecisionGeo) {
+			flag = true;
+		}
+
+		return flag;
+	}
+	
+	/**
+	 * 点p0是否在点p1和p2的线上
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersection(Coordinate p1, Coordinate p2,
+			Coordinate p0,double precisionGeo) throws Exception {
+
+		boolean flag = false;
+
+		Coordinate[] coordinates = new Coordinate[2];
+
+		coordinates[0] = p1;
+
+		coordinates[1] = p2;
+		
+		int num0=String.valueOf(1/precisionGeo).length()-1;
+
+		LineString line = (LineString) transform(
+				geoFactory.createLineString(coordinates), 100000, 5+num0);
+
+		Point point = (Point) transform(geoFactory.createPoint(p0), 100000, 5+num0);
+		System.out.println("point1:"+p1.toString());
+		System.out.println("point2:"+p2.toString());
+		System.out.println("point0:"+p0.toString());
+		System.out.println(line.distance(point));
+		if (line.distance(point) < precisionGeo) {
 			flag = true;
 		}
 

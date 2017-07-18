@@ -15,6 +15,8 @@ public class IxPoiPhoto extends BasicRow {
 	protected String status ;
 	protected String memo ;
 	protected int tag = 1;
+	//*******2017.07.18*******
+	protected int originPid;
 	
 	public IxPoiPhoto (long objPid){
 		super(objPid);
@@ -69,7 +71,15 @@ public class IxPoiPhoto extends BasicRow {
 			this.tag = tag;
 		}
 	}
-	
+	//*******2017.07.18*******
+	public int getOriginPid() {
+		return originPid;
+	}
+
+	public void setOriginPid(int originPid) {
+		this.originPid = originPid;
+	}
+
 	@Override
 	public String tableName() {
 		return "IX_POI_PHOTO";
@@ -81,5 +91,7 @@ public class IxPoiPhoto extends BasicRow {
 	public static final String STATUS = "STATUS";
 	public static final String MEMO = "MEMO";
 	public static final String TAG = "TAG";
+	//*******2017.07.18*******
+	public static final String ORIGIN_PID = "ORIGIN_PID";
 
 }

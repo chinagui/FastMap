@@ -35,6 +35,7 @@ public class CreateCMSTaskPhase extends JobPhase {
 
     @Override
     public JobProgressStatus run() throws Exception {
+        log.info("CreateCMSTaskPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
         try {
@@ -91,9 +92,10 @@ public class CreateCMSTaskPhase extends JobPhase {
             String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
             Map<String, String> parMap = new HashMap<>();
             parMap.put("parameter", parameter.toString());
-            log.info(parameter.toString());
+            log.info("phaseId:"+jobProgress.getPhaseId()+",cms param:"+parameter.toString());
             jobProgress.setMessage(parameter.toString());
             String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
+            log.info("phaseId:"+jobProgress.getPhaseId()+",cms result:"+result);
             //result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
             jobProgress.setOutParameter(result);
             JSONObject res = null;
@@ -109,16 +111,17 @@ public class CreateCMSTaskPhase extends JobPhase {
                 if (success) {
                     jobProgress.setStatus(JobProgressStatus.SUCCESS);
                 } else {
-                    log.error("cms error msg" + res.get("msg"));
+                    log.error("phaseId:"+jobProgress.getPhaseId()+",cms error msg:" + res.get("msg"));
                     jobProgress.setStatus(JobProgressStatus.FAILURE);
                     jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
+
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
-            log.error(ExceptionUtils.getStackTrace(ex));
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
@@ -127,6 +130,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             }
             throw ex;
         } finally {
+            log.info("CreateCMSTaskPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
     }

@@ -143,33 +143,36 @@ public class PoiDownloadOperation {
 		int taskId = 0;
 		int dbid = 0;
 		Map<String,Integer> map = seach.getRegionIdTaskIdBySubtaskId(subtaskId);
-		String fileName = map.get("regionId")+"_"+map.get("taskId")+"_"+subtaskId+".txt";
-		fileName = folderName + fileName;
-		logger.info("fileName : "+fileName);
-		if(map.containsKey("taskId")){taskId = map.get("taskId");}
-		if(map.containsKey("dayDbId")){dbid = map.get("dayDbId");}
-		
-		PrintWriter pw = new PrintWriter(fileName);
-		try {
-			if(taskId > 0 && dbid > 0){
-				
-			logger.info("starting load data...");
-			Set<Integer> data = new PoiGridIncreSearch().getPidsByTaskId(taskId,dbid);
-			logger.info("data total:"+data.size());
-			logger.info("begin write json to file");
-			for (int pid : data) {
-				JSONObject jo = new JSONObject();
-				jo.put("pid", pid);
-				pw.println(jo.toString());
-			}
-			}
-			logger.info("file write ok");
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			pw.close();
+		if(map != null && map.size() > 0 ){
+			String fileName = map.get("regionId")+"_"+map.get("taskId")+"_"+subtaskId+".txt";
+			fileName = folderName + fileName;
+			logger.info("fileName : "+fileName);
+			if(map.containsKey("taskId")){taskId = map.get("taskId");}
+			if(map.containsKey("dayDbId")){dbid = map.get("dayDbId");}
+			
+			PrintWriter pw = new PrintWriter(fileName);
+			try {
+				if(taskId > 0 && dbid > 0){
+					
+				logger.info("starting load data...");
+				Set<Integer> data = new PoiGridIncreSearch().getPidsByTaskId(taskId,dbid);
+				logger.info("data total:"+data.size());
+				logger.info("begin write json to file");
+				for (int pid : data) {
+					JSONObject jo = new JSONObject();
+					jo.put("pid", pid);
+					pw.println(jo.toString());
+				}
+				}
+				logger.info("file write ok");
+			} catch (Exception e) {
+				throw e;
+			} finally {
+				pw.close();
 
+			}
 		}
+		
 	}
 	
 	/**

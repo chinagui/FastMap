@@ -28,8 +28,10 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.navinfo.dataservice.engine.fcc.tips.TipsLineRelateQuery;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
@@ -57,12 +59,12 @@ public class SyncTips2Solr {
 	
 	private String index;
 	private String tableName;
-	private SolrController sc;
+	private SolrBulkUpdater sbu;
 	
 	public SyncTips2Solr(String tableName,String index){
 		this.tableName=tableName;
 		this.index=index;
-		sc=new SolrController();
+		sbu=new SolrBulkUpdater(TipsImportUtils.QueueSize, TipsImportUtils.ThreadCount);
 	}
 	
 	public void doSync()throws Exception{
@@ -81,13 +83,15 @@ public class SyncTips2Solr {
 		int num=0;
 		while ((results = rs.next(5000)).length > 0){
 			for (Result result : results){
-				sc.addTips(convert(result));
+				sbu.addTips(convert(result));
 				num++;
 				if(num%1000==0){
+					sbu.commit();
 					log.info("index:"+index+",num:"+num);
 				}
 			}
 		}
+		sbu.commit();
 		setTotal(index,num);
 		htab.close();
 	}
@@ -102,7 +106,7 @@ public class SyncTips2Solr {
 			//rowkey
 			json.put("id", Bytes.toString(result.getRow()));
 			
-			log.info("rowkey:"+Bytes.toString(result.getRow()));
+			//log.info("rowkey:"+Bytes.toString(result.getRow()));
 			
 			//显示坐标
 			String geoString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("geometry")));

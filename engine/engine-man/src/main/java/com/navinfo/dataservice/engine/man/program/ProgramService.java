@@ -2604,9 +2604,9 @@ public class ProgramService {
 			
 			StringBuffer sb = new StringBuffer();
 			//未规划草稿状态
-			sb.append("select distinct p.name, t.program_id,r.daily_db_id from PROGRAM p, TASK t,region r where t.data_plan_status = 0 and t.status = 2 ");
+			sb.append("select distinct p.name, t.program_id,r.daily_db_id from PROGRAM p, TASK t,region r where t.data_plan_status = 0 ");
 			//中线采集任务
-			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and p.type = 1 and t.type = 0 and t.work_kind like '%1|%'");
 			sb.append("and r.region_id = t.region_id ");
 			sb.append("and t.program_id = p.program_id");
 			if(json.containsKey("name") && json.getString("name").length() > 0){

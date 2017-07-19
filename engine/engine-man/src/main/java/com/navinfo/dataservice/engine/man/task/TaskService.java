@@ -384,7 +384,6 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
-			int erNum = 0;//二代任务数量
 			//List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
@@ -1240,7 +1239,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       T.DATA_PLAN_STATUS,");
+			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1284,7 +1283,7 @@ public class TaskService {
 			sb.append("	                          NULL          PLAN_END_DATE,");
 			sb.append("	                          NULL          ROAD_PLAN_TOTAL,");
 			sb.append("	                          NULL          POI_PLAN_TOTAL,");
-			sb.append("	                          NULL          DATA_PLAN_STATUS,");
+			//sb.append("	                          NULL          DATA_PLAN_STATUS,");
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
@@ -1317,7 +1316,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       T.DATA_PLAN_STATUS,");
+			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1448,7 +1447,7 @@ public class TaskService {
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
-						task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
+						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
@@ -2184,6 +2183,7 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.DATA_PLAN_STATUS,"
 					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
 					+ "       B.BLOCK_NAME,"
@@ -2239,6 +2239,7 @@ public class TaskService {
 						task.setMethod(rs.getString("METHOD"));
 						task.setAdminName(rs.getString("ADMIN_NAME"));	
 						task.setInforStage(rs.getInt("INFOR_STAGE"));
+						task.setDataPlanStatus(rs.getInt("DATA_PLAN_STATUS"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
@@ -2316,6 +2317,7 @@ public class TaskService {
 			map.put("version", task.getVersion());
 			map.put("method", task.getMethod());
 			map.put("adminName", task.getAdminName());
+			map.put("dataPlanStatus", task.getDataPlanStatus());
 			
 			return map;
 		}catch(Exception e){
@@ -3729,7 +3731,7 @@ public class TaskService {
 					+ "   AND t.STATUS = 2"
 					+ "   AND t.LATEST = 1"
 					+ "   AND t.GROUP_ID != 0"
-					+ "	  AND t.DATA_PLAN_STATUS <> 0"
+					//+ "	  AND t.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT t1.TASK_ID"
 					+ "  FROM TASK t1"
@@ -3739,7 +3741,7 @@ public class TaskService {
 					+ "   AND t1.LATEST = 1"
 					+ "   AND (t1.WORK_KIND LIKE '1|%' OR t1.WORK_KIND LIKE '0|1%')"
 					+ "   AND t1.GROUP_ID != 0"
-					+ "	  AND t1.DATA_PLAN_STATUS <> 0"
+					//+ "	  AND t1.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT t2.TASK_ID "
 					+ "  FROM TASK t2"
@@ -3748,8 +3750,8 @@ public class TaskService {
 					+ "   AND t2.STATUS = 2"
 					+ "   AND t2.LATEST = 1"
 					+ "   AND t2.WORK_KIND LIKE '0|0%'"
-					+ "   AND t2.GROUP_ID = 0"
-					+ "	  AND t2.DATA_PLAN_STATUS <> 0";
+					+ "   AND t2.GROUP_ID = 0";
+					//+ "	  AND t2.DATA_PLAN_STATUS <> 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
 				@Override
@@ -3786,12 +3788,11 @@ public class TaskService {
 			
 			String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from PROGRAM p, TASK t where p.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.status = 2 ");
+			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
-			sb.append("and p.type = 1 and t.type = 0 ");
-			sb.append("and t.program_id = p.program_id");
+			sb.append(" and t.type = 0 ");
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){
@@ -3898,10 +3899,10 @@ public class TaskService {
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
 			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
-			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
+			if(!wktMap.containsKey("originGeo") || StringUtils.isBlank(wktMap.get("originGeo").toString())){
 				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
 			}
-			String wktJson = wktMap.get("geometry").toString();
+			String wktJson = wktMap.get("originGeo").toString();
 			String wkt = Geojson.geojson2Wkt(wktJson);
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			

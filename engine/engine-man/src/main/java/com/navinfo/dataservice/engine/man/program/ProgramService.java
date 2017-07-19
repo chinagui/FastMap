@@ -1151,7 +1151,7 @@ public class ProgramService {
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "           AND T.LATEST = 1"
+					+ "           AND T.LATEST = 1 and t.type!=2"
 					+ "           AND T.STATUS !=0)"
 					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
 					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
@@ -1289,7 +1289,7 @@ public class ProgramService {
 					+ "   AND NOT EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "           AND T.LATEST = 1"
+					+ "           AND T.LATEST = 1 and t.type!=2"
 					+ "           AND T.STATUS != 0)),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
@@ -2604,9 +2604,9 @@ public class ProgramService {
 			
 			StringBuffer sb = new StringBuffer();
 			//未规划草稿状态
-			sb.append("select distinct p.name, t.program_id,r.daily_db_id from PROGRAM p, TASK t,region r where t.data_plan_status = 0 and t.status = 2 ");
+			sb.append("select distinct p.name, t.program_id,r.daily_db_id from PROGRAM p, TASK t,region r where t.data_plan_status = 0 ");
 			//中线采集任务
-			sb.append("and p.type = 1 and t.type = 0 ");
+			sb.append("and p.type = 1 and t.type = 0 and t.work_kind like '%1|%'");
 			sb.append("and r.region_id = t.region_id ");
 			sb.append("and t.program_id = p.program_id");
 			if(json.containsKey("name") && json.getString("name").length() > 0){

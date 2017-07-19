@@ -43,6 +43,10 @@ public class UrbanBatchUtils extends BaseBatchUtils {
      */
     // 目前仅处理RdLink新增时的urban属性
     public static void updateUrban(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
+        // 初始化Link的Urban值
+        if (null == geometry) {
+            link.setUrban(IS_NOT_URBAN);
+        }
         // 将link几何缩小100000倍，根据link几何查找与之相关的BUA面
         Geometry linkGeometry = null == geometry ? shrink(link.getGeometry()) : shrink(geometry);
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替

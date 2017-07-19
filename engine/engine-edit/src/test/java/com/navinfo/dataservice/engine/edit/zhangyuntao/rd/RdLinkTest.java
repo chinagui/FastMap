@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -165,8 +166,13 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void delete() throws Exception {
-        MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-        metadataApi.scPointSpecKindCodeType14();
+        RdLink link = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(502000560, false);
+        Geometry linkGeo = GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+        ZoneFace face = (ZoneFace) new ZoneFaceSelector(DBConnector.getInstance().getConnectionById(13)).loadById(504000018, false);
+        Geometry faceGeo = GeoTranslator.transform(face.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+        GeoRelationUtils.IsLinkOnLeftOfRing(linkGeo, faceGeo);
     }
 
     public static void main(String[] args) throws Exception {

@@ -146,6 +146,8 @@ public class CollectScenario{
 			insertEditPreOriginalLink(dailyConn);
 			//查询3-9级link附近30米范围内的poi相关数据保存到临时表
 			creatTempTableFromLinkTable(dailyConn);
+			//从临时表中删除一个link下重复的poi
+			deleteSameDataInTempTable(dailyConn);
 			//更新临时表中的重要POI为A
 			insertImportantPoiToTempTable(dailyConn);
 			//3-9保存
@@ -170,8 +172,11 @@ public class CollectScenario{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "delete LINK_EDIT_PRE";
-			log.info("初始化sql：" + sql);
+			log.info("初始化数据sql：" + sql);
 			run.execute(dailyConn, sql);
+//			String tableSql = "drop table LINK_PRE_TEST";
+//			log.info("初始化表sql：" + sql);
+//			run.execute(dailyConn, tableSql);
 		}catch(Exception e){
 			log.error("初始化异常："+e.getMessage(),e);
 			throw e;
@@ -215,12 +220,12 @@ public class CollectScenario{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "CREATE TABLE LINK_PRE_TEST AS "
-					+ "( SELECT T.LINK_PID, T.LENGTH, T.PID, T.RANGE, IA.NAME_ID ADDRESS, F.LINK_PID FORM FROM"
+					+ "( SELECT T.LINK_PID, T.LENGTH, T.PID, T.RANGE, IA.NAME_ID ADDRESS, F.form_of_way FORM FROM"
 					+ "(SELECT RL.LINK_PID, IP.PID, RL.LENGTH, IP."+"\""+"LEVEL"+"\""+"  RANGE FROM RD_LINK RL, IX_POI IP, "
 					+ "TABLE(SDO_JOIN('RD_LINK', 'GEOMETRY', 'IX_POI', 'GEOMETRY', 'DISTANCE=30')) J "
 					+ "WHERE J.ROWID1 = RL.ROWID AND J.ROWID2 = IP.ROWID AND RL.KIND >= 3 AND RL.KIND <= 9) T "
-					+ "LEFT JOIN IX_POI_ADDRESS IA ON IA.POI_PID = T.PID and IA.lang_code = 'CHI'"
-					+ "LEFT JOIN RD_LINK_FORM F ON F.LINK_PID = T.LINK_PID and F.form_of_way = 20)";
+					+ "LEFT JOIN IX_POI_ADDRESS IA ON IA.POI_PID = T.PID "
+					+ "LEFT JOIN RD_LINK_FORM F ON F.LINK_PID = T.LINK_PID)";
 			log.info("保存数据到临时表sql:" + sql);
 			run.execute(dailyConn, sql);
 		}catch(Exception e){
@@ -229,26 +234,26 @@ public class CollectScenario{
 		}
 	}
 	
-//	/**
-//	 * 道路等级1-2级直接定义为车采集保存到LINK_EDIT_PRE
-//	 * @param Connection
-//	 * @throws Exception
-//	 * 
-//	 * */
-//	public void insertEditPreCarColectionLink(Connection dailyConn) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//
-//			String sql = "insert into LINK_EDIT_PRE t(t.pid,t.scenario,t.operate_date) "
-//					+ "select distinct r.link_pid, 2, CURRENT_TIMESTAMP from RD_LINK r where r.kind between 1 and 2";
-//			
-//			log.info("1-2级link保存sql：" + sql);
-//			run.execute(dailyConn, sql);
-//		}catch(Exception e){
-//			log.error("保存1-2级link数据到LINK_EDIT_PRE异常："+e.getMessage(),e);
-//			throw e;
-//		}
-//	}
+	/**
+	 * 从临时表中删除link和poi都重复的数据
+	 * @param Connection
+	 * @throws Exception
+	 * 
+	 * */
+	public void deleteSameDataInTempTable(Connection dailyConn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "delete from LINK_PRE_TEST a where rowid !=(select max(rowid) "
+					+ "from LINK_PRE_TEST b where a.link_pid = b.link_pid and a.pid = b.pid) ";
+			
+			log.info("从临时表中删除link和poi都重复的数据sql：" + sql);
+			run.execute(dailyConn, sql);
+		}catch(Exception e){
+			log.error("从临时表中删除link和poi都重复的数据异常："+e.getMessage(),e);
+			throw e;
+		}
+	}
 	
 	
 	/**
@@ -389,7 +394,7 @@ public class CollectScenario{
 				
 				StringBuffer sb = new StringBuffer();
 				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct pt.LINK_PID FROM LINK_PRE_TEST pt where pt.FORM != 0)");
+				sb.append("select distinct pt.LINK_PID FROM LINK_PRE_TEST pt where pt.FORM = 20)");
 
 				String sql = sb.toString();
 				log.info("保存步行街POI数据sql：" + sql);

@@ -220,7 +220,7 @@ public class Fm2ChargeInit {
 					ChargePoiConvertor poiConvertor = new ChargePoiConvertor();
 					for(BasicObj obj:objs.values()){
 						try {
-							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj);
+							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj,conn);
 							chargePoi.add(initPoi);
 						} catch (Exception e) {
 							log.error(e.getMessage(),e);

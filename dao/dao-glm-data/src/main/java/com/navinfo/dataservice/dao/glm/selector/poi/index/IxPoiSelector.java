@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
+import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -73,13 +74,17 @@ public class IxPoiSelector extends AbstractSelector {
 		int startRow = (pageNum - 1) * pageSize + 1;
 
 		int endRow = pageNum * pageSize;
+		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+		List<String> checkRuleList=selector.loadByOperationName("POI_ROW_COMMIT");
+		String ckRules = "('";
+		ckRules += StringUtils.join(checkRuleList.toArray(), "','") + "')";
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
 		buffer.append(" FROM (SELECT   COUNT (1) OVER (PARTITION BY 1) total,");
 		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.collect_time, ");
 		buffer.append(" (SELECT COUNT (1)  FROM ix_poi_photo iph WHERE ip.pid = iph.poi_pid(+) AND U_RECORD != 2) as photocount  ,");
-		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IX_POI') as checkcount ");
+		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IX_POI' AND n.ruleid in "+ckRules+") as checkcount ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 

@@ -50,8 +50,8 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"id1\":143,\"lineWkt\":\"LINESTRING(116.53369903564453 39.90980207146212,116.52820587158203 39.90822196779971,116.53172492980957 39.90624678696849)\"}"; 
-		String parameter ="{\"id1\":148,\"id2\":147}"; 
+		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
+		String parameter ="{\"id1\":263,\"id2\":264}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -60,7 +60,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=78;
+		int taskId=135;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}
@@ -99,11 +99,34 @@ public class SubtaskTest extends InitApplication{
 		Map<String, Object> result = service.query(362,1);
 		System.out.print(result);
 	}
+	@Test
+	public void testList() throws Exception {
+		String parameter="{\"condition\":{\"taskId\":78},\"pageNum\":1,\"pageSize\":15,\"snapshot\":1}";
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		
+		int curPageNum= 1;//默认为第一页
+		if(dataJson.containsKey("pageNum")){
+			curPageNum = dataJson.getInt("pageNum");
+		}
+		
+		int pageSize = 30;//默认页容量为20
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+		}
+		//查询条件
+		JSONObject condition = dataJson.getJSONObject("condition");
+		SubtaskService service = SubtaskService.getInstance();
+		Page result = service.list(condition, pageSize, curPageNum);
+		System.out.print(result);
+	}
 	
 	@Test
 	public void testListByUser() throws Exception {
 		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"stage\":0}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -127,7 +150,7 @@ public class SubtaskTest extends InitApplication{
 		}
 		if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
 			//dataJson.put("exeUserId", (int)tokenObj.getUserId());
-			dataJson.put("exeUserId", 1674);
+			dataJson.put("exeUserId", 1664);
 		}
         Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
         System.out.print(page.getResult());			
@@ -180,7 +203,7 @@ public class SubtaskTest extends InitApplication{
 	//创建质检圈(测试)
 	@Test
 	public void testQualityCreate() throws Exception {
-		String parameter = "{\"subtaskId\":183,\"geometry\":\"POLYGON((116.33251190185545 39.89419695072923,116.36495590209962 39.88892859714545,116.35242462158202 39.86640182019855,116.32530212402342 39.86890516081786,116.33251190185545 39.89419695072923))\"}";
+		String parameter = "{\"subtaskId\":178,\"geometry\":\"POLYGON((116.34384155273436 39.889718875996685,116.33079528808595 39.86653357724533,116.3733673095703 39.88128876522249,116.35276794433594 39.892353073034826,116.34384155273436 39.889718875996685))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}

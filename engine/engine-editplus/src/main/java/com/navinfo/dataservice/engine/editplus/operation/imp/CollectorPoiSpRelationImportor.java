@@ -97,12 +97,12 @@ public class CollectorPoiSpRelationImportor extends AbstractOperation {
 					//判断两个fid是否在库中存在
 					if(!util.fidExists(fid)){
 						log.info("fid:"+fid+"在库中不存在");
-						errLogs.add(new ErrorLog(fid,"poi在库中不存在"));
+						errLogs.add(new ErrorLog(fid,0,"poi在库中不存在"));
 						continue;
 					}
 					if(!util.fidExists(sameFid)){
 						log.info("同一poi(fid:"+sameFid+")在库中不存在");
-						errLogs.add(new ErrorLog(fid,"同一poi(fid:"+sameFid+")在库中不存在"));
+						errLogs.add(new ErrorLog(fid,0,"同一poi(fid:"+sameFid+")在库中不存在"));
 						continue;
 					}
 					//判断fid是否有同一关系
@@ -133,7 +133,7 @@ public class CollectorPoiSpRelationImportor extends AbstractOperation {
 						}
 					}
 				}catch(Exception e){
-					errLogs.add(new ErrorLog(fid,"未分类错误："+e.getMessage()));
+					errLogs.add(new ErrorLog(fid,0,"未分类错误："+e.getMessage()));
 					log.warn("fid（"+fid+"）同一关系入库发生错误："+e.getMessage());
 					log.warn(e.getMessage(),e);
 				}

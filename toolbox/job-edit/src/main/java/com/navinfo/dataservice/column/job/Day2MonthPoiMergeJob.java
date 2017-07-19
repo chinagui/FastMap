@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang.StringUtils;
 
@@ -700,16 +701,35 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 	}
 	private void releaseMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
+		if (meshs == null || meshs.size() == 0) {return;}
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
 		//获取锁
 		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE  LOCK_OWNER='GLOBAL' FOR UPDATE";
-		Statement sourceStmt = monthConn.createStatement();
 		try{
-			ResultSet rs = sourceStmt.executeQuery(sql);//获取锁
-			QueryRunner run = new QueryRunner();
-			for(int m:meshs){
-				String sqlD = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM'";
-				run.execute(monthConn, sqlD);
+			run.query(monthConn,sql,new ColumnListHandler("LOCK_STATUS"));//获取锁
+			sb.append("DELETE FROM FM_GEN2_MESHLOCK WHERE LOCK_STATUS=1 AND LOCK_OWNER='FM'");
+			
+			List<Object> values = new ArrayList<Object>();
+			
+			if (meshs.size() > 1000) {
+				Clob clob = ConnectionUtil.createClob(monthConn);
+				clob.setString(1, StringUtils.join(meshs, ","));
+				sb.append(" AND MESH_ID in (select column_value from table(clob_to_table(?))) ");
+				values.add(clob);
+			} else {
+				sb.append(" AND MESH_ID IN (" + StringUtils.join(meshs, ",") + ")");
 			}
+			if (values != null && values.size() > 0) {
+				Object[] queryValues = new Object[values.size()];
+				for (int i = 0; i < values.size(); i++) {
+					queryValues[i] = values.get(i);
+				}
+				run.update(monthConn, sb.toString(), queryValues);
+			} else {
+				run.update(monthConn, sb.toString());
+			}
+			
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			log.info("加锁图幅回滚");
@@ -721,10 +741,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 	}
 	private void getMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
-		QueryRunner run = new QueryRunner();
-		for(int m:meshs){
-			String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','"+this.getJobInfo().getId()+"')";
-			run.execute(monthConn, sql);
+		Statement stmt = monthConn.createStatement();
+		try{
+			for(int m:meshs){
+				String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','"+this.getJobInfo().getId()+"') ";
+				stmt.addBatch(sql);
+			}
+			stmt.executeBatch();
+		}catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			DbUtils.close(stmt);
 		}
 	}
 	private void hasLock(Connection monthConn,List<Integer> meshs) throws Exception {

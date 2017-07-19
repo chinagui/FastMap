@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -24,8 +25,8 @@ public class GLM60994 extends BasicCheckRule {
             IxPoiObj poiObj = (IxPoiObj) obj;
             IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-            Geometry  geometry = poi.getGeometry();
-            if (MeshUtils.isPointAtMeshBorderWith100000(geometry.getCoordinate().x, geometry.getCoordinate().y)) {
+            Geometry  geometry = GeoTranslator.transform(poi.getGeometry(), GeoTranslator.dPrecisionMap, 5);
+            if (MeshUtils.isPointAtMeshBorder(geometry.getCoordinate().x, geometry.getCoordinate().y)) {
                 setCheckResult(geometry, String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
             }
         }

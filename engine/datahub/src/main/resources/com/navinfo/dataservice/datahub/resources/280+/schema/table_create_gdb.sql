@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 10g                           */
-/* Created on:     2016-12-12 21:46:35                          */
+/* Created on:     2017-5-25 21:46:40                           */
 /*==============================================================*/
 
 
@@ -195,13 +195,17 @@ create table RD_LINK  (
        check (SIDEWALK_FLAG in (0,1,2)),
    WALKSTAIR_FLAG       NUMBER(1)                      default 0 not null
        check (WALKSTAIR_FLAG in (0,1,2)),
+   NONMOTOR_FLAG        NUMBER(1)                      default 3 not null
+       check (NONMOTOR_FLAG in (0,1,2,3)),
+   LEISURE_TYPE         NUMBER(1)                      default 0 not null
+       check (LEISURE_TYPE in (0,1,2,3)),
    DICI_TYPE            NUMBER(1)                      default 0 not null
        check (DICI_TYPE in (0,1,2)),
    WALK_FLAG            NUMBER(1)                      default 0 not null
        check (WALK_FLAG in (0,1,2)),
    DIF_GROUPID          VARCHAR2(200),
    SRC_FLAG             NUMBER(2)                      default 6 not null
-       check (SRC_FLAG in (1,2,3,4,5,6)),
+       check (SRC_FLAG in (1,2,3,4,5,6,7)),
    DIGITAL_LEVEL        NUMBER(2)                      default 0 not null
        check (DIGITAL_LEVEL in (0,1,2,3,4)),
    EDIT_FLAG            NUMBER(1)                      default 1 not null
@@ -354,10 +358,10 @@ create table ADAS_ITPLINK_GEOMETRY  (
    OFFSET               NUMBER(10,3)                   default 0 not null,
    GEOMETRY             SDO_GEOMETRY,
    Z_VALUE              NUMBER(10,3)                   default -9999 not null,
-   HEADING              NUMBER(10,3)                   default 0 not null,
-   CURVATURE            NUMBER(10,6)                   default 0 not null,
-   SLOPE                NUMBER(10,3)                   default 0 not null,
-   BANKING              NUMBER(10,3)                   default 0 not null,
+   HEADING              NUMBER(10,3)                   default -9999999 not null,
+   CURVATURE            NUMBER(10)                     default -9999999 not null,
+   SLOPE                NUMBER(10,3)                   default -99 not null,
+   BANKING              NUMBER(10,3)                   default -99 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -385,11 +389,11 @@ comment on column ADAS_ITPLINK_GEOMETRY.HEADING is
 '单位:度,值域:[0,360]';
 
 comment on column ADAS_ITPLINK_GEOMETRY.CURVATURE is
-'单位:1/米,值域:[-1,1]';
+'单位:10-6/米,值域:[-106,106]
+起终点无效值为-9999999';
 
 comment on column ADAS_ITPLINK_GEOMETRY.SLOPE is
-'单位:度,值域:[-90,90]
-起终点无效值为-999999';
+'单位:度,值域:[-90,90]';
 
 comment on column ADAS_ITPLINK_GEOMETRY.BANKING is
 '单位:度,值域:[-90,90]';
@@ -506,10 +510,10 @@ create table ADAS_LINK_GEOMETRY  (
    SHP_SEQ_NUM          NUMBER(5)                      default 0 not null,
    GEOMETRY             SDO_GEOMETRY,
    Z_VALUE              NUMBER(10,3)                   default -9999 not null,
-   HEADING              NUMBER(10,3)                   default 0 not null,
-   CURVATURE            NUMBER(10,6)                   default 0 not null,
-   SLOPE                NUMBER(10,3)                   default 0 not null,
-   BANKING              NUMBER(10,3)                   default 0 not null,
+   HEADING              NUMBER(10,3)                   default -9999999 not null,
+   CURVATURE            NUMBER(10)                     default -9999999 not null,
+   SLOPE                NUMBER(10,3)                   default -99 not null,
+   BANKING              NUMBER(10,3)                   default -99 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -536,8 +540,8 @@ comment on column ADAS_LINK_GEOMETRY.HEADING is
 '单位:度,值域:[0,360]';
 
 comment on column ADAS_LINK_GEOMETRY.CURVATURE is
-'[210]修改单位.
-单位:1/米,值域:[-1,1]';
+'单位:10-6/米,值域:[-106,106]
+起终点无效值为-9999999';
 
 comment on column ADAS_LINK_GEOMETRY.SLOPE is
 '单位:度,值域:[-90,90]';
@@ -558,8 +562,8 @@ create table ADAS_NODE_INFO  (
    NODE_PID             NUMBER(10)                      not null,
    IN_LINK_PID          NUMBER(10)                      not null,
    OUT_LINK_PID         NUMBER(10)                      not null,
-   HEADING              NUMBER(10,3)                   default 0 not null,
-   CURVATURE            NUMBER(10,6)                   default 0 not null,
+   HEADING              NUMBER(10,3)                   default -9999999 not null,
+   CURVATURE            NUMBER(10)                     default -9999999 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -589,8 +593,7 @@ comment on column ADAS_NODE_INFO.HEADING is
 '单位:度,值域:[0,360]';
 
 comment on column ADAS_NODE_INFO.CURVATURE is
-'[210]修改单位.
-单位:1/米,值域:[-1,1]';
+'单位:10-6/米,值域:[-106,106]';
 
 comment on column ADAS_NODE_INFO.U_RECORD is
 '增量更新标识';
@@ -741,7 +744,7 @@ comment on column ADAS_RDNODE_SLOPE_DTM.U_FIELDS is
 create table ADAS_SLOPE  (
    NODE_PID             NUMBER(10)                      not null,
    LINK_PID             NUMBER(10)                      not null,
-   SLOPE                NUMBER(10,3)                   default 0 not null,
+   SLOPE                NUMBER(10,3)                   default -99 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -1711,7 +1714,7 @@ create table AU_MARK  (
    WORKER               NUMBER(4)                      default 0 not null,
    IN_WORKER            NUMBER(4)                      default 0 not null,
    MARK_ITEM            NUMBER(5)                      default 0 not null
-       check (MARK_ITEM in (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,30,31,32,33,34,35,36,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,70,71,72,73,74,75,76,77,78,80,81,82,83,101,102,103,104,105,106,107,108,109,110,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232)),
+       check (MARK_ITEM in (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,30,31,32,33,34,35,36,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,70,71,72,73,74,75,76,77,78,80,81,82,83,101,102,103,104,105,106,107,108,109,110,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241)),
    PARAM_L              NUMBER(10)                     default 0 not null,
    PARAM_R              NUMBER(10)                     default 0 not null,
    PARAM_S              VARCHAR2(2000),
@@ -6080,8 +6083,8 @@ create table CK_EXCEPTION  (
    EXTENDED             VARCHAR2(1000),
    TASK_ID              VARCHAR2(500),
    QA_TASK_ID           VARCHAR2(500),
-   QA_STATUS            NUMBER(2)                      default 2 not null
-       check (QA_STATUS in (1,2)),
+   QA_STATUS            NUMBER(2)                      default 0 not null
+       check (QA_STATUS in (0,1,2)),
    WORKER               VARCHAR2(500),
    QA_WORKER            VARCHAR2(500),
    MEMO_1               VARCHAR2(500),
@@ -7207,6 +7210,7 @@ create table HWY_JUNCTION  (
    DIS_BETW             NUMBER(15,3)                   default 0 not null,
    SEQ_NUM              NUMBER(3)                      default 0 not null,
    HW_PID               NUMBER(10)                     default 0 not null,
+   PRE_NODEPID          NUMBER(10)                     default 0 not null,
    MEMO                 VARCHAR2(500),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
@@ -9794,31 +9798,7 @@ comment on column IX_POI_CHARGINGSTATION.CHARGING_NUM is
 '大于等于0,空表示未调查';
 
 comment on column IX_POI_CHARGINGSTATION.SERVICE_PROV is
-'只能有一个值，值域包括:
-0	其他
-1	国家电网
-2	南方电网
-3	中石油
-4	中石化
-5	中海油
-6	中国普天
-7	特来电
-8	循道新能源
-9	富电科技
-10	华商三优
-11	中電
-12	港燈
-13	澳電
-14	绿狗
-15	EVCARD
-16	星星充电
-17	电桩
-18	依威能源
-19（聚电）
-20（普斯迪尔 BusTil）
-21（鼎充）
-22（能瑞）
-23（云快充 Cloud Power）
+'只能有一个值，值域包括（参见元数据表）:
 ChainID';
 
 comment on column IX_POI_CHARGINGSTATION.MEMO is
@@ -9966,6 +9946,11 @@ create table IX_POI_DETAIL  (
    CARDTYPE             VARCHAR2(10),
    HOSPITAL_CLASS       NUMBER(2)                      default 0 not null
        check (HOSPITAL_CLASS in (0,1,2,3,4,5,6,7,8,9)),
+   MICHELIN_STAR        NUMBER(1)                      default 9 not null
+       check (MICHELIN_STAR in (0,1,2,3,9)),
+   ESTABLISHMENT        NUMBER(2)                      default 99 not null
+       check (ESTABLISHMENT in (0,1,2,3,4,5,11,12,13,14,15,99)),
+   SERVICES             NUMBER(10)                     default 1 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -10798,6 +10783,7 @@ create table IX_POI_PHOTO  (
    MEMO                 VARCHAR2(500),
    TAG                  NUMBER(3)                      default 1 not null
        check (TAG in (1,2,3,4,5,7,100)),
+   ORIGIN_PID           NUMBER(10)                     default 0 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -15013,6 +14999,8 @@ create table RD_CROSSWALK_INFO  (
    ATTR                 NUMBER(5)                      default 0 not null,
    SIGNAGE              NUMBER(1)                      default 0 not null
        check (SIGNAGE in (0,1,2,3,4)),
+   NONMOTOR_FLAG        NUMBER(1)                      default 3 not null
+       check (NONMOTOR_FLAG in (0,1,2,3)),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -15333,6 +15321,8 @@ create table RD_ELECTRONICEYE  (
    VERIFIED_FLAG        NUMBER(2)                      default 0 not null
        check (VERIFIED_FLAG in (0,1,2)),
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    GEOMETRY             SDO_GEOMETRY,
    SRC_FLAG             VARCHAR2(2)                    default '1' not null
        check (SRC_FLAG in ('0','1','2','3')),
@@ -15364,7 +15354,7 @@ comment on column RD_ELECTRONICEYE.LOCATION is
 如果所有bit位均为0,表示未调查';
 
 comment on column RD_ELECTRONICEYE.SPEED_LIMIT is
-'当Kind=1~3、20、21 时有效, 单位:百米/时,值域: 1~9999';
+'当Kind=1~3、20、21 时有效, 记录小汽车最大限速值，单位:百米/时,值域: 0~9999';
 
 comment on column RD_ELECTRONICEYE.VERIFIED_FLAG is
 '[173sp2]';
@@ -15456,7 +15446,7 @@ comment on column RD_GATE.U_FIELDS is
 create table RD_GATE_CONDITION  (
    PID                  NUMBER(10)                      not null,
    VALID_OBJ            NUMBER(1)                      default 0 not null
-       check (VALID_OBJ in (0,1)),
+       check (VALID_OBJ in (0,1,2,3)),
    TIME_DOMAIN          VARCHAR2(1000),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
@@ -15583,7 +15573,14 @@ create table RD_HGWG_LIMIT  (
    RES_WEIGH            NUMBER(5,2)                    default 0 not null,
    RES_AXLE_LOAD        NUMBER(5,2)                    default 0 not null,
    RES_WIDTH            NUMBER(5,2)                    default 0 not null,
+   RES_HIGH_FLAG        NUMBER(1)                      default 0 not null
+       check (RES_HIGH_FLAG in (0,1,2)),
+   RES_WIDTH_FLAG       NUMBER(1)                      default 0 not null
+       check (RES_WIDTH_FLAG in (0,2)),
+   DESCRIPT             VARCHAR2(100),
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    GEOMETRY             SDO_GEOMETRY,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
@@ -15939,6 +15936,30 @@ comment on column RD_LANE_CONNEXITY.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
 
 /*==============================================================*/
+/* Table: RD_LANE_HGWD                                          */
+/*==============================================================*/
+create table RD_LANE_HGWD  (
+   PID                  NUMBER(10)                      not null,
+   LINK_PID             NUMBER(10)                      not null,
+   DIRECT               NUMBER(1)                      default 0 not null
+       check (DIRECT in (0,2,3)),
+   LANE_RES_HIGH        VARCHAR2(100),
+   LANE_RES_WIDTH       VARCHAR2(100),
+   MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
+   GEOMETRY             SDO_GEOMETRY,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(100),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint PK_RD_LANE_HGWD primary key (PID),
+   constraint FK_RD_LANE__REFERENCE_RD_LINK foreign key (LINK_PID)
+         references RD_LINK (LINK_PID)
+);
+
+/*==============================================================*/
 /* Table: RD_LANE_TOPOLOGY                                      */
 /*==============================================================*/
 create table RD_LANE_TOPOLOGY  (
@@ -16270,7 +16291,7 @@ create table RD_LINK_INT_RTIC  (
 create table RD_LINK_LIMIT  (
    LINK_PID             NUMBER(10)                      not null,
    TYPE                 NUMBER(2)                      default 3 not null
-       check (TYPE in (0,1,2,3,4,5,6,7,8,9,10)),
+       check (TYPE in (0,1,2,3,4,5,6,7,8,9,10,11)),
    LIMIT_DIR            NUMBER(1)                      default 0 not null
        check (LIMIT_DIR in (0,1,2,3,9)),
    TIME_DOMAIN          VARCHAR2(1000),
@@ -16282,6 +16303,7 @@ create table RD_LINK_LIMIT  (
    INPUT_TIME           VARCHAR2(32),
    PROCESS_FLAG         NUMBER(1)                      default 0 not null
        check (PROCESS_FLAG in (0,1,2)),
+   DESCRIPT             VARCHAR2(100),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -16359,6 +16381,26 @@ comment on column RD_LINK_LIMIT_TRUCK.U_RECORD is
 
 comment on column RD_LINK_LIMIT_TRUCK.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
+
+/*==============================================================*/
+/* Table: RD_LINK_LMT_TRUCK                                     */
+/*==============================================================*/
+create table RD_LINK_LMT_TRUCK  (
+   LINK_PID             NUMBER(10)                      not null,
+   TYPE                 NUMBER(2)                      default 11 not null
+       check (TYPE in (11)),
+   LIMIT_DIR            NUMBER(1)                      default 0 not null
+       check (LIMIT_DIR in (0,1,2,3)),
+   TIME_DOMAIN          VARCHAR2(1000),
+   DESCRIPT             VARCHAR2(100),
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint FK_RD_LINK__REFERENCE_RD_LINK foreign key (LINK_PID)
+         references RD_LINK (LINK_PID)
+);
 
 /*==============================================================*/
 /* Table: RD_LINK_NAME                                          */
@@ -16576,9 +16618,9 @@ create table RD_LINK_SPEEDLIMIT  (
    SPEED_CLASS          NUMBER(1)                      default 0 not null
        check (SPEED_CLASS between 0 and 8 and SPEED_CLASS in (0,1,2,3,4,5,6,7,8)),
    FROM_LIMIT_SRC       NUMBER(2)                      default 0 not null
-       check (FROM_LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9)),
+       check (FROM_LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9,10)),
    TO_LIMIT_SRC         NUMBER(2)                      default 0 not null
-       check (TO_LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9)),
+       check (TO_LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9,10)),
    SPEED_TYPE           NUMBER(1)                      default 0 not null
        check (SPEED_TYPE in (0,1 ,3 )),
    SPEED_DEPENDENT      NUMBER(2)                      default 0 not null
@@ -16635,8 +16677,12 @@ comment on column RD_LINK_SPEEDLIMIT.U_FIELDS is
 /*==============================================================*/
 create table RD_LINK_SPEED_TRUCK  (
    LINK_PID             NUMBER(10)                      not null,
+   SPEED_TYPE           NUMBER(1)                      default 0 not null
+       check (SPEED_TYPE in (0,3)),
    FROM_SPEED_LIMIT     NUMBER(4)                      default 0 not null,
    TO_SPEED_LIMIT       NUMBER(4)                      default 0 not null,
+   SPEED_DEPENDENT      NUMBER(2)                      default 0 not null
+       check (SPEED_DEPENDENT in (0,1,2,3,6,10,12,31,32,33,34)),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -16722,6 +16768,8 @@ create table RD_LINK_WARNING  (
    VEHICLE              NUMBER(10)                     default 0 not null,
    DESCRIPT             VARCHAR2(100),
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -16847,6 +16895,8 @@ create table RD_MILEAGEPILE  (
    DLLX                 VARCHAR2(50),
    GEOMETRY             SDO_GEOMETRY,
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    U_RECORD             NUMBER(2)                      default 0 not null,
    U_FIELDS             VARCHAR2(1000),
    U_DATE               VARCHAR2(14),
@@ -17140,6 +17190,118 @@ comment on column RD_NODE_NAME.U_RECORD is
 
 comment on column RD_NODE_NAME.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
+
+/*==============================================================*/
+/* Table: RD_NOPARKING                                          */
+/*==============================================================*/
+create table RD_NOPARKING  (
+   PID                  NUMBER(10)                      not null,
+   LINK_PID             NUMBER(10)                     default 0 not null,
+   DIRECT               NUMBER(1)                      default 0 not null
+       check (DIRECT in (0,2,3)),
+   NOPARKING_FLAG       NUMBER(1)                      default 0 not null
+       check (NOPARKING_FLAG in (0,1)),
+   VIRTUAL              NUMBER(1)                      default 0 not null
+       check (VIRTUAL in (0,1)),
+   TIME_DOMAIN          VARCHAR2(1000),
+   DESCRIPT             VARCHAR2(100),
+   MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
+   GEOMETRY             SDO_GEOMETRY,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint PK_RD_NOPARKING primary key (PID)
+);
+
+/*==============================================================*/
+/* Table: RD_NOPARKING_PAIR                                     */
+/*==============================================================*/
+create table RD_NOPARKING_PAIR  (
+   GROUP_ID             NUMBER(10)                      not null,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint PK_RD_NOPARKING_PAIR primary key (GROUP_ID)
+);
+
+/*==============================================================*/
+/* Table: RD_NOPARKING_PAIR_TRUCK                               */
+/*==============================================================*/
+create table RD_NOPARKING_PAIR_TRUCK  (
+   GROUP_ID             NUMBER(10)                      not null,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint PK_RD_NOPARKING_PAIR_TRUCK primary key (GROUP_ID)
+);
+
+/*==============================================================*/
+/* Table: RD_NOPARKING_PART                                     */
+/*==============================================================*/
+create table RD_NOPARKING_PART  (
+   GROUP_ID             NUMBER(10)                      not null,
+   NOPARKING_PID        NUMBER(10)                      not null,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint FK_RD_NOPARK_REF_RDNOPARK foreign key (GROUP_ID)
+         references RD_NOPARKING_PAIR (GROUP_ID),
+   constraint FK_RD_NOPARK_REF_RDNOPARKPP foreign key (NOPARKING_PID)
+         references RD_NOPARKING (PID)
+);
+
+/*==============================================================*/
+/* Table: RD_NOPARKING_TRUCK                                    */
+/*==============================================================*/
+create table RD_NOPARKING_TRUCK  (
+   PID                  NUMBER(10)                      not null,
+   LINK_PID             NUMBER(10)                     default 0 not null,
+   DIRECT               NUMBER(1)                      default 0 not null
+       check (DIRECT in (0,2,3)),
+   NOPARKING_FLAG       NUMBER(1)                      default 0 not null
+       check (NOPARKING_FLAG in (0,1)),
+   VIRTUAL              NUMBER(1)                      default 0 not null
+       check (VIRTUAL in (0,1)),
+   TIME_DOMAIN          VARCHAR2(1000),
+   DESCRIPT             VARCHAR2(100),
+   MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
+   GEOMETRY             SDO_GEOMETRY,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint PK_RD_NOPARKING_TRUCK primary key (PID)
+);
+
+/*==============================================================*/
+/* Table: RD_NOPARKING_PART_TRUCK                               */
+/*==============================================================*/
+create table RD_NOPARKING_PART_TRUCK  (
+   GROUP_ID             NUMBER(10)                      not null,
+   NOPARKING_PID        NUMBER(10)                      not null,
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_FIELDS             VARCHAR2(1000),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
+   constraint FK_RD_NOPARK_REF_RDNOPARKTRUCK foreign key (NOPARKING_PID)
+         references RD_NOPARKING_TRUCK (PID),
+   constraint FK_RD_NOPARKREF_NOPARKTRUCKPP foreign key (GROUP_ID)
+         references RD_NOPARKING_PAIR_TRUCK (GROUP_ID)
+);
 
 /*==============================================================*/
 /* Table: RD_OBJECT                                             */
@@ -18218,12 +18380,14 @@ create table RD_SPEEDLIMIT  (
    SPEED_FLAG           NUMBER(1)                      default 0 not null
        check (SPEED_FLAG in (0,1)),
    LIMIT_SRC            NUMBER(2)                      default 1 not null
-       check (LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9)),
+       check (LIMIT_SRC in (0,1,2,3,4,5,6,7,8,9,10)),
    TIME_DOMAIN          VARCHAR2(1000),
    CAPTURE_FLAG         NUMBER(1)                      default 0 not null
        check (CAPTURE_FLAG in (0,1,2)),
    DESCRIPT             VARCHAR2(100),
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    STATUS               NUMBER(1)                      default 7 not null
        check (STATUS in (0,1,2,3,4,5,6,7)),
    CK_STATUS            NUMBER(2)                      default 6 not null
@@ -18292,12 +18456,18 @@ create table RD_SPEEDLIMIT_TRUCK  (
    DIRECT               NUMBER(1)                      default 0 not null
        check (DIRECT in (0,2,3)),
    SPEED_VALUE          NUMBER(4)                      default 0 not null,
+   SPEED_TYPE           NUMBER(1)                      default 0 not null
+       check (SPEED_TYPE in (0,3)),
+   SPEED_DEPENDENT      NUMBER(2)                      default 0 not null
+       check (SPEED_DEPENDENT in (0,1,2,3,6,10,12,31,32,33,34)),
    SPEED_FLAG           NUMBER(1)                      default 0 not null
        check (SPEED_FLAG in (0,1)),
    CAPTURE_FLAG         NUMBER(1)                      default 0 not null
        check (CAPTURE_FLAG in (0,1,2)),
    DESCRIPT             VARCHAR2(100),
    MESH_ID              NUMBER(8)                      default 0 not null,
+   EDIT_FLAG            NUMBER(1)                      default 1 not null
+       check (EDIT_FLAG in (0,1)),
    STATUS               NUMBER(1)                      default 7 not null
        check (STATUS in (0,1,2,3,4,5,6,7)),
    CK_STATUS            NUMBER(2)                      default 6 not null
@@ -18324,7 +18494,7 @@ comment on column RD_SPEEDLIMIT_TRUCK.LINK_PID is
 '参考"RD_LINK"';
 
 comment on column RD_SPEEDLIMIT_TRUCK.SPEED_VALUE is
-'记录最高限速值,值域范围:1~9999,单位:百米/时,应用时需除以10';
+'记录最高限速值,值域范围:0~9999,单位:百米/时,应用时需除以10';
 
 comment on column RD_SPEEDLIMIT_TRUCK.SPEED_FLAG is
 '限速开始或限速解除';
@@ -18422,6 +18592,8 @@ create table RD_TOLLGATE  (
        check (LOCATION_FLAG in (0,1,2)),
    TRUCK_FLAG           NUMBER(1)                      default 1 not null
        check (TRUCK_FLAG in (0,1)),
+   PHOTO_FLAG           NUMBER(1)                      default 1 not null
+       check (PHOTO_FLAG in (1,2,3,4,5)),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -18658,6 +18830,8 @@ create table RD_TOLLGATE_PASSAGE  (
    CARD_TYPE            NUMBER(1)                      default 0 not null
        check (CARD_TYPE in (0,1,2,3)),
    VEHICLE              NUMBER(10)                     default 0 not null,
+   LANE_TYPE            NUMBER(2)                      default 0 not null
+       check (LANE_TYPE in (0,1)),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -19914,7 +20088,7 @@ comment on column RW_NODE_MESH.U_FIELDS is
 /*==============================================================*/
 create table RW_NODE_MESH_20W  (
    NODE_PID             NUMBER(10)                      not null,
-   MESH_ID              NUMBER(6)                      default 0 not null,
+   MESH_ID              NUMBER(8)                      default 0 not null,
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),

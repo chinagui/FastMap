@@ -2097,7 +2097,8 @@ public class SubtaskService {
 	 */
 	public String closeSubtask(Connection conn, Subtask subtask, long userId) throws Exception {
 		//修改子任务状态
-		SubtaskOperation.closeBySubtaskId(conn, subtask.getSubtaskId());
+		int num=SubtaskOperation.closeBySubtaskId(conn, subtask.getSubtaskId());
+		if(num==0){throw new Exception("子任务关闭失败。区域子任务关闭条件：保证其范围内的grid粗编子任务关闭");}
 		log.info("=================closeBySubtaskId==========================");
 
 		//动态调整子任务范围
@@ -2823,6 +2824,7 @@ public class SubtaskService {
 						}
 						list.add(result.getInt("GRID_ID"));
 					}
+					res.put(subtaskId, list);
 					res.remove(0);
 					return res;
 				}});

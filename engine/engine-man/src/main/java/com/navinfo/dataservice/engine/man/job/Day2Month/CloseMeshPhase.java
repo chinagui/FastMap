@@ -47,6 +47,9 @@ public class CloseMeshPhase extends JobPhase {
             //业务逻辑
             if(jobRelation.getItemType()== ItemType.PROJECT) {
                 //按项目落需要关闸
+                JSONObject parameter = JSONObject.fromObject(job.getParameter());
+                int lot = parameter.getInt("lot");
+
                 JSONObject outPrarm = JSONObject.fromObject(lastJobProgress.getOutParameter());
                 List<Integer> meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
                 log.info("phaseId:"+jobProgress.getPhaseId()+",day2month mesh:"+meshs.toString());
@@ -58,7 +61,7 @@ public class CloseMeshPhase extends JobPhase {
 
                 tipsMeshset.addAll(meshs);
                 if(tipsMeshset.size()>0) {
-                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 0 WHERE MESH IN "
+                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG=0,QUICK"+lot+"_FLAG=1 WHERE MESH IN "
                             + tipsMeshset.toString().replace("[", "(").replace("]", ")");
                     log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
                     meta = DBConnector.getInstance().getMetaConnection();

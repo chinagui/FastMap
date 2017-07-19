@@ -46,7 +46,6 @@ public class Day2MonthPhase extends JobPhase {
                 lot = (int) jobRelation.getItemId();
             } else {
                 type = 1;
-                lot = 0;
             }
             JSONObject jobDataJson = new JSONObject();
             jobDataJson.put("type", type);

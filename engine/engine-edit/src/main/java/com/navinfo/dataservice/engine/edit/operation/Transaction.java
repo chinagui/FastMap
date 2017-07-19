@@ -6,7 +6,10 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.*;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -1462,6 +1465,20 @@ public class Transaction {
                     }
                 }
 
+                if (Constant.NODE_TYPES.containsKey(row.objType())) {
+                    try {
+                        int nodePid = Integer.parseInt(loadFieldValue(row, "Pid").toString());
+
+                        List<IObj> links = listLinkByNodePid(nodePid, row.objType());
+                        for (IObj obj : links) {
+                            dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
+                        }
+                        continue;
+                    } catch (Exception e) {
+                        logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
+                    }
+                }
+
                 Geometry geometry = GeometryUtils.loadGeometry(row);
                 if (row.changedFields().containsKey("geometry")) {
                     try {
@@ -1678,7 +1695,7 @@ public class Transaction {
                     geometry = GeoTranslator.createPoint(new Coordinate(data.getDouble("longitude"), data.getDouble("latitude")));
                     Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库移动操作...");
+                        throw new Exception("不允许进行跨大区库移动操作.");
                     }
                 }
             }
@@ -1692,7 +1709,7 @@ public class Transaction {
                     Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(json.getJSONObject("geometry")));
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库修形操作...");
+                        throw new Exception("不允许进行跨大区库修形操作.");
                     }
                     if (newDbIds.size() == 1) {
                         return;
@@ -1707,11 +1724,11 @@ public class Transaction {
                             link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
                             Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
                             if (dbIds.size() > 1) {
-                                throw new Exception("不允许挂接大区库接边LINK...");
+                                throw new Exception("不允许挂接大区库接边LINK.");
                             }
                         }
                         if (obj.containsKey("catchNodePid")) {
-                            throw new Exception("大区接边LINK不允许挂接NODE操作...");
+                            throw new Exception("大区接边LINK不允许挂接NODE操作.");
                         }
                     }
                 }
@@ -1725,27 +1742,22 @@ public class Transaction {
                         return;
                     }
                     JSONObject data = json.getJSONObject("data");
-                    Geometry geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"));
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (dbIds.size() == 1) {
+                    if (!data.containsKey("catchLinks")) {
                         return;
                     }
-                    if (!json.containsKey("catchLinks")) {
-                        return;
-                    }
-                    Iterator<JSONObject> iterator = json.getJSONArray("catchLinks").iterator();
+                    Iterator<JSONObject> iterator = data.getJSONArray("catchLinks").iterator();
                     while (iterator.hasNext()) {
                         final JSONObject obj = iterator.next();
                         if (obj.containsKey("linkPid")) {
                             IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
                             Set<Integer> catchDbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (catchDbIds.size() == 1) {
-                                throw new Exception("创建大区接边LINK不能挂接LINK操作...");
+                            if (catchDbIds.size() > 1) {
+                                throw new Exception("创建大区接边LINK不能挂接LINK操作.");
                             }
                         }
-                        if (obj.containsKey("nodePid")) {
-                            throw new Exception("创建大区接边LINK不允许挂接NODE操作...");
-                        }
+                        //if (obj.containsKey("nodePid")) {
+                        //    throw new Exception("创建大区接边LINK不允许挂接NODE操作.");
+                        //}
                     }
                 }
                 for (Map.Entry<ObjType, Class<IRow>> entry : Constant.FACE_TYPES.entrySet()) {
@@ -1768,7 +1780,7 @@ public class Transaction {
                         Geometry geometry = GeometryUtils.loadGeometry(row);
                         Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                         if (dbIds.size() > 1) {
-                            throw new Exception("不允许使用大区接边LINK进行线构面操作...");
+                            throw new Exception("不允许使用大区接边LINK进行线构面操作.");
                         }
                     }
                 }
@@ -1787,6 +1799,25 @@ public class Transaction {
                         assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "eNodePid").toString()));
                     }
                 }
+                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.NODE_TYPES.entrySet()) {
+                    if (!entry.getKey().equals(objType)) {
+                        continue;
+                    }
+                    int nodePid = json.getInt("objId");
+                    IRow node = new AbstractSelector(entry.getValue(), process.getConn()).loadById(nodePid, false);
+                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(node));
+                    if (dbIds.size() > 1) {
+                        return;
+                    }
+
+                    List<IObj> links = listLinkByNodePid(nodePid, entry.getKey());
+                    for (IObj obj : links) {
+                        dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj));
+                        if (dbIds.size() > 1) {
+                            throw new Exception("不允许对大区接边LINK的非跨大区点进行删除操作.");
+                        }
+                    }
+                }
             }
             if (OperType.BATCH.equals(operType) && ObjType.RDLINK.equals(objType)) {
                 if (!json.containsKey("data")) {
@@ -1803,7 +1834,7 @@ public class Transaction {
                     Geometry geometry = GeometryUtils.loadGeometry(row);
                     Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量编辑操作...");
+                        throw new Exception("不允许对大区接边LINK进行批量编辑操作.");
                     }
                 }
             }
@@ -1818,7 +1849,7 @@ public class Transaction {
                     Geometry geometry = GeometryUtils.loadGeometry(row);
                     Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量删除操作...");
+                        throw new Exception("不允许对大区接边LINK进行批量删除操作.");
                     }
                 }
             }
@@ -1834,19 +1865,7 @@ public class Transaction {
      * @throws Exception
      */
     private void assertConnectionLink(int linkPid, int nodePid) throws Exception {
-        List<IObj> objs = new ArrayList<>();
-        switch (objType) {
-            case RDLINK:
-                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case LCLINK:
-                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case LULINK:
-                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ADLINK:
-                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ZONELINK:
-                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-        }
+        List<IObj> objs = listLinkByNodePid(nodePid, objType);
 
         for (IObj obj : objs) {
             if (obj.pid() == linkPid) {
@@ -1856,9 +1875,36 @@ public class Transaction {
             Geometry geometry = GeometryUtils.loadGeometry(obj);
             Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
             if (dbIds.size() == 1) {
-                throw new Exception("删除接边LINK时请优先删除挂接LINK...");
+                throw new Exception("删除接边LINK时请优先删除挂接LINK.");
             }
         }
+    }
+
+    private List<IObj> listLinkByNodePid(int pid, ObjType tpye) throws Exception {
+        List<IObj> objs = new ArrayList<>();
+        switch (tpye) {
+            case RDNODE:
+                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(pid, false));  break;
+            case LCNODE:
+                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case LUNODE:
+                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case ADNODE:
+                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case ZONENODE:
+                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case RDLINK:
+                objs.add((IObj) new AbstractSelector(RdLink.class, process.getConn()).loadById(pid, false)); break;
+            case LCLINK:
+                objs.add((IObj) new AbstractSelector(LcLink.class, process.getConn()).loadById(pid, false)); break;
+            case LULINK:
+                objs.add((IObj) new AbstractSelector(LuLink.class, process.getConn()).loadById(pid, false)); break;
+            case ADLINK:
+                objs.add((IObj) new AbstractSelector(AdLink.class, process.getConn()).loadById(pid, false)); break;
+            case ZONELINK:
+                objs.add((IObj) new AbstractSelector(ZoneLink.class, process.getConn()).loadById(pid, false)); break;
+        }
+        return objs;
     }
 
     /**

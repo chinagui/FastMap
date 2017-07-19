@@ -196,7 +196,8 @@ public class DataEditService {
 			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
 			int poiPid = run.queryForInt(poiconn, queryPoiPid);
 			NiValExceptionSelector selector = new NiValExceptionSelector(poiconn);
-			JSONArray checkResultsArr = selector.poiCheckResultList(poiPid);
+			List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+			JSONArray checkResultsArr = selector.poiCheckResultList(poiPid,checkRuleList);
 			checkErrorNum = checkResultsArr.size();
 		} catch (Exception e) {
 			throw e;
@@ -285,7 +286,9 @@ public class DataEditService {
 			
 			if(cfmPoiPid!=0){
 				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
-				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid);
+				List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid,checkRuleList);
+				
 				log.put("data", checkResultsArr);
 				log.put("total", checkResultsArr.size());
 			}
@@ -2358,7 +2361,7 @@ public class DataEditService {
 		
 		//查询检查结果数量
 		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-		JSONArray checkResultsArr = selector.poiCheckResultList(objPid);
+		JSONArray checkResultsArr = selector.poiCheckResultList(objPid,checkCommand.getRuleIdList());
 		resultCount=checkResultsArr.size();
 		log.info("查询poi检查结果数量:" +resultCount);
 		log.info("end runDealershipCheck");

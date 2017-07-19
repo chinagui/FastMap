@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.job;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
@@ -11,6 +10,8 @@ import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -34,7 +35,7 @@ public class JobService {
      * 执行tips转mark
      *
      * @param itemId     目标对象ID
-     * @param itemType   目标对象类型（项目、任务、子任务、批次）
+     * @param itemType   目标对象类型（项目、任务、子任务）
      * @param operator   执行人
      * @param isContinue 是否继续
      * @return jobId
@@ -57,7 +58,7 @@ public class JobService {
      * 执行日落月
      *
      * @param itemId     目标对象ID
-     * @param itemType   目标对象类型（项目、任务、子任务、批次）
+     * @param itemType   目标对象类型（项目、批次）
      * @param operator   执行人
      * @param isContinue 是否继续
      * @return jobId
@@ -100,6 +101,26 @@ public class JobService {
     }
 
     /**
+     * 获取按批次日落月的进度
+     * @return
+     * @throws Exception
+     */
+    public JSONObject getDay2MonthLotJobProgress() throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getManConnection();
+            JobOperator jobOperator = new JobOperator(conn);
+            return jobOperator.getDay2MonthLotJobProgressStatus();
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("获取JOB状态失败，原因为:" + e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+    /**
      * 更新Job步骤的状态，并继续执行Job
      *
      * @param phaseId
@@ -118,13 +139,16 @@ public class JobService {
 
             try {
                 JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
-                SysMsgPublisher.publishManJobMsg(JSON.toJSONString(jobMessage), jobMessage.getOperator());
+                String message = JSON.toJSONString(jobMessage);
+                log.info("publishManJobMsg:"+message);
+                SysMsgPublisher.publishManJobMsg(message, jobMessage.getOperator());
             } catch (Exception ex) {
-                log.error("public_msg_error:" + ExceptionUtils.getStackTrace(ex));
+                log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
             }
 
             if (status == JobProgressStatus.FAILURE) {
                 //步骤失败，更新job状态为失败，停止执行
+                log.info("updateJobProgress: phaseId "+phaseId+" set failure");
                 JobOperator jobOperator = new JobOperator(conn);
                 jobOperator.updateStatusByPhaseId(phaseId, JobStatus.FAILURE);
             } else {
@@ -147,6 +171,7 @@ public class JobService {
                 if (runner == null) {
                     throw new Exception("不支持的任务类型：jobid " + job.getJobId() + ",type " + job.getType().value());
                 }
+                log.info("继续执行job:"+job.getJobId());
                 runner.resume(job);
             }
         } catch (Exception e) {

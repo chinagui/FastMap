@@ -78,8 +78,11 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void depart() throws Exception {
-        RdLinkSearch search = new RdLinkSearch(DBConnector.getInstance().getConnectionById(13));
-        search.searchDataByTileWithGap(108069, 49640, 17, 10);
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":401000528,\"dbId\":13,\"subtaskId\":393," +
+                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.86708688735963," +
+                "39.97191567906229],[116.86638,39.97247]]},\"catchInfos\":[{\"nodePid\":500000364,\"longitude\":116.86708688735963," +
+                "\"latitude\":39.97191567906229}]}}";
+        TestUtil.run(requester);
     }
 
     @Test

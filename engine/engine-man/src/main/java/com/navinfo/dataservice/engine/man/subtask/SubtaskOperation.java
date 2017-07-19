@@ -254,7 +254,7 @@ public class SubtaskOperation {
 		}
 	}
 	
-	public static void closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
+	public static int closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String closedSubtaskStr = "(";
@@ -265,7 +265,7 @@ public class SubtaskOperation {
 					+ "set S.STATUS=0 "
 					+ "where S.SUBTASK_ID in "
 					+ closedSubtaskStr 
-					+ " AND (S.TYPE!=4 OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
+					+ " AND (S.TYPE!=4 or s.descp like '%预处理%' OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
 					+ "          FROM SUBTASK SS, SUBTASK_GRID_MAPPING SM, TASK_GRID_MAPPING TM"
 					+ "         WHERE SS.SUBTASK_ID = SM.SUBTASK_ID"
 					+ "           AND SM.GRID_ID = TM.GRID_ID"
@@ -275,7 +275,7 @@ public class SubtaskOperation {
 					+ "           AND S.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.TYPE = 3)))";
 			log.info("关闭SQL："+updateSql);
-			run.update(conn,updateSql);
+			return run.update(conn,updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
@@ -810,8 +810,8 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						}
 
-						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")){
+						//采集poi,采集一体化，日编grid粗编，质检日编grid粗编，质检日编区域粗编
+						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -2913,11 +2913,11 @@ public class SubtaskOperation {
 	 * @param subtaskId
 	 * @throws Exception 
 	 */
-	public static void closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
+	public static int closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
 		try{
 			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
 			closedSubtaskList.add(subtaskId);
-			closeBySubtaskList(conn, closedSubtaskList);
+			return closeBySubtaskList(conn, closedSubtaskList);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
@@ -3256,6 +3256,67 @@ public class SubtaskOperation {
 					+ "     AND S.STAGE = 2";
 			log.info("根据任务调整月编子任务sql："+sql);
 			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 根据质检子任务id，获取常规子任务相关信息
+	 * @param Connection
+	 * @param qualitySets
+	 * @return Map<Integer, Map<String, String>>：key：具体的qualitySubtaskId，value：Map<String, String>常规子任务相关信息
+	 * @throws Exception
+	 * 
+	 * */
+	public static Map<Integer, Map<String, String>> getCommonByQuality(Connection conn,Set<Integer> qualitySets) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT S.SUBTASK_ID,S.QUALITY_SUBTASK_ID,s.status,"
+					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
+					+ "       G.GROUP_NAME,"
+					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
+					+ "       S.NAME           SUBTASK_NAME,"
+					+ "       T.NAME           TASK_NAME"
+					+ "  FROM TASK                     T,"
+					+ "       SUBTASK                  S,"
+					+ "       USER_GROUP               G,"
+					+ "       SUBTASK                  SQ,"
+					+ "       USER_INFO                I,"
+					+ "       FM_STAT_OVERVIEW_SUBTASK F"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID"
+					+ "   AND S.EXE_USER_ID = I.USER_ID"
+					+ "   AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   AND S.QUALITY_SUBTASK_ID = SQ.SUBTASK_ID"
+					+ "   AND SQ.SUBTASK_ID IN "+qualitySets.toString().replace("[", "(").replace("]", ")");
+			log.info("getCommonSubtaskByQualitySubtask SQL："+selectSql);
+			
+
+			ResultSetHandler<Map<Integer, Map<String, String>>> rsHandler = new ResultSetHandler<Map<Integer, Map<String, String>>>() {
+				public Map<Integer, Map<String, String>> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Map<String, String>> returnMap=new HashMap<Integer, Map<String, String>>();
+					while (rs.next()) {
+						Map<String, String> map=new HashMap<String, String>();
+						map.put("subtaskId", rs.getString("SUBTASK_ID"));
+						map.put("exeUserId", rs.getString("EXE_USER_ID"));
+						map.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						map.put("groupId", rs.getString("GROUP_ID"));
+						map.put("status",  rs.getString("STATUS"));
+						map.put("groupName", rs.getString("GROUP_NAME"));
+						map.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						map.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						map.put("taskName", rs.getString("TASK_NAME"));
+						returnMap.put(rs.getInt("QUALITY_SUBTASK_ID"), map);
+					}
+					return returnMap;
+				}	
+			};
+			return run.query(conn, selectSql,rsHandler);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);

@@ -283,8 +283,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Map<String,String> parMap = new HashMap<String,String>();
 			parMap.put("parameter", jso.toString());
 			parMap.put("operate", "downloadFastMapFeedBack");
-//			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
 			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDayNotifyUrl);
+			log.debug(" 反馈多源 msUrl: "+msUrl);
 			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());

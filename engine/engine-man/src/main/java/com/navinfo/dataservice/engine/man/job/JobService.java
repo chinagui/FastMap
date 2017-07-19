@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.job;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
@@ -11,6 +10,8 @@ import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -90,6 +91,26 @@ public class JobService {
             conn = DBConnector.getInstance().getManConnection();
             JobOperator jobOperator = new JobOperator(conn);
             return jobOperator.getJobProgressStatus(itemId, itemType, jobType);
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("获取JOB状态失败，原因为:" + e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+    /**
+     * 获取按批次日落月的进度
+     * @return
+     * @throws Exception
+     */
+    public JSONObject getDay2MonthLotJobProgress() throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getManConnection();
+            JobOperator jobOperator = new JobOperator(conn);
+            return jobOperator.getDay2MonthLotJobProgressStatus();
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);

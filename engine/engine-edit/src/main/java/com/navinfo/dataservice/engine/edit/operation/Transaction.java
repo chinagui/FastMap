@@ -1853,8 +1853,8 @@ public class Transaction {
                     }
                 }
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw e;
         }
     }
 

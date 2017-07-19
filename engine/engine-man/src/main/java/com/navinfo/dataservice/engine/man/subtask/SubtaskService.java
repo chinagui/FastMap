@@ -150,16 +150,21 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
+				dataJson.remove("qualityMethod");
+			}
+			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
-				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",3);
+				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				dataJson.discard("qualityMethod");
+				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=3;
 				}
-				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",1);
+				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
+					qualityMethod=1;
 				}
-				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",2);
+				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=2;
 				}
 			}
 			
@@ -190,6 +195,7 @@ public class SubtaskService {
 					qualityBean.setName(qualityBean.getName()+"_质检");}
 				qualityBean.setIsQuality(1);
 				qualityBean.setStatus(2);
+				qualityBean.setQualityMethod(qualityMethod);
 				qualityBean.setExeUserId(qualityExeUserId);
 				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
 				qualityBean.setExeGroupId(qualityExeGroupId);
@@ -388,16 +394,18 @@ public class SubtaskService {
 			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
 				dataJson.remove("qualityMethod");
 			}
+			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
-				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",3);
+				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				dataJson.discard("qualityMethod");
+				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=3;
 				}
-				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",1);
+				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
+					qualityMethod=1;
 				}
-				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",2);
+				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=2;
 				}
 			}
 			
@@ -443,6 +451,7 @@ public class SubtaskService {
 				qualitySubtask.setSubtaskId(qualitySubtaskId);
 				qualitySubtask.setExeUserId(qualityExeUserId);
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+				qualitySubtask.setQualityMethod(qualityMethod);
 				//qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
@@ -460,7 +469,7 @@ public class SubtaskService {
 					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 					qualitySubtask.setExeUserId(qualityExeUserId);
-						
+					qualitySubtask.setQualityMethod(qualityMethod);	
 					//创建质检子任务 subtask	
 					newQualitySubtaskId = createSubtaskWithSubtaskId(conn,qualitySubtask);	
 					subtask.setIsQuality(0);
@@ -3562,6 +3571,7 @@ public class SubtaskService {
 			Geometry geometryRefer = run.query(conn, selectSql, geometryHandler);
 			if(geometryRefer != null){
 				Geometry newGeometry = geometry.intersection(geometryRefer);
+				if(newGeometry==null||newGeometry.isEmpty()){throw new Exception("绘制的质检圈完全超过子任务不规则圈，请重新画");}
 				String createSql = "INSERT INTO SUBTASK_QUALITY (QUALITY_ID, SUBTASK_ID, GEOMETRY) VALUES (Subtask_quality_SEQ.Nextval,?,?)";
 				run.update(conn, createSql, subtaskId, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)));
 			}
@@ -3599,6 +3609,7 @@ public class SubtaskService {
 			Geometry geometryQuality = run.query(conn, selectSql, geometryHandler);
 			if(geometryQuality != null){
 				Geometry newGeometry = geometry.intersection(geometryQuality);
+				if(newGeometry==null||newGeometry.isEmpty()){throw new Exception("绘制的质检圈完全超过子任务不规则圈，请重新修改");}
 				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
 				run.update(conn, updateSql, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)), qualityId);
 			}

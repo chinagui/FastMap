@@ -203,7 +203,7 @@ public class SubtaskTest extends InitApplication{
 	//创建质检圈(测试)
 	@Test
 	public void testQualityCreate() throws Exception {
-		String parameter = "{\"subtaskId\":178,\"geometry\":\"POLYGON((116.34384155273436 39.889718875996685,116.33079528808595 39.86653357724533,116.3733673095703 39.88128876522249,116.35276794433594 39.892353073034826,116.34384155273436 39.889718875996685))\"}";
+		String parameter = "{\"subtaskId\":184,\"geometry\":\"POLYGON((116.29989624023439 39.891826241725596,116.29714965820311 39.86600654754002,116.35139465332031 39.87338459498892,116.29989624023439 39.891826241725596))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}

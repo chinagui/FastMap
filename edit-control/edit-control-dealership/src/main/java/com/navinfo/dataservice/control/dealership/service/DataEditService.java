@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -31,6 +33,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
@@ -1939,6 +1942,8 @@ public class DataEditService {
 			log.error("解析excel表格出现错误。原因为："+e);
 			throw new Exception("解析excel表格出错，请检查表格内是否有空行");
 		}
+		//代理店_补充数据上传增加文件检查（6879）
+		addChainDataCheck(addDataMaps);
 		
 		Connection conn = null;
 		try{
@@ -2006,6 +2011,99 @@ public class DataEditService {
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//代理店_补充数据上传增加文件检查（6879）
+	private void addChainDataCheck(List<Map<String, Object>> list) throws Exception {
+		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, List<String>> dataMap = metadataApi.scPointAdminareaDataMap();
+		Map<String, Integer> chainStatusMap = null;
+		List<Integer> historyList = Arrays.asList(1,2,3,4);
+		List<String> districtList = null;
+		List<String> kindCodeList = null;
+		Connection metaConn = null;
+		Connection dealershipConn = null;
+		try{
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			dealershipConn = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			String districtSql = "SELECT DISTRICT FROM SC_POINT_ADMINAREA WHERE REMARK = '1'";
+			String kindCodeSql = "SELECT KIND_CODE FROM SC_POINT_POICODE_NEW";
+			String chainStatusSql = "SELECT CHAIN_CODE, CHAIN_STATUS FROM IX_DEALERSHIP_CHAIN";
+			districtList = run.query(metaConn, districtSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("DISTRICT"));
+					}
+					return list;
+				}
+			});
+			kindCodeList = run.query(metaConn, kindCodeSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("KIND_CODE"));
+					}
+					return list;
+				}
+			});
+			chainStatusMap = run.query(dealershipConn, chainStatusSql, new ResultSetHandler<Map<String, Integer>>(){
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put(rs.getString("CHAIN_CODE"), rs.getInt("CHAIN_STATUS"));
+					}
+					return map;
+				}
+			});
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(metaConn);
+			DbUtils.rollbackAndCloseQuietly(dealershipConn);
+			log.error(e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(metaConn);
+			DbUtils.closeQuietly(dealershipConn);
+		}
+		
+		for (int i = 0; i < list.size(); i++) {
+			String province = list.get(i).get("province").toString();
+			String city = list.get(i).get("city").toString();
+			String project = list.get(i).get("project").toString();
+			String kindCode = list.get(i).get("kindCode").toString();
+			String chain = list.get(i).get("chain").toString();
+			String name = list.get(i).get("name").toString();
+			String address = list.get(i).get("address").toString();
+			Integer history = Integer.valueOf(list.get(i).get("history").toString()) ;
+			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
+				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
+			}
+			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
+				throw new ServiceException("第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+			}
+			if(StringUtils.isEmpty(project)){
+				throw new ServiceException("第" + (i+2) + "行中：项目为空");
+			}
+			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
+				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
+			}
+			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 1){
+				throw new ServiceException("第" + (i+2) + "行中：代理店品牌为空或代理店品牌表中状态不是作业中");
+			}
+			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供名称为空或不是全角");
+			}
+			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
+			}
+			if(!historyList.contains(history)){
+				throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+			}
 		}
 	}
 	

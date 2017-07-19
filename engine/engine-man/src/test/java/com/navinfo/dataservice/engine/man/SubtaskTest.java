@@ -51,7 +51,7 @@ public class SubtaskTest extends InitApplication{
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
 		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
-		String parameter ="{\"id1\":263,\"id2\":264}"; 
+		String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		

@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.kmeans.KPoint;
+import com.navinfo.dataservice.commons.kmeans.Kmeans;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -3646,7 +3648,7 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			//未规划的gird
+			//已规划的gird
 			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
 			//获取统计量信息
 			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
@@ -3666,7 +3668,7 @@ public class SubtaskService {
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
 				if(grids.contains(gridId)){
-						result.remove(i);
+					result.remove(i);
 				}
 			}
 			
@@ -3726,20 +3728,69 @@ public class SubtaskService {
 	public void autoPlan(int taskId, int subtaskNum) throws Exception{
 		Connection conn = null;
 		try{
+			log.info("taskId:"+taskId+" autoplan start");
+
 			conn = DBConnector.getInstance().getManConnection();
-			//未规划的gird
+			//已规划的gird
 			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
 			//获取统计量信息
 			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
-
-			//从统计信息中移除已规划的gird
-			for(int i = 0; i < result.size(); i++){
-				Map<String, Object> map = result.get(i);
+			//获取未规划的grid
+			List<KPoint> pointList = new ArrayList<>();
+			for(Map map:result){
 				int gridId = Integer.parseInt(map.get("gridId").toString());
-				if(grids.contains(gridId)){
-					result.remove(i);
+				int tipsNum = Integer.parseInt(map.get("unfinished").toString());
+				if(!grids.contains(gridId)) {
+					KPoint point = new KPoint(gridId, tipsNum);
+					pointList.add(point);
 				}
 			}
+			if(pointList.size()==0){
+				log.info("taskId:"+taskId+",no grids");
+				return;
+			}
+
+			if(pointList.size()<subtaskNum){
+				throw new Exception("可分配grid个数少于子任务个数，无法分配");
+			}
+
+			KPoint[] points = new KPoint[pointList.size()];
+			pointList.toArray(points);
+			//执行kmeans分类
+			log.info("taskId "+taskId+": kmeans start");
+			Kmeans kmeans = new Kmeans(points, subtaskNum, true);
+			int[] assignments = kmeans.run();
+			log.info("taskId "+taskId+": kmeans end");
+			//组装每个子任务的grid列表
+			Map<Integer,Map<Integer,Integer>> gridMaps = new HashMap<>();
+			for(int i=0;i<points.length;i++){
+				int assignment = assignments[i];
+				if(!gridMaps.containsKey(assignment)){
+					Map<Integer, Integer> gridMap = new HashMap<>();
+					gridMaps.put(assignment, gridMap);
+				}
+				Map<Integer, Integer> gridMap = gridMaps.get(assignment);
+				gridMap.put(points[i].getGridId(), 1);
+			}
+			//创建子任务
+			int[] sums = kmeans.getCounts();
+
+			for( Integer index : gridMaps.keySet()){
+				Map<Integer, Integer> gridMap = gridMaps.get(index);
+				Subtask subtask = new Subtask();
+				subtask.setGridIds(gridMap);
+				subtask.setType(3);//一体化grid粗编
+				subtask.setTaskId(taskId);
+				subtask.setStage(1); //日编
+				subtask.setDescp("自动规划创建");
+				List<Integer> gridList = subtask.getGridIds();
+				log.info("taskId:"+taskId+",sum:"+sums[index]+",grids:"+gridList.toString());
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridList));
+				subtask.setGeometry(wkt);
+				createSubtaskWithSubtaskId(conn,subtask);
+			}
+
+			log.info("taskId:"+taskId+" autoplan end");
 
 		}catch(Exception e){
 			log.error("日编子任务自动规划接口异常，原因为："+e.getMessage(),e);

@@ -168,8 +168,6 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		//采集任务创建子任务
 		for(Task task:collectTaskList){
 			Subtask subtask = new Subtask();
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, subtask);
-			subtask.setSubtaskId(subtaskId);
 			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
 			subtask.setType(2);
 			subtask.setStage(0);

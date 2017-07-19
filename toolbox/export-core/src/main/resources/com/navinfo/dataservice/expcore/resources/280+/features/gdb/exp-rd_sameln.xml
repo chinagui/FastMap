@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="SAME_NODE_AND_LINK">
+        <!--
+            同一关系提取规则：
+            a)	根据RD_LINK号提取同一关系；
+            b)	根据RW_LINK号提取同一关系；
+            c)	根据AD_LINK号提取同一关系；
+            d)	根据ZONE_LINK号提取同一关系；
+            e)	根据LU_LINK（BUA）号提取同一关系
+            f)	对所有的LINK去重；
+
+            第2步得到图幅内link 和图幅内node
+                -->
+        <step value="67">
+            <!--道路Link同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.1">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_LINK
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_FILTER_RD_LINK N, RD_SAMELINK_PART CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'RD_LINK'));
+                        ]]></sql>
+
+            <!--铁路Link同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.2">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_LINK
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_FILTER_RW_LINK N, RD_SAMELINK_PART CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'RW_LINK'));
+                        ]]></sql>
+
+            <!--行政区划Link同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.3">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_LINK
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_AD_LINK N, RD_SAMELINK_PART CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'AD_LINK'));
+                        ]]></sql>
+
+
+            <!--Zone Link同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.4">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_LINK
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_ZONE_LINK N, RD_SAMELINK_PART CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'ZONE_LINK'));
+                        ]]></sql>
+
+            <!--LU_LINK（BUA）同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.5">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_LINK
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_LU_LINK N, RD_SAMELINK_PART CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'LU_LINK'));
+                        ]]></sql>
+
+            <!--///////////////////////////////////////////////////////////////////////////////////////////////-->
+            <!--/////////////////////////////////////同一Node关系////////////////////////////////////////////////-->
+            <!--道路NODE同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.6">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_NODE
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_FILTER_RD_NODE N, RD_SAMENODE_PART CN
+                            WHERE (N.PID = CN.NODE_PID AND CN.TABLE_NAME = 'RD_NODE'));
+                        ]]></sql>
+
+            <!--铁路NODE同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.7">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_NODE
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_FILTER_RW_NODE N, RD_SAMENODE_PART CN
+                            WHERE (N.PID = CN.NODE_PID AND CN.TABLE_NAME = 'RW_NODE'));
+                        ]]></sql>
+
+            <!--行政区划NODE同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.8">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_NODE
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_AD_NODE N, RD_SAMENODE_PART CN
+                            WHERE (N.PID = CN.NODE_PID AND CN.TABLE_NAME = 'AD_NODE'));
+                        ]]></sql>
+
+
+            <!--ZoneNODE同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.9">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_NODE
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_ZONE_NODE N, RD_SAMENODE_PART CN
+                            WHERE (N.PID = CN.NODE_PID AND CN.TABLE_NAME = 'ZONE_NODE'));
+                        ]]></sql>
+
+            <!--LU NODE同一关系-->
+            <sql id="exp-rd-SAME_NODE_AND_LINK-4.10">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_SAME_NODE
+                          (PID)
+                          (SELECT CN.GROUP_ID
+                             FROM TEMP_LU_NODE N, RD_SAMENODE_PART CN
+                            WHERE (N.PID = CN.NODE_PID AND CN.TABLE_NAME = 'LU_NODE'));
+                        ]]></sql>
+        </step>
+
+        <step value="70">
+            <!--TEMP_SAME_LINK去重-->
+            <sql>
+                <![CDATA[
+                        DELETE FROM TEMP_SAME_LINK A
+                         WHERE A.ROWID !=
+                               (SELECT MAX(B.ROWID) FROM TEMP_SAME_LINK B WHERE A.PID = B.PID);
+                        ]]></sql>
+            <!--TEMP_SAME_NODE去重-->
+            <sql>
+                <![CDATA[
+                        DELETE FROM TEMP_SAME_NODE A
+                         WHERE A.ROWID !=
+                               (SELECT MAX(B.ROWID) FROM TEMP_SAME_NODE B WHERE A.PID = B.PID);
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM RD_SAMELINK P,TEMP_SAME_LINK T WHERE P.GROUP_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SAMELINK_PART P,TEMP_SAME_LINK T WHERE P.GROUP_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SAMENODE P,TEMP_SAME_NODE T WHERE P.GROUP_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SAMENODE_PART P,TEMP_SAME_NODE T WHERE P.GROUP_ID=T.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+        	<sql><![CDATA[DELETE FROM RD_SAMELINK P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_SAME_LINK T ); ]]></sql>
+        	<sql><![CDATA[DELETE FROM RD_SAMELINK_PART P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_SAME_LINK T ); ]]></sql>
+        	<sql><![CDATA[DELETE FROM RD_SAMENODE P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_SAME_NODE T ); ]]></sql>
+        	<sql><![CDATA[DELETE FROM RD_SAMENODE_PART P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_SAME_NODE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_SAME_LINK
+					  SELECT GROUP_ID
+					    FROM RD_SAMELINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_SAMELINK  B WHERE A.GROUP_ID = B.GROUP_ID);
+				]]></sql>
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_SAME_NODE
+					  SELECT GROUP_ID
+					    FROM RD_SAMENODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_SAMENODE  B WHERE A.GROUP_ID = B.GROUP_ID);
+				]]></sql>
+        </step>
+
+
+    </feature>
+</sqls>

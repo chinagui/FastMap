@@ -409,6 +409,7 @@ public class ColumnCoreOperation {
 		sql.append("SELECT DISTINCT ps.pid,ps.qc_flag,ps.common_handler FROM POI_COLUMN_STATUS PS ");
 		sql.append(" WHERE PS.PID IN ("+StringUtils.join(pidList, ",")+") ");
 		sql.append("	AND PS.HANDLER in (0, "+userId+") ");
+		sql.append("	AND PS.work_item_id not in ('FM-DETAIL','FM-CARRENTAL','FM-PARKING') ");
 		if(isQuality==0){
 			sql.append("	AND PS.COMMON_HANDLER = "+userId);
 		}else if(isQuality==1){

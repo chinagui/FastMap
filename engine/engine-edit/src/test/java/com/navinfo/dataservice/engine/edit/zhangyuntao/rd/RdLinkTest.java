@@ -78,10 +78,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void depart() throws Exception {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":401000528,\"dbId\":13,\"subtaskId\":393," +
-                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.86708688735963," +
-                "39.97191567906229],[116.86638,39.97247]]},\"catchInfos\":[{\"nodePid\":500000364,\"longitude\":116.86708688735963," +
-                "\"latitude\":39.97191567906229}]}}";
+        String requester = "{\"command\":\"TOPOBREAK\",\"type\":\"RDLINK\",\"dbId\":249,\"subtaskId\":505,\"objId\":[14680372," +
+                "408001028],\"data\":{\"longitude\":116.20895085842606,\"latitude\":39.80757077990377,\"nodePid\":0}}";
         TestUtil.run(requester);
     }
 

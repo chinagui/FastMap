@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-11-3
+-->
+<sqls>
+    <import file="exp-ck.xml"/>
+</sqls>

@@ -288,7 +288,7 @@ public class FccApiImpl implements FccApi{
                 int count=0;
 
                 Tips2AuMarkApi api=new Tips2AuMarkApi();
-                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo,taskType);
+                //count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo,taskType);
 
                 if(count!=0){
                     apiService.updateJobProgress(phaseId,2,"转mark执行成功");

@@ -2041,12 +2041,9 @@ public class TipsSelector {
      * @return
      * @throws Exception
      */
-    public List<JSONObject> getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
-
-        List<JSONObject> snapshots=conn.queryTipsByTask(taskId, taskType, 1);
-
-        return snapshots;
-
+    public SolrDocumentList getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
+        SolrDocumentList sdList = conn.queryTipsByTask(taskId, taskType, 1);
+        return sdList;
     }
 
     /**

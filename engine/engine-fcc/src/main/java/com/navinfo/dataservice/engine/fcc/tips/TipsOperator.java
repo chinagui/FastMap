@@ -590,8 +590,7 @@ public class TipsOperator {
 			
 			hbaseConn=HBaseConnector.getInstance().getConnection();
 			
-			htab=hbaseConn
-					.getTable(TableName.valueOf(HBaseConstant.tipTab));
+			htab=hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			
 			List<JSONObject> tipsList=selector.getTipsByTaskId(sQTaskId, TaskType.Q_TASK_TYPE);
 			for (JSONObject json : tipsList) {
@@ -645,12 +644,14 @@ public class TipsOperator {
 			}
 			
 			htab.put(puts);
-			
-			htab.close();
-			
+
 		} catch (Exception e) {
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
+		}finally {
+			if(htab != null) {
+                htab.close();
+            }
 		}
 		
 		
@@ -710,52 +711,57 @@ public class TipsOperator {
         builder.append("wkt:\"intersects(");
         builder.append(wkt);
         builder.append(")\"");
-        builder.append(" AND s_qTaskId:0");
-        builder.append(" AND s_mTaskId:0");
+        StringBuilder fqBuilder = new StringBuilder();
+        fqBuilder.append("s_qTaskId:0");
+        fqBuilder.append(" AND s_mTaskId:0");
         //20170615 过滤内业Tips
-        builder.append(" AND ");
-        builder.append("-s_sourceType:80*");
-        builder.append(" AND ");
-        builder.append("t_tipStatus:2");
+        fqBuilder.append(" AND ");
+        fqBuilder.append("-s_sourceType:80*");
+        fqBuilder.append(" AND ");
+        fqBuilder.append("t_tipStatus:2");
 
         Connection hbaseConn = null;
         Table htab = null;
-        List<Put> puts = new ArrayList<>();
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), null);
+            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
             long totalNum = sdList.getNumFound();
-            if (totalNum <= fetchNum) {
-                for (int i = 0; i < totalNum; i++) {
-                    SolrDocument doc = sdList.get(i);
-                    JSONObject snapshot = JSONObject.fromObject(doc);
-                    String rowkey = snapshot.getString("id");
-                    //更新hbase
-                    Get get = new Get(rowkey.getBytes());
-                    Result result = htab.get(get);
-                    JSONObject source = JSONObject.fromObject(new String(result.getValue(
-                            "data".getBytes(), "source".getBytes())));
-                    Put put = new Put(rowkey.getBytes());
-                    source.put("s_mTaskId", midTaskId);
-                    put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
-                            .getBytes());
-                    puts.add(put);
+            if(totalNum > fetchNum || totalNum == 0) {
+                return 0;
+            }
+            List<Put> puts = new ArrayList<>();
+            List<JSONObject> solrIndexList = new ArrayList<>();
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                String rowkey = snapshot.getString("id");
+                //更新hbase
+                Get get = new Get(rowkey.getBytes());
+                Result result = htab.get(get);
+                JSONObject source = JSONObject.fromObject(new String(result.getValue(
+                        "data".getBytes(), "source".getBytes())));
+                Put put = new Put(rowkey.getBytes());
+                source.put("s_mTaskId", midTaskId);
+                put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
+                        .getBytes());
+                puts.add(put);
 
-                    //更新solr
-                    JSONObject solrIndex = solr.getById(rowkey);
-                    solrIndex.put("s_mTaskId", midTaskId);
-                    solr.addTips(solrIndex);
-                }
-            } else {
-                // 暂先不处理
+                //更新solr
+                JSONObject solrIndex = solr.getById(rowkey);
+                solrIndex.put("s_mTaskId", midTaskId);
+                solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            htab.close();
+            solr.addTips(solrIndexList);
             return totalNum;
         }catch (Exception e) {
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
         }
     }
 

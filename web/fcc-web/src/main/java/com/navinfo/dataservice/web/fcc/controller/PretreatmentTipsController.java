@@ -93,7 +93,7 @@ public class PretreatmentTipsController extends BaseController {
 
 	
 	/**
-	 * @Description:删除tips
+	 * @Description:情报矢量化删除tips
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -392,7 +392,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submitInfoJobTips2Web( user,taskId);
+			op.submitInfoJobTips2Web(user,taskId);
 
 			return new ModelAndView("jsonView", success());
 
@@ -461,7 +461,7 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
-	 * @Description:（情报矢量化+FCC??）tip新增或者修改
+	 * @Description:（情报矢量化）tip新增或者修改
 	 * @param request
 	 * @return
 	 * @throws ServletException

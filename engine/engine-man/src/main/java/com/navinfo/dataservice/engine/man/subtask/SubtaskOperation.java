@@ -254,7 +254,7 @@ public class SubtaskOperation {
 		}
 	}
 	
-	public static void closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
+	public static int closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String closedSubtaskStr = "(";
@@ -265,7 +265,7 @@ public class SubtaskOperation {
 					+ "set S.STATUS=0 "
 					+ "where S.SUBTASK_ID in "
 					+ closedSubtaskStr 
-					+ " AND (S.TYPE!=4 OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
+					+ " AND (S.TYPE!=4 or s.descp like '%预处理%' OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
 					+ "          FROM SUBTASK SS, SUBTASK_GRID_MAPPING SM, TASK_GRID_MAPPING TM"
 					+ "         WHERE SS.SUBTASK_ID = SM.SUBTASK_ID"
 					+ "           AND SM.GRID_ID = TM.GRID_ID"
@@ -275,7 +275,7 @@ public class SubtaskOperation {
 					+ "           AND S.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.TYPE = 3)))";
 			log.info("关闭SQL："+updateSql);
-			run.update(conn,updateSql);
+			return run.update(conn,updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
@@ -2913,11 +2913,11 @@ public class SubtaskOperation {
 	 * @param subtaskId
 	 * @throws Exception 
 	 */
-	public static void closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
+	public static int closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
 		try{
 			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
 			closedSubtaskList.add(subtaskId);
-			closeBySubtaskList(conn, closedSubtaskList);
+			return closeBySubtaskList(conn, closedSubtaskList);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);

@@ -3260,7 +3260,10 @@ public class SubtaskService {
 				
 				Geometry unionGeo=geo1.union(geo2);
 				
-				if(!unionGeo.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+				if(!unionGeo.isSimple()){throw new ServiceException("合并后不是简单面，请重新选择");}
+				JSONObject geoJson = GeoTranslator.jts2Geojson(unionGeo);
+				int ringNum=geoJson.getJSONArray("coordinates").size();
+				if(ringNum>1){throw new Exception("合并后形成环，请重新选择");}
 				//4.保存
 				SubtaskRefer refer=new SubtaskRefer();
 				refer.setBlockId(refers.get(0).getBlockId());

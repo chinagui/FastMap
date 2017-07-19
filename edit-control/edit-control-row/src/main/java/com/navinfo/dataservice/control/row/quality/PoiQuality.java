@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -1151,7 +1152,10 @@ public class PoiQuality {
 			ResultSet rs = null;
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT PID FROM POI_EDIT_STATUS E WHERE E.STATUS = 2 AND NOT EXISTS (");
-			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R WHERE R.TABLE_NAME = 'IX_POI' AND R.PID = E.PID)");
+			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
+					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
+					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
+					+ "			  AND N.RULEID IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))");
 			sb.append( " AND (E.QUICK_SUBTASK_ID='"+subtaskId+"' or E.MEDIUM_SUBTASK_ID='"+subtaskId+"')");
 			
 			pstmt = conn.prepareStatement(sb.toString());

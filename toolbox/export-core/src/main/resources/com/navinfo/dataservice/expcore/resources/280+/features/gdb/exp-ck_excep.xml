@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+    <feature name="ck_excep">
+        <step value="100">
+            <sql condition="mesh"><![CDATA[SELECT P.* FROM CK_EXCEPTION P WHERE P.MESH_ID [mesh];]]></sql>
+        </step>
+        <step value="101">
+            <sql condition="mesh"><![CDATA[DELETE FROM CK_EXCEPTION P WHERE P.MESH_ID [mesh];]]></sql>
+        </step>
+    </feature>
+</sqls>

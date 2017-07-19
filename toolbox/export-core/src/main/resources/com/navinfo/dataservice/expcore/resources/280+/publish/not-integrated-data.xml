@@ -1,0 +1,970 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- CREATE TABLE TEMP_NOT_INTEGRATED_DATA( TABLE_NAME VARCHAR2(32), PID NUMBER(10), OBJECT_TYPE VARCHAR2(32), COLUMN_NAME VARCHAR2(32), REF_TABLE VARCHAR2(32), REF_COLUMN VARCHAR2(32) 
+	) NOLOGGING CREATE INDEX TEMP_NID_OP ON TEMP_NOT_INTEGRATED_DATA(OBJECT_TYPE,PID) -->
+
+<tables>
+	<!-- 虚拟连接 -->
+	<objectName name="RD_VIRCONNECT">
+		<step value="1">
+			<table name="RD_VIRCONNECT_TRANSIT" pid="PID" OBJECT_TYPE="RD_VIRCONNECT">
+				<ref column="FIR_NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="SEN_NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_VIRCONNECT_TRANSIT" refPid="PID" />
+				<remove tableName="RD_VIRCONNECT_NAME" refPid="PID" />
+				<remove tableName="RD_VIRCONNECT" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	<!-- 坡度 -->
+	<objectName name="RD_SLOPE">		
+		<step value="1">
+			<table name="RD_SLOPE_VIA" pid="SLOPE_PID" OBJECT_TYPE="RD_SLOPE">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_SLOPE" pid="PID" OBJECT_TYPE="RD_SLOPE">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_SLOPE" pid="PID" OBJECT_TYPE="RD_SLOPE">
+				<remove tableName="RD_SLOPE_VIA" refPid="SLOPE_PID" />				
+				<remove tableName="RD_SLOPE" refPid="PID" />
+			</table>
+		</step>
+		
+	</objectName>
+
+	<!--限速关系 -->
+	<objectName name="RD_SPEEDLIMIT">
+		<step value="1">
+			<table name="RD_SPEEDLIMIT" pid="PID" OBJECT_TYPE="RD_SPEEDLIMIT">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_SPEEDLIMIT" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!--卡车限速关系 -->
+	<objectName name="RD_SPEEDLIMIT_TRUCK">
+		<step value="1">
+			<table name="RD_SPEEDLIMIT_TRUCK" pid="PID" OBJECT_TYPE="RD_SPEEDLIMIT_TRUCK">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_SPEEDLIMIT_TRUCK" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!--限高限重 -->
+	<objectName name="RD_HGWG_LIMIT">
+		<step value="1">
+			<table name="RD_HGWG_LIMIT" pid="PID" OBJECT_TYPE="RD_HGWG_LIMIT">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_HGWG_LIMIT" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!--车道限高限宽 -->
+	<objectName name="RD_LANE_HGWD">
+		<step value="1">
+			<table name="RD_LANE_HGWD" pid="PID" OBJECT_TYPE="RD_LANE_HGWD">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LANE_HGWD" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	
+   <!--警示信息 -->
+	<objectName name="RD_LINK_WARNING">
+		<step value="1">
+			<table name="RD_LINK_WARNING" pid="PID" OBJECT_TYPE="RD_LINK_WARNING">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LINK_WARNING" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!--里程桩 -->
+	<objectName name="RD_MILEAGEPILE">
+		<step value="1">
+			<table name="RD_MILEAGEPILE" pid="PID" OBJECT_TYPE="RD_MILEAGEPILE">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_MILEAGEPILE" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!-- 人行过道 -->
+	<objectName name="RD_CROSSWALK">
+		<step value="1">
+
+			<table name="RD_CROSSWALK_NODE" pid="PID" OBJECT_TYPE="RD_CROSSWALK">
+				<ref column="FIR_NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="SEN_NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_CROSSWALK_INFO" pid="PID" OBJECT_TYPE="RD_CROSSWALK">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_CROSSWALK_INFO" pid="PID" OBJECT_TYPE="RD_CROSSWALK">
+				<remove tableName="RD_CROSSWALK_INFO" refPid="PID" />
+				<remove tableName="RD_CROSSWALK_NODE" refPid="PID" />
+				<remove tableName="RD_CROSSWALK" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+
+	<!-- 交通信号灯 -->
+	<objectName name="RD_TRAFFICSIGNAL">
+		<step value="1">
+			<table name="RD_TRAFFICSIGNAL" pid="PID" OBJECT_TYPE="RD_TRAFFICSIGNAL">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_TRAFFICSIGNAL" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 警示信息  280不再导出 -->
+<!-- 	<objectName name="RD_WARNINGINFO">
+		<step value="1">
+			<table name="RD_WARNINGINFO" pid="PID" OBJECT_TYPE="RD_WARNINGINFO">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_WARNINGINFO" refPid="PID" />
+			</table>
+		</step>
+	</objectName> -->
+
+	<!-- 电子眼 -->
+
+	<objectName name="RD_ELECTRONICEYE">
+		<step value="1">
+			<table name="RD_ELECTRONICEYE" pid="PID" OBJECT_TYPE="RD_ELECTRONICEYE">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_ELECTRONICEYE" refPid="PID" />
+			</table>
+		</step>		
+		<step value="7">
+			<table name="RD_ELECEYE_PART" pid="GROUP_ID" OBJECT_TYPE="RD_ELECEYE_PAIR">
+				<ref column="ELECEYE_PID" refTable="RD_ELECTRONICEYE" refTablePid="PID" />
+				<remove tableName="RD_ELECEYE_PART" refPid="GROUP_ID" />
+				<remove tableName="RD_ELECEYE_PAIR" refPid="GROUP_ID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 大门 -->
+	<objectName name="RD_GATE">
+		<step value="1">
+			<table name="RD_GATE" pid="PID" OBJECT_TYPE="RD_GATE">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_GATE_CONDITION" refPid="PID" />
+				<remove tableName="RD_GATE" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 交限 -->
+	<objectName name="RD_RESTRICTION">
+		<step value="1">
+			<table name="RD_RESTRICTION" pid="PID" OBJECT_TYPE="RD_RESTRICTION">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_RESTRICTION" refPid="PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_RESTRICTION_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_RESTRICTION_DETAIL">
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="RESTRIC_PID" refTable="RD_RESTRICTION" refTablePid="PID" />
+			</table>
+			<table name="RD_RESTRICTION_VIA" pid="DETAIL_ID" OBJECT_TYPE="RD_RESTRICTION_DETAIL">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_RESTRICTION_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_RESTRICTION_DETAIL">
+				<remove tableName="RD_RESTRICTION_DETAIL" refPid="DETAIL_ID" />
+				<remove tableName="RD_RESTRICTION_CONDITION" refPid="DETAIL_ID" />
+				<remove tableName="RD_RESTRICTION_VIA" refPid="DETAIL_ID" />
+			</table>
+		</step>
+		<step value="13">
+			<!--删除孤立对象 -->
+			<table name="RD_RESTRICTION" pid="PID" OBJECT_TYPE="RD_RESTRICTION">
+				<ref column="PID" refTable="RD_RESTRICTION_DETAIL" refTablePid="RESTRIC_PID" />
+				<remove tableName="RD_RESTRICTION" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	<!-- 顺行 -->
+	<objectName name="RD_DIRECTROUTE">
+		<step value="1">
+			<table name="RD_DIRECTROUTE_VIA" pid="PID" OBJECT_TYPE="RD_DIRECTROUTE">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_DIRECTROUTE" pid="PID" OBJECT_TYPE="RD_DIRECTROUTE">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_DIRECTROUTE_VIA" refPid="PID" />
+				<remove tableName="RD_DIRECTROUTE" refPid="PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_DIRECTROUTE" pid="PID" OBJECT_TYPE="RD_DIRECTROUTE">
+				<remove tableName="RD_DIRECTROUTE_VIA" refPid="PID" />
+				<remove tableName="RD_DIRECTROUTE" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 分歧 -->
+	<objectName name="RD_BRANCH">
+		<step value="1">
+			<table name="RD_BRANCH_VIA" pid="BRANCH_PID" OBJECT_TYPE="RD_BRANCH">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_BRANCH" pid="BRANCH_PID" OBJECT_TYPE="RD_BRANCH">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_BRANCH" pid="BRANCH_PID" OBJECT_TYPE="RD_BRANCH">
+				<remove tableName="RD_BRANCH_VIA" refPid="BRANCH_PID" />
+				<remove tableName="RD_BRANCH_REALIMAGE" refPid="BRANCH_PID" />
+				<remove tableName="RD_SIGNBOARD" refPid="BRANCH_PID" />
+				<remove tableName="RD_SIGNASREAL" refPid="BRANCH_PID" />
+				<remove tableName="RD_SERIESBRANCH" refPid="BRANCH_PID" />
+				<remove tableName="RD_BRANCH" refPid="BRANCH_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_BRANCH_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_BRANCH_DETAIL">
+				<ref column="BRANCH_PID" refTable="RD_BRANCH" refTablePid="BRANCH_PID" />
+				<remove tableName="RD_BRANCH_DETAIL" refPid="DETAIL_ID" />
+				<remove tableName="RD_BRANCH_NAME" refPid="DETAIL_ID" />
+			</table>
+			<table name="RD_SIGNBOARD" pid="SIGNBOARD_ID" OBJECT_TYPE="RD_SIGNBOARD">
+				<ref column="BRANCH_PID" refTable="RD_BRANCH" refTablePid="BRANCH_PID" />
+				<remove tableName="RD_SIGNBOARD" refPid="SIGNBOARD_ID" />
+				<remove tableName="RD_SIGNBOARD_NAME" refPid="SIGNBOARD_ID" />
+			</table>
+		</step>
+		<step value="13">
+			<table name="RD_BRANCH_NAME_TONE" pid="NAME_ID" OBJECT_TYPE="RD_BRANCH_NAME_TONE">
+				<ref column="NAME_ID" refTable="RD_BRANCH_NAME" refTablePid="NAME_ID" />
+				<remove tableName="RD_BRANCH_NAME_TONE" refPid="NAME_ID" />
+			</table>
+			<table name="RD_SIGNBOARD_NAME_TONE" pid="NAME_ID" OBJECT_TYPE="RD_SIGNBOARD_NAME_TONE">
+				<ref column="NAME_ID" refTable="RD_SIGNBOARD_NAME" refTablePid="NAME_ID" />
+				<remove tableName="RD_SIGNBOARD_NAME_TONE" refPid="NAME_ID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 车信 -->
+	<objectName name="RD_LANE_CONNEXITY">
+		<step value="1">
+			<table name="RD_LANE_CONNEXITY" pid="PID" OBJECT_TYPE="RD_LANE_CONNEXITY">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LANE_CONNEXITY" refPid="PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_LANE_TOPOLOGY" pid="TOPOLOGY_ID" OBJECT_TYPE="RD_LANE_TOPOLOGY">
+				<ref column="CONNEXITY_PID" refTable="RD_LANE_CONNEXITY" refTablePid="PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_LANE_VIA" pid="TOPOLOGY_ID" OBJECT_TYPE="RD_LANE_TOPOLOGY">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_LANE_TOPOLOGY" pid="TOPOLOGY_ID" OBJECT_TYPE="RD_LANE_TOPOLOGY">
+				<remove tableName="RD_LANE_TOPOLOGY" refPid="TOPOLOGY_ID" />
+				<remove tableName="RD_LANE_VIA" refPid="TOPOLOGY_ID" />
+			</table>
+		</step>
+		<step value="13">
+			<!--删除孤立对象 -->
+			<table name="RD_LANE_CONNEXITY" pid="PID" OBJECT_TYPE="RD_LANE_CONNEXITY">
+				<ref column="PID" refTable="RD_LANE_TOPOLOGY" refTablePid="CONNEXITY_PID" />
+				<remove tableName="RD_LANE_CONNEXITY" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 详细车道 -->
+	<objectName name="RD_LANE">
+		<step value="1">
+			<table name="RD_LANE" pid="LANE_PID" OBJECT_TYPE="RD_LANE">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LANE_CONDITION" refPid="LANE_PID" />
+				<remove tableName="RD_LANE" refPid="LANE_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_LANE_TOPO_DETAIL" pid="TOPO_ID" OBJECT_TYPE="RD_LANE_TOPO_DETAIL">
+				<ref column="IN_LANE_PID" refTable="RD_LANE" refTablePid="LANE_PID" />
+				<ref column="OUT_LANE_PID" refTable="RD_LANE" refTablePid="LANE_PID" />
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_LANE_TOPO_VIA" pid="TOPO_ID" OBJECT_TYPE="RD_LANE_TOPO_DETAIL">
+				<ref column="LANE_PID" refTable="RD_LANE" refTablePid="LANE_PID" />
+				<ref column="VIA_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_LANE_TOPO_DETAIL" pid="TOPO_ID" OBJECT_TYPE="RD_LANE_TOPO_DETAIL">
+				<remove tableName="RD_LANE_TOPO_DETAIL" refPid="TOPO_ID" />
+				<remove tableName="RD_LANE_TOPO_VIA" refPid="TOPO_ID" />
+			</table>
+		</step>
+	</objectName>
+	<!-- 收费站 -->
+	<objectName name="RD_TOLLGATE">
+		<step value="1">
+			<table name="RD_TOLLGATE" pid="PID" OBJECT_TYPE="RD_TOLLGATE">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_TOLLGATE_PASSAGE" refPid="PID" />
+				<remove tableName="RD_TOLLGATE_NAME" refPid="PID" />
+				<remove tableName="RD_TOLLGATE" refPid="PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_TOLLGATE_COST" pid="TOLLCOST_ID" OBJECT_TYPE="RD_TOLLGATE_COST">
+				<ref column="IN_TOLLGATE" refTable="RD_TOLLGATE" refTablePid="PID" />
+				<ref column="OUT_TOLLGATE" refTable="RD_TOLLGATE" refTablePid="PID" />
+				<remove tableName="RD_TOLLGATE_COST" refPid="TOLLCOST_ID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 语音引导 -->
+	<objectName name="RD_VOICEGUIDE">
+		<step value="1">
+			<table name="RD_VOICEGUIDE" pid="PID" OBJECT_TYPE="RD_VOICEGUIDE">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_VOICEGUIDE" refPid="PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_VOICEGUIDE_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_VOICEGUIDE_DETAIL">
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="VOICEGUIDE_PID" refTable="RD_VOICEGUIDE" refTablePid="PID" />
+			</table>
+			<table name="RD_VOICEGUIDE_VIA" pid="DETAIL_ID" OBJECT_TYPE="RD_VOICEGUIDE_DETAIL">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="10">
+			<table name="RD_VOICEGUIDE_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_VOICEGUIDE_DETAIL">
+				<remove tableName="RD_VOICEGUIDE_DETAIL" refPid="DETAIL_ID" />
+			</table>
+			<table name="RD_VOICEGUIDE_VIA" pid="DETAIL_ID" OBJECT_TYPE="RD_VOICEGUIDE_DETAIL">
+				<remove tableName="RD_VOICEGUIDE_VIA" refPid="DETAIL_ID" />
+			</table>
+		</step>
+		
+		<step value="13">
+			<!--删除孤立对象 -->
+			<table name="RD_VOICEGUIDE" pid="PID" OBJECT_TYPE="RD_VOICEGUIDE">
+				<ref column="PID" refTable="RD_VOICEGUIDE_DETAIL" refTablePid="VOICEGUIDE_PID" />
+				<remove tableName="RD_VOICEGUIDE" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+
+	<!-- 分岔口提示 -->
+	<objectName name="RD_SE">
+		<step value="1">
+			<table name="RD_SE" pid="PID" OBJECT_TYPE="RD_SE">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_SE" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 可变限速信息 -->
+	<objectName name="RD_VARIABLE_SPEED">
+		<step value="1">
+			<table name="RD_VARIABLE_SPEED" pid="VSPEED_PID" OBJECT_TYPE="RD_VARIABLE_SPEED">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_VARIABLE_SPEED" refPid="VSPEED_PID" />
+				<remove tableName="RD_VARIABLE_SPEED_VIA" refPid="VSPEED_PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 上下线分离关系 -->
+	<objectName name="RD_MULTIDIGITIZED_LINK">
+		<step value="1">
+
+			<table name="RD_MULTIDIGITIZED_LINK" pid="GROUP_ID" OBJECT_TYPE="RD_MULTIDIGITIZED_LINK">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_MULTIDIGITIZED_LINK" refPid="GROUP_ID" />
+				<remove tableName="RD_MULTIDIGITIZED" refPid="GROUP_ID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 主辅路关系 -->
+	<objectName name="RD_MAINSIDE_LINK">
+		<step value="1">
+
+			<table name="RD_MAINSIDE_LINK" pid="GROUP_ID" OBJECT_TYPE="RD_MAINSIDE_LINK">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_MAINSIDE_LINK" refPid="GROUP_ID" />
+				<remove tableName="RD_MAINSIDE" refPid="GROUP_ID" />
+			</table>
+
+		</step>
+	</objectName>
+
+	<!-- 路口 -->
+	<objectName name="RD_CROSS">
+		<step value="1">
+
+			<table name="RD_CROSS_LINK" pid="PID" OBJECT_TYPE="RD_CROSS">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_CROSS_NODE" pid="PID" OBJECT_TYPE="RD_CROSS">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_CROSS" pid="PID" OBJECT_TYPE="RD_CROSS">
+				<remove tableName="RD_CROSS_NAME" refPid="PID" />
+				<remove tableName="RD_CROSS" refPid="PID" />
+				<remove tableName="RD_CROSS_NODE" refPid="PID" />
+				<remove tableName="RD_CROSS_LINK" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+	<!-- CRF -->
+	<objectName name="RD_OBJECT">
+		<step value="1">
+			<table name="RD_INTER_LINK" pid="PID" OBJECT_TYPE="RD_INTER">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_INTER_NODE" pid="PID" OBJECT_TYPE="RD_INTER">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+			</table>
+			<!-- CRF 道路 -->
+			<table name="RD_ROAD_LINK" pid="PID" OBJECT_TYPE="RD_ROAD">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_OBJECT_LINK" pid="PID" OBJECT_TYPE="RD_OBJECT">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+			<table name="RD_OBJECT_NODE" pid="PID" OBJECT_TYPE="RD_OBJECT">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+			</table>
+
+		</step>
+		<step value="7">
+
+			<table name="RD_INTER" pid="PID" OBJECT_TYPE="RD_INTER">
+				<remove tableName="RD_INTER" refPid="PID" />
+				<remove tableName="RD_INTER_LINK" refPid="PID" />
+				<remove tableName="RD_INTER_NODE" refPid="PID" />
+			</table>
+
+			<table name="RD_ROAD" pid="PID" OBJECT_TYPE="RD_ROAD">
+				<remove tableName="RD_ROAD" refPid="PID" />
+				<remove tableName="RD_ROAD_LINK" refPid="PID" />
+			</table>
+
+		</step>
+		<step value="10">
+			<table name="RD_OBJECT_INTER" pid="PID" OBJECT_TYPE="RD_OBJECT">
+				<ref column="INTER_PID" refTable="RD_INTER" refTablePid="PID" />
+			</table>
+			<table name="RD_OBJECT_ROAD" pid="PID" OBJECT_TYPE="RD_OBJECT">
+				<ref column="ROAD_PID" refTable="RD_ROAD" refTablePid="PID" />
+			</table>
+		</step>
+		<step value="13">
+			<table name="RD_OBJECT" pid="PID" OBJECT_TYPE="RD_OBJECT">
+				<remove tableName="RD_OBJECT" refPid="PID" />
+				<remove tableName="RD_OBJECT_LINK" refPid="PID" />
+				<remove tableName="RD_OBJECT_NODE" refPid="PID" />
+				<remove tableName="RD_OBJECT_INTER" refPid="PID" />
+				<remove tableName="RD_OBJECT_ROAD" refPid="PID" />
+				<remove tableName="RD_OBJECT_NAME" refPid="PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<!-- 标牌 -->
+	<objectName name="RD_SIGNPOST">
+		<step value="1">
+			<table name="RD_SIGNPOST_LINK" pid="SIGNPOST_PID" OBJECT_TYPE="RD_SIGNPOST">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<table name="RD_SIGNPOST" pid="PID" OBJECT_TYPE="RD_SIGNPOST">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_SIGNPOST_PHOTO" refPid="SIGNPOST_PID" />
+				<remove tableName="RD_SIGNPOST" refPid="PID" />
+				<remove tableName="RD_SIGNPOST_LINK" refPid="SIGNPOST_PID" />
+			</table>
+		</step>
+	</objectName>
+
+	<objectName name="RD_CHAIN">
+		<step value="1">
+			<!-- 路链 -->
+			<table name="RD_CHAIN_LINK" pid="PID" OBJECT_TYPE="RD_CHAIN">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="7">
+			<!-- 路链 -->
+			<table name="RD_CHAIN" pid="PID" OBJECT_TYPE="RD_CHAIN">
+				<remove tableName="RD_CHAIN_NAME" refPid="PID" />
+				<remove tableName="RD_CHAIN" refPid="PID" />
+				<remove tableName="RD_CHAIN_LINK" refPid="PID" />
+			</table>
+
+		</step>
+	</objectName>
+
+
+
+	<objectName name="IX_POI">
+		<step value="1">
+			<!-- POI 父子关系 -->
+			<table name="IX_POI_PARENT" pid="GROUP_ID" OBJECT_TYPE="IX_POI_PARENT">
+				<ref column="PARENT_POI_PID" refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_CHILDREN" refPid="GROUP_ID" />
+				<remove tableName="IX_POI_PARENT" refPid="GROUP_ID" />
+			</table>
+			<!-- POI 同一关系 -->
+			<table name="IX_SAMEPOI_PART" pid="GROUP_ID" OBJECT_TYPE="IX_SAMEPOI">
+				<ref column="POI_PID" refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_SAMEPOI_PART" refPid="GROUP_ID" />
+				<remove tableName="IX_SAMEPOI" refPid="GROUP_ID" />
+			</table>
+
+		</step>
+		<step value="7">
+			<!-- POI 父子关系 -->
+			<table name="IX_POI_CHILDREN" pid="GROUP_ID" OBJECT_TYPE="IX_POI_CHILDREN">
+				<ref column="GROUP_ID" refTable="IX_POI_PARENT" refTablePid="GROUP_ID" />
+				<ref column="CHILD_POI_PID" refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_CHILDREN" refPid="GROUP_ID" />
+				<remove tableName="IX_POI_PARENT" refPid="GROUP_ID" />
+			</table>
+		</step>
+		<step value="10">
+			<!--删除孤立对象 -->
+			<!--POI 父子关系 -->
+			<table name="IX_POI_PARENT" pid="GROUP_ID" OBJECT_TYPE="IX_POI_PARENT">
+				<ref column="GROUP_ID" refTable="IX_POI_CHILDREN" refTablePid="GROUP_ID" />
+				<remove tableName="IX_POI_PARENT" refPid="GROUP_ID" />
+			</table>
+		</step>
+	</objectName>
+
+	<objectName name="IX_POINTADDRESS">
+		<step value="1">
+			<!-- 点门牌 父子关系 -->
+			<table name="IX_POINTADDRESS_PARENT" pid="GROUP_ID" OBJECT_TYPE="IX_POINTADDRESS_PARENT">
+				<ref column="PARENT_PA_PID" refTable="IX_POINTADDRESS" refTablePid="PID" />
+				<remove tableName="IX_POINTADDRESS_CHILDREN" refPid="GROUP_ID" />
+				<remove tableName="IX_POINTADDRESS_PARENT" refPid="GROUP_ID" />
+			</table>
+		</step>
+		<step value="7">
+			<!-- 点门牌 父子关系 -->
+			<table name="IX_POINTADDRESS_CHILDREN" pid="GROUP_ID" OBJECT_TYPE="IX_POINTADDRESS_CHILDREN">
+				<ref column="GROUP_ID" refTable="IX_POINTADDRESS_PARENT" refTablePid="GROUP_ID" />
+				<ref column="CHILD_PA_PID" refTable="IX_POINTADDRESS" refTablePid="PID" />
+				<remove tableName="IX_POINTADDRESS_CHILDREN" refPid="GROUP_ID" />
+				<remove tableName="IX_POINTADDRESS_PARENT" refPid="GROUP_ID" />
+			</table>
+		</step>
+		<step value="10">
+			<!--删除孤立对象 -->
+			<!--POI 父子关系 -->
+			<table name="IX_POINTADDRESS_PARENT" pid="GROUP_ID" OBJECT_TYPE="IX_POINTADDRESS_PARENT">
+				<ref column="GROUP_ID" refTable="IX_POINTADDRESS_CHILDREN" refTablePid="GROUP_ID" />
+				<remove tableName="IX_POINTADDRESS_PARENT" refPid="GROUP_ID" />
+			</table>
+		</step>
+	</objectName>
+
+
+
+	<objectName name="RD_SAMENODELINK">
+		<step value="1">
+			<!--立交关系 同一关系 -->
+			<table name="RD_SAMENODE" pid="GROUP_ID" OBJECT_TYPE="RD_SAMENODE">
+				<sql><![CDATA[
+				SELECT P.GROUP_ID
+              FROM RD_SAMENODE_PART P
+             WHERE P.TABLE_NAME = 'RD_NODE'
+               AND P.NODE_PID NOT IN (SELECT NODE_PID FROM RD_NODE)
+            UNION ALL
+            SELECT P.GROUP_ID
+              FROM RD_SAMENODE_PART P
+             WHERE P.TABLE_NAME = 'RW_NODE'
+               AND P.NODE_PID NOT IN (SELECT NODE_PID FROM RW_NODE)
+            UNION ALL
+            SELECT P.GROUP_ID
+              FROM RD_SAMENODE_PART P
+             WHERE P.TABLE_NAME = 'AD_NODE'
+               AND P.NODE_PID NOT IN (SELECT NODE_PID FROM AD_NODE)
+            UNION ALL
+            SELECT P.GROUP_ID
+              FROM RD_SAMENODE_PART P
+             WHERE P.TABLE_NAME = 'ZONE_NODE'
+               AND P.NODE_PID NOT IN (SELECT NODE_PID FROM ZONE_NODE)
+            UNION ALL
+            SELECT P.GROUP_ID
+              FROM RD_SAMENODE_PART P
+             WHERE P.TABLE_NAME = 'LU_NODE'
+               AND P.NODE_PID NOT IN (SELECT NODE_PID FROM LU_NODE)
+		]]></sql>
+
+				<remove tableName="RD_SAMENODE_PART" refPid="GROUP_ID" />
+				<remove tableName="RD_SAMENODE" refPid="GROUP_ID" />
+
+			</table>
+
+			<table name="RD_SAMELINK" pid="GROUP_ID" OBJECT_TYPE="RD_SAMELINK">
+				<sql><![CDATA[
+				SELECT P.GROUP_ID
+              FROM RD_SAMELINK_PART P
+             WHERE P.TABLE_NAME = 'RD_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM RD_LINK)
+            UNION ALL
+            
+            SELECT P.GROUP_ID
+              FROM RD_SAMELINK_PART P
+             WHERE P.TABLE_NAME = 'RW_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM RW_LINK)
+            
+            UNION ALL
+            
+            SELECT P.GROUP_ID
+              FROM RD_SAMELINK_PART P
+             WHERE P.TABLE_NAME = 'AD_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM AD_LINK)
+            
+            UNION ALL
+            
+            SELECT P.GROUP_ID
+              FROM RD_SAMELINK_PART P
+             WHERE P.TABLE_NAME = 'ZONE_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM ZONE_LINK)
+            
+            UNION ALL
+            
+            SELECT P.GROUP_ID
+              FROM RD_SAMELINK_PART P
+             WHERE P.TABLE_NAME = 'LU_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM LU_LINK)
+		]]></sql>
+
+				<remove tableName="RD_SAMELINK_PART" refPid="GROUP_ID" />
+				<remove tableName="RD_SAMELINK" refPid="GROUP_ID" />
+
+			</table>
+
+		</step>
+	</objectName>
+
+
+
+	<objectName name="RD_GSC">
+		<step value="1">
+
+			<table name="RD_GSC" pid="PID" OBJECT_TYPE="RD_GSC">
+				<sql><![CDATA[
+				 SELECT P.PID
+              FROM RD_GSC_LINK P
+             WHERE P.TABLE_NAME = 'RD_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM RD_LINK)
+            UNION ALL
+            SELECT P.PID
+              FROM RD_GSC_LINK P
+             WHERE P.TABLE_NAME = 'RW_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM RW_LINK)
+            UNION ALL
+            SELECT P.PID
+              FROM RD_GSC_LINK P
+             WHERE P.TABLE_NAME = 'AD_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM AD_LINK)
+            UNION ALL
+            SELECT P.PID
+              FROM RD_GSC_LINK P
+             WHERE P.TABLE_NAME = 'ZONE_LINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM ZONE_LINK)
+            UNION ALL
+            SELECT P.PID
+              FROM RD_GSC_LINK P
+             WHERE P.TABLE_NAME = 'CMG_BUILDLINK'
+               AND P.LINK_PID NOT IN (SELECT LINK_PID FROM CMG_BUILDLINK)
+		]]></sql>
+
+				<remove tableName="RD_GSC_LINK" refPid="PID" />
+				<remove tableName="RD_GSC" refPid="PID" />
+
+			</table>
+
+		</step>
+	</objectName>
+
+    <!--高速-->
+	<objectName name="HW_ESTAB">
+		<!--将不完整的路由删除-->
+        <step value="1">
+			<table name="HW_ROUTE" pid="ROUTE_PID" OBJECT_TYPE="HW_ROUTE">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<sql><![CDATA[select ROUTE_PID from HW_ROUTE t
+                            where t.PRE_NODEPID not in (select NODE_PID from RD_NODE)
+                            and t.PRE_NODEPID > 0
+                        ]]></sql>
+				<remove tableName="HW_ROUTE" refPid="ROUTE_PID" />
+			</table>
+		</step>
+        <!--将不完整的位置关系删除-->
+        <step value="7">
+			<table name="HW_POSITION" pid="POSITION_PID" OBJECT_TYPE="HW_POSITION">
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="HW_POSITION" refPid="POSITION_PID" />
+			</table>
+		</step>
+        <!--将不完整的设施删除-->
+        <step value="10">
+			<table name="HW_ESTAB_ROUTE_POS" pid="ESTAB_PID" OBJECT_TYPE="HW_ESTAB">
+                <sql><![CDATA[select t.ESTAB_PID from HW_ESTAB_ROUTE_POS t
+                        where t.POSITION_PID not in (select POSITION_PID from HW_POSITION)
+                        and t.POSITION_PID > 0]]></sql>
+                <sql><![CDATA[select t.ESTAB_PID from HW_ESTAB_ROUTE_POS t
+                        where t.ROUTE_PID not in (select ROUTE_PID from HW_ROUTE)
+                        and t.ROUTE_PID > 0]]></sql>
+				<!--<ref column="ROUTE_PID" refTable="HW_ROUTE" refTablePid="ROUTE_PID" />-->
+				<!--<ref column="POSITION_PID" refTable="HW_POSITION" refTablePid="POSITION_PID" />-->
+				<remove tableName="HW_ESTAB_NAME" refPid="ESTAB_PID" />
+				<remove tableName="HW_ESTAB_SA" refPid="ESTAB_PID" />
+				<remove tableName="HW_ESTAB_ROUTE_POS" refPid="ESTAB_PID" />
+                <remove tableName="HW_ESTAB" refPid="PID" />
+			</table>
+		</step>
+        <!--将不完整的HW JCT关系删除-->
+        <step value="13">
+			<table name="HW_ESTAB_JCT" pid="JCT_PID" OBJECT_TYPE="HW_ESTAB_JCT">
+				<ref column="S_ESTAB_PID" refTable="HW_ESTAB" refTablePid="PID" />
+				<ref column="E_ESTAB_PID" refTable="HW_ESTAB" refTablePid="PID" />
+				<ref column="JCTLINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="HW_ESTAB_JCT" refPid="JCT_PID" />
+			</table>
+		</step>
+        <!--将不完整的HW主并设关系删除-->
+        <step value="16">
+			<table name="HW_ESTAB_MAIN" pid="GROUP_ID" OBJECT_TYPE="HW_ESTAB_MAIN">
+				<ref column="ESTAB_PID" refTable="HW_ESTAB" refTablePid="PID" />
+			</table>
+            <table name="HW_ESTAB_CONTAIN" pid="GROUP_ID" OBJECT_TYPE="HW_ESTAB_MAIN">
+                <ref column="ESTAB_PID" refTable="HW_ESTAB" refTablePid="PID" />
+                <remove tableName="HW_ESTAB_MAIN" refPid="GROUP_ID" />
+                <remove tableName="HW_ESTAB_CONTAIN" refPid="GROUP_ID" />
+            </table>
+		</step>
+
+	</objectName>
+	<!-- 减速带 -->
+	<objectName name="RD_SPEEDBUMP">
+		<step value="1">
+			<table name="RD_SPEEDBUMP" pid="BUMP_PID" OBJECT_TYPE="RD_SPEEDBUMP">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_SPEEDBUMP" refPid="BUMP_PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!-- POI深度信息  
+	<objectName name="IX_POI_DETAIL">
+		<step value="1">
+			<table name="IX_POI_DETAIL" pid="POI_PID" OBJECT_TYPE="IX_POI_DETAIL">
+				<ref column="POI_PID"  refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_DETAIL" refPid="POI_PID" />
+			</table>
+		</step>
+	</objectName>
+	<objectName name="IX_POI_PARKING">
+		<step value="1">
+			<table name="IX_POI_PARKING" pid="POI_PID" OBJECT_TYPE="IX_POI_PARKING">
+				<ref column="POI_PID"  refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_PARKING" refPid="POI_PID" />
+			</table>
+		</step>
+	</objectName>
+	<objectName name="IX_POI_TOURROUTE">
+		<step value="1">
+			<table name="IX_POI_TOURROUTE" pid="POI_PID" OBJECT_TYPE="IX_POI_TOURROUTE">
+				<ref column="POI_PID"  refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_TOURROUTE" refPid="POI_PID" />
+			</table>
+		</step>
+	</objectName>
+	<objectName name="IX_POI_EVENT">
+		<step value="1">
+			<table name="IX_POI_EVENT" pid="POI_PID" OBJECT_TYPE="IX_POI_EVENT">
+				<ref column="POI_PID"  refTable="IX_POI" refTablePid="PID" />
+				<remove tableName="IX_POI_EVENT" refPid="POI_PID" />
+			</table>
+		</step>
+	</objectName>
+	-->
+	<!-- ADAS属性信息 -->
+	<!-- 
+	<objectName name="RD_LINK_SLOPE_DTM">
+		<step value="1">
+			<table name="RD_LINK_SLOPE_DTM" pid="LINK_PID" OBJECT_TYPE="RD_LINK_SLOPE_DTM">
+				<ref column="LINK_PID"  refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LINK_SLOPE_DTM" refPid="LINK_PID" />
+			</table>
+		</step>
+	</objectName>
+	<objectName name="RD_LINK_SLOPE_ADAS">
+		<step value="1">
+			<table name="RD_LINK_SLOPE_ADAS" pid="LINK_PID" OBJECT_TYPE="RD_LINK_SLOPE_ADAS">
+				<ref column="LINK_PID"  refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LINK_SLOPE_ADAS" refPid="LINK_PID" />
+			</table>
+		</step>
+	</objectName>
+	<objectName name="RD_LINK_CURHEAD_ADAS">
+		<step value="1">
+			<table name="RD_LINK_CURHEAD_ADAS" pid="LINK_PID" OBJECT_TYPE="RD_LINK_CURHEAD_ADAS">
+				<ref column="LINK_PID"  refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LINK_CURHEAD_ADAS" refPid="LINK_PID" />
+			</table>
+		</step>
+	</objectName> 210模型删除-->
+	<objectName name="RD_LINK_PARAM_ADAS">
+		<step value="1">
+			<table name="RD_LINK_PARAM_ADAS" pid="LINK_PID" OBJECT_TYPE="RD_LINK_PARAM_ADAS">
+				<ref column="LINK_PID"  refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_LINK_PARAM_ADAS" refPid="LINK_PID" />
+			</table>
+		</step>
+	</objectName>
+	
+	<!-- 200新增 -->
+	<!-- 自然语音引导 -->
+	<objectName name="RD_NATGUD">
+	
+		<step value="1">
+			<table name="RD_NATGUD_JUN_VIA" pid="DETAIL_ID" OBJECT_TYPE="RD_NATGUD_JUN_DETAIL">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		<step value="3">
+			<table name="RD_NATGUD_JUN_DETAIL" pid="DETAIL_ID" OBJECT_TYPE="RD_NATGUD_JUN_DETAIL">
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="RD_NATGUD_JUN_VIA" refPid="DETAIL_ID" />
+				<remove tableName="RD_NATGUD_JUN_DETAIL" refPid="DETAIL_ID" />
+			</table>
+		</step>
+	
+	
+		<step value="7">
+			<table name="RD_NATGUD_JUN" pid="PID" OBJECT_TYPE="RD_NATGUD_JUN">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<remove tableName="RD_NATGUD_JUN" refPid="PID" />
+				<remove tableName="RD_NATGUD_JUN_DETAIL" refPid="NG_COND_PID" />
+			</table>
+		</step>
+		
+		<step value="11">
+			<table name="IX_NATGUD" pid="PID" OBJECT_TYPE="IX_NATGUD">
+				<ref column="PID" refTable="RD_NATGUD_JUN_DETAIL" refTablePid="NG_ASSO_PID" />
+				<remove tableName="IX_NATGUD" refPid="PID" />
+				<remove tableName="IX_NATGUD_NAME" refPid="NG_ASSO_PID" />
+			</table>
+		</step>
+		
+		<!-- 删除孤立对象 -->
+		
+		<step value="13">
+			<table name="RD_NATGUD_JUN" pid="PID" OBJECT_TYPE="RD_NATGUD_JUN">
+				<ref column="PID" refTable="RD_NATGUD_JUN_DETAIL" refTablePid="NG_COND_PID" />
+				<remove tableName="RD_NATGUD_JUN" refPid="PID" />
+			</table>
+		</step>
+		
+		<step value="15">
+			<table name="RD_NATGUD_JUN_VIA" pid="DETAIL_ID" OBJECT_TYPE="RD_NATGUD_JUN_DETAIL">
+				<ref column="DETAIL_ID" refTable="RD_NATGUD_JUN_DETAIL" refTablePid="DETAIL_ID" />
+				<remove tableName="RD_NATGUD_JUN_VIA" refPid="DETAIL_ID" />
+			</table>
+		</step>
+		
+	</objectName>
+	
+	<!-- 高速出入口信息-->
+	<objectName name="HWY_JCT">
+	
+		<step value="1">
+			<table name="HWY_JUNCTION" pid="JUNC_PID" OBJECT_TYPE="HWY_JUNCTION">
+				<ref column="IN_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
+				<ref column="OUT_LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+				<remove tableName="HWY_JUNCTION" refPid="JUNC_PID" />
+				<remove tableName="HWY_JUNCTION_NAME" refPid="JUNC_PID" />
+				<remove tableName="HWY_SAPA" refPid="JUNC_PID" />
+			</table>
+		</step>
+		
+		<step value="3">
+			<table name="HWY_JCT_LINK" pid="JCT_PID" OBJECT_TYPE="HWY_JCT">
+				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
+			</table>
+		</step>
+		
+		<step value="7">
+			<table name="HWY_JCT" pid="JCT_PID" OBJECT_TYPE="HWY_JCT">
+				<ref column="S_JUNC_PID" refTable="HWY_JUNCTION" refTablePid="JUNC_PID" />
+				<ref column="E_JUNC_PID" refTable="HWY_JUNCTION" refTablePid="JUNC_PID" />
+				<remove tableName="HWY_JCT_LINK" refPid="JCT_PID" />
+				<remove tableName="HWY_JCT" refPid="JCT_PID" />
+			</table>
+		</step>
+		
+	</objectName>
+</tables>

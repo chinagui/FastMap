@@ -150,16 +150,21 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
+			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
+				dataJson.remove("qualityMethod");
+			}
+			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
-				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",3);
+				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				dataJson.discard("qualityMethod");
+				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=3;
 				}
-				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",1);
+				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
+					qualityMethod=1;
 				}
-				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",2);
+				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=2;
 				}
 			}
 			
@@ -190,6 +195,7 @@ public class SubtaskService {
 					qualityBean.setName(qualityBean.getName()+"_质检");}
 				qualityBean.setIsQuality(1);
 				qualityBean.setStatus(2);
+				qualityBean.setQualityMethod(qualityMethod);
 				qualityBean.setExeUserId(qualityExeUserId);
 				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
 				qualityBean.setExeGroupId(qualityExeGroupId);
@@ -388,16 +394,18 @@ public class SubtaskService {
 			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
 				dataJson.remove("qualityMethod");
 			}
+			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethod = dataJson.getJSONArray("qualityMethod");
-				if(qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",3);
+				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				dataJson.discard("qualityMethod");
+				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=3;
 				}
-				if(qualityMethod.contains(1)&&!qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",1);
+				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
+					qualityMethod=1;
 				}
-				if(!qualityMethod.contains(1)&&qualityMethod.contains(2)){
-					dataJson.put("qualityMethod",2);
+				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
+					qualityMethod=2;
 				}
 			}
 			
@@ -443,6 +451,7 @@ public class SubtaskService {
 				qualitySubtask.setSubtaskId(qualitySubtaskId);
 				qualitySubtask.setExeUserId(qualityExeUserId);
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+				qualitySubtask.setQualityMethod(qualityMethod);
 				//qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
@@ -460,7 +469,7 @@ public class SubtaskService {
 					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 					qualitySubtask.setExeUserId(qualityExeUserId);
-						
+					qualitySubtask.setQualityMethod(qualityMethod);	
 					//创建质检子任务 subtask	
 					newQualitySubtaskId = createSubtaskWithSubtaskId(conn,qualitySubtask);	
 					subtask.setIsQuality(0);
@@ -3562,6 +3571,7 @@ public class SubtaskService {
 			Geometry geometryRefer = run.query(conn, selectSql, geometryHandler);
 			if(geometryRefer != null){
 				Geometry newGeometry = geometry.intersection(geometryRefer);
+				if(newGeometry==null||newGeometry.isEmpty()){throw new Exception("绘制的质检圈完全超过子任务不规则圈，请重新画");}
 				String createSql = "INSERT INTO SUBTASK_QUALITY (QUALITY_ID, SUBTASK_ID, GEOMETRY) VALUES (Subtask_quality_SEQ.Nextval,?,?)";
 				run.update(conn, createSql, subtaskId, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)));
 			}
@@ -3599,6 +3609,7 @@ public class SubtaskService {
 			Geometry geometryQuality = run.query(conn, selectSql, geometryHandler);
 			if(geometryQuality != null){
 				Geometry newGeometry = geometry.intersection(geometryQuality);
+				if(newGeometry==null||newGeometry.isEmpty()){throw new Exception("绘制的质检圈完全超过子任务不规则圈，请重新修改");}
 				String updateSql = "UPDATE SUBTASK_QUALITY SET GEOMETRY =  ? WHERE QUALITY_ID = ?";
 				run.update(conn, updateSql, GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(newGeometry,0.00001, 5)), qualityId);
 			}
@@ -3647,7 +3658,7 @@ public class SubtaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			//未规划的gird
-			List<Integer> grids = queryDailySubTaskGrids(conn, taskId);
+			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
 			//获取统计量信息
 			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
 			
@@ -3665,11 +3676,8 @@ public class SubtaskService {
 			for(int i = 0; i < result.size(); i++){
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
-				for(int j = 0; j < grids.size(); j++){
-					if(gridId == grids.get(j)){
+				if(grids.contains(gridId)){
 						result.remove(i);
-						break;
-					}
 				}
 			}
 			
@@ -3715,6 +3723,43 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * 日编子任务自动规划
+	 * 根据taskId获取未规划的gridId和tips统计
+	 * 将未规划的grid自动分配到几个子任务中，尽量保证每个子任务tips数量相近
+	 * 应用场景：管理平台—子任务—日编规划—自动规划按钮
+	 * @param taskId
+	 * @param subtaskNum
+	 * @return
+	 * @throws Exception
+	 */
+	public void autoPlan(int taskId, int subtaskNum) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//未规划的gird
+			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
+			//获取统计量信息
+			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+
+			//从统计信息中移除已规划的gird
+			for(int i = 0; i < result.size(); i++){
+				Map<String, Object> map = result.get(i);
+				int gridId = Integer.parseInt(map.get("gridId").toString());
+				if(grids.contains(gridId)){
+					result.remove(i);
+				}
+			}
+
+		}catch(Exception e){
+			log.error("日编子任务自动规划接口异常，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("日编子任务自动规划接口异常:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/**
 	 * 获取日编子任务对应的grid
@@ -3725,15 +3770,15 @@ public class SubtaskService {
 	 * @throws Exception
 	 * 
 	 * */
-	public List<Integer> queryDailySubTaskGrids(Connection conn, int taskId) throws Exception{
+	public Set<Integer> queryDailySubTaskGrids(Connection conn, int taskId) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select distinct sgm.grid_id from SUBTASK_GRID_MAPPING sgm, SUBTASK st  where sgm.subtask_id = st.subtask_id "
 					+ " and st.type = 3 and st.task_id = "+taskId;
 			
-			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-					List<Integer> gids = new ArrayList<>();
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> gids = new HashSet<>();
 					while (rs.next()) {
 						gids.add(rs.getInt("grid_id"));
 					}

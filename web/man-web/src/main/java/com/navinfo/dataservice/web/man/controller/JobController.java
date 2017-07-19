@@ -26,7 +26,6 @@ public class JobController extends BaseController {
     @RequestMapping(value = "/job/get")
     public ModelAndView getProgress(HttpServletRequest request) {
         try {
-
             JSONObject parameter = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
             if (parameter == null) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
@@ -41,7 +40,7 @@ public class JobController extends BaseController {
             JSONArray result = JobService.getInstance().getJobProgress(itemId, ItemType.valueOf(itemType), JobType.valueOf(jobType));
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
-            log.error("创建失败，原因：" + e.getMessage(), e);
+            log.error("查询进度失败，原因：" + e.getMessage(), e);
             return new ModelAndView("jsonView", exception(e));
         }
     }
@@ -69,6 +68,33 @@ public class JobController extends BaseController {
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
             log.error("创建tips转mark任务失败，原因：" + e.getMessage(), e);
+            return new ModelAndView("jsonView", exception(e));
+        }
+    }
+
+    @RequestMapping(value = "/job/run/day2month")
+    public ModelAndView day2month(HttpServletRequest request) {
+        try {
+            JSONObject data = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+            if (data == null) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+            if (!data.containsKey("itemType")||!data.containsKey("itemId")||!data.containsKey("isContinue")){
+                throw new IllegalArgumentException("itemId|itemType|isContinue不能为空");
+            }
+            AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+            long operator = tokenObj.getUserId();
+
+            long itemId = data.getLong("itemId");
+            ItemType itemType = ItemType.valueOf(data.getInt("itemType"));
+            boolean isContinue = data.getBoolean("isContinue");
+
+            long jobId = JobService.getInstance().day2month(itemId,itemType,operator,isContinue,null);
+            JSONObject result = new JSONObject();
+            result.put("jobId",jobId);
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+            log.error("创建日落月任务失败，原因：" + e.getMessage(), e);
             return new ModelAndView("jsonView", exception(e));
         }
     }

@@ -18,7 +18,7 @@ import java.util.*;
 public class Day2MonthUtils {
     private static Logger log = LoggerRepos.getLogger(Day2MonthUtils.class);
 
-    public static Map<Integer, List<Integer>> getTaskInfo(Connection conn, long itemId, ItemType itemType) throws Exception {
+    public static Map<String, List<Integer>> getTaskInfo(Connection conn, long itemId, ItemType itemType) throws Exception {
         try {
             QueryRunner run = new QueryRunner();
 
@@ -26,18 +26,25 @@ public class Day2MonthUtils {
 
             switch (itemType) {
                 case PROJECT:
-                    selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.STATUS=0 AND T.TYPE=0 AND T.PROGRAM_ID=?";
+                    selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.TYPE=0 AND T.PROGRAM_ID=?";
                     break;
                 case LOT:
-                    selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.STATUS=0 AND T.TYPE=0 AND T.LOT=?";
+                    if(itemId==1){
+                        selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.TYPE=0 AND T.LOT=1";
+                    }
+                    else if(itemId==2) {
+                        selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.TYPE=0 AND T.LOT in (1,2)";
+                    }else{
+                        selectSql = "SELECT T.TASK_ID,T.REGION_ID FROM TASK T WHERE T.TYPE=0";
+                    }
                     break;
             }
-            ResultSetHandler<Map<Integer, List<Integer>>> rsHandler = new ResultSetHandler<Map<Integer, List<Integer>>>() {
-                public Map<Integer, List<Integer>> handle(ResultSet rs) throws SQLException {
-                    Map<Integer, List<Integer>> result = new HashMap<>();
+            ResultSetHandler<Map<String, List<Integer>>> rsHandler = new ResultSetHandler<Map<String, List<Integer>>>() {
+                public Map<String, List<Integer>> handle(ResultSet rs) throws SQLException {
+                    Map<String, List<Integer>> result = new HashMap<>();
                     while (rs.next()) {
                         int taskId = rs.getInt("task_id");
-                        int regionId = rs.getInt("region_id");
+                        String regionId = rs.getString("region_id");
 
                         if (!result.containsKey(regionId)) {
                             List<Integer> list = new ArrayList<>();
@@ -50,7 +57,11 @@ public class Day2MonthUtils {
                     return result;
                 }
             };
-            return run.query(conn, selectSql, rsHandler, itemId);
+            if(itemType==ItemType.LOT) {
+                return run.query(conn, selectSql, rsHandler);
+            }else{
+                return run.query(conn, selectSql, rsHandler, itemId);
+            }
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);
@@ -62,7 +73,7 @@ public class Day2MonthUtils {
         try {
             QueryRunner run = new QueryRunner();
 
-            String selectSql = "SELECT T.TASK_ID FROM TASK T WHERE T.STATUS=0 AND T.TYPE=0 AND T.PROGRAM_ID=?";
+            String selectSql = "SELECT T.TASK_ID FROM TASK T WHERE T.TYPE=0 AND T.PROGRAM_ID=?";
             ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
                 public Set<Integer> handle(ResultSet rs) throws SQLException {
                     Set<Integer> result = new HashSet<>();

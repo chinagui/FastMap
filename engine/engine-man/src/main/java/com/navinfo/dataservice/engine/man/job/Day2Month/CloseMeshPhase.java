@@ -33,6 +33,7 @@ public class CloseMeshPhase extends JobPhase {
 
     @Override
     public JobProgressStatus run() throws Exception {
+        log.info("CloseMeshPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         Connection meta = null;
         JobProgressOperator jobProgressOperator = null;
@@ -48,33 +49,38 @@ public class CloseMeshPhase extends JobPhase {
                 //按项目落需要关闸
                 JSONObject outPrarm = JSONObject.fromObject(lastJobProgress.getOutParameter());
                 List<Integer> meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
-                log.info("获取日落月全图幅"+meshs.toString());
+                log.info("phaseId:"+jobProgress.getPhaseId()+",day2month mesh:"+meshs.toString());
                 FccApi fccApi = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
                 Set<Integer> collectTaskSet = Day2MonthUtils.getTaskIdSet(conn, jobRelation.getItemId());
                 Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet);
-                log.info("获取tips全图幅"+tipsMeshset.toString());
+                log.info("phaseId:"+jobProgress.getPhaseId()+",tips mesh:"+tipsMeshset.toString());
 
                 tipsMeshset.addAll(meshs);
-                String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 0 WHERE MESH IN "
-                        + tipsMeshset.toString().replace("[", "(").replace("]", ")");
-                meta = DBConnector.getInstance().getMetaConnection();
-                QueryRunner run = new QueryRunner();
-                run.update(meta, updateSql);
+                if(tipsMeshset.size()>0) {
+                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 0 WHERE MESH IN "
+                            + tipsMeshset.toString().replace("[", "(").replace("]", ")");
+                    log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
+                    meta = DBConnector.getInstance().getMetaConnection();
+                    QueryRunner run = new QueryRunner();
+                    run.update(meta, updateSql);
+                }
             }
             //更新状态为成功
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             DbUtils.rollback(meta);
             if (jobProgressOperator != null && jobProgress != null) {
-                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
+                jobProgress.setOutParameter(ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;
         } finally {
+            log.info("CloseMeshPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
             DbUtils.commitAndCloseQuietly(meta);
         }

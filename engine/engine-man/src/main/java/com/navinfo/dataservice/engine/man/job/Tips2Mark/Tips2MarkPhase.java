@@ -35,6 +35,7 @@ public class Tips2MarkPhase extends JobPhase {
 
     @Override
     public JobProgressStatus run() throws Exception {
+        log.info("Tips2MarkPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
         try {
@@ -119,23 +120,24 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("task_type", taskType);
 
             parameter.put("taskInfo", taskPar);
-            log.info("tips2Aumark:" + parameter);
+            log.info("tips2mark fccApi:" + parameter);
 
             FccApi fccApi = (FccApi) ApplicationContextUtil
                     .getBean("fccApi");
             fccApi.tips2Aumark(parameter);
 
-//            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
             return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
+            log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
-                jobProgress.setOutParameter(ExceptionUtils.getStackTrace(ex));
+                jobProgress.setOutParameter(ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;
         } finally {
+            log.info("Tips2MarkPhase end:phaseId "+jobProgress.getPhaseId()+",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
     }

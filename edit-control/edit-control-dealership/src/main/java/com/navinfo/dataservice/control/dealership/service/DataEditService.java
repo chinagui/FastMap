@@ -507,7 +507,7 @@ public class DataEditService {
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
 						clearRelevancePoi(resultId, con);
-						//为了启动录入作业中赋值9单独写一个方法！！！！！！
+						//workflow_status=2需删除状态时，workflow_status赋值为9，deal_status赋值为3，change by jch 20170717
 						updateWorkFlowStatus(resultId, con);
 						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
@@ -1115,7 +1115,7 @@ public class DataEditService {
 	public void updateWorkFlowStatus(int resultId, Connection con) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t set t.WORKFLOW_STATUS = 9 where t.RESULT_ID = "+ resultId;
+			String sql = "update IX_DEALERSHIP_RESULT t set t.WORKFLOW_STATUS = 9,t.DEAL_STATUS=3 where t.RESULT_ID = "+ resultId;
 			log.info("清空关联poiSQL："+sql);
 			run.execute(con, sql);
 		}catch(Exception e){
@@ -1959,8 +1959,8 @@ public class DataEditService {
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
 					continue;
 				}
-				resultId = Integer.parseInt(map.get("number").toString());
-				resultIdList.add(resultId);
+//				resultId = Integer.parseInt(map.get("number").toString());
+//				resultIdList.add(resultId);
 				String history = map.get("history").toString();
 				addChainDataEntity.setResultId(resultId);
 				//新增
@@ -1986,6 +1986,12 @@ public class DataEditService {
 				
 				chainCodeList.add(chainCode);
 			}
+			HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+			Iterator<Integer> it = resultIds.iterator();
+			while (it.hasNext()){
+				resultIdList.add(it.next());
+			}
+			
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
 			if(chainCodeList.size() > 0){
@@ -2000,6 +2006,33 @@ public class DataEditService {
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询无序号数据当前事物插入的resultIds
+	 * @param Connection
+	 * @throws Exception 
+	 * 
+	 * */
+	public HashSet<Integer> queryResultIdsForNoNumber(Connection conn) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			String sql = "select RESULT_SEQ.currval as id from IX_DEALERSHIP_RESULT";
+			ResultSetHandler<HashSet<Integer>> rs = new ResultSetHandler<HashSet<Integer>>() {
+				@Override
+				public HashSet<Integer> handle(ResultSet rs) throws SQLException {
+					HashSet<Integer> hs = new HashSet<Integer>();
+					while(rs.next()){
+						hs.add(rs.getInt("id"));
+					}
+					return hs;
+				}
+			};
+			return run.query(conn, sql, rs);
+		}catch(Exception e){
+			log.error(e);
+			throw e;
 		}
 	}
 	
@@ -2279,8 +2312,14 @@ public class DataEditService {
 	
 	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
 		log.info("start runDealershipCheck");
+		int resultCount=0;
 		Connection conn=null;
     	try{
+    		 JSONObject dealershipInfo = JSONObject.fromObject(jsonReq.getString("dealershipInfo"));
+             int wkfStatus= dealershipInfo.getInt("workflowStatus");
+             if (wkfStatus!=3){
+            	 return resultCount;
+             }
     		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
         	int poiDbId = poiData.getInt("dbId");
         	int objPid = poiData.getInt("objId");
@@ -2318,7 +2357,6 @@ public class DataEditService {
 		check.operate(checkCommand);
 		
 		//查询检查结果数量
-		int resultCount=0;
 		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 		JSONArray checkResultsArr = selector.poiCheckResultList(objPid);
 		resultCount=checkResultsArr.size();

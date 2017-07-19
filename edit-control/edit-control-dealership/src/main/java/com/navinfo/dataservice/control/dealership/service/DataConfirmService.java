@@ -423,11 +423,13 @@ public class DataConfirmService {
 	public String expInfoFeedbackService(long userId, JSONObject timeObj, HttpServletRequest request) throws Exception {
 		String fileName = getFeedbackFileName(timeObj, userId);
 		log.info("调用情报接口，反馈文件名称：" + fileName);
+		
+		if(fileName.contains("未查到符合条件的情报信息")){
+			return fileName;
+		}
 
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/information/" + fileName;
-		//JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
-		//String filePath = request.getSession().getServletContext().getRealPath(refilePath);
 
 		log.info("反馈情报路径：" + filePath);
 		Connection conn = null;
@@ -520,7 +522,7 @@ public class DataConfirmService {
 		
 		int exportCount = resultObj.getInt("exportCount");
 		if(exportCount == 0){
-			throw new Exception("未查到符合条件的情报信息!");
+			return "未查到符合条件的情报信息!";
 		}
 		
 		String fileName = resultObj.getString("filename");

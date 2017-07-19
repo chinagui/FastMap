@@ -160,9 +160,43 @@ public class ConfigService {
 	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
 	 * 5.	仅openFlag有值，对全部图幅进行操作
 	 * @param dataJson
+	 * @throws Exception 
 	 */
-	public void mangeMesh(JSONObject dataJson) {
-		// TODO Auto-generated method stub
-		
+	public void mangeMesh(JSONObject dataJson) throws Exception {
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getMetaConnection();
+			int openFlag=dataJson.getInt("openFlag");
+			
+			String addUpdate="";
+			/*QUICK1_FLAG
+			QUICK2_FLAG
+			QUICK3_FLAG
+			MEDIUM1_FLAG
+			MEDIUM2_FLAG*/
+			if(dataJson.containsKey("mediumAction")){
+				int mediumAction=dataJson.getInt("mediumAction");
+				if(mediumAction==1){addUpdate=",s.MEDIUM1_FLAG=1";}
+				if(mediumAction==2){addUpdate=",s.MEDIUM2_FLAG=1";}
+			}
+			String sql="update SC_PARTITION_MESHLIST s set s.open_flag="+openFlag+addUpdate+" where 1=1";
+			
+			if(dataJson.containsKey("action")){
+				sql=sql+" and s.action="+dataJson.getInt("action");
+			}
+			
+			if(dataJson.containsKey("meshList")){
+				sql=sql+" and s.mesh in ('"+dataJson.getString("meshList").replaceAll(",", "'")+"')";
+			}	
+			
+			QueryRunner runner=new QueryRunner();
+			runner.update(conn, sql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("查询配置错误", e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

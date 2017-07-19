@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
+import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.control.row.quality.PoiQuality;
 import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -283,9 +284,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
 					+ " WHERE E.STATUS = 2"
 					+ "   AND NOT EXISTS (SELECT 1"
-					+ "          FROM CK_RESULT_OBJECT R"
-					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
-					+ "           AND R.PID = E.PID)"
+					+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
+					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
+					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
+					+ "			  AND N.RULEID IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
 					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
 			

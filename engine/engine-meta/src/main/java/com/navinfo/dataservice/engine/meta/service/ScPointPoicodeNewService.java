@@ -3,6 +3,11 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
@@ -67,6 +72,63 @@ public class ScPointPoicodeNewService {
 						data.add(jsonArr);
 					}
 					return data;
+				}
+	    	};
+	    	return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: list
+	 * @Description: 查询POI分类元数据接口
+	 * @param jsonReq
+	 * @return
+	 * @throws ServiceException  JSONArray
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月18日 下午5:14:51 
+	 */
+	public List<Map<String, Object>> list()throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+					
+			String selectSql = " select distinct n.class_name,n.sub_class_name,n.class_code,n.sub_class_code from  "
+					+ " SC_POINT_POICODE_NEW n order by n.class_code";
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> returns=new ArrayList<Map<String, Object>>();
+					Map<String, Object> bigClassMap=new HashMap<String, Object>();					
+					List<Map<String, Object>> subClassS=new ArrayList<Map<String, Object>>();					
+					String bigClass="";
+					while(rs.next()){
+						Map<String, Object> subClassMap=new HashMap<String, Object>();
+						if(StringUtils.isEmpty(bigClass)){bigClass=rs.getString("class_code");}
+						if(!bigClass.equals(rs.getString("class_code"))){
+							bigClassMap.put("subClassCodes", subClassS);
+							returns.add(bigClassMap);
+							bigClassMap=new HashMap<String, Object>();
+							subClassS=new ArrayList<Map<String, Object>>();
+							bigClass=rs.getString("class_code");
+						}
+						bigClassMap.put("classCode", rs.getString("class_code"));
+						bigClassMap.put("className", rs.getString("class_name"));
+						bigClassMap.put("flag", 1);
+						subClassMap.put("classCode", rs.getString("sub_class_code"));
+						subClassMap.put("className", rs.getString("sub_class_name"));
+						subClassMap.put("flag", 1);
+						subClassS.add(subClassMap);
+					}
+					bigClassMap.put("subClassCodes", subClassS);
+					returns.add(bigClassMap);
+					return returns;
 				}
 	    	};
 	    	return run.query(conn, selectSql, rsHandler);

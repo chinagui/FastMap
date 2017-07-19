@@ -1,15 +1,25 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.sql.DataSource;
+
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.CellRangeAddress;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.junit.Before;
 import org.junit.Test;
+
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -21,9 +31,6 @@ import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterSp9;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONArray;
@@ -59,7 +66,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	}
 	
 	
-//	@Test
+	@Test
 	public void testMetadataDonwnload() throws Exception {
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();//F:\tabfile
@@ -84,7 +91,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		JobScriptsInterface.initContext();
 
 		String path="f:/gdb/";
-		String type="month";
+		String type="day";
 		int regionId = 1;
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
@@ -114,7 +121,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 //			Connection conn = datasource.getConnection();
 			
 			Connection conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_315_d_1", "fm_regiondb_315_d_1").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 
 
@@ -209,7 +216,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testImportSourceExcel() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -226,7 +233,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testImportPoiToRegionDb() throws Exception{
 		JobScriptsInterface.initContext();
 		
@@ -348,4 +355,15 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		Geometry blockGeo = CompGridUtil.grids2Jts(grids1);
 		System.out.println(blockGeo);*/
 	}
+	
+	@Test
+	public void testExportQualityPoiReport() throws Exception{
+		JobScriptsInterface.initContext();
+		
+		ExportQualityPoiReport.execute("550","D://");
+
+		System.out.println("Over.");
+		System.exit(0);
+	}
+	
 }

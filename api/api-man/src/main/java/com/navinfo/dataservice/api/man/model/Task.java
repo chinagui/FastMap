@@ -3,6 +3,7 @@ package com.navinfo.dataservice.api.man.model;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.sf.json.JSONArray;
@@ -19,37 +20,44 @@ public class Task implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Integer taskId ;
+	private int taskId ;
 	private String name;
-	private Integer blockId=0 ;
+	private int blockId=0 ;
 	private String blockName;
-	private Integer regionId=0;
-	private Integer programId=0;
+	private int regionId=0;
+	private int programId=0;
 	private String programName;
 	private String version;
-	private Integer createUserId ;
+	private int createUserId ;
 	private String createUserName;
 	private Timestamp createDate ;
-	private Integer status ;
+	private int status ;
 	private String descp ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate ;
-	private Integer type;
-	private Integer programType;
+	private int type;
+	private int programType;
 	private Timestamp producePlanStartDate ;
 	private Timestamp producePlanEndDate ;
-	private Integer lot ;
-	private Integer groupId;
+	private int lot ;
+	private int groupId;
 	private String groupName;
-	private Integer roadPlanTotal ;
-	private Integer poiPlanTotal ;
-	private Integer latest ;
-	private Integer groupLeader =0; 
+	private int roadPlanTotal ;
+	private int poiPlanTotal ;
+	private int latest ;
+	private int groupLeader =0; 
 	private String workProperty ;
+	private int dataPlanStatus;
 	
 	private String workKind;
 	private String overdueReason;
 	private String overdueOtherReason;
+	
+	private Map<String, Object> changeFields=new HashMap<String, Object>();
+	
+	public Map<String, Object> getChangeFields() {
+		return changeFields;
+	}
 
 	public String getWorkKind() {
 		return workKind;
@@ -68,6 +76,7 @@ public class Task implements Serializable{
 
 
 	public void setWorkKind(String workKind) {
+		changeFields.put("WORK_KIND", workKind);
 		this.workKind = workKind;
 	}
 	/**
@@ -84,6 +93,7 @@ public class Task implements Serializable{
 			int t=Integer.valueOf(kind.toString());
 			result=result.substring(0,(t-1)*2)+"1"+result.substring((t-1)*2+1,result.length());
 		}
+		changeFields.put("WORK_KIND", result);
 		this.workKind= result;
 	}
 	
@@ -103,33 +113,38 @@ public class Task implements Serializable{
 	
 	private String method;
 	private String adminName;
+	private int inforStage;
 	
 	public Task (){
 	}
 
 	
-	public Integer getTaskId() {
+	public int getTaskId() {
 		return taskId;
 	}
-	public void setTaskId(Integer taskId) {
+	public void setTaskId(int taskId) {
+		changeFields.put("TASK_ID", taskId);
 		this.taskId = taskId;
 	}
-	public Integer getCreateUserId() {
+	public int getCreateUserId() {
 		return createUserId;
 	}
-	public void setCreateUserId(Integer createUserId) {
+	public void setCreateUserId(int createUserId) {
+		changeFields.put("CREATE_USER_ID", createUserId);
 		this.createUserId = createUserId;
 	}
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
 	public void setCreateDate(Timestamp createDate) {
+		changeFields.put("CREATE_DATE", createDate);
 		this.createDate = createDate;
 	}
-	public Integer getStatus() {
+	public int getStatus() {
 		return status;
 	}
-	public void setStatus(Integer status) {
+	public void setStatus(int status) {
+		changeFields.put("STATUS", status);
 		this.status = status;
 	}
 	public String getDescp() {
@@ -137,141 +152,38 @@ public class Task implements Serializable{
 		return descp;
 	}
 	public void setDescp(String descp) {
-		if(null==descp){this.descp="";}
 		this.descp = descp;
+		changeFields.put("DESCP", descp);
 	}
 	public Timestamp getPlanEndDate() {
 		return planEndDate;
 	}
-	public void setPlanEndDate(Timestamp collectPlanEndDate) {
-		this.planEndDate = collectPlanEndDate;
+	public void setPlanEndDate(Timestamp planEndDate) {
+		changeFields.put("PLAN_END_DATE", planEndDate);
+		this.planEndDate = planEndDate;
 	}
-	public Integer getLatest() {
+	public int getLatest() {
 		return latest;
 	}
-	public void setLatest(Integer latest) {
+	public void setLatest(int latest) {
+		changeFields.put("LATEST", latest);
 		this.latest = latest;
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-//	@Override
-//	public String toString() {
-//		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+taskStatus+",descp="+taskDescp+",planStartDate="+planStartDate+",planEndDate="+planEndDate+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",latest="+latest+"]";
-//	}
-
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-//	@Override
-//	public int hashCode() {
-//		final int prime = 31;
-//		int result = 1;
-//		result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
-//		result = prime * result + ((cityId == null) ? 0 : cityId.hashCode());
-//		result = prime * result + ((createUserId == null) ? 0 : createUserId.hashCode());
-//		result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
-//		result = prime * result + ((taskStatus == null) ? 0 : taskStatus.hashCode());
-//		result = prime * result + ((taskDescp == null) ? 0 : taskDescp.hashCode());
-//		result = prime * result + ((planStartDate == null) ? 0 : planStartDate.hashCode());
-//		result = prime * result + ((planEndDate == null) ? 0 : planEndDate.hashCode());
-//		result = prime * result + ((monthEditPlanStartDate == null) ? 0 : monthEditPlanStartDate.hashCode());
-//		result = prime * result + ((monthEditPlanEndDate == null) ? 0 : monthEditPlanEndDate.hashCode());
-//		result = prime * result + ((monthEditGroupId == null) ? 0 : monthEditGroupId.hashCode());
-//		result = prime * result + ((latest == null) ? 0 : latest.hashCode());
-//		return result;
-//	}
-
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (this == obj)
-//			return true;
-//		if (obj == null)
-//			return false;
-//		if (getClass() != obj.getClass())
-//			return false;
-//		Task other = (Task) obj;
-//		if (taskId == null) {
-//			if (other.taskId != null)
-//				return false;
-//		} else if (!taskId.equals(other.taskId))
-//			return false;
-//		if (cityId == null) {
-//			if (other.cityId != null)
-//				return false;
-//		} else if (!cityId.equals(other.cityId))
-//			return false;
-//		if (createUserId == null) {
-//			if (other.createUserId != null)
-//				return false;
-//		} else if (!createUserId.equals(other.createUserId))
-//			return false;
-//		if (createDate == null) {
-//			if (other.createDate != null)
-//				return false;
-//		} else if (!createDate.equals(other.createDate))
-//			return false;
-//		if (taskStatus == null) {
-//			if (other.taskStatus != null)
-//				return false;
-//		} else if (!taskStatus.equals(other.taskStatus))
-//			return false;
-//		if (taskDescp == null) {
-//			if (other.taskDescp != null)
-//				return false;
-//		} else if (!taskDescp.equals(other.taskDescp))
-//			return false;
-//		if (planStartDate == null) {
-//			if (other.planStartDate != null)
-//				return false;
-//		} else if (!planStartDate.equals(other.planStartDate))
-//			return false;
-//		if (planEndDate == null) {
-//			if (other.planEndDate != null)
-//				return false;
-//		} else if (!planEndDate.equals(other.planEndDate))
-//			return false;
-//		
-//		if (monthEditPlanStartDate == null) {
-//			if (other.monthEditPlanStartDate != null)
-//				return false;
-//		} else if (!monthEditPlanStartDate.equals(other.monthEditPlanStartDate))
-//			return false;
-//		if (monthEditPlanEndDate == null) {
-//			if (other.monthEditPlanEndDate != null)
-//				return false;
-//		} else if (!monthEditPlanEndDate.equals(other.monthEditPlanEndDate))
-//			return false;
-//		if (monthEditGroupId == null) {
-//			if (other.monthEditGroupId != null)
-//				return false;
-//		} else if (!monthEditGroupId.equals(other.monthEditGroupId))
-//			return false;
-//		if (latest == null) {
-//			if (other.latest != null)
-//				return false;
-//		} else if (!latest.equals(other.latest))
-//			return false;
-//		return true;
-//	}
+	
 	public String getName() {
 		if(null==name){return "";}
 		return name;
 	}
 	public void setName(String name) {
-		if(null==name){this.name="";}
 		this.name = name;
+		changeFields.put("NAME", name);
 	}
 	public Timestamp getPlanStartDate() {
 		return planStartDate;
 	}
 	public void setPlanStartDate(Timestamp planStartDate) {
 		this.planStartDate = planStartDate;
+		changeFields.put("PLAN_START_DATE", planStartDate);
 	}
 	public String getVersion() {
 		return version;
@@ -290,7 +202,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the blockId
 	 */
-	public Integer getBlockId() {
+	public int getBlockId() {
 		return blockId;
 	}
 
@@ -298,15 +210,16 @@ public class Task implements Serializable{
 	/**
 	 * @param blockId the blockId to set
 	 */
-	public void setBlockId(Integer blockId) {
+	public void setBlockId(int blockId) {
 		this.blockId = blockId;
+		changeFields.put("BLOCK_ID", blockId);
 	}
 
 
 	/**
 	 * @return the regionId
 	 */
-	public Integer getRegionId() {
+	public int getRegionId() {
 		return regionId;
 	}
 
@@ -314,15 +227,16 @@ public class Task implements Serializable{
 	/**
 	 * @param regionId the regionId to set
 	 */
-	public void setRegionId(Integer regionId) {
+	public void setRegionId(int regionId) {
 		this.regionId = regionId;
+		changeFields.put("REGION_ID", regionId);
 	}
 
 
 	/**
 	 * @return the type
 	 */
-	public Integer getType() {
+	public int getType() {
 		return type;
 	}
 
@@ -330,8 +244,9 @@ public class Task implements Serializable{
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(Integer type) {
+	public void setType(int type) {
 		this.type = type;
+		changeFields.put("TYPE", type);
 	}
 
 
@@ -348,6 +263,7 @@ public class Task implements Serializable{
 	 */
 	public void setProducePlanStartDate(Timestamp producePlanStartDate) {
 		this.producePlanStartDate = producePlanStartDate;
+		changeFields.put("PRODUCE_PLAN_START_DATE", producePlanStartDate);
 	}
 
 
@@ -364,13 +280,14 @@ public class Task implements Serializable{
 	 */
 	public void setProducePlanEndDate(Timestamp producePlanEndDate) {
 		this.producePlanEndDate = producePlanEndDate;
+		changeFields.put("PRODUCE_PLAN_END_DATE", producePlanEndDate);
 	}
 
 
 	/**
 	 * @return the lot
 	 */
-	public Integer getLot() {
+	public int getLot() {
 		return lot;
 	}
 
@@ -378,15 +295,16 @@ public class Task implements Serializable{
 	/**
 	 * @param lot the lot to set
 	 */
-	public void setLot(Integer lot) {
+	public void setLot(int lot) {
 		this.lot = lot;
+		changeFields.put("LOT", lot);
 	}
 
 
 	/**
 	 * @return the groupId
 	 */
-	public Integer getGroupId() {
+	public int getGroupId() {
 		return groupId;
 	}
 
@@ -394,15 +312,16 @@ public class Task implements Serializable{
 	/**
 	 * @param groupId the groupId to set
 	 */
-	public void setGroupId(Integer groupId) {
+	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+		changeFields.put("GROUP_ID", groupId);
 	}
 
 
 	/**
 	 * @return the roadPlanTotal
 	 */
-	public Integer getRoadPlanTotal() {
+	public int getRoadPlanTotal() {
 		return roadPlanTotal;
 	}
 
@@ -410,15 +329,16 @@ public class Task implements Serializable{
 	/**
 	 * @param roadPlanTotal the roadPlanTotal to set
 	 */
-	public void setRoadPlanTotal(Integer roadPlanTotal) {
+	public void setRoadPlanTotal(int roadPlanTotal) {
 		this.roadPlanTotal = roadPlanTotal;
+		changeFields.put("ROAD_PLAN_TOTAL", roadPlanTotal);
 	}
 
 
 	/**
 	 * @return the poiPlanTotal
 	 */
-	public Integer getPoiPlanTotal() {
+	public int getPoiPlanTotal() {
 		return poiPlanTotal;
 	}
 
@@ -426,15 +346,16 @@ public class Task implements Serializable{
 	/**
 	 * @param poiPlanTotal the poiPlanTotal to set
 	 */
-	public void setPoiPlanTotal(Integer poiPlanTotal) {
+	public void setPoiPlanTotal(int poiPlanTotal) {
 		this.poiPlanTotal = poiPlanTotal;
+		changeFields.put("POI_PLAN_TOTAL", poiPlanTotal);
 	}
 
 
 	/**
 	 * @return the programId
 	 */
-	public Integer getProgramId() {
+	public int getProgramId() {
 		return programId;
 	}
 
@@ -442,15 +363,16 @@ public class Task implements Serializable{
 	/**
 	 * @param programId the programId to set
 	 */
-	public void setProgramId(Integer programId) {
+	public void setProgramId(int programId) {
 		this.programId = programId;
+		changeFields.put("PROGRAM_ID", programId);
 	}
 
 
 	/**
 	 * @return the groupLeader
 	 */
-	public Integer getGroupLeader() {
+	public int getGroupLeader() {
 		return groupLeader;
 	}
 
@@ -458,7 +380,7 @@ public class Task implements Serializable{
 	/**
 	 * @param groupLeader the groupLeader to set
 	 */
-	public void setGroupLeader(Integer groupLeader) {
+	public void setGroupLeader(int groupLeader) {
 		this.groupLeader = groupLeader;
 	}
 
@@ -530,13 +452,14 @@ public class Task implements Serializable{
 	 */
 	public void setWorkProperty(String workProperty) {
 		this.workProperty = workProperty;
+		changeFields.put("WORK_PROPERTY",workProperty);
 	}
 
 
 	/**
 	 * @return the programType
 	 */
-	public Integer getProgramType() {
+	public int getProgramType() {
 		return programType;
 	}
 
@@ -544,7 +467,7 @@ public class Task implements Serializable{
 	/**
 	 * @param programType the programType to set
 	 */
-	public void setProgramType(Integer programType) {
+	public void setProgramType(int programType) {
 		this.programType = programType;
 	}
 
@@ -562,6 +485,7 @@ public class Task implements Serializable{
 	 */
 	public void setGeometry(JSONObject geometry) {
 		this.geometry = geometry;
+		changeFields.put("GEOMETRY", geometry);
 	}
 
 
@@ -588,6 +512,7 @@ public class Task implements Serializable{
 
 	public void setMethod(String method) {
 		this.method = method;
+		changeFields.put("METHOD", method);
 	}
 
 
@@ -606,6 +531,7 @@ public class Task implements Serializable{
 
 	public void setOverdueReason(String overdueReason) {
 		this.overdueReason = overdueReason;
+		changeFields.put("OVERDUE_REASON", overdueReason);
 	}
 
 	public String getOverdueOtherReason() {
@@ -614,6 +540,25 @@ public class Task implements Serializable{
 
 	public void setOverdueOtherReason(String overdueOtherReason) {
 		this.overdueOtherReason = overdueOtherReason;
+		changeFields.put("OVERDUE_OTHER_REASON", overdueOtherReason);
+	}
+
+	public int getInforStage() {
+		return inforStage;
+	}
+
+	public void setInforStage(int inforStage) {
+		this.inforStage = inforStage;
+		changeFields.put("INFOR_STAGE", inforStage);
+	}
+
+	public int getDataPlanStatus() {
+		return dataPlanStatus;
+	}
+
+	public void setDataPlanStatus(int dataPlanStatus) {
+		changeFields.put("DATA_PLAN_STATUS", dataPlanStatus);
+		this.dataPlanStatus = dataPlanStatus;
 	}
 
 }

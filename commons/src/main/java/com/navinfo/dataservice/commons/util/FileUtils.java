@@ -284,9 +284,9 @@ public class FileUtils {
 		int srcWidth = srcImage.getWidth(null);// 原图片宽度
 		int srcHeight = srcImage.getHeight(null);// 原图片高度
 		
-		tagImage = new BufferedImage(srcWidth, srcWidth,
+		tagImage = new BufferedImage(srcWidth, srcHeight,
 				BufferedImage.TYPE_INT_RGB);
-		tagImage.getGraphics().drawImage(srcImage, 0, 0, srcWidth, srcWidth,
+		tagImage.getGraphics().drawImage(srcImage, 0, 0, srcWidth, srcHeight,
 				null);
 
 		ByteOutputStream bos = new ByteOutputStream();

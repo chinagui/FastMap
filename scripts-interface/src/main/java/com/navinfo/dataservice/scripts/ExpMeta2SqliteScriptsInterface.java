@@ -48,9 +48,12 @@ public class ExpMeta2SqliteScriptsInterface {
 			scPointFocus(conn,sqliteConn);
 			pointTruck(conn,sqliteConn);
 			scPointNameck(conn,sqliteConn);
-			//scPointChargeManu(conn,sqliteConn);
+			scPointChargeManu(conn,sqliteConn);
 			ciParaKindSame(conn, sqliteConn);
 			scPointCode2Level(conn,sqliteConn);
+			scProblemType(conn, sqliteConn);
+			scRootCauseAnalysis(conn, sqliteConn);
+			scTipsCode(conn, sqliteConn);
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
@@ -142,11 +145,19 @@ public class ExpMeta2SqliteScriptsInterface {
 		//13.POI名称相关检查配置表：
 		sqliteList.add("CREATE TABLE SC_POINT_NAMECK (id integer PRIMARY KEY,pre_key text,result_key text,ref_key text,type text,kg_flag text, hm_flag text,memo text,kind text,adminarea text )");
 		//14.充电站充电桩生产商配置表：
-		//sqliteList.add("CREATE TABLE SC_POINT_CHARGE_MANU (serial_id text,full_name text,simply_name text,product_model text,product_type text,voltate text,current text,power text,memo text)");
+		sqliteList.add("CREATE TABLE SC_POINT_CHARGE_MANU (serial_id text,full_name text,simply_name text,product_model text,product_type text,voltate text,current text,power text,memo text)");
 		//15.同一关系分类表：
 		sqliteList.add("CREATE TABLE CI_PARA_KIND_SAME (id integer PRIMARY KEY,kind_code text,kind_code_samepoi text )");
 		//16.poi分类与poi分级对照表:
 		sqliteList.add("CREATE TABLE SC_POINT_CODE2LEVEL (id integer PRIMARY KEY,kind_name text,kind_code text,old_poi_level text,new_poi_level text,chain text,rating integer ,flagcode text,category integer,memo text,descript text,kg_flag text,hm_flag text ,type text )");
+		//17.问题类型表:
+		sqliteList.add("CREATE TABLE SC_PROBLEM_TYPE (PROJECT integer ,CLASS_TOP text,CLASS_MEDIUM text,CLASS text,SEVERITY text,TYPE text,PHENOMENON text ,WEIGHT text)");
+		//18.rca表:
+		sqliteList.add("CREATE TABLE SC_ROOT_CAUSE_ANALYSIS (PROJECT integer ,INITIAL_CAUSE text,ROOT_CAUSE text )");
+		//19.tips类型表:
+		sqliteList.add("CREATE TABLE SC_TIPS_CODE (TOPNAME text,TOPCODE text,NAME text,CODE text,SECOND_JOB_REQ integer ,COLLECTION integer )");
+							
+		
 		return sqliteList;
 	}
 	
@@ -874,8 +885,8 @@ public class ExpMeta2SqliteScriptsInterface {
 		String insertSql = "insert into SC_POINT_CHARGE_MANU(serial_id,full_name,simply_name,product_model,product_type,voltate, "
 				+"current,power,memo ) values(?,?,?,?,?,?,?,?,?)";
 		String selectSql = "select serial_id,full_name,simply_name,product_model,product_type,voltate, "
-				+"current,power,memo  "
-				+"from SC_DEEP_MANUFACTURER";
+				+"\"CURRENT"+"\",\"POWER\",memo  "
+				+"from SC_POINT_CHARGE_MANU";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -1020,7 +1031,157 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 	}
 
+	/**17
+	 * @Title: scProblemType
+	 * @Description: 问题类型表 SC_PROBLEM_TYPE
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月12日 下午1:58:49 
+	 */
+	private static void scProblemType(Connection conn, Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_PROBLEM_TYPE...");
+		String insertSql = "insert into SC_PROBLEM_TYPE(PROJECT ,CLASS_TOP ,CLASS_MEDIUM ,CLASS ,SEVERITY ,TYPE ,PHENOMENON  ,WEIGHT ) values(?,?,?,?,?,?,?,?)";
+		String selectSql = "select PROJECT ,CLASS_TOP ,CLASS_MEDIUM ,CLASS ,SEVERITY ,TYPE ,PHENOMENON  ,WEIGHT   from SC_PROBLEM_TYPE ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("PROJECT"));
+				prep.setString(2, resultSet.getString("CLASS_TOP"));
+				prep.setString(3, resultSet.getString("CLASS_MEDIUM"));
+				prep.setString(4, resultSet.getString("CLASS"));
+				prep.setString(5, resultSet.getString("SEVERITY"));
+				prep.setString(6, resultSet.getString("TYPE"));
+				prep.setString(7, resultSet.getString("PHENOMENON"));
+				prep.setString(8, resultSet.getString("WEIGHT"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_PROBLEM_TYPE end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+		
+	}
 	
+	/**18
+	 * @Title: scRootCauseAnalysis
+	 * @Description: RCA表 SC_ROOT_CAUSE_ANALYSIS
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月12日 下午1:58:49 
+	 */
+	private static void scRootCauseAnalysis(Connection conn, Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_ROOT_CAUSE_ANALYSIS...");
+		String insertSql = "insert into SC_ROOT_CAUSE_ANALYSIS(PROJECT ,INITIAL_CAUSE ,ROOT_CAUSE ) values(?,?,?)";
+		String selectSql = "select PROJECT  ,INITIAL_CAUSE ,ROOT_CAUSE   from SC_ROOT_CAUSE_ANALYSIS ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("PROJECT"));
+				prep.setString(2, resultSet.getString("INITIAL_CAUSE"));
+				prep.setString(3, resultSet.getString("ROOT_CAUSE"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_ROOT_CAUSE_ANALYSIS end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+		
+	}
+	
+	/**19
+	 * @Title: scTipsCode
+	 * @Description: TIPS类型表：SC_TIPS_CODE
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月12日 下午1:58:49 
+	 */
+	private static void scTipsCode(Connection conn, Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_TIPS_CODE...");
+		String insertSql = "insert into SC_TIPS_CODE(TOPNAME ,TOPCODE ,NAME ,CODE,SECOND_JOB_REQ,COLLECTION ) values(?,?,?,?,?,?)";
+		String selectSql = "select TOPNAME ,TOPCODE ,NAME ,CODE,SECOND_JOB_REQ,COLLECTION   from SC_TIPS_CODE ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setString(1, resultSet.getString("TOPNAME"));
+				prep.setString(2, resultSet.getString("TOPCODE"));
+				prep.setString(3, resultSet.getString("NAME"));
+				prep.setString(4, resultSet.getString("CODE"));
+				prep.setInt(5, resultSet.getInt("SECOND_JOB_REQ"));
+				prep.setInt(6, resultSet.getInt("COLLECTION"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_TIPS_CODE end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+		
+	}
 	public static void export2SqliteByNames(String dir) throws Exception{
 
 		File mkdirFile = new File(dir);

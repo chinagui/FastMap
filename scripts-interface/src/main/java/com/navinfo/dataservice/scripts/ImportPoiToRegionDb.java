@@ -42,7 +42,7 @@ public class ImportPoiToRegionDb {
 		// 1)调用createDb Job创建空库
 		JSONObject createDbReq = new JSONObject();
 		createDbReq.put("serverType", "ORACLE");
-		createDbReq.put("bizType", "copVersion");
+		createDbReq.put("bizType", "gen2Version");
 		JobInfo jobInfo = new JobInfo(0, UuidUtils.genUuid());
 		jobInfo.setType("createDb");
 		jobInfo.setRequest(createDbReq);
@@ -59,6 +59,7 @@ public class ImportPoiToRegionDb {
 		JSONObject diffReq = new JSONObject();
 		diffReq.put("leftDbId", request.getInt("sourceDbId"));
 		diffReq.put("rightDbId", createDbResponse.getInt("outDbId"));
+		diffReq.put("specificTables", request.getJSONArray("specificTables"));
 		JobInfo jobDiff = new JobInfo(0, UuidUtils.genUuid());
 		jobDiff.setType("diff");
 		jobDiff.setRequest(diffReq);

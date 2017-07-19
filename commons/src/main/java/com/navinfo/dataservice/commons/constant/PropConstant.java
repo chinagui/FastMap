@@ -27,6 +27,8 @@ public class PropConstant {
 	public static final String linkTileTableName = "hbase.tablename.linktile";
 
 	public static final String solrAddress = "solr.address";
+	
+	public static final String solrCloudAddress = "solr.cloud.address";
 
 	public static final String pidManagerIp = "pid_manager_ip";
 
@@ -98,8 +100,11 @@ public class PropConstant {
 	public static final String mongoPort="mongo_port";
 	
 	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
+	public static final String multisrcDayNotifyUrl="multisrc.day.notify.url";
 	public static final String seasonVersion="SEASON.VERSION";
 	public static final String productConvert="product.convert";
+	public static final String day2mounthGetLock="day2mounth.getLock";
+	public static final String day2mounthReleaseLock="product.releaseLock";
 	
 	public static final String valueSmtp="VALUE_SMTP";
 	public static final String sendEmail="SEND_EMAil";
@@ -111,4 +116,6 @@ public class PropConstant {
 	
 	public static final String mapspotterInfoPass="mapspotter.info.pass.url";
 	public static final String mapspotterInfoFeedBack="mapspotter.info.feedback.url";
+	
+	public static final String manPassword="man.password";
 }

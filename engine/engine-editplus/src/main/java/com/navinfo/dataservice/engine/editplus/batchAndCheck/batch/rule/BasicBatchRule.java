@@ -19,6 +19,7 @@ public abstract class BasicBatchRule {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private BatchRuleCommand batchRuleCommand;
 	private BatchRule batchRule;
+	private boolean isBatchDelData=false;
 	public Map<String,Map<Long, BasicObj>> myReferDataMap=new HashMap<String, Map<Long,BasicObj>>();
 
 	public BatchRule getBatchRule() {
@@ -27,6 +28,14 @@ public abstract class BasicBatchRule {
 
 	public void setBatchRule(BatchRule batchRule) {
 		this.batchRule = batchRule;
+	}
+
+	public boolean isBatchDelData() {
+		return isBatchDelData;
+	}
+
+	public void setBatchDelData(boolean isBatchDelData) {
+		this.isBatchDelData = isBatchDelData;
 	}
 
 	public BasicBatchRule() {
@@ -49,15 +58,12 @@ public abstract class BasicBatchRule {
 		loadReferDatas(rows.values());
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
-			//FM-BAT-20-187-1批处理比较特殊，删除的数据也要触发批处理
-			if(obj.objName().equals(ObjectName.IX_POI)){
-				IxPoi poi=(IxPoi) obj.getMainrow();
-				if(poi.getKindCode().equals("230227")&&poi.getOpType().equals(OperationType.PRE_DELETED)){
+			if(isBatchDelData){
+				runBatch(obj);
+			}else{
+				if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 					runBatch(obj);
 				}
-			}
-			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
-				runBatch(obj);
 			}
 		}
 	}

@@ -230,14 +230,14 @@ public class CollectorPoiImportor extends AbstractOperation {
 					if(!keys.contains(fid)){
 						log.info("删除的poi在库中未找到。fid:"+fid);
 						//
-						errLogs.add(new ErrorLog(fid,3,"删除的poi在库中未找到"));
+						errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
 					}
 				}
 			}else{
 				log.info("删除的poi在库中均没找到。pids:"+StringUtils.join(deletePois.keySet(),","));
 				//err log
 				for(String fid:deletePois.keySet()){
-					errLogs.add(new ErrorLog(fid,3,"删除的poi在库中未找到"));
+					errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
 				}
 			}
 		}else{

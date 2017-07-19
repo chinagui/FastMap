@@ -113,6 +113,12 @@ public class PoiQuery {
 //			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
+			
+			if(pageNum==0&&pageSize==0){
+				pageNum=1;
+				pageSize=999999999;
+			}
+			
 			//int pid = 0;
 			//20170106_gpr:pid和name搜索合成一个字段；
 			String pidName = "";

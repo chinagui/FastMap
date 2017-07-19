@@ -10,6 +10,9 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -129,6 +132,23 @@ public class RowEditController extends BaseController {
 		try {
 			Day2Mon day2Mon = new Day2Mon();
 			long jobId = day2Mon.dailyReleaseSync(parameter, tokenObj.getUserId());
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/poi/quality/tableCount/")
+	public ModelAndView poiQualityInitCountTable(HttpServletRequest request)
+			throws ServletException, IOException {
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			JSONObject jsonReq =new  JSONObject();
+			JobApi apiService = (JobApi) ApplicationContextUtil
+					.getBean("jobApi");
+			long jobId = apiService.createJob("poiQualityInitCountTableJob", jsonReq, 0,0,
+					"POI质检DB统计");
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

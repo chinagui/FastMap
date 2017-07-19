@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -26,6 +27,7 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -1597,7 +1599,7 @@ public class Transaction {
 
         } else if (row instanceof RdInterNode) {
 
-            return ((RdInterLink) row).getPid();
+            return ((RdInterNode) row).getPid();
 
         } else if (row instanceof RdRoad) {
 
@@ -1885,7 +1887,7 @@ public class Transaction {
     private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
         StringBuffer patter = new StringBuffer("^(");
 
-        patter.append("RD_LINK|RD_NODE");
+        patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
         patter.append("|RD_WARINGINFO|RD_LINK_WARING");
@@ -1897,6 +1899,7 @@ public class Transaction {
         Iterator<Integer> pidIterator = pids.iterator();
         while (rowIterator.hasNext()) {
             IRow row = rowIterator.next();
+            int pid = pidIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
                 logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
@@ -2003,8 +2006,13 @@ public class Transaction {
     public String run() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -2020,6 +2028,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2044,12 +2055,15 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            //if (!hasOverride("run")) {
+                process.postCheck();
+            //}
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
-
-            // 执行后检查
-            process.postCheck();
         } catch (Exception e) {
             logger.error(String.format("%s操作失败，数据库进行回滚，requester: %s", objType, requester), e);
             for (AbstractProcess process : processes) {
@@ -2073,8 +2087,13 @@ public class Transaction {
     public String innerRun() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -2090,6 +2109,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2111,6 +2133,12 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            if (!hasOverride("innerRun")) {
+                process.postCheck();
+            }
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
@@ -2119,12 +2147,35 @@ public class Transaction {
             for (AbstractProcess process : processes) {
                 DBUtils.rollBack(process.getConn());
             }
+            throw e;
         } finally {
             for (AbstractProcess process : processes) {
+                if (process.getConn() == conn) {
+                    continue;
+                }
                 DBUtils.closeConnection(process.getConn());
             }
         }
         return msg;
+    }
+
+    /**
+     * 判断子类是否已经重写了methodName方法
+     * 如果重写过了则默认子类进行调用
+     * @param methodName
+     * @return
+     */
+    private boolean hasOverride(String methodName) {
+        Class clazz = process.getClass();
+        boolean flag = false;
+
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (methodName.equals(method.getName()) && method.getParameterTypes().length == 0) {
+                flag =  true;
+            }
+        }
+        return flag;
     }
 
     /**

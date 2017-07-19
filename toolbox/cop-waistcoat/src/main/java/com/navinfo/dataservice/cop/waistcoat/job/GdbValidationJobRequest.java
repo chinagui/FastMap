@@ -22,7 +22,7 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	protected List<String> rules;
 	protected int targetDbId;
 	protected int valDbId=0;
-	protected int timeOut;
+	protected int timeOut;//miao
 	protected boolean reuseDb=true;
 	
 	@Override

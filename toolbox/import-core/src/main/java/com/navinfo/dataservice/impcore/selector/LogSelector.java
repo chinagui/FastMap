@@ -29,6 +29,8 @@ public abstract class LogSelector {
 	protected List<Integer> grids;
 	protected List<Integer> filterGrids;
 	protected Date stopTime;
+	protected List<Integer> taskIds;
+	protected int taskType;//快线任务：1，中线任务：0
 	protected String tempTable;
 	protected QueryRunner run;
 	public LogSelector(OracleSchema logSchema){
@@ -123,5 +125,17 @@ public abstract class LogSelector {
 	}
 	public void setFilterGrids(List<Integer> filterGrids) {
 		this.filterGrids = filterGrids;
+	}
+	public int getTaskType() {
+		return taskType;
+	}
+	public void setTaskType(int taskType) {
+		this.taskType = taskType;
+	}
+	public List<Integer> getTaskIds() {
+		return taskIds;
+	}
+	public void setTaskIds(List<Integer> taskIds) {
+		this.taskIds = taskIds;
 	}
 }

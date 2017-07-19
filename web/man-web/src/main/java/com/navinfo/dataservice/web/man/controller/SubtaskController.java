@@ -51,10 +51,7 @@ public class SubtaskController extends BaseController {
 	 * @date 2016年11月3日 下午5:06:43 
 	 */
 	@RequestMapping(value = { "/subtask/create" })
-	public ModelAndView create(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"blockId\":\"\",blockId，与taskId只能传一个<br/>\"taskId\":\"\",taskId，与blockId只能传一个<br/>\"type\":\"\",作业要素（0POI，1Road，2一体化）<br/>\"stage\":\"\",作业阶段（0采集，1日编，2月编）<br/>\"descp\":\"\",任务描述<br/>\"planStartDate\":\"\",计划开始时间<br/>\"planEndDate\":\"\",计划结束时间<br/>\"exeUserId\":\"\",作业人员<br/>\"gridIds\":\"\"grid数组<br/>}")@RequestParam( value = "parameter") String parameter
-//			,@ApiParam(required =true, name = "file", value="文件")@RequestParam( value = "file") MultipartFile file
-			,HttpServletRequest request){
+	public ModelAndView create(HttpServletRequest request){
 		try{	
 
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
@@ -220,9 +217,7 @@ public class SubtaskController extends BaseController {
 	 */
 	//@ApiOperation(value = "批量修改子任务详细信息", notes = "批量修改子任务详细信息")  
 	@RequestMapping(value = { "/subtask/update" })
-	public ModelAndView update(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtasks\":<br/>[<br/>{<br/>\"subtaskId\":32,<br/>\"descp\":\"testtest\",<br/>\"planStartDate\":\"20160430\",<br/>\"planEndDate\":\"20160630\",<br/>\"exeUserId\":21<br/>}<br/>]<br/>} ")@RequestParam( value = "parameter") String postData
-			,HttpServletRequest request){
+	public ModelAndView update(HttpServletRequest request){
 		try{
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
@@ -757,5 +752,70 @@ public class SubtaskController extends BaseController {
 			log.error("修改质检圈失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
+	}
+	
+	/**
+	 * 日编子任务未规划grid接口
+	 * grid及tips完成情况统计
+	 * 筛选出未规划的grid
+	 * 按照tips个数从大到小排序，gridid从大到小排序
+	 * 
+	 * */
+	@RequestMapping(value = "/subtask/unPlanGridList")
+	public ModelAndView unPlanGridList(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int pageNum = 1;
+			if(dataJson.containsKey("pageNum")){
+				pageNum = dataJson.getInt("pageNum");
+			}
+			int pageSize = 20;
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new Exception("缺少taskId");
+			}
+			int taskId = dataJson.getInt("taskId");
+			
+			Map<String, Object> result = SubtaskService.getInstance().unPlanGridList(taskId,pageNum,pageSize);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+		
+	}
+	
+	/**
+	 * 提交质检圈
+	 * 修改subtask表quality_plan_status=1
+	 * 应用场景：独立工具--外业规划--绘制质检圈—完成
+	 * 
+	 * */
+	@RequestMapping(value = "/subtask/qualityCommit")
+	public ModelAndView qualityCommit(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("subtaskId")){
+				throw new Exception("缺少subtaskId");
+			}
+			int subtaskId = dataJson.getInt("subtaskId");
+			
+			SubtaskService.getInstance().qualityCommit(subtaskId);
+			
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("日编子任务未规划grid接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+		
 	}
 }

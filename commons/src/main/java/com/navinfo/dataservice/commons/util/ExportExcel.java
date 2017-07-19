@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,12 +18,15 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFComment;
 import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFCellUtil;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.util.CellRangeAddress;
   
 /** 
  * 利用开源组件POI3.0.2动态导出EXCEL文档 转载时请保留以下信息，注明出处！ 
@@ -34,25 +38,45 @@ import org.apache.poi.hssf.util.HSSFColor;
  *            注意这里为了简单起见，boolean型的属性xxx的get器方式为getXxx(),而不是isXxx() 
  *            byte[]表jpg格式的图片数据 
  */  
+@SuppressWarnings("deprecation")
 public class ExportExcel<T>  
 {  
     public void exportExcel(Collection<T> dataset, OutputStream out)  
     {  
-        exportExcel("测试POI导出EXCEL文档", null, dataset, out, "yyyy-MM-dd");  
+        exportExcel("测试POI导出EXCEL文档", null, dataset, out, "yyyy-MM-dd",null,null,null);  
     }  
   
     public void exportExcel(String[] headers, Collection<T> dataset,  
             OutputStream out)  
     {  
-        exportExcel("测试POI导出EXCEL文档", headers, dataset, out, "yyyy-MM-dd");  
+        exportExcel("测试POI导出EXCEL文档", headers, dataset, out, "yyyy-MM-dd",null,null,null);  
     }  
   
     public void exportExcel(String[] headers, Collection<T> dataset,  
             OutputStream out, String pattern)  
     {  
-        exportExcel("测试POI导出EXCEL文档", headers, dataset, out, pattern);  
+        exportExcel("测试POI导出EXCEL文档", headers, dataset, out, pattern,null,null,null);  
     }  
   
+     
+    @SuppressWarnings("unchecked")  
+    public void exportExcel(String title, String[] headers,  
+            Collection<T> dataset, OutputStream out, String pattern,Map<String,Integer> colorMap,
+            Map<String,String> mergeMap,String[] mergeHeaders)  
+    {  
+        // 声明一个工作薄   
+        HSSFWorkbook workbook = new HSSFWorkbook();  
+        createSheet(title, workbook, headers, dataset, out, pattern,colorMap,mergeMap,mergeHeaders);
+        try  
+        {  
+            workbook.write(out);  
+        }  
+        catch (IOException e)  
+        {  
+            e.printStackTrace();  
+        }  
+    }  
+    
     /** 
      * 这是一个通用的方法，利用了JAVA的反射机制，可以将放置在JAVA集合中并且符号一定条件的数据以EXCEL 的形式输出到指定IO设备上 
      *  
@@ -67,14 +91,42 @@ public class ExportExcel<T>
      *            与输出设备关联的流对象，可以将EXCEL文档导出到本地文件或者网络中 
      * @param pattern 
      *            如果有时间数据，设定输出格式。默认为"yyy-MM-dd" 
-     */  
+     */ 
     @SuppressWarnings("unchecked")  
     public void exportExcel(String title, String[] headers,  
             Collection<T> dataset, OutputStream out, String pattern)  
     {  
         // 声明一个工作薄   
         HSSFWorkbook workbook = new HSSFWorkbook();  
-        // 生成一个表格   
+        createSheet(title, workbook, headers, dataset, out, pattern,null,null,null);
+        try  
+        {  
+            workbook.write(out);  
+        }  
+        catch (IOException e)  
+        {  
+            e.printStackTrace();  
+        }  
+    }  
+    
+    /**
+     * colorMap 背景色
+     * mergeMap 合并单元格行列map
+     * headers2 合并单元格标题
+     * @param title
+     * @param workbook
+     * @param headers
+     * @param dataset
+     * @param out
+     * @param pattern
+     * @param colorMap
+     * @param mergeMap
+     * @param headers2
+     */
+    public void createSheet(String title,HSSFWorkbook workbook,String[] headers,  
+            Collection<T> dataset, OutputStream out, String pattern,Map<String,Integer> colorMap,
+            Map<String,String> mergeMap,String[] mergeHeaders){
+    	// 生成一个表格   
         HSSFSheet sheet = workbook.createSheet(title);  
         // 设置表格默认列宽度为15个字节   
         sheet.setDefaultColumnWidth((short) 15);  
@@ -88,13 +140,31 @@ public class ExportExcel<T>
 //        style.setBorderRight(HSSFCellStyle.BORDER_THIN);  
 //        style.setBorderTop(HSSFCellStyle.BORDER_THIN);  
         style.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
+        
+        //设置标题颜色
+        if(null!=colorMap&&(!colorMap.isEmpty())){
+        	 HSSFPalette palette = workbook.getCustomPalette();  
+        	 Integer red = colorMap.get("red");
+        	 Integer green = colorMap.get("green");
+        	 Integer blue = colorMap.get("blue");
+             palette.setColorAtIndex((short)11, (byte) (red.intValue()), (byte) (green.intValue()), (byte) (blue.intValue()));
+             style.setFillPattern((short)11);
+             style.setFillForegroundColor((short)11);
+             style.setFillBackgroundColor((short)11);
+        }
+        
+       
         // 生成一个字体   
         HSSFFont font = workbook.createFont();  
 //        font.setColor(HSSFColor.VIOLET.index);  
-        font.setFontHeightInPoints((short) 12);  
+        font.setFontHeightInPoints((short) 10);  
         font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);  
         // 把字体应用到当前的样式   
         style.setFont(font);  
+        style.setBorderBottom(HSSFCellStyle.BORDER_THIN); //下边框
+        style.setBorderLeft(HSSFCellStyle.BORDER_THIN);//左边框
+        style.setBorderTop(HSSFCellStyle.BORDER_THIN);//上边框
+        style.setBorderRight(HSSFCellStyle.BORDER_THIN);//右边框
         // 生成并设置另一个样式   
         HSSFCellStyle style2 = workbook.createCellStyle();  
 //        style2.setFillForegroundColor(HSSFColor.LIGHT_YELLOW.index);  
@@ -123,18 +193,73 @@ public class ExportExcel<T>
         comment.setAuthor("leno");  
   
         // 产生表格标题行   
-        HSSFRow row = sheet.createRow(0);  
-        for (short i = 0; i < headers.length; i++)  
-        {  
-            HSSFCell cell = row.createCell(i);  
-            cell.setCellStyle(style);  
-            HSSFRichTextString text = new HSSFRichTextString(headers[i]);  
-            cell.setCellValue(text);  
-        }  
+        HSSFRow row = sheet.createRow(0); 
+        int index = 0;
+        if(null==mergeMap||mergeMap.isEmpty()){
+    	  for (short i = 0; i < headers.length; i++)  
+          {  
+              HSSFCell cell = row.createCell(i);  
+              cell.setCellStyle(style);  
+              HSSFRichTextString text = new HSSFRichTextString(headers[i]);  
+              cell.setCellValue(text);  
+              
+          }  
+        }else{
+        	index = Integer.parseInt((String)mergeMap.get("rowNum"))-1;
+        	String[] colIndexArray = ((String)mergeMap.get("colIndex")).split(",");
+        	int firstMergeIndex = Integer.parseInt(colIndexArray[0]);
+        	int lastMergeIndex  = Integer.parseInt(colIndexArray[colIndexArray.length-1]);
+        	HSSFRow row1 = sheet.createRow(1);  
+        	for (int i=0;i<colIndexArray.length;i++)  
+            {   
+        		if(i==colIndexArray.length-1){break;}
+        		int colIndex = Integer.parseInt(colIndexArray[i]);
+        		int nextColIndex = Integer.parseInt(colIndexArray[i+1]);
+                HSSFCell cell = row.createCell(colIndex);  
+                // 生成并设置另一个样式   
+                cell.setCellStyle(style);  
+                HSSFRichTextString text = new HSSFRichTextString(mergeHeaders[i]);  
+                cell.setCellValue(text);
+                CellRangeAddress cra = new CellRangeAddress(0, 0, colIndex, nextColIndex-1);
+                sheet.addMergedRegion(cra); 
+                setRegionStyle(sheet, cra, style);
+                for (int j=colIndex;j<nextColIndex;j++) {
+                	HSSFCell cell1 =  row1.createCell(j);
+                    cell1.setCellStyle(style);  
+                    HSSFRichTextString text1 = new HSSFRichTextString(headers[j]);  
+                    cell1.setCellValue(text1);
+				}
+                setRegionStyle(sheet, cra, style);
+            }  
+           	for (int i = 0; i < firstMergeIndex; i++)  
+            {  
+        		
+                HSSFCell cell = row.createCell(i);  
+                HSSFRichTextString text = new HSSFRichTextString(headers[i]);  
+                CellRangeAddress cra = new CellRangeAddress(0, index, i, i);
+                sheet.addMergedRegion(cra); 
+                cell.setCellStyle(style);
+                cell.setCellValue(text);
+                setRegionStyle(sheet, cra, style);
+            } 
+        	for (int i = lastMergeIndex; i < headers.length; i++)  
+            {  
+        		
+                HSSFCell cell = row.createCell(i);  
+                CellRangeAddress cra = new CellRangeAddress(0, index, i, i);
+                sheet.addMergedRegion(cra); 
+                cell.setCellStyle(style);
+                HSSFRichTextString text = new HSSFRichTextString(headers[i]);  
+                cell.setCellValue(text);
+                setRegionStyle(sheet, cra, style);
+            } 
+        }	
+        	
+   
+        	
   
         // 遍历集合数据，产生数据行   
         Iterator<T> it = dataset.iterator();  
-        int index = 0;  
         while (it.hasNext())  
         {  
             index++;  
@@ -270,15 +395,18 @@ public class ExportExcel<T>
                 }  
             }  
         }  
-        try  
-        {  
-            workbook.write(out);  
-        }  
-        catch (IOException e)  
-        {  
-            e.printStackTrace();  
-        }  
-    }  
+       
+    }
     
+    
+    public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
+		 for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
+			 HSSFRow row = HSSFCellUtil.getRow(i, sheet);
+			 for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
+			   HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
+			   cell.setCellStyle(cs);
+			  }
+			 }
+		}
 }  
 

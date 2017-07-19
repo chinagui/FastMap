@@ -20,7 +20,6 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
-import com.graphbuilder.geom.Geom;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -939,6 +938,46 @@ public class GeoTranslator {
 
 		return flag;
 	}
+	
+	/**
+	 * 点p0是否在点p1和p2的线上
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersection(Coordinate p1, Coordinate p2,
+			Coordinate p0,double precisionGeo) throws Exception {
+
+		boolean flag = false;
+
+		Coordinate[] coordinates = new Coordinate[2];
+
+		coordinates[0] = p1;
+
+		coordinates[1] = p2;
+		
+		int num0=String.valueOf(1/precisionGeo).length()-1;
+
+		LineString line = (LineString) transform(
+				geoFactory.createLineString(coordinates), 100000, 5+num0);
+
+		Point point = (Point) transform(geoFactory.createPoint(p0), 100000, 5+num0);
+		System.out.println("point1:"+p1.toString());
+		System.out.println("point2:"+p2.toString());
+		System.out.println("point0:"+p0.toString());
+		System.out.println(line.distance(point));
+		if (line.distance(point) < precisionGeo) {
+			flag = true;
+		}
+
+		return flag;
+	}
 
 	public static long round(double d) {
 		return d < 0 ? (long) d : (long) (d + 0.5);
@@ -1071,20 +1110,32 @@ public class GeoTranslator {
 				continue;
 			}
 			//不是第一个点，判断交点是否在两点中间
-			if(isIntersection(coorBefore, linePoint, coord1)){
+			if(isIntersection(coorBefore, linePoint, coord1)&&!isIntersection(coorBefore, coord1, coord2)){
 				tmpLine.add(coord1);
 				subLines.add(GeoTranslator.createLineString(tmpLine));
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord1);
+				if(isIntersection(coord1, linePoint, coord2)){
+					tmpLine.add(coord2);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+					tmpLine.add(coord2);
+				}
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;
 			}
-			if(isIntersection(coorBefore, linePoint, coord2)){
+			if(isIntersection(coorBefore, linePoint, coord2)&&!isIntersection(coorBefore, coord2, coord1)){
 				tmpLine.add(coord2);
 				subLines.add(GeoTranslator.createLineString(tmpLine));
 				tmpLine=new ArrayList<Coordinate>();
 				tmpLine.add(coord2);
+				if(isIntersection(coord2, linePoint, coord1)){
+					tmpLine.add(coord1);
+					subLines.add(GeoTranslator.createLineString(tmpLine));
+					tmpLine=new ArrayList<Coordinate>();
+					tmpLine.add(coord1);
+				}
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;
@@ -1153,14 +1204,14 @@ public class GeoTranslator {
 			if(sCoors[sCoors.length-1].equals(coord1)||sCoors[sCoors.length-1].equals(coord2)){
 				if(i==1){
 					Geometry orderMidLine=midLine;
-					if(sCoors[sCoors.length-1].equals(coord2)){
+					if(sCoors[sCoors.length-1].equals(orderMidLine.getCoordinates()[orderMidLine.getNumPoints()-1])){
 						orderMidLine=orderMidLine.reverse();
 					}
 					polygonLineTmp.add(orderMidLine);
 					polygonLineTmp=polygonLine2;i=2;
 				}else{
 					Geometry orderMidLine=midLine;
-					if(sCoors[sCoors.length-1].equals(coord2)){
+					if(sCoors[sCoors.length-1].equals(orderMidLine.getCoordinates()[orderMidLine.getNumPoints()-1])){
 						orderMidLine=orderMidLine.reverse();
 					}
 					polygonLineTmp.add(orderMidLine);

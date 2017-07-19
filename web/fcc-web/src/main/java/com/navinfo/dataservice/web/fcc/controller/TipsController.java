@@ -216,8 +216,7 @@ public class TipsController extends BaseController {
     }
 
     @RequestMapping(value = "/tip/import")
-    public ModelAndView importTips(HttpServletRequest request
-    ) throws ServletException, IOException {
+    public ModelAndView importTips(HttpServletRequest request) throws ServletException, IOException {
 
         String parameter = request.getParameter("parameter");
 
@@ -236,7 +235,6 @@ public class TipsController extends BaseController {
 
             //外业，有可能没有任务号
             if(json.containsKey("subtaskId")){
-
                 subtaskId=json.getInt("subtaskId");
             }
 
@@ -273,6 +271,13 @@ public class TipsController extends BaseController {
             result.put("JVImageResult", patternImageResultImpResult);
 
             logger.info("开始上传tips完成，jobId:"+jobId+"\tresult:"+result);
+
+
+            //20170712 Tips上传增加外业质检问题记录上传
+            logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
+            tipsUploader.runQuality(filePath + "/"+ "rd_qcRecord.txt");
+            result.put("qcTotal", tipsUploader.getQcTotal());
+            result.put("qcReasons", tipsUploader.getQcReasons());
 
             return new ModelAndView("jsonView", success(result));
 

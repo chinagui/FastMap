@@ -483,6 +483,14 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAdminArea scPoint = new ScPointAdminArea();
 		return scPoint.searchByAdminCode(admincode);
 	}
+	
+	@Override
+	public JSONObject getProvinceAndCityByAdminCode(String admincode) throws Exception {
+		
+		ScPointAdminArea scPoint = new ScPointAdminArea();
+		return scPoint.getProvinceAndCityByAdminCode(admincode);
+	}
+	
 	@Override
 	public String searchKindName(String kindcode) throws Exception {
 		KindCodeSelector kind = new KindCodeSelector();
@@ -570,6 +578,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointSpecKindCodeType15() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType15();
+	}
+
+	@Override
+	public Map<String, List<String>> scPointSpecKindCodeType7() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType7();
 	}
 	
 	@Override
@@ -758,6 +772,13 @@ public class MetadataApiImpl implements MetadataApi {
 		return scPartitionMeshlist.getCloseMeshs(meshs);
 	}
 	
+	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getMeshsFromPartition(List<Integer> meshs,int openFlag,int action)throws Exception{
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.getMeshsFromPartition(meshs,openFlag,action);
+	}
 	
 	/**
      * sc_point_poicode_new.KIND_USE= 1

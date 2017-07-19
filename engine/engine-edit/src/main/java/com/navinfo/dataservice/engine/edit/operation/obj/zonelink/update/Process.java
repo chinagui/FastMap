@@ -40,10 +40,7 @@ public class Process extends AbstractProcess<Command> {
 			this.prepareData();
 			IOperation operation = new Operation(this.getCommand());
 			operation.run(this.getResult());
-			String preCheckMsg = this.preCheck();
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+	
 		} catch (Exception e) {
 
 			getConn().rollback();

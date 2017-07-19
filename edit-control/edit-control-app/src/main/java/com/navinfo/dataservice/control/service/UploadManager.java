@@ -579,7 +579,7 @@ public class UploadManager {
 				JSONObject chargingStationJobj = jo.getJSONObject("chargingStation");
 				errorFiled = "chargingStation:type";
 				if(chargingStationJobj.containsKey("type")){
-					ixPoiChargingStation.setType(chargingStationJobj.getInt(""));
+					ixPoiChargingStation.setType(chargingStationJobj.getInt("type"));
 				}
 				errorFiled = "chargingStation:changeBrands";
 				if(chargingStationJobj.containsKey("changeBrands") &&  !(chargingStationJobj.get("changeBrands") instanceof JSONNull)){

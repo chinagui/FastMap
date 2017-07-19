@@ -322,6 +322,10 @@ public class DataConfirmService {
 
 			String return_value = Parser_Tool.do_get(urlStr.toString());
 			JSONObject resultObj = JSONObject.fromObject(return_value);
+			
+			if(!resultObj.getString("errmsg").equals("success")){
+				throw new Exception("情报接口未返回文件！");
+			}
 
 			log.info("输入的URL：" + urlStr);
 			log.info("接口返回结果：" + resultObj);
@@ -419,11 +423,13 @@ public class DataConfirmService {
 	public String expInfoFeedbackService(long userId, JSONObject timeObj, HttpServletRequest request) throws Exception {
 		String fileName = getFeedbackFileName(timeObj, userId);
 		log.info("调用情报接口，反馈文件名称：" + fileName);
+		
+		if(fileName.contains("未查到符合条件的情报信息")){
+			return fileName;
+		}
 
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)
 				+ "/dealership/information/" + fileName;
-		//JSONObject returnParam = InputStreamUtils.request2File(request, refilePath);
-		//String filePath = request.getSession().getServletContext().getRealPath(refilePath);
 
 		log.info("反馈情报路径：" + filePath);
 		Connection conn = null;
@@ -516,7 +522,7 @@ public class DataConfirmService {
 		
 		int exportCount = resultObj.getInt("exportCount");
 		if(exportCount == 0){
-			throw new Exception("未查到符合条件的情报信息!");
+			return "未查到符合条件的情报信息!";
 		}
 		
 		String fileName = resultObj.getString("filename");

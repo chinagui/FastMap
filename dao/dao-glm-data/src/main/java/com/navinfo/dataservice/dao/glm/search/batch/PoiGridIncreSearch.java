@@ -9,9 +9,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -39,7 +41,9 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEditStatusHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiEvaluPlanHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.PoiFlagHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -71,10 +75,7 @@ public class PoiGridIncreSearch {
 			gridClob.setString(1, StringUtils.join(gridDateMap.keySet(), ","));
 			
 			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in (select column_value from table(clob_to_table(?))) ";
-			System.out.println(sql);
-			//*********************************
-//			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in ("+StringUtils.join(gridDateMap.keySet(), ",")+")";
-			System.out.println(sql);
+			logger.info(sql);
 			Map<Integer,Collection<String>> dbGridMap = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<Integer,Collection<String>>>(){
 
 				@Override
@@ -159,11 +160,11 @@ public class PoiGridIncreSearch {
 		}
 		
 		if(StringUtils.isEmpty(date)){
-			//load all poi，初始化u_record应为0
+			logger.info("load all poi，初始化u_record应为0");
 			pois = loadIxPoi(grid,conn);
-			//load status
+			logger.info("load status");
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, null);
-			
+			logger.info("begin set poi's u_record with poiStatus mapping");
 			//load 变更poi的状态，设置u_record
 			if(poiStatus!=null&&poiStatus.size()>0){
 				for(Integer status:poiStatus.keySet()){
@@ -175,8 +176,9 @@ public class PoiGridIncreSearch {
 				}
 			}
 		}else{
+			logger.info("load status");
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, date);
-
+			logger.info("begin set poi's u_record with poiStatus mapping");
 			//load 
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
@@ -595,11 +597,101 @@ public class PoiGridIncreSearch {
 							+ " and t.pid is not null");
 		logger.debug("editstatus sql :" + sbEditStatus.toString());
 		
-		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);
+		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new PoiEditStatusHandler(),pidsClob);
 		for(Long pid:editStatus.keySet()){
 			pois.get(pid).setPoiEditStatus(editStatus.get(pid));
 		}
+		
+		//*************
+		logger.info("设置 字段 evaluPlan");
+		StringBuilder sbEvaluPlan = new StringBuilder();
+		sbEvaluPlan.append("SELECT * FROM (");
+		sbEvaluPlan.append(" SELECT ROW_NUMBER() OVER(PARTITION BY p.pid ORDER BY p.is_plan_selected DESC) rn, "
+				+ " p.pid,p.is_plan_selected,p.is_important   FROM data_plan p where p.data_type = 1 and p.pid in (select to_number(column_value) from table(clob_to_table(?)))  ");
+		sbEvaluPlan.append("  )  WHERE rn = 1 ");
+		logger.debug("sbEvaluPlan sql :" + sbEvaluPlan.toString());
+		
+		Map<Long,Integer> evaluPlan = run.query(conn, sbEvaluPlan.toString(), new PoiEvaluPlanHandler(),pidsClob);
+		for(Long pid:evaluPlan.keySet()){
+			pois.get(pid).setEvaluPlan(evaluPlan.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_FLAG_METHOD");
+		
+		 sql = "select p.poi_pid  ,p.src_record,p.field_verified from IX_POI_FLAG_METHOD p where  "
+		 		+ " p.poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		 logger.info(" IX_POI_FLAG_METHOD sql: "+sql);
+		 Map<Long,List<IRow>> poiFlags = run.query(conn, sql, new PoiFlagHandler(),pidsClob);
+
+		for(Long pid:poiFlags.keySet()){
+			pois.get(pid).setIxPoiFlagMethod(poiFlags.get(pid));
+		}
 			
 	}
+	public Map<String,Integer> getRegionIdTaskIdBySubtaskId(int subtaskId) throws Exception {
+		Connection manConn = null;
+		try {
+			manConn = DBConnector.getInstance().getManConnection();
+			//String sql = " select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id from subtask s,task t,region r where s.task_id = t.task_id and t.region_id = r.region_id  and s.subtask_id = ? ";
+			String sql =" select distinct s.subtask_id,s.task_id,t.region_id,r.daily_db_id ,c.admin_id from subtask s,task t,program p,city c,region r  where s.task_id =t.task_id and  t.program_id  = p.program_id and p.city_id = c.city_id and t.region_id = r.region_id  and s.subtask_id= ? ";
+			logger.info(sql);
+			Map<String,Integer> map = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<String,Integer>>(){
+
+				@Override
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> map = new HashMap<String,Integer>();
+					while (rs.next()) {
+						int taskId = rs.getInt("task_id");
+						int regionId = 0;//rs.getInt("region_id");
+						int dayDbId = rs.getInt("daily_db_id");
+						String adminId = rs.getString("admin_id");
+						if(adminId.length() > 2){
+							adminId = adminId.substring(0,2);
+						}
+						regionId = Integer.parseInt(adminId);
+						map.put("taskId", taskId);
+						map.put("regionId", regionId);
+						map.put("dayDbId", dayDbId);
+					}
+					return map;
+				}
+				
+			},subtaskId);
+			
+			return map;
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DBUtils.closeConnection(manConn);
+		}
+	}
 	
+	public Set<Integer> getPidsByTaskId(int taskId, int dbId) throws Exception {
+		Connection conn = null;
+		try{
+			conn =  DBConnector.getInstance().getConnectionById(dbId);
+			String sql = " select distinct p.pid  from data_plan p where p.data_type = 2  and p.is_plan_selected = 0 and p.task_id = ? ";
+			logger.info(sql);
+			Set<Integer> PidSet = new QueryRunner().query(conn, sql, new ResultSetHandler<Set<Integer>>(){
+				@Override
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> set = new HashSet<Integer>();
+					while (rs.next()) {
+						set.add(rs.getInt("pid"));
+					}
+					return set;
+				}
+				
+			},taskId);
+			return PidSet;
+		}catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 }

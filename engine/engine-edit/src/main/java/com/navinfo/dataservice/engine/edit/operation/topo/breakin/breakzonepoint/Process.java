@@ -39,9 +39,8 @@ public class Process extends AbstractProcess<Command> {
 		ZoneLink breakLink = (ZoneLink) new ZoneLinkSelector(this.getConn())
 				.loadById(this.getCommand().getLinkPid(), true, false);
 		this.getCommand().setBreakLink(breakLink);
-		
-		if(this.getCommand().getRepairLinkGeo()!=null)
-		{
+
+		if (this.getCommand().getRepairLinkGeo() != null) {
 			breakLink.setGeometry(this.getCommand().getRepairLinkGeo());
 		}
 		// 删除要打断LCLINK
@@ -65,12 +64,9 @@ public class Process extends AbstractProcess<Command> {
 			OpRefAdFace opRefAdFace = new OpRefAdFace(this.getCommand(),
 					this.getConn());
 			opRefAdFace.run(this.getResult());
-			
-			String preCheckMsg = this.preCheck();
 
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+		
+
 		} catch (Exception e) {
 
 			this.getConn().rollback();

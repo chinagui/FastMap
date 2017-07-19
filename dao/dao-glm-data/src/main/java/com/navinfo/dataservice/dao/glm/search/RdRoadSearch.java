@@ -153,4 +153,94 @@ public class RdRoadSearch implements ISearch {
 
 		return list;
 	}
+
+	public List<SearchSnapshot> searchDataByRoadPids(List<Integer> pids) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<>();
+
+		if (null == pids || pids.size() == 0) {
+
+			return list;
+		}
+		if (pids.size() > 1000) {
+
+			return list;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "SELECT A.PID, A.LINK_PID, B.GEOMETRY FROM RD_ROAD_LINK A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE A.U_RECORD <> 2 AND B.U_RECORD <> 2 AND A.PID IN ( " + ids + " )";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			// Map<String:crf道路pid, Map<String：linkpid, JSONArray：link几何json组>>
+			Map<String, Map<String, JSONObject>> values = new HashMap<String, Map<String, JSONObject>>();
+
+			while (resultSet.next()) {
+
+				String roadPid = resultSet.getString("PID");
+
+				if (!values.containsKey(roadPid)) {
+
+					values.put(roadPid, new HashMap<String, JSONObject>());
+				}
+
+				Map<String, JSONObject> linkMap = values.get(roadPid);
+
+				String linkPid = resultSet.getString("LINK_PID");
+
+				STRUCT struct = (STRUCT) resultSet.getObject("GEOMETRY");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				linkMap.put(linkPid, geojson);
+			}
+
+			for (String roadPid : values.keySet()) {
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				snapshot.setT(40);
+
+				snapshot.setI(Integer.parseInt(roadPid));
+
+				Map<String, JSONObject> linkMap = values.get(roadPid);
+
+				JSONArray gArray = new JSONArray();
+
+				for (String linkpid : linkMap.keySet()) {
+
+					JSONObject gObject = new JSONObject();
+
+					gObject.put("i", Integer.parseInt(linkpid));
+
+					gObject.put("g",
+							linkMap.get(linkpid).getJSONArray("coordinates"));
+
+					gArray.add(gObject);
+				}
+
+				snapshot.setG(gArray);
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return list;
+	}
 }

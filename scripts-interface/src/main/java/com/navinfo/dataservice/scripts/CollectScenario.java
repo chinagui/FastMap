@@ -211,7 +211,7 @@ public class CollectScenario{
 	}
 	
     /**
-     * 从link中查询3-9级道路，每长度，是否是步行街属性数据保存到临时表中
+     * 从link中查询3-9级道路，地址POI，POI等级的数据保存到临时表中
      * @param Connection
      * @throws Exception
      * 
@@ -220,12 +220,11 @@ public class CollectScenario{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "CREATE TABLE LINK_PRE_TEST AS "
-					+ "( SELECT T.LINK_PID, T.LENGTH, T.PID, T.RANGE, IA.NAME_ID ADDRESS, F.form_of_way FORM FROM"
+					+ "( SELECT T.LINK_PID, T.LENGTH, T.PID, T.RANGE, IA.NAME_ID ADDRESS FROM"
 					+ "(SELECT RL.LINK_PID, IP.PID, RL.LENGTH, IP."+"\""+"LEVEL"+"\""+"  RANGE FROM RD_LINK RL, IX_POI IP, "
 					+ "TABLE(SDO_JOIN('RD_LINK', 'GEOMETRY', 'IX_POI', 'GEOMETRY', 'DISTANCE=30')) J "
 					+ "WHERE J.ROWID1 = RL.ROWID AND J.ROWID2 = IP.ROWID AND RL.KIND >= 3 AND RL.KIND <= 9) T "
-					+ "LEFT JOIN IX_POI_ADDRESS IA ON IA.POI_PID = T.PID "
-					+ "LEFT JOIN RD_LINK_FORM F ON F.LINK_PID = T.LINK_PID)";
+					+ "LEFT JOIN IX_POI_ADDRESS IA ON IA.POI_PID = T.PID)";
 			log.info("保存数据到临时表sql:" + sql);
 			run.execute(dailyConn, sql);
 		}catch(Exception e){
@@ -236,6 +235,7 @@ public class CollectScenario{
 	
 	/**
 	 * 从临时表中删除link和poi都重复的数据
+	 * 关联地址POI可能会产生重复的数据，地址POI数据包含中文英文两种数据
 	 * @param Connection
 	 * @throws Exception
 	 * 
@@ -394,7 +394,7 @@ public class CollectScenario{
 				
 				StringBuffer sb = new StringBuffer();
 				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct pt.LINK_PID FROM LINK_PRE_TEST pt where pt.FORM = 20)");
+				sb.append("select distinct pt.LINK_PID FROM RD_LINK_FORM pt where pt.form_of_way = 20)");
 
 				String sql = sb.toString();
 				log.info("保存步行街POI数据sql：" + sql);

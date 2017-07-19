@@ -3788,12 +3788,11 @@ public class TaskService {
 			
 			String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from PROGRAM p, TASK t where p.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.status = 2 ");
+			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
-			sb.append("and p.type = 1 and t.type = 0 ");
-			sb.append("and t.program_id = p.program_id");
+			sb.append(" and t.type = 0 ");
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){

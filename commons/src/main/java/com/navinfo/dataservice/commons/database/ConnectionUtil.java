@@ -38,6 +38,20 @@ public class ConnectionUtil {
 			return conn.createClob();
 		}
 	}
+
+	public static Clob createClob(Connection conn,String param)throws SQLException{
+		if(conn==null)return null;
+		Clob c = null;
+		if(conn instanceof DruidPooledConnection){
+			ClobProxyImpl impl = (ClobProxyImpl)conn.createClob();
+			c = impl.getRawClob();
+		}else{
+			c = conn.createClob();
+		}
+		c.setString(1, param);
+		return c;
+		
+	}
 	public static STRUCT createSTRUCTFromJGeometry(JGeometry jGeometry,Connection conn)throws SQLException{
 		Object[] oracleDescriptors = null;
 		Connection delegateConn = null;

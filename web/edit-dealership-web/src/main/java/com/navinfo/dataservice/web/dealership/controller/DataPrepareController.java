@@ -343,7 +343,9 @@ public class DataPrepareController extends BaseController {
 		        		"POI3_NUM","POI3_名称" ,"POI3_别名","POI3_分类","POI3_CHAIN","POI3_地址","POI3_电话","POI3_邮编","POI3_差分结果",
 		        		"POI4_NUM","POI4_名称" ,"POI4_别名","POI4_分类","POI4_CHAIN","POI4_地址","POI4_电话","POI4_邮编","POI4_差分结果",
 		        		"POI5_NUM","POI5_名称" ,"POI5_别名","POI5_分类","POI5_CHAIN","POI5_地址","POI5_电话","POI5_邮编","POI5_差分结果",
-		        		"匹配度","代理店确认时间","大区ID"};  
+		        		//代理店 - 表库差分结果导出原则变更(6882)
+		        		"CFM_POI_NUM","CFM_POI_NUM_名称","CFM_POI_NUM_别名","CFM_POI_NUM_分类","CFM_POI_NUM_CHAIN","CFM_POI_NUM_地址","CFM_POI_NUM_电话","CFM_POI_NUM_邮编","CFM_POI_NUM_差分结果",
+		        		"POI是否采纳","匹配度","代理店确认时间","大区ID"};
 			
 			try  
 	        {  

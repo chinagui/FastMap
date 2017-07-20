@@ -17,7 +17,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNameckUtil;
 /**
- * 查询条件：本次日编存在IX_POI_NAME新增或者修改履历，或者存在主表改分类的修改履历，且分类为150101（Chain为6003、6045、6002、6001、6000、6028、6025、602C、6047、6027、600A）
+ * 查询条件：本次日编存在官方原始中文IX_POI_NAME新增或者修改履历，或者存在主表改分类的修改履历，且分类为150101（Chain为6003、6045、6002、6001、6000、6028、6025、602C、6047、6027、600A）
  * 或分类为150101（chain为6020）且官方标准化简体中文名称中不包含{"平安银行"}中的银行类POI，则执行如下批处理：
  * 
  * 批处理：将官方标准化中文名称（包括简体中文和繁体中文）的开头部分中包含有“SC_POINT_NAMECK”配置表中的“TYPE”=10的“PRE_KEY”字段内容（不区分大小写），
@@ -54,7 +54,7 @@ public class FMBAT20138 extends BasicBatchRule {
 			}
 			String newKindCode=poi.getKindCode();
 			String newChain=poi.getChain();
-			IxPoiName br=poiObj.getOfficeStandardCHName();
+			IxPoiName br=poiObj.getOfficeOriginCHName();
 			if(br==null){return;}
 			String name=br.getName();
 			if(newKindCode.equals("150101")){
@@ -123,7 +123,7 @@ public class FMBAT20138 extends BasicBatchRule {
 			}
 		}
 		//存在IX_POI_NAME新增或者修改履历
-		IxPoiName br=poiObj.getOfficeStandardCHName();
+		IxPoiName br=poiObj.getOfficeOriginCHName();
 		if(br!=null){
 			if(br.getHisOpType().equals(OperationType.INSERT)){return true;}
 			if(br.getHisOpType().equals(OperationType.UPDATE) && br.hisOldValueContains(IxPoiName.NAME)){

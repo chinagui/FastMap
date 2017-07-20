@@ -1,15 +1,12 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.IntersectionMatrix;
-import com.vividsolutions.jts.geom.LineString;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Arrays;
 
 /**
  * @author zhangyt
@@ -149,58 +146,27 @@ public abstract class GeoRelationUtils {
     }
 
     public static boolean IsLinkOnLeftOfRing(Geometry link, Geometry ring) {
-        List<Coordinate> pts = new ArrayList<>();
-        // 首先将Link的坐标从起点至终点依次填入
-        Coordinate[] linkCoords = link.getCoordinates();
-        for (int i = 0; i < linkCoords.length; i++) {
-            pts.add(linkCoords[i]);
-        }
-        // 求取其余部分
-
-        List<Coordinate> diffCoords = diff(link, ring.getBoundary());
-
-        // 将其余部分坐标填入
-        for (Coordinate coor : diffCoords) {
-            pts.add(coor);
-        }
-        // 若所构成的环为逆时针则证明多变形在Link行进方向的左侧
         boolean isCCW = false;
+        if (link.isEmpty() || ring.isEmpty()) {
+            return isCCW;
+        }
+
         try {
-            isCCW = GeometryUtils.IsCCW(pts.toArray(new Coordinate[pts.size()]));
+            isCCW = GeometryUtils.IsCCW(sortCoordinates(link, ring.getBoundary()));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return isCCW;
+        return !isCCW;
     }
 
-    private static List<Coordinate> diff(Geometry link, Geometry boundary) {
-        Coordinate startCoor = link.getCoordinates()[0];
-        Coordinate endCoor = link.getCoordinates()[link.getCoordinates().length - 1];
+    private static Coordinate[] sortCoordinates(Geometry link, Geometry boundary) {
+        String linkStr = Arrays.toString(link.getCoordinates());
+        linkStr = StringUtils.substring(linkStr, 1, linkStr.length() - 1);
 
-        int start = 0;
-        int end = 0;
+        boolean flag = StringUtils.contains(Arrays.toString(boundary.getCoordinates()), linkStr);
 
-        Coordinate[] coordinates = direct(link, boundary) ? boundary.getCoordinates() : boundary.reverse().getCoordinates();
-
-        for (int i = 0; i < coordinates.length; i++) {
-            Coordinate coor = coordinates[i];
-
-            if (startCoor.x == coor.x && startCoor.y == coor.y) {
-                end = i;
-            }
-            if (endCoor.x == coor.x && endCoor.y == coor.y) {
-                start = i;
-            }
-        }
-
-        List<Coordinate> result = new ArrayList<>();
-        result.addAll(Arrays.asList(Arrays.copyOfRange(coordinates, start, coordinates.length - 1)));
-        result.addAll(Arrays.asList(Arrays.copyOfRange(coordinates, 0, end - 1)));
+        Coordinate[] result = flag ? boundary.getCoordinates() : boundary.reverse().getCoordinates();
 
         return result;
-    }
-
-    private static boolean direct(Geometry link, Geometry boundary) {
-        return org.apache.commons.lang.StringUtils.contains(Arrays.toString(boundary.getCoordinates()), Arrays.toString(link.getCoordinates()));
     }
 }

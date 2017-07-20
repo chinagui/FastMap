@@ -1473,7 +1473,6 @@ public class Transaction {
                         for (IObj obj : links) {
                             dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
                         }
-                        continue;
                     } catch (Exception e) {
                         logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
                     }
@@ -1705,19 +1704,24 @@ public class Transaction {
                         continue;
                     }
                     IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(json.getInt("objId"), false);
+                    if (!json.containsKey("data")) {
+                        return;
+                    }
+
+                    JSONObject data = json.getJSONObject("data");
                     Geometry geometry = GeometryUtils.loadGeometry(link);
                     Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(json.getJSONObject("geometry")));
+                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(data.getJSONObject("geometry")));
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
                         throw new Exception("不允许进行跨大区库修形操作.");
                     }
                     if (newDbIds.size() == 1) {
                         return;
                     }
-                    if (!json.containsKey("catchInfos")) {
+                    if (!data.containsKey("catchInfos")) {
                         continue;
                     }
-                    Iterator<JSONObject> iterator = json.getJSONArray("catchInfos").iterator();
+                    Iterator<JSONObject> iterator = data.getJSONArray("catchInfos").iterator();
                     while (iterator.hasNext()) {
                         JSONObject obj = iterator.next();
                         if (obj.containsKey("catchLinkPid")) {
@@ -1936,7 +1940,10 @@ public class Transaction {
         patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
-        patter.append("|RD_WARINGINFO|RD_LINK_WARING");
+        patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
+        patter.append("|RD_TRAFFICSIGNAL");
+        patter.append("|RD_TMCLOCATION_LINK");
+        patter.append("|RD_SPEEDBUMP");
         patter.append("|RD_ELECTRONICEYE|RD_ELECEYE_PAIR|RD_ELECEYE_PART");
 
         patter.append(").*");

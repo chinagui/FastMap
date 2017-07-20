@@ -161,13 +161,13 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			PoiQuality poiQuality = new PoiQuality();
-			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
+//			PoiQuality poiQuality = new PoiQuality();
+//			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
 			int count=commitPoi(conn);
 			
-			log.info("开始执行poi质检提交修改count_table 任务");
-			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
-			log.info("poi质检提交修改count_table 任务完成");
+//			log.info("开始执行poi质检提交修改count_table 任务");
+//			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
+//			log.info("poi质检提交修改count_table 任务完成");
 			
 			log.info("end change poi_edit_status=3 commit ："+count+" 条");
 			JSONObject response =new JSONObject();

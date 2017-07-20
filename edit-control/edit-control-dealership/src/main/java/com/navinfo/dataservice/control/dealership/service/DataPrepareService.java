@@ -273,6 +273,8 @@ public class DataPrepareService {
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
 		String chainCode = returnParam.getString("chainCode");
+//		String localFile="E:/temp/20170720162631.xls";
+//		String chainCode = "400F";
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
@@ -414,6 +416,7 @@ public class DataPrepareService {
 				}
 				resultObj = resultObjSet.get(resultId);
 				if(resultObj.getName()!=diffSub.getName()||resultObj.getAddress()!=diffSub.getAddress()){
+					log.info("resultObj.name:"+resultObj.getName()+",resultObj.address:"+resultObj.getAddress()+",diffSub.name:"+diffSub.getName()+",diffSub.address:"+diffSub.getAddress());
 					log.info("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
 					throw new Exception("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
 				}

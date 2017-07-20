@@ -1726,10 +1726,10 @@ public class DataEditService {
 				ixDealershipResult.setFbDate(map.get("fbDate").toString());
 				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
 				if(map.get("fbAuditRemark").toString().equals("舍弃")){
-					ixDealershipResult.setWorkflowStatus(3);
-				}else{
 					ixDealershipResult.setWorkflowStatus(9);
 					ixDealershipResult.setDealStatus(3);
+				}else{
+					ixDealershipResult.setWorkflowStatus(3);
 				}
 				ixDealershipResult.setCfmStatus(3);
 				ixDealershipResult.setFbSource(2);

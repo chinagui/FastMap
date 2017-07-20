@@ -904,7 +904,7 @@ public class SubtaskService {
 			Map<String, Object> result = run.query(conn, selectSql,rsHandler);
 			//补充子任务的用户名/组名/gridIds
 			if(result.containsKey("exeUserId")){
-				Long exeUserId=(Long) result.get("exeUserId");
+				Long exeUserId=Long.valueOf(String.valueOf(result.get("exeUserId")));
 				if(!exeUserId.equals(Long.valueOf(0))){
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,exeUserId);
 					result.put("executer",userInfo.getUserRealName());
@@ -913,7 +913,7 @@ public class SubtaskService {
 			}				
 		
 			if(result.containsKey("exeGroupId")){
-				Long exeGroupId=(Long) result.get("exeGroupId");
+				Long exeGroupId=Long.valueOf(String.valueOf(result.get("exeGroupId")));
 				if(!exeGroupId.equals(Long.valueOf(0))){
 					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,exeGroupId);
 					result.put("executer",group.getGroupName());
@@ -933,11 +933,13 @@ public class SubtaskService {
 					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
-					result.put("qualityExeUserName",userInfo.getUserRealName());
-					result.put("qualityRisk",userInfo.getRisk());
+					if(userInfo!=null){
+						result.put("qualityExeUserName",userInfo.getUserRealName());
+						result.put("qualityRisk",userInfo.getRisk());
+					}
 					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,subtaskQuality.getExeGroupId());
 					result.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
-					result.put("qualityExeGroupName",group.getGroupName());
+					if(group!=null){result.put("qualityExeGroupName",group.getGroupName());}
 				}
 			}				
 			

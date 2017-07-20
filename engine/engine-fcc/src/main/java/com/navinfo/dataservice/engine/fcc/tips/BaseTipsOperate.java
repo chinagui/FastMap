@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -255,12 +259,11 @@ public class BaseTipsOperate {
 	 * @Description:删除tips
 	 * @param rowkey
 	 * @author: y
-	 * @param user ：删除用户
 	 * @param delType :0 逻辑删除，1：物理删除
 	 * @throws Exception
 	 * @time:2016-11-16 下午5:21:09
 	 */
-	public void deleteByRowkey(String rowkey, int delType, int user) throws Exception {
+	public void deleteByRowkey(String rowkey, int delType) throws Exception {
 		Connection hbaseConn;
 		try {
 			//物理删除
@@ -269,7 +272,7 @@ public class BaseTipsOperate {
 			}
 			//逻辑删除
 			else{
-				logicDel(rowkey,user);
+				logicDel(rowkey);
 			}
 
 		} catch (SolrServerException e) {
@@ -289,17 +292,14 @@ public class BaseTipsOperate {
 	/**
 	 * @Description:逻辑删除tips(将t_lifecycle改为1：删除)
 	 * @param rowkey：被删除的tips的rowkey
-	 * @param user：删除操作的作业员id
 	 * @author: y
 	 * @throws Exception
 	 * @time:2017-4-8 下午4:14:57
 	 */
-	private void logicDel(String rowkey, int user) throws Exception {
+	private void logicDel(String rowkey) throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
         try {
-            String date = StringUtils.getCurrentTime();
-
             //修改hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -327,7 +327,6 @@ public class BaseTipsOperate {
 
             htab.put(put);
 
-
             //同步更新solr
             JSONObject solrIndex = solr.getById(rowkey);
             solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
@@ -343,10 +342,6 @@ public class BaseTipsOperate {
 
 	}
 
-
-
-
-
 	/**
 	 * @Description:TOOD
 	 * @param rowkey
@@ -360,7 +355,6 @@ public class BaseTipsOperate {
 		Connection hbaseConn = null;
         Table htab = null;
         try {
-            // delete hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
@@ -368,9 +362,10 @@ public class BaseTipsOperate {
             Delete d1 = new Delete(rowkey.getBytes());
             list.add(d1);
 
-            htab.delete(list);
             // delete solr
             solr.deleteByRowkey(rowkey);
+
+            htab.delete(list);
         }catch (Exception e) {
             e.printStackTrace();
             logger.error("物理删除失败:", e);

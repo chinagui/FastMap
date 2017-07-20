@@ -46,7 +46,7 @@ public class TipsRequestParam {
         //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
         int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
         
-        if(subTaskType!=3&&subTaskType!=4&&taskBuilder!=null){
+        if(subTaskType != 3 && subTaskType != 4 && taskBuilder != null){
         	
         	 builder.append(" AND "+taskBuilder);
         }
@@ -453,7 +453,7 @@ public class TipsRequestParam {
                 if(builder.length() > 0) {
                     builder.append(" AND ");
                 }
-                builder.append("stage:(1 2 5 6 ) AND t_tipStatus:2   -t_dEditStatus:2");
+                builder.append("stage:(1 2 5 6 ) AND t_tipStatus:2 AND -t_dEditStatus:2");
          
             }
         	
@@ -475,7 +475,7 @@ public class TipsRequestParam {
                 if(builder.length() > 0) {
                     builder.append(" AND ");
                 }
-                builder.append(" stage:7 AND handler:"+handler+"  -t_dEditStatus:2 ");
+                builder.append(" stage:7 AND handler:"+handler+" AND -t_dEditStatus:2 ");
             }
         	
         }
@@ -550,6 +550,7 @@ public class TipsRequestParam {
             if(pType.equals("sl")) {//矢量化 赵航
                 stages.add(0);
                 stages.add(1);
+                stages.add(2);
                 stages.add(6);
             }else if(pType.equals("ms")) {//生产管理 万冲
                 stages.add(0);
@@ -607,9 +608,9 @@ public class TipsRequestParam {
                     addTaskFilterSql(noQFilter, builder);
                 }else if(pType.equals("fc")) {//FC 预处理 钟小明
                     if(builder.length() > 0) {
-                        builder.append(" AND ((s_sourceType:8001 AND t_tipStatus:(1 2)) OR (-s_sourceType:8001 AND t_tipStatus:2))");
+                        builder.append(" AND (t_tipStatus:2 OR (s_sourceType:8001 AND t_tipStatus:1))");
                     }else{
-                        builder.append("((s_sourceType:8001 AND t_tipStatus:(1 2)) OR (-s_sourceType:8001 AND t_tipStatus:2))");
+                        builder.append("(t_tipStatus:2 OR (s_sourceType:8001 AND t_tipStatus:1))");
                     }
                 }
             }else {//web 刘哲

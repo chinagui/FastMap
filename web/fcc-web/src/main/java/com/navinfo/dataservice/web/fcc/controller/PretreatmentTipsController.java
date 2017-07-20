@@ -114,21 +114,25 @@ public class PretreatmentTipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 			
-			int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
+			int delType = 1; //默认物理删除。0：逻辑删除；1：物理删除 2:无数据
 			
-			int user = jsonReq.getInt("user");
+//			int user = jsonReq.getInt("user");
+
+            int subTaskId = jsonReq.getInt("subTaskId");
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
-			
+
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 			
 			PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 			
-			delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
+			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
-			op.deleteByRowkey(rowkey,delType,user);
+            if(delType == 0 || delType == 1) {
+                op.deleteByRowkey(rowkey, delType);
+            }
 
 			return new ModelAndView("jsonView", success());
 

@@ -1214,7 +1214,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		//如果是修改的，则需要按照打断后的多根测线，维护测线上的tips
 		if(command==COMMAND_UPADATE){
 			maintainHookTips(oldRowkey,user, allTips,hasModifyGlocation);
-			deleteByRowkey( oldRowkey,  1,  user); //将旧的rowkey删除（物理删除）
+			deleteByRowkey(oldRowkey, 1); //将旧的rowkey删除（物理删除）
 		}
 		
 		return returnRowkey;
@@ -1263,13 +1263,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-14 上午9:25:33
 	 */
-	private void addSolr(JSONObject jsonInfo, String currentDate)
+	private JSONObject addSolr(JSONObject jsonInfo, String currentDate)
 			throws Exception {
 		try {
             TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(jsonInfo.getString("rowkey"), currentDate,
                     jsonInfo.getJSONObject("track"), jsonInfo.getJSONObject("source"), jsonInfo.getJSONObject("geometry"),
                     jsonInfo.getJSONObject("deep"), jsonInfo.getJSONObject("feedback"));
-			solr.addTips(JSONObject.fromObject(tipsIndexModel));
+			return JSONObject.fromObject(tipsIndexModel);
 		} catch (Exception e) {
 			logger.error("更新索引出错：" + e.getMessage());
 			e.printStackTrace();
@@ -1407,7 +1407,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		htab.put(put);
 
-		addSolr(jsonInfo, date);
+		JSONObject solrIndex = addSolr(jsonInfo, date);
+        solr.addTips(solrIndex);
 	}
 
 	/**
@@ -1515,18 +1516,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	public void batchSaveOrUpdate(JSONArray jsonInfoArr, int user, int command) throws Exception {
 
-		Connection hbaseConn;
-		
-		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+		Connection hbaseConn = null;
+        Table htab = null;
+        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
 
 			List<Put> puts = new ArrayList<Put>();
+            List<JSONObject> solrIndexList = new ArrayList<>();
 			for (Object jsonInfo : jsonInfoArr) {
 
 				JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
@@ -1557,26 +1559,27 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				puts.add(put);
 
 
-				addSolr(tipsInfo, date);
-				
+				JSONObject solrIndex = addSolr(tipsInfo, date);
+                solrIndexList.add(solrIndex);
 				//需要进行tips差分
 				allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
 			}
 
 			htab.put(puts);
-
-			htab.close();
-			
+            solr.addTips(solrIndexList);
 			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
 			logger.error("批量新增tips出错：" + e.getMessage(), e);
 			throw new Exception("批量新增tips出错：" + e.getMessage(), e);
-		}
+		}finally {
+            if(htab != null) {
+                htab.close();
+            }
+        }
 
 	}
 
-	// 2、licycle=3且t_trackInfo数组(最后一条)stage=6,handler=当前持有人的Tips物理删除，点击<删除>后MAP区域的Tips自动消失。
 	/**
 	 * @Description:判断情报矢量化的tip删除，是逻辑删除还是物理删除 判断原则：
 	 * @param rowkey
@@ -1586,21 +1589,52 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-4-12 下午4:07:37
 	 */
-	public int getDelTypeByRowkeyAndUserId(String rowkey, int user)
+	public int getDelTypeByRowkeyAndUserId(String rowkey, int subTaskId)
 			throws Exception {
+		//20170720 物理删除：t_lifecycle=3，trackinfo=[]，source-->s_qSubTaskId/s_mSubTaskId=当前子任务
+        Connection hbaseConn = null;
+        Table htab = null;
+        try{
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		JSONObject snappot = solr.getById(rowkey);
+            Result result = htab.get(new Get(rowkey.getBytes()));
+            if(result.isEmpty()) {
+                return 2;
+            }
 
-		int stage = snappot.getInt("stage");
-		int handler = snappot.getInt("handler");
-		int lifeCycle = snappot.getInt("t_lifecycle");
+            JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "track".getBytes())));
+            JSONObject sourceJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "source".getBytes())));
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            List trackInfoList = track.getT_trackInfo();
+            int lifecycle = track.getT_lifecycle();
+            int taskType = this.getTaskType(subTaskId);//// 1，中线 4，快线
+            if(taskType == 0) {
+                return 2;
+            }
+            int tipTaskId = 0;
+            if(taskType == TaskType.Q_TASK_TYPE) {//快线子任务
+                tipTaskId = sourceJson.getInt("s_qSubTaskId");
+            }else if(taskType == TaskType.M_TASK_TYPE) {//中线子任务
+                tipTaskId = sourceJson.getInt("s_mSubTaskId");
+            }
 
-		if (lifeCycle == 3 && handler == user && stage == 6) {
-
-			return 1;
-		}
-
-		return 0;
+            int delType = 0;//默认逻辑删除0
+            if((trackInfoList == null || trackInfoList.size() == 0)
+                    && lifecycle == 3 && tipTaskId == subTaskId) {
+                delType = 1;
+            }
+            return delType;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+        }
+        return 2;
 	}
 
 	/**
@@ -1715,17 +1749,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
     private void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
 
-        Connection hbaseConn;
-
-        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+        Connection hbaseConn = null;
+		Table htab = null;
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
-            Table htab = hbaseConn.getTable(TableName
+            htab = hbaseConn.getTable(TableName
                     .valueOf(HBaseConstant.tipTab));
-//            String date = StringUtils.getCurrentTime();
 
             List<Put> puts = new ArrayList<Put>();
+            List<JSONObject> solrIndexList = new ArrayList<>();
             for (Object jsonInfo : jsonInfoArr) {
 
                 JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
@@ -1758,23 +1792,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 
                 Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
                 solrIndex.put("relate_links", relateMap.get("relate_links"));
-                
-                solr.addTips(solrIndex);
+                solrIndexList.add(solrIndex);
 
                 //需要进行tips差分
                 allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
             }
 
             htab.put(puts);
-
-            htab.close();
-
+            solr.addTips(solrIndexList);
             TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
         } catch (Exception e) {
             logger.error("批量新增tips出错：" + e.getMessage(), e);
             throw new Exception("批量新增tips出错：" + e.getMessage(), e);
-        }
+        }finally {
+			if(htab != null) {
+                htab.close();
+            }
+		}
 
     }
 
@@ -2140,12 +2175,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	private int getTaskType(int taskId) throws Exception {
 		// 调用 manapi 获取 任务类型、及任务号
-		int taskType=0;
+		int taskType = 0;
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try {
 			Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(taskId);
 			if (taskMap != null) {
-				int taskIdResult = taskMap.get("taskId");
 				// 1，中线 4，快线
 				taskType = taskMap.get("programType");
 

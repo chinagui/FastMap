@@ -30,12 +30,12 @@ public class SolrController {
 
     private int fetchNum = Integer.MAX_VALUE;
 
-//    private HttpSolrClient client;
+    //    private HttpSolrClient client;
     private SolrClient client;
 
     public SolrController() {
 //        client = SolrConnector.getInstance().getClient();
-    	client = SolrClientFactory.getInstance().getClient();
+        client = SolrClientFactory.getInstance().getClient();
     }
 
     /**
@@ -48,7 +48,7 @@ public class SolrController {
     public void addTips(JSONObject json) throws JSONException,
             SolrServerException, IOException {
 
-    	SolrInputDocument doc = new SolrInputDocument();
+        SolrInputDocument doc = new SolrInputDocument();
 
         doc.addField("id", json.getString("id"));
 
@@ -191,8 +191,10 @@ public class SolrController {
 
             sdList.add(doc);
         }
-        client.add(sdList);
-        client.commit();
+        if(sdList.size() > 0) {
+            client.add(sdList);
+            client.commit();
+        }
     }
 
     public boolean checkTipsMobile(String wkt, String date,
@@ -594,13 +596,11 @@ public class SolrController {
      */
     public JSONObject getById(String id) throws Exception {
         String param = "id:" + id;
-        SolrDocumentList sdList = this.queryTips(param, null, 1, "id");
-        long totalNum = sdList.size();
-        if (totalNum == 0) {
+        List<JSONObject> snapshots = this.queryTips(param, null, 1);
+        if (snapshots == null || snapshots.size() == 0) {
             return null;
         }
-        SolrDocument doc = sdList.get(0);
-        JSONObject snapshot = JSONObject.fromObject(doc);
+        JSONObject snapshot = snapshots.get(0);
         return snapshot;
     }
 

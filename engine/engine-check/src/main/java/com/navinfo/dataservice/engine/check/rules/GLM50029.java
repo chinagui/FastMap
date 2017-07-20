@@ -108,9 +108,9 @@ public class GLM50029 extends baseRule {
             if (face.pid() == zoneFace.pid()) {
                 continue;
             }
-            //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, zoneFace.getGeometry())) {
-            //    continue;
-            //}
+            if (CheckGeometryUtils.isOnlyEdgeShared(geometry, zoneFace.getGeometry())) {
+                continue;
+            }
 
             AdAdmin adAdmin = null;
             try {

@@ -105,6 +105,9 @@ public class ImportCityBlockByOracle {
 			String updCityGridSql = "UPDATE GRID SET CITY_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int cityCount=0;
 			for(City4Imp city:citys.values()){
+				if(!city.getCityName().equals("北京市")){
+					continue;
+				}
 				long cityId= getCityId(conn);
 				Geometry cityGeo = MeshUtils.meshes2Jts(city.getMeshes());
 				Clob clob = ConnectionUtil.createClob(conn);
@@ -124,6 +127,7 @@ public class ImportCityBlockByOracle {
 					System.out.println("imp city:"+cityCount);
 				}
 			}
+			conn.commit();
 			System.out.println("imp city:"+cityCount);
 			//
 			Map<String,Block4Imp> blocks = parseBlock(conn,rawBlockTable,blockTable);
@@ -135,6 +139,9 @@ public class ImportCityBlockByOracle {
 			String updBlockGridSql = "UPDATE GRID SET BLOCK_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int bCount =0;
 			for(Block4Imp block:blocks.values()){
+				if(!block.getCityName().equals("北京市")){
+					continue;
+				}
 				long blockId= getBlockId(conn);
 				Geometry blockGeo = CompGridUtil.grids2Jts(block.getGrids());
 				Clob clob = ConnectionUtil.createClob(conn);
@@ -151,6 +158,7 @@ public class ImportCityBlockByOracle {
 					System.out.println("imp block:"+bCount);
 				}
 			}
+			conn.commit();
 			System.out.println("imp block:"+bCount);
 
 			//update city admin geo
@@ -253,8 +261,8 @@ public class ImportCityBlockByOracle {
 	}
 	public static void getBlockOriginGeometry(Connection conn,String rawBlockTable,Map<String,Block4Imp> blocks)throws Exception{
 		try{
-			System.out.println("Starting read block file...");
-			String sql = "MERGE INTO SELECT BLOCKCODE,GEOMETRY FROM "+rawBlockTable;
+			System.out.println("Starting read raw block geo file...");
+			String sql = "SELECT BLOCKCODE,GEOMETRY FROM "+rawBlockTable;
 			Map<String,Geometry> geos = new QueryRunner().query(conn, sql, new ResultSetHandler<Map<String,Geometry>>(){
 
 				@Override
@@ -277,7 +285,9 @@ public class ImportCityBlockByOracle {
 			});
 			for(Entry<String,Geometry> entry:geos.entrySet()){
 				Block4Imp block = blocks.get(entry.getKey());
-				block.setOriginGeomtry(entry.getValue());
+				if(block!=null){
+					block.setOriginGeomtry(entry.getValue());
+				}
 			}
 		}catch(Exception e){
 			e.printStackTrace();

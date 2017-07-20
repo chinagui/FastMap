@@ -52,7 +52,9 @@ public class HBaseConnector {
 					Configuration conf = new Configuration();
 
 					conf.set("hbase.zookeeper.quorum", hbaseAddress);
+					
 					conf.setLong(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 600000);
+					
 					connection = ConnectionFactory.createConnection(conf);
 				}
 			}

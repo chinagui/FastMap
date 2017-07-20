@@ -83,9 +83,13 @@ public class SyncTips2Solr {
 		int num=0;
 		while ((results = rs.next(5000)).length > 0){
 			for (Result result : results){
-				sbu.addTips(convert(result));
+				try{
+					sbu.addTips(convert(result));
+				}catch(Exception e){
+					log.error(e.getMessage(),e);
+				}
 				num++;
-				if(num%1000==0){
+				if(num%10000==0){
 					sbu.commit();
 					log.info("index:"+index+",num:"+num);
 				}

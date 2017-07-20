@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.control.row.charge;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,8 +19,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
-import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -177,7 +174,7 @@ public class Fm2ChargeInit {
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				//查询充电站
 				String kindCode = "230218";
-				List<Long> pidList = IxPoiSelector.getPidsByKindCode(conn, kindCode);
+				List<Long> pidList = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
 				//设置查询子表
 				Set<String> selConfig = new HashSet<String>();
 				selConfig.add("IX_POI_NAME");
@@ -193,24 +190,6 @@ public class Fm2ChargeInit {
 				JSONArray poiLog = new JSONArray();
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
-					//设置子fid
-					Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
-					for(BasicObj obj:objs.values()){
-						IxPoiObj poi = (IxPoiObj) obj;
-						List<Long> childPids = new ArrayList<Long>();
-						List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
-						if(rows!=null && rows.size()>0){
-							for(BasicRow row:rows){
-								IxPoiChildren children = (IxPoiChildren) row;
-								childPids.add(children.getChildPoiPid());
-							}
-						}
-						objMap.put(obj.objPid(), childPids);
-					}
-					Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
-					for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
-						((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
-					}
 					//设置adminId
 					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
@@ -221,10 +200,17 @@ public class Fm2ChargeInit {
 					for(BasicObj obj:objs.values()){
 						try {
 							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj,conn);
-							chargePoi.add(initPoi);
+							if(initPoi != null){
+								chargePoi.add(initPoi);
+							}
+							//错误日志
+							JSONArray errorLog = poiConvertor.getErrorLog();
+							for (int i = 0; i < errorLog.size(); i++) {
+								String str = errorLog.getString(i);
+								poiLog.add("dbId("+dbId+"),"+str);
+							}
 						} catch (Exception e) {
 							log.error(e.getMessage(),e);
-							poiLog.add("dbId("+dbId+"),"+e.getMessage());
 						}
 					}
 					stats.put(dbId, objs.size());

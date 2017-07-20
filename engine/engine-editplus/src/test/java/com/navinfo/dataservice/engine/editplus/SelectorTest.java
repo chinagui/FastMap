@@ -480,7 +480,7 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(13);
 			String kindCode = "230218";
-			List<Long> pids = IxPoiSelector.getPidsByKindCode(conn, kindCode);
+			List<Long> pids = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
 			System.out.println(pids.toString());
 			System.out.println(pids.size());
 		}catch(Exception e){

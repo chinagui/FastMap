@@ -640,17 +640,21 @@ public class IxPoiSelector {
 	 * @author Han Shaoming
 	 * @param conn
 	 * @param pidList
+	 * @param isDele true:包括删除的记录
 	 * @return
 	 * @throws ServiceException
 	 */
-	public static List<Long> getPidsByKindCode(Connection conn,String kindCode) throws ServiceException{
+	public static List<Long> getPidsByKindCode(Connection conn,String kindCode,boolean isDele) throws ServiceException{
 		List<Long> pids = new ArrayList<Long>();
 		if(kindCode == null){
 			return pids;
 		}
 		try{
-			String sql = "SELECT PID FROM IX_POI WHERE KIND_CODE = "+kindCode+" AND U_RECORD <>2";
-			
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT PID FROM IX_POI WHERE KIND_CODE = "+kindCode);
+			if(!isDele){
+				sql.append(" AND U_RECORD <>2");
+			}
 			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
 				public List<Long> handle(ResultSet rs) throws SQLException {
 					List<Long> result = new ArrayList<Long>();
@@ -662,8 +666,8 @@ public class IxPoiSelector {
 				}
 			};
 			
-			log.info("getPidsByKindCode查询主表："+sql);
-			pids = new QueryRunner().query(conn,sql, rsHandler);
+			log.info("getPidsByKindCode查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
 			return pids;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

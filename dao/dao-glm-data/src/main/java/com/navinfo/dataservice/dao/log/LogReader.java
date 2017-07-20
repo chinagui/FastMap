@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -823,7 +824,48 @@ public class LogReader {
 		});
 	}
 
+	
+	/**
+	 * 根据pid查询相应的履历
+	 * @param objName
+	 * @param mainTabName
+	 * @param pid
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> getLogByPid(String objName,String mainTabName,long objPid) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT LO.OP_ID,LO.OP_DT,LD.* FROM LOG_OPERATION LO,LOG_DETAIL LD WHERE LO.OP_ID = LD.OP_ID ");
+		sb.append(" AND LD.OB_NM = ? AND LD.TB_NM = ? AND LD.OB_PID = ? ORDER BY LO.OP_DT ASC");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
 
+			pstmt.setString(1, objName);
+			pstmt.setString(2, mainTabName);
+			pstmt.setLong(3, objPid);
+			
+			resultSet = pstmt.executeQuery();
+			while(resultSet.next()){
+				Map<String,Object> map = new HashMap<String,Object>();
+				map.put("operation", resultSet.getInt("OP_TP"));
+				map.put("date", DateUtils.dateToString(resultSet.getTimestamp("OP_DT"),DateUtils.DATE_COMPACTED_FORMAT));
+				result.add(map);
+			}
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override
@@ -870,10 +912,11 @@ public class LogReader {
 		System.out.println(new Date());
 		System.out.println(new Date());
 		String objTable = "IX_POI";
-		int objPid = 405000003 ;
-		int status = new LogReader(con).getObjectState(objPid, objTable);
+		int objPid = 407000001 ;
+//		int status = new LogReader(con).getObjectState(objPid, objTable);
+		List<Map<String, Object>> list = new LogReader(con).getLogByPid(objTable, objTable, objPid);
 		System.out.println(new Date());
-		System.out.println(status);
+		System.out.println(list.toString());
 //		System.out.println(flag);
 	}
 }

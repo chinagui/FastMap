@@ -1473,7 +1473,6 @@ public class Transaction {
                         for (IObj obj : links) {
                             dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
                         }
-                        continue;
                     } catch (Exception e) {
                         logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
                     }
@@ -1936,7 +1935,10 @@ public class Transaction {
         patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
-        patter.append("|RD_WARINGINFO|RD_LINK_WARING");
+        patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
+        patter.append("|RD_TRAFFICSIGNAL");
+        patter.append("|RD_TMCLOCATION_LINK");
+        patter.append("|RD_SPEEDBUMP");
         patter.append("|RD_ELECTRONICEYE|RD_ELECEYE_PAIR|RD_ELECEYE_PART");
 
         patter.append(").*");

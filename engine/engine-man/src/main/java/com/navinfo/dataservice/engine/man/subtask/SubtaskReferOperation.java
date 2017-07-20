@@ -68,6 +68,31 @@ public class SubtaskReferOperation {
 	 * @param bean
 	 * @throws Exception  void
 	 */
+	public static void updateGeo(Connection conn,SubtaskRefer bean) throws Exception{
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			
+			String createSql = "update SUBTASK_REFER set GEOMETRY=? where id=?";
+			List<Object> values = new ArrayList<Object>();
+			STRUCT struct = GeoTranslator.wkt2Struct(conn,  GeoTranslator.jts2Wkt(bean.getGeometry()));
+			values.add(struct);
+			values.add(bean.getId());
+			run.update(conn, 
+					   createSql, 
+					   values.toArray() );
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 */
 	public static void delete(Connection conn,Set<Integer> ids) throws Exception{
 		try{
 			//持久化

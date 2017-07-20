@@ -86,7 +86,7 @@ public class JobProgressOperator {
         String sql;
         if (jobProgress.getStatus().equals(JobProgressStatus.RUNNING)) {
             sql = "update job_progress set status=?,start_date=SYSDATE,message=? where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId(), jobProgress.getMessage());
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
         } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
@@ -104,7 +104,7 @@ public class JobProgressOperator {
 
     public JobMessage getJobMessage(long phaseId) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "SELECT J.OPERATOR,JP.PHASE,JP.STATUS,JR.ITEM_ID,JR.ITEM_TYPE,(SELECT COUNT(1) FROM JOB_PROGRESS JP2 WHERE JP2.JOB_ID=JP.JOB_ID ) TOTAL FROM JOB_PROGRESS JP, JOB_RELATION JR, JOB J WHERE J.JOB_ID=JP.JOB_ID AND JP.JOB_ID=JR.JOB_ID AND JP.PHASE_ID=?";
+        String sql = "SELECT J.OPERATOR,J.TYPE,JP.PHASE,JP.STATUS,JR.ITEM_ID,JR.ITEM_TYPE,(SELECT COUNT(1) FROM JOB_PROGRESS JP2 WHERE JP2.JOB_ID=JP.JOB_ID ) TOTAL FROM JOB_PROGRESS JP, JOB_RELATION JR, JOB J WHERE J.JOB_ID=JP.JOB_ID AND JP.JOB_ID=JR.JOB_ID AND JP.PHASE_ID=?";
 
         ResultSetHandler<JobMessage> rsHandler = new ResultSetHandler<JobMessage>() {
             @Override
@@ -117,6 +117,7 @@ public class JobProgressOperator {
                     int itemType = rs.getInt("item_type");
                     int total = rs.getInt("total");
                     long operator = rs.getLong("operator");
+                    int jobType = rs.getInt("type");
 
                     jobMessage.setItemId(itemId);
                     jobMessage.setItemType(itemType);
@@ -124,6 +125,7 @@ public class JobProgressOperator {
                     jobMessage.setStatus(status);
                     jobMessage.setOperator(operator);
                     jobMessage.setJobStatus(JobStatus.RUNNING.value());
+                    jobMessage.setJobType(jobType);
 
                     if (status == JobProgressStatus.FAILURE.value()) {
                         jobMessage.setJobStatus(JobStatus.FAILURE.value());

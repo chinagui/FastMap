@@ -63,7 +63,7 @@ public class CheckTest {
         check.setCheckRuleCommand(command);
 
         Set<Long> pids = new HashSet<Long>();
-        pids.add(501000119L);
+        pids.add(504000121L);
         Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, false);
 
         for (Map.Entry<Long, BasicObj> entry : pois.entrySet()) {

@@ -228,18 +228,18 @@ public class ColumnCoreOperation {
 		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORNM,");
 		sb.append("                         (SELECT CASE");
 		sb.append("                                   WHEN 'addrSplit' = '"+secondWorkItem+"' THEN");
-		sb.append("                                    A.NAME_ID || ':' || A.PROVINCE || A.CITY || A.COUNTY ||");
-		sb.append("                                    A.TOWN || A.PLACE || A.STREET || A.LANDMARK || A.PREFIX ||");
-		sb.append("                                    A.HOUSENUM || A.TYPE || A.SUBNUM || A.SURFIX || A.ESTAB ||");
-		sb.append("                                    A.BUILDING || A.FLOOR || A.UNIT || A.ROOM || A.ADDONS");
+		sb.append("                                    A.NAME_ID || ':' || A.PROVINCE ||'|'|| A.CITY ||'|'|| A.COUNTY ||'|'||");
+		sb.append("                                    A.TOWN ||'|'|| A.PLACE ||'|'|| A.STREET ||'|'|| A.LANDMARK ||'|'|| A.PREFIX ||'|'||");
+		sb.append("                                    A.HOUSENUM ||'|'|| A.TYPE ||'|'|| A.SUBNUM ||'|'|| A.SURFIX ||'|'|| A.ESTAB ||'|'||");
+		sb.append("                                    A.BUILDING ||'|'|| A.FLOOR ||'|'|| A.UNIT ||'|'|| A.ROOM ||'|'|| A.ADDONS");
 		sb.append("                                   WHEN 'addrPinyin' = '"+secondWorkItem+"' THEN");
-		sb.append("                                    A.NAME_ID || ':' || A.PROV_PHONETIC || A.CITY_PHONETIC ||");
-		sb.append("                                    A.TOWN_PHONETIC || A.PLACE_PHONETIC || A.STREET_PHONETIC ||");
-		sb.append("                                    A.LANDMARK_PHONETIC || A.PREFIX_PHONETIC ||");
-		sb.append("                                    A.HOUSENUM_PHONETIC || A.TYPE_PHONETIC || A.SUBNUM_PHONETIC ||");
-		sb.append("                                    A.SURFIX_PHONETIC || A.ESTAB_PHONETIC ||");
-		sb.append("                                    A.BUILDING_PHONETIC || A.FLOOR_PHONETIC || A.UNIT_PHONETIC ||");
-		sb.append("                                    A.ROOM_PHONETIC || A.ADDONS_PHONETIC");
+		sb.append("                                    A.NAME_ID || ':' || A.PROV_PHONETIC ||'|'|| A.CITY_PHONETIC ||'|'||A.COUNTY_PHONETIC||'|'||");
+		sb.append("                                    A.TOWN_PHONETIC ||'|'|| A.PLACE_PHONETIC ||'|'|| A.STREET_PHONETIC ||'|'||");
+		sb.append("                                    A.LANDMARK_PHONETIC ||'|'|| A.PREFIX_PHONETIC ||'|'||");
+		sb.append("                                    A.HOUSENUM_PHONETIC ||'|'|| A.TYPE_PHONETIC ||'|'|| A.SUBNUM_PHONETIC ||'|'||");
+		sb.append("                                    A.SURFIX_PHONETIC ||'|'|| A.ESTAB_PHONETIC ||'|'||");
+		sb.append("                                    A.BUILDING_PHONETIC ||'|'|| A.FLOOR_PHONETIC ||'|'|| A.UNIT_PHONETIC ||'|'||");
+		sb.append("                                    A.ROOM_PHONETIC ||'|'|| A.ADDONS_PHONETIC");
 		sb.append("                                   WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN");
 		sb.append("                                    A.NAME_ID || ':' || A.FULLNAME");
 		sb.append("                                   ELSE");
@@ -409,6 +409,7 @@ public class ColumnCoreOperation {
 		sql.append("SELECT DISTINCT ps.pid,ps.qc_flag,ps.common_handler FROM POI_COLUMN_STATUS PS ");
 		sql.append(" WHERE PS.PID IN ("+StringUtils.join(pidList, ",")+") ");
 		sql.append("	AND PS.HANDLER in (0, "+userId+") ");
+		sql.append("	AND PS.work_item_id not in ('FM-DETAIL','FM-CARRENTAL','FM-PARKING') ");
 		if(isQuality==0){
 			sql.append("	AND PS.COMMON_HANDLER = "+userId);
 		}else if(isQuality==1){

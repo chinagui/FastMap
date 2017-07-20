@@ -341,7 +341,7 @@ public class RdNameResultsTest {
 				//List<JSONObject> page =null;
 				try {
 					int pid = jsonReq.getInt("pid");
-					checkResultsArr = a.poiCheckResultList(pid);
+					checkResultsArr = a.poiCheckResultList(pid,new ArrayList());
 					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
 					 System.out.println("哈哈哈: "+checkResultsArr);
 					 System.out.println(checkResultsArr.size());

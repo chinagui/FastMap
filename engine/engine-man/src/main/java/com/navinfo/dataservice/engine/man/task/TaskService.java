@@ -29,6 +29,7 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -63,6 +64,7 @@ import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -383,7 +385,6 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
-			int erNum = 0;//二代任务数量
 			//List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			List<Integer> commonBlockIds=new ArrayList<Integer>();
@@ -1239,7 +1240,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       T.DATA_PLAN_STATUS,");
+			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1256,12 +1257,18 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
+//			sb.append("                      NVL((SELECT J.STATUS ");
+//			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
+//					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
+			
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
+			
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
+					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1283,7 +1290,7 @@ public class TaskService {
 			sb.append("	                          NULL          PLAN_END_DATE,");
 			sb.append("	                          NULL          ROAD_PLAN_TOTAL,");
 			sb.append("	                          NULL          POI_PLAN_TOTAL,");
-			sb.append("	                          NULL          DATA_PLAN_STATUS,");
+			//sb.append("	                          NULL          DATA_PLAN_STATUS,");
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
@@ -1295,6 +1302,7 @@ public class TaskService {
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
+			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("	                          -1 job_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
@@ -1316,7 +1324,7 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       T.DATA_PLAN_STATUS,");
+			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1337,6 +1345,7 @@ public class TaskService {
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
+			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
@@ -1447,7 +1456,7 @@ public class TaskService {
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
-						task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
+						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
@@ -2183,6 +2192,7 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.DATA_PLAN_STATUS,"
 					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
 					+ "       B.BLOCK_NAME,"
@@ -2238,6 +2248,7 @@ public class TaskService {
 						task.setMethod(rs.getString("METHOD"));
 						task.setAdminName(rs.getString("ADMIN_NAME"));	
 						task.setInforStage(rs.getInt("INFOR_STAGE"));
+						task.setDataPlanStatus(rs.getInt("DATA_PLAN_STATUS"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
@@ -2315,6 +2326,7 @@ public class TaskService {
 			map.put("version", task.getVersion());
 			map.put("method", task.getMethod());
 			map.put("adminName", task.getAdminName());
+			map.put("dataPlanStatus", task.getDataPlanStatus());
 			
 			return map;
 		}catch(Exception e){
@@ -2810,6 +2822,23 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return getCollectTaskIdsByTaskId(conn,taskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdsByTaskId(Connection conn,int taskId) throws ServiceException {
+		try {
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT TT.TASK_ID"
@@ -2820,8 +2849,7 @@ public class TaskService {
 					+ "   AND T.TASK_ID = " + taskId;
 			
 			log.info("getCollectTaskIdsByTaskId sql :" + sql);
-			
-			
+						
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
 				public Set<Integer> handle(ResultSet rs) throws SQLException {
 					Set<Integer> result = new HashSet<Integer>();
@@ -2837,9 +2865,7 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 
 	/**根据任务id关闭日落月开关
@@ -3728,7 +3754,7 @@ public class TaskService {
 					+ "   AND t.STATUS = 2"
 					+ "   AND t.LATEST = 1"
 					+ "   AND t.GROUP_ID != 0"
-					+ "	  AND t.DATA_PLAN_STATUS <> 0"
+					//+ "	  AND t.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT t1.TASK_ID"
 					+ "  FROM TASK t1"
@@ -3738,7 +3764,7 @@ public class TaskService {
 					+ "   AND t1.LATEST = 1"
 					+ "   AND (t1.WORK_KIND LIKE '1|%' OR t1.WORK_KIND LIKE '0|1%')"
 					+ "   AND t1.GROUP_ID != 0"
-					+ "	  AND t1.DATA_PLAN_STATUS <> 0"
+					//+ "	  AND t1.DATA_PLAN_STATUS <> 0"
 					+ " UNION ALL"
 					+ " SELECT t2.TASK_ID "
 					+ "  FROM TASK t2"
@@ -3747,8 +3773,8 @@ public class TaskService {
 					+ "   AND t2.STATUS = 2"
 					+ "   AND t2.LATEST = 1"
 					+ "   AND t2.WORK_KIND LIKE '0|0%'"
-					+ "   AND t2.GROUP_ID = 0"
-					+ "	  AND t2.DATA_PLAN_STATUS <> 0";
+					+ "   AND t2.GROUP_ID = 0";
+					//+ "	  AND t2.DATA_PLAN_STATUS <> 0";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
 				@Override
@@ -3785,12 +3811,11 @@ public class TaskService {
 			
 			String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from PROGRAM p, TASK t where p.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.status = 2 ");
+			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
-			sb.append("and p.type = 1 and t.type = 0 ");
-			sb.append("and t.program_id = p.program_id");
+			sb.append(" and t.type = 0 ");
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){
@@ -3896,12 +3921,11 @@ public class TaskService {
 			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
-			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
-			if(!wktMap.containsKey("geometry") || StringUtils.isBlank(wktMap.get("geometry").toString())){
+			Block block = BlockService.getInstance().queryByBlockId(con,task.getBlockId());
+			if(block.getOriginGeo()==null || block.getOriginGeo().isEmpty()){
 				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
 			}
-			String wktJson = wktMap.get("geometry").toString();
-			String wkt = Geojson.geojson2Wkt(wktJson);
+			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
@@ -3915,6 +3939,8 @@ public class TaskService {
 				//这里在更新一下对应在重要一览表中存在的数据类型
 				updateIsImportant(poi, taskId, dailyConn);
 			}
+			log.info("DATA_PLAN收集统计信息");
+			DataBaseUtils.gatherStats(dailyConn, "DATA_PLAN");
 			return result;
 		}catch(Exception e){
 			log.error("初始化规划数据列表失败,原因为："+e.getMessage(),e);
@@ -3983,19 +4009,10 @@ public class TaskService {
 	 * 
 	 * */
 	public List<Integer> queryImportantPid() throws SQLException{
-		Connection conn = null;
-		try{
-			//通过api调用
-			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<Integer> pids = api.queryImportantPid();
-			return pids;
-		}catch(Exception e){
-			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
-			throw e;
-		}finally{
-			DbUtils.closeQuietly(conn);
-		}
+		//通过api调用
+		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		List<Integer> pids = api.queryImportantPid();
+		return pids;
 	}
 	
 //	/**
@@ -4232,16 +4249,19 @@ public class TaskService {
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
-					int minCount = condition.getInt("poiMultiMinCount");
-					int maxCount = condition.getInt("poiMultiMaxCount");
-					//元数据库中的pid，也需要更新到data_plan表中
-					List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
 					//把不满足条件的数据状态更新为不需要作业
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
 					//日库中的dataPlan更新数据
 					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
-					//更新从元数据库中获取的pid到dataPlan表中
-					updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
+					
+					if(dataType == 1 || dataType == 3){
+						int minCount = condition.getInt("poiMultiMinCount");
+						int maxCount = condition.getInt("poiMultiMaxCount");
+						//元数据库中的pid，也需要更新到data_plan表中
+						List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
+						//更新从元数据库中获取的pid到dataPlan表中
+						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
+					}
 					//保存到taskPrograss表
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
@@ -4287,15 +4307,19 @@ public class TaskService {
 				String poisql = "";
 				String linksql = "";
 				sb.append("update DATA_PLAN t set t.is_plan_selected = "+isPlanStatus+" where ");
-				sb.append("t.task_id = "+taskId+" and t.data_type in ("+type+") and t.pid in (");
+				
 				if("1".equals(type) || "1,2".equals(type)){
+					poisb.append("t.task_id = "+taskId+" and t.data_type = 1 and t.pid in (");
 					poisb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					poisql = sb.toString()+poisb.toString();
+					log.info("根据范围规划数据更新POI："+poisql);
 					run.update(conn, poisql, wkt);
 				}
 				if("2".equals(type) || "1,2".equals(type)){
+					linksb.append("t.task_id = "+taskId+" and t.data_type = 2 and t.pid in (");
 					linksb.append("select r.link_pid from RD_LINK r where sdo_relate(r.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					linksql = sb.toString()+linksb.toString();
+					log.info("根据范围规划数据更新link："+linksql);
 					run.update(conn, linksql, wkt);
 				}
 			}catch(Exception e){
@@ -4355,6 +4379,9 @@ public class TaskService {
 					if(level.length() > 0){
 						levels = level.deleteCharAt(level.length() - 1).toString();
 					}
+					if(poiLevel.size() == 0 || StringUtils.isBlank(levels)){
+						levels = "''";
+					}
 					
 				}
 				//dateType = 2或者 3 时进行道路数据处理
@@ -4364,14 +4391,24 @@ public class TaskService {
 					for(int i = 0 ; i < roadKind.size(); i++){
 						kinds.append(roadKind.get(i) + ",");
 					}
-					roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					if(kinds.length() > 1){
+						roadKinds = kinds.deleteCharAt(kinds.length() - 1).toString();
+					}
+					if(roadKind.size() == 0 || StringUtils.isBlank(roadKinds)){
+						roadKinds = "''";
+					}
 					
 					JSONArray roadFC = condition.getJSONArray("roadFC");
 					StringBuffer FCs = new StringBuffer();
 					for(int i = 0 ; i < roadFC.size(); i++){
 						FCs.append(roadFC.get(i) + ",");
 					}
-					roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					if(FCs.length() > 0){
+						roadFCs = FCs.deleteCharAt(FCs.length() - 1).toString();
+					}
+					if(roadFC.size() == 0 || StringUtils.isBlank(roadFCs)){
+						roadFCs = "''";
+					}
 				}
 
 				result.put("roadKinds",roadKinds);
@@ -4399,20 +4436,24 @@ public class TaskService {
 				TaskProgress bean = new TaskProgress();
 				int taskId = dataJson.getInt("taskId");
 				String parameter = dataJson.getJSONObject("condition").toString();
+				int dataType = dataJson.getInt("dataType");
 				
 				int phaseId = 0;
 				bean.setTaskId(taskId);
 				bean.setOperator(userId);
-				bean.setParameter(parameter);
 				bean.setPhase(2);
 				bean.setStatus(0);
 				if(taskPrograss == null){
+					bean.setParameter(parameter);
 					phaseId = TaskProgressOperation.getNewPhaseId(conn);
 					bean.setPhaseId(phaseId);
 					Timestamp time = new Timestamp(System.currentTimeMillis()); 
 					bean.setCreatDate(time);
 					TaskProgressOperation.create(conn, bean);
 				}else{
+					//这里针对poi和道路需要只处理对应的数据，未选中的数据保持原有内容不变
+					String taskParameter = convertParameter(taskPrograss.getParameter(), parameter, dataType);
+					bean.setParameter(taskParameter);
 					phaseId = taskPrograss.getPhaseId();
 					bean.setPhaseId(phaseId);
 					TaskProgressOperation.updateTaskProgress(conn, bean);
@@ -4423,6 +4464,39 @@ public class TaskService {
 			}
 		}
 		
+		/**
+		 * 处理要保存到task_prograss表内的parameter数据
+		 * 根据操作类型增量更新parameter中的内容
+		 * @param String原来表中存储的parameter
+		 * @param 上传的parameter
+		 * @param int 要修改的数据类型
+		 * @return String 处理后的parameter
+		 * 
+		 * */
+		public String convertParameter(String parameter, String json, int dateType){
+			//原数据库存的parameter
+			JSONObject jsonParameter = JSONObject.fromObject(parameter);
+			//新上传的parameter的conditon内容
+			JSONObject condition = JSONObject.fromObject(json);
+			
+			if(dateType == 1 || dateType == 3){
+				String poiLevel = condition.getJSONArray("poiLevel").toString();
+				String poiKind = condition.getJSONArray("poiKind").toString();
+				String poiMultiMinCount = condition.getString("poiMultiMinCount");
+				String poiMultiMaxCount = condition.getString("poiMultiMaxCount");
+				jsonParameter.put("poiLevel", poiLevel);
+				jsonParameter.put("poiKind", poiKind);
+				jsonParameter.put("poiMultiMinCount", poiMultiMinCount);
+				jsonParameter.put("poiMultiMaxCount", poiMultiMaxCount);
+			}
+			if(dateType == 2 || dateType == 3){
+				String roadKind = condition.getJSONArray("roadKind").toString();
+				String roadFC = condition.getJSONArray("roadFC").toString();
+				jsonParameter.put("roadKind", roadKind);
+				jsonParameter.put("roadFC", roadFC);
+			}
+			return jsonParameter.toString();
+		}
 		/**
 		 * 条件规划：更新不满足条件规划的数据状态为不需要作业
 		 * @param Connection
@@ -4529,7 +4603,7 @@ public class TaskService {
 					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
 				}
 				
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+")";
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
 				run.execute(conn, sql);
 			}catch(Exception e){

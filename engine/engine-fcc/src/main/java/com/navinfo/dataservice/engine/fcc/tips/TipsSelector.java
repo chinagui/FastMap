@@ -1469,8 +1469,12 @@ public class TipsSelector {
 				}
 				// 删除记录
 				else if (type == 2101) {
-					linkPids.add(Integer.valueOf(Integer.valueOf(deep
-							.getString("rId"))));
+					JSONObject fObj = deep.getJSONObject("f");
+                    int type2101 = fObj.getInt("type");
+                    if(type2101 == 1) {//1道路LINK 2测线
+                        linkPids.add(Integer.valueOf(Integer.valueOf(fObj
+                                .getString("id"))));
+                    }
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -2037,12 +2041,9 @@ public class TipsSelector {
      * @return
      * @throws Exception
      */
-    public List<JSONObject> getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
-
-        List<JSONObject> snapshots=conn.queryTipsByTask(taskId, taskType, 1);
-
-        return snapshots;
-
+    public SolrDocumentList getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
+        SolrDocumentList sdList = conn.queryTipsByTask(taskId, taskType, 1);
+        return sdList;
     }
 
     /**

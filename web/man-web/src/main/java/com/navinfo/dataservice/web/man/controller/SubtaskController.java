@@ -51,10 +51,7 @@ public class SubtaskController extends BaseController {
 	 * @date 2016年11月3日 下午5:06:43 
 	 */
 	@RequestMapping(value = { "/subtask/create" })
-	public ModelAndView create(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"blockId\":\"\",blockId，与taskId只能传一个<br/>\"taskId\":\"\",taskId，与blockId只能传一个<br/>\"type\":\"\",作业要素（0POI，1Road，2一体化）<br/>\"stage\":\"\",作业阶段（0采集，1日编，2月编）<br/>\"descp\":\"\",任务描述<br/>\"planStartDate\":\"\",计划开始时间<br/>\"planEndDate\":\"\",计划结束时间<br/>\"exeUserId\":\"\",作业人员<br/>\"gridIds\":\"\"grid数组<br/>}")@RequestParam( value = "parameter") String parameter
-//			,@ApiParam(required =true, name = "file", value="文件")@RequestParam( value = "file") MultipartFile file
-			,HttpServletRequest request){
+	public ModelAndView create(HttpServletRequest request){
 		try{	
 
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
@@ -220,9 +217,7 @@ public class SubtaskController extends BaseController {
 	 */
 	//@ApiOperation(value = "批量修改子任务详细信息", notes = "批量修改子任务详细信息")  
 	@RequestMapping(value = { "/subtask/update" })
-	public ModelAndView update(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtasks\":<br/>[<br/>{<br/>\"subtaskId\":32,<br/>\"descp\":\"testtest\",<br/>\"planStartDate\":\"20160430\",<br/>\"planEndDate\":\"20160630\",<br/>\"exeUserId\":21<br/>}<br/>]<br/>} ")@RequestParam( value = "parameter") String postData
-			,HttpServletRequest request){
+	public ModelAndView update(HttpServletRequest request){
 		try{
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
@@ -822,5 +817,40 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 		
+	}
+
+	/**
+	 * 日编子任务自动规划
+	 * 根据taskId获取未规划的gridId和tips统计
+	 * 将未规划的grid自动分配到几个子任务中，尽量保证每个子任务tips数量相近
+	 * 应用场景：管理平台—子任务—日编规划—自动规划按钮
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/autoPlan")
+	public ModelAndView autoPlan(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			if(!dataJson.containsKey("subtaskNum")){
+				throw new Exception("缺少subtaskNum");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new Exception("缺少taskId");
+			}
+			int taskId = dataJson.getInt("taskId");
+			int subtaskNum = dataJson.getInt("subtaskNum");
+
+			SubtaskService.getInstance().autoPlan(taskId, subtaskNum);
+
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("日编子任务自动规划接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+
 	}
 }

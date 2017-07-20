@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -68,7 +69,7 @@ public class PoiQuality {
 				
 				for (Integer pid : pidList) {
 
-					IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
+					IxPoi poi = (IxPoi) poiSelector.loadAllById(pid, false);
 					JSONObject jsonObject = new JSONObject();
 					jsonObject.put("FID", poi.getPoiNum());
 					jsonObject.put("\"LEVEL\"", "null");
@@ -145,7 +146,7 @@ public class PoiQuality {
         	
         	conn = DBConnector.getInstance().getManConnection();
         	
-        	String sql="UPDATE SUBTASK_QUALITY SET DB_STAT = '1' WHERE QUALITY_ID = "+qualityId;
+        	String sql="UPDATE SUBTASK_QUALITY SET POI_DB_STAT = 1 WHERE QUALITY_ID = "+qualityId;
 
             pstmt = conn.prepareStatement(sql);
 
@@ -175,7 +176,7 @@ public class PoiQuality {
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT ST.SUBTASK_ID,R.DAILY_DB_ID,sq.geometry,sq.quality_id FROM SUBTASK ST,TASK T,REGION R,subtask_quality sq ");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID AND T.REGION_ID = R.REGION_ID AND sq.subtask_id = st.subtask_id ");
-			sb.append(" AND st.quality_plan_status = 1 AND st.is_quality = 1 AND sq.db_stat = 0");
+			sb.append(" AND st.quality_plan_status = 1 AND st.is_quality = 1 AND sq.poi_db_stat = 0");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 			rs = pstmt.executeQuery();
@@ -935,7 +936,7 @@ public class PoiQuality {
 			
 			for (Integer pid : pidList) {
 
-				IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
+				IxPoi poi = (IxPoi) poiSelector.loadAllById(pid, false);
 				Map<String, String> countTableInfoMap = getCountTableInfoByFid(poi.getPoiNum(),checkConn);
 				String extra = countTableInfoMap.get("EXTRA");
 				String nameDataUnmodified = countTableInfoMap.get("NAME_DATA_UNMODIFIED")==null?"null":countTableInfoMap.get("NAME_DATA_UNMODIFIED");
@@ -968,7 +969,7 @@ public class PoiQuality {
 				LogReader logReader = new LogReader(conn);
 				int state = logReader.getObjectState(poi.pid(), "IX_POI");
 				if(state==2){
-					if(extra.equals("0")){
+					if(extra==null||extra.equals("0")){
 						jsonObject.put("EXTRA", "1");
 					}else if(extra.equals("DB统计")){
 						jsonObject.put("EXTRA", "0");
@@ -980,8 +981,12 @@ public class PoiQuality {
 				JSONObject jo = QualityService.getInstance().queryInitValueForProblem(userId, pid, (int)subtaskId);
 				long usId = jo.getLong("usId");
 				String collectorTimeString = jo.getString("collectorTime");
-				Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
-				String collectorTime =  DateUtils.format(date, "yyyyMMddHHmmss");
+				String collectorTime = "null";
+				if(StringUtils.isNotBlank(collectorTimeString)){
+					Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
+					collectorTime = DateUtils.format(date, "yyyyMMddHHmmss");
+				}
+				
 				boolean existRecord = true;
 				if(state==1){
 					int count = existRecordInPoiCountTable(poi.getPoiNum(), checkConn);
@@ -1151,7 +1156,10 @@ public class PoiQuality {
 			ResultSet rs = null;
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT PID FROM POI_EDIT_STATUS E WHERE E.STATUS = 2 AND NOT EXISTS (");
-			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R WHERE R.TABLE_NAME = 'IX_POI' AND R.PID = E.PID)");
+			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
+					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
+					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
+					+ "			  AND N.RULEID IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))");
 			sb.append( " AND (E.QUICK_SUBTASK_ID='"+subtaskId+"' or E.MEDIUM_SUBTASK_ID='"+subtaskId+"')");
 			
 			pstmt = conn.prepareStatement(sb.toString());

@@ -192,4 +192,126 @@ public class RdInterSearch implements ISearch {
 		return list;
 	}
 
+
+	public List<SearchSnapshot> searchDataByInterPids(List<Integer> pids) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0) {
+			return list;
+		}
+		if (pids.size() > 1000) {
+			return list;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "WITH TMP1 AS (SELECT A.PID INTER_PID FROM RD_INTER A WHERE A.PID IN ( "+ids +" ) AND A.U_RECORD <> 2), TMP11 AS (SELECT NODE_PID,PID FROM RD_INTER_NODE A WHERE A.PID IN (SELECT INTER_PID FROM TMP1 ) AND A.U_RECORD <> 2 ), TMP12 AS (SELECT LINK_PID,PID FROM RD_INTER_LINK A WHERE A.PID IN (SELECT INTER_PID FROM TMP1) AND A.U_RECORD <> 2), TMP2 AS (SELECT /*+ index(b) */ PID, LISTAGG(A.NODE_PID, ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B.GEOMETRY), ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_WKTS FROM TMP11 A, RD_NODE B WHERE  A.NODE_PID = B.NODE_PID AND B.U_RECORD != 2 GROUP BY A.PID), TMP3 AS (SELECT /*+ index(b) */ PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) LINK_PIDS, LISTAGG(B.S_NODE_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) S_NODE_PIDS, LISTAGG(B.E_NODE_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) E_NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B. GEOMETRY), ';') WITHIN GROUP(ORDER BY A.LINK_PID) LINK_WKTS FROM TMP12 A, RD_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 GROUP BY A.PID) SELECT TMP2.*, TMP3.LINK_PIDS, TMP3.LINK_WKTS, S_NODE_PIDS, E_NODE_PIDS FROM TMP2 LEFT JOIN TMP3 ON TMP2.PID = TMP3.PID";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		WKTReader wktReader = new WKTReader();
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				snapshot.setI(resultSet.getInt("pid"));
+
+				snapshot.setT(39);
+
+				String nodePids = resultSet.getString("node_pids");
+
+				String []splits = nodePids.split(",");
+
+				String wktPoints = resultSet.getString("node_wkts");
+
+				JSONArray gArray = new JSONArray();
+
+				String []nodeWktSplits = wktPoints.split(",");
+
+				for (int i = 0; i < splits.length; i++) {
+					JSONObject gObject = new JSONObject();
+
+
+					JSONObject geojson = Geojson.wkt2Geojson(nodeWktSplits[i]);
+
+					gObject.put("g", geojson.getJSONArray("coordinates"));
+					gObject.put("i", splits[i]);
+
+					gArray.add(gObject);
+				}
+
+				snapshot.setG(gArray);
+
+				JSONObject jsonM = new JSONObject();
+
+				String linkPids = resultSet.getString("link_pids");
+
+				if(StringUtils.isNotEmpty(linkPids))
+				{
+					String []linkSplits = linkPids.split(",");
+
+					String wktLinks = resultSet.getString("link_wkts");
+
+					JSONArray gLinkArray = new JSONArray();
+
+					String []linkWktSplits = wktLinks.split(";");
+
+					String sNodePids[] = resultSet.getString("s_node_pids").split(",");
+
+					String eNodePids[] = resultSet.getString("e_node_pids").split(",");
+
+					for (int i = 0; i < linkSplits.length; i++) {
+						JSONObject gObject = new JSONObject();
+
+						JSONObject geojson = Geojson.wkt2Geojson(linkWktSplits[i]);
+
+						gObject.put("g", geojson.getJSONArray("coordinates"));
+						gObject.put("i", Integer.parseInt(linkSplits[i]));
+						gObject.put("s", Integer.parseInt(sNodePids[i]));
+						gObject.put("e", Integer.parseInt(eNodePids[i]));
+
+						gLinkArray.add(gObject);
+					}
+
+					jsonM.put("a", gLinkArray);
+
+					snapshot.setM(jsonM);
+				}
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new SQLException(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return list;
+	}
+
 }

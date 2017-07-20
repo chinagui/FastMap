@@ -47,6 +47,7 @@ public class Task implements Serializable{
 	private int latest ;
 	private int groupLeader =0; 
 	private String workProperty ;
+	private int dataPlanStatus;
 	
 	private String workKind;
 	private String overdueReason;
@@ -549,6 +550,15 @@ public class Task implements Serializable{
 	public void setInforStage(int inforStage) {
 		this.inforStage = inforStage;
 		changeFields.put("INFOR_STAGE", inforStage);
+	}
+
+	public int getDataPlanStatus() {
+		return dataPlanStatus;
+	}
+
+	public void setDataPlanStatus(int dataPlanStatus) {
+		changeFields.put("DATA_PLAN_STATUS", dataPlanStatus);
+		this.dataPlanStatus = dataPlanStatus;
 	}
 
 }

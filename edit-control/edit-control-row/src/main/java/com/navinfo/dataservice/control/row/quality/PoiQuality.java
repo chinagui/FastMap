@@ -69,7 +69,7 @@ public class PoiQuality {
 				
 				for (Integer pid : pidList) {
 
-					IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
+					IxPoi poi = (IxPoi) poiSelector.loadAllById(pid, false);
 					JSONObject jsonObject = new JSONObject();
 					jsonObject.put("FID", poi.getPoiNum());
 					jsonObject.put("\"LEVEL\"", "null");
@@ -936,7 +936,7 @@ public class PoiQuality {
 			
 			for (Integer pid : pidList) {
 
-				IxPoi poi = (IxPoi) poiSelector.loadById(pid, false);
+				IxPoi poi = (IxPoi) poiSelector.loadAllById(pid, false);
 				Map<String, String> countTableInfoMap = getCountTableInfoByFid(poi.getPoiNum(),checkConn);
 				String extra = countTableInfoMap.get("EXTRA");
 				String nameDataUnmodified = countTableInfoMap.get("NAME_DATA_UNMODIFIED")==null?"null":countTableInfoMap.get("NAME_DATA_UNMODIFIED");
@@ -969,7 +969,7 @@ public class PoiQuality {
 				LogReader logReader = new LogReader(conn);
 				int state = logReader.getObjectState(poi.pid(), "IX_POI");
 				if(state==2){
-					if(extra.equals("0")){
+					if(extra==null||extra.equals("0")){
 						jsonObject.put("EXTRA", "1");
 					}else if(extra.equals("DB统计")){
 						jsonObject.put("EXTRA", "0");
@@ -981,8 +981,12 @@ public class PoiQuality {
 				JSONObject jo = QualityService.getInstance().queryInitValueForProblem(userId, pid, (int)subtaskId);
 				long usId = jo.getLong("usId");
 				String collectorTimeString = jo.getString("collectorTime");
-				Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
-				String collectorTime =  DateUtils.format(date, "yyyyMMddHHmmss");
+				String collectorTime = "null";
+				if(StringUtils.isNotBlank(collectorTimeString)){
+					Date date = DateUtils.parse(collectorTimeString, "yyyy.MM.dd");
+					collectorTime = DateUtils.format(date, "yyyyMMddHHmmss");
+				}
+				
 				boolean existRecord = true;
 				if(state==1){
 					int count = existRecordInPoiCountTable(poi.getPoiNum(), checkConn);

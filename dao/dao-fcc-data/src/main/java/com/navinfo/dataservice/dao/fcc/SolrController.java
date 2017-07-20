@@ -41,7 +41,7 @@ public class SolrController {
     public void addTips(JSONObject json) throws JSONException,
             SolrServerException, IOException {
 
-        SolrInputDocument doc = new SolrInputDocument();
+    	SolrInputDocument doc = new SolrInputDocument();
 
         doc.addField("id", json.getString("id"));
 
@@ -52,40 +52,40 @@ public class SolrController {
 
         doc.addField("stage", json.getInt("stage"));
 
-        //doc.addField("t_operateDate", json.getString("t_operateDate"));
+        doc.addField("t_operateDate", json.getString("t_operateDate"));
 
-        //doc.addField("t_date", json.getString("t_date"));
+        doc.addField("t_date", json.getString("t_date"));
 
-        //doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
+        doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
 
-        //doc.addField("t_command", json.getInt("t_command"));
+        doc.addField("t_command", json.getInt("t_command"));
 
         doc.addField("handler", json.getInt("handler"));
 
-        //doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
+        doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
 
         doc.addField("s_sourceType", json.getString("s_sourceType"));
 
-        //doc.addField("g_location", json.getString("g_location"));
+        doc.addField("g_location", json.getString("g_location"));
 
-        //doc.addField("g_guide", json.getString("g_guide"));
+        doc.addField("g_guide", json.getString("g_guide"));
 
-        //doc.addField("deep", json.getString("deep"));
+        doc.addField("deep", json.getString("deep"));
 
-        //doc.addField("feedback", json.getString("feedback"));
+        doc.addField("feedback", json.getString("feedback"));
 
-        //doc.addField("s_reliability", json.getInt("s_reliability"));
+        doc.addField("s_reliability", json.getInt("s_reliability"));
 
         doc.addField("t_tipStatus", json.getInt("t_tipStatus"));
         doc.addField("t_dEditStatus", json.getInt("t_dEditStatus"));
-        //doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
-        //doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
-        //doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
+        doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
+        doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
+        doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
 
-//        if (json.containsKey("tipdiff")) {
-//
-//            doc.addField("tipdiff", json.getString("tipdiff"));
-//        }
+        if (json.containsKey("tipdiff")) {
+
+            doc.addField("tipdiff", json.getString("tipdiff"));
+        }
 
         doc.addField("s_qTaskId", json.getInt("s_qTaskId"));
 
@@ -93,15 +93,15 @@ public class SolrController {
 
         doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
 
-//        if(json.containsKey("s_project") && StringUtils.isNotEmpty(json.getString("s_project"))) {
-//            doc.addField("s_project", json.getString("s_project"));
-//        }
+        if(json.containsKey("s_project") && StringUtils.isNotEmpty(json.getString("s_project"))) {
+            doc.addField("s_project", json.getString("s_project"));
+        }
 
         doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
 
-        //doc.addField("relate_links", json.getString("relate_links"));
+        doc.addField("relate_links", json.getString("relate_links"));
 
-        //doc.addField("relate_nodes", json.getString("relate_nodes"));
+        doc.addField("relate_nodes", json.getString("relate_nodes"));
 
         client.add(doc);
 

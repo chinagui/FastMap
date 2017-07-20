@@ -14,10 +14,11 @@ public class SolrQueryUtils {
 	
     private static List<String> notDisplayTipTpye=new ArrayList<String>();
 	
-	public static String NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL="";
+	public static String NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL = "";
 	
 	static{
-		
+
+		/**
 		notDisplayTipTpye.add("1108");//减速带
 		notDisplayTipTpye.add("1110");// 卡车限制
 		notDisplayTipTpye.add("1113");//车道限速
@@ -38,8 +39,49 @@ public class SolrQueryUtils {
 //		notDisplayTipTpye.add("1513");//窄道
         notDisplayTipTpye.add("1112");//可变限速
 		notDisplayTipTpye.add("1707");//里程桩
-		
-		if(notDisplayTipTpye.size()!=0){
+		**/
+
+    //20170720屏蔽增加至38种Tips，屏蔽Tips类型以后配置到元数据库，此为临时解决方案
+        notDisplayTipTpye.add("1103");
+        notDisplayTipTpye.add("1108");
+        notDisplayTipTpye.add("1110");
+        notDisplayTipTpye.add("1112");
+        notDisplayTipTpye.add("1113");
+        notDisplayTipTpye.add("1114");
+        notDisplayTipTpye.add("1115");
+        notDisplayTipTpye.add("1117");
+        notDisplayTipTpye.add("1204");
+        notDisplayTipTpye.add("1212");
+        notDisplayTipTpye.add("1213");
+        notDisplayTipTpye.add("1303");
+        notDisplayTipTpye.add("1306");
+        notDisplayTipTpye.add("1307");
+        notDisplayTipTpye.add("1308");
+        notDisplayTipTpye.add("1310");
+        notDisplayTipTpye.add("1311");
+        notDisplayTipTpye.add("1401");
+        notDisplayTipTpye.add("1402");
+        notDisplayTipTpye.add("1406");
+        notDisplayTipTpye.add("1409");
+        notDisplayTipTpye.add("1518");
+        notDisplayTipTpye.add("1519");
+        notDisplayTipTpye.add("1707");
+        notDisplayTipTpye.add("1708");
+        notDisplayTipTpye.add("2002");
+        notDisplayTipTpye.add("2201");
+        notDisplayTipTpye.add("2202");
+        notDisplayTipTpye.add("2203");
+        notDisplayTipTpye.add("2204");
+        notDisplayTipTpye.add("8003");
+        notDisplayTipTpye.add("8004");
+        notDisplayTipTpye.add("8005");
+        notDisplayTipTpye.add("8006");
+        notDisplayTipTpye.add("8007");
+        notDisplayTipTpye.add("8008");
+        notDisplayTipTpye.add("8009");
+        notDisplayTipTpye.add("8010");
+
+        if(notDisplayTipTpye.size()!=0){
 			
 			StringBuilder builder= new StringBuilder();
 			builder.append("-s_sourceType:(");

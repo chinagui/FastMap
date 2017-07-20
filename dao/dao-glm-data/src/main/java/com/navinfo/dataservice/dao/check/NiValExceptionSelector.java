@@ -1718,7 +1718,7 @@ public class NiValExceptionSelector {
 	public List<String> getColumnCheckRules(String type) throws Exception{
 				
 		List<String> deepCheckRules = new ArrayList<String>();
-		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item=：1 ";
+		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item='"+type+"'";
 		
 		PreparedStatement pstmt = null;
 
@@ -1726,8 +1726,6 @@ public class NiValExceptionSelector {
 		
 		try {			
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, type);
-			
 			resultSet = pstmt.executeQuery();
 			
 			while (resultSet.next()) {

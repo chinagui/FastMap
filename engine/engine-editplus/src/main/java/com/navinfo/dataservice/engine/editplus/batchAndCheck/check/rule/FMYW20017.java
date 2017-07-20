@@ -18,7 +18,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  *     以下条件(1)、(2)、(3)之一，且(4)同时满足时，需要进行检查：
  *     (1)存在IX_POI_NAME的新增；
  *     (2)存在IX_POI_NAME的修改；
- *     (3)存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
+ *     (3)存在KIND_CODE或CHAIN修改
  *     (4)KIND_CODE不在重要分类表中
  *     检查原则：
  *     满足条件的POI全部报出。
@@ -46,29 +46,27 @@ public class FMYW20017 extends BasicCheckRule {
 	 *  以下条件(1)、(2)、(3)之一，且(4)同时满足时，需要进行检查：
 	 *     (1)存在IX_POI_NAME的新增；
 	 *     (2)存在IX_POI_NAME的修改；
-	 *     (3) 存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
+	 *     (3) 存在KIND_CODE或CHAIN修改
 	 * @param poiObj
 	 * @return true满足检查条件，false不满足检查条件
 	 * @throws Exception 
 	 */
 	private boolean isCheck(IxPoiObj poiObj) throws Exception{
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
+		String newKindCode=poi.getKindCode();
+		String newChain=poi.getChain();
 		if(poi.hisOldValueContains(IxPoi.KIND_CODE) ||poi.hisOldValueContains(IxPoi.CHAIN)){
-			String newKindCode=poi.getKindCode();
-			String oldKindCode=newKindCode;
 			if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
-				oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				if(!newKindCode.equals(oldKindCode)){
+					return true;
+				}
 			}
-			String newChain=poi.getChain();
-			String oldChain=newChain;
 			if(poi.hisOldValueContains(IxPoi.CHAIN)){
-				oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
-			}
-			//存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
-			String newWordKind=metadataApi.wordKind(newKindCode, newChain);
-			String oldWordKind=metadataApi.wordKind(oldKindCode, oldChain);
-			if((newWordKind!=null&&!newWordKind.equals(oldWordKind)) || (StringUtils.isEmpty(newWordKind) && StringUtils.isNotEmpty(oldWordKind))){
-				return true;
+				String oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
+				if(!newChain.equals(oldChain)){
+					return true;
+				}
 			}
 		}
 		//(1)存在IX_POI_NAME的新增；(2)存在IX_POI_NAME的修改；

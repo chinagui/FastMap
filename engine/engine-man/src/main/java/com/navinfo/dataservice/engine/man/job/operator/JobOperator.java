@@ -58,7 +58,7 @@ public class JobOperator {
      */
     public Job getLatestJob(long itemId, ItemType itemType, final JobType jobType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=?";
+
         ResultSetHandler<Job> resultSetHandler = new ResultSetHandler<Job>() {
             @Override
             public Job handle(ResultSet rs) throws SQLException {
@@ -70,7 +70,13 @@ public class JobOperator {
                 return null;
             }
         };
-        return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+        if(jobType==JobType.DAY2MONTH && itemType==ItemType.LOT){
+            String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_type=? and j.type=?";
+            return run.query(conn, sql, resultSetHandler, itemType.value(), jobType.value());
+        }else {
+            String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=?";
+            return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+        }
     }
 
     public Job getByJobId(long jobId) throws SQLException {

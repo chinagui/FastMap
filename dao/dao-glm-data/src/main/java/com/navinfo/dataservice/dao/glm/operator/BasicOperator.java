@@ -126,6 +126,7 @@ public class BasicOperator extends AbstractOperator {
 					key.append(M_ROW_ID + ",");
 					if (StringUtils.isEmpty(row.rowId())) {
 						row.setRowId(UuidUtils.genUuid());
+						
 					}
 					/*
 					 * String tableName = SelectorUtils.getObjTableName(row); if

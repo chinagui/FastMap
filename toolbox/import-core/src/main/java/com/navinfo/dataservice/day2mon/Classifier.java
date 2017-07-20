@@ -2,6 +2,7 @@ package com.navinfo.dataservice.day2mon;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -200,7 +201,7 @@ public class Classifier {
 	private void updateColumnStatus(Long pid,Set<String> workItemId,int handler) throws Exception {
 		// TODO 清理上次灌库时所打的数据标记
 		
-		PreparedStatement pstmt = null;
+		Statement stmt = conn.createStatement();
 		try {
 			for (String workItem:workItemId) {
 				StringBuilder sb = new StringBuilder(" MERGE INTO poi_column_status T1 ");
@@ -211,14 +212,13 @@ public class Classifier {
 				sb.append(" UPDATE SET T1.first_work_status = 1,T1.second_work_status = 1,T1.handler = T2.d,T1.QC_FLAG=0,T1.common_handler=0 ");
 				sb.append(" WHEN NOT MATCHED THEN ");
 				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler) VALUES(T2.b,T2.c,1,1,T2.d)");
-				
-				pstmt = conn.prepareStatement(sb.toString());
-				pstmt.execute();
+				stmt.addBatch(sb.toString());
 			}
+			stmt.executeBatch();
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(stmt);
 		}
 	}
 	

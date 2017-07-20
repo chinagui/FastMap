@@ -38,7 +38,7 @@ public class AdminOperateUtils {
 			}
 
 			if (GeometryRelationUtils.LinkOnRingSide(faceGeo, linkGeo)) {
-				if (GeometryRelationUtils.IsLinkOnLeftOfRing(faceGeo, linkGeo)) {
+				if (GeoRelationUtils.IsLinkOnLeftOfRing(faceGeo, linkGeo)) {
 					allLeftsideFaces.add(face);
 				} else {
 					allRightsideFaces.add(face);

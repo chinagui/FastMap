@@ -158,7 +158,26 @@ public class RdLink implements IObj {
 
     private String rowId;
 
-    // private String name;
+    private int nonmotorFlag = 3;
+
+    private int leisureType = 0;
+
+    public int getNonmotorFlag() {
+        return nonmotorFlag;
+    }
+
+    public void setNonmotorFlag(int nonmotorFlag) {
+        this.nonmotorFlag = nonmotorFlag;
+    }
+
+    public int getLeisureType() {
+        return leisureType;
+    }
+
+    public void setLeisureType(int leisureType) {
+        this.leisureType = leisureType;
+    }
+// private String name;
 
     private List<IRow> forms = new ArrayList<IRow>();
 
@@ -596,6 +615,10 @@ public class RdLink implements IObj {
         this.setParkingFlag(sourceLink.getParkingFlag());
 
         this.setMemo(sourceLink.getMemo());
+
+        this.setNonmotorFlag(sourceLink.getNonmotorFlag());
+
+        this.setLeisureType(sourceLink.getLeisureType());
 
         // this.setName(sourceLink.getName());
 

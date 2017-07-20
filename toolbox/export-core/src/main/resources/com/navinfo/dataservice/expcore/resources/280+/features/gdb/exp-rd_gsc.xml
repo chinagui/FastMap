@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+	<!--//////////////////////////////////////立交//////////////////////////////////////////-->
+    <feature name="RD_GSC">
+        <!--
+            立交关系提取规则：
+            a)	根据RD_LINK关联立交关系提取立交信息；
+            b)	根据RW_LINK关联立交关系提取立交信息；
+            c)	根据AD_LINK关联立交关系提取立交信息；
+            d)	根据ZONE_LINK关联立交关系提取立交信息；
+            e)	根据CITYMODEL提取立交关系
+
+            f)	根据RD_NODE关联立交关系提取立交信息；
+            g)	根据RW_NODE关联立交关系提取立交信息；
+            h)	根据AD_ZONE关联立交关系提取立交信息；
+            i)	根据ZONE_NODE关联立交关系提取立交信息；
+            j)	对所有NODE	去重复；
+
+
+            第2步得到图幅内rd_link 和图幅内rd_node
+            第2步得到图幅内rw_link 和图幅内rw_node
+            第2步得到图幅内ad_link 和图幅内rw_node
+            第2步得到图幅内zone_link 和图幅内zone_node
+            第2步得到图幅内cm_link 和 第4步图幅内cm_node
+        -->
+        <step value="40">
+            <!--道路Link立交关系-->
+            <sql id="exp-rd-RD_GSC-4.1">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_GSC
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'RD_LINK'));
+                        ]]></sql>
+            <!--铁路Link立交关系-->
+            <sql id="exp-rd-RD_GSC-4.2">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_GSC
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RW_LINK N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'RW_LINK'));
+                        ]]></sql>
+
+            <!--ad Link立交关系-->
+            <sql id="exp-rd-RD_GSC-4.3">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_GSC
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_AD_LINK N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'AD_LINK'));
+                        ]]></sql>
+
+            <!--ZONE Link立交关系-->
+            <sql id="exp-rd-RD_GSC-4.4">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_GSC
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_ZONE_LINK N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.LINK_PID AND CN.TABLE_NAME = 'ZONE_LINK'));
+                        ]]></sql>
+
+            <!--CM_BUILDLINK立交关系-->
+            <sql id="exp-rd-RD_GSC-4.5">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_GSC
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_CMG_BUILDLINK N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.LINK_PID
+                            		AND CN.TABLE_NAME = 'CMG_BUILDLINK'));
+                        ]]></sql>
+        </step>
+        <step value="43">
+            <!--TEMP_RD_GSC去重-->
+            <sql id="exp-rd-RD_GSC-5.1">
+                <![CDATA[
+                        DELETE FROM TEMP_RD_GSC A
+                         WHERE A.ROWID !=
+                               (SELECT MAX(B.ROWID) FROM TEMP_RD_GSC B WHERE A.PID = B.PID);
+                        ]]></sql>
+        </step>
+        <!--提取GSC 的组成link
+        注意道路铁路等link的去重步骤
+        -->
+        <!--<step value="16">
+            &lt;!&ndash;提取rd_link&ndash;&gt;
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT CN.LINK_PID
+                             FROM TEMP_RD_GSC N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.PID AND CN.TABLE_NAME = 'RD_LINK'));
+                    ]]></sql>
+
+            &lt;!&ndash;提取rw_link  rw_link step=7去重 &ndash;&gt;
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RW_LINK
+                      (PID)
+                      (SELECT CN.LINK_PID
+                             FROM TEMP_RD_GSC N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.PID AND CN.TABLE_NAME = 'RW_LINK'));
+                    ]]></sql>
+
+            &lt;!&ndash;提取ad_link  ad_link step=16 去重 &ndash;&gt;
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_AD_LINK
+                      (PID)
+                      (SELECT CN.LINK_PID
+                             FROM TEMP_RD_GSC N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.PID AND CN.TABLE_NAME = 'AD_LINK'));
+                    ]]></sql>
+
+            &lt;!&ndash;提取zone_link  zone_link step=6 去重 &ndash;&gt;
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_ZONE_LINK
+                      (PID)
+                      (SELECT CN.LINK_PID
+                             FROM TEMP_RD_GSC N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.PID AND CN.TABLE_NAME = 'ZONE_LINK'));
+                    ]]></sql>
+
+            &lt;!&ndash;提取cmg_link  cmg_link step=6 去重 &ndash;&gt;
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CMG_BUILDLINK
+                      (PID)
+                      (SELECT CN.LINK_PID
+                             FROM TEMP_RD_GSC N, RD_GSC_LINK CN
+                            WHERE (N.PID = CN.PID AND CN.TABLE_NAME = 'CMG_BUILDLINK'));
+                    ]]></sql>
+        </step>-->
+
+
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM RD_GSC P,TEMP_RD_GSC T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_GSC_LINK P,TEMP_RD_GSC T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+        	<sql><![CDATA[DELETE FROM RD_GSC P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_GSC T ); ]]></sql>
+        	<sql><![CDATA[DELETE FROM RD_GSC_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_GSC T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_GSC
+					  SELECT PID
+					    FROM RD_GSC A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_GSC  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+
+    </feature>
+</sqls>

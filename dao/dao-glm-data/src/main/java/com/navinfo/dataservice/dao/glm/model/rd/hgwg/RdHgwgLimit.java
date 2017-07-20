@@ -39,6 +39,14 @@ public class RdHgwgLimit implements IObj {
 
     private double resWidth;
 
+    private int resHighFlag = 0;
+
+    private int resWidthFlag = 0;
+
+    private String descript;
+
+    private int editFlag = 1;
+
     private int meshId;
 
     private Geometry geometry;
@@ -114,6 +122,12 @@ public class RdHgwgLimit implements IObj {
         limit.resWidth = this.resWidth;
         limit.meshId = this.meshId;
         limit.geometry = this.geometry;
+
+        limit.resHighFlag = this.resHighFlag;
+        limit.resWidthFlag = this.resWidthFlag;
+        limit.descript = this.descript;
+        limit.editFlag = this.editFlag;
+
     }
 
     @Override
@@ -290,5 +304,37 @@ public class RdHgwgLimit implements IObj {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    public int getResHighFlag() {
+        return resHighFlag;
+    }
+
+    public void setResHighFlag(int resHighFlag) {
+        this.resHighFlag = resHighFlag;
+    }
+
+    public int getResWidthFlag() {
+        return resWidthFlag;
+    }
+
+    public void setResWidthFlag(int resWidthFlag) {
+        this.resWidthFlag = resWidthFlag;
+    }
+
+    public String getDescript() {
+        return descript;
+    }
+
+    public void setDescript(String descript) {
+        this.descript = descript;
+    }
+
+    public int getEditFlag() {
+        return editFlag;
+    }
+
+    public void setEditFlag(int editFlag) {
+        this.editFlag = editFlag;
     }
 }

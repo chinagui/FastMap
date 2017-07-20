@@ -4294,15 +4294,19 @@ public class TaskService {
 				String poisql = "";
 				String linksql = "";
 				sb.append("update DATA_PLAN t set t.is_plan_selected = "+isPlanStatus+" where ");
-				sb.append("t.task_id = "+taskId+" and t.data_type in ("+type+") and t.pid in (");
+				
 				if("1".equals(type) || "1,2".equals(type)){
+					poisb.append("t.task_id = "+taskId+" and t.data_type = 1 and t.pid in (");
 					poisb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					poisql = sb.toString()+poisb.toString();
+					log.info("根据范围规划数据更新POI："+poisql);
 					run.update(conn, poisql, wkt);
 				}
 				if("2".equals(type) || "1,2".equals(type)){
+					linksb.append("t.task_id = "+taskId+" and t.data_type = 2 and t.pid in (");
 					linksb.append("select r.link_pid from RD_LINK r where sdo_relate(r.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					linksql = sb.toString()+linksb.toString();
+					log.info("根据范围规划数据更新link："+linksql);
 					run.update(conn, linksql, wkt);
 				}
 			}catch(Exception e){

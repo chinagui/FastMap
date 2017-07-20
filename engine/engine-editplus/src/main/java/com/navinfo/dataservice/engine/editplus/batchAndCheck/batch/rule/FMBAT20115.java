@@ -18,9 +18,9 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * 查询条件：满足以下任一条件均执行批处理：
- * (1)存在IX_POI_NAME新增履历；
- * (2)存在IX_POI_NAME修改履历；
- * (3)存在KIND_CODE或CHAIN的修改履历且修改前后在word_kind表中对应的词库不一样；
+ * (1)存在官方原始中文名称或官方标准中文名称新增履历；
+ * (2)存在官方原始中文名称或官方标准中文名称修改履历；
+ * (3)存在KIND_CODE或CHAIN的修改履历
  * 批处理：当NAME_TYPE=1且NAME_CLASS=1时，进行如下批处理：
  * (1)当同组（NAME_GROUPID相同）名称中，没有原始英文名称（LANG_CODE="ENG",NAME_TYPE=2）时,新增一条原始英文名(组号一样，NAME_CLASS=1，NAME_TYPE=2，LANG_CODE="ENG"，NAME转拼音赋值，NAME_PHONETIC赋值空），并生成新增履历；
  * (2)当同组（NAME_GROUPID相同）名称中，有原始英文名称（LANG_CODE="ENG",NAME_TYPE=2）时,更新英文名NAME；有标准化英文名称时，清空标准化英文NAME，并生成履历；
@@ -53,30 +53,16 @@ public class FMBAT20115 extends BasicBatchRule {
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		boolean isChanged = false;
 		for (IxPoiName name:names) {
-			if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE)) {
-				isChanged = true;
-				break;
+			if(name.getNameClass()==1&&name.getNameType()==2&&(name.getLangCode().equals("CHI")||name.getLangCode().equals("CHT"))){
+				if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE)) {
+					isChanged = true;
+					break;
+				}
 			}
 		}
-		// 存在KIND_CODE或CHAIN的修改履历且修改前后在word_kind表中对应的词库不一样；
+		// 存在KIND_CODE或CHAIN的修改；
 		if (poi.hisOldValueContains(IxPoi.KIND_CODE) || poi.hisOldValueContains(IxPoi.CHAIN)) {
-			String wordNew = metadata.wordKind(poi.getKindCode(), poi.getChain());
-			String newKindCode = null;
-			String newChain = null;
-			if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
-				newKindCode = (String)poi.getHisOldValue(IxPoi.KIND_CODE);
-			} else {
-				newKindCode = poi.getKindCode();
-			}
-			if (poi.hisOldValueContains(IxPoi.CHAIN)) {
-				newChain = (String)poi.getHisOldValue(IxPoi.CHAIN);
-			} else {
-				newChain = poi.getChain();
-			}
-			String wordOld = metadata.wordKind(newKindCode,newChain);
-			if ((StringUtils.isEmpty(wordNew) && StringUtils.isNotEmpty(wordOld)) || (StringUtils.isNotEmpty(wordNew) && !wordNew.equals(wordOld))) {
-				isChanged = true;
-			}
+			isChanged = true;
 		}
 		
 		if (isChanged) {

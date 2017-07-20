@@ -50,8 +50,8 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		String parameter ="{\"id1\":99,\"lineWkt\":\"LINESTRING(116.62673950195314 39.824094732204195,116.60785675048828 39.687110247162934)\"}"; 
-		//String parameter ="{\"id1\":88,\"id2\":89}"; 
+		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
+		String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -68,7 +68,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":135,\"name\":\"北京市北京市通州区郊区郊区_20170503_韩雪松\",\"status\":2,\"type\":0,\"referId\":100,\"stage\":0,\"descp\":\"不规则圈\",\"workKind\":1,\"planStartDate\":\"20170712\",\"planEndDate\":\"20170712\",\"exeUserId\":1664,\"hasQuality\":0}";
+		String parameter ="{\"taskId\":78,\"name\":\"北京市北京市城区西站南站20170427_韩雪松\",\"status\":2,\"type\":1,\"stage\":0,\"descp\":\"\",\"workKind\":1,\"planStartDate\":\"20170720\",\"planEndDate\":\"20170720\",\"exeUserId\":1664,\"hasQuality\":0,\"referId\":499}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -83,7 +83,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testPushMsg() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="[572]";
+		String parameter ="[1254]";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -93,17 +93,40 @@ public class SubtaskTest extends InitApplication{
 		System.out.print(mString);
 	}	
 	
-//	@Test
+	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(362,1);
+		Map<String, Object> result = service.query(584,1);
+		System.out.print(result);
+	}
+	@Test
+	public void testList() throws Exception {
+		String parameter="{\"condition\":{\"taskId\":78},\"pageNum\":1,\"pageSize\":15,\"snapshot\":1}";
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		
+		int curPageNum= 1;//默认为第一页
+		if(dataJson.containsKey("pageNum")){
+			curPageNum = dataJson.getInt("pageNum");
+		}
+		
+		int pageSize = 30;//默认页容量为20
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+		}
+		//查询条件
+		JSONObject condition = dataJson.getJSONObject("condition");
+		SubtaskService service = SubtaskService.getInstance();
+		Page result = service.list(condition, pageSize, curPageNum);
 		System.out.print(result);
 	}
 	
 	@Test
 	public void testListByUser() throws Exception {
 		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"stage\":0}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -180,7 +203,7 @@ public class SubtaskTest extends InitApplication{
 	//创建质检圈(测试)
 	@Test
 	public void testQualityCreate() throws Exception {
-		String parameter = "{\"subtaskId\":183,\"geometry\":\"POLYGON((116.33251190185545 39.89419695072923,116.36495590209962 39.88892859714545,116.35242462158202 39.86640182019855,116.32530212402342 39.86890516081786,116.33251190185545 39.89419695072923))\"}";
+		String parameter = "{\"subtaskId\":184,\"geometry\":\"POLYGON((116.29989624023439 39.891826241725596,116.29714965820311 39.86600654754002,116.35139465332031 39.87338459498892,116.29989624023439 39.891826241725596))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}

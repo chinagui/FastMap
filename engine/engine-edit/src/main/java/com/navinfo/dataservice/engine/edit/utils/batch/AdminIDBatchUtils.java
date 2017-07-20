@@ -66,28 +66,32 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
                     link.setRightRegionId(regionId);
                 } else {
                     // 修行时修改regionId
-                    if (link.getLeftRegionId() != regionId)
+                    if (link.getLeftRegionId() != regionId) {
                         link.changedFields().put("leftRegionId", regionId);
-                    if (link.getRightRegionId() != regionId)
+                    }
+                    if (link.getRightRegionId() != regionId) {
                         link.changedFields().put("rightRegionId", regionId);
+                    }
                 }
                 // RdLink处在AdFace组成线上
             } else if (GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
                 // RdLink在AdFace的右边
                 if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeometry)) {
                     // 新增时为RightRegionId赋值
-                    if (null == geometry)
+                    if (null == geometry) {
                         link.setRightRegionId(regionId);
                         // 修改时修改RightRegionId值
-                    else if (link.getRightRegionId() != regionId)
+                    } else if (link.getRightRegionId() != regionId) {
                         link.changedFields().put("rightRegionId", regionId);
+                    }
                 } else {
                     // 新增时为LeftRegionId赋值
-                    if (null == geometry)
+                    if (null == geometry) {
                         link.setLeftRegionId(regionId);
                         // 修改时修改LeftRegionId值
-                    else if (link.getLeftRegionId() != regionId)
+                    } else if (link.getLeftRegionId() != regionId) {
                         link.changedFields().put("leftRegionId", regionId);
+                    }
                 }
             } else {
                 // 其他情况暂不处理
@@ -106,11 +110,12 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             if ("POINT".equalsIgnoreCase(g.getGeometryType())) {
                 int faceRegionId = face.getRegionId();
                 // 新增row时赋值
-                if (null == geometry)
+                if (null == geometry) {
                     setRegionId(row, faceRegionId);
-                else
+                } else {
                     // 修形时修改regionId
                     row.changedFields().put("regionId", faceRegionId);
+                }
             }
         }
     }

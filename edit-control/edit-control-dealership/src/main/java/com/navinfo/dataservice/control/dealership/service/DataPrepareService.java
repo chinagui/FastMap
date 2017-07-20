@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -31,6 +32,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -271,6 +273,8 @@ public class DataPrepareService {
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
 		String chainCode = returnParam.getString("chainCode");
+//		String localFile="E:/temp/20170720162631.xls";
+//		String chainCode = "400F";
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
@@ -282,10 +286,12 @@ public class DataPrepareService {
 			Set<Integer> resultIdSet=new HashSet<Integer>();
 			Set<Integer> sourceIdSet=new HashSet<Integer>();
 			List<DiffTableExcel> excelSet=new ArrayList<DiffTableExcel>();
+			List<Integer> excelOldSourceIdList=new ArrayList<Integer>();
 			for(Map<String,Object> source:sourceMaps){
 				JSONObject json = JSONObject.fromObject(source);
 				DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
 				excelSet.add(diffSub);
+				excelOldSourceIdList.add(diffSub.getOldSourceId());
 				resultIdSet.add(diffSub.getResultId());
 				sourceIdSet.add(diffSub.getOldSourceId());
 				//导入时，判断导入文件中“代理店品牌”是否跟作业品牌一致，如果一致，则可以导入，否则不可以导入
@@ -295,8 +301,8 @@ public class DataPrepareService {
 			}
 				if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=2
 						&&diffSub.getDealSrcDiff()!=3&&diffSub.getDealSrcDiff()!=4){
-					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
-					throw new Exception("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
+					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内，uuid="+diffSub.getResultId());
+					throw new Exception("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内，uuid="+diffSub.getResultId());
 				}
 			}
 			//加载IX_DEALERSHIP_RESULT中的数据
@@ -304,7 +310,7 @@ public class DataPrepareService {
 			//Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
 			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
 			//根据导入原则，获取需要修改的数据
-			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet);
+			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet,excelOldSourceIdList);
 			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
 			deleteResult(conn,chainCode,resultIdSet);
 			//数据持久化到数据库
@@ -376,7 +382,7 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	private Map<String, Set<IxDealershipResult>> importMain(
-			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) throws Exception {
+			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet,List<Integer> excelOldSourceIdList) throws Exception {
 		log.info("start 表表差分修改result表记录");
 		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
 		resultMap.put("ADD", new HashSet<IxDealershipResult>());
@@ -389,6 +395,12 @@ public class DataPrepareService {
 			cpRegionMap.put(region.getProvince(), region.getRegionId());
 		}
 		
+		for(Entry<Integer, IxDealershipSource> entry : sourceObjSet.entrySet()) {  
+			if (!excelOldSourceIdList.contains(entry.getKey())){
+				log.info("全国一览表IX_DEALERSHIP_RESULT.SOURCE_ID在表表差分结果中“旧一览表ID”不存在：旧一览表ID="+entry.getKey());
+				throw new Exception("全国一览表IX_DEALERSHIP_RESULT.SOURCE_ID在表表差分结果中“旧一览表ID”不存在：旧一览表ID="+entry.getKey());
+			}		  
+		}  
 		for (DiffTableExcel diffSub:excelSet){
 			int resultId=diffSub.getResultId();
 			IxDealershipResult resultObj = null;
@@ -403,11 +415,37 @@ public class DataPrepareService {
 					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
 				}
 				resultObj = resultObjSet.get(resultId);
+				if(!(resultObj.getName().equals(diffSub.getName()))||!(resultObj.getAddress().equals(diffSub.getAddress()))){
+					log.info("resultObj.name:"+resultObj.getName()+",resultObj.address:"+resultObj.getAddress()+",diffSub.name:"+diffSub.getName()+",diffSub.address:"+diffSub.getAddress());
+					log.info("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+					throw new Exception("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+				}
 				resultMap.get("UPDATE").add(resultObj);
 			}else{
 				resultObj = new IxDealershipResult();
 				//resultObj.setSourceId(oldSourceId);
 				resultMap.get("ADD").add(resultObj);
+			}
+			
+			if (diffSub.getName()!=null&&!"".equals(diffSub.getName())){
+				if(diffSub.getOldSourceId()!=0){
+					if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=4){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{1,4}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{1,4}:uuid="+resultId);
+					}
+				}else{
+					if(diffSub.getDealSrcDiff()!=3){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{3}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{3}:uuid="+resultId);
+					}
+				}
+			}else{
+				if(diffSub.getOldSourceId()!=0){
+					if(diffSub.getDealSrcDiff()!=2){
+						log.info("表表差分结果中“新旧一览表差分结果”的值域必须是{2}:uuid="+resultId);
+						throw new Exception("表表差分结果中“新旧一览表差分结果”的值域必须是{2}:uuid="+resultId);
+					}
+				}
 			}
 			
 			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());
@@ -658,6 +696,9 @@ public class DataPrepareService {
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
 
+						//Excel文件的校验
+						uploadChainExcelCheck(sourceMaps);
+						
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
 							IxDealershipResult ixDealershipResult = new IxDealershipResult();
@@ -702,6 +743,94 @@ public class DataPrepareService {
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//Excel文件的校验（一栏表上传接口：6877）
+	private void uploadChainExcelCheck(List<Map<String, Object>> list) throws Exception {
+		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, List<String>> dataMap = metadataApi.scPointAdminareaDataMap();
+		Map<String, Integer> chainStatusMap = null;
+		List<String> districtList = null;
+		List<String> kindCodeList = null;
+		Connection metaConn = null;
+		Connection dealershipConn = null;
+		try{
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			dealershipConn = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			String districtSql = "SELECT DISTRICT FROM SC_POINT_ADMINAREA WHERE REMARK = '1'";
+			String kindCodeSql = "SELECT KIND_CODE FROM SC_POINT_POICODE_NEW";
+			String chainStatusSql = "SELECT CHAIN_CODE, CHAIN_STATUS FROM IX_DEALERSHIP_CHAIN";
+			districtList = run.query(metaConn, districtSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("DISTRICT"));
+					}
+					return list;
+				}
+			});
+			kindCodeList = run.query(metaConn, kindCodeSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("KIND_CODE"));
+					}
+					return list;
+				}
+			});
+			chainStatusMap = run.query(dealershipConn, chainStatusSql, new ResultSetHandler<Map<String, Integer>>(){
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put(rs.getString("CHAIN_CODE"), rs.getInt("CHAIN_STATUS"));
+					}
+					return map;
+				}
+			});
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(metaConn);
+			DbUtils.rollbackAndCloseQuietly(dealershipConn);
+			log.error(e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(metaConn);
+			DbUtils.closeQuietly(dealershipConn);
+		}
+		
+		for (int i = 0; i < list.size(); i++) {
+			String province = list.get(i).get("province").toString();
+			String city = list.get(i).get("city").toString();
+			String project = list.get(i).get("project").toString();
+			String kindCode = list.get(i).get("kindCode").toString();
+			String chain = list.get(i).get("chain").toString();
+			String name = list.get(i).get("name").toString();
+			String address = list.get(i).get("address").toString();
+			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
+				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
+			}
+			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
+				throw new ServiceException("第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+			}
+			if(StringUtils.isEmpty(project)){
+				throw new ServiceException("第" + (i+2) + "行中：项目为空");
+			}
+			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
+				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
+			}
+			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 0){
+				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是未开启");
+			}
+			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
+				throw new ServiceException("第" + (i+2) +"行中：厂商提供名称为空或不是全角");
+			}
+			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
+			}
 		}
 	}
 	
@@ -1162,6 +1291,11 @@ public class DataPrepareService {
 			sb.append("        R.POI_NUM_3,                                     ");
 			sb.append("        R.POI_NUM_4,                                     ");
 			sb.append("        R.POI_NUM_5,                                     ");
+			//=====================================================================
+			//代理店 - 表库差分结果导出原则变更(6882)
+			sb.append("        R.CFM_POI_NUM,                                   ");
+			sb.append("        R.CFM_IS_ADOPTED,                                ");
+			//=====================================================================
 			sb.append("        R.SIMILARITY,                                    ");
 			sb.append("        R.DEAL_CFM_DATE,                                 ");
 			sb.append("        R.REGION_ID,                                     ");
@@ -1180,9 +1314,13 @@ public class DataPrepareService {
 			sb.append("        S.POST_CODE OLD_POST_CODE,                       ");
 			sb.append("        S.NAME_ENG OLD_NAME_ENG,                         ");
 			sb.append("        S.ADDRESS_ENG OLD_ADDRESS_ENG                    ");
-			sb.append("   FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S   ");
-			sb.append("  WHERE R.SOURCE_ID = S.SOURCE_ID                        ");
-			sb.append("    AND R.CHAIN = '" + chainCode + "'");
+//			sb.append("   FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S   ");
+//			sb.append("  WHERE R.SOURCE_ID = S.SOURCE_ID                        ");
+//			sb.append("    AND R.CHAIN = '" + chainCode + "'");
+			//代码修改：数据导出，导出数据量同界面显示数据量不一致（7102）
+			sb.append("   FROM IX_DEALERSHIP_RESULT R LEFT JOIN IX_DEALERSHIP_SOURCE S   ");
+			sb.append("  ON R.SOURCE_ID = S.SOURCE_ID                        ");
+			sb.append("    WHERE R.CHAIN = '" + chainCode + "'");
 			
 			log.info("searchDbDiff sql: "+sb.toString());
 			ResultSetHandler<List<ExpDbDiffResult>> rs = new ResultSetHandler<List<ExpDbDiffResult>>() {
@@ -1246,7 +1384,7 @@ public class DataPrepareService {
 								result.setDbDiff("无");
 								break;
 							case 1:
-								result.setDbDiff("无需处理");
+								result.setDbDiff("差分一致无需处理");
 								break;
 							case 2:
 								result.setDbDiff("需删除");
@@ -1264,19 +1402,19 @@ public class DataPrepareService {
 								result.setDbDiff("不代理");
 								break;
 							case 9:
-								result.setDbDiff("处理完成");
+								result.setDbDiff("外业处理完成，出品");
 								break;
 							}
 							int matchMethod = rs.getInt("MATCH_METHOD");
 							switch(matchMethod){
 							case 0:
-								result.setDbDiff("不应用");
+								result.setMatchMethod("不应用");
 								break;
 							case 1:
-								result.setDbDiff("ID匹配");
+								result.setMatchMethod("ID匹配");
 								break;
 							case 2:
-								result.setDbDiff("推荐匹配");
+								result.setMatchMethod("推荐匹配");
 								break;
 							}
 
@@ -1306,7 +1444,27 @@ public class DataPrepareService {
 							if(rs.getString("POI_NUM_5")!=null&&!rs.getString("POI_NUM_5").equals("")){
 								poiNum.add(rs.getString("POI_NUM_5"));
 							}
+							
+							//=============================================================================
+							//代理店 - 表库差分结果导出原则变更(6882)
+							result.setCfmPoiNum( rs.getString("CFM_POI_NUM"));
+							if(rs.getString("CFM_POI_NUM")!=null&&!rs.getString("CFM_POI_NUM").equals("")){
+								poiNum.add(rs.getString("CFM_POI_NUM"));
+							}
 
+							int cfmIsAdpoted = rs.getInt("CFM_IS_ADOPTED");
+							switch(cfmIsAdpoted){
+							case 0:
+								result.setCfmIsAdopted("未处理");
+								break;
+							case 1:
+								result.setCfmIsAdopted("未采纳");
+								break;
+							case 2:
+								result.setCfmIsAdopted("已采纳");
+								break;
+							}
+							//=============================================================================
 							result.setSimilarity( rs.getString("SIMILARITY"));
 							result.setDealCfmDate( rs.getString("DEAL_CFM_DATE"));
 							result.setRegionId( rs.getInt("region_id"));
@@ -1532,6 +1690,38 @@ public class DataPrepareService {
 					expDbDiffResult.setPoi5Chain(poiInfo.get("poiChain"));
 				}
 			}
+			//=================================================================================================================================
+			//代理店 - 表库差分结果导出原则变更(6882)
+			if(expDbDiffResult.getCfmPoiNum()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getCfmPoiNum())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getCfmPoiNum());
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+				
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setCfmPoiNumName(poiInfo.get("poiName"));
+				}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setCfmPoiNumAliasName(poiInfo.get("poiAliasName"));
+				}
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setCfmPoiNumAddress(poiInfo.get("poiAddress"));
+				}
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setCfmPoiNumTel(poiInfo.get("poiTel"));
+				}
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setCfmPoiNumDiff(poiInfo.get("poiDiff"));
+				}
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setCfmPoiNumPostCode(poiInfo.get("poiPostCode"));
+				}
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setCfmPoiNumKindCode(poiInfo.get("poiKindCode"));
+				}
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setCfmPoiNumChain(poiInfo.get("poiChain"));
+				}
+			}
+			//=================================================================================================================================
 		}
 	}
 
@@ -1583,7 +1773,7 @@ public class DataPrepareService {
 //		result.put("poiTel", poiTel);
 		
 //==========================================================================================		
-		//增加导出poi电话多条时，考虑电话优先级问题
+		//增加导出poi电话多条时，考虑电话优先级问题(7170)
 		Map<Integer, String> map = new TreeMap<>();
 		for(IxPoiContact ixPoiContact:ixPoiContactList){
 			map.put(ixPoiContact.getPriority(), ixPoiContact.getContact());

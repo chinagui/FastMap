@@ -24,11 +24,11 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Date startTime;
-	public Day2MonPoiLogByFilterGridsSelector(OracleSchema logSchema,Date stopTime,List<Integer> filterGrids) {
+	public Day2MonPoiLogByFilterGridsSelector(OracleSchema logSchema,Date stopTime,List<Integer> filterGrids,int taskType) {
 		super(logSchema);
 		this.stopTime = stopTime;
 		this.filterGrids = filterGrids;
-		
+		this.taskType=taskType;
 	}
 	public Day2MonPoiLogByFilterGridsSelector(OracleSchema logSchema) {
 		super(logSchema);
@@ -137,6 +137,10 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 					String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
 					sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
 				}
+				if(this.startTime!=null){
+					String startTimeSqlFormat = DateUtils.dateToString(startTime, DateUtils.DATE_COMPACTED_FORMAT);
+					sb.append("   and p.op_dt >= to_date('"+startTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
+				}
 				
 				List<Object> values = new ArrayList<Object> ();
 //				if(grids!=null&&grids.size()>0){
@@ -171,9 +175,8 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 			String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
 			sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
 		}
-		if(this.startTime!=null){
-			String startTimeSqlFormat = DateUtils.dateToString(startTime, DateUtils.DATE_COMPACTED_FORMAT);
-			sb.append("   and p.op_dt >= to_date('"+startTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
+		if(this.taskType==0){
+			sb.append("   and s.medium_task_id<>0  \r\n") ;
 		}
 				 
 		List<Object> values = new ArrayList<Object> ();

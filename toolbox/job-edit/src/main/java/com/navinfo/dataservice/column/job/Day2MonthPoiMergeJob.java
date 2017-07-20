@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.column.job;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -21,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang.StringUtils;
 
@@ -35,12 +37,15 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -55,6 +60,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.Check;
 import com.navinfo.dataservice.day2mon.Classifier;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogByFilterGridsSelector;
+import com.navinfo.dataservice.day2mon.Day2MonPoiLogByTaskIdSelector;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.DeepInfoMarker;
 import com.navinfo.dataservice.day2mon.PoiGuideLinkBatch;
@@ -109,96 +115,308 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil
 				.getBean("metadataApi");
 		try {
+			JSONObject logInfo =new JSONObject();
 			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
-			int specRegionId = day2MonRequest.getSpecRegionId();
-			List<Integer> specMeshes = day2MonRequest.getSpecMeshes();
-			int phaseId = day2MonRequest.getPhaseId();
+			int type = day2MonRequest.getType();//快线还是中线:0 中线，1 快线
+			int lot = day2MonRequest.getLot();//中线批次:0,1,2,3(快线输0)
+			long phaseId =(long) day2MonRequest.getPhaseId();
+			Map<Integer,List<Integer>> subTasks = (Map<Integer,List<Integer>>)day2MonRequest.getTaskInfo();
+			
+			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
 
 			//确定需要日落月的大区
-			List<Region> regions = null;
-			if(specRegionId>0){//判断是否有指定大区的日落月
-				Region r = manApi.queryByRegionId(specRegionId);
-				regions = new ArrayList<Region>();
-				regions.add(r);
-			}else{//全部大区
+			List<Region> regions = new ArrayList<Region>();;
+			if(subTasks!=null&&subTasks.size()>0){//判断是否按任务落
+				for(Object obj:subTasks.keySet()) {
+					int regionId=0;
+					if(obj instanceof Integer){  
+		                regionId=(int) obj;
+					}else if(obj instanceof String){  
+						regionId =Integer.parseInt(String.valueOf(obj));
+		            }
+					Region r = manApi.queryByRegionId(regionId);
+					regions.add(r);
+				} 
+			}else{//全部大区定时落
 				regions = manApi.queryRegionList();
 			}
 			log.info("确定日落月大区库个数："+regions.size()+"个。");
 			response("确定日落月大区库个数："+regions.size()+"个。",null);
 			
-			List<Integer> grids = new ArrayList<Integer>();
-			//支持精编任务关闭日落月
-			if(specMeshes!=null&&specMeshes.size()>0){
-				grids= meshs2grids(specMeshes);
-				for(Region region:regions){
+			if(type==1){//快线任务日落月，所有日大区库统一成功、统一失败回滚
+				try {
 					
-					//20170426 按任务落添加图幅开关判断
-					//	1、获取任务范围内已关闭的图幅号
-					List<Integer> closemeshes = metaApi.getCloseMeshs(specMeshes);
-					//	2、将任务范围内关闭的图幅号转换成grids
-					List<Integer> closeGrids = meshs2grids(closemeshes);
-					//	3、筛选这些grids中的是否存在未落的履历
-					if(closeGrids.size()>0){
-						List<String> logGrids =selectLogFromCloseGrids(closeGrids,datahubApi,region);
-						if(logGrids!=null&&logGrids.size()>0){
-							//更新任务状态
-							manApi.taskUpdateCmsProgress(phaseId,3,"以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
-							throw new Exception("以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
-						}
+					/** 一、快线任务
+					1、根据输入的 大区及大区内的快线任务，分别去每个大区库中筛选相应的快线任务涉及的数据履历。
+					2、筛选到履历后，获取所有的grids;
+					3、将所有的grids转换成对应的meshes；
+					4、拿所有的meshes申请DMS锁；
+					5、若存在申请不到DMS锁的图幅，则报出具体图幅被锁信息，且所有大区库均日落月失败；
+					6、若所有图幅均申请成功DMS锁，则所有大区库均日落月成功；
+					备注：所有大区库刷月库保持事务一致性；
+					*/
+					
+					List<Integer> allLogGrids = new ArrayList<Integer>();
+					for(Region region:regions){
+						
+						//1、获取该大区库下面的任务号
+						List<Integer> taskIds = subTasks.get(region.getRegionId().toString());
+						//2、获取履历所在所有grids
+						List<Integer> logGrids =selectLogGridsByTaskId(taskIds,datahubApi,region,type);
+						allLogGrids.addAll(logGrids);
 					}
+					//3、将所有的grids转换成对应的meshes；
+					List<Integer> allLogMeshes = grids2meshs(allLogGrids);
+					//4、拿所有的meshes申请DMS锁；
+					Map<Integer,String>  dmsLockMeshes= new HashMap<Integer,String>();
+					dmsLockMeshes = getDmsLock(allLogMeshes,jobInfo.getId(),dbInfo);
 					
-					doSync(region,null,grids, datahubApi, d2mSyncApi,manApi,phaseId);
-					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
-				}
-			//支持每天定时日落月	
-			}else{
-				//获取region对应的省份
-				List<CpRegionProvince> regionProvs = manApi.listCpRegionProvince();
-				Map<Integer,Set<Integer>> adminMap = new HashMap<Integer,Set<Integer>>();
-				for(CpRegionProvince cp:regionProvs){
-					if(adminMap.containsKey(cp.getRegionId())){
-						adminMap.get(cp.getRegionId()).add(cp.getAdmincode());
+					Connection monthConn=getGdbConnect(datahubApi);
+					OracleSchema monthDbSchema=getGdbSchema(datahubApi);
+					
+					//5、若存在申请不到DMS锁的图幅，则报出具体图幅被锁信息，且所有大区库均日落月失败；
+					if(dmsLockMeshes!=null&&dmsLockMeshes.size()>0){
+						logInfo.put("dmsLockMeshes", dmsLockMeshes);
+						manApi.updateJobProgress(phaseId,3,logInfo.toString());
+						log.info("以下图幅存在需要落的数据，但是对应的图幅没有申请到DMS锁，请处理后再落:"+dmsLockMeshes.toString());
+						throw new Exception("以下gird存在需要落的数据，但是对应的图幅没有申请到DMS锁，请处理后再落:"+dmsLockMeshes.toString());
 					}else{
-						Set<Integer> codes = new HashSet<Integer>();
-						codes.add(cp.getAdmincode());
-						adminMap.put(cp.getRegionId(), codes);
-					}
-				}
-				//开始分配
-				for(Region region:regions){
-					//获取region包含的省份
-					Set<Integer> admins = adminMap.get(region.getRegionId());
-					//过去大区库内的关闭图幅并转换成girds
-					List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(admins);
-					List<Integer> filterGrids = new ArrayList<Integer>();
-					for(Mesh4Partition m:meshes){
-						if(m.getDay2monSwitch()==0){
-							int mId = m.getMesh();
-							for(int i=0;i<4;i++){
-								for(int j=0;j<4;j++){
-									filterGrids.add(mId*100 + i*10+ j);
-								}
+						//6、若所有图幅均申请成功DMS锁，则所有日大区库均日落月成功（有异常则所有的都失败）；
+						
+						List<LogMover> logMovers= new ArrayList<LogMover>();
+						//大区库链接集合：这个链接用来挪履历，有异常需要回滚；
+						List<Connection> dailyConns= new ArrayList<Connection>();
+						//大区库链接集合：这个链接是用来改出品履历状态的，有异常需要回滚；
+						List<LogSelector> LogSelectors= new ArrayList<LogSelector>();
+						
+						OperationResult allResult=new OperationResult();
+						String tempPoiGLinkTab ="";
+						boolean isbatch = true;
+						try{
+							for(Region region:regions){
+								
+								log.info("获取大区库连接信息:"+region);
+								if(region==null) return ;							
+								
+								OperationResult result=new OperationResult();
+								Date syncTimeStamp= new Date();
+								
+								Connection dailyConn=getConnectByRegion(region,datahubApi,"daily");
+								dailyConns.add(dailyConn);
+								OracleSchema dailyDbSchema=getSchemaByRegion(region,datahubApi,"daily");
+		
+								List<Integer> taskIds = subTasks.get(region.getRegionId().toString());
+								
+								
+								log.info("开始获取日编库相关快线任务履历"+taskIds.toString());
+								LogSelector logSelector = new Day2MonPoiLogByTaskIdSelector(dailyDbSchema,syncTimeStamp,null,taskIds,1);
+								LogSelectors.add(logSelector);
+								String tempOpTable = logSelector.select();
+
+								log.info("开始将日库履历刷新到月库,temptable:"+tempOpTable);
+								result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable);
+								
+								allResult.putAll(result.getAllObjs());
+								log.info("大区库（regionId:"+region.getRegionId()+"）日落月刷库完成。");
+							}
+							
+							log.info("开始筛选需要批引导LINK的POI");
+							tempPoiGLinkTab=createPoiTabForBatchGL(allResult,monthDbSchema);
+							log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+							logInfo.put("allQuickMeshes", allLogMeshes);
+						
+						}catch(Exception e){
+							logInfo.put("errmsg", e.getMessage());
+							isbatch = false;
+							if(monthConn!=null)monthConn.rollback();
+							for(Connection dconn:dailyConns){
+								dconn.rollback();
+							}
+							log.info("rollback db");
+							throw e;
+							
+						}finally{
+							DbUtils.commitAndCloseQuietly(monthConn);
+							for(Connection dconn:dailyConns){
+								DbUtils.commitAndCloseQuietly(dconn);
+							}
+							log.info("commit db");
+							for(LogSelector LogSelector:LogSelectors){
+								log.info("释放履历锁");
+								LogSelector.unselect(false);
+							}
+							if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+								log.info("开始执行引导LINK批处理");
+								new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+								log.info("引导LINK批处理执行完成");
 							}
 						}
 					}
-					doSync(region,filterGrids,grids,datahubApi, d2mSyncApi,manApi,phaseId);
-					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
+					manApi.updateJobProgress(phaseId,2,logInfo.toString());
+				}catch(Exception e){
+					callDmsReleaseLockApi(jobInfo.getId());
+					manApi.updateJobProgress(phaseId,3,logInfo.toString());
+					log.error(e.getMessage(), e);
+					throw new JobException(e.getMessage(),e);
+				}
+				
+			}else{//中线任务日落月，单个日大区库成功，单个儿日大区库失败
+				try {
+					List<Integer> logCloseLot = new ArrayList<Integer>();//中线按任务落：当前批次关闭的图幅
+					List<Integer> logCloseUnLot = new ArrayList<Integer>();//中线按任务落：非当前批次关闭的图幅
+					Map<Integer,String>  logDmsLockLot= new HashMap<Integer,String>();//中线按任务落：当前批次未申请到DMS锁的图幅
+					Map<Integer,String>  logDmsLockUnLot= new HashMap<Integer,String>();//中线按任务落：非当前批次未申请到DMS锁的图幅
+					
+					for(Region region:regions){
+						
+						if(subTasks==null||subTasks.size()==0){
+							/**中线任务
+							1）每天定时落
+							①获取所有的大区库，依次日落月每个大区库
+							②每个大区库中查询：粗编完成且图幅开关为开启的数据履历信息；
+							③筛选到履历后，获取所有的grids;
+							④将所有的grids转换成对应的meshes；
+							⑤拿所有的meshes申请DMS锁；
+							⑥若存在申请不到DMS锁的图幅，则报出具体图幅被锁信息，申请到锁的图幅执行日落月*/
+							
+							List<Integer> filterGrids = new ArrayList<Integer>();
+							List<Integer> logGrids =selectLogGridsByTaskId(null,datahubApi,region,type);//查询所有存在可落履历的grids
+							List<Integer> logMeshes = grids2meshs(logGrids);
+							List<Integer> closeMeshes = metaApi.getMeshsFromPartition(logMeshes,0,0);//查询关闭的图幅
+							
+							log.info("以下关闭图幅内的数据履历未日落月："+closeMeshes.toString());
+							filterGrids.addAll(meshs2grids(closeMeshes));
+							
+							logMeshes.removeAll(closeMeshes);//拿所有的未关闭的meshes申请DMS锁；
+							Map<Integer,String> dmsLockInfo =new HashMap<Integer,String>();
+							dmsLockInfo = getDmsLock(logMeshes,jobInfo.getId(),dbInfo);
+							
+							List<Integer> dmsLockMeshes = new ArrayList<Integer>();
+							dmsLockMeshes.addAll(dmsLockInfo.keySet());
+							log.info("以下未申请到DMS锁的图幅，未日落月："+dmsLockMeshes.toString());
+							filterGrids.addAll(meshs2grids(dmsLockMeshes));
+
+							doMediumSync(region,filterGrids,null,null,datahubApi,d2mSyncApi,manApi);
+
+						}else{
+							/**2）按批次补落：
+							①根据输入的 大区及大区内的中线任务，分别去每个大区库中筛选相应的中线任务涉及的数据履历。
+							②筛选到履历后，获取所有的grids;
+							③将所有的grids转换成对应的meshes；
+							④筛选图幅开关为“开启”的图幅（未开启需记录下来，返回给管理平台）
+							⑤拿所有开启的meshes申请DMS锁；（未申请到锁的记录下来，返回给管理平台）
+							⑥日落月申请到DMS锁的图幅对应的中线任务的履历；*/
+							
+							List<Integer> taskIds = subTasks.get(region.getRegionId().toString());
+							List<Integer> logGrids =selectLogGridsByTaskId(taskIds,datahubApi,region,type);//按任务查询所有存在可落履历的grids
+							List<Integer> logMeshes = grids2meshs(logGrids);
+							List<Integer> closeMeshes = metaApi.getMeshsFromPartition(logMeshes,0,0);//查询关闭的图幅
+							
+							List<Integer> lotCloseMeshes = metaApi.getMeshsFromPartition(logMeshes,0,lot);//查询当前批次关闭的图幅
+							logCloseLot.addAll(lotCloseMeshes);//返给管理平台：当前批次关闭图幅
+							
+							logMeshes.removeAll(closeMeshes);//删除关闭图幅，申请DMS锁；
+							
+							List<Integer> openLot = metaApi.getMeshsFromPartition(logMeshes,1,lot);//用当前批次开启的图幅，申请DMS锁
+							Map<Integer,String>  openLotDmsLockInfo= new HashMap<Integer,String>();
+							openLotDmsLockInfo = getDmsLock(openLot,jobInfo.getId(),dbInfo);
+							
+							
+							List<Integer> openUnLot = new ArrayList<Integer>();
+							openUnLot.addAll(logMeshes);
+							openUnLot.removeAll(openLot);//用非当前批次开启的图幅，申请DMS锁
+							Map<Integer,String>  openUnLotDmsLockInfo= new HashMap<Integer,String>();
+							openUnLotDmsLockInfo = getDmsLock(openUnLot,jobInfo.getId(),dbInfo);
+							
+							closeMeshes.removeAll(lotCloseMeshes);//获取非当前批次关闭图幅
+							logCloseUnLot.addAll(closeMeshes);//返给管理平台：当前批次关闭图幅
+							logDmsLockLot.putAll(openLotDmsLockInfo);//返给管理平台：当前批次未申请到DMS锁的图幅
+							logDmsLockUnLot.putAll(openUnLotDmsLockInfo);//返给管理平台：非当前批次未申请到DMS锁的图幅
+
+							logMeshes.removeAll(openLotDmsLockInfo.keySet());//删除未申请到DMS图幅锁的图幅
+							logMeshes.removeAll(openUnLotDmsLockInfo.keySet());//删除未申请到DMS图幅锁的图幅
+							
+							List<Integer> grids = meshs2grids(logMeshes);
+							doMediumSync(region,null,grids,taskIds,datahubApi,d2mSyncApi,manApi);
+						}
+					}
+					logInfo.put("closeLot", logCloseLot);
+					logInfo.put("closeUnLot", logCloseUnLot);
+					logInfo.put("dmsLockLot", logDmsLockLot);
+					logInfo.put("dmsLockUnLot", logDmsLockUnLot);
+					if(phaseId!=0){
+						manApi.updateJobProgress(phaseId,2,logInfo.toString());
+					}
+				}catch(Exception e){
+					callDmsReleaseLockApi(jobInfo.getId());
+					logInfo.put("errmsg", e.getMessage());
+					if(phaseId!=0){
+						manApi.updateJobProgress(phaseId,3,logInfo.toString());
+					}
+					log.error(e.getMessage(), e);
+					throw new JobException(e.getMessage(),e);
 				}
 			}
-			
+			callDmsReleaseLockApi(jobInfo.getId());
 
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
-		}finally {
-			
 		}
-		
 
 	}
 	
+	private Connection getConnectByRegion(Region region,DatahubApi datahubApi,String flag) throws Exception{
+		log.info("获取大区库连接信息:"+region);
+		Integer dbId = 0;
+		if(flag.equals("daily")){
+			dbId = region.getDailyDbId();
+			log.info("获取日大区库dbId:"+dbId);
+		}else{
+			dbId = region.getMonthlyDbId();
+			log.info("获取月大区库dbId:"+dbId);
+		}
+		DbInfo dbInfo = datahubApi.getDbById(dbId);
+		log.info("获取数据库信息:"+dbInfo);
+		OracleSchema dbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+		Connection conn = dbSchema.getPoolDataSource().getConnection();
+		return conn;
+	}
+	private OracleSchema getSchemaByRegion(Region region,DatahubApi datahubApi,String flag) throws Exception{
+		log.info("获取大区库连接信息:"+region);
+		Integer dbId = 0;
+		if(flag.equals("daily")){
+			dbId = region.getDailyDbId();
+			log.info("获取日大区库dbId:"+dbId);
+		}else{
+			dbId = region.getMonthlyDbId();
+			log.info("获取月大区库dbId:"+dbId);
+		}
+		DbInfo dbInfo = datahubApi.getDbById(dbId);
+		log.info("获取数据库信息:"+dbInfo);
+		OracleSchema dbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+		return dbSchema;
+	}
+	private OracleSchema getGdbSchema(DatahubApi databhubApi) throws Exception{
+		DbInfo dbInfo = databhubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
+		log.info("获GDB母库连接信息:"+dbInfo);
+		OracleSchema dbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+		return dbSchema;
+	}
+	private Connection getGdbConnect(DatahubApi databhubApi) throws Exception{
+		DbInfo dbInfo = databhubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
+		log.info("获GDB母库连接信息:"+dbInfo);
+		OracleSchema dbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+		Connection conn = dbSchema.getPoolDataSource().getConnection();
+		return conn;
+	}
+	
 
-	private void doSync(Region region,List<Integer> filterGrids,List<Integer> grids,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi,ManApi manApi,int phaseId)
+	private void doMediumSync(Region region,List<Integer> filterGrids,List<Integer> grids,List<Integer> taskIds,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi,ManApi manApi)
 			throws Exception{
 		
 		//1. 获取最新的成功同步信息，并记录本次同步信息
@@ -210,81 +428,35 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 		log.info("获取大区库连接信息:"+region);
 		if(region==null) return ;
-		Integer dailyDbId = region.getDailyDbId();
-		DbInfo dailyDbInfo = datahubApi.getDbById(dailyDbId);
-		log.info("获取dailyDbInfo信息:"+dailyDbInfo);
-		Integer monthDbId = region.getMonthlyDbId();
-		DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
-		log.info("获取monthDbInfo信息:"+monthDbInfo);		
+
+		Connection dailyConn=getConnectByRegion(region,datahubApi,"daily");
+		OracleSchema dailyDbSchema=getSchemaByRegion(region,datahubApi,"daily");
+		Connection monthConn=getConnectByRegion(region,datahubApi,"month");
+		OracleSchema monthDbSchema=getSchemaByRegion(region,datahubApi,"month");
 		
-		OracleSchema dailyDbSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
-		Connection dailyConn = dailyDbSchema.getPoolDataSource().getConnection();
-		OracleSchema monthDbSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
-		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
 		LogMover logMover = null;
 		LogSelector logSelector = null;
-		List<Integer> allGrids =new ArrayList<Integer>();
 		
-		if(filterGrids!=null&&filterGrids.size()>0){allGrids = filterGrids;}
-		if(grids!=null&&grids.size()>0){allGrids = grids;}
-		List<Integer> meshs =grids2meshs(allGrids);
 		String tempPoiGLinkTab ="";
 		boolean isbatch = true;
 		OperationResult result=new OperationResult();
 		try{
 			
-			log.info("处理日落月和DMS的数据读写锁");
-			dealFmAndDMSLock(monthDbSchema,meshs);
-			
 			log.info("开始获取日编库履历");
 			String tempOpTable="";
 			if(grids!=null&&grids.size()>0){
-				logSelector = new Day2MonPoiLogSelector(dailyDbSchema,syncTimeStamp,grids);
+				logSelector = new Day2MonPoiLogByTaskIdSelector(dailyDbSchema,syncTimeStamp,grids,taskIds,0);
 				tempOpTable = logSelector.select();
 			}else{
-				logSelector = new Day2MonPoiLogByFilterGridsSelector(dailyDbSchema,syncTimeStamp,filterGrids);
+				logSelector = new Day2MonPoiLogByFilterGridsSelector(dailyDbSchema,syncTimeStamp,filterGrids,0);
 				tempOpTable = logSelector.select();
 			}
 			
-			log.info("开始将日库履历刷新到月库,temptable:"+tempOpTable);
-			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
-			if(0==flushResult.getTotal()){
-				log.info("没有符合条件的履历，不执行日落月，返回");
-				isbatch = false;
-			}else{
-				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
-				logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
-				LogMoveResult logMoveResult = logMover.move();
-				log.info("开始进行履历分析");
-				result = parseLog(logMoveResult, monthConn);
-				if(result.getAllObjs().size()>0){
-					log.info("开始进行深度信息打标记");
-					new DeepInfoMarker(result,monthConn).execute();
-					log.info("开始执行前批");
-					new PreBatch(result, monthConn).execute();
-					log.info("开始执行检查");
-					Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-					new Classifier(checkResult,monthConn).execute();
-					log.info("开始执行后批处理");
-					new PostBatch(result,monthConn).execute();
-					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
-					updateField(result, monthConn);
-				}
-
-				updateLogCommitStatus(dailyConn,tempOpTable);
-				
-			}
+			result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable);
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			log.info("finished:"+region.getRegionId());
-			
-			//更新任务状态
-			if(grids!=null&&grids.size()>0){
-				manApi.taskUpdateCmsProgress(phaseId,2,null);
-			}
 			
 			log.info("开始筛选需要批引导LINK的POI");
 			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
@@ -298,10 +470,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			try{
 				curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 				d2mSyncApi.updateSyncInfo(curSyncInfo);
-				//更新任务状态
-				if(grids!=null&&grids.size()>0){
-					manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
-				}
 			}catch(Exception ee){
 				log.info("回滚任务状态报错："+ee.getMessage());
 			}
@@ -313,8 +481,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			throw e;
 			
 		}finally{
-			log.info("释放加锁图幅");
-			releaseMeshLock(monthConn,meshs);
 			DbUtils.commitAndCloseQuietly(monthConn);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 			log.info("commit db");
@@ -331,6 +497,48 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 		
 	}
+	
+	private OperationResult logFlushAndBatchData(OracleSchema monthDbSchema,Connection monthConn,OracleSchema dailyDbSchema,Connection dailyConn,String tempOpTable)
+			throws Exception{
+		
+		OperationResult result=new OperationResult();
+		try{
+			
+			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
+			if(0==flushResult.getTotal()){
+				log.info("没有符合条件的履历，不执行日落月，返回");
+			}else{
+				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
+				//快线搬移履历是传进去的日大区库连接（刷库用的连接），如果出现异常，回滚日大区库连接即可；
+				LogMover logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable(),dailyConn,true);
+				LogMoveResult logMoveResult = logMover.move();
+				log.info("开始进行履历分析");
+				result = parseLog(logMoveResult, monthConn);
+				if(result.getAllObjs().size()>0){
+					log.info("开始进行深度信息打标记");
+					new DeepInfoMarker(result,monthConn).execute();
+					log.info("开始执行前批");
+					new PreBatch(result, monthConn).execute();
+					log.info("开始执行检查");
+					Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+					new Classifier(checkResult,monthConn).execute();
+					log.info("开始执行后批处理");
+					new PostBatch(result,monthConn).execute();
+					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
+					updateField(result, monthConn);
+				}
+				updateLogCommitStatus(dailyConn,tempOpTable);
+			}
+
+			return result;
+		}catch(Exception e){
+			throw e;
+		}finally{
+
+		}
+		
+	}
+
 	
 
 	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
@@ -493,16 +701,35 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 	}
 	private void releaseMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
+		if (meshs == null || meshs.size() == 0) {return;}
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
 		//获取锁
 		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE  LOCK_OWNER='GLOBAL' FOR UPDATE";
-		Statement sourceStmt = monthConn.createStatement();
 		try{
-			ResultSet rs = sourceStmt.executeQuery(sql);//获取锁
-			QueryRunner run = new QueryRunner();
-			for(int m:meshs){
-				String sqlD = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM'";
-				run.execute(monthConn, sqlD);
+			run.query(monthConn,sql,new ColumnListHandler("LOCK_STATUS"));//获取锁
+			sb.append("DELETE FROM FM_GEN2_MESHLOCK WHERE LOCK_STATUS=1 AND LOCK_OWNER='FM'");
+			
+			List<Object> values = new ArrayList<Object>();
+			
+			if (meshs.size() > 1000) {
+				Clob clob = ConnectionUtil.createClob(monthConn);
+				clob.setString(1, StringUtils.join(meshs, ","));
+				sb.append(" AND MESH_ID in (select column_value from table(clob_to_table(?))) ");
+				values.add(clob);
+			} else {
+				sb.append(" AND MESH_ID IN (" + StringUtils.join(meshs, ",") + ")");
 			}
+			if (values != null && values.size() > 0) {
+				Object[] queryValues = new Object[values.size()];
+				for (int i = 0; i < values.size(); i++) {
+					queryValues[i] = values.get(i);
+				}
+				run.update(monthConn, sb.toString(), queryValues);
+			} else {
+				run.update(monthConn, sb.toString());
+			}
+			
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			log.info("加锁图幅回滚");
@@ -514,10 +741,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 	}
 	private void getMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
-		QueryRunner run = new QueryRunner();
-		for(int m:meshs){
-			String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','"+this.getJobInfo().getId()+"')";
-			run.execute(monthConn, sql);
+		Statement stmt = monthConn.createStatement();
+		try{
+			for(int m:meshs){
+				String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','"+this.getJobInfo().getId()+"') ";
+				stmt.addBatch(sql);
+			}
+			stmt.executeBatch();
+		}catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			DbUtils.close(stmt);
 		}
 	}
 	private void hasLock(Connection monthConn,List<Integer> meshs) throws Exception {
@@ -535,7 +769,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 	}
 	
-	protected List<String> selectLogFromCloseGrids(List<Integer> grids,DatahubApi datahubApi,Region region) throws Exception{
+	protected List<Integer> selectLogGridsByTaskId(List<Integer> taskIds,DatahubApi datahubApi,Region region,int subTaskType) throws Exception{
 	
 		DbInfo dailyDbInfo = datahubApi.getDbById(region.getDailyDbId());
 		OracleSchema dailyDbSchema = new OracleSchema(
@@ -544,20 +778,20 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 		try{
 			QueryRunner queryRunner = new QueryRunner();
-			SqlClause sqlClause = getSelectLogSql(conn,grids);
+			SqlClause sqlClause = getSelectLogSql(conn,taskIds,subTaskType);
 			
-			ResultSetHandler<List<String>> rsh = new ResultSetHandler<List<String>>() {
+			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
-				public List<String> handle(ResultSet rs) throws SQLException {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
 					// TODO Auto-generated method stub
-					List<String> msgs = new ArrayList<String>();
+					List<Integer> msgs = new ArrayList<Integer>();
 					while(rs.next()){
-						msgs.add(rs.getString("GRID_ID"));
+						msgs.add(rs.getInt("GRID_ID"));
 					}
 					return msgs;
 				}
 			};
-			List<String> query = queryRunner.query(conn, sqlClause.getSql(), rsh, sqlClause.getValues().toArray());
+			List<Integer> query = queryRunner.query(conn, sqlClause.getSql(), rsh, sqlClause.getValues().toArray());
 			return query;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -592,6 +826,39 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		return sqlClause;
 	}
+	protected SqlClause getSelectLogSql(Connection conn,List<Integer> taskIds, int taskType) throws Exception{
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select distinct g.GRID_ID\r\n" + 
+				"   from log_operation   p,\r\n" + 
+				"       log_detail d,\r\n" +
+				"       log_detail_grid g,\r\n" + 
+				"       poi_edit_status s\r\n" + 
+				"   where p.op_id = d.op_id\r\n" + 
+				"    and d.row_id = g.log_row_id\r\n" + 
+				"    and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n"+ 
+				"    and p.com_sta = 0"+ 
+				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
+				"    and s.status = 3");
+		if(taskType==0&&(taskIds==null||taskIds.size()==0)){
+			sb.append(" and s.medium_task_id<>0 ");
+		}
+				 
+		List<Object> values = new ArrayList<Object> ();
+		if(taskIds!=null&&taskIds.size()>0){
+			String str=" s.medium_task_id ";
+			if(taskType==1){
+				str=" s.quick_task_id ";
+			}
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,taskIds,str);
+			if (inClause!=null){
+				sb .append(" AND "+ inClause.getSql());
+			}
+			values.addAll(inClause.getValues());
+		}
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		log.info("查询存在履历的grids:"+sqlClause.getSql());
+		return sqlClause;
+	}
 	
 	private List<Integer> grids2meshs(List<Integer> grids) throws Exception {
 		List<Integer> meshs =new ArrayList<Integer>();
@@ -615,6 +882,67 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			}
 		}
 		return grids;
+	}
+	
+	private void callDmsReleaseLockApi(long jobId) throws IOException {
+		JSONObject parameter = new JSONObject();
+		try {
+			Map<String,String> parMap=new HashMap<String,String>();
+			parameter.put("jobId", jobId);
+			parMap.put("parameter", parameter.toString());
+			ServiceInvokeUtil http =new ServiceInvokeUtil();
+			//String msUrl ="http://192.168.3.228:8086/VMWeb/springmvc/vmmanager/day2mounth/releaseLock?";
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.day2mounthReleaseLock);
+			String json=http.invoke(msUrl,parMap,100);
+			log.info("调用DMS解锁接口:"+json);
+		 } catch (Exception e) {
+			 log.debug("调用DMS解锁接口:"+e.getMessage());
+			 throw new IOException(e);
+	     } 
+	}
+	private Map<Integer,String> getDmsLock(List<Integer> meshes,long jobId,DbInfo dbInfos) throws IOException {
+		Map<Integer,String> dmsLockMeshes = new HashMap<Integer,String>();
+		if(meshes==null||meshes.size()==0){
+			return dmsLockMeshes;
+		}
+		JSONObject parameter = new JSONObject();
+		JSONObject dbInfo = new JSONObject();
+		try {
+			dbInfo.put("schemaName", dbInfos.getDbUserName());
+			dbInfo.put("ip", dbInfos.getDbServer().getIp());
+			parameter.put("jobId", jobId);
+			parameter.put("dbInfo", dbInfo);
+			parameter.put("meshIds", meshes);
+			JSONObject jsonReq = JSONObject.fromObject(callDmsGetLockApi(parameter));
+			if(jsonReq.getInt("errcode")==0){
+				if(jsonReq.get("data")!=null){
+					dmsLockMeshes =(Map<Integer,String>) jsonReq.get("data");
+				}
+				
+			}
+			log.info("DMS被锁图幅:"+dmsLockMeshes);		
+		} catch (Exception e) {
+			log.debug("调用DMS加锁接口:"+e.getMessage());
+			throw new IOException(e);
+	    } 
+		return dmsLockMeshes;
+	}
+	
+	private String callDmsGetLockApi(JSONObject parameter) throws IOException {
+		String json="";
+		try {
+			Map<String,String> parMap=new HashMap<String,String>();
+			parMap.put("parameter", parameter.toString());
+			ServiceInvokeUtil http =new ServiceInvokeUtil();
+			//String msUrl ="http://192.168.3.228:8086/VMWeb/springmvc/vmmanager/day2mounth/getLock?";
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.day2mounthGetLock);
+			json=http.invoke(msUrl,parMap,100);
+			log.info("调用DMS加锁接口:"+json);
+		 } catch (Exception e) {
+			 log.debug("调用DMS加锁接口:"+e.getMessage());
+			 throw new IOException(e);
+	     } 
+		return json;
 	}
 	
 	public static void main(String[] args) throws JobException{

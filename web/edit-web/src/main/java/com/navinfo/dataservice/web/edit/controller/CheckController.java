@@ -279,12 +279,20 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int pid = jsonReq.getInt("pid");
 			int dbId = jsonReq.getInt("dbId");
+			//row:日编  deep:深度信息
+			String checkType = jsonReq.getString("checkType");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-
+			List<String> checkRuleList=new ArrayList<String>();
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			JSONObject data = new JSONObject();// selector.poiCheckResults(pid);
-			JSONArray checkResultsArr = selector.poiCheckResultList(pid);
+			//深度信息
+			if(checkType.equals("DEEP")){
+				checkRuleList=selector.getColumnCheckRules("poi_deep");
+			}else{
+				checkRuleList=selector.loadByOperationName(checkType);
+				}
+			JSONObject data = new JSONObject();
+			JSONArray checkResultsArr = selector.poiCheckResultList(pid,checkRuleList);
 			data.put("data", checkResultsArr);
 			data.put("total", checkResultsArr.size());
 

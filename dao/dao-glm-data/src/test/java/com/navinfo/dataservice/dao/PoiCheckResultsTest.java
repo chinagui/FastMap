@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
@@ -45,7 +46,7 @@ public class PoiCheckResultsTest {
 			
 				//List<JSONObject> page =null;
 				try {
-					 JSONArray checkResultsArr = a.poiCheckResultList(507000006);
+					 JSONArray checkResultsArr = a.poiCheckResultList(507000006,new ArrayList());
 						data.put("data", checkResultsArr);
 						data.put("total", checkResultsArr.size());
 					//page =a.list(2, grids, 5, 1);

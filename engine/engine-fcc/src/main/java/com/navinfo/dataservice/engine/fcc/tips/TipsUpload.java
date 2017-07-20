@@ -239,14 +239,15 @@ public class TipsUpload {
 		loadOldTips(htab, gets);
 
 		List<Put> puts = new ArrayList<Put>();
+        List<JSONObject> solrIndexList = new ArrayList<>();
 
 		// 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
+		doInsert(puts, solrIndexList);
 
-		doInsert(puts);
-
-		doUpdate(puts);
+		doUpdate(puts, solrIndexList);
 
 		htab.put(puts);
+        solr.addTips(solrIndexList);
 
 		htab.close();
 
@@ -611,7 +612,7 @@ public class TipsUpload {
 	 *
 	 * @param puts
 	 */
-	private void doInsert(List<Put> puts) throws Exception {
+	private void doInsert(List<Put> puts, List<JSONObject> solrIndexList) throws Exception {
 		Set<Entry<String, JSONObject>> set = insertTips.entrySet();
 
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
@@ -673,11 +674,10 @@ public class TipsUpload {
 							json.getString("s_sourceType"));
 				}
 
-				TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
-
-				solr.addTips(JSONObject.fromObject(tipsIndexModel));
-
 				puts.add(put);
+
+                TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
+                solrIndexList.add(JSONObject.fromObject(tipsIndexModel));
 
 			} catch (Exception e) {
 				failed += 1;
@@ -800,7 +800,7 @@ public class TipsUpload {
 	 *
 	 * @param puts
 	 */
-	private void doUpdate(List<Put> puts) throws Exception {
+	private void doUpdate(List<Put> puts, List<JSONObject> solrIndexList) throws Exception {
 		Set<Entry<String, JSONObject>> set = updateTips.entrySet();
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
@@ -851,12 +851,10 @@ public class TipsUpload {
 				}
 
 				Put put = updatePut(rowkey, json, oldTip);
-
-				TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
-
-				solr.addTips(JSONObject.fromObject(tipsIndexModel));
-
 				puts.add(put);
+
+                TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
+                solrIndexList.add(JSONObject.fromObject(tipsIndexModel));
 
 				// 修改的需要差分
 				allNeedDiffRowkeysCodeMap.put(rowkey,

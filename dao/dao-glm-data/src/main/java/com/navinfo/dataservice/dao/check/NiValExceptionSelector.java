@@ -12,16 +12,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -29,6 +29,10 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class NiValExceptionSelector {
 
@@ -901,101 +905,6 @@ public class NiValExceptionSelector {
 	}
 
 	/**
-	 * @Title: poiCheckResultList
-	 * @Description: 根据 pid 查询 exception
-	 * @return
-	 * @throws Exception
-	 * @throws
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年5月19日
-	 */
-	public JSONArray poiCheckResultList(int pid) throws Exception {
-
-		StringBuilder sql = new StringBuilder(
-				"select q.*,"
-						+ pid
-						+ " pid from ( "
-						+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status from ni_val_exception a where  "
-						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
-						+ " and o.pid="
-						+ pid
-						+ "  "
-						+ ") "
-						+ " union all "
-						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status from ck_exception c where "
-						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
-						+ " and o.pid=" + pid + " " + " )  " + " )  q ");
-
-		sql.append("  order by q.created desc,q.md5_code desc ");
-
-		log.info("poiCheckResultList:  " + sql);
-		return new QueryRunner().query(conn, sql.toString(),
-				new ResultSetHandler<JSONArray>() {
-
-					@Override
-					public JSONArray handle(ResultSet rs) throws SQLException {
-
-						JSONArray results = new JSONArray();
-						while (rs.next()) {
-
-							JSONObject json = new JSONObject();
-
-							json.put("id", rs.getString("md5_code"));
-
-							json.put("ruleid", rs.getString("ruleid"));
-
-							// json.put("situation", rs.getString("situation"));
-
-							json.put("rank", rs.getInt("level_"));
-
-							String targets = "";
-							if (rs.getString("targets") != null
-									&& StringUtils.isNotEmpty(rs
-											.getString("targets"))) {
-								targets = rs.getString("targets");
-							}
-							json.put("targets", targets);
-
-							json.put("information", rs.getString("information"));
-
-							json.put("geometry", "(" + rs.getDouble("x") + ","
-									+ rs.getDouble("y") + ")");
-
-							json.put("create_date", rs.getString("created"));
-							json.put("update_date", rs.getString("updated"));
-
-							json.put("worker", rs.getString("worker"));
-							json.put(
-									"qa_worker",
-									rs.getString("qa_worker") == null ? "" : rs
-											.getString("qa_worker"));
-							json.put("qa_status", rs.getString("qa_status"));
-
-							JSONArray refFeaturesArr = new JSONArray();
-							// int refPoiCount = 0;
-
-							if (targets != null
-									&& StringUtils.isNotEmpty(targets)) {
-
-								String pids = targets
-										.replaceAll("[\\[\\]]", "")
-										.replaceAll("IX_POI,", "")
-										.replaceAll(";", ",");
-								refFeaturesArr = queryRefFeatures(pids,
-										rs.getInt("pid"));
-							}
-							// 查询关联poi根据pid
-							json.put("refFeatures", refFeaturesArr);
-							json.put("refCount", refFeaturesArr.size());
-
-							results.add(json);
-						}
-						return results;
-					}
-				});
-	}
-
-	/**
 	 * @Title: listPoiCheckResultList
 	 * @Description: 子任务范围内poi检查结果列表查询接口
 	 * @param params
@@ -1764,6 +1673,168 @@ public class NiValExceptionSelector {
 			e.printStackTrace();
 			return jobRuleObjs;
 		}
+	}
+	
+	/**
+	 * 根据operationName获取规则列表
+	 * @param operationName
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> loadByOperationName(String operationName) throws Exception {
+
+					try {
+						String sql="SELECT OPERATION_CODE, CHECK_ID FROM CHECK_OPERATION_PLUS WHERE OPERATION_CODE=?";
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+							pstmt = conn.prepareStatement(sql);
+							pstmt.setString(1,operationName);
+							rs = pstmt.executeQuery();
+							List<String> ruleList=new ArrayList<String>();
+							while (rs.next()) {
+								ruleList.add(rs.getString("CHECK_ID"));		
+							} 
+							return ruleList;
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.commitAndCloseQuietly(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("获取检查规则"+operationName+"失败："
+								+ e.getMessage(), e);
+					}
+				}
+
+	/**
+	 * 获取月編规则号
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getColumnCheckRules(String type) throws Exception{
+				
+		List<String> deepCheckRules = new ArrayList<String>();
+		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item='"+type+"'";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {			
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				deepCheckRules.add(resultSet.getString("work_item_id"));
+			}
+			
+			return deepCheckRules;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+	/**
+	 * @Title: poiCheckResultList，根据检查规则过滤
+	 * @Description: 根据 pid 查询 exception
+	 * @return
+	 * @throws Exception
+	 * @throws
+	 * @author add by update by jch
+	 * @date 2017年7月18日
+	 */
+	public JSONArray poiCheckResultList(int pid,List<String> ckRuleList) throws Exception {
+		String ckRules = "('";
+		ckRules += StringUtils.join(ckRuleList.toArray(), "','") + "')";
+		StringBuilder sql = new StringBuilder(
+				"select q.*,"
+						+ pid
+						+ " pid from ( "
+						+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status from ni_val_exception a where  a.ruleid in "+ckRules+" and "
+						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
+						+ " and o.pid="
+						+ pid
+						+ "  "
+						+ ") "
+						+ " union all "
+						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status from ck_exception c where c.rule_id in "+ckRules+" and "
+						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
+						+ " and o.pid=" + pid + " " + " )  " + " )  q ");
+
+		sql.append("  order by q.created desc,q.md5_code desc ");
+
+		log.info("poiCheckResultList:  " + sql);
+		return new QueryRunner().query(conn, sql.toString(),
+				new ResultSetHandler<JSONArray>() {
+
+					@Override
+					public JSONArray handle(ResultSet rs) throws SQLException {
+
+						JSONArray results = new JSONArray();
+						while (rs.next()) {
+
+							JSONObject json = new JSONObject();
+
+							json.put("id", rs.getString("md5_code"));
+
+							json.put("ruleid", rs.getString("ruleid"));
+
+							// json.put("situation", rs.getString("situation"));
+
+							json.put("rank", rs.getInt("level_"));
+
+							String targets = "";
+							if (rs.getString("targets") != null
+									&& StringUtils.isNotEmpty(rs
+											.getString("targets"))) {
+								targets = rs.getString("targets");
+							}
+							json.put("targets", targets);
+
+							json.put("information", rs.getString("information"));
+
+							json.put("geometry", "(" + rs.getDouble("x") + ","
+									+ rs.getDouble("y") + ")");
+
+							json.put("create_date", rs.getString("created"));
+							json.put("update_date", rs.getString("updated"));
+
+							json.put("worker", rs.getString("worker"));
+							json.put(
+									"qa_worker",
+									rs.getString("qa_worker") == null ? "" : rs
+											.getString("qa_worker"));
+							json.put("qa_status", rs.getString("qa_status"));
+
+							JSONArray refFeaturesArr = new JSONArray();
+							// int refPoiCount = 0;
+
+							if (targets != null
+									&& StringUtils.isNotEmpty(targets)) {
+
+								String pids = targets
+										.replaceAll("[\\[\\]]", "")
+										.replaceAll("IX_POI,", "")
+										.replaceAll(";", ",");
+								refFeaturesArr = queryRefFeatures(pids,
+										rs.getInt("pid"));
+							}
+							// 查询关联poi根据pid
+							json.put("refFeatures", refFeaturesArr);
+							json.put("refCount", refFeaturesArr.size());
+
+							results.add(json);
+						}
+						return results;
+					}
+				});
 	}
 	
 }

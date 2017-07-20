@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-02-25
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////公交/////////////////////////////////////////////////////////-->
+    <feature name="PT_FEATURE">
+    
+    
+    	<!--  显示坐标、引导坐标字段值在采样框中，并且引导link在转出道路数据中存在的记录。 -->
+        <step value="13">
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_PT_POI
+                          (PID)
+                          (SELECT PID FROM PT_POI
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                        ]]></sql>
+
+
+        </step>
+        <!--根据引导link，删除引导link未导出的pt_poi-->
+		<step value="16">
+            <sql condition="area">
+                <![CDATA[
+                        DELETE FROM TEMP_PT_POI T
+					 WHERE T.PID IN
+					       (SELECT PID
+					          FROM PT_POI P
+					         WHERE P.LINK_PID NOT IN (SELECT PID FROM TEMP_FILTER_RD_LINK));
+
+                        ]]></sql>
+
+
+        </step>
+		<step value="19">
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_PLATFORM
+                           (PID)
+                           (SELECT DISTINCT P.PID
+                              FROM PT_PLATFORM P,TEMP_PT_POI T
+                             WHERE P.POI_PID=T.PID);
+                        ]]></sql>
+
+
+
+        </step>
+        <step value="22">
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_TRANSFER
+                           (PID)
+                           (SELECT P.TRANSFER_ID
+                              FROM PT_TRANSFER P  WHERE P.TRANSFER_TYPE=0 AND P.POI_FIR IN (SELECT PID FROM TEMP_PT_POI T)
+                               AND P.POI_SEC IN (SELECT PID FROM TEMP_PT_POI T));
+                        ]]></sql>
+
+			<sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_TRANSFER
+                           (PID)
+                           (SELECT P.TRANSFER_ID
+                              FROM PT_TRANSFER P  WHERE P.TRANSFER_TYPE=1 AND P.PLATFORM_FIR IN (SELECT PID FROM TEMP_PT_PLATFORM T)
+                               AND P.PLATFORM_SEC IN (SELECT PID FROM TEMP_PT_PLATFORM T));
+                        ]]></sql>
+                        
+          <!-- TEMP_PT_STRAND -->         
+          <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_STRAND
+                           (PID)
+                           (SELECT DISTINCT P.STRAND_PID
+                              FROM PT_STRAND_PLATFORM P,TEMP_PT_PLATFORM T WHERE P.PLATFORM_PID=T.PID );
+                        ]]></sql>              
+
+
+        </step>
+        <step value="25">
+            <sql condition="area">
+                <![CDATA[
+                        DELETE FROM TEMP_PT_TRANSFER A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_PT_TRANSFER B WHERE A.PID = B.PID);
+                        ]]></sql>
+             <!-- TEMP_PT_LINE -->
+             <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_LINE
+                           (PID)
+                           (SELECT DISTINCT P.LINE_ID
+                              FROM TEMP_PT_STRAND T,PT_STRAND P WHERE P.PID=T.PID  );
+                        ]]></sql>                   
+
+        </step>
+        <step value="28">
+             <!-- TEMP_PT_SYSTEM -->
+             <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_SYSTEM
+                           (PID)
+                           (SELECT DISTINCT P.SYSTEM_ID
+                              FROM TEMP_PT_LINE T,PT_LINE P WHERE P.PID=T.PID  );
+                        ]]></sql>                   
+
+        </step>
+		<step value="31">
+             <!-- TEMP_PT_COMPANY -->
+             <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_COMPANY
+                           (PID)
+                           (SELECT DISTINCT P.COMPANY_ID
+                              FROM TEMP_PT_SYSTEM T,PT_SYSTEM P WHERE P.SYSTEM_ID=T.PID  );
+                        ]]></sql>                   
+
+        </step>
+        <step value="100">
+            <!--//////////////////////////////////////////公交POI////////////////////////////////////////////////////////////-->
+            <!--PT_POI-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI P,  TEMP_PT_POI R
+                         WHERE P.PID = R.PID;
+                         ]]></sql>
+
+            <!--PT_POI_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI_NAME P,  TEMP_PT_POI R
+                         WHERE P.POI_PID = R.PID;
+                         ]]></sql>
+            <!--PT_POI_NAME_TONE*-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI_NAME_TONE P,PT_POI_NAME N,  TEMP_PT_POI R
+                         WHERE N.POI_PID = R.PID
+                         AND P.NAME_ID=N.NAME_ID;
+                         ]]></sql>
+            <!--PT_POI_FLAG-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI_FLAG P,  TEMP_PT_POI R
+                         WHERE P.POI_PID = R.PID;
+                         ]]></sql>
+            <!--PT_POI_PARENT-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI_PARENT P,  TEMP_PT_POI R
+                         WHERE P.PARENT_POI_PID = R.PID;
+                         ]]></sql>
+
+
+            <!--PT_POI_CHILDREN-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_POI_CHILDREN P,PT_POI_PARENT PA,TEMP_PT_POI R
+                         WHERE PA.PARENT_POI_PID = R.PID
+                         AND P.GROUP_ID=PA.GROUP_ID;
+                         ]]></sql>
+
+            <!--//////////////////////////////////////////站台////////////////////////////////////////////////////////////-->
+            <!--PT_PLATFORM-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_PLATFORM P,
+                          TEMP_PT_PLATFORM R
+                         WHERE P.PID = R.PID;
+                         ]]></sql>
+            <!--PT_PLATFORM_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_PLATFORM_NAME P,
+                          TEMP_PT_PLATFORM T
+                         WHERE P.PID=T.PID;
+                         ]]></sql>
+
+            <!--PT_TRANSFER-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM PT_TRANSFER P,TEMP_PT_TRANSFER T  WHERE P.TRANSFER_ID =T.PID;
+                         ]]></sql>
+
+            <!--PT_PLATFORM_ACCESS-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_PLATFORM_ACCESS P,
+                          TEMP_PT_PLATFORM T
+                         WHERE P.PLATFORM_ID=T.PID;
+                         ]]></sql>
+
+            <!--//////////////////////////////////////////公交线路////////////////////////////////////////////////////////////-->
+            <!--PT_LINE-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_LINE P,TEMP_PT_LINE T
+                         WHERE  P.PID=T.PID;
+                         ]]></sql>
+            <!--PT_LINE_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_LINE_NAME P,TEMP_PT_LINE T
+                         WHERE  P.PID=T.PID;
+                         ]]></sql>
+            <!--PT_STRAND-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_STRAND P,TEMP_PT_STRAND T
+                         WHERE  P.PID=T.PID;
+                         ]]></sql>
+
+            <!--PT_STRAND_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_STRAND_NAME P,TEMP_PT_STRAND T
+                         WHERE  P.PID=T.PID;
+                         ]]></sql>
+
+            <!--PT_STRAND_PLATFORM-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_STRAND_PLATFORM P,
+                          TEMP_PT_STRAND T
+                         WHERE  P.STRAND_PID=T.PID
+                         ]]></sql>
+
+            <!--PT_STRAND_SCHEDULE-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_STRAND_SCHEDULE P,TEMP_PT_STRAND T
+                         WHERE  P.STRAND_PID=t.PID;
+                         ]]></sql>
+
+            <!--PT_RUNTIME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_RUNTIME P,TEMP_PT_STRAND T
+                         WHERE  P.STRAND_PID=t.PID;
+                         ]]></sql>
+            <!--//////////////////////////////////////////公交公司和公交系统////////////////////////////////////////////////////////////-->
+            <!--PT_COMPANY-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_COMPANY P,TEMP_PT_COMPANY T
+                         WHERE P.COMPANY_ID = T.PID ;
+                         ]]></sql>
+
+            <!--PT_SYSTEM-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_SYSTEM P,TEMP_PT_SYSTEM T WHERE P.SYSTEM_ID =T.PID;
+                         ]]></sql>
+            <!--//////////////////////////////////////////公交深度信息////////////////////////////////////////////////////////////-->
+            <!--PT_ETA_COMPANY-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_ETA_COMPANY P,TEMP_PT_COMPANY T
+                         WHERE  P.COMPANY_ID=T.PID;
+                         ]]></sql>
+            <!--PT_ETA_SYSTEM-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_ETA_SYSTEM P,TEMP_PT_SYSTEM T
+                         WHERE P.SYSTEM_ID=T.PID;
+                         ]]></sql>
+
+            <!--PT_ETA_ACCESS-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_ETA_ACCESS P,  TEMP_PT_POI R
+                         WHERE P.POI_PID = R.PID;
+                         ]]></sql>
+
+            <!--PT_ETA_STOP-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_ETA_STOP P,  TEMP_PT_POI R
+                         WHERE P.POI_PID = R.PID;
+                         ]]></sql>
+            <!--PT_ETA_LINE-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM PT_ETA_LINE P,TEMP_PT_LINE T
+                         WHERE  P.PID=T.PID;
+                         ]]></sql>
+
+
+        </step>
+    </feature>
+</sqls>

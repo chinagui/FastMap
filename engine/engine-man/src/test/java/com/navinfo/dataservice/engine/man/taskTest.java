@@ -123,7 +123,7 @@ public class taskTest extends InitApplication{
 	public void testPushMsg() throws Exception
 	{
 		JSONArray taskIds=new JSONArray();
-		taskIds.add(809);
+		taskIds.add(78);
 		String message = TaskService.getInstance().taskPushMsg(0, taskIds);
 		System.out.println(message);
 	}

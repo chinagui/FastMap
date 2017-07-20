@@ -63,7 +63,9 @@ public class Day2MonthPhase extends JobPhase {
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             if (jobProgressOperator != null && jobProgress != null) {
-                jobProgress.setOutParameter(ex.getMessage());
+                JSONObject out = new JSONObject();
+                out.put("errmsg",ex.getMessage());
+                jobProgress.setOutParameter(out.toString());
                 jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;

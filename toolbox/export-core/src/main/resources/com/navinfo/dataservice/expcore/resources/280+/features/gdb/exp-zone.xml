@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////Zone/////////////////////////////////////////////////////////-->
+    <feature name="ZONE_FEATURE">
+        <!--
+            ZONE提取原则:
+
+        -->
+
+        <step value="7">
+            <!--提取图幅内link-->
+            <sql condition="mesh"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_ZONE_LINK
+                    (PID)
+                    (SELECT P.LINK_PID
+                      FROM ZONE_LINK_MESH P
+                     WHERE  P.MESH_ID [mesh]);
+                     ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_ZONE_LINK
+                    (PID)
+                    (SELECT  P.LINK_PID
+                      FROM ZONE_LINK P
+                     WHERE SDO_ANYINTERACT(P.GEOMETRY,[area]) = 'TRUE');
+                     ]]></sql>
+
+            <!--提取图廓点-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_ZONE_NODE
+                       (PID)
+                       (SELECT NODE_PID
+                          FROM (SELECT COUNT(1), N.NODE_PID
+                                  FROM ZONE_NODE_MESH M,
+                                       (SELECT NODE_PID FROM ZONE_NODE_MESH WHERE MESH_ID [mesh]) N
+                                 WHERE N.NODE_PID = M.NODE_PID
+                                 GROUP BY N.NODE_PID
+                                HAVING COUNT(1) > 1)
+                       );
+                     ]]></sql>
+
+
+        </step>
+
+        <step value="10">
+            <!--根据图框线提取face-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_ZONE_FACE
+                           (PID)
+                           (
+                            SELECT DISTINCT FT.FACE_PID
+                              FROM (SELECT COUNT(1), N.PID
+                                      FROM ZONE_LINK_MESH M, TEMP_ZONE_LINK N
+                                     WHERE N.PID = M.LINK_PID
+                                     GROUP BY N.PID
+                                    HAVING COUNT(1) > 1) T,
+                                   ZONE_FACE_TOPO FT
+                             WHERE T.PID = FT.LINK_PID
+                           );
+                         ]]></sql>
+
+
+        </step>
+        <step value="13">
+            <!--根据图框线提取的face补link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_ZONE_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_ZONE_FACE P, ZONE_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+            <!--根据图廓点提取link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_ZONE_LINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM ZONE_LINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID FROM TEMP_ZONE_NODE)
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM ZONE_LINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID FROM TEMP_ZONE_NODE)
+                        );
+                    ]]></sql>
+
+        </step>
+        <step value="16">
+            <!--按图幅提取FACE信息-->
+            <!--提取图幅内的face-->
+            <sql condition="mesh"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_ZONE_FACE
+                          (PID)
+                          (SELECT P.FACE_PID FROM ZONE_FACE P WHERE P.MESH_ID [mesh]);
+                        ]]></sql>
+            <sql condition="area"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_ZONE_FACE
+                          (PID)
+                          (SELECT P.FACE_PID FROM ZONE_FACE P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE');
+                        ]]></sql>
+        </step>
+        <step value="19">
+            <!--face去重复-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_ZONE_FACE A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_ZONE_FACE B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+        </step>
+        <step value="22">
+            <!--FACE 关联 ZONE_FEATURE 并去重-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AD_ADMIN_RG
+                          (PID)
+                          (SELECT DISTINCT R.REGION_ID
+                              FROM ZONE_FACE R,TEMP_ZONE_FACE  T
+                             WHERE R.FACE_PID= T.PID
+                             AND R.REGION_ID!=0 AND R.REGION_ID!=-1);
+                        ]]></sql>
+
+
+
+            <!--根据face补link-->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_ZONE_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_ZONE_FACE P, ZONE_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+
+        </step>
+
+        <step value="25">
+            <!--LINK去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_ZONE_LINK A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_ZONE_LINK B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <!--提取node-->
+        <step value="28">
+            <!--查询LINK的两端端点并去重-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_ZONE_NODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM ZONE_LINK P, TEMP_ZONE_LINK T WHERE P.LINK_PID = T.PID
+                            UNION ALL
+                           SELECT P.E_NODE_PID FROM ZONE_LINK P, TEMP_ZONE_LINK T WHERE P.LINK_PID = T.PID);
+                        ]]></sql>
+        </step>
+        <step value="31">
+            <!--NODE去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_ZONE_NODE A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_ZONE_NODE B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+
+
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.ZONE_FACE
+                2.ZONE_FACE_TOPO
+                3.ZONE_LINK
+                4.ZONE_LINK_MESH
+                5.ZONE_NODE
+                6.ZONE_NODE_MESH
+            -->
+            <!--ZONE_FACE-->
+            <sql><![CDATA[SELECT P.* FROM ZONE_FACE P,TEMP_ZONE_FACE T WHERE P.FACE_PID=T.PID; ]]></sql>
+            <!--ZONE_FACE_TOPO-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM ZONE_FACE_TOPO P, TEMP_ZONE_FACE R
+                         WHERE P.FACE_PID = R.PID
+                        ]]></sql>
+            <!--ZONE_LINK-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM ZONE_LINK P, TEMP_ZONE_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+
+            <!--ZONE_LINK-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM ZONE_LINK_KIND P, TEMP_ZONE_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+
+            <!--ZONE_LINK_MESH-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM ZONE_LINK_MESH P, TEMP_ZONE_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+            <!--ZONE_NODE-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM ZONE_NODE P, TEMP_ZONE_NODE R
+                         WHERE P.NODE_PID = R.PID;
+                        ]]></sql>
+            <!--ZONE_NODE_MESH-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM ZONE_NODE_MESH P, TEMP_ZONE_NODE R
+                         WHERE P.NODE_PID = R.PID;
+                        ]]></sql>
+
+
+        </step>
+
+
+        <step value="101">
+            <!--
+                根据图幅号直接提取数据表：
+                1.ZONE_FACE
+                2.ZONE_FACE_TOPO
+                3.ZONE_LINK
+                4.ZONE_LINK_MESH
+                5.ZONE_NODE
+                6.ZONE_NODE_MESH
+            -->
+            <!--ZONE_FACE-->
+            <sql><![CDATA[DELETE FROM ZONE_FACE P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_ZONE_FACE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_FACE_TOPO P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_ZONE_FACE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ZONE_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_LINK_KIND P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ZONE_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_LINK_MESH P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ZONE_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_NODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_ZONE_NODE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM ZONE_NODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_ZONE_NODE T ); ]]></sql>
+
+        </step>
+
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_ZONE_FACE
+					  SELECT FACE_PID
+					    FROM ZONE_FACE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM ZONE_FACE  B WHERE A.FACE_PID = B.FACE_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_ZONE_LINK
+					  SELECT LINK_PID
+					    FROM ZONE_LINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM ZONE_LINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_ZONE_NODE
+					  SELECT NODE_PID
+					    FROM ZONE_NODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM ZONE_NODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+        </step>
+
+    </feature>
+</sqls>

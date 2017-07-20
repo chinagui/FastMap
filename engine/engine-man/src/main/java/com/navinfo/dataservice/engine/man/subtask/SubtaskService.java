@@ -283,18 +283,16 @@ public class SubtaskService {
 	 * @throws ServiceException 
 	 */
 	public int createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
-		try {
-			// 获取subtaskId
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
-
-			bean.setSubtaskId(subtaskId);
+		try {			
 			//默认subtask状态为草稿2
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
 			}
 			//情报项目为空时，需要后台自动创建名称
 			bean=autoInforName(conn,bean);
-			
+			// 获取subtaskId
+			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
+			bean.setSubtaskId(subtaskId);
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
 			
@@ -711,8 +709,10 @@ public class SubtaskService {
 			};
 			log.info("queryAdminIdBySubtaskS sql:" + sb.toString());
 			Subtask subtask = run.query(conn, selectSql,rsHandler);
-			Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtask.getSubtaskId());
-			subtask.setGridIds(gridIds);
+			if(subtask!=null&&subtask.getSubtaskId()!=null){
+				Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtask.getSubtaskId());
+				subtask.setGridIds(gridIds);
+			}
 			return subtask;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

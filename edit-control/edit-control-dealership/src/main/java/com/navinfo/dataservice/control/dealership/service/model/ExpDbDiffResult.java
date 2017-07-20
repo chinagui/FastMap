@@ -95,12 +95,22 @@ public class ExpDbDiffResult {
 	private String  poi5Tel;
 	private String  poi5PostCode;
 	private String  poi5Diff;
+	
+	//代理店 - 表库差分结果导出原则变更(6882)
+	private String cfmPoiNum;
+	private String cfmPoiNumName;
+	private String cfmPoiNumAliasName;
+	private String cfmPoiNumKindCode;
+	private String cfmPoiNumChain;
+	private String cfmPoiNumAddress;
+	private String cfmPoiNumTel;
+	private String cfmPoiNumPostCode;
+	private String cfmPoiNumDiff;
+	private String cfmIsAdopted;
 
 	private String  similarity;
 	private String  dealCfmDate;
 	private int  regionId;
-
-
 
 	
 	
@@ -1565,6 +1575,186 @@ public class ExpDbDiffResult {
 
 	public void setRegionId(int regionId) {
 		this.regionId = regionId;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNum() {
+		return cfmPoiNum;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNum(String cfmPoiNum) {
+		this.cfmPoiNum = cfmPoiNum;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumName() {
+		return cfmPoiNumName;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumName(String cfmPoiNumName) {
+		this.cfmPoiNumName = cfmPoiNumName;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumAliasName() {
+		return cfmPoiNumAliasName;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumAliasName(String cfmPoiNumAliasName) {
+		this.cfmPoiNumAliasName = cfmPoiNumAliasName;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumKindCode() {
+		return cfmPoiNumKindCode;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumKindCode(String cfmPoiNumKindCode) {
+		this.cfmPoiNumKindCode = cfmPoiNumKindCode;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumChain() {
+		return cfmPoiNumChain;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumChain(String cfmPoiNumChain) {
+		this.cfmPoiNumChain = cfmPoiNumChain;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumAddress() {
+		return cfmPoiNumAddress;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumAddress(String cfmPoiNumAddress) {
+		this.cfmPoiNumAddress = cfmPoiNumAddress;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumTel() {
+		return cfmPoiNumTel;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumTel(String cfmPoiNumTel) {
+		this.cfmPoiNumTel = cfmPoiNumTel;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumPostCode() {
+		return cfmPoiNumPostCode;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumPostCode(String cfmPoiNumPostCode) {
+		this.cfmPoiNumPostCode = cfmPoiNumPostCode;
+	}
+
+
+
+
+
+
+	public String getCfmPoiNumDiff() {
+		return cfmPoiNumDiff;
+	}
+
+
+
+
+
+
+	public void setCfmPoiNumDiff(String cfmPoiNumDiff) {
+		this.cfmPoiNumDiff = cfmPoiNumDiff;
+	}
+
+
+
+
+
+
+	public String getCfmIsAdopted() {
+		return cfmIsAdopted;
+	}
+
+
+
+
+
+
+	public void setCfmIsAdopted(String cfmIsAdopted) {
+		this.cfmIsAdopted = cfmIsAdopted;
 	}
 	
 }

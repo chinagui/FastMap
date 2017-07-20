@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-08-29
+-->
+<sqls>
+
+    <!--索引：文字表-->
+    <feature name="IX_ANNOTATION">
+        <!--
+            提取原则：
+            1.按图幅提取
+        -->
+        <step value="100">
+            <!--IX_ANNOTATION-->
+            <sql><![CDATA[SELECT P.* FROM IX_ANNOTATION_100W P;]]></sql>
+
+            <!--IX_ANNOTATION_NAME-->
+            <sql condition="mesh"><![CDATA[
+                         SELECT P.*
+                           FROM IX_ANNOTATION_NAME_100W P;
+                         ]]></sql>
+
+
+        </step>
+
+    </feature>
+
+</sqls>

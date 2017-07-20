@@ -196,12 +196,13 @@ public class JobOperator {
                     json.put("phaseId", rs.getLong("phase_id"));
                     json.put("status", rs.getInt("status"));
                     json.put("message", rs.getString("out_parameter"));
+                    json.put("lot", rs.getInt("item_id"));
                     return json;
                 }
                 return null;
             }
         };
-        String sql = "select jp.phase_id,jp.status,jp.out_parameter from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and jp.phase=1 and j.latest=1 and jr.item_type=4 and j.type=2 order by phase_id desc";
+        String sql = "select jp.phase_id,jp.status,jp.out_parameter,jr.item_id from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and jp.phase=1 and j.latest=1 and jr.item_type=4 and j.type=2 order by phase_id desc";
         return run.query(conn, sql, resultSetHandler);
     }
 }

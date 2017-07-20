@@ -933,10 +933,7 @@ public class ProgramService {
 					+ "         0 STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS,"
-					+ "         1 OPEN_TASK,"
-					+ "         -1 TIPS2MARK,"
-					+ "         -1 DAY2MONTH,"
+					+ "         C.PLAN_STATUS"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS = 0"
 					+ "  UNION ALL"
@@ -947,14 +944,7 @@ public class ProgramService {
 					+ "         P.STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS,"
-					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
-					+ "       NVL((SELECT J.STATUS"
-					+ "            FROM JOB_RELATION JR,JOB J"
-					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
-					+ "       NVL((SELECT J.STATUS"
-					+ "            FROM JOB_RELATION JR,JOB J"
-					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
+					+ "         C.PLAN_STATUS"
 					+ "    FROM PROGRAM P, INFOR C"
 					+ "   WHERE P.INFOR_ID = C.INFOR_ID"
 					+ "     AND P.LATEST = 1"
@@ -1003,7 +993,6 @@ public class ProgramService {
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-					map.put("jobs", getJobArray(rs));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}

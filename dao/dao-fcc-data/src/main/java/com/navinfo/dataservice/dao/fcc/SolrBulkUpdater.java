@@ -35,45 +35,69 @@ public class SolrBulkUpdater {
 	public void addTips(JSONObject json) throws JSONException,
 			SolrServerException, IOException {
 
-		SolrInputDocument doc = new SolrInputDocument();
+        SolrInputDocument doc = new SolrInputDocument();
 
-		doc.addField("id", json.getString("id"));
+        doc.addField("id", json.getString("id"));
 
-		doc.addField("wkt", json.getString("wkt"));
+        doc.addField("wkt", json.getString("wkt"));
 
-		doc.addField("stage", json.getInt("stage"));
-		
-		doc.addField("t_operateDate", json.getString("t_operateDate"));
+        //这个主要是g_location:目前只用于tips的下载和渲染
+        doc.addField("wktLocation", json.getString("wktLocation"));
 
-		doc.addField("t_date", json.getString("t_date"));
+        doc.addField("stage", json.getInt("stage"));
 
-		doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
+        //doc.addField("t_operateDate", json.getString("t_operateDate"));
 
-		doc.addField("t_command", json.getInt("t_command"));
+        //doc.addField("t_date", json.getString("t_date"));
 
-		doc.addField("handler", json.getInt("handler"));
-		
-		doc.addField("t_cStatus", json.getInt("t_cStatus"));
-		
-		doc.addField("t_dStatus", json.getInt("t_dStatus"));
-		
-		doc.addField("t_mStatus", json.getInt("t_mStatus"));
-		
-		doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
+        //doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
 
-		doc.addField("s_sourceType", json.getString("s_sourceType"));
+        //doc.addField("t_command", json.getInt("t_command"));
 
-		doc.addField("g_location", json.getString("g_location"));
+        doc.addField("handler", json.getInt("handler"));
 
-		doc.addField("g_guide", json.getString("g_guide"));
+        //doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
 
-		doc.addField("deep", json.getString("deep"));
-		
-		doc.addField("feedback", json.getString("feedback"));
-		
-		doc.addField("s_reliability", json.getInt("s_reliability"));
-		
-		client.add(doc);
+        doc.addField("s_sourceType", json.getString("s_sourceType"));
+
+        //doc.addField("g_location", json.getString("g_location"));
+
+        //doc.addField("g_guide", json.getString("g_guide"));
+
+        //doc.addField("deep", json.getString("deep"));
+
+        //doc.addField("feedback", json.getString("feedback"));
+
+        //doc.addField("s_reliability", json.getInt("s_reliability"));
+
+        doc.addField("t_tipStatus", json.getInt("t_tipStatus"));
+        doc.addField("t_dEditStatus", json.getInt("t_dEditStatus"));
+        //doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
+        //doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
+        //doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
+
+//        if (json.containsKey("tipdiff")) {
+//
+//            doc.addField("tipdiff", json.getString("tipdiff"));
+//        }
+
+        doc.addField("s_qTaskId", json.getInt("s_qTaskId"));
+
+        doc.addField("s_mTaskId", json.getInt("s_mTaskId"));
+
+        doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
+
+//        if(json.containsKey("s_project") && StringUtils.isNotEmpty(json.getString("s_project"))) {
+//            doc.addField("s_project", json.getString("s_project"));
+//        }
+
+        doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
+
+        //doc.addField("relate_links", json.getString("relate_links"));
+
+        //doc.addField("relate_nodes", json.getString("relate_nodes"));
+
+        client.add(doc);
 	}
 	
 	public void commit() throws SolrServerException, IOException{

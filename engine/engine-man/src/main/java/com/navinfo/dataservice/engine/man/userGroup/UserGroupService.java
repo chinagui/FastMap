@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -549,6 +551,49 @@ public class UserGroupService {
 			throw new ServiceException("查询组名失败，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public UserGroup getGroupNameByGroupId(Connection conn,long groupId) throws ServiceException{
+		try {
+			Set<Long> userSet=new HashSet<Long>();
+			userSet.add(groupId);
+			Map<Long, UserGroup> returnMap = getGroupByGroupIds(conn, userSet);
+			if(returnMap.containsKey(groupId)){return returnMap.get(groupId);}
+			return null;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询组名失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	public Map<Long, UserGroup> getGroupByGroupIds(Connection conn,Set<Long> groupIdSet) throws ServiceException{
+		try {
+			QueryRunner run = new QueryRunner();
+			// 查询组名
+			String querySql = "select g.group_id,g.group_name from user_group g where g.group_id in " + groupIdSet.toString().replace("[", "(").replace("]", ")");
+
+			ResultSetHandler<Map<Long, UserGroup>> rsh = new ResultSetHandler<Map<Long, UserGroup>>() {
+				@Override
+				public Map<Long, UserGroup> handle(ResultSet rs) throws SQLException {
+					Map<Long, UserGroup> groups=new HashMap<Long, UserGroup>();
+					while(rs.next()){
+						UserGroup group=new UserGroup();
+						group.setGroupName(rs.getString("group_name"));
+						group.setGroupId(rs.getInt("group_id"));
+						groups.put(rs.getLong("group_id"), group);
+					}
+					return groups;
+				}
+			};
+			return run.query(conn, querySql, rsh);
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询组名失败，原因为:" + e.getMessage(), e);
 		}
 	}
 	

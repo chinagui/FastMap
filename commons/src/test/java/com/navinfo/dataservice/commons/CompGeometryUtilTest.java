@@ -104,4 +104,19 @@ public class CompGeometryUtilTest{
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void intersect_004(){
+		try{
+			Geometry p = JtsGeometryFactory.read("POLYGON((116.38559 39.92893,116.30559 39.9867,116.43661 39.9867,116.43661 39.92893,116.38559 39.92893))");
+
+			Geometry l = JtsGeometryFactory.read("LINESTRING (116.28432 39.93663,116.3577 39.9766, 116.57634 39.93663)");
+			Geometry r = p.intersection(l);
+			System.out.println(r.getGeometryType());
+
+			System.out.println(r.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

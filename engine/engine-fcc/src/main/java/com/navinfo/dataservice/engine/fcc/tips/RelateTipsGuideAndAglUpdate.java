@@ -75,7 +75,7 @@ public class RelateTipsGuideAndAglUpdate {
         case "1101":// 13. 点限速 f.id  g_location到f.id的垂足
         case "1706"://27.ADAS打点   g_location到f.id
         case "1702":// 24. 铁路道口  g_location到f.id
-        case "2101":// 26.删除道路标记 null
+        case "2101":// 26.删除道路标记f.id
             return updateSimpleFPointTips();
         	
         	

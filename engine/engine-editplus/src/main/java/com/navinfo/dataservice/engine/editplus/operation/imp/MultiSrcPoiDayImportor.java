@@ -23,7 +23,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -687,7 +686,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//修改履历
 				String log = null;
-				if(!JSONUtils.isNull(jo.get("log"))){
+				if(!JSONUtils.isNull(jo.get("log")) && StringUtils.isNotEmpty(jo.getString("log")) 
+						&& (jo.getString("log").contains("改名称") || jo.getString("log").contains("改分类") 
+								|| jo.getString("log").contains("改电话") || jo.getString("log").contains("改地址") 
+								|| jo.getString("log").contains("改邮编") || jo.getString("log").contains("改风味类型") 
+								|| jo.getString("log").contains("改父子关系")  || jo.getString("log").contains("改品牌") 
+								|| jo.getString("log").contains("改24小时") || jo.getString("log").contains("改星级") 
+								|| jo.getString("log").contains("改内部POI"))){
 					log = jo.getString("log");
 				}else{
 					throw new Exception("修改履历log字段名不存在");

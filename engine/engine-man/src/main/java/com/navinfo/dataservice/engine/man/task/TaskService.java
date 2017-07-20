@@ -29,6 +29,7 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -1256,12 +1257,18 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
+//			sb.append("                      NVL((SELECT J.STATUS ");
+//			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
+//					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
+			
 			sb.append("                      nvl((select tpt.status"
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
+			
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
+					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1295,6 +1302,7 @@ public class TaskService {
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
+			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("	                          -1 job_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
@@ -1337,6 +1345,7 @@ public class TaskService {
 					+ "          from (select * from task_progress tp order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
+			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
@@ -2813,6 +2822,23 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return getCollectTaskIdsByTaskId(conn,taskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdsByTaskId(Connection conn,int taskId) throws ServiceException {
+		try {
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT TT.TASK_ID"
@@ -2823,8 +2849,7 @@ public class TaskService {
 					+ "   AND T.TASK_ID = " + taskId;
 			
 			log.info("getCollectTaskIdsByTaskId sql :" + sql);
-			
-			
+						
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
 				public Set<Integer> handle(ResultSet rs) throws SQLException {
 					Set<Integer> result = new HashSet<Integer>();
@@ -2840,9 +2865,7 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 
 	/**根据任务id关闭日落月开关
@@ -3898,12 +3921,11 @@ public class TaskService {
 			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
-			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
-			if(!wktMap.containsKey("originGeo") || StringUtils.isBlank(wktMap.get("originGeo").toString())){
+			Block block = BlockService.getInstance().queryByBlockId(con,task.getBlockId());
+			if(block.getOriginGeo()==null || block.getOriginGeo().isEmpty()){
 				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
 			}
-			String wktJson = wktMap.get("originGeo").toString();
-			String wkt = Geojson.geojson2Wkt(wktJson);
+			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
@@ -3987,19 +4009,10 @@ public class TaskService {
 	 * 
 	 * */
 	public List<Integer> queryImportantPid() throws SQLException{
-		Connection conn = null;
-		try{
-			//通过api调用
-			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<Integer> pids = api.queryImportantPid();
-			return pids;
-		}catch(Exception e){
-			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
-			throw e;
-		}finally{
-			DbUtils.closeQuietly(conn);
-		}
+		//通过api调用
+		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		List<Integer> pids = api.queryImportantPid();
+		return pids;
 	}
 	
 //	/**

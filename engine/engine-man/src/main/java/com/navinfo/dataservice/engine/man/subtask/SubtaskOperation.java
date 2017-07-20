@@ -1978,12 +1978,12 @@ public class SubtaskOperation {
 			//收信人列表
 			List<UserInfo> receiverList = new ArrayList<UserInfo>();
 			if(subtask.getExeUserId()!=0){
-				UserInfo receiver = UserInfoService.getInstance().getUserInfoByUserId(subtask.getExeUserId());
+				UserInfo receiver =  UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
 				receiverList.add(receiver);
 			}else if(subtask.getExeGroupId()!=0){
 				UserGroup bean = new UserGroup();
 				bean.setGroupId(subtask.getExeGroupId());
-				receiverList = UserInfoService.getInstance().list(bean);
+				receiverList = UserInfoService.getInstance().list(conn,bean);
 			}
 			if(receiverList==null||receiverList.size()==0){return;}
 			UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, userId);

@@ -696,19 +696,6 @@ public class SubtaskService {
 							e1.printStackTrace();
 						}
 						
-						try {
-							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
-//							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
-//							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
-//								gridIdMap.put(entry.getKey().toString(), entry.getValue());
-//							}
-//							subtask.setGridIds(gridIdMap);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						if (2 == rs.getInt("STAGE")) {
 							//月编子任务
@@ -723,7 +710,10 @@ public class SubtaskService {
 				}	
 			};
 			log.info("queryAdminIdBySubtaskS sql:" + sb.toString());
-			return run.query(conn, selectSql,rsHandler);			
+			Subtask subtask = run.query(conn, selectSql,rsHandler);
+			Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtask.getSubtaskId());
+			subtask.setGridIds(gridIds);
+			return subtask;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -864,51 +854,15 @@ public class SubtaskService {
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
 						int exeGroupId = rs.getInt("EXE_GROUP_ID");
-						if(exeUserId!=0){
-							//获取作业员名称
-							try {
-								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
-								subtask.put("exeUserId",exeUserId);
-								subtask.put("executerId",exeUserId);
-								subtask.put("executer",userInfo.getUserRealName());
-								subtask.put("risk",userInfo.getRisk());
-							} catch (ServiceException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}else{
-							//获取作业组名称
-							try {
-								String userGroupName = UserGroupService.getInstance().getGroupNameByGroupId(exeGroupId);
-								subtask.put("exeGroupId",exeGroupId);
-								//subtask.put("executerId",exeGroupId);
-								subtask.put("executer",userGroupName);
-							} catch (ServiceException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
+						subtask.put("exeUserId",exeUserId);
+						subtask.put("executerId",exeUserId);
+						subtask.put("exeGroupId",exeGroupId);
+						
 						subtask.put("qualitySubtaskId",rs.getInt("QUALITY_SUBTASK_ID"));
 						subtask.put("hasQuality",0);
 						//获取质检任务信息
 						if(!subtask.get("qualitySubtaskId").toString().equals("0")){
 							subtask.put("hasQuality",1);
-							try {
-								Subtask subtaskQuality = queryBySubtaskIdS((Integer)subtask.get("qualitySubtaskId"));
-								subtask.put("qualityExeUserId",subtaskQuality.getExeUserId());
-								subtask.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
-								subtask.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
-								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
-								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
-								subtask.put("qualityExeUserName",userInfo.getUserRealName());
-								subtask.put("qualityRisk",userInfo.getRisk());
-								String groupName=UserGroupService.getInstance().getGroupNameByGroupId(subtaskQuality.getExeGroupId());
-								subtask.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
-								subtask.put("qualityExeGroupName",groupName);
-							} catch (ServiceException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
 						}
 						
 						//GEOMETRY
@@ -930,15 +884,7 @@ public class SubtaskService {
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
-						}
-						
-						try {
-							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds",gridIds);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						}						
 						
 						subtask.put("taskId",rs.getInt("TASK_ID"));
 						if (2 == rs.getInt("STAGE")) {
@@ -955,7 +901,49 @@ public class SubtaskService {
 				}	
 			};
 			log.info("queryBySubtaskId sql:" + selectSql);
-			return run.query(conn, selectSql,rsHandler);			
+			Map<String, Object> result = run.query(conn, selectSql,rsHandler);
+			//补充子任务的用户名/组名/gridIds
+			if(result.containsKey("exeUserId")){
+				Long exeUserId=Long.valueOf(String.valueOf(result.get("exeUserId")));
+				if(!exeUserId.equals(Long.valueOf(0))){
+					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,exeUserId);
+					result.put("executer",userInfo.getUserRealName());
+					result.put("risk",userInfo.getRisk());
+				}
+			}				
+		
+			if(result.containsKey("exeGroupId")){
+				Long exeGroupId=Long.valueOf(String.valueOf(result.get("exeGroupId")));
+				if(!exeGroupId.equals(Long.valueOf(0))){
+					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,exeGroupId);
+					result.put("executer",group.getGroupName());
+				}
+			}
+		
+			Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtaskId);
+			result.put("gridIds",gridIds);
+		
+		
+			if(result.containsKey("hasQuality")){
+				int hasQuality=(int) result.get("hasQuality");
+				if(hasQuality==1){
+					Subtask subtaskQuality = queryBySubtaskIdS(conn,(int)result.get("qualitySubtaskId"));
+					result.put("qualityExeUserId",subtaskQuality.getExeUserId());
+					result.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
+					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
+					result.put("qualityTaskStatus",subtaskQuality.getStatus());
+					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
+					if(userInfo!=null){
+						result.put("qualityExeUserName",userInfo.getUserRealName());
+						result.put("qualityRisk",userInfo.getRisk());
+					}
+					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,subtaskQuality.getExeGroupId());
+					result.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
+					if(group!=null){result.put("qualityExeGroupName",group.getGroupName());}
+				}
+			}				
+			
+			return result;			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -3665,7 +3653,7 @@ public class SubtaskService {
 			//已规划的gird
 			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
 			//获取统计量信息
-			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(conn,taskId);
 			
 			int gridNum = result.size();
 			int totalCount = gridNum;
@@ -3748,7 +3736,7 @@ public class SubtaskService {
 			//已规划的gird
 			Set<Integer> grids = queryDailySubTaskGrids(conn, taskId);
 			//获取统计量信息
-			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			List<Map> result = StaticsService.getInstance().getDayTaskTipsStatics(conn,taskId);
 			//获取未规划的grid
 			List<KPoint> pointList = new ArrayList<>();
 			for(Map map:result){

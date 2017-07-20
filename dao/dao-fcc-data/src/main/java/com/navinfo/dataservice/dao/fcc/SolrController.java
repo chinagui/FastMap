@@ -48,7 +48,7 @@ public class SolrController {
     public void addTips(JSONObject json) throws JSONException,
             SolrServerException, IOException {
 
-        SolrInputDocument doc = new SolrInputDocument();
+    	SolrInputDocument doc = new SolrInputDocument();
 
         doc.addField("id", json.getString("id"));
 

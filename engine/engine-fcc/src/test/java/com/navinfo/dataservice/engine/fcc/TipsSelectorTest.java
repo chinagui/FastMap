@@ -941,7 +941,7 @@ public class TipsSelectorTest extends InitApplication {
 
 		try {
 
-			JSONObject data = selector.searchDataByRowkeyNew("021109nirobot17032500026");
+			JSONObject data = selector.searchDataByRowkeyNew("1113025593515");
 			System.out.println(data);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

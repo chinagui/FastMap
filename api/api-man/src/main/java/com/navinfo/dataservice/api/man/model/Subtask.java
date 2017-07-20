@@ -218,6 +218,7 @@ public class Subtask implements Serializable{
 		this.planEndDate = planEndDate;
 	}
 	public String getDescp() {
+		if(descp==null){return "";}
 		return descp;
 	}
 	public void setDescp(String descp) {

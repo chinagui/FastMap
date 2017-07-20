@@ -550,6 +550,8 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/batchQuickTask")
 	public ModelAndView batchQuickTask(HttpServletRequest request){
 		try{	
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			//taskId,taskType
 			int dbId= dataJson.getInt("dbId");
@@ -558,7 +560,7 @@ public class TaskController extends BaseController {
 			int subtaskId=dataJson.getInt("subtaskId");
 			int taskId=dataJson.getInt("taskId");
 			
-			TaskService.getInstance().batchQuickTask(dbId,subtaskId,taskId,pois,tips);
+			TaskService.getInstance().createMidTask2QuickJob(userId, dbId, subtaskId, taskId, pois, tips);
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

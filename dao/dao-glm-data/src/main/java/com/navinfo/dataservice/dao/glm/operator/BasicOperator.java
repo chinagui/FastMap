@@ -120,6 +120,10 @@ public class BasicOperator extends AbstractOperator {
                     }
                 } else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
                     key.append(M_ROW_ID + ",");
+                    if (StringUtils.isEmpty(row.rowId())) {
+						row.setRowId(UuidUtils.genUuid());
+						
+					}
                     //String tableName = SelectorUtils.getObjTableName(row);
                     //if (StringUtils.isNotEmpty(row.rowId())) {
                     //    if (!tableName.equals("IX_POI")) {

@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -32,6 +37,14 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
  *
  */
 public class BaseTipsOperate {
+
+	public static int TIP_STATUS_EDIT = 1;
+	public static int TIP_STATUS_INIT = 0;
+	public static int TIP_STATUS_COMMIT = 2;
+
+    public static int TIP_LIFECYCLE_DELETE = 1;
+    public static int TIP_LIFECYCLE_UPDATE = 2;
+    public static int TIP_LIFECYCLE_ADD = 3;
 
 	protected SolrController solr = new SolrController();
 
@@ -246,12 +259,11 @@ public class BaseTipsOperate {
 	 * @Description:删除tips
 	 * @param rowkey
 	 * @author: y
-	 * @param user ：删除用户
 	 * @param delType :0 逻辑删除，1：物理删除
 	 * @throws Exception
 	 * @time:2016-11-16 下午5:21:09
 	 */
-	public void deleteByRowkey(String rowkey, int delType, int user) throws Exception {
+	public void deleteByRowkey(String rowkey, int delType) throws Exception {
 		Connection hbaseConn;
 		try {
 			//物理删除
@@ -260,7 +272,7 @@ public class BaseTipsOperate {
 			}
 			//逻辑删除
 			else{
-				logicDel(rowkey,user);
+				logicDel(rowkey);
 			}
 
 		} catch (SolrServerException e) {
@@ -280,85 +292,55 @@ public class BaseTipsOperate {
 	/**
 	 * @Description:逻辑删除tips(将t_lifecycle改为1：删除)
 	 * @param rowkey：被删除的tips的rowkey
-	 * @param user：删除操作的作业员id
 	 * @author: y
 	 * @throws Exception
 	 * @time:2017-4-8 下午4:14:57
 	 */
-	private void logicDel(String rowkey, int user) throws Exception {
+	private void logicDel(String rowkey) throws Exception {
+        Connection hbaseConn = null;
+        Table htab = null;
+        try {
+            //修改hbase
+            hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		String date = StringUtils.getCurrentTime();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		//修改hbase
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+            Get get = new Get(rowkey.getBytes());
 
-		Table htab = hbaseConn
-				.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            get.addColumn("data".getBytes(), "track".getBytes());
 
-		Get get = new Get(rowkey.getBytes());
+            Result result = htab.get(get);
 
-		get.addColumn("data".getBytes(), "track".getBytes());
+            if (result.isEmpty()) {
+                throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey：" + rowkey);
+            }
 
-		Result result = htab.get(get);
+            Put put = new Put(rowkey.getBytes());
 
-		if (result.isEmpty()) {
-			throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey："+rowkey);
-		}
+            JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "track".getBytes())));
 
-		Put put = new Put(rowkey.getBytes());
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE);
+            put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track).toString()
+                    .getBytes());
 
-		JSONObject track = JSONObject.fromObject(new String(result.getValue(
-				"data".getBytes(), "track".getBytes())));
+            htab.put(put);
 
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr.size() - 1);
-
-		int lastStage = lastTrackInfo.getInt("stage");
-
-		JSONObject jo = new JSONObject();
-
-		jo.put("stage", lastStage);
-
-		jo.put("date", date);
-
-		jo.put("handler", user);
-
-		trackInfoArr.add(jo);
-
-		track.put("t_trackInfo", trackInfoArr);
-
-		track.put("t_date", date);
-
-		track.put("t_lifecycle", 1);//将t_lifecycle改为1：删除
-
-		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
-				.getBytes());
-
-		htab.put(put);
-
-		htab.close();
-
-
-		//同步更新solr
-		JSONObject solrIndex=solr.getById(rowkey);
-
-		solrIndex.put("t_lifecycle", 1);
-
-		solrIndex.put("t_date", date);
-
-		solrIndex.put("handler", user);
-
-		solr.addTips(solrIndex);
-
-
-
+            //同步更新solr
+            JSONObject solrIndex = solr.getById(rowkey);
+            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+            solr.addTips(solrIndex);
+        }catch (Exception e) {
+            e.printStackTrace();
+            logger.error("逻辑删除失败"+rowkey+":", e);
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+        }
 
 	}
-
-
-
-
 
 	/**
 	 * @Description:TOOD
@@ -370,24 +352,121 @@ public class BaseTipsOperate {
 	 */
 	private void physicalDel(String rowkey) throws SolrServerException,
 			IOException {
-		Connection hbaseConn;
-		// delete hbase
-		hbaseConn = HBaseConnector.getInstance().getConnection();
+		Connection hbaseConn = null;
+        Table htab = null;
+        try {
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		Table htab = hbaseConn.getTable(TableName
-				.valueOf(HBaseConstant.tipTab));
+            List list = new ArrayList();
+            Delete d1 = new Delete(rowkey.getBytes());
+            list.add(d1);
 
-		List list = new ArrayList();
-		Delete d1 = new Delete(rowkey.getBytes());
-		list.add(d1);
+            // delete solr
+            solr.deleteByRowkey(rowkey);
 
-		htab.delete(list);
+            htab.delete(list);
+        }catch (Exception e) {
+            e.printStackTrace();
+            logger.error("物理删除失败:", e);
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+        }
+    }
 
-		htab.close();
+    /**
+     * FC预处理，情报矢量化
+     * 20170718 Tips新增或修改是维护Track,t_tipStatus=1，t_dEditStatus=0，
+     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
+     *不维护t_trackinfo
+     * @param track
+     * @param lifecycle
+     * @return
+     */
+    public TipsTrack tipSaveUpdateTrack(TipsTrack track, int lifecycle) {
+        String date = DateUtils.dateToString(new Date(),
+                DateUtils.DATE_COMPACTED_FORMAT);
+        track.setT_date(date);
+        track.setT_lifecycle(lifecycle);
+        track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
+        track.setT_dEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_mEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_dEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_mEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        return track;
+    }
 
-		// delete solr
-		solr.deleteByRowkey(rowkey);
-	}
+    /**
+     * FC预处理，情报矢量化
+     * 20170718 Tips提交维护Track,t_tipStatus=2，t_dEditStatus=0，
+     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
+     *同时维护t_trackinfo
+     * @param track
+     * @return
+     */
+    public TipsTrack tipSubmitTrack(TipsTrack track, int handler, int stage) {
+        String date = DateUtils.dateToString(new Date(),
+                DateUtils.DATE_COMPACTED_FORMAT);
+        track.setT_date(date);
+        track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_COMMIT);
+        track.setT_dEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_mEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_dEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        track.setT_mEditMeth(PretreatmentTipsOperator.TIP_STATUS_INIT);
+        //新增一个trackInfo
+        TipsTrack.TrackInfo trackInfo = new TipsTrack.TrackInfo();
+        trackInfo.setDate(date);
+        trackInfo.setHandler(handler);
+        trackInfo.setStage(stage);
+        List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
+        trackInfoList.add(trackInfo);
+        return track;
+    }
 
+    /**
+     * FC预处理，情报矢量化
+     * 20170718 Tips新增或修改是维护Track,t_tipStatus=1，t_dEditStatus=0，
+     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
+     *不维护t_trackinfo
+     * @param track
+     * @param solrIndex
+     * @return
+     */
+    public JSONObject tipSaveUpdateTrackSolr(TipsTrack track, JSONObject solrIndex) {
+        solrIndex.put("t_date", track.getT_date());
+        solrIndex.put("t_lifecycle", track.getT_lifecycle());
+        solrIndex.put("t_tipStatus", track.getT_tipStatus());
+        solrIndex.put("t_dEditStatus", track.getT_dEditStatus());
+        solrIndex.put("t_dEditMeth", track.getT_dEditMeth());
+        solrIndex.put("t_mEditStatus", track.getT_mEditStatus());
+        solrIndex.put("t_mEditMeth", track.getT_mEditMeth());
+        return solrIndex;
+    }
+
+    /**
+     * FC预处理，情报矢量化
+     * 20170718 Tips提交维护Track,t_tipStatus=2，t_dEditStatus=0，
+     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
+     *同时维护t_trackinfo
+     * @param track
+     * @param solrIndex
+     * @return
+     */
+    public JSONObject tipSubmitTrackSolr(TipsTrack track, JSONObject solrIndex) {
+        solrIndex.put("t_date", track.getT_date());
+        solrIndex.put("t_tipStatus", track.getT_tipStatus());
+        solrIndex.put("t_dEditStatus", track.getT_dEditStatus());
+        solrIndex.put("t_dEditMeth", track.getT_dEditMeth());
+        solrIndex.put("t_mEditStatus", track.getT_mEditStatus());
+        solrIndex.put("t_mEditMeth", track.getT_mEditMeth());
+        List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
+        TipsTrack.TrackInfo lastTrack = trackInfoList.get(trackInfoList.size() - 1);
+        solrIndex.put("stage", lastTrack.getStage());
+        solrIndex.put("t_operateDate", lastTrack.getDate());
+        solrIndex.put("handler", lastTrack.getHandler());
+        return solrIndex;
+    }
 
 }

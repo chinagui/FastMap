@@ -11,7 +11,7 @@ import java.sql.Connection;
  * Created by wangshishuai3966 on 2017/7/6.
  */
 public abstract class JobPhase {
-    private static Logger log = LoggerRepos.getLogger(JobPhase.class);
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
     public JobProgress jobProgress;
     public Job job;
     public JobProgress lastJobProgress;

@@ -113,7 +113,7 @@ public class TipsRelateLineUpdate {
             case "1901":// 25. 道路名 null
                 return null;
             case "2101":// 26.删除道路标记 null
-                return null;
+            	return updateSimpleF();
             case "1706"://27.ADAS打点 f.id
                 return updateSimpleF();
             case "1806"://28.草图

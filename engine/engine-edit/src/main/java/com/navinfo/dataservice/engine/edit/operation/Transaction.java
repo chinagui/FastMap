@@ -1704,19 +1704,24 @@ public class Transaction {
                         continue;
                     }
                     IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(json.getInt("objId"), false);
+                    if (!json.containsKey("data")) {
+                        return;
+                    }
+
+                    JSONObject data = json.getJSONObject("data");
                     Geometry geometry = GeometryUtils.loadGeometry(link);
                     Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(json.getJSONObject("geometry")));
+                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(data.getJSONObject("geometry")));
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
                         throw new Exception("不允许进行跨大区库修形操作.");
                     }
                     if (newDbIds.size() == 1) {
                         return;
                     }
-                    if (!json.containsKey("catchInfos")) {
+                    if (!data.containsKey("catchInfos")) {
                         continue;
                     }
-                    Iterator<JSONObject> iterator = json.getJSONArray("catchInfos").iterator();
+                    Iterator<JSONObject> iterator = data.getJSONArray("catchInfos").iterator();
                     while (iterator.hasNext()) {
                         JSONObject obj = iterator.next();
                         if (obj.containsKey("catchLinkPid")) {

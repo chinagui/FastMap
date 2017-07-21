@@ -139,4 +139,43 @@ public class JobController extends BaseController {
             return new ModelAndView("jsonView", exception(e));
         }
     }
+    
+    @RequestMapping(value = "/job/run/commonJob")
+    public ModelAndView runCommonJob(HttpServletRequest request) {
+        try {
+            JSONObject data = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+            if (data == null) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+            if (!data.containsKey("itemType")||!data.containsKey("isContinue")){
+                throw new IllegalArgumentException("itemType|isContinue不能为空");
+            }
+
+            boolean isContinue = data.getBoolean("isContinue");
+            ItemType itemType = ItemType.valueOf(data.getInt("itemType"));
+
+            AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+            long operator = tokenObj.getUserId();
+            
+            JobType jobType = JobType.valueOf(data.getInt("jobType"));
+
+            String parameter=null;
+            long itemId=0;
+            if(data.containsKey("itemId")){
+                itemId = data.getInt("itemId");
+            }
+            
+            if(data.containsKey("condition")){
+            	parameter = data.getJSONObject("condition").toString();
+            }
+
+            long jobId = JobService.getInstance().runCommonJob(jobType,itemId,itemType,operator,isContinue,parameter);
+            JSONObject result = new JSONObject();
+            result.put("jobId",jobId);
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+            log.error("创建日落月任务失败，原因：" + e.getMessage(), e);
+            return new ModelAndView("jsonView", exception(e));
+        }
+    }
 }

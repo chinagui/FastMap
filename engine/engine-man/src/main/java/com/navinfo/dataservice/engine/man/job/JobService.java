@@ -5,6 +5,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
+import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
@@ -186,4 +187,34 @@ public class JobService {
     private static class SingletonHolder {
         private static final JobService INSTANCE = new JobService();
     }
+
+	public long runCommonJob(JobType jobType, long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
+		log.info("start runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
+		try {
+			JobRunner runner = jobFactory(jobType);
+            long jobId= runner.run(itemId, itemType, isContinue, operator, parameter);
+            log.info("end runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
+            return jobId;
+		} catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new Exception("执行JOB失败，原因为:" + e.getMessage(), e);
+        }
+	}
+	
+	/**
+	 * 根据jobType获取执行类
+	 * @param jobType
+	 * @return
+	 */
+	private JobRunner jobFactory(JobType jobType){
+		JobRunner runner=null;
+		if(jobType==JobType.DAY2MONTH){
+			runner= new Day2MonthJobRunner();
+		}else if(jobType==JobType.NOTASK2MID){
+			runner= new NoTask2MediumJobRunner();
+		}else if(jobType==JobType.TiPS2MARK){
+			runner= new Tips2MarkJobRunner();
+		}
+		return runner;
+	}
 }

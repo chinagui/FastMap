@@ -3,7 +3,7 @@ package com.navinfo.dataservice.dao.fcc.operator;
 import java.util.Collection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.fcc.model.TipsIndexDao;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.exception.DaoOperatorException;
 
 /** 
@@ -13,7 +13,7 @@ import com.navinfo.navicommons.exception.DaoOperatorException;
  * @Description: TipsOperator.java
  */
 public interface TipsIndexOperator {
-	public List<TipsIndexDao> searchDataByTileWithGap(String parameter)throws DaoOperatorException;
-	public void save(TipsIndexDao ti)throws DaoOperatorException;
-	public void save(Collection<TipsIndexDao> tis)throws DaoOperatorException;
+	public List<TipsDao> searchDataByTileWithGap(String parameter)throws DaoOperatorException;
+	public void save(TipsDao ti)throws DaoOperatorException;
+	public void save(Collection<TipsDao> tis)throws DaoOperatorException;
 }

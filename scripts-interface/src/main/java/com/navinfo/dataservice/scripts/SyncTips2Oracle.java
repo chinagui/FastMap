@@ -35,7 +35,7 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
-import com.navinfo.dataservice.dao.fcc.model.TipsIndexDao;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOperator;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.datahub.service.DbService;
@@ -95,7 +95,7 @@ public class SyncTips2Oracle {
 			Result[] results = null;
 			int num=0;
 			while ((results = rs.next(5000)).length > 0){
-				List<TipsIndexDao> tis = new ArrayList<TipsIndexDao>();
+				List<TipsDao> tis = new ArrayList<TipsDao>();
 				
 				for (Result result : results){
 					try{
@@ -104,12 +104,17 @@ public class SyncTips2Oracle {
 						if(num%1000==0){
 							op.save(tis);
 							conn.commit();
+							tis.clear();
 							log.info("index:"+index+",num:"+num);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);
 					}
 				}
+
+				op.save(tis);
+				conn.commit();
+				tis.clear();
 			}
 			conn.commit();
 			setTotal(index,num);
@@ -121,13 +126,13 @@ public class SyncTips2Oracle {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	private TipsIndexDao convert(Result result)throws Exception{
+	private TipsDao convert(Result result)throws Exception{
 		try{
 			if(result==null){
 				log.info("result is null");
 				return null;
 			}
-			TipsIndexDao ti = new TipsIndexDao();
+			TipsDao ti = new TipsDao();
 			
 			//rowkey
 			ti.setId(Bytes.toString(result.getRow()));

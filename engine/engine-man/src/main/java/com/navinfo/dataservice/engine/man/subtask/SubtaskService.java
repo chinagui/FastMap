@@ -283,18 +283,16 @@ public class SubtaskService {
 	 * @throws ServiceException 
 	 */
 	public int createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
-		try {
-			// 获取subtaskId
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
-
-			bean.setSubtaskId(subtaskId);
+		try {			
 			//默认subtask状态为草稿2
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
 			}
 			//情报项目为空时，需要后台自动创建名称
 			bean=autoInforName(conn,bean);
-			
+			// 获取subtaskId
+			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
+			bean.setSubtaskId(subtaskId);
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
 			
@@ -711,8 +709,10 @@ public class SubtaskService {
 			};
 			log.info("queryAdminIdBySubtaskS sql:" + sb.toString());
 			Subtask subtask = run.query(conn, selectSql,rsHandler);
-			Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtask.getSubtaskId());
-			subtask.setGridIds(gridIds);
+			if(subtask!=null&&subtask.getSubtaskId()!=null){
+				Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn,subtask.getSubtaskId());
+				subtask.setGridIds(gridIds);
+			}
 			return subtask;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -904,7 +904,7 @@ public class SubtaskService {
 			Map<String, Object> result = run.query(conn, selectSql,rsHandler);
 			//补充子任务的用户名/组名/gridIds
 			if(result.containsKey("exeUserId")){
-				Long exeUserId=(Long) result.get("exeUserId");
+				Long exeUserId=Long.valueOf(String.valueOf(result.get("exeUserId")));
 				if(!exeUserId.equals(Long.valueOf(0))){
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,exeUserId);
 					result.put("executer",userInfo.getUserRealName());
@@ -913,7 +913,7 @@ public class SubtaskService {
 			}				
 		
 			if(result.containsKey("exeGroupId")){
-				Long exeGroupId=(Long) result.get("exeGroupId");
+				Long exeGroupId=Long.valueOf(String.valueOf(result.get("exeGroupId")));
 				if(!exeGroupId.equals(Long.valueOf(0))){
 					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,exeGroupId);
 					result.put("executer",group.getGroupName());
@@ -933,11 +933,13 @@ public class SubtaskService {
 					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
-					result.put("qualityExeUserName",userInfo.getUserRealName());
-					result.put("qualityRisk",userInfo.getRisk());
+					if(userInfo!=null){
+						result.put("qualityExeUserName",userInfo.getUserRealName());
+						result.put("qualityRisk",userInfo.getRisk());
+					}
 					UserGroup group = UserGroupService.getInstance().getGroupNameByGroupId(conn,subtaskQuality.getExeGroupId());
 					result.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
-					result.put("qualityExeGroupName",group.getGroupName());
+					if(group!=null){result.put("qualityExeGroupName",group.getGroupName());}
 				}
 			}				
 			

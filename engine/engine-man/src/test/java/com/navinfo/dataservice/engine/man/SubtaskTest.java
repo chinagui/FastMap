@@ -68,7 +68,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":135,\"name\":\"北京市北京市通州区郊区郊区_20170503_韩雪松\",\"status\":2,\"type\":0,\"referId\":100,\"stage\":0,\"descp\":\"不规则圈\",\"workKind\":1,\"planStartDate\":\"20170712\",\"planEndDate\":\"20170712\",\"exeUserId\":1664,\"hasQuality\":0}";
+		String parameter ="{\"taskId\":78,\"name\":\"北京市北京市城区西站南站20170427_韩雪松\",\"status\":2,\"type\":1,\"stage\":0,\"descp\":\"\",\"workKind\":1,\"planStartDate\":\"20170720\",\"planEndDate\":\"20170720\",\"exeUserId\":1664,\"hasQuality\":0,\"referId\":499}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -83,7 +83,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testPushMsg() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="[572]";
+		String parameter ="[1254]";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -93,10 +93,10 @@ public class SubtaskTest extends InitApplication{
 		System.out.print(mString);
 	}	
 	
-//	@Test
+	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(362,1);
+		Map<String, Object> result = service.query(584,1);
 		System.out.print(result);
 	}
 	@Test

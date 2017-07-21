@@ -180,11 +180,11 @@ public class EdgeMatchTipsController extends BaseController {
 				}
 				
 			}
-			//逻辑删除，需要给用户
-			if(delType==0){
-				
-				user = jsonReq.getInt("user");  
-			}
+			//逻辑删除，需要给用户,20170720取消用户
+//			if(delType==0){
+//
+//				user = jsonReq.getInt("user");
+//			}
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -192,7 +192,7 @@ public class EdgeMatchTipsController extends BaseController {
 
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			op.deleteByRowkey(rowkey,delType,user);
+			op.deleteByRowkey(rowkey, delType);
 
 			return new ModelAndView("jsonView", success());
 

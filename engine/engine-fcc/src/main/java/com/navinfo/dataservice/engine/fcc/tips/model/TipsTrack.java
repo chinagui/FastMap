@@ -97,7 +97,7 @@ public class TipsTrack {
         this.getT_trackInfo().add(trackInfo);
     }
 
-    public class TrackInfo {
+    public static class TrackInfo {
         private int stage = 0;
         private String date = "";
         private int handler = 0;

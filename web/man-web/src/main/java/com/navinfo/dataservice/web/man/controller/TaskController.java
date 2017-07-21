@@ -558,7 +558,7 @@ public class TaskController extends BaseController {
 			int subtaskId=dataJson.getInt("subtaskId");
 			int taskId=dataJson.getInt("taskId");
 			
-			TaskService.getInstance().batchQuickTask(dbId, subtaskId, taskId, pois, tips);
+			TaskService.getInstance().batchQuickTask(dbId,subtaskId,taskId,pois,tips);
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

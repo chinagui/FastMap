@@ -58,7 +58,7 @@ public class SubtaskQualityOperation {
 						if(beforeId!=bean.getSubtaskId()){
 							returns.put(beforeId, qualitys);
 							qualitys=new ArrayList<SubtaskQuality>();
-							beforeId = bean.getSubtaskId();
+							beforeId=bean.getSubtaskId();
 						}
 						qualitys.add(bean);
 					}

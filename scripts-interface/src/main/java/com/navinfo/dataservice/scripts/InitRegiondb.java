@@ -121,7 +121,7 @@ public class InitRegiondb {
 				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
 				req2.put("conditionParams", JSONArray.fromObject(extendMeshes));
 				req2.put("featureType", GlmTable.FEATURE_TYPE_ALL);
-				req2.put("dataIntegrity", true);
+				req2.put("dataIntegrity", false);
 				req2.put("targetDbId", dbDay);
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
@@ -390,7 +390,6 @@ public class InitRegiondb {
 				//************2016.11.11 zl****************
 				//在元数据库中创建大区库的dblink
 				createRegionDbLinks(db);
-				
 			} catch (DataHubException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -401,4 +400,5 @@ public class InitRegiondb {
 			
 		
 	}
+	
 }

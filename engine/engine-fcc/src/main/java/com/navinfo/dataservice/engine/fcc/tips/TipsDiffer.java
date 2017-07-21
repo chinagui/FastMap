@@ -1,11 +1,16 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
 import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
 import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
 import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
@@ -24,14 +29,21 @@ public class TipsDiffer {
 		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
 		SolrBulkUpdater solrConn = null;
-
-		try {
+        Table htab = null;
+        try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			solrConn = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
 					TipsBuilderUtils.ThreadCount);
 			Set<String> rowkeySet = allNeedDiffRowkeysCodeMap.keySet();
+            htab = hbaseConn.getTable(TableName
+                    .valueOf(HBaseConstant.tipTab));
 			if (rowkeySet.size() > 0) {
 				for (String rowkey : rowkeySet) {
+                    Get get = new Get(Bytes.toBytes(rowkey));
+                    boolean isExists = htab.exists(get);
+                    if(!isExists) {
+                        continue;
+                    }
 					errRowkey = rowkey;
 					String s_sourceType = allNeedDiffRowkeysCodeMap.get(rowkey);
 
@@ -59,7 +71,9 @@ public class TipsDiffer {
 		} finally {
 			System.out.println("-----------");
 			// 连接不能关
-
+            if(htab != null) {
+                htab.close();
+            }
 
 	/*		 *  * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
 			 *

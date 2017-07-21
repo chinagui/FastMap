@@ -14,11 +14,10 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
  * FM-YW-20-014	重要分类英文名作业	D
  * 检查条件：
- *     以下条件(1)、(2)、(3)、(4)之一，且(5)同时满足时，需要进行检查：
+ *     以下条件(1)、(2)、(3)、之一，且(5)同时满足时，需要进行检查：
  *     (1)存在IX_POI_NAME的新增；
  *     (2)存在IX_POI_NAME的修改；
- *     (3)存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
- *     (4)存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库一样且修改前KIND_CODE在非重要分类表中；
+ *     (3)存在KIND_CODE或CHAIN修改
  *     (5)KIND_CODE在重要分类表中
  *     检查原则：
  *     满足条件的POI全部报出。
@@ -46,33 +45,25 @@ public class FMYW20014 extends BasicCheckRule {
 	 *  以下条件(1)、(2)、(3)之一，且(4)同时满足时，需要进行检查：
 	 *     (1)存在IX_POI_NAME的新增；
 	 *     (2)存在IX_POI_NAME的修改；
-	 *     (3) 存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
-	 *     (4)存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库一样且修改前KIND_CODE在非重要分类表中；
+	 *     (3) 存在KIND_CODE或CHAIN修改
 	 * @param poiObj
 	 * @return true满足检查条件，false不满足检查条件
 	 * @throws Exception 
 	 */
 	private boolean isCheck(IxPoiObj poiObj) throws Exception{
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
+		String newKindCode=poi.getKindCode();
+		String newChain=poi.getChain();
 		if(poi.hisOldValueContains(IxPoi.KIND_CODE) ||poi.hisOldValueContains(IxPoi.CHAIN)){
-			String newKindCode=poi.getKindCode();
-			String oldKindCode=newKindCode;
 			if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
-				oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				if(!newKindCode.equals(oldKindCode)){
+					return true;
+				}
 			}
-			String newChain=poi.getChain();
-			String oldChain=newChain;
 			if(poi.hisOldValueContains(IxPoi.CHAIN)){
-				oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
-			}
-			//存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
-			String newWordKind=metadataApi.wordKind(newKindCode, newChain);
-			String oldWordKind=metadataApi.wordKind(oldKindCode, oldChain);
-			if(newWordKind!=null&&!newWordKind.equals(oldWordKind)){
-				return true;
-			}else if(newWordKind!=null&&newWordKind.equals(oldWordKind)){
-				//(4)存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库一样且修改前KIND_CODE在非重要分类表中；
-				if(!metadataApi.judgeScPointKind(oldKindCode, oldChain)){
+				String oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
+				if(!newChain.equals(oldChain)){
 					return true;
 				}
 			}

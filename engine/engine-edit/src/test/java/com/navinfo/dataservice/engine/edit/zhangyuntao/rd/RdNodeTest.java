@@ -52,4 +52,11 @@ public class RdNodeTest extends InitApplication {
 		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309002394,\"data\":{\"longitude\":116.5178820490837,\"latitude\":40.08373975500465},\"type\":\"RDNODE\"}";
 		TestUtil.run(parameter);
 	}
+
+	@Test
+	public void update(){
+	    String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDNODE\",\"objId\":404000382,\"data\":{\"srcFlag\":3," +
+                "\"rowId\":\"CD6B9C33DD974D88870DDF828217262D\",\"pid\":404000382,\"objStatus\":\"UPDATE\"}}";
+	    TestUtil.run(parameter);
+    }
 }

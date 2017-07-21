@@ -511,6 +511,8 @@
             <FEE_FLAG FieldType="Integer" Default="0" AlterName="计费赋值标识"/>
             <SYSTEM_ID FieldType="Integer" Default="0" AlterName="区域标识"/>
             <ADAS_MEMO FieldType="Integer" Default="0" AlterName="ADAS备注"/>
+            <NONMOTOR_FLAG FieldType="Integer" Default="3" AlterName="非机动车通行属性"/>
+            <LEISURE_TYPE FieldType="Integer" Default="0" AlterName="休闲路线类型"/>
         </RD_LINK>
         <RD_LINK_FORM>
             <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
@@ -529,6 +531,7 @@
             <TOLL_Type FieldType="Integer" Default="0" AlterName="收费类型"/>
             <INPUT_TIME FieldType="String" Default="" AlterName="录入时间"/>
             <WEATHER FieldType="Integer" Default="9" AlterName="天气条件"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
         </RD_LINK_LIMIT>
         <RD_LINK_LIMIT_TRUCK>
             <LINK_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="LINK号码"/>
@@ -751,6 +754,7 @@
             <SRC_FLAG FieldType="String" Default="1" AlterName="来源标识"/>
             <CREATION_DATE FieldType="String" Default="" AlterName="创建日期"/>
             <HIGH_VIOLATION FieldType="Integer" Default="0" AlterName="是否违章高发地"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
         </RD_ELECTRONICEYE>
         <RD_ELECEYE_PAIR>
             <GROUP_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="同一组号"/>
@@ -773,6 +777,7 @@
             <Type FieldType="Integer" Default="0" AlterName="过道类型"/>
             <ATTR FieldType="Integer" Default="0" AlterName="连接属性"/>
             <SIGNAGE FieldType="Integer" Default="0" AlterName="过道标牌"/>
+            <NONMOTOR_FLAG FieldType="Integer" Default="3" AlterName="非机动车通行属性"/>
         </RD_CROSSWALK_INFO>
         <RD_CROSSWALK_NODE>
             <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="人行过道"/>
@@ -813,6 +818,7 @@
             <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="限速标牌坐标"/>
             <LANE_SPEED_VALUE FieldType="String" Default="" AlterName="车道限速值"/>
             <TOLLGATE_FLAG FieldType="Integer" Default="0" AlterName="收费站前标识"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
         </RD_SPEEDLIMIT>
 
         <RD_SPEEDLIMIT_TRUCK  >
@@ -882,6 +888,7 @@
             <LOCATION_FLAG FieldType="Integer" Default="0" AlterName="是否跨省"/>
             <TRUCK_FLAG FieldType="Integer" Default="1" AlterName="是否允许卡车"/>
             <U_FIELDS FieldType="String" Default="1" AlterName="收费标牌照片"/>
+            <PHOTO_FLAG FieldType="Integer" Default="1" AlterName="收费标牌采集"/>
         </RD_TOLLGATE>
         <RD_TOLLGATE_NAME>
             <PID FieldType="Integer" HasIndex="1" Default="0" AlterName="收费站"/>
@@ -907,6 +914,7 @@
             <TOLL_FORM FieldType="Integer" Default="0" AlterName="收费方式"/>
             <CARD_Type FieldType="Integer" Default="0" AlterName="领卡类型"/>
             <VEHICLE FieldType="Integer" Default="0" AlterName="车辆类型"/>
+            <LANE_TYPE FieldType="Integer" Default="0" AlterName="通道类型"/>
         </RD_TOLLGATE_PASSAGE>
         <RD_VARIABLE_SPEED>
             <VSPEED_PID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="可变限速号码"/>
@@ -1388,6 +1396,7 @@
             <MEMO FieldType="String" Default="" AlterName="备注信息"/>
             <PID FieldType="String" Default="" AlterName="FCC库照片号码"/>
             <TAG FieldType="Integer" Default="1" AlterName="标识"/>
+            <ORIGIN_PID FieldType="Integer" Default="0" AlterName="原始照片号码 "/>
         </IX_POI_PHOTO>
         <IX_POI_FLAG>
             <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
@@ -1910,6 +1919,10 @@
             <DIRECT FieldType="Integer" Default="0" AlterName="作用方向"/>
             <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
             <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="坐标"/>
+            <RES_HIGH_FLAG FieldType="Integer" Default="0" AlterName="限高采集标志"/>
+            <RES_WIDTH_FLAG FieldType="Integer" Default="0" AlterName="限宽采集标志"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
+            <DESCRIPT FieldType="String" Default="" AlterName="文字说明"/>
         </RD_HGWG_LIMIT>
         <IX_POI_PARKING>
             <PARKING_ID FieldType="Integer" IsPK="1" HasIndex="1" Default="0" AlterName="停车场号码"/>
@@ -2025,6 +2038,9 @@
             <PAYCARD FieldType="Integer" Default="0" AlterName="是否支持信用卡支付"/>
             <CARDType FieldType="String" Default="" AlterName="支持信用卡类型"/>
             <HOSPITAL_CLASS FieldType="Integer" Default="0" AlterName="医院等级"/>
+            <MICHELIN_STAR FieldType="Integer" Default="99" AlterName="米其林星级及推荐餐厅"/>
+            <ESTABLISHMENT FieldType="Integer" Default="9" AlterName="米其林舒适程度等级"/>
+            <SERVICES FieldType="Integer" Default="1" AlterName="米其林餐厅附属服务"/>
         </IX_POI_DETAIL>
         <IX_POI_BUSINESSTIME>
             <POI_PID FieldType="Integer" HasIndex="1" Default="0" AlterName="POI号码"/>
@@ -2092,6 +2108,7 @@
             <GEOMETRY FieldType="Blob" IsSpatial="1" AlterName="坐标"/>
             <MESH_ID FieldType="Integer" Default="0" AlterName="图幅号码"/>
             <DIRECT FieldType="Integer" Default="0" AlterName="里程桩方向"/>
+            <EDIT_FLAG FieldType="Integer" Default="1" AlterName="编辑标识"/>
         </RD_MILEAGEPILE>
 
     </Tables>

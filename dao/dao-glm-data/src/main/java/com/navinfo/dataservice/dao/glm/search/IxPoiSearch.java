@@ -226,24 +226,47 @@ public class IxPoiSearch implements ISearch {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("WITH "
-				+ "TMP1 AS "
-				+ "("
-					+ "SELECT i.PID, i.KIND_CODE, i.INDOOR, i.X_GUIDE, i.Y_GUIDE, i.GEOMETRY, i.ROW_ID,p.is_plan_selected,p.is_important  "
-					+ "FROM IX_POI i ,data_plan p "
-					+ " WHERE SDO_RELATE(i.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT')= 'TRUE' "
-					+ " AND U_RECORD != 2 "
-					+ " AND p.data_type = 1 and p.task_id =:2 and i.pid = p.pid "
-				+ "), "
-				+ "TMP2 AS "
-				+ "("
-					+ "SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
-					+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
-					+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
-					+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2"
-				+ ") "
-				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_SUBTASK_ID,0) QUICK_SUBTASK_ID ,nvl(B.MEDIUM_SUBTASK_ID,0) MEDIUM_SUBTASK_ID  FROM TMP1 A LEFT JOIN "
-				+ "POI_EDIT_STATUS B ON A.PID = B.PID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
+		sb.append("WITH TMP1 AS");
+		sb.append( " (SELECT I.PID,");
+		sb.append( "         I.KIND_CODE,");
+		sb.append( "         I.INDOOR,");
+		sb.append( "         I.X_GUIDE,");
+		sb.append( "         I.Y_GUIDE,");
+		sb.append( "         I.GEOMETRY,");
+		sb.append( "         I.ROW_ID");
+		sb.append( "    FROM IX_POI I");
+		sb.append( "   WHERE SDO_RELATE(I.GEOMETRY,");
+		sb.append( "                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+		sb.append( "     AND I.U_RECORD != 2),");
+		sb.append( " TMP2 AS");
+		sb.append( " (SELECT /*+ NO_MERGE(A),INDEX(D) */");
+		sb.append( "   PN.NAME, PN.POI_PID PID");
+		sb.append( "    FROM TMP1 A, IX_POI_NAME PN");
+		sb.append( "   WHERE PN.POI_PID = A.PID");
+		sb.append( "     AND PN.LANG_CODE = 'CHI'");
+		sb.append( "     AND PN.NAME_CLASS = 1");
+		sb.append( "     AND PN.NAME_TYPE = 2");
+		sb.append( "     AND PN.U_RECORD != 2)");
+		sb.append( " SELECT /*+ORDERED ,NO_MERGE(B)*/");
+		sb.append( " B.PID,");
+		sb.append( " B.KIND_CODE,");
+		sb.append( " B.INDOOR,");
+		sb.append( " B.X_GUIDE,");
+		sb.append( " B.Y_GUIDE,");
+		sb.append( " B.GEOMETRY,");
+		sb.append( " B.ROW_ID,");
+		sb.append( " C . NAME,");
+		sb.append( " A.IS_PLAN_SELECTED,");
+		sb.append( " A.IS_IMPORTANT,");
+		sb.append( " D.STATUS,");
+		sb.append( " D.QUICK_SUBTASK_ID,");
+		sb.append( " D.MEDIUM_SUBTASK_ID");
+		sb.append( "  FROM TMP1 B, TMP2 C, DATA_PLAN A, POI_EDIT_STATUS D");
+		sb.append( " WHERE B.PID = A.PID");
+		sb.append( "   AND B.PID = C.PID(+)");
+		sb.append( "   AND B.PID = D.PID");
+		sb.append( "   AND A.DATA_TYPE = 1");
+		sb.append( "   AND A.TASK_ID = :2");
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -253,7 +276,7 @@ public class IxPoiSearch implements ISearch {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
+			log.info("wkt:"+wkt);
 			pstmt.setString(1, wkt);
 			pstmt.setInt(2, taskId);
 

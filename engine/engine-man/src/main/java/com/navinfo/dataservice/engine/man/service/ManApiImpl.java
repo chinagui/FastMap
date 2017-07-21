@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.man.service;
 import java.sql.Connection;
 import java.util.*;
 
+import com.navinfo.dataservice.engine.man.job.JobService;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import net.sf.json.JSONArray;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -57,7 +59,19 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
 		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status,message);
-	}	
+	}
+
+	/**
+	 * 更新job步骤的执行状态, 如果是成功和无数据，继续执行job
+	 * @param phaseId
+	 * @param status 2成功，3失败，4无数据
+	 * @param message
+	 * @throws Exception
+	 */
+	@Override
+	public void updateJobProgress(long phaseId,int status,String message) throws Exception {
+		JobService.getInstance().updateJobProgress(phaseId, JobProgressStatus.valueOf(status), message);
+	}
 	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {
@@ -407,5 +421,17 @@ public class ManApiImpl implements ManApi {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/**
+	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+	 * key：groupName,province,city,userId,version
+	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+	 * @param qualitySubtaskId 质检子任务号
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getSubtaskInfoByQuality(qualitySubtaskId);
+	}
 }
-

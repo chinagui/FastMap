@@ -25,7 +25,8 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
 		super();
 		this.setCommand(command);
 		// 初始化检查参数
@@ -38,16 +39,18 @@ public class Process extends AbstractProcess<Command> {
 		// 获取由该link组成的立交（RDGSC）
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RW_LINK", true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this
+				.getCommand().getLinkPid(), "RW_LINK", true);
 
 		this.getCommand().setRdGscs(rdGscList);
 
 		// 获取要打断LCLINK的对象
-		RwLink breakLink = (RwLink) new RwLinkSelector(this.getConn()).loadById(this.getCommand().getLinkPid(), true,
-				false);
+		RwLink breakLink = (RwLink) new RwLinkSelector(this.getConn())
+				.loadById(this.getCommand().getLinkPid(), true, false);
 		this.getCommand().setBreakLink(breakLink);
 		// 删除要打断LCLINK
-		this.getResult().insertObject(breakLink, ObjStatus.DELETE, breakLink.pid());
+		this.getResult().insertObject(breakLink, ObjStatus.DELETE,
+				breakLink.pid());
 
 		return true;
 
@@ -60,17 +63,15 @@ public class Process extends AbstractProcess<Command> {
 			this.prepareData();
 
 			// 创建铁路点有关铁路线具体操作
-			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
+			OpTopo operation = new OpTopo(this.getCommand(), check,
+					this.getConn());
 			msg = operation.run(this.getResult());
 			// 打断线对立交影响
 			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
 			opRefRdGsc.run(this.getResult());
-			
-			String preCheckMsg = this.preCheck();
 
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+		
+
 		} catch (Exception e) {
 
 			this.getConn().rollback();

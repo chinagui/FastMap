@@ -20,15 +20,19 @@ public interface FccApi {
 //	 * @time:2016-10-25 上午10:57:37
 //	 */
 //	public JSONObject getSubTaskStats(JSONArray grids) throws Exception;
+	
 	/**
-	 * @Description:根据wkt，查询子tips的数据总量和已完成量，web编辑卡片统计
-	 * @param wkt
+	 * @Description:根据wkt+collectTaskIds，查询子tips的数据总量和待作业量，web编辑卡片统计
+	 * @param wkt: 任务wkt
+	 * @param collectTaskIds:采集子任务号（目前默认都是快线）
+	 * @param taskType：任务类型：作业任务，1.是质检任务
+	 * @param handler：质检员id(作业任务不用，可以传递0)
 	 * @return
 	 * @throws Exception
 	 * @author: y
-	 * @time:2016-10-25 上午10:57:37
+	 * @time:2017-7-12 下午5:46:13
 	 */
-	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception;
+	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception;
 	
 	
 	public void tips2Aumark(JSONObject parameter) throws Exception;

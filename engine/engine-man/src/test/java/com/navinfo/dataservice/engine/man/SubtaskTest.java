@@ -1,37 +1,14 @@
 package com.navinfo.dataservice.engine.man;
 
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Program;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.json.JsonOperation;
-import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.token.AccessTokenFactory;
-import com.navinfo.dataservice.commons.token.AccessTokenUtil;
-import com.navinfo.dataservice.commons.util.TimestampUtils;
-import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.util.GeometryTransformer;
-import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -42,7 +19,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testUpdate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"name\":\"江苏省宿迁市城区_20170612_多源组test1\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
+		String parameter ="{\"taskId\":135,\"subtaskId\":594,\"name\":\"北京市北京市通州区郊区郊区_20170503_韩雪松\",\"status\":2,\"type\":0,\"referId\":0,\"stage\":0,\"descp\":\"不规则圈\",\"workKind\":1,\"planStartDate\":\"20170712\",\"planEndDate\":\"20170712\",\"exeUserId\":1664,\"hasQuality\":0}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -73,8 +50,8 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"lineWkt\":\"LINESTRING(116.3001 39.7,116.7 39.7)\"}"; 
-		String parameter ="{\"id1\":23,\"id2\":24}"; 
+		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
+		String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -91,7 +68,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":617;\"name\":\"江苏省宿迁市城区_20170612_多源组test1_me\",\"subtaskId\":558,\"descp\":null,\"planStartDate\":\"20170612\",\"planEndDate\":\"20170612\",\"gridIds\":[50586122,50586123,50586120,50586121,50587200,50586112,50586113,50587210,50585123,50585122,50587113,50585121,50586131,50585131,50586130,50586133,50585133,50586132,50585132,50587102,50587103,50585111,50585112,50585113,50585230,50585231,50584133,50584132,50585101,50585220,50585221,50585103,50584131,50585222,50585102,50584122,50584123,50586102,50585202,50586103,50585203,50585200,50586101,50585201,50585212,50585213,50585210,50586111,50585211,50584230,50584231,50586201,50586200,50584233,50586220,50584330,50584210,50585301,50585300,50584221,50584220,50586210,50586211,50586230],\"workKind\":4,\"hasQuality\":1,\"exeGroupId\":7,\"qualityPlanStartDate\":\"20170612\",\"qualityPlanEndDate\":\"20170612\"}"; 
+		String parameter ="{\"taskId\":78,\"name\":\"北京市北京市城区西站南站20170427_韩雪松\",\"status\":2,\"type\":1,\"stage\":0,\"descp\":\"\",\"workKind\":1,\"planStartDate\":\"20170720\",\"planEndDate\":\"20170720\",\"exeUserId\":1664,\"hasQuality\":0,\"referId\":499}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -101,19 +78,55 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
-	}
+	}	
+	
+	@Test
+	public void testPushMsg() throws Exception {
+		// TODO Auto-generated constructor stub
+		String parameter ="[1254]";
+		if (StringUtils.isEmpty(parameter)){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}		
+		JSONArray subtaskIds = JSONArray.fromObject(parameter);		
+		SubtaskService service = SubtaskService.getInstance();
+		String mString=service.pushMsg(Long.valueOf(0), subtaskIds);	
+		System.out.print(mString);
+	}	
 	
 	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(362,1);
+		Map<String, Object> result = service.query(584,1);
+		System.out.print(result);
+	}
+	@Test
+	public void testList() throws Exception {
+		String parameter="{\"condition\":{\"taskId\":78},\"pageNum\":1,\"pageSize\":15,\"snapshot\":1}";
+		JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		
+		int curPageNum= 1;//默认为第一页
+		if(dataJson.containsKey("pageNum")){
+			curPageNum = dataJson.getInt("pageNum");
+		}
+		
+		int pageSize = 30;//默认页容量为20
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+		}
+		//查询条件
+		JSONObject condition = dataJson.getJSONObject("condition");
+		SubtaskService service = SubtaskService.getInstance();
+		Page result = service.list(condition, pageSize, curPageNum);
 		System.out.print(result);
 	}
 	
 	@Test
 	public void testListByUser() throws Exception {
 		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":0,\"status\":1,\"pageSize\":1000,\"stage\":0}");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"stage\":0}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -148,7 +161,7 @@ public class SubtaskTest extends InitApplication{
 		initContext();
 	}	
 		
-	@Test
+//	@Test
 	public void testUnPlanQualitylist() throws Exception
 	{
 		try {
@@ -159,20 +172,20 @@ public class SubtaskTest extends InitApplication{
 	}
 	
 	//删除质检圈(测试)
-	@Test
+//	@Test
 	public void testQualityDelete() throws Exception
 	{
 		System.out.println(SubtaskService.getInstance().qualityDelete(3));
 	}
 	
 	//获取质检圈(测试)
-	@Test
+//	@Test
 	public void testQualityList() throws Exception
 	{
 		System.out.println(SubtaskService.getInstance().qualitylist(362));
 	}
 	
-		@Test
+//		@Test
 	public void testQueryListReferByWkt() throws Exception {
 		// TODO Auto-generated constructor stub
 		String parameter = "{\"blockId\":0,\"wkt\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
@@ -190,7 +203,7 @@ public class SubtaskTest extends InitApplication{
 	//创建质检圈(测试)
 	@Test
 	public void testQualityCreate() throws Exception {
-		String parameter = "{\"subtaskId\":172,\"geometry\":\"POLYGON((80.83422 20.51848,120.41350 20.51848,120.41350 50.31498,80.83422 50.31498,80.83422 20.51848))\"}";
+		String parameter = "{\"subtaskId\":184,\"geometry\":\"POLYGON((116.29989624023439 39.891826241725596,116.29714965820311 39.86600654754002,116.35139465332031 39.87338459498892,116.29989624023439 39.891826241725596))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
@@ -203,7 +216,7 @@ public class SubtaskTest extends InitApplication{
 	}
 	
 	//修改质检圈(测试)
-	@Test
+//	@Test
 	public void testQualityUpdate() throws Exception {
 		String parameter = "{\"qualityId\":27,\"geometry\":\"POLYGON ((80.83422 20.51848, 120.4135 20.51848, 120.4135 50.31498, 80.83422 50.31498, 80.83422 20.51848))\"}";
 		if (StringUtils.isEmpty(parameter)){

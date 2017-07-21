@@ -2595,13 +2595,13 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", df.format(planStartDate));
+							overView.put("actualStartDate", overView.get("planStartDate"));
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
 							if(status==0){
-								overView.put("actualEndDate", df.format(planEndDate));
+								overView.put("actualEndDate",  overView.get("planEndDate"));
 							}else{
 								overView.put("actualEndDate", null);
 							}	
@@ -2803,15 +2803,32 @@ public class StaticsService {
 	       return day2 - day1;
 
 	    }
-
 	/**
 	 * @param taskId
 	 * @return
 	 * @throws Exception 
 	 */
 	public List<Map> getDayTaskTipsStatics(int taskId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			return getDayTaskTipsStatics(conn,taskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map> getDayTaskTipsStatics(Connection conn,int taskId) throws Exception {
 		List<Map> result = new ArrayList<Map>();
-		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(taskId);
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(conn,taskId);
 		//调用fccApi
 		FccApi fccApi = (FccApi) ApplicationContextUtil
 				.getBean("fccApi");

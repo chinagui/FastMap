@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
@@ -18,7 +19,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
-import com.navinfo.dataservice.scripts.model.VectorTabSuspect;
+import com.navinfo.dataservice.scripts.model.ShapeModel;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -32,23 +33,34 @@ import com.vividsolutions.jts.io.WKTReader;
  * @Description: ImportCityBlockByJson.java
  */
 public class ImportRenderShape2Oracle {
+	private static QueryRunner runner = new QueryRunner();
 
-//	private static QueryRunner runner = new QueryRunner();
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
 		try {
-			if(args==null||args.length!=1){
+			if(args==null||args.length < 2){
 				System.out.println("ERROR:need args:shapeFile");
 				return;
 			}
 
 			String shapeFile = args[0];
-//			String shapeFile = "F:\\shapefile\\leshan\\road_out.shp";
+			//VECTOR_TAB
+			//VECTOR_TAB_SUSPECT
+			//MISS_ROAD_DIDI
+			//MISS_ROAD_TENGXUN
+			String tableName = args[1];
+			int deleteFlag = 1;
+			if(args.length == 3 && args[2] != null){
+				deleteFlag = Integer.parseInt(args[2]);
+			}
+//			int deleteFlag = 1;
+//			String shapeFile = "F:\\shapefile\\shp\\tengxunUGC.shp";
+//			String tableName = "MISS_ROAD_TENGXUN";
 
-			imp(shapeFile);
+			imp(shapeFile,tableName,deleteFlag);
 			
 			System.out.println("Over.");
 			System.exit(0);
@@ -59,7 +71,13 @@ public class ImportRenderShape2Oracle {
 		}
 	}
 	
-	public static void imp(String shapeFile)throws Exception{
+	private static int getId(Connection conn,String tableName)throws SQLException{
+		String sql = "SELECT "+tableName+"_SEQ.NEXTVAL FROM DUAL";
+		return runner.queryForInt(conn, sql);
+	}
+	
+	
+	public static void imp(String shapeFile, String tableName, int deleteFlag)throws Exception{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{
@@ -71,20 +89,27 @@ public class ImportRenderShape2Oracle {
 					DbConnectConfig.createConnectConfig(manInfo.getConnectParam()));
 			conn = manSchema.getPoolDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			List<VectorTabSuspect> vtsList = parseShape(shapeFile);
+			List<ShapeModel> vtsList = parseShape(shapeFile);
 			/*List<VectorTabSuspect> vtsList = new ArrayList<VectorTabSuspect>();
 			VectorTabSuspect  vts1 = new VectorTabSuspect();
 				vts1.setId(1);
 				vts1.setGeometry("MULTILINESTRING ((108.00903921127319 35.038537865448, 108.00880317687988 35.038387661743165, 108.00777320861816 35.03810871200562, 108.00755863189697 35.0379799659729, 108.00727968215942 35.03795850830078, 108.00584201812744 35.03755081253052, 108.00436143875122 35.03703582839966, 108.0024302482605 35.03656375961304, 107.9953706741333 35.034375077056886, 107.99217348098755 35.03347385482788, 107.99137954711914 35.033173447418214, 107.99028520584106 35.032915955352784, 107.98833255767822 35.03229368286133, 107.98753862380981 35.03197181777954, 107.98732404708862 35.03195036010742, 107.9861867904663 35.03145683364868, 107.98453454971313 35.03111351089478, 107.98157339096069 35.03074873046875, 107.97977094650268 35.030426865386964, 107.97882680892944 35.03034103469849, 107.97781829833984 35.030147915649415, 107.97734622955322 35.030147915649415, 107.97623043060302 35.02995479660034, 107.97623043060302 35.02995479660034))");
 			vtsList.add(vts1);*/
 			int count = 0;
-			if(vtsList != null && vtsList.size() >0){
+			if(vtsList != null && vtsList.size() >0 ){
 				//write vtsList
-				String insCitySql = "INSERT INTO vector_tab_suspect (ID,GEOMETRY) VALUES (?,SDO_GEOMETRY(?,8307))";
-				String deleteSql = " delete vector_tab_suspect ";
-				run.execute(conn, deleteSql);
-				for(VectorTabSuspect vts:vtsList){
-					int id = vts.getId();
+				String insCitySql = "INSERT INTO "+tableName+" (RID,GEOMETRY) VALUES (?,SDO_GEOMETRY(?,8307))";
+				
+				if(deleteFlag > 0){//当 deleteFlag > 0 则清除数据库表
+					String deleteSql = " delete "+tableName+" ";
+					run.execute(conn, deleteSql);
+					conn.commit();
+				}
+				
+				for(ShapeModel vts:vtsList){
+//					int id = vts.getId();
+					int id = getId(conn,tableName);
+					
 					String geo = vts.getGeometry();
 					if(geo != null ){
 						Geometry geo_mls = r.read(geo);
@@ -110,6 +135,7 @@ public class ImportRenderShape2Oracle {
 						
 //						System.out.println(count);
 					}
+					
 					/*if(count > 1000){
 						break;
 					}*/
@@ -127,12 +153,12 @@ public class ImportRenderShape2Oracle {
 		}
 	}
 	
-	public static List<VectorTabSuspect> parseShape(String shapeFile)throws Exception{
-		List<VectorTabSuspect> vtsList =null;
+	public static List<ShapeModel> parseShape(String shapeFile)throws Exception{
+		List<ShapeModel> vtsList =null;
 		 
 		ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();  
         try {  
-        	vtsList = new ArrayList<VectorTabSuspect>();
+        	vtsList = new ArrayList<ShapeModel>();
         	
             ShapefileDataStore sds = (ShapefileDataStore)dataStoreFactory.createDataStore(new File(shapeFile).toURI().toURL());  
             sds.setCharset(Charset.forName("GBK"));  
@@ -140,12 +166,12 @@ public class ImportRenderShape2Oracle {
             SimpleFeatureIterator itertor = featureSource.getFeatures().features();  
   
             while(itertor.hasNext()) {  
-            	VectorTabSuspect vts = new VectorTabSuspect();
+            	ShapeModel vts = new ShapeModel();
                 SimpleFeature feature = itertor.next();  
 //                System.out.println("geometry: "+feature.getDefaultGeometryProperty().getValue());
 //                System.out.println(feature.getAttribute("road_ID"));  
-                long idl = (long) feature.getAttribute("road_ID");
-                vts.setId( Integer.parseInt(String.valueOf(idl)) );
+                /*long idl = (long) feature.getAttribute("road_ID");
+                vts.setId( Integer.parseInt(String.valueOf(idl)) );*/
                 String geo = feature.getDefaultGeometryProperty().getValue().toString();
                 vts.setGeometry(geo);
                 vtsList.add(vts);
@@ -153,6 +179,7 @@ public class ImportRenderShape2Oracle {
             }    
                  
             itertor.close(); 
+            sds.dispose();
                 
         } catch (Exception e) {  
             e.printStackTrace();  

@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.*;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -26,6 +30,7 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -1460,6 +1465,19 @@ public class Transaction {
                     }
                 }
 
+                if (Constant.NODE_TYPES.containsKey(row.objType())) {
+                    try {
+                        int nodePid = Integer.parseInt(loadFieldValue(row, "Pid").toString());
+
+                        List<IObj> links = listLinkByNodePid(nodePid, row.objType());
+                        for (IObj obj : links) {
+                            dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
+                        }
+                    } catch (Exception e) {
+                        logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
+                    }
+                }
+
                 Geometry geometry = GeometryUtils.loadGeometry(row);
                 if (row.changedFields().containsKey("geometry")) {
                     try {
@@ -1597,7 +1615,7 @@ public class Transaction {
 
         } else if (row instanceof RdInterNode) {
 
-            return ((RdInterLink) row).getPid();
+            return ((RdInterNode) row).getPid();
 
         } else if (row instanceof RdRoad) {
 
@@ -1676,7 +1694,7 @@ public class Transaction {
                     geometry = GeoTranslator.createPoint(new Coordinate(data.getDouble("longitude"), data.getDouble("latitude")));
                     Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库移动操作...");
+                        throw new Exception("不允许进行跨大区库移动操作.");
                     }
                 }
             }
@@ -1686,30 +1704,35 @@ public class Transaction {
                         continue;
                     }
                     IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(json.getInt("objId"), false);
+                    if (!json.containsKey("data")) {
+                        return;
+                    }
+
+                    JSONObject data = json.getJSONObject("data");
                     Geometry geometry = GeometryUtils.loadGeometry(link);
                     Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(json.getJSONObject("geometry")));
+                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(data.getJSONObject("geometry")));
                     if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库修形操作...");
+                        throw new Exception("不允许进行跨大区库修形操作.");
                     }
                     if (newDbIds.size() == 1) {
                         return;
                     }
-                    if (!json.containsKey("catchInfos")) {
+                    if (!data.containsKey("catchInfos")) {
                         continue;
                     }
-                    Iterator<JSONObject> iterator = json.getJSONArray("catchInfos").iterator();
+                    Iterator<JSONObject> iterator = data.getJSONArray("catchInfos").iterator();
                     while (iterator.hasNext()) {
                         JSONObject obj = iterator.next();
                         if (obj.containsKey("catchLinkPid")) {
                             link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
                             Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
                             if (dbIds.size() > 1) {
-                                throw new Exception("不允许挂接大区库接边LINK...");
+                                throw new Exception("不允许挂接大区库接边LINK.");
                             }
                         }
                         if (obj.containsKey("catchNodePid")) {
-                            throw new Exception("大区接边LINK不允许挂接NODE操作...");
+                            throw new Exception("大区接边LINK不允许挂接NODE操作.");
                         }
                     }
                 }
@@ -1723,27 +1746,22 @@ public class Transaction {
                         return;
                     }
                     JSONObject data = json.getJSONObject("data");
-                    Geometry geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"));
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (dbIds.size() == 1) {
+                    if (!data.containsKey("catchLinks")) {
                         return;
                     }
-                    if (!json.containsKey("catchLinks")) {
-                        return;
-                    }
-                    Iterator<JSONObject> iterator = json.getJSONArray("catchLinks").iterator();
+                    Iterator<JSONObject> iterator = data.getJSONArray("catchLinks").iterator();
                     while (iterator.hasNext()) {
                         final JSONObject obj = iterator.next();
                         if (obj.containsKey("linkPid")) {
                             IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
                             Set<Integer> catchDbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (catchDbIds.size() == 1) {
-                                throw new Exception("创建大区接边LINK不能挂接LINK操作...");
+                            if (catchDbIds.size() > 1) {
+                                throw new Exception("创建大区接边LINK不能挂接LINK操作.");
                             }
                         }
-                        if (obj.containsKey("nodePid")) {
-                            throw new Exception("创建大区接边LINK不允许挂接NODE操作...");
-                        }
+                        //if (obj.containsKey("nodePid")) {
+                        //    throw new Exception("创建大区接边LINK不允许挂接NODE操作.");
+                        //}
                     }
                 }
                 for (Map.Entry<ObjType, Class<IRow>> entry : Constant.FACE_TYPES.entrySet()) {
@@ -1766,7 +1784,7 @@ public class Transaction {
                         Geometry geometry = GeometryUtils.loadGeometry(row);
                         Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                         if (dbIds.size() > 1) {
-                            throw new Exception("不允许使用大区接边LINK进行线构面操作...");
+                            throw new Exception("不允许使用大区接边LINK进行线构面操作.");
                         }
                     }
                 }
@@ -1785,6 +1803,25 @@ public class Transaction {
                         assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "eNodePid").toString()));
                     }
                 }
+                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.NODE_TYPES.entrySet()) {
+                    if (!entry.getKey().equals(objType)) {
+                        continue;
+                    }
+                    int nodePid = json.getInt("objId");
+                    IRow node = new AbstractSelector(entry.getValue(), process.getConn()).loadById(nodePid, false);
+                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(node));
+                    if (dbIds.size() > 1) {
+                        return;
+                    }
+
+                    List<IObj> links = listLinkByNodePid(nodePid, entry.getKey());
+                    for (IObj obj : links) {
+                        dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj));
+                        if (dbIds.size() > 1) {
+                            throw new Exception("不允许对大区接边LINK的非跨大区点进行删除操作.");
+                        }
+                    }
+                }
             }
             if (OperType.BATCH.equals(operType) && ObjType.RDLINK.equals(objType)) {
                 if (!json.containsKey("data")) {
@@ -1801,7 +1838,7 @@ public class Transaction {
                     Geometry geometry = GeometryUtils.loadGeometry(row);
                     Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量编辑操作...");
+                        throw new Exception("不允许对大区接边LINK进行批量编辑操作.");
                     }
                 }
             }
@@ -1816,12 +1853,12 @@ public class Transaction {
                     Geometry geometry = GeometryUtils.loadGeometry(row);
                     Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                     if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量删除操作...");
+                        throw new Exception("不允许对大区接边LINK进行批量删除操作.");
                     }
                 }
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -1832,19 +1869,7 @@ public class Transaction {
      * @throws Exception
      */
     private void assertConnectionLink(int linkPid, int nodePid) throws Exception {
-        List<IObj> objs = new ArrayList<>();
-        switch (objType) {
-            case RDLINK:
-                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case LCLINK:
-                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case LULINK:
-                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ADLINK:
-                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ZONELINK:
-                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-        }
+        List<IObj> objs = listLinkByNodePid(nodePid, objType);
 
         for (IObj obj : objs) {
             if (obj.pid() == linkPid) {
@@ -1854,9 +1879,36 @@ public class Transaction {
             Geometry geometry = GeometryUtils.loadGeometry(obj);
             Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
             if (dbIds.size() == 1) {
-                throw new Exception("删除接边LINK时请优先删除挂接LINK...");
+                throw new Exception("删除接边LINK时请优先删除挂接LINK.");
             }
         }
+    }
+
+    private List<IObj> listLinkByNodePid(int pid, ObjType tpye) throws Exception {
+        List<IObj> objs = new ArrayList<>();
+        switch (tpye) {
+            case RDNODE:
+                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(pid, false));  break;
+            case LCNODE:
+                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case LUNODE:
+                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case ADNODE:
+                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case ZONENODE:
+                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
+            case RDLINK:
+                objs.add((IObj) new AbstractSelector(RdLink.class, process.getConn()).loadById(pid, false)); break;
+            case LCLINK:
+                objs.add((IObj) new AbstractSelector(LcLink.class, process.getConn()).loadById(pid, false)); break;
+            case LULINK:
+                objs.add((IObj) new AbstractSelector(LuLink.class, process.getConn()).loadById(pid, false)); break;
+            case ADLINK:
+                objs.add((IObj) new AbstractSelector(AdLink.class, process.getConn()).loadById(pid, false)); break;
+            case ZONELINK:
+                objs.add((IObj) new AbstractSelector(ZoneLink.class, process.getConn()).loadById(pid, false)); break;
+        }
+        return objs;
     }
 
     /**
@@ -1885,10 +1937,13 @@ public class Transaction {
     private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
         StringBuffer patter = new StringBuffer("^(");
 
-        patter.append("RD_LINK|RD_NODE");
+        patter.append("RD_LINK|RD_NODE|RD_LANE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
-        patter.append("|RD_WARINGINFO|RD_LINK_WARING");
+        patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
+        patter.append("|RD_TRAFFICSIGNAL");
+        patter.append("|RD_TMCLOCATION_LINK");
+        patter.append("|RD_SPEEDBUMP");
         patter.append("|RD_ELECTRONICEYE|RD_ELECEYE_PAIR|RD_ELECEYE_PART");
 
         patter.append(").*");
@@ -1897,6 +1952,7 @@ public class Transaction {
         Iterator<Integer> pidIterator = pids.iterator();
         while (rowIterator.hasNext()) {
             IRow row = rowIterator.next();
+            int pid = pidIterator.next();
             String tableName = row.tableName().toUpperCase();
             if (!tableName.matches(patter.toString())) {
                 logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
@@ -2003,8 +2059,13 @@ public class Transaction {
     public String run() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -2020,6 +2081,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2044,12 +2108,15 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            //if (!hasOverride("run")) {
+                process.postCheck();
+            //}
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
-
-            // 执行后检查
-            process.postCheck();
         } catch (Exception e) {
             logger.error(String.format("%s操作失败，数据库进行回滚，requester: %s", objType, requester), e);
             for (AbstractProcess process : processes) {
@@ -2073,8 +2140,13 @@ public class Transaction {
     public String innerRun() throws Exception {
         List<AbstractCommand> commands = new ArrayList<>();
         List<AbstractProcess> processes = new ArrayList<>();
-        commands.add(initCommand(requester));
-        processes.add(createProcess(commands.iterator().next()));
+        AbstractCommand abstractCommand = initCommand(requester);
+        commands.add(abstractCommand);
+        AbstractProcess abstractProcess = createProcess(abstractCommand);
+        processes.add(abstractProcess);
+        if (abstractCommand.isHasConn()) {
+            abstractProcess.setConn(conn);
+        }
 
         String msg = "";
         try {
@@ -2090,6 +2162,9 @@ public class Transaction {
 
             // 处理提示信息
             if (infect == 1) {
+                if (StringUtils.isNotEmpty(msg)) {
+                    return msg;
+                }
                 return delPrompt(result);
             }
 
@@ -2111,6 +2186,12 @@ public class Transaction {
                 recordData(pro, res);
             }
 
+            // 执行后检查
+            if (!hasOverride("innerRun")) {
+                process.postCheck();
+            }
+
+            // 数据入库
             for (AbstractProcess process : processes) {
                 process.getConn().commit();
             }
@@ -2119,12 +2200,35 @@ public class Transaction {
             for (AbstractProcess process : processes) {
                 DBUtils.rollBack(process.getConn());
             }
+            throw e;
         } finally {
             for (AbstractProcess process : processes) {
+                if (process.getConn() == conn) {
+                    continue;
+                }
                 DBUtils.closeConnection(process.getConn());
             }
         }
         return msg;
+    }
+
+    /**
+     * 判断子类是否已经重写了methodName方法
+     * 如果重写过了则默认子类进行调用
+     * @param methodName
+     * @return
+     */
+    private boolean hasOverride(String methodName) {
+        Class clazz = process.getClass();
+        boolean flag = false;
+
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (methodName.equals(method.getName()) && method.getParameterTypes().length == 0) {
+                flag =  true;
+            }
+        }
+        return flag;
     }
 
     /**

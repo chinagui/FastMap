@@ -1,19 +1,15 @@
 package com.navinfo.dataservice.control.row.crowdTest;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.control.row.crowds.RowCrowdsControl;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONObject;
 
 public class TestCrowd {
@@ -32,7 +28,7 @@ public class TestCrowd {
 			RowCrowdsControl control = new RowCrowdsControl();
 			String str = "{\"data\": {    \"REAUDITNAME\": \"开发用例04\",    \"REAUDITADDRESS\": \"锦业路12\",    \"REAUDITPHONE\": \"010-88888888\",    \"RECLASSCODE\": \"110101\",    \"GEOX\": 116.35961,    \"GEOY\": 39.91454,    \"GEOX1\": 116.35959,    \"GEOY1\": 39.91456,    \"GEOX2\": 116.35859,    \"GEOY2\": 39.91456,    \"GEOX3\": 0,    \"GEOY3\": 0,    \"GEOX4\": 0,    \"GEOY4\": 0,    \"FID\": \"30020170605151823001\",    \"EDITHISTORY\": [{\"newValue\": {\"location\":{ \"latitude\": 31.409682494153515, \"longitude\": 121.42497241170153}},\"oldValue\": {\"location\":{ \"latitude\": 31.4097374341083, \"longitude\": 121.424965706179}}}],    \"PHOTO\": {        \"p1\": \"137ddc9149c511e78c23a4db305c0475.jpg\",        \"p2\": \"284fc1ae49c511e7a6f4a4db305c0475.jpg\"    },    \"BATCHTASK_ID\": 0,    \"GATHERUSERID\": 78,    \"DESCP\": null,    \"STATE\": 1}}";
 			JSONObject reqJson = JSONObject.fromObject(str);
-			String msg = control.release(reqJson);
+			JSONObject msg = control.release(reqJson);
 			
 			System.out.println(msg);
 		} catch (Exception e) {
@@ -70,7 +66,24 @@ public class TestCrowd {
 		RowCrowdsControl control = new RowCrowdsControl();
 //		JSONObject result = control.getTelephone(x, y);
 //		System.out.println(result);
-		System.out.println(control.getDailyDbId(116.330015199342, 39.9264604897165));
+		System.out.println(control.getDailyDbId(116.4300328, 39.85880944));
 		
 	}
+	
+	@Test
+	public void testChargeData2Day() {
+
+		try {
+			RowCrowdsControl control = new RowCrowdsControl();
+			String str = "{\"data\": {    \"REAUDITNAME\": \"开发用例04\",    \"REAUDITADDRESS\": \"锦业路12\",    \"REAUDITPHONE\": \"010-88888888\",    \"RECLASSCODE\": \"110101\",    \"GEOX\": 116.35961,    \"GEOY\": 39.91454,    \"GEOX1\": 116.35959,    \"GEOY1\": 39.91456,    \"GEOX2\": 116.35859,    \"GEOY2\": 39.91456,    \"GEOX3\": 0,    \"GEOY3\": 0,    \"GEOX4\": 0,    \"GEOY4\": 0,    \"FID\": \"30020170605151823001\",    \"EDITHISTORY\": [{\"newValue\": {\"location\":{ \"latitude\": 31.409682494153515, \"longitude\": 121.42497241170153}},\"oldValue\": {\"location\":{ \"latitude\": 31.4097374341083, \"longitude\": 121.424965706179}}}],    \"PHOTO\": {        \"p1\": \"137ddc9149c511e78c23a4db305c0475.jpg\",        \"p2\": \"284fc1ae49c511e7a6f4a4db305c0475.jpg\"    },    \"BATCHTASK_ID\": 0,    \"GATHERUSERID\": 78,    \"DESCP\": null,    \"STATE\": 1}}";
+			JSONObject reqJson = JSONObject.fromObject(str);
+			JSONObject msg = control.release(reqJson);
+			
+			System.out.println(msg);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }

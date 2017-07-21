@@ -494,8 +494,20 @@ public class UserInfoService {
 	public List<UserInfo> list(UserGroup bean) throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			return list(conn,bean);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public List<UserInfo> list(Connection conn,UserGroup bean) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
 			String selectSql = "select us.* from user_info us,group_user_mapping gum where us.user_id=gum.user_id and gum.group_id=? ";
 
 			List<Object> values = new ArrayList<Object>();
@@ -527,9 +539,7 @@ public class UserInfoService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 
 	public List<String> getUploadTime(Integer userId, String deviceId) throws ServiceException {
@@ -598,14 +608,12 @@ public class UserInfoService {
 	 */
 	public int queryQualityLevel(long userId,String firstWorkItem) throws ServiceException{
 		Connection conn=null;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
 		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item='"+firstWorkItem+"' AND u.user_id="+userId+" AND pc.type=1 ";
 		int qcLevel=0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-
-			PreparedStatement pstmt = null;
-
-			ResultSet resultSet = null;
 
 			pstmt = conn.prepareStatement(selectSql);
 
@@ -622,6 +630,8 @@ public class UserInfoService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询user抽检等级失败，原因为:" + e.getMessage(), e);
 		}finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
@@ -632,13 +642,11 @@ public class UserInfoService {
 	 */
 	public Map<Integer, String> getUsers() throws Exception {
 		Connection conn=null;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-
 			String selectSql = "select u.user_id,u.user_real_name from user_info u ";
-
-			PreparedStatement pstmt = null;
-			ResultSet resultSet = null;
 
 			pstmt = conn.prepareStatement(selectSql);
 			resultSet = pstmt.executeQuery();
@@ -655,6 +663,8 @@ public class UserInfoService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询users，原因为:" + e.getMessage(), e);
 		}finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

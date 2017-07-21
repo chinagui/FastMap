@@ -12,6 +12,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.fileConvert.ImportOracle;
 import com.navinfo.dataservice.commons.fileConvert.LoadTab;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.navicommons.database.QueryRunner;
 
 public class commonTest {
 	
@@ -26,11 +27,17 @@ public class commonTest {
 		System.out.println("start"); 
 		commonTest test=new commonTest();
 		test.before();
+		
+		String sql="insert into subtask_quality(quality_id,subtask_id,geometry)"
+		+ "select subtask_quality_seq.nextval,142,sdo_geometry('POLYGON ((114.56434 39.36486，114.56434 40.21208，116.79367 40.21208，116.79367 39.36486，114.56434 39.36486))',"
+		+ "8307) from dual";
 		//String filePathString="D:/temp/block_tab2json/bj.TAB";
-		String filePathString = String.valueOf(args[0]);
+		//String filePathString = String.valueOf(args[0]);
 		Connection conn=DBConnector.getInstance().getManConnection();
-		List<Map<String, Object>> dataList = LoadTab.readTabReturnAllData(filePathString);
-		ImportOracle.writeOracle(conn, "test1125", dataList);
+		QueryRunner runner=new QueryRunner();
+		runner.update(conn, sql);
+		//List<Map<String, Object>> dataList = LoadTab.readTabReturnAllData(filePathString);
+		//ImportOracle.writeOracle(conn, "test1125", dataList);
 		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end"); 
 	}

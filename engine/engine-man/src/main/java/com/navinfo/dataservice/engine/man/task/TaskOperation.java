@@ -257,34 +257,30 @@ public class TaskOperation {
 	public static void insertTask(Connection conn,Task bean) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String taskIdStr="TASK_SEQ.NEXTVAL";
-			if(bean.getTaskId()!=null && bean.getTaskId()!=0){
-				taskIdStr=bean.getTaskId().toString();
-			}
-			
+			Map<String, Object> changeFields = bean.getChangeFields();
 			String insertPart="";
 			String valuePart="";
-			if (bean!=null && bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
+			if (changeFields.containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" WORK_KIND ";
 				valuePart+= "'" + bean.getWorkKind() + "'";
 			};
-			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
+			if (changeFields.containsKey("TASK_ID")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TASK_ID ";
 				valuePart+=bean.getTaskId();
 			};
-			if (bean!=null&&bean.getProgramId()!=null && bean.getProgramId()!=0 && StringUtils.isNotEmpty(bean.getProgramId().toString())){
+			if (changeFields.containsKey("PROGRAM_ID")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PROGRAM_ID ";
 				valuePart+=bean.getProgramId();
 			};
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" NAME ";
 				valuePart+= "'" + bean.getName() + "'";
 			};
-			if (bean!=null&&bean.getBlockId()!=null && bean.getBlockId()!=0 && StringUtils.isNotEmpty(bean.getBlockId().toString())){
+			if (changeFields.containsKey("BLOCK_ID")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" BLOCK_ID ";
 				valuePart+=bean.getBlockId();
@@ -292,57 +288,57 @@ public class TaskOperation {
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
 			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" DESCP ";
 				valuePart+="'"+bean.getDescp()+"'";
 			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PLAN_START_DATE ";
 				valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PLAN_END_DATE ";
 				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
+			if (changeFields.containsKey("TYPE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TYPE ";
 				valuePart+=bean.getType();
 			};
-			if (bean!=null&&bean.getLot()!=null && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (changeFields.containsKey("LOT")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" LOT";
 				valuePart+= bean.getLot();
 			};
-			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (changeFields.containsKey("GROUP_ID")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" GROUP_ID ";
 				valuePart+=bean.getGroupId();
 			};
-			if (bean!=null&&bean.getRegionId()!=null && bean.getRegionId()!=0 && StringUtils.isNotEmpty(bean.getRegionId().toString())){
+			if (changeFields.containsKey("REGION_ID")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" REGION_ID ";
 				valuePart+=bean.getRegionId();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (changeFields.containsKey("ROAD_PLAN_TOTAL")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" ROAD_PLAN_TOTAL ";
 				valuePart+=bean.getRoadPlanTotal();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && bean.getPoiPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (changeFields.containsKey("POI_PLAN_TOTAL")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" POI_PLAN_TOTAL ";
 				valuePart+=bean.getPoiPlanTotal();
 			};
-			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PRODUCE_PLAN_START_DATE ";
 				valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+			if (changeFields.containsKey("PRODUCE_PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PRODUCE_PLAN_END_DATE";
 				valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
@@ -356,1251 +352,66 @@ public class TaskOperation {
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
-	
-//	public static Page getCommonUnPushListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 记录默认排序原则：根据城市名称排序
-//			 * 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据任务状态筛选，可多选
-//			 * • 点击更多，跳转到<全国任务详情列表>页面，可进行批量操作
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("cityId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
-//					if ("taskStatus".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
-//					if ("cityPlanStatus".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.CITY_PLAN_STATUS="+conditionJson.getInt(key);}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;
-//							if(tmp==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.CITY_PLAN_STATUS =0";}
-//							if(tmp==2){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.TASK_STATUS =2";}
-//						}
-//					}
-//				}
-//			}	
-//			if(!statusSql.isEmpty()){//有非status
-//				conditionSql+=" and ("+statusSql+")";}
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "         T.NAME TASK_NAME,"
-//					+ "         C.CITY_ID,"
-//					+ "         C.CITY_NAME,"
-//					+ "         C.PLAN_STATUS CITY_PLAN_STATUS,"
-//					+ "         T.STATUS TASK_STATUS, "
-//					+ "         T.DESCP TASK_DESCP, "
-//					+ "         1 TASK_TYPE"
-//					+ "    FROM TASK T, CITY C"
-//					+ "   WHERE T.CITY_ID=C.CITY_ID"
-//					+ "   AND C.CITY_ID NOT IN (100000,100001,100002)"
-//					+ "   AND T.STATUS=2"
-//					+ "   AND T.LATEST=1"
-//					+ "  UNION"
-//					+ "  SELECT 0,"
-//					+ "         '---',"
-//					+ "         C.CITY_ID,"
-//					+ "         C.CITY_NAME,"
-//					+ "         C.PLAN_STATUS,"
-//					+ "         0,"
-//					+ "         '---' TASK_DESCP, "
-//					+ "         1 TASK_TYPE"
-//					+ "    FROM CITY C"
-//					+ "   WHERE C.CITY_ID NOT IN (100000,100001,100002)"
-//					+ "   AND C.PLAN_STATUS=0),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.CITY_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getUnPushSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getCommonPushListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 记录默认排序原则：
-//			 * ①根据剩余工期排序，逾期>剩余
-//			 * ②相同剩余工期，根据完成度排序，完成度高>完成度低
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选 采集/日编 正常/异常/完成
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("cityId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
-//					if ("collectProgress".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-//					if ("dailyProgress".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成,12月编正常,13月编异常,14月编完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						JSONArray collectProgress=new JSONArray();
-//						JSONArray dailyProgress=new JSONArray();
-//						JSONArray monthlyProgress=new JSONArray();
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;
-//							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
-//							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
-//							if(tmp==12||tmp==13||tmp==14){monthlyProgress.add(tmp-11);}
-//						}
-//						if(!collectProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
-//						if(!dailyProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
-//						if(!monthlyProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.monthly_Progress IN ("+monthlyProgress.join(",")+")";}
-//					}
-//				}
-//			}	
-//			if(!statusSql.isEmpty()){//有非status
-//				conditionSql+=" and ("+statusSql+")";}
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.CITY_ID,"
-//					+ "       C.CITY_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       1 TASK_TYPE,"
-//					+ "       NVL(S.PERCENT,0) PERCENT,"
-//					+ "       NVL(S.DIFF_DATE,0) DIFF_DATE,"
-//					+ "       NVL(S.PROGRESS,0) PROGRESS,"
-//					+ "       NVL(S.COLLECT_PROGRESS,0) COLLECT_PROGRESS,"
-//					+ "       NVL(S.COLLECT_PERCENT,0) COLLECT_PERCENT,"
-//					+ "       NVL(S.DAILY_PROGRESS,0) DAILY_PROGRESS,"
-//					+ "       NVL(S.DAILY_PERCENT,0) DAILY_PERCENT,"
-//					+ "       NVL(S.MONTHLY_PROGRESS,0) MONTHLY_PROGRESS,"
-//					+ "       NVL(S.MONTHLY_PERCENT,0) MONTHLY_PERCENT"
-//					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S"
-//					+ " WHERE T.CITY_ID = C.CITY_ID"
-//					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.STATUS = 1"
-//					+ "   AND T.LATEST = 1"
-//					+ "   AND (EXISTS(SELECT 1"
-//					+ "                    FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID"
-//					+ "                     AND M.STATUS <> 0)"
-//					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getCommonOverListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 
-//			 * 记录默认排序原则：
-//			 * ①根据状态排序，100%>已关闭
-//			 * ②根据剩余工期排序，逾期>按时>提前
-//			 * ③根据任务名称排序
-//			 * 
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("cityId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
-//					if ("diffDate".equals(key)) {
-//						JSONArray diffDateArray=conditionJson.getJSONArray(key);
-//						for(Object diffDate:diffDateArray){
-//							if((int) diffDate==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if((int) diffDate==0){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if((int) diffDate==-1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//							}
-//						}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;												
-//							if(tmp==9){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if(tmp==10){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if(tmp==11){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//						}
-//					}
-//				}	
-//				if(!statusSql.isEmpty()){//有非status
-//					conditionSql+=" and ("+statusSql+")";}	
-//			}			
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.CITY_ID,"
-//					+ "       C.CITY_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       1 TASK_TYPE,"
-//					+ "       S.PERCENT,"
-//					+ "       S.DIFF_DATE,"
-//					+ "       S.PROGRESS,"
-//					+ "       S.COLLECT_PROGRESS,"
-//					+ "       S.COLLECT_PERCENT,"
-//					+ "       S.DAILY_PROGRESS,"
-//					+ "       S.DAILY_PERCENT,"
-//					+ "       S.MONTHLY_PROGRESS,"
-//					+ "       S.MONTHLY_PERCENT"
-//					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
-//					+ " WHERE T.CITY_ID = C.CITY_ID"
-//					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.TASK_ID = BM.TASK_ID"
-//					//+ "   AND S.PERCENT = 100"
-//					+ "   AND T.STATUS = 1"
-//					+ "   AND T.LATEST = 1"
-//					+ "   AND NOT EXISTS(SELECT 1"
-//					+ "                    FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID"
-//					+ "                     AND M.LATEST = 1"
-//					+ "                     AND M.STATUS <> 0)),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.TASK_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getCommonCloseListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 
-//			 * 记录默认排序原则：
-//			 * ①根据状态排序，100%>已关闭
-//			 * ②根据剩余工期排序，逾期>按时>提前
-//			 * ③根据任务名称排序
-//			 * 
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("cityId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
-//					if ("diffDate".equals(key)) {
-//						JSONArray diffDateArray=conditionJson.getJSONArray(key);
-//						for(Object diffDate:diffDateArray){
-//							if((int) diffDate==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if((int) diffDate==0){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if((int) diffDate==-1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//							}
-//						}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;												
-//							if(tmp==9){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if(tmp==10){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if(tmp==11){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//						}
-//					}
-//				}	
-//				if(!statusSql.isEmpty()){//有非status
-//					conditionSql+=" and ("+statusSql+")";}	
-//			}			
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.CITY_ID,"
-//					+ "       C.CITY_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       1 TASK_TYPE,"
-//					+ "       S.PERCENT,"
-//					+ "       S.DIFF_DATE,"
-//					+ "       S.PROGRESS,"
-//					+ "       S.COLLECT_PROGRESS,"
-//					+ "       S.COLLECT_PERCENT,"
-//					+ "       S.DAILY_PROGRESS,"
-//					+ "       S.DAILY_PERCENT,"
-//					+ "       S.MONTHLY_PROGRESS,"
-//					+ "       S.MONTHLY_PERCENT"
-//					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S"
-//					+ " WHERE T.CITY_ID = C.CITY_ID"
-//					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.STATUS = 0"
-//					+ "   AND T.LATEST = 1),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.TASK_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getInforUnPushListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 记录默认排序原则：根据城市名称排序
-//			 * 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据任务状态筛选，可多选
-//			 * • 点击更多，跳转到<全国任务详情列表>页面，可进行批量操作
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("taskStatus".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
-//					if ("inforId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
-//					if ("blockPlanStatus".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.INFOR_PLAN_STATUS="+conditionJson.getInt(key);}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;
-//							if(tmp==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.INFOR_PLAN_STATUS =0";}
-//							if(tmp==2){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.TASK_STATUS =2";}	
-//						}
-//					}
-//					
-//				}
-//				
-//			}	
-//			if(!statusSql.isEmpty()){//有非status
-//				conditionSql+=" and ("+statusSql+")";}
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "         T.NAME TASK_NAME,"
-//					+ "         C.INFOR_ID,"
-//					+ "         C.INFOR_NAME,"
-//					+ "         C.PLAN_STATUS INFOR_PLAN_STATUS,"
-//					+ "         T.STATUS TASK_STATUS, "
-//					+ "         T.DESCP TASK_DESCP, "
-//					+ "         4 TASK_TYPE"
-//					+ "    FROM TASK T, INFOR C"
-//					+ "   WHERE T.TASK_ID=C.TASK_ID"
-//					+ "   AND T.STATUS=2"
-//					+ "   AND T.LATEST=1"
-//					+ "  UNION"
-//					+ "  SELECT 0,"
-//					+ "         '---',"
-//					+ "         C.INFOR_ID,"
-//					+ "         C.INFOR_NAME,"
-//					+ "         C.PLAN_STATUS,"
-//					+ "         0,"
-//					+ "         '---' TASK_DESCP, "
-//					+ "         4 TASK_TYPE"
-//					+ "    FROM INFOR C"
-//					+ "   WHERE C.PLAN_STATUS=0),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.INFOR_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getUnPushSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getInforPushListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 记录默认排序原则：
-//			 * ①根据剩余工期排序，逾期>剩余
-//			 * ②相同剩余工期，根据完成度排序，完成度高>完成度低
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选 采集/日编 正常/异常/完成
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("inforId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
-//					if ("collectProgress".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-//					if ("dailyProgress".equals(key)) {
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						JSONArray collectProgress=new JSONArray();
-//						JSONArray dailyProgress=new JSONArray();
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;
-//							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
-//							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}												
-//						}
-//						if(!collectProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
-//						if(!dailyProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
-//					}
-//				}
-//			}	
-//			if(!statusSql.isEmpty()){//有非status
-//				conditionSql+=" and ("+statusSql+")";}
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.INFOR_ID,"
-//					+ "       C.INFOR_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       4 TASK_TYPE,"
-//					+ "       NVL(S.PERCENT,0) PERCENT,"
-//					+ "       NVL(S.DIFF_DATE,0) DIFF_DATE,"
-//					+ "       NVL(S.PROGRESS,0) PROGRESS,"
-//					+ "       NVL(S.COLLECT_PROGRESS,0) COLLECT_PROGRESS,"
-//					+ "       NVL(S.COLLECT_PERCENT,0) COLLECT_PERCENT,"
-//					+ "       NVL(S.DAILY_PROGRESS,0) DAILY_PROGRESS,"
-//					+ "       NVL(S.DAILY_PERCENT,0) DAILY_PERCENT,"
-//					+ "       NVL(S.MONTHLY_PROGRESS,0) MONTHLY_PROGRESS,"
-//					+ "       NVL(S.MONTHLY_PERCENT,0) MONTHLY_PERCENT"
-//					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S"
-//					+ " WHERE T.TASK_ID = C.TASK_ID"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.STATUS = 1"
-//					+ "   AND T.LATEST = 1"
-//					+ "   AND (EXISTS(SELECT 1"
-//					+ "                    FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID"
-//					+ "                     AND M.STATUS <> 0)"
-//					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID))"
-//					+ "   AND (EXISTS(SELECT 1"
-//					+ "                    FROM SUBTASK ST"
-//					+ "                   WHERE ST.TASK_ID = T.TASK_ID"
-//					+ "                     AND ST.STATUS <> 0)"
-//					+ "      OR NOT EXISTS(SELECT 1 FROM SUBTASK ST"
-//					+ "                   WHERE ST.TASK_ID = T.TASK_ID))),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}
-//		catch(Exception e)
-//		{
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getInforOverListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 
-//			 * 记录默认排序原则：
-//			 * ①根据状态排序，100%>已关闭
-//			 * ②根据剩余工期排序，逾期>按时>提前
-//			 * ③根据任务名称排序
-//			 * 
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("inforId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;													
-//							if(tmp==9){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if(tmp==10){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if(tmp==11){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//						}
-//					}
-//					
-//					if ("diffDate".equals(key)) {
-//						JSONArray diffDateArray=conditionJson.getJSONArray(key);
-//						for(Object diffDate:diffDateArray){
-//							if((int) diffDate==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if((int) diffDate==0){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if((int) diffDate==-1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//							}
-//						}
-//				}	
-//				if(!statusSql.isEmpty()){//有非status
-//					conditionSql+=" and ("+statusSql+")";}	
-//			}			
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.INFOR_ID,"
-//					+ "       C.INFOR_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       4 TASK_TYPE,"
-//					+ "       S.PERCENT,"
-//					+ "       S.DIFF_DATE,"
-//					+ "       S.PROGRESS,"
-//					+ "       S.COLLECT_PROGRESS,"
-//					+ "       S.COLLECT_PERCENT,"
-//					+ "       S.DAILY_PROGRESS,"
-//					+ "       S.DAILY_PERCENT,"
-//					+ "       NVL(S.MONTHLY_PROGRESS,0) MONTHLY_PROGRESS,"
-//					+ "       NVL(S.MONTHLY_PERCENT,0) MONTHLY_PERCENT"
-//					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
-//					+ " WHERE T.task_ID = C.TASK_ID"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.TASK_ID=BM.TASK_ID"
-//					//+ "   AND S.PERCENT = 100"
-//					+ "   AND T.STATUS = 1"
-//					+ "   AND T.LATEST = 1"
-//					+ "   AND NOT EXISTS(SELECT 1"
-//					+ "                    FROM BLOCK_MAN M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID"
-//					+ "                     AND M.LATEST = 1"
-//					+ "                     AND M.STATUS <> 0)"
-//					+ "   AND NOT EXISTS(SELECT 1"
-//					+ "                    FROM SUBTASK M"
-//					+ "                   WHERE M.TASK_ID = T.TASK_ID"
-//					+ "                     AND M.STATUS <> 0)),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.TASK_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	public static Page getInforCloseListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			/* 
-//			 * 记录默认排序原则：
-//			 * ①根据状态排序，100%>已关闭
-//			 * ②根据剩余工期排序，逾期>按时>提前
-//			 * ③根据任务名称排序
-//			 * 
-//			 * • 点击搜索，根据城市名称\任务名称模糊查询
-//			 * • 点击筛选，根据分类筛选，可多选
-//			 */
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("name".equals(key)){
-//						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-//					if ("inforId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
-//					if ("diffDate".equals(key)) {
-//						JSONArray diffDateArray=conditionJson.getJSONArray(key);
-//						for(Object diffDate:diffDateArray){
-//							if((int) diffDate==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if((int) diffDate==0){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if((int) diffDate==-1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//							}
-//						}
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;													
-//							if(tmp==9){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if(tmp==10){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if(tmp==11){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//						}
-//					}
-//				}	
-//				if(!statusSql.isEmpty()){//有非status
-//					conditionSql+=" and ("+statusSql+")";}	
-//			}			
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH TASK_LIST AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "       T.NAME        TASK_NAME,"
-//					+ "       C.INFOR_ID,"
-//					+ "       C.INFOR_NAME,"
-//					+ "       C.PLAN_STATUS,"
-//					+ "       T.STATUS      TASK_STATUS, "
-//					+ "       T.DESCP TASK_DESCP, "
-//					+ "       4 TASK_TYPE,"
-//					+ "       S.PERCENT,"
-//					+ "       S.DIFF_DATE,"
-//					+ "       S.PROGRESS,"
-//					+ "       S.COLLECT_PROGRESS,"
-//					+ "       S.COLLECT_PERCENT,"
-//					+ "       S.DAILY_PROGRESS,"
-//					+ "       S.DAILY_PERCENT,"
-//					+ "       NVL(S.MONTHLY_PROGRESS,0) MONTHLY_PROGRESS,"
-//					+ "       NVL(S.MONTHLY_PERCENT,0) MONTHLY_PERCENT"
-//					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S"
-//					+ " WHERE T.task_ID = C.TASK_ID"
-//					+ "   AND T.TASK_ID = S.TASK_ID(+)"
-//					+ "   AND T.STATUS = 0"
-//					+ "   AND T.LATEST = 1),"
-//					+ " FINAL_TABLE AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+ "    WHERE 1=1"
-//					+  conditionSql
-//					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.TASK_NAME DESC)"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
-//					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
-//			//System.out.println(selectSql);
-//			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	/**
-//	 * TASK_STATUS:1常规，2多源，3代理店，4情报
-//	 * @param currentPageNum
-//	 * @param pageSize
-//	 * @return
-//	 */
-//	private static ResultSetHandler<Page> getUnPushSnapshotQuery(final int currentPageNum,final int pageSize){
-//		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-//		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-//			public Page handle(ResultSet rs) throws SQLException {
-//				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-//				Page page = new Page(currentPageNum);
-//			    page.setPageSize(pageSize);
-//			    int total=0;
-//				while(rs.next()){
-//					Map<String, Object> map = new HashMap<String, Object>();
-//					map.put("taskId", rs.getInt("TASK_ID"));
-//					map.put("taskName", rs.getString("TASK_NAME"));
-//					map.put("taskDescp", rs.getString("TASK_DESCP"));
-//					
-//					if(rs.getInt("TASK_TYPE")==1){
-//						map.put("cityId", rs.getInt("CITY_ID"));
-//						map.put("cityName", rs.getString("CITY_NAME"));
-//						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));}
-//					else if(rs.getInt("TASK_TYPE")==4){
-//						map.put("inforId", rs.getString("INFOR_ID"));
-//						map.put("inforName", rs.getString("INFOR_NAME"));
-//						map.put("inforPlanStatus", rs.getInt("INFOR_PLAN_STATUS"));}
-//					map.put("taskType", rs.getInt("TASK_TYPE"));
-//					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-//					map.put("version", version);
-//					total=rs.getInt("TOTAL_RECORD_NUM");
-//					list.add(map);
-//				}
-//				page.setTotalCount(total);
-//				page.setResult(list);
-//				return page;
-//			}
-//    	};
-//    	return rsHandler;
-//	}
-//	
-//	/**
-//	 * TASK_STATUS:1常规，2多源，3代理店，4情报
-//	 * @param currentPageNum
-//	 * @param pageSize
-//	 * @return
-//	 */
-//	private static ResultSetHandler<Page> getOtherSnapshotQuery(final int currentPageNum,final int pageSize){
-//		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-//		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-//			public Page handle(ResultSet rs) throws SQLException {
-//				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-//				Page page = new Page(currentPageNum);
-//			    page.setPageSize(pageSize);
-//			    int total=0;
-//				while(rs.next()){
-//					Map<String, Object> map = new HashMap<String, Object>();
-//					map.put("taskId", rs.getInt("TASK_ID"));
-//					map.put("taskName", rs.getString("TASK_NAME"));
-//					if(rs.getInt("TASK_TYPE")==1){
-//						map.put("cityId", rs.getInt("CITY_ID"));
-//						map.put("cityName", rs.getString("CITY_NAME"));
-//						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
-//					else if(rs.getInt("TASK_TYPE")==4){
-//						map.put("inforId", rs.getString("INFOR_ID"));
-//						map.put("inforName", rs.getString("INFOR_NAME"));
-//						map.put("inforPlanStatus", rs.getInt("PLAN_STATUS"));}
-//					map.put("taskType", rs.getInt("TASK_TYPE"));
-//					map.put("taskStatus", rs.getInt("TASK_STATUS"));					
-//					map.put("percent", rs.getInt("PERCENT"));
-//					map.put("diffDate", rs.getInt("DIFF_DATE"));
-//					map.put("progress", rs.getInt("PROGRESS"));
-//					map.put("collectProgress", rs.getInt("COLLECT_PROGRESS"));
-//					map.put("collectPercent", rs.getInt("COLLECT_PERCENT"));
-//					map.put("dailyProgress", rs.getInt("DAILY_PROGRESS"));
-//					map.put("dailyPercent", rs.getInt("DAILY_PERCENT"));
-//					map.put("monthlyProgress", rs.getInt("MONTHLY_PROGRESS"));
-//					map.put("monthlyPercent", rs.getInt("MONTHLY_PERCENT"));
-//					map.put("version", version);
-//					total=rs.getInt("TOTAL_RECORD_NUM");
-//					list.add(map);
-//				}
-//				page.setTotalCount(total);
-//				page.setResult(list);
-//				return page;
-//			}
-//    	};
-//    	return rsHandler;
-//	}
-//	
-//	public static Page getListIntegrate(Connection conn,JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-//			long pageEndNum = currentPageNum * pageSize;
-//			
-//			/*默认任务ID排序显示
-//			 *搜索功能，搜索项包括：任务 ID，任务名称，创建人，城市/情报名称；
-//			 *筛选功能，筛选项包括：任务状态(未规划/草稿/开启/关闭)
-//			 *排序功能，排序项包括：任务 ID，任务总体计划开始时间，任务总体计划结束时间,城市/情报名称,任务状态,任务类型
-//			 *搜索、筛选、排序功能可同时使用*/
-//			String conditionSql="";
-//			String statusSql="";
-//			if(null!=conditionJson && !conditionJson.isEmpty()){
-//				Iterator keys = conditionJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					if("taskStatus".equals(key) || "planStatus".equals(key)){
-//						if(!statusSql.isEmpty()){statusSql+=" or ";}
-//					}
-//					else{
-//						if(conditionSql.isEmpty()){conditionSql+=" where ";}
-//						else{conditionSql+=" and ";}}
-//					
-//					if ("upperLevelId".equals(key)) {
-//						conditionSql+=" AND TASK_LIST.UPPER_LEVEL_ID='"+conditionJson.getString(key)+"'";}
-//					
-//					//城市/情报名称
-//					if ("upperLevelName".equals(key)) {conditionSql+=" TASK_LIST.UPPER_LEVEL_NAME like '%"+conditionJson.getString(key)+"%'";}
-//					if ("taskId".equals(key)) {conditionSql+=" TASK_LIST.TASK_ID="+conditionJson.getInt(key);}
-//					if ("taskName".equals(key)) {conditionSql+=" TASK_LIST.TASK_NAME like '%"+conditionJson.getString(key)+"%'";}
-//					if ("createUserName".equals(key)) {conditionSql+=" TASK_LIST.create_User_Name like '%"+conditionJson.getString(key)+"%'";}
-//					
-//					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
-//					if("selectParam1".equals(key)){
-//						JSONArray selectParam1=conditionJson.getJSONArray(key);
-//						JSONArray collectProgress=new JSONArray();
-//						JSONArray dailyProgress=new JSONArray();
-//						for(Object i:selectParam1){
-//							int tmp=(int) i;
-//							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
-//							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
-//							if(tmp==1){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.PLAN_STATUS =0";}
-//							if(tmp==2){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.TASK_STATUS =2";}													
-//							if(tmp==9){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date=0";
-//							}
-//							if(tmp==10){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date>0";
-//							}
-//							if(tmp==11){
-//								if(!statusSql.isEmpty()){statusSql+=" or ";}
-//								statusSql+=" TASK_LIST.diff_date<0";
-//							}
-//						}
-//						if(!collectProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
-//						if(!dailyProgress.isEmpty()){
-//							if(!statusSql.isEmpty()){statusSql+=" or ";}
-//							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
-//					}
-//					
-//					if ("taskStatus".equals(key)) {statusSql+=" (TASK_LIST.TASK_STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")"
-//							+ " AND TASK_LIST.PLAN_STATUS!=0)";}
-//					if ("planStatus".equals(key)) {statusSql+=" TASK_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
-//					}
-//				if(conditionSql.isEmpty()){
-//					//只有status
-//					conditionSql+=" where "+statusSql;}
-//				else if(!statusSql.isEmpty()){//有非status
-//					conditionSql+=" and ("+statusSql+")";}
-//				}
-//			
-//			String orderSql="";
-//			if(null!=orderJson && !orderJson.isEmpty()){
-//				Iterator keys = orderJson.keys();
-//				while (keys.hasNext()) {
-//					String key = (String) keys.next();
-//					//城市/情报名称,任务状态,任务类型
-//					if ("taskId".equals(key)) {orderSql+=" order by TASK_LIST.TASK_ID "+orderJson.getString(key);break;}
-//					if ("planStartDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_START_DATE "+orderJson.getString(key);break;}
-//					if ("planEndDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_END_DATE "+orderJson.getString(key);break;}
-//					
-//					if ("upperLevelName".equals(key)) {orderSql+=" order by TASK_LIST.UPPER_LEVEL_NAME "+orderJson.getString(key);break;}
-//					if ("taskStatus".equals(key)) {orderSql+=" order by TASK_LIST.TASK_STATUS "+orderJson.getString(key);break;}
-//					if ("taskType".equals(key)) {orderSql+=" order by TASK_LIST.TASK_TYPE "+orderJson.getString(key);break;}
-//					}
-//			}else{
-//				orderSql+=" order by TASK_LIST.TASK_ID";
-//			}
-//			
-//			//分页显示列表，不带条件查询
-//			String selectSql = "WITH T AS"
-//					+ " (SELECT T.TASK_ID,"
-//					+ "         T.NAME,"
-//					+ "         T.DESCP,"
-//					+ "         T.CITY_ID,"
-//					+ "         T.TASK_TYPE,"
-//					+ "         T.PLAN_START_DATE,"
-//					+ "         T.PLAN_END_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
-//					+ "         T.MONTH_EDIT_GROUP_ID,"
-//					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
-//					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
-//					+ "         T.STATUS,"
-//					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
-//					+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
-//					+ "         G.GROUP_NAME MONTH_EDIT_GROUP_NAME,"
-//					+ "         S.PERCENT,S.collect_Progress,S.DAILY_Progress,S.DIFF_DATE,"
-//					+ "         S.MONTHLY_Progress"
-//					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK S, USER_INFO U, USER_GROUP G"
-//					+ "   WHERE S.TASK_ID(+) = T.TASK_ID"
-//					+ "     AND T.LATEST = 1"
-//					+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
-//					+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)),"
-//					+ " TASK_LIST AS"
-//					+ " (SELECT NVL(T.TASK_ID, 0) TASK_ID,"
-//					+ "         NVL(T.NAME, '---') TASK_NAME,"
-//					+ "         NVL(T.DESCP, '---') TASK_DESCP,"
-//					+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
-//					+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
-//					+ "         CASE C.CITY_ID"
-//					+ "           WHEN 100000 THEN 2"
-//					+ "           WHEN 100001 THEN 3"
-//					+ "           ELSE 1 END TASK_TYPE,"
-//					+ "         T.PLAN_START_DATE,"
-//					+ "         T.PLAN_END_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
-//					+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
-//					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
-//					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
-//					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
-//					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
-//					+ "         T.MONTH_EDIT_GROUP_NAME, "
-//					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
-//					+ "         C.PLAN_STATUS,"
-//					+ "         NVL(T.PERCENT, 0) PERCENT,"
-//					+ " NVL(T.collect_Progress, 0) collect_Progress,NVL(T.DAILY_Progress, 0) DAILY_Progress,"
-//					+ "NVL(T.DIFF_DATE, 0) DIFF_DATE,NVL(T.MONTHLY_Progress, 0) monthly_Progress "
-//					+ "    FROM T, CITY C"
-//					+ "   WHERE T.CITY_ID(+) = C.CITY_ID"
-//					+ "     AND C.CITY_ID <> 100002"
-//					+ "  UNION ALL"
-//					+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
-//					+ "         NVL(T.NAME, '---') NAME,"
-//					+ "         NVL(T.DESCP, '---') TASK_DESCP,"
-//					+ "         I.INFOR_ID,"
-//					+ "         I.INFOR_NAME,"
-//					+ "         4 TASK_TYPE,"
-//					+ "         T.PLAN_START_DATE,"
-//					+ "         T.PLAN_END_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
-//					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
-//					+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
-//					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
-//					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
-//					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
-//					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
-//					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
-//					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
-//					+ "         I.PLAN_STATUS,"
-//					+ "         NVL(T.PERCENT, 0) PERCENT,"
-//					+ " NVL(T.collect_Progress, 0) collect_Progress,NVL(T.DAILY_Progress, 0) DAILY_Progress,"
-//					+ "NVL(T.DIFF_DATE, 0) DIFF_DATE,NVL(T.MONTHLY_Progress, 0) monthly_Progress "
-//					+ "    FROM T, INFOR I"
-//					+ "   WHERE T.TASK_ID(+) = I.TASK_ID),"
-//					+ " QUERY AS"
-//					+ " (SELECT DISTINCT *"
-//					+ "    FROM TASK_LIST"
-//					+conditionSql
-//					+orderSql
-//					+ ")"
-//					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-//					+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"
-//					+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM QUERY T WHERE ROWNUM <= "+pageEndNum+") T"
-//					+ " WHERE T.ROWNUM_ >= "+pageStartNum;
-//			return run.query(conn, selectSql, getIntegrateQuery(currentPageNum,pageSize));		
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
-//	
-//	/**
-//	 * TASK_STATUS:1常规，2多源，3代理店，4情报
-//	 * @param currentPageNum
-//	 * @param pageSize
-//	 * @return
-//	 */
-//	private static ResultSetHandler<Page> getIntegrateQuery(final int currentPageNum,final int pageSize){
-//		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
-//          C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
-//          T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,
-//          NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,T.MONTH_PRODUCE_PLAN_START_DATE,
-//          T.MONTH_PRODUCE_PLAN_END_DATE,NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,
-//          NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,
-//          NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,
-//          ROWNUM_,TOTAL_RECORD_NUM*/
-//		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-//		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-//			public Page handle(ResultSet rs) throws SQLException {
-//				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-//				Page page = new Page(currentPageNum);
-//			    page.setPageSize(pageSize);
-//			    int total=0;
-//				while(rs.next()){
-//					Map<String, Object> map = new HashMap<String, Object>();
-//					map.put("taskId", rs.getInt("TASK_ID"));
-//					map.put("taskName", rs.getString("TASK_NAME"));
-//					map.put("taskDescp", rs.getString("TASK_DESCP"));
-//					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
-//					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
-//					map.put("taskType", rs.getInt("TASK_TYPE"));
-//					map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
-//					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
-//					map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
-//					map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
-//					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
-//					map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
-//					map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
-//					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-//					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
-//					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
-//					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-//					map.put("upperPlanStatus", rs.getInt("PLAN_STATUS"));
-//					map.put("percent", rs.getInt("PERCENT"));
-//					map.put("version", version);
-//					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
-//					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
-//					total=rs.getInt("TOTAL_RECORD_NUM");
-//					list.add(map);
-//				}
-//				page.setTotalCount(total);
-//				page.setResult(list);
-//				return page;
-//			}
-//    	};
-//    	return rsHandler;
-//	}
-//		
+		
 	public static void updateTask(Connection conn,Task bean) throws Exception{
 		try{
+			Map<String, Object> changeFields = bean.getChangeFields();
 			String baseSql = "update task set ";
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" DESCP= '" + bean.getDescp() + "'";
 			};
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" NAME='" + bean.getName() + "'";
 			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" PLAN_START_DATE=to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" PLAN_END_DATE=to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" PRODUCE_PLAN_START_DATE=to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+			if (changeFields.containsKey("PRODUCE_PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" PRODUCE_PLAN_END_DATE=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=null && bean.getLot()!=0 && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (changeFields.containsKey("LOT")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LOT= " + bean.getLot();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (changeFields.containsKey("POI_PLAN_TOTAL")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" poi_plan_total= " + bean.getPoiPlanTotal();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (changeFields.containsKey("ROAD_PLAN_TOTAL")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" road_plan_total= " + bean.getRoadPlanTotal();
 			};
-			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (changeFields.containsKey("GROUP_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GROUP_ID= "+bean.getGroupId();
 			};
-			if (bean!=null&&bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
+			if (changeFields.containsKey("WORK_KIND")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
-			if (bean!=null&&bean.getOverdueReason()!=null && StringUtils.isNotEmpty(bean.getOverdueReason())){
+			if (changeFields.containsKey("OVERDUE_OTHER")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_reason='" + bean.getOverdueReason() + "'";
 			};
-			if (bean!=null&&bean.getOverdueOtherReason()!=null && StringUtils.isNotEmpty(bean.getOverdueOtherReason())){
+			if (changeFields.containsKey("OVERDUE_OTHER_REASON")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_other_reason='" + bean.getOverdueOtherReason() + "'";
 			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				updateSql+=" where TASK_ID=" + bean.getTaskId();
-			};
+			updateSql+=" where TASK_ID=" + bean.getTaskId();
 			run.update(conn,baseSql+updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -2220,6 +1031,76 @@ public class TaskOperation {
 		}
 		
 	}
+	
+	/**
+	 * 中线采集任务范围调整
+	 * @param Connection
+	 * @param List<Integer>
+	 * @param Subtask
+	 * @throws Exception 
+	 * 
+	 * */
+	public static void changeTaskGridByGrids(Connection conn, List<Integer> grids, Subtask subtask) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "insert into TASK_GRID_MAPPING (TASK_ID, GRID_ID, TYPE) VALUES (?,?,?)";
+			Object[][] param = new Object[grids.size()][];
+			int i = 0;
+			for(int grid : grids){
+				Object[] temp = new Object[3];
+				temp[0] = subtask.getTaskId();
+				temp[1] = grid;
+				temp[2] = 2;
+				param[i] = temp;
+				i++;
+			}
+			run.batch(conn, sql, param);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("中线采集任务范围更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
+	 * 根据项目修改对应月编任务范围，快线的月编任务范围和任务对应的项目范围一致
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception 
+	 * 
+	 */
+	public static int changeMonthTaskGridByProgram(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "     FROM PROGRAM_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "    WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.PROGRAM_ID = P.PROGRAM_ID"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT UT.TASK_ID, M.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "   WHERE T.TASK_ID = "+taskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4";
+			log.info("根据项目调整月编任务sql："+sql);
+			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 
 	/**
 	 * @param conn
@@ -2465,7 +1346,8 @@ public class TaskOperation {
 	public static void changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-
+			//modify by songhe
+			//删除task.type对应=3的二代编辑任务
 			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
 					+ "  (TASK_ID, GRID_ID, TYPE)"
 					+ "  SELECT UT.TASK_ID, GRID_ID, 2"
@@ -2474,7 +1356,7 @@ public class TaskOperation {
 					+ "     AND S.TASK_ID = M.TASK_ID"
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
-					+ "     AND UT.TYPE IN (1, 3)"
+					+ "     AND UT.TYPE = 1"
 					+ "  MINUS"
 					+ "  SELECT UT.TASK_ID, T.GRID_ID, 2"
 					+ "    FROM TASK_GRID_MAPPING T, TASK S, TASK UT"
@@ -2482,7 +1364,7 @@ public class TaskOperation {
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
 					+ "     AND UT.TASK_ID = T.TASK_ID"
-					+ "     AND UT.TYPE IN (1, 3)";
+					+ "     AND UT.TYPE = 1";
 			run.update(conn, createMappingSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

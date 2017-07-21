@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
 public class TipsUtils {
 	
 
-	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211 }; // 不下载的tips
+	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211,1520 }; // 不下载的tips
 	
 	//关于空值得定义：对象NULL,数据[]，字符串""
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
@@ -169,11 +169,10 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
-        //Tips上传赋值为0，无需赋值
-//        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
-//        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
-//        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
-//        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
+        tipsIndexModel.setT_dEditStatus(trackJson.getInt("t_dEditStatus"));
+        tipsIndexModel.setT_dEditMeth(trackJson.getInt("t_dEditMeth"));
+        tipsIndexModel.setT_mEditStatus(trackJson.getInt("t_mEditStatus"));
+        tipsIndexModel.setT_mEditMeth(trackJson.getInt("t_mEditMeth"));
 
         return tipsIndexModel;
 	}
@@ -181,17 +180,23 @@ public class TipsUtils {
     public static TipsIndexModel generateSolrIndex(String rowkey, String operateDate,
                                                    JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
                                                    JSONObject deepJson, JSONObject feedbackJson) throws Exception {
-        JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
-        int size = trackInfoArr.size();
-        JSONObject lastTrackInfo = trackInfoArr.getJSONObject(size - 1);
+
         TipsIndexModel tipsIndexModel = new TipsIndexModel();
+        if(trackJson.containsKey("t_trackInfo")) {
+            JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
+            int size = trackInfoArr.size();
+            if(size > 0) {
+                JSONObject lastTrackInfo = trackInfoArr.getJSONObject(size - 1);
+                tipsIndexModel.setStage(lastTrackInfo.getInt("stage"));
+                tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
+            }
+        }
+
         tipsIndexModel.setId(rowkey);
-        tipsIndexModel.setStage(lastTrackInfo.getInt("stage"));
         tipsIndexModel.setT_date(trackJson.getString("t_date"));//当前时间
         tipsIndexModel.setT_operateDate(operateDate);//t_operateDate原值导入
         tipsIndexModel.setT_lifecycle(trackJson.getInt("t_lifecycle"));
         tipsIndexModel.setT_command(trackJson.getInt("t_command"));
-        tipsIndexModel.setHandler(lastTrackInfo.getInt("handler"));
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
         tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
 

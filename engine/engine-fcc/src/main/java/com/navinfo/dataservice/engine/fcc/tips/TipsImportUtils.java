@@ -1,23 +1,20 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.json.JSONException;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.io.ParseException;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.json.JSONException;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * tips导入辅助工具，如rowkey生成，source生成
@@ -220,7 +217,7 @@ public class TipsImportUtils {
 		}
 
 		if (geos.size() == 1) {
-			return GeoTranslator.jts2Wkt(geos.get(0), 0.00001, 5);
+			return GeoTranslator.jts2Wkt(geos.get(0));
 		} else {
 			/**
 			 * 20161026修改，如果复杂几何中存在相同的坐标，则保留一个，否则solr计算wkt相交有问题（
@@ -243,7 +240,7 @@ public class TipsImportUtils {
 			}
 			Geometry g = factory.createGeometryCollection(gArray);
 
-			return GeoTranslator.jts2Wkt(g, 0.00001, 5);
+			return GeoTranslator.jts2Wkt(g);
 		}
 
 	}
@@ -290,6 +287,36 @@ public class TipsImportUtils {
 		  
 		  Geometry geo= GeoTranslator.geojson2Jts(geometry);
 		
-		 return GeoTranslator.jts2Wkt(geo, 0.00001, 5);
+		 return GeoTranslator.jts2Wkt(geo);
 	}
+
+    public static JSONObject queryLinkKindFC(Connection conn, String id) throws Exception{
+        String sqlLink = "select rl.KIND,rl.FUNCTION_CLASS from rd_link rl where rl.link_pid = :1";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sqlLink);
+            pstmt.setString(1, id);
+            resultSet = pstmt.executeQuery();
+            JSONObject jsonObject = null;
+            if (resultSet.next()){//有记录
+                int kind = resultSet.getInt("KIND");
+                int fc = resultSet.getInt("FUNCTION_CLASS");
+                jsonObject = new JSONObject();
+                jsonObject.put("kind", kind);
+                jsonObject.put("fc", fc);
+            }
+            return jsonObject;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            if(pstmt != null) {
+                pstmt.close();
+            }
+            if(resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return null;
+    }
 }

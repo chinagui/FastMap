@@ -1465,18 +1465,7 @@ public class Transaction {
                     }
                 }
 
-                if (Constant.NODE_TYPES.containsKey(row.objType())) {
-                    try {
-                        int nodePid = Integer.parseInt(loadFieldValue(row, "Pid").toString());
-
-                        List<IObj> links = listLinkByNodePid(nodePid, row.objType());
-                        for (IObj obj : links) {
-                            dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
-                        }
-                    } catch (Exception e) {
-                        logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
-                    }
-                }
+                calcDbIdRefNode(dbIds, row, row);
 
                 Geometry geometry = GeometryUtils.loadGeometry(row);
                 if (row.changedFields().containsKey("geometry")) {
@@ -1664,9 +1653,32 @@ public class Transaction {
                 String className = String.format("%s.%s", row.getClass().getPackage().getName(), CaseFormat.UPPER_UNDERSCORE.to
                         (CaseFormat.UPPER_CAMEL, row.parentTableName()));
                 IRow partent = new AbstractSelector(Class.forName(className), process.getConn()).loadById(row.parentPKValue(), false);
+                calcDbIdRefNode(dbIds, row, partent);
+
                 dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(partent)));
             } catch (Exception e) {
                 logger.error(String.format("未找到对应主表信息 [row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
+            }
+        }
+    }
+
+    /**
+     * 要素类型为NODE时,根据关联LINK计算是否跨大区
+     * @param dbIds
+     * @param row
+     * @param partent
+     */
+    private void calcDbIdRefNode(Set<Integer> dbIds, IRow row, IRow partent) {
+        if (Constant.NODE_TYPES.containsKey(partent.objType())) {
+            try {
+                int nodePid = Integer.parseInt(loadFieldValue(partent, "Pid").toString());
+
+                List<IObj> links = listLinkByNodePid(nodePid, partent.objType());
+                for (IObj obj : links) {
+                    dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
+                }
+            } catch (Exception e) {
+                logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
             }
         }
     }
@@ -2110,7 +2122,7 @@ public class Transaction {
 
             // 执行后检查
             //if (!hasOverride("run")) {
-                process.postCheck();
+            process.postCheck();
             //}
 
             // 数据入库

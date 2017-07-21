@@ -30,7 +30,6 @@ public class TaskProgressOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskProgressOperation.class);
 	
 	public static int taskOther2MediumJob=1;
-	public static int midTask2QuickJob = 1;
 	
 	public static int taskCreate=0;
 	public static int taskWorking=1;

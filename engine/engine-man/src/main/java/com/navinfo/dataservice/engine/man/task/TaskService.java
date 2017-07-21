@@ -29,7 +29,6 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
@@ -4739,56 +4738,5 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-    /**
-     * 应用场景：中线任务转快线任务
-	 * @param task
-	 * @return
-     * @throws Exception 
-	 */
-	public int createMidTask2QuickJob(long userId, int dbId, int subtaskId, int taskId, JSONArray pois, JSONArray tips) throws Exception{
-		Connection conn = null;
-		ManApi manApi = null;
-		int phaseId = 0;
-		long jobId = 0L;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			//获取最新的记录
-			TaskProgress latestProgress = TaskProgressOperation.queryLatestByTaskId(conn, taskId, TaskProgressOperation.taskOther2MediumJob);
-			//无记录/成功/失败时，增加新的记录
-			if(latestProgress==null||latestProgress.getStatus()==TaskProgressOperation.taskSuccess||latestProgress.getStatus()==TaskProgressOperation.taskFail){
-				phaseId = TaskProgressOperation.getNewPhaseId(conn);
-				latestProgress=new TaskProgress();
-				latestProgress.setPhaseId(phaseId);
-				latestProgress.setTaskId(taskId);
-				latestProgress.setPhase(TaskProgressOperation.midTask2QuickJob);
-				TaskProgressOperation.create(conn, latestProgress);
-				conn.commit();
-			}
-			phaseId = latestProgress.getPhaseId();
-			JobApi api = (JobApi) ApplicationContextUtil.getBean("jobApi");
-			JSONObject request = new JSONObject();
-			request.put("dbId", dbId);
-			request.put("subtaskId", subtaskId);
-			request.put("taskId", taskId);
-			request.put("pois", pois);
-			request.put("tips", tips);
-			jobId = api.createJob("midTask2QuickJob", request, userId, taskId, "中转快");
-			
-			manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-			manApi.updateJobProgress(phaseId, 2, "jobId:"+jobId);
-			
-			TaskProgressOperation.updateProgress(conn, phaseId, 0, "jobid:"+jobId);
-			TaskProgressOperation.startProgress(conn, userId, phaseId);			
-			return phaseId;
-		}catch(Exception e){
-			log.error("", e);
-			manApi.updateJobProgress(phaseId, 3, "jobId:"+jobId);
-			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new ServiceException(e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
 		
 }

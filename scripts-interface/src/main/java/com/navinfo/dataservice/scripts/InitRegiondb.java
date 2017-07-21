@@ -390,7 +390,6 @@ public class InitRegiondb {
 				//************2016.11.11 zl****************
 				//在元数据库中创建大区库的dblink
 				createRegionDbLinks(db);
-				
 			} catch (DataHubException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -401,4 +400,5 @@ public class InitRegiondb {
 			
 		
 	}
+	
 }

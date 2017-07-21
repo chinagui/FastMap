@@ -1262,7 +1262,7 @@ public class TaskService {
 //					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
 			
 			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
 			
@@ -1272,7 +1272,7 @@ public class TaskService {
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
-			sb.append("                   AND T.latest=1");
+			//sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
@@ -1342,7 +1342,7 @@ public class TaskService {
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
@@ -1351,7 +1351,7 @@ public class TaskService {
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			sb.append("                   AND t.latest=1");
+			//sb.append("                   AND t.latest=1");
 			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");

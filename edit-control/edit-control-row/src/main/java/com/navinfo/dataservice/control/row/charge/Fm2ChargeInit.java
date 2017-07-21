@@ -57,71 +57,83 @@ public class Fm2ChargeInit {
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	
 	public JSONObject excute(List<Region> regionList) throws Exception {
-		JSONObject result = new JSONObject();
-		//1.处理大区库
-		Set<Integer> dbIds = new HashSet<Integer>();
-		Map<Integer,Integer> regionMap = new HashMap<Integer,Integer>();
-		for (Region region : regionList) {
-			if(region.getDailyDbId() != null){
-				dbIds.add(region.getDailyDbId());
-				//处理日库月库
-				if(region.getMonthlyDbId() != null){
-					regionMap.put(region.getDailyDbId(), region.getMonthlyDbId());
+		try {
+			JSONObject result = new JSONObject();
+			//1.处理大区库
+			Set<Integer> dbIds = new HashSet<Integer>();
+			Map<Integer,Integer> regionMap = new HashMap<Integer,Integer>();
+			for (Region region : regionList) {
+				if(region.getDailyDbId() != null){
+					dbIds.add(region.getDailyDbId());
+					//处理日库月库
+					if(region.getMonthlyDbId() != null){
+						regionMap.put(region.getDailyDbId(), region.getMonthlyDbId());
+					}
 				}
 			}
-		}
-		//2.开始执行导出数据
-		log.debug("开始执行导出数据");
-		Map<Integer,Integer> stats = new ConcurrentHashMap<Integer,Integer>();
-		Map<Integer,JSONObject> chargePOIs = new ConcurrentHashMap<Integer,JSONObject>();
-		long t = System.currentTimeMillis();
-		int dbSize = dbIds.size();
-		int monDbId = 0;
-		if(dbSize==1){
-			int dbId = dbIds.iterator().next();
-			if(regionMap.containsKey(dbId)){
-				monDbId = regionMap.get(dbId);
-			}
-			new Fm2ChargeExportThread(null,dbId,monDbId,chargePOIs,stats).run();
-		}else{
-			if(dbSize>10){
-				initThreadPool(10);
-			}else{
-				initThreadPool(dbSize);
-			}
-			final CountDownLatch latch = new CountDownLatch(dbSize);
-			threadPoolExecutor.addDoneSignal(latch);
-			// 执行转数据
-			for(int dbId:dbIds){
-				if(regionMap.containsKey(dbId)){
-					monDbId = regionMap.get(dbId);
+			//2.开始执行导出数据
+			log.debug("开始执行导出数据");
+			Map<Integer,Integer> stats = new ConcurrentHashMap<Integer,Integer>();
+			Map<Integer,JSONObject> chargePOIs = new ConcurrentHashMap<Integer,JSONObject>();
+			long t = System.currentTimeMillis();
+			int dbSize = dbIds.size();
+			int monDbId = 0;
+			try {
+				if(dbSize==1){
+					int dbId = dbIds.iterator().next();
+					if(regionMap.containsKey(dbId)){
+						monDbId = regionMap.get(dbId);
+					}
+					new Fm2ChargeExportThread(null,dbId,monDbId,chargePOIs,stats).run();
+				}else{
+					if(dbSize>10){
+						initThreadPool(10);
+					}else{
+						initThreadPool(dbSize);
+					}
+					final CountDownLatch latch = new CountDownLatch(dbSize);
+					threadPoolExecutor.addDoneSignal(latch);
+					// 执行转数据
+					for(int dbId:dbIds){
+						if(regionMap.containsKey(dbId)){
+							monDbId = regionMap.get(dbId);
+						}
+						threadPoolExecutor.execute(new Fm2ChargeExportThread(latch,dbId,monDbId,chargePOIs,stats));
+					}
+					latch.await();
+					if (threadPoolExecutor.getExceptions().size() > 0) {
+						throw new Exception(threadPoolExecutor.getExceptions().get(0));
+					}
 				}
-				threadPoolExecutor.execute(new Fm2ChargeExportThread(latch,dbId,monDbId,chargePOIs,stats));
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
 			}
-			latch.await();
-			if (threadPoolExecutor.getExceptions().size() > 0) {
-				throw new Exception(threadPoolExecutor.getExceptions().get(0));
+			//3.处理各大区库数据
+			JSONArray data = new JSONArray();
+			JSONArray errorLog = new JSONArray();
+			for(Map.Entry<Integer, JSONObject> entry : chargePOIs.entrySet()){
+				JSONObject jso = entry.getValue();
+				JSONArray chargePOI = jso.getJSONArray("data");
+				JSONArray chargePOILog = jso.getJSONArray("log");
+				if(chargePOI != null && chargePOI.size() > 0){
+					data.addAll(chargePOI);
+				}
+				if(chargePOILog != null && chargePOILog.size() > 0){
+					errorLog.addAll(chargePOILog);
+				}
 			}
+			result.put("total", data.size());
+			result.put("data", data);
+			result.put("log", errorLog);
+			log.debug("所有大区库导出json完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
+			
+			return result;
+		} catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			shutDownPoolExecutor();
 		}
-		//3.处理各大区库数据
-		JSONArray data = new JSONArray();
-		JSONArray errorLog = new JSONArray();
-		for(Map.Entry<Integer, JSONObject> entry : chargePOIs.entrySet()){
-			JSONObject jso = entry.getValue();
-			JSONArray chargePOI = jso.getJSONArray("data");
-			JSONArray chargePOILog = jso.getJSONArray("log");
-			if(chargePOI != null && chargePOI.size() > 0){
-				data.add(chargePOI);
-			}
-			if(chargePOILog != null && chargePOILog.size() > 0){
-				errorLog.add(chargePOILog);
-			}
-		}
-		result.put("total", data.size());
-		result.put("data", data);
-		result.put("log", errorLog);
-		log.debug("所有大区库导出json完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-		return result;
 	}
 	
 	
@@ -136,7 +148,6 @@ public class Fm2ChargeInit {
 				new LinkedBlockingQueue(),
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
-	@SuppressWarnings("unused")
 	private void shutDownPoolExecutor(){
 		if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
 			log.debug("关闭线程池");

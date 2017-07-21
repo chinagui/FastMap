@@ -31,7 +31,8 @@ public class RowChargeController extends BaseController{
 	 * @return
 	 * @throws Exception
 	 * 参数:type 1:初始化,2:增量
-	 * 		time 初始化传0,增量传具体时间"20170717200411"
+	 * 	lastSyncTime 增量传具体时间"20170717200411"
+	 * 	syncTime 增量传具体时间"20170717200411"
 	 */
 	@RequestMapping(value = "/poi/charge/download")
 	public ModelAndView run(HttpServletRequest request) throws Exception {
@@ -50,12 +51,20 @@ public class RowChargeController extends BaseController{
 			if(!paraJson.containsKey("type")){
 				throw new IllegalArgumentException("parameter参数中type不能为空。");
 			}
-			if(!paraJson.containsKey("time")){
-				throw new IllegalArgumentException("parameter参数中time不能为空。");
+			int type = paraJson.getInt("type");
+			String lastSyncTime = "";
+			String syncTime = "";
+			if(type == 2){
+				if(!paraJson.containsKey("lastSyncTime")){
+					throw new IllegalArgumentException("parameter参数中lastSyncTime不能为空。");
+				}
+				if(!paraJson.containsKey("syncTime")){
+					throw new IllegalArgumentException("parameter参数中syncTime不能为空。");
+				}
+				lastSyncTime = paraJson.getString("lastSyncTime");
+				syncTime = paraJson.getString("syncTime");
 			}
-			String type = paraJson.getString("type");
-			String time = paraJson.getString("time");
-			JSONObject data = RowChargeService.getInstance().chargePoiConvertor(type,time);
+			JSONObject data = RowChargeService.getInstance().chargePoiConvertor(type,lastSyncTime,syncTime);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

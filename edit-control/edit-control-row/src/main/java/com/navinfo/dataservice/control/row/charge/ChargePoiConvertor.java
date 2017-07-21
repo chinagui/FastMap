@@ -529,8 +529,9 @@ public class ChargePoiConvertor {
 	 * @author Han Shaoming
 	 * @param plotMap
 	 * @return
+	 * @throws Exception 
 	 */
-	private Map<String,Object> getSockerParamsAndSockerNum(Map<Long, BasicObj> plotMap){
+	private Map<String,Object> getSockerParamsAndSockerNum(Map<Long, BasicObj> plotMap) throws Exception{
 		Map<String,Object> map = new HashMap<String,Object>();
 		JSONArray sockerParams = new JSONArray();
 		JSONObject sockerNum = new JSONObject();
@@ -688,6 +689,7 @@ public class ChargePoiConvertor {
 							}
 						} catch (Exception e) {
 							log.error("pid("+pid+")的plot记录转换失败"+e.getMessage(),e);
+							throw new Exception("pid("+pid+")的plot记录转换失败"+e.getMessage(),e);
 						}
 					}
 				}
@@ -1009,8 +1011,9 @@ public class ChargePoiConvertor {
 	 * @author Han Shaoming
 	 * @param poiObj
 	 * @return
+	 * @throws Exception 
 	 */
-	private Map<String,String> getProviceAndCity(IxPoiObj poiObj,long pid){
+	private Map<String,String> getProviceAndCity(IxPoiObj poiObj,long pid) throws Exception{
 		Map<String,String> map = new HashMap<String,String>();
 		String provice = "";
 		String city = "";
@@ -1030,6 +1033,7 @@ public class ChargePoiConvertor {
 			}
 		} catch (Exception e) {
 			log.error("pid:"+pid+",查询省市名称报错,"+e.getMessage(),e);
+			throw new Exception("pid:"+pid+",查询省市名称报错,"+e.getMessage(),e);
 		}
 		map.put("provice", provice);
 		map.put("city", city);
@@ -1042,8 +1046,9 @@ public class ChargePoiConvertor {
 	 * @param poiObj
 	 * @param pid
 	 * @return
+	 * @throws Exception 
 	 */
-	private Map<String,String> getValidationDateAndUpdateDate(IxPoiObj poiObj,Connection conn,long pid){
+	private Map<String,String> getValidationDateAndUpdateDate(IxPoiObj poiObj,Connection conn,long pid) throws Exception{
 		Map<String,String> map = new HashMap<String,String>();
 		String validationDate = "20170815000000";
 		String updateDate = "20170815000000";
@@ -1081,6 +1086,7 @@ public class ChargePoiConvertor {
 			}
 		} catch (Exception e) {
 			log.error("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
+			throw new Exception("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
 		}
 		map.put("validationDate", validationDate);
 		map.put("updateDate", updateDate);
@@ -1093,8 +1099,9 @@ public class ChargePoiConvertor {
 	 * @param poiObj
 	 * @param pid
 	 * @return
+	 * @throws Exception 
 	 */
-	private String getCreateDate(IxPoiObj poiObj,Connection conn){
+	private String getCreateDate(IxPoiObj poiObj,Connection conn) throws Exception{
 		String createDate = "20170815000000";
 		IxPoi ixPoi =(IxPoi) poiObj.getMainrow();
 		long pid = ixPoi.getPid();
@@ -1124,6 +1131,7 @@ public class ChargePoiConvertor {
 			}
 		} catch (Exception e) {
 			log.error("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
+			throw new Exception("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
 		}
 		return createDate;
 	}

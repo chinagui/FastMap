@@ -40,22 +40,23 @@ public class RowChargeService {
 	 * @author Han Shaoming
 	 * @param type
 	 * @param time
+	 * @param syncTime 
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject chargePoiConvertor(String type, String time) throws Exception {
+	public JSONObject chargePoiConvertor(int type, String lastSyncTime, String syncTime) throws Exception {
 		log.info("开始数据转化,获取所有的大区库");
 		JSONObject result = null;
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		List<Region> regionList = manApi.queryRegionList();
-		if("1".equals(type)){
+		if(type==1){
 			//初始化
 			result = Fm2ChargeInit.getInstance().excute(regionList);
-		}else if("2".equals(type)){
+		}else if(type==2){
 			//增量
 			result = Fm2ChargeAdd.getInstance().excute(regionList);
 		}
-		log.info("数据转化结束库");
+		log.info("数据转化结束");
 		return result;
 	}
 	

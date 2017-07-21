@@ -118,7 +118,7 @@ public class InitMongoDataExp {
 			mongoClient = new MongoClient(mongodbHost, mongoPort);
 			String mongoDbName = "";
 			if (expType == 0) {
-				mongoDbName = "fm_edit_deepinfo";
+				mongoDbName = "deepinfo";
 			}
 			if (expType == 1) {
 				mongoDbName = "edit_charge";

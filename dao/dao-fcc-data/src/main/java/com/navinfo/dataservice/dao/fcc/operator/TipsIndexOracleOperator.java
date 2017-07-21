@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.fcc.model.TipsIndexDao;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.DaoOperatorException;
 
@@ -29,12 +29,12 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	}
 
 	@Override
-	public List<TipsIndexDao> searchDataByTileWithGap(String parameter) throws DaoOperatorException {
+	public List<TipsDao> searchDataByTileWithGap(String parameter) throws DaoOperatorException {
 		return null;
 	}
 
 	@Override
-	public void save(TipsIndexDao ti) throws DaoOperatorException {
+	public void save(TipsDao ti) throws DaoOperatorException {
 		try{
 			run.update(conn, insertSql, ti.toColsObjectArr());
 		}catch(Exception e){
@@ -44,14 +44,14 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	}
 
 	@Override
-	public void save(Collection<TipsIndexDao> tis) throws DaoOperatorException {
+	public void save(Collection<TipsDao> tis) throws DaoOperatorException {
 		if(tis==null||tis.size()==0){
 			return;
 		}
 		try{
 			Object[][] tisCols = new Object[tis.size()][];
 			int i = 0;
-			for(TipsIndexDao ti:tis){
+			for(TipsDao ti:tis){
 				tisCols[i]= ti.toColsObjectArr();
 				i++;
 			}

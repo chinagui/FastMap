@@ -47,8 +47,7 @@ public class JobService {
             if(itemType == ItemType.LOT){
                 throw new Exception("不支持的对象类型 "+itemType);
             }
-            Tips2MarkJobRunner runner = new Tips2MarkJobRunner();
-            return runner.run(itemId, itemType, isContinue, operator, parameter);
+            return runCommonJob(JobType.TiPS2MARK,itemId, itemType , operator,isContinue, parameter);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("执行tips转mark失败，原因为:" + e.getMessage(), e);
@@ -70,8 +69,7 @@ public class JobService {
             if(itemType != ItemType.LOT && itemType != ItemType.PROJECT){
                 throw new Exception("不支持的对象类型 "+itemType);
             }
-            Day2MonthJobRunner runner = new Day2MonthJobRunner();
-            return runner.run(itemId, itemType, isContinue, operator, parameter);
+            return runCommonJob(JobType.DAY2MONTH,itemId, itemType , operator,isContinue, parameter);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("执行日落月失败，原因为:" + e.getMessage(), e);
@@ -159,15 +157,7 @@ public class JobService {
                 if (job == null) {
                     throw new Exception("phaseId:" + phaseId + "对应的job不存在！");
                 }
-                JobRunner runner = null;
-                switch (job.getType()) {
-                    case TiPS2MARK:
-                        runner = new Tips2MarkJobRunner();
-                        break;
-                    case DAY2MONTH:
-                        runner = new Day2MonthJobRunner();
-                        break;
-                }
+                JobRunner runner = jobFactory(job.getType());
 
                 if (runner == null) {
                     throw new Exception("不支持的任务类型：jobid " + job.getJobId() + ",type " + job.getType().value());

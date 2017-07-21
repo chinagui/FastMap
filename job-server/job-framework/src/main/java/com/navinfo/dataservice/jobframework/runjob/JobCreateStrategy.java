@@ -92,17 +92,17 @@ public class JobCreateStrategy {
 		return req;
 	}
 	private static void loadMapping(){
-		String mappingFile = "/job-class2.xml";
+		String mappingFile = "/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();
 		requestClassMap = new HashMap<String,Class<?>>();
 		//加载管理库的信息
 		InputStream is = null;
         log.debug("parse file " + mappingFile);
         try {
-//            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mappingFile);
-//            if (is == null) {
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mappingFile);
+            if (is == null) {
                 is = JobCreateStrategy.class.getResourceAsStream(mappingFile);
-//            }
+            }
 
             SAXReader reader = new SAXReader();
             Document document = reader.read(is);

@@ -9,13 +9,14 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 
 /**
  * 
- * 查询条件：当IX_POI_NAME.LNNG_CODE="ENG",且IX_POI_FLAG.FLAG_CODE="002000080000"或"002000090000"时，英文原始官方名称记录NAME字段大于35个字符的记录，
+ * 查询条件：当IX_POI_NAME.LNNG_CODE="ENG",且IX_POI_name_FLAG.FLAG_CODE="110020080000"或"110020090000"时，英文原始官方名称记录NAME字段大于35个字符的记录，
  * 且未制作标准化官方英文名的记录或标准化官方英文名为空时。
  * 批处理：将NAME中单词（前后存在空格的作为一个单词，首尾单词只需要判断一侧）从右往左在元数据库SC_ENGSHORT_LIST中与FULL_NAME字段匹配，如果存在，
  * 将其用SHORT_NAME替换。如果替换后，长度小于等于35个字符，当标准化官方英文名为空时，将替换的结果更新到标准化官方英文名中；当没有标准化官方英文名时，
@@ -35,13 +36,17 @@ public class FMBAT20135 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		List<IxPoiName> names = poiObj.getIxPoiNames();
-		List<IxPoiFlag> flags = poiObj.getIxPoiFlags();
+		IxPoiName br=poiObj.getOfficeStandardEngName();
+		List<IxPoiNameFlag> flags =poiObj.getIxPoiNameFlags();
+		//List<IxPoiFlag> flags = poiObj.getIxPoiFlags();
 		boolean isFlag = false;
-		if (flags != null) {
-			for (IxPoiFlag flag:flags) {
-				if (flag.getFlagCode().equals("002000080000") || flag.getFlagCode().equals("002000090000")) {
-					isFlag = true;
-					break;
+		if (flags != null&&br!=null) {
+			for (IxPoiNameFlag flag:flags) {
+				if(flag.getNameId()==br.getNameId()){
+					if (flag.getFlagCode().equals("110020080000") || flag.getFlagCode().equals("110020090000")) {
+						isFlag = true;
+						break;
+					}
 				}
 			}
 		}

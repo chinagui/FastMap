@@ -1726,10 +1726,10 @@ public class DataEditService {
 				ixDealershipResult.setFbDate(map.get("fbDate").toString());
 				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
 				if(map.get("fbAuditRemark").toString().equals("舍弃")){
-					ixDealershipResult.setWorkflowStatus(3);
-				}else{
 					ixDealershipResult.setWorkflowStatus(9);
 					ixDealershipResult.setDealStatus(3);
+				}else{
+					ixDealershipResult.setWorkflowStatus(3);
 				}
 				ixDealershipResult.setCfmStatus(3);
 				ixDealershipResult.setFbSource(2);
@@ -2202,7 +2202,7 @@ public class DataEditService {
 				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
 			}
 			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 1){
-				throw new ServiceException("第" + (i+2) + "行中：代理店品牌为空或代理店品牌表中状态不是作业中");
+				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是作业中");
 			}
 			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
 				throw new ServiceException("第" + (i+2) + "行中：厂商提供名称为空或不是全角");

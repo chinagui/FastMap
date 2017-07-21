@@ -234,6 +234,7 @@ public class QualityService {
 				String rootCause = "";
 				String memo = "";
 				String version = "";
+				String confirmUser = "";
 				
 				if(data.containsKey("problemNum")){
 					problemNum = data.getString("problemNum");
@@ -315,6 +316,14 @@ public class QualityService {
 					conditions.add("\"VERSION\" = ?");
 					params.add(version);
 				}
+				if(data.containsKey("confirmUser")){
+					confirmUser = data.getString("confirmUser");
+				}
+				if(!StringUtils.isEmpty(confirmUser)){
+					conditions.add("CONFIRM_USER = ?");
+					params.add(confirmUser);
+				}
+				
 				StringBuilder builder = new StringBuilder();
 				builder.append("UPDATE POI_PROBLEM_SUMMARY ");
 				if(conditions.size() > 0){

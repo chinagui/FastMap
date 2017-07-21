@@ -1272,7 +1272,7 @@ public class TaskService {
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
-			sb.append("                   AND T.latest=1");
+			//sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
@@ -1351,7 +1351,7 @@ public class TaskService {
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			sb.append("                   AND t.latest=1");
+			//sb.append("                   AND t.latest=1");
 			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");

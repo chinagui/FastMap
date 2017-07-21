@@ -178,11 +178,12 @@ public class HbasePoiInfo {
 		case "001000020000":
 		case "001000030000":
 		case "001000030001":
+		case "001000030002":
 		case "001000030003":
 		case "001000030004":
 			srcRecord = 3;
 			break;
-		case "0010001300000":
+		case "001000130000":
 			srcRecord = 2;
 			break;
 		case "001000040000":
@@ -194,6 +195,7 @@ public class HbasePoiInfo {
 		default:
 			break;
 		}
+		
 		return srcRecord;
 	}
 

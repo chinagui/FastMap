@@ -48,6 +48,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 public class ProgramService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -2058,7 +2059,23 @@ public class ProgramService {
 					
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
-					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);					
+					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);	
+					//快线月编任务需要按照图幅扩展grid
+					if(t.getType()==2){
+						Set<Integer> myGrid=t.getGridIds().keySet(); 
+						Set<String> meshs=new HashSet<String>();
+						for(Integer gridTmp:myGrid){
+							meshs.add(String.valueOf(gridTmp/100));
+						}
+						for(String meshTmp:meshs){
+							Set<String> allGrid = CompGridUtil.mesh2Grid(meshTmp);
+							for(String gridExt:allGrid){
+								if(!myGrid.contains(Integer.valueOf(gridExt))){
+									t.getGridIds().put(Integer.valueOf(gridExt), 2);
+								}
+							}
+						}
+					}
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}
 			}

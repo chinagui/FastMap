@@ -55,7 +55,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	}
 	
 	
-	@Test
+//	@Test
 	public void testMetadataDonwnload() throws Exception {
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();//F:\tabfile
@@ -75,7 +75,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -345,7 +345,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.out.println(blockGeo);*/
 	}
 	
-	@Test
+//	@Test
 	public void testExportQualityPoiReport() throws Exception{
 		JobScriptsInterface.initContext();
 		

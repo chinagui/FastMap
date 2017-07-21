@@ -32,6 +32,7 @@ public class DBConnector {
 	private MongoClient statClient;
 	private DataSource checkDataSource;
 	private DataSource renderDataSource;
+	private DataSource tipsIdxDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -263,5 +264,28 @@ public class DBConnector {
 			}
 		}
 		return renderDataSource.getConnection();
+	}
+	public Connection getTipsIdxConnection() throws SQLException {
+		if (tipsIdxDataSource == null) {
+			synchronized (this) {
+				if (tipsIdxDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo fmTipsIdxDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						fmTipsIdxDb = datahub.getOnlyDbByType("fmTipsIdx");
+						connConfig = DbConnectConfig
+								.createConnectConfig(fmTipsIdxDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取fmTipsIdx信息失败："
+								+ e.getMessage(), e);
+					}
+					tipsIdxDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return tipsIdxDataSource.getConnection();
 	}
 }

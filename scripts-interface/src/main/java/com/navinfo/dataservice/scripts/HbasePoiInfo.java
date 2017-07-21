@@ -195,6 +195,7 @@ public class HbasePoiInfo {
 		default:
 			break;
 		}
+		
 		return srcRecord;
 	}
 

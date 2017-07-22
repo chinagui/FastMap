@@ -1008,28 +1008,22 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// 同步更新solr
             solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
-			solrIndex.put("feedback", feedBack);
 
-			if (newDeep != null) {
-				solrIndex.put("deep", newDeep);
-			}
-
-			solr.addTips(solrIndex);
+			operator.updateOne(solrIndex);
 
 			htab.put(put);
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
-
+        	DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(), e);
-
 			throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(conn);
         }
 
 	}

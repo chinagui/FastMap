@@ -49,6 +49,8 @@ public class TipsSelector {
 
 	private static final Logger logger = Logger.getLogger(TipsSelector.class);
 
+    public static String TIP_OLD_KEY_NAME = "old";
+
 	private SolrController conn = new SolrController();
 
 	public TipsSelector() {
@@ -1158,7 +1160,7 @@ public class TipsSelector {
 			json.put("rowkey", rowkey);
 
 			for (KeyValue kv : list) {
-				System.out.println(kv);
+				System.out.println(new String(kv.qualifier()));
 				JSONObject injson = JSONObject
 						.fromObject(new String(kv.value()));
 
@@ -1211,20 +1213,23 @@ public class TipsSelector {
 			json.put("rowkey", rowkey);
 
 			for (KeyValue kv : list) {
-				System.out.println(kv);
-				JSONObject injson = JSONObject
-						.fromObject(new String(kv.value()));
-
-				String key = new String(kv.qualifier());
-
-				System.out.println("key:"+key);
+                String key = new String(kv.qualifier());
+                if(key.equals(TIP_OLD_KEY_NAME)) {
+                    JSONArray arrayJson = JSONArray
+                            .fromObject(new String(kv.value()));
+                    json.put(key, arrayJson);
+                }else{
+                    JSONObject injson = JSONObject
+                            .fromObject(new String(kv.value()));
+                    json.put(key, injson);
+                }
 
 			/*	if (key.equals("feedback")) {
 					json.put("feedback", injson);
 				} else {
 					json.putAll(injson);
 				}*/
-				json.put(key, injson);
+
 
 			}
 

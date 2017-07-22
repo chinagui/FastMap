@@ -23,4 +23,6 @@ public interface TipsIndexOperator {
 	public void delete(Collection<TipsDao> tis) throws Exception;
 
 	public void update(Collection<TipsDao> tis) throws Exception;
+
+    public void delete(String rowkey) throws Exception;
 }

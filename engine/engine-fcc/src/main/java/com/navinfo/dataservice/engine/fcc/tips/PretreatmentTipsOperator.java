@@ -31,8 +31,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
 import java.util.*;
@@ -751,7 +749,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 //更新solr
                 //JSONObject solrIndex = solr.getById(rowkey);
                 TipsDao tipsDao = oracleOperator.getById(rowkey);
-                this.tipSubmitTracOracle(track, tipsDao);
+                this.tipSubmitTrackOracle(track, tipsDao);
 
                 solrIndexList.add(tipsDao);
             }
@@ -2202,7 +2200,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 //更新solr
                 //JSONObject solrIndex = solr.getById(rowkey);
                 TipsDao tipsDao = oracleOperator.getById(rowkey);
-                this.tipSubmitTracOracle(track, tipsDao);
+                this.tipSubmitTrackOracle(track, tipsDao);
                 solrIndexList.add(tipsDao);
             }
 

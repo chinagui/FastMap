@@ -474,7 +474,7 @@ public class BaseTipsOperate {
      * @param tipsDao
      * @return
      */
-    public void tipSubmitTracOracle(TipsTrack track, TipsDao tipsDao) {
+    public void tipSubmitTrackOracle(TipsTrack track, TipsDao tipsDao) {
         tipsDao.setT_date(track.getT_date());
         tipsDao.setT_tipStatus(track.getT_tipStatus());
         tipsDao.setT_dEditStatus(track.getT_dEditStatus());

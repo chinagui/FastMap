@@ -626,24 +626,22 @@ public class TipsOperator {
 		TipsSelector selector=new TipsSelector();
 		String  rowkey="";
 		List<Put> puts=new ArrayList<>();
-        List<JSONObject> solrIndexList = new ArrayList<>();
+        List<TipsDao> solrIndexList = new ArrayList<>();
 		Connection hbaseConn = null;
-
+		java.sql.Connection tipsConn=null;
 		Table htab = null;
 		try {
 			
 			hbaseConn=HBaseConnector.getInstance().getConnection();
-			
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 			htab=hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			
-			List<JSONObject> tipsList=selector.getTipsByTaskId(sQTaskId, TaskType.Q_TASK_TYPE);
-			for (JSONObject json : tipsList) {
+			List<TipsDao> tipsList=selector.getTipsByTaskId(tipsConn,sQTaskId, TaskType.Q_TASK_TYPE);
+			for (TipsDao json : tipsList) {
 				
-				rowkey=json.getString("id");
+				rowkey=json.getId();
 				
-				String wkt=json.getString("wkt");
-				
-				Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
+				Geometry geo =json.getWkt();
 				
 				Set<String> gridSet=TipsGridCalculate.calculate(geo);
 				
@@ -661,7 +659,7 @@ public class TipsOperator {
 				
 				//1.update solr
 				
-				json.put("s_mTaskId", mTaskId);
+				json.setS_mTaskId(mTaskId);
 
                 solrIndexList.add(json);
 				
@@ -688,7 +686,8 @@ public class TipsOperator {
 			}
 			
 			htab.put(puts);
-            solr.addTips(solrIndexList);
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			operator.save(solrIndexList);
 		} catch (Exception e) {
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
@@ -749,21 +748,23 @@ public class TipsOperator {
      * @param midTaskId
      * @throws Exception
      */
-    public long batchNoTaskDataByMidTask(String wkt, int midTaskId) throws Exception {
-        StringBuilder builder = new StringBuilder();
-        //builder.append("wkt:\"intersects(");
-        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
-
-        StringBuilder fqBuilder = new StringBuilder();
-        fqBuilder.append(" AND s_qTaskId = 0 ");
-        fqBuilder.append(" AND s_mTaskId = 0 ");
+    public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
+            throws Exception {
+        StringBuilder builder = new StringBuilder("select * from tips_index i where (");
+        
+        builder.append("s_qTaskId!=0");
+        builder.append(" AND s_mTaskId!=0");
         //20170615 过滤内业Tips
-        fqBuilder.append(" AND ");
-        fqBuilder.append(" s_sourceType not like '80%' ");
-        fqBuilder.append(" AND ");
-        fqBuilder.append(" t_tipStatus = 2 ");
+        builder.append(" AND ");
+        builder.append("s_sourceType like '80%' ");
+        builder.append(" AND ");
+        builder.append("t_tipStatus!=2");
+        builder.append(") and ");
+        
+        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 
         Connection hbaseConn = null;
+        java.sql.Connection tipsConn=null;
         Table htab = null;
         java.sql.Connection oracleConn = null;
         try {
@@ -774,19 +775,15 @@ public class TipsOperator {
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
             //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
             TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
-            List<TipsDao> tipsDaos = oracleOperator.query("SELECT * FROM TIPS_INDEX WHERE " + builder.toString() + fqBuilder.toString(), wkt);
+            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), wkt);
 
             if (CollectionUtils.isEmpty(tipsDaos)) {
                 return 0;
             }
             List<Put> puts = new ArrayList<>();
             List<TipsDao> solrIndexList = new ArrayList<>();
-            //for (int i = 0; i < totalNum; i++) {
-            for (TipsDao dao : tipsDaos) {
-                //SolrDocument doc = sdList.get(i);
-
-                JSONObject snapshot = JSONObject.fromObject(dao);
-                String rowkey = snapshot.getString("id");
+            for (TipsDao snapshot:tipsDaos) {
+                String rowkey = snapshot.getId();
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
                 Result result = htab.get(get);
@@ -797,21 +794,19 @@ public class TipsOperator {
                 puts.add(put);
 
                 //更新solr
-                //JSONObject solrIndex = solr.getById(rowkey);
-                TipsDao tipsDao = oracleOperator.getById(rowkey);
-                tipsDao.setS_mTaskId(midTaskId);
-                solrIndexList.add(tipsDao);
+                TipsDao solrIndex = oracleOperator.getById(rowkey);
+                solrIndex.setS_mTaskId(midTaskId);
+                solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            //solr.addTips(solrIndexList);
-            oracleOperator.save(solrIndexList);
+            oracleOperator.update(solrIndexList);
             return tipsDaos.size();
         }catch (Exception e) {
-            DBUtils.rollBack(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
         }finally {
-            DBUtils.closeConnection(oracleConn);
+        	DbUtils.commitAndCloseQuietly(oracleConn);
             if(htab != null) {
                 htab.close();
             }

@@ -284,7 +284,7 @@ public class TipsCheckOperator {
         	
         	tipsDao.setT_date(date);
         	
-        	operator.update(tipsDao);
+        	operator.updateOne(tipsDao);
         	
         	//更新hbase
         	lastTrack.put("date", date);

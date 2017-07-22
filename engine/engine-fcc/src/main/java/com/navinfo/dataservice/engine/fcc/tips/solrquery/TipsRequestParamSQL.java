@@ -493,7 +493,7 @@ public class TipsRequestParamSQL {
 	private StringBuilder getSolrIntSetQueryNoAnd(Set<Integer> intSet,
 			String fieldName) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(fieldName + "in (");
+		builder.append(fieldName + " in (");
 		int i = 0;
 		for (Integer filedValue : intSet) {
 			if (i > 0) {
@@ -539,10 +539,10 @@ public class TipsRequestParamSQL {
 
 			if (taskBuilder == null) {
 
-				builder.append("AND ( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  ");// 接边Tips
+				builder.append(" AND ( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  ");// 接边Tips
 			} else {
 
-				builder.append("AND (( s_sourceType='8002' AND stage=(2,7) AND t_tipStatus=2)  OR  "
+				builder.append(" AND (( s_sourceType='8002' AND stage=(2,7) AND t_tipStatus=2)  OR  "
 						+ taskBuilder + " )");// 接边Tips
 			}
 
@@ -570,7 +570,7 @@ public class TipsRequestParamSQL {
 
 			allBuilder.append("(");
 			allBuilder
-					.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
+					.append(" t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
 			allBuilder.append(")");
 
 			allBuilder.append(" OR ");

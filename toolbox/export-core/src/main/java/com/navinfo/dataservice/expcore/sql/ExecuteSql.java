@@ -40,8 +40,9 @@ public class ExecuteSql {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor executePoolExecutor;
-	protected VMThreadPoolExecutor queryPoolExecutor; // 查询sql执行线程，最后一步select *语句的查询线程
-	protected OracleInput input; 
+	protected VMThreadPoolExecutor queryPoolExecutor; // 查询sql执行线程，最后一步select
+														// *语句的查询线程
+	protected OracleInput input;
 	protected DataOutput output;
 	protected String exportMode;
 	protected boolean dataIntegrity;
@@ -56,14 +57,15 @@ public class ExecuteSql {
 	 * @param config
 	 *            系统配置
 	 */
-	public ExecuteSql(OracleInput input,DataOutput output
-			,String exportMode,boolean dataIntegrity, boolean multiThread4Input,boolean multiThread4Output) {
-		this.input=input;
-		this.output=output;
-		this.exportMode=exportMode;
-		this.dataIntegrity=dataIntegrity;
-		this.multiThread4Input=multiThread4Input;
-		this.multiThread4Output=multiThread4Output;
+	public ExecuteSql(OracleInput input, DataOutput output, String exportMode,
+			boolean dataIntegrity, boolean multiThread4Input,
+			boolean multiThread4Output) {
+		this.input = input;
+		this.output = output;
+		this.exportMode = exportMode;
+		this.dataIntegrity = dataIntegrity;
+		this.multiThread4Input = multiThread4Input;
+		this.multiThread4Output = multiThread4Output;
 		createThreadPool();
 	}
 
@@ -74,26 +76,24 @@ public class ExecuteSql {
 	 */
 	protected void createThreadPool() {
 		int inputPoolSize = 1;
-		if(multiThread4Input){
-			inputPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.inputPoolSize", 10);
+		if (multiThread4Input) {
+			inputPoolSize = SystemConfigFactory.getSystemConfig().getIntValue(
+					"export.multiThread.inputPoolSize", 10);
 		}
 		int outPoolSize = 1;
-		if(multiThread4Output){
-			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
+		if (multiThread4Output) {
+			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue(
+					"export.multiThread.outputPoolSize", 10);
 		}
-		
+
 		try {
 			executePoolExecutor = new VMThreadPoolExecutor(inputPoolSize,
-					inputPoolSize,
-					3,
-					TimeUnit.SECONDS,
+					inputPoolSize, 3, TimeUnit.SECONDS,
 					new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 
 			queryPoolExecutor = new VMThreadPoolExecutor(outPoolSize,
-					outPoolSize,
-					3,
-					TimeUnit.SECONDS,
+					outPoolSize, 3, TimeUnit.SECONDS,
 					new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		} catch (Exception e) {
@@ -113,24 +113,26 @@ public class ExecuteSql {
 		try {
 			Map<Integer, List<ExpSQL>> expSqlMap = input.getExpSqlMap();
 			// 获取当前执行任务对应的sql集合，执行临时表装载
-			Set<Entry<Integer, List<ExpSQL>>> sqlEntrySet = expSqlMap.entrySet();
+			Set<Entry<Integer, List<ExpSQL>>> sqlEntrySet = expSqlMap
+					.entrySet();
 			for (Iterator iterator = sqlEntrySet.iterator(); iterator.hasNext();) {
 				Entry sqlEntry = (Entry) iterator.next();
 				Integer step = (Integer) sqlEntry.getKey();
-				if(step>99)continue;
+				if (step > 99)
+					continue;
 				List<ExpSQL> sqlList = (List<ExpSQL>) sqlEntry.getValue();
 				execute(step, sqlList, ctx);
 			}
-			//导出数据
+			// 导出数据
 			// 100 输出数据
 			// 101 删除数据
-			if(exportMode.equals(ExportConfig.MODE_COPY)){
+			if (exportMode.equals(ExportConfig.MODE_COPY)) {
 				Integer step = new Integer(100);
 				execute(step, expSqlMap.get(step), ctx);
-			}else if (exportMode.equals(ExportConfig.MODE_DELETE)) {
+			} else if (exportMode.equals(ExportConfig.MODE_DELETE)) {
 				Integer step = new Integer(101);
 				execute(step, expSqlMap.get(step), ctx);
-			}else if(exportMode.equals(ExportConfig.MODE_DELETE_COPY)){
+			} else if (exportMode.equals(ExportConfig.MODE_DELETE_COPY)) {
 				Integer step = new Integer(101);
 				execute(step, expSqlMap.get(step), ctx);
 				step = new Integer(100);
@@ -167,7 +169,8 @@ public class ExecuteSql {
 
 				// 毛边导出
 				if (expSQL.getSqlType() == null
-						|| ExportConfig.DATA_INTEGRITY.equals(expSQL.getSqlType())) {
+						|| ExportConfig.DATA_INTEGRITY.equals(expSQL
+								.getSqlType())) {
 					// log.debug("毛边导出："+expSQL.getSql());
 					filterSqlList.add(expSQL);
 				}
@@ -175,7 +178,10 @@ public class ExecuteSql {
 				// 非毛边导出
 
 				if (expSQL.getSqlType() == null
-						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL.getSqlType())) {
+						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
+								.getSqlType())
+						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
+								.getSqlExtendType())) {
 					// log.debug("非毛边导出,"+expSQL.getSqlType()+"："+expSQL.getSql());
 					filterSqlList.add(expSQL);
 				}
@@ -185,13 +191,14 @@ public class ExecuteSql {
 		return filterSqlList;
 	}
 
-
-	private void execute(Integer step, List<ExpSQL> oriSqlList, ThreadLocalContext ctx) throws Exception {
+	private void execute(Integer step, List<ExpSQL> oriSqlList,
+			ThreadLocalContext ctx) throws Exception {
 		try {
 			List<ExpSQL> sqlList = filterSql(oriSqlList);
 			long t1 = System.currentTimeMillis();
-			log.debug("start execute step "+step);
-			DataSource dataSource = input.getSource().getSchema().getPoolDataSource();
+			log.debug("start execute step " + step);
+			DataSource dataSource = input.getSource().getSchema()
+					.getPoolDataSource();
 			if (executePoolExecutor.isShutdown())
 				return;
 			if (queryPoolExecutor.isShutdown())
@@ -200,7 +207,7 @@ public class ExecuteSql {
 			int queryTheadCount = 0;
 			// 创建线程执行计数器
 			for (ExpSQL expSQL : sqlList) {
-				if (expSQL.isDML() || expSQL.isDDL()|| expSQL.isProgramBlock())
+				if (expSQL.isDML() || expSQL.isDDL() || expSQL.isProgramBlock())
 					executeTheadCount++;
 				else {
 					queryTheadCount++;
@@ -211,7 +218,8 @@ public class ExecuteSql {
 			int threadCount = sqlList.size();
 			// log.debug("start to execute step" + step + ",线程数：" +
 			// threadCount);
-			CountDownLatch executeDoneSignal = new CountDownLatch(executeTheadCount);
+			CountDownLatch executeDoneSignal = new CountDownLatch(
+					executeTheadCount);
 			CountDownLatch queryDoneSignal = new CountDownLatch(queryTheadCount);
 			executePoolExecutor.addDoneSignal(executeDoneSignal);
 			queryPoolExecutor.addDoneSignal(queryDoneSignal);
@@ -222,20 +230,20 @@ public class ExecuteSql {
 
 				Runnable handler = null;
 				if (expSQL.isDML()) {
-					handler = new DMLExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
+					handler = new DMLExecThreadHandler(executeDoneSignal,
+							expSQL, dataSource, ctx);
 					executePoolExecutor.execute(handler);
 				} else if (expSQL.isDDL()) {
-					handler = new DDLExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
+					handler = new DDLExecThreadHandler(executeDoneSignal,
+							expSQL, dataSource, ctx);
 					executePoolExecutor.execute(handler);
 				} else if (expSQL.isProgramBlock()) {
-					handler = new ProgramBlockExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
+					handler = new ProgramBlockExecThreadHandler(
+							executeDoneSignal, expSQL, dataSource, ctx);
 					executePoolExecutor.execute(handler);
 				} else {
 					handler = new QueryExecThreadHandler(queryDoneSignal,
-							expSQL,
-							dataSource,
-							output,
-							ctx);
+							expSQL, dataSource, output, ctx);
 
 					queryPoolExecutor.execute(handler);
 

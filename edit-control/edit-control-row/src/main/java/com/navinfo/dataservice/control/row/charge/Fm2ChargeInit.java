@@ -83,11 +83,6 @@ public class Fm2ChargeInit {
 			int dbSize = dbIds.size();
 			int monDbId = 0;
 			
-			try {
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 			if(dbSize==1){
 				int dbId = dbIds.iterator().next();
 				if(regionMap.containsKey(dbId)){

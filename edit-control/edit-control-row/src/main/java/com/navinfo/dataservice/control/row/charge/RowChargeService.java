@@ -48,24 +48,20 @@ public class RowChargeService {
 	public JSONObject chargePoiConvertor(int type, String lastSyncTime, String syncTime) throws Exception {
 		log.info("开始数据转化,获取所有的大区库");
 		JSONObject result = null;
-//		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-//		List<Region> regionList = manApi.queryRegionList();
-		List<Region> regionList = new ArrayList<Region>();
-		Region region = new Region();
-		region.setRegionId(1);
-		region.setDailyDbId(13);
-		region.setMonthlyDbId(12);
-		regionList.add(region);
-		Region region2 = new Region();
-		region2.setRegionId(18);
-		region2.setDailyDbId(329);
-		region2.setMonthlyDbId(12);
-		regionList.add(region2);
-		Region region1 = new Region();
-		region1.setRegionId(19);
-		region1.setDailyDbId(330);
-		region1.setMonthlyDbId(12);
-		regionList.add(region1);
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		List<Region> regionList = manApi.queryRegionList();
+//		List<Region> regionList = new ArrayList<Region>();
+//		Region region = new Region();
+//		region.setRegionId(1);
+//		region.setDailyDbId(13);
+//		region.setMonthlyDbId(12);
+//		regionList.add(region);
+//		Region region1 = new Region();
+//		region1.setRegionId(19);
+//		region1.setDailyDbId(330);
+//		region1.setMonthlyDbId(12);
+//		regionList.add(region1);
+		
 		if(type==1){
 			//初始化
 			result = Fm2ChargeInit.getInstance().excute(regionList);

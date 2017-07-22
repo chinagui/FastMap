@@ -192,20 +192,11 @@ public class TipsRequestParam {
      * @author: y
      * @time:2017-5-26 上午11:49:09
      */
-    public String getQueryFilterSqlForCheck(JSONArray grids,int workStatus,int subtaskId,int woker,int cheker,JSONArray rowkeyList) throws Exception{
+    public String getQueryFilterSqlForCheck(int workStatus,int subtaskId,int woker,int cheker,JSONArray rowkeyList) throws Exception{
 
-        //1.wkt过滤
-        String wkt = GridUtils.grids2Wkt(grids);
         //solr查询语句
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("wkt:\"intersects(" + wkt + ")\"");
-
-//        //2.任务号过滤
-//        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-//        if (taskSet != null && taskSet.size() > 0) {
-//            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
-//        }
+        StringBuilder builder = new StringBuilder("select * from tips_index where ");
+        
 
         //2.任务号过滤同时补充接边Tips和预处理Tips
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
@@ -213,10 +204,9 @@ public class TipsRequestParam {
         if (taskSet != null && taskSet.size() > 0) {
             taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
         }
-
-        builder.append(" AND ");
+        
         builder.append("(");
-        builder.append("(s_sourceType:(8001 8002) AND t_tipStatus:2)");//接边Tips，预处理提交
+        builder.append("(s_sourceType in (8001,8002) AND t_tipStatus=2)");//接边Tips，预处理提交
         if(taskBuilder != null) {
             builder.append(" OR ");
             builder.append("(");
@@ -230,6 +220,10 @@ public class TipsRequestParam {
 
         //4.状态过滤（状态显示隐藏）
         this.getWokerStatusFilterQuery(woker, cheker, workStatus, builder,rowkeyList);
+
+        builder.append(" AND ");
+        //builder.append("wkt:\"intersects(" + wkt + ")\"");
+        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 
         logger.info("getQueryFilterSqlForCheck:" + builder.toString());
         return builder.toString();
@@ -253,7 +247,7 @@ public class TipsRequestParam {
                                            int workStatus, StringBuilder builder, JSONArray rowkeyList) {
         //1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
 
-        builder.append(" AND stage:2 AND t_dEditStatus:2 AND handler:"+woker+"");
+        builder.append(" AND stage=2 AND t_dEditStatus=2 AND handler="+woker+"");
 
     }
 
@@ -774,11 +768,11 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrIntSetQueryNoAnd(Set<Integer> intSet, String fieldName) {
         StringBuilder builder = new StringBuilder();
-        builder.append(fieldName + ":(");
+        builder.append(fieldName + " in (");
         int i = 0;
         for (Integer filedValue : intSet) {
             if (i > 0) {
-                builder.append(" ");
+                builder.append(" , ");
             }
             builder.append(filedValue);
             i++;

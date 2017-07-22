@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -7,9 +8,14 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.log4j.Logger;
@@ -40,145 +46,174 @@ public class TipsOperator {
 	 */
 	public boolean update(String rowkey, int handler, String pid, String mdFlag, int editStatus, int editMeth)
 			throws Exception {
+		java.sql.Connection oracleConn = null;
+		try{
 
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-		Table htab = hbaseConn
-				.getTable(TableName.valueOf(HBaseConstant.tipTab));
-
-		Get get = new Get(rowkey.getBytes());
-
-		get.addColumn("data".getBytes(), "track".getBytes());
-
-		if (StringUtils.isNotEmpty(pid)) {
-			get.addColumn("data".getBytes(), "deep".getBytes());
-		}
-
-		Result result = htab.get(get);
-
-		if (result.isEmpty()) {
-			return false;
-		}
-
-		Put put = new Put(rowkey.getBytes());
-
-		JSONObject track = JSONObject.fromObject(new String(result.getValue(
-				"data".getBytes(), "track".getBytes())));
-
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-//        int editStatus = json.getInt("editStatus");
-//        int editMeth = json.getInt("editMeth");
-
-        JSONObject jsonTrackInfo = new JSONObject();
-        if(mdFlag.equals("d")) {//日编
-            int oldEStatus = track.getInt("t_dEditStatus");
-            if (oldEStatus == 0 && editStatus != 0) {
-                jsonTrackInfo.put("stage", 2);
-            }
-            if(oldEStatus != 0 && editStatus == 0) {
-                jsonTrackInfo.put("stage", -1);
-            }
-            track.put("t_dEditStatus", editStatus);
-            track.put("t_dEditMeth", editMeth);
-        }else if(mdFlag.equals("m")) {//月编
-            int oldEStatus = track.getInt("t_mEditStatus");
-            if (oldEStatus == 0 && editStatus != 0) {
-                jsonTrackInfo.put("stage", 3);
-            }
-            if(oldEStatus != 0 && editStatus == 0) {
-                jsonTrackInfo.put("stage", -1);
-            }
-            track.put("t_mEditStatus", editStatus);
-            track.put("t_mEditMeth", editMeth);
-        }
-
-        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
-        if(jsonTrackInfo.containsKey("stage")) {
-            int curStage = jsonTrackInfo.getInt("stage");
-            if(trackInfoArr.size() == 0) {
-                // 更新hbase 增一个trackInfo
-                if(curStage != -1) {
-                    trackInfoArr.add(jsonTrackInfo);
-                }
-            }else {
-                int lastStage = lastTrack.getInt("stage");
-                if(lastStage == curStage) {//更新
-                    lastTrack.put("date", date);
-                    lastTrack.put("handler", handler);
-                    trackInfoArr.remove(trackInfoArr.size()-1);
-                    trackInfoArr.add(lastTrack);
-                }else{//新增
-                    if(curStage == -1 && trackInfoArr.size() >= 2) {
-                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
-                        int lastSecondStage = lastSecondTrack.getInt("stage");
-                        jsonTrackInfo.put("stage", lastSecondStage);
-                    }
-                    trackInfoArr.add(jsonTrackInfo);
-                }
-            }
-        } else {
-            lastTrack.put("date", date);
-            lastTrack.put("handler", handler);
-            trackInfoArr.remove(trackInfoArr.size()-1);
-            trackInfoArr.add(lastTrack);
-        }
-
-		track.put("t_trackInfo", trackInfoArr);
-
-		track.put("t_date", date);
-
-		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
-				.getBytes());
-
-		String newDeep = null;
-
-		if (StringUtils.isNotEmpty(pid)) {
-
-			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
-					"data".getBytes(), "deep".getBytes())));
-			if (deep.containsKey("id")) {
-				deep.put("id", String.valueOf(pid));
-
-				newDeep = deep.toString();
-
-				put.addColumn("data".getBytes(), "deep".getBytes(), deep
-						.toString().getBytes());
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+	
+			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+	
+			Get get = new Get(rowkey.getBytes());
+	
+			get.addColumn("data".getBytes(), "track".getBytes());
+	
+			if (StringUtils.isNotEmpty(pid)) {
+				get.addColumn("data".getBytes(), "deep".getBytes());
 			}
+	
+			Result result = htab.get(get);
+	
+			if (result.isEmpty()) {
+				return false;
+			}
+	
+			Put put = new Put(rowkey.getBytes());
+	
+			JSONObject track = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "track".getBytes())));
+	
+			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+	//        int editStatus = json.getInt("editStatus");
+	//        int editMeth = json.getInt("editMeth");
+	
+	        JSONObject jsonTrackInfo = new JSONObject();
+	        if(mdFlag.equals("d")) {//日编
+	            int oldEStatus = track.getInt("t_dEditStatus");
+	            if (oldEStatus == 0 && editStatus != 0) {
+	                jsonTrackInfo.put("stage", 2);
+	            }
+	            if(oldEStatus != 0 && editStatus == 0) {
+	                jsonTrackInfo.put("stage", -1);
+	            }
+	            track.put("t_dEditStatus", editStatus);
+	            track.put("t_dEditMeth", editMeth);
+	        }else if(mdFlag.equals("m")) {//月编
+	            int oldEStatus = track.getInt("t_mEditStatus");
+	            if (oldEStatus == 0 && editStatus != 0) {
+	                jsonTrackInfo.put("stage", 3);
+	            }
+	            if(oldEStatus != 0 && editStatus == 0) {
+	                jsonTrackInfo.put("stage", -1);
+	            }
+	            track.put("t_mEditStatus", editStatus);
+	            track.put("t_mEditMeth", editMeth);
+	        }
+	
+	        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+	        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
+	        if(jsonTrackInfo.containsKey("stage")) {
+	            int curStage = jsonTrackInfo.getInt("stage");
+	            if(trackInfoArr.size() == 0) {
+	                // 更新hbase 增一个trackInfo
+	                if(curStage != -1) {
+	                    trackInfoArr.add(jsonTrackInfo);
+	                }
+	            }else {
+	                int lastStage = lastTrack.getInt("stage");
+	                if(lastStage == curStage) {//更新
+	                    lastTrack.put("date", date);
+	                    lastTrack.put("handler", handler);
+	                    trackInfoArr.remove(trackInfoArr.size()-1);
+	                    trackInfoArr.add(lastTrack);
+	                }else{//新增
+	                    if(curStage == -1 && trackInfoArr.size() >= 2) {
+	                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
+	                        int lastSecondStage = lastSecondTrack.getInt("stage");
+	                        jsonTrackInfo.put("stage", lastSecondStage);
+	                    }
+	                    trackInfoArr.add(jsonTrackInfo);
+	                }
+	            }
+	        } else {
+	            lastTrack.put("date", date);
+	            lastTrack.put("handler", handler);
+	            trackInfoArr.remove(trackInfoArr.size()-1);
+	            trackInfoArr.add(lastTrack);
+	        }
+	
+			track.put("t_trackInfo", trackInfoArr);
+	
+			track.put("t_date", date);
+	
+			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+					.getBytes());
+	
+			String newDeep = null;
+	
+			if (StringUtils.isNotEmpty(pid)) {
+	
+				JSONObject deep = JSONObject.fromObject(new String(result.getValue(
+						"data".getBytes(), "deep".getBytes())));
+				if (deep.containsKey("id")) {
+					deep.put("id", String.valueOf(pid));
+	
+					newDeep = deep.toString();
+	
+					put.addColumn("data".getBytes(), "deep".getBytes(), deep
+							.toString().getBytes());
+				}
+			}
+//			JSONObject solrIndex = solr.getById(rowkey);
+			
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao tips = tipsOp.getById(rowkey);
+			
+			List<TipsDao> newTis = new ArrayList<>();
+			
+			if(tips != null){
+		        if(jsonTrackInfo.containsKey("stage")) {
+		        	tips.setStage(jsonTrackInfo.getInt("stage"));
+		        }
+		        tips.setT_date(date);
+				if (mdFlag.equals("d")) {// 日编
+					tips.setT_dEditStatus(editStatus);
+					tips.setT_dEditMeth(editMeth);
+				} else if (mdFlag.equals("m")) {// 月编
+					tips.setT_mEditStatus(editStatus);
+					tips.setT_mEditMeth(editMeth);
+				}
+				tips.setHandler(handler);
+				if (newDeep != null) {
+					tips.setDeep(newDeep);
+				}
+				newTis.add(tips);
+			}
+			
+			tipsOp.update(newTis);
+			
+//	        if(jsonTrackInfo.containsKey("stage")) {
+//	            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+//	        }
+//	
+//			solrIndex.put("t_date", date);
+//	
+//	        if(mdFlag.equals("d")) {//日编
+//	            solrIndex.put("t_dEditStatus", editStatus);
+//	            solrIndex.put("t_dEditMeth", editMeth);
+//	        }else if(mdFlag.equals("m")) {//月编
+//	            solrIndex.put("t_mEditStatus", editStatus);
+//	            solrIndex.put("t_mEditMeth", editMeth);
+//	        }
+//	
+//			solrIndex.put("handler", handler);
+//	
+//			if (newDeep != null) {
+//				solrIndex.put("deep", newDeep);
+//			}
+//	
+//			solr.addTips(solrIndex);
+	
+			htab.put(put);
+	
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			DbUtils.rollback(oracleConn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-
-		JSONObject solrIndex = solr.getById(rowkey);
-
-        if(jsonTrackInfo.containsKey("stage")) {
-            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
-        }
-
-		solrIndex.put("t_date", date);
-
-        if(mdFlag.equals("d")) {//日编
-            solrIndex.put("t_dEditStatus", editStatus);
-            solrIndex.put("t_dEditMeth", editMeth);
-        }else if(mdFlag.equals("m")) {//月编
-            solrIndex.put("t_mEditStatus", editStatus);
-            solrIndex.put("t_mEditMeth", editMeth);
-        }
-
-
-
-	/*	if (0 == lifecycle) {
-			solrIndex.put("t_lifecycle", 2);
-		}*/
-
-		solrIndex.put("handler", handler);
-
-		if (newDeep != null) {
-			solrIndex.put("deep", newDeep);
-		}
-
-		solr.addTips(solrIndex);
-
-		htab.put(put);
-
 		return true;
 	}
 

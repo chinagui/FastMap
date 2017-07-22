@@ -289,7 +289,7 @@ public class TipsRequestParamSQL {
 		}
 
 		if (jsonReq.containsKey("type")) {
-			builder.append(" AND s_sourceType=2001  AND t_lifecycle=3");
+			builder.append(" AND s_sourceType='2001'  AND t_lifecycle=3");
 		}
 		logger.info("getTipsCheckWhere :" + builder.toString());
 		return builder.toString();
@@ -404,10 +404,10 @@ public class TipsRequestParamSQL {
 		// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
 		else if (subTaskType == 3) {
 			if (taskBuilder == null) {
-				builder.append("AND (s_sourceType=8002 AND stage in(2,7) AND t_tipStatus=2)");// 接边Tips
+				builder.append("AND (s_sourceType='8002' AND stage in(2,7) AND t_tipStatus=2)");// 接边Tips
 			} else {
 
-				builder.append("AND (( s_sourceType=8002 AND stage in (2,7) AND t_tipStatus=2)  OR  "
+				builder.append("AND (( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  OR  "
 						+ taskBuilder + " )");// 接边Tips
 			}
 
@@ -415,7 +415,7 @@ public class TipsRequestParamSQL {
 		// 4 区域粗编
 		else if (subTaskType == 4) {
 			// 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
-			builder.append(" AND s_sourceType=8001 AND stage in (2,5,7) AND t_tipStatus=2 ");// 预处理提交
+			builder.append(" AND s_sourceType='8001' AND stage in (2,5,7) AND t_tipStatus=2 ");// 预处理提交
 
 		}
 
@@ -539,16 +539,16 @@ public class TipsRequestParamSQL {
 
 			if (taskBuilder == null) {
 
-				builder.append("AND ( s_sourceType=8002 AND stage in (2,7) AND t_tipStatus=2)  ");// 接边Tips
+				builder.append("AND ( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  ");// 接边Tips
 			} else {
 
-				builder.append("AND (( s_sourceType=8002 AND stage=(2,7) AND t_tipStatus=2)  OR  "
+				builder.append("AND (( s_sourceType='8002' AND stage=(2,7) AND t_tipStatus=2)  OR  "
 						+ taskBuilder + " )");// 接边Tips
 			}
 
 		} else if (subTaskType == 4) {// 4 区域粗编
 			// 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
-			builder.append(" AND s_sourceType=8001 AND stage=(2,5,7) AND t_tipStatus=2 ");// 预处理提交
+			builder.append(" AND s_sourceType='8001' AND stage=(2,5,7) AND t_tipStatus=2 ");// 预处理提交
 
 		}
 

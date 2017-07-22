@@ -349,6 +349,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			return false;
 		} catch (IOException e) {
 			logger.error("tips修形出错,rowkey:" + rowkey + "原因：" + e.getMessage());
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			throw new Exception("tips修形出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}finally {
@@ -370,6 +371,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throws Exception {
 
 		Connection hbaseConn;
+		java.sql.Connection oracleConn =null;
 		try {
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -412,15 +414,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update solr
 
-			JSONObject solrIndex = solr.getById(rowkey);
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			   
+			TipsIndexOracleOperator tipOperator = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao solrIndex = tipOperator.getById(rowkey);
 
-			solrIndex.put("t_date", date);
+			solrIndex.setT_date(date);
 
-			solrIndex.put("handler", user);
+			solrIndex.setHandler( user);
 
-			solrIndex.put("deep", deep);
+			solrIndex.setDeep(deep.toString());
 
-			solr.addTips(solrIndex);
+			tipOperator.updateOne(solrIndex);
 
 			htab.put(put);
 
@@ -431,9 +437,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		} catch (IOException e) {
 
 			logger.error("tips点移动出错,rowkey:" + rowkey + "原因：" + e.getMessage());
-
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			throw new Exception("tips点移动出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 	}
 
@@ -702,21 +710,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         Table htab = null;
         java.sql.Connection tipsConn=null;
         try {
-			SolrDocumentList sdList = solr.queryHasNotSubmitPreTips(user, subTaskId);
-            long totalNum = sdList.getNumFound();
-            if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+        	tipsConn =DBConnector.getInstance().getTipsIdxConnection();
+        	TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+        	String sql = "select * from tips_index where s_project='"+subTaskId+"' and handler="+user+" AND t_tipStatus=1 AND s_sourceType='8001'";
+        	List<TipsDao> tips = operator.query(sql);
+            long totalNum = tips.size();
+            if(totalNum == 0) {
                 return;
             }
 
 			List<Get> gets = new ArrayList<Get>();
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
+			Map<String,TipsDao> tipsMap = new HashMap<String,TipsDao>();
+            for (TipsDao tip :tips) {
+                String rowkey = tip.getId();
 				Get get = new Get(rowkey.getBytes());
 				get.addColumn("data".getBytes(), "track".getBytes());
 				get.addColumn("data".getBytes(), "feedback".getBytes());
 				gets.add(get);
+				tipsMap.put(rowkey, tip);
 			}
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -727,7 +738,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			Set<String> keys = tipsTracks.keySet();
             List<Put> puts = new ArrayList<>();
             List<TipsDao> solrIndexList = new ArrayList<>();
-            TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+            
 			for (String rowkey : keys) {
 
 				// 1.更新feddback和track
@@ -742,24 +753,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 puts.add(put);
 
                 //更新solr
-                TipsDao solrIndex = operator.getById(rowkey);
+                TipsDao solrIndex = tipsMap.get(rowkey);
                 solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
                 solrIndexList.add(solrIndex);
 			}
 
             //更新hbase
             htab.put(puts);
-            operator.save(solrIndexList);
+            operator.update(solrIndexList);
 
-            //更新solr
-            //solr.addTips(solrIndexList);
 
 		} catch (IOException e) {
 
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("tips提交出错，原因：" + e.getMessage(), e);
 		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
             if(htab != null) {
                 htab.close();
             }

@@ -465,4 +465,26 @@ public class BaseTipsOperate {
 		return solrIndex;
 	}
 
+    /**
+     * FC预处理，情报矢量化
+     * 20170718 Tips提交维护Track,t_tipStatus=2，t_dEditStatus=0，
+     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
+     *同时维护t_trackinfo
+     * @param track
+     * @param tipsDao
+     * @return
+     */
+    public void tipSubmitTracOracle(TipsTrack track, TipsDao tipsDao) {
+        tipsDao.setT_date(track.getT_date());
+        tipsDao.setT_tipStatus(track.getT_tipStatus());
+        tipsDao.setT_dEditStatus(track.getT_dEditStatus());
+        tipsDao.setT_dEditMeth(track.getT_dEditMeth());
+        tipsDao.setT_mEditStatus(track.getT_mEditStatus());
+        tipsDao.setT_mEditMeth(track.getT_mEditMeth());
+        List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
+        TipsTrack.TrackInfo lastTrack = trackInfoList.get(trackInfoList.size() - 1);
+        tipsDao.setStage(lastTrack.getStage());
+        tipsDao.setT_operateDate(lastTrack.getDate());
+        tipsDao.setHandler(lastTrack.getHandler());
+    }
 }

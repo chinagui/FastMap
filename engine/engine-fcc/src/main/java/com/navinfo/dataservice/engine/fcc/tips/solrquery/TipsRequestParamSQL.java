@@ -312,4 +312,17 @@ public class TipsRequestParamSQL {
 
 	}
 
+    public String getTaskFilterSQL(int taskId, int taskType) throws Exception {
+        StringBuilder builder = new StringBuilder();
+        if (taskType == TaskType.Q_TASK_TYPE) {
+            builder.append(" AND s_qTaskId = " + taskId);
+        } else if (taskType == TaskType.Q_SUB_TASK_TYPE) {
+            builder.append(" AND s_qSubTaskId = " + taskId);
+        } else if (taskType == TaskType.M_TASK_TYPE) {
+            builder.append(" AND s_mTaskId = " + taskId);
+        } else if (taskType == TaskType.M_SUB_TASK_TYPE) {
+            builder.append(" AND s_mSubTaskId = " + taskId);
+        }
+        throw new Exception("不支持的任务类型：" + taskType);
+    }
 }

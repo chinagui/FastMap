@@ -573,7 +573,7 @@ public class TipsRequestParamSQL {
 
 			allBuilder.append(" OR ");
 
-			allBuilder.append("(stage=2 AND t_dEditStatus in (1 2))");
+			allBuilder.append("(stage=2 AND t_dEditStatus in (1,2))");
 
 			allBuilder.append(")");
 

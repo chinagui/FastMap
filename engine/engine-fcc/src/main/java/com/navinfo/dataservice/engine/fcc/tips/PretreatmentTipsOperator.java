@@ -262,11 +262,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user)
 			throws Exception {
 
-		Connection hbaseConn;
+		Connection hbaseConn = null;
+		java.sql.Connection oracleConn = null;
+		Table htab = null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String[] queryColNames = { "track", "deep", "geometry" };
@@ -312,33 +314,45 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.getBytes());
 
 			// update solr
-			JSONObject solrIndex = solr.getById(rowkey);
-			solrIndex.put("t_lifecycle", PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
-			solrIndex.put("t_date", track.getT_date());
-//			solrIndex.put("handler", user);
-			solrIndex.put("g_location", lineGeometry);
-			solrIndex.put("g_guide", guideNew);
-			solrIndex.put("deep", deep);
-//            solrIndex.put("s_qSubTaskId", qSubTaskId);
-			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.get("feedback"));
-            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
-                    feedbackObj));
-            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
-                    feedbackObj));
-            Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(String.valueOf(FC_SOURCE_TYPE), deep);
-            solrIndex.put("relate_links", relateMap.get("relate_links"));
-            solrIndex.put("relate_nodes", relateMap.get("relate_nodes"));
-			solr.addTips(solrIndex);
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		   
+			TipsIndexOracleOperator tipsIndexOracleConn = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao solrIndex = tipsIndexOracleConn.getById(rowkey);
 
+			solrIndex.setT_lifecycle(PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+			solrIndex.setT_date(track.getT_date());
+			solrIndex.setG_location(lineGeometry.toString());
+			solrIndex.setG_guide(guideNew.toString());
+			solrIndex.setDeep(deep.toString());
+			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.getFeedback());
+			solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+
+			solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+
+            Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(String.valueOf(FC_SOURCE_TYPE), deep);
+            solrIndex.setRelate_links(relateMap.get("relate_links"));
+            solrIndex.setRelate_nodes(relateMap.get("relate_nodes"));
+
+            
+            List<TipsDao> solrIndexList = new ArrayList<TipsDao>();
+            solrIndexList.add(solrIndex);
+            tipsIndexOracleConn.update(solrIndexList);
+            
 			htab.put(put);
-			htab.close();
+			
 			return false;
 		} catch (IOException e) {
 			logger.error("tips修形出错,rowkey:" + rowkey + "原因：" + e.getMessage());
 			throw new Exception("tips修形出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+			htab.close();
 		}
 	}
 

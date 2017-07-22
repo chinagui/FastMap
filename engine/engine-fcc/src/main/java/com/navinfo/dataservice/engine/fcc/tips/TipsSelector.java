@@ -2088,17 +2088,6 @@ public class TipsSelector {
 			for(TipsDao tips: tis){
 				rowkeyList.add(tips.getId());
 			}
-//	        long totalNum = sdList.getNumFound();
-//	        if (totalNum <= Integer.MAX_VALUE) {
-//	            for (int i = 0; i < totalNum; i++) {
-//	                SolrDocument doc = sdList.get(i);
-//	                JSONObject snapshot = JSONObject.fromObject(doc);
-//	                String rowkey = snapshot.getString("id");
-//	                rowkeyList.add(rowkey);
-//	            }
-//	        } else {
-//	            // 暂先不处理
-//	        }
         }catch(Exception e){
         	logger.error(e.getMessage(), e);
         }finally{

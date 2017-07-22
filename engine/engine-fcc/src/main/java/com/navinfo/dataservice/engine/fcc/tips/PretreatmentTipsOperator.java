@@ -1180,7 +1180,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		List<TipsDao> allTips=new ArrayList<TipsDao>();
 		String oldRowkey=jsonInfo.getString("rowkey"); //打断前的rowkey
 		
-		boolean hasModifyGlocation=hasModifyGLocation(command,oldRowkey,gLocation);
+		boolean hasModifyGlocation=hasModifyGLocation(tipsConn,command,oldRowkey,gLocation);
 		
 		//跨图幅不需要打断，直接保存
 		if(geoList==null||geoList.size()==0){
@@ -1270,21 +1270,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception 
 	 * @time:2017-7-5 上午9:22:13
 	 */
-	private boolean hasModifyGLocation(int command, String oldRowkey, JSONObject gLocation) throws Exception {
+	private boolean hasModifyGLocation(java.sql.Connection tipsConn,int command, String oldRowkey, JSONObject gLocation) throws Exception {
 		
 		//新增的
 		if(command==COMMAND_INSERT){
 			
 			return false;
 		}
+        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(tipsConn);
+        TipsDao tipsDao = operator.getById(oldRowkey);
 		
-		JSONObject index = solr.getById(oldRowkey);
-		
-		if(index==null){
+		if(tipsDao == null){
 			return false;
 		}
 		
-		String oldLocation=index.getString("g_location");
+		String oldLocation = tipsDao.getG_location();
 		
 		if(!oldLocation.equals(gLocation)){
 			
@@ -1615,12 +1615,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("批量新增tips出错：" + e.getMessage(), e);
 			throw new Exception("批量新增tips出错：" + e.getMessage(), e);
 		}finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(tipsConn);
         }
 
 	}
@@ -1628,7 +1630,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	/**
 	 * @Description:判断情报矢量化的tip删除，是逻辑删除还是物理删除 判断原则：
 	 * @param rowkey
-	 * @param user
+	 * @param subTaskId
 	 * @return
 	 * @author: y
 	 * @throws Exception
@@ -1718,17 +1720,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 	}
 
-	/**
-	 * @Description:维护测线上挂接的tips
-	 * @param user
-	 * @param linesAfterCut:打断后的测线(只有id和显示坐标)
-	 * @throws SolrServerException
-	 * @throws IOException
-	 * @throws Exception
-	 * @author: y
-	 * @param oldRowkey
-	 * @time:2017-6-21 下午9:37:44
-	 */
+    /**
+     * 维护测线上挂接的tips
+     * @param tipsConn
+     * @param oldRowkey
+     * @param user
+     * @param resultArr
+     * @param hasModifyGlocation
+     * @throws SolrServerException
+     * @throws IOException
+     * @throws Exception
+     */
 	private void maintainHookTips(java.sql.Connection tipsConn,String oldRowkey, int user, List<TipsDao> resultArr, boolean hasModifyGlocation)
 			throws SolrServerException, IOException, Exception {
 
@@ -1864,12 +1866,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
         } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
             logger.error("批量新增tips出错：" + e.getMessage(), e);
             throw new Exception("批量新增tips出错：" + e.getMessage(), e);
         }finally {
 			if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(tipsConn);
 		}
 
     }
@@ -2216,12 +2220,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			htab.put(puts);
 			operator.save(solrIndexList);
 		} catch (Exception e) {
-
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
 		}finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(tipsConn);
         }
 
 	}

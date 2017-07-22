@@ -78,8 +78,11 @@ public class TipsSelector {
 				snapshot.put("t", 1);
 				array.add(snapshot);
 			}
-		} finally {
-			DbUtils.closeQuietly(oracleConn);
+		} catch (Exception e){
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		}finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 		return array;
 	}
@@ -1888,16 +1891,23 @@ public class TipsSelector {
 	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
-		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
-				TipsUtils.notExpSourceType);
-		long count = new TipsIndexOracleOperator(oracleConn).querCount(
-				"select count(1) from tips_index where " + where
-						+ " and rownum=1", wkt);
-
-		return (count > 0 ? 1 : 0);
-	}
+		Connection oracleConn = null;
+        try {
+            oracleConn = DBConnector.getInstance() .getTipsIdxConnection();
+            String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
+                    TipsUtils.notExpSourceType);
+            long count = new TipsIndexOracleOperator(oracleConn).querCount(
+                    "select count(1) from tips_index where " + where
+                            + " and rownum=1", wkt);
+            return (count > 0 ? 1 : 0);
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+            e.printStackTrace();
+        }finally {
+            DbUtils.commitAndCloseQuietly(oracleConn);
+        }
+        return 0;
+    }
 
 	/**
 	 * 范围查询Tips 分类查询
@@ -2066,15 +2076,24 @@ public class TipsSelector {
 	public List<String> getCheckRowkeyList(String parameter) throws Exception {
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 		String where = param.getTipsCheckWhere(parameter);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
-		List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn)
-				.query("select * from tips_index where " + where);
-		List<String> rowkeyList = new ArrayList<String>();
-		for (TipsDao t : tipsList) {
-			rowkeyList.add(t.getId());
-		}
-		return rowkeyList;
+		Connection oracleConn = null;
+        List<String> rowkeyList = new ArrayList<String>();
+        try {
+            oracleConn = DBConnector.getInstance()
+                    .getTipsIdxConnection();
+            List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn)
+                    .query("select * from tips_index where " + where);
+
+            for (TipsDao t : tipsList) {
+                rowkeyList.add(t.getId());
+            }
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+            e.printStackTrace();
+        }finally {
+            DbUtils.commitAndCloseQuietly(oracleConn);
+        }
+        return rowkeyList;
 	}
 
 	/**

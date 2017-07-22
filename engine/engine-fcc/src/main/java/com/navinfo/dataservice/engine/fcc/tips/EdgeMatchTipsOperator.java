@@ -55,9 +55,10 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
 		Connection hbaseConn;
 		java.sql.Connection tipsConn=null;
+		Table htab = null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			// 1.rowkey
@@ -147,8 +148,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			List<Put> puts = new ArrayList<Put>();
 			puts.add(put);
 			htab.put(puts);
-			htab.close();
-			htab.close();
+
 			
 			return rowkey;
 		} catch (IOException e) {
@@ -157,6 +157,9 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(tipsConn);
+			if(htab != null) {
+				htab.close();
+			}
 		}
 
 	}

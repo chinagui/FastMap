@@ -51,13 +51,11 @@ public class TipsOperator {
 	public boolean update(String rowkey, int handler, String pid, String mdFlag, int editStatus, int editMeth)
 			throws Exception {
 		java.sql.Connection oracleConn = null;
-        Connection hbaseConn = null;
-        Table htab = null;
 		try{
 
-			hbaseConn = HBaseConnector.getInstance().getConnection();
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 	
-			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 	
 			Get get = new Get(rowkey.getBytes());
 	
@@ -219,9 +217,6 @@ public class TipsOperator {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(oracleConn);
-            if(htab != null) {
-                htab.close();
-            }
 		}
 		return true;
 	}
@@ -631,7 +626,6 @@ public class TipsOperator {
 		TipsSelector selector=new TipsSelector();
 		String  rowkey="";
 		List<Put> puts=new ArrayList<>();
-//        List<TipsDao> solrIndexList = new ArrayList<>();
 		Connection hbaseConn = null;
 		java.sql.Connection tipsConn=null;
 		Table htab = null;
@@ -665,8 +659,6 @@ public class TipsOperator {
 				//1.update solr
 				
 				json.setS_mTaskId(mTaskId);
-
-//                solrIndexList.add(json);
 				
 				//2.update hbase
 				Get get = new Get(rowkey.getBytes());
@@ -692,7 +684,7 @@ public class TipsOperator {
 			
 			htab.put(puts);
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
-			operator.save(tipsList);
+			operator.update(tipsList);
 		} catch (Exception e) {
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
@@ -796,7 +788,7 @@ public class TipsOperator {
                 return 0;
             }
             List<Put> puts = new ArrayList<>();
-//            List<TipsDao> solrIndexList = new ArrayList<>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
             for (TipsDao snapshot:tipsDaos) {
                 String rowkey = snapshot.getId();
                 //更新hbase
@@ -811,10 +803,10 @@ public class TipsOperator {
                 //更新solr
                 TipsDao solrIndex = oracleOperator.getById(rowkey);
                 solrIndex.setS_mTaskId(midTaskId);
-//                solrIndexList.add(solrIndex);
+                solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            oracleOperator.update(tipsDaos);
+            oracleOperator.update(solrIndexList);
             return tipsDaos.size();
         }catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(oracleConn);

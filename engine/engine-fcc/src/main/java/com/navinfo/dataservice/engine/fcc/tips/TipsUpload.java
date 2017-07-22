@@ -5,11 +5,9 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -20,29 +18,20 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.nirobot.common.utils.GeometryConvertor;
-import com.navinfo.nirobot.common.utils.JsonUtil;
-import com.navinfo.nirobot.common.utils.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -1134,7 +1123,7 @@ public class TipsUpload {
 						insertPstmt.setString(26, record.getCheck_time());
 						// 当关联的link上tips外业有采集时，该link关联的所有tips都记录常规采集任务对应的userid,
 						// 当关联link上挂接的tips全部未采集时，该字段记录为AAA.（是否采集过通过stage=1,handler=常规采集子任务userid判断）
-						String collecorUserId = this.getCollectUserId(record.getLink_pid(), userId, htab);
+						String collecorUserId = this.getCollectUserId(operator, record.getLink_pid(), userId, htab);
 						insertPstmt.setString(27, collecorUserId);
 						// 读取常规采集子任务的date
 						insertPstmt.setString(28, startDate);
@@ -1231,35 +1220,30 @@ public class TipsUpload {
 
 	}
 
-	private String getCollectUserId(String linkPid, int userId, Table htab) throws Exception {
+	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
 		String collecorUserId = "AAA";
-		String query = "relate_links:*|" + linkPid + "|*";
-		String fQuery = "-stage:0";
-		List<JSONObject> relateTips = solr.queryTips(query, fQuery);
-		SolrDocumentList sdList = solr.queryTipsSolrDocFilter(query, fQuery);
-		long totalNum = sdList.getNumFound();
-		if (totalNum <= Integer.MAX_VALUE) {
-			for (int j = 0; j < totalNum; j++) {
-				SolrDocument doc = sdList.get(j);
-				JSONObject snapshot = JSONObject.fromObject(doc);
-				String rowkey = snapshot.getString("id");
 
-				JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[] { "track" });
-				JSONObject track = oldTip.getJSONObject("track");
-				JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-				for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-					JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-					int stage = trackInfoObj.getInt("stage");
-					if (stage == 1) {
-						int handler = trackInfoObj.getInt("handler");
-						if (handler == userId) {
-							collecorUserId = String.valueOf(userId);
-							break;
-						}
-					}
-				}
-			}
-		}
+        String where = "stage<>0 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + linkPid + "'))";
+        String query = "select * from tips_index where " + where;
+        List<TipsDao> relateTips = operator.query(query);
+        for (TipsDao snapshot : relateTips) {
+            String rowkey = snapshot.getId();
+
+            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+            JSONObject track = oldTip.getJSONObject("track");
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+                int stage = trackInfoObj.getInt("stage");
+                if (stage == 1) {
+                    int handler = trackInfoObj.getInt("handler");
+                    if (handler == userId) {
+                        collecorUserId = String.valueOf(userId);
+                        break;
+                    }
+                }
+            }
+        }
 		return collecorUserId;
 	}
 

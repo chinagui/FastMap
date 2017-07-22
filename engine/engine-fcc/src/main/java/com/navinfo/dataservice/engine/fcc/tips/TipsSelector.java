@@ -14,6 +14,8 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
+import com.navinfo.navicommons.database.Page;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -2220,37 +2222,48 @@ public class TipsSelector {
 
 
     public JSONObject listInfoTipsByPage(String parameter) throws Exception {
-        JSONObject jsonReq = JSONObject.fromObject(parameter);
-        TipsRequestParam param = new TipsRequestParam();
-        String queryTotal = param.getTipsCheckTotal(parameter);
-        int curPage = jsonReq.getInt("curPage");
-        int pageSize = jsonReq.getInt("pageSize");
-        int firstNum = (curPage - 1) * pageSize;
-        SolrDocumentList sdList = conn.queryTipsSolrDocByPage(queryTotal, null, firstNum, pageSize);
-        JSONObject jsonObject = new JSONObject();
-        long totalNum = sdList.getNumFound();
-        if (totalNum <= Integer.MAX_VALUE) {
-            jsonObject.put("total", totalNum);
-            long pageTotalNum = sdList.size();
-            JSONArray jsonArray = new JSONArray();
-            for (int i = 0; i < pageTotalNum; i++) {
-                JSONObject resultObj = new JSONObject();
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
-                resultObj.put("rowkey", rowkey);
-                String sourceType = snapshot.getString("s_sourceType");
-                resultObj.put("sourceType", sourceType);
-                int lifecycle = snapshot.getInt("t_lifecycle");
-                resultObj.put("lifecycle", lifecycle);
-                String date = snapshot.getString("t_date");
-                resultObj.put("date", date);
-                jsonArray.add(resultObj);
-            }
-            jsonObject.put("result", jsonArray);
-        } else {
-            // 暂先不处理
-        }
+
+		JSONObject jsonObject = new JSONObject();
+		java.sql.Connection conn = null;
+    	try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			TipsRequestParam param = new TipsRequestParam();
+			String queryTotal = param.getTipsCheckTotal(parameter);
+			int curPage = jsonReq.getInt("curPage");
+			int pageSize = jsonReq.getInt("pageSize");
+
+			conn=DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			Page page = operator.queryPage(queryTotal, curPage, pageSize);
+
+			long totalNum = page.getTotalCount();
+			if (totalNum <= Integer.MAX_VALUE) {
+				jsonObject.put("total", totalNum);
+				List<TipsDao> tipsDaoList = (List<TipsDao>) page.getResult();
+				JSONArray jsonArray = new JSONArray();
+				for (TipsDao tipsDao : tipsDaoList) {
+					JSONObject resultObj = new JSONObject();
+					String rowkey = tipsDao.getId();
+					resultObj.put("rowkey", rowkey);
+					String sourceType = tipsDao.getS_sourceType();
+					resultObj.put("sourceType", sourceType);
+					int lifecycle = tipsDao.getT_lifecycle();
+					resultObj.put("lifecycle", lifecycle);
+					String date = tipsDao.getT_date();
+					resultObj.put("date", date);
+					jsonArray.add(resultObj);
+				}
+				jsonObject.put("result", jsonArray);
+			} else {
+				// 暂先不处理
+			}
+		}
+        catch (Exception ex){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw ex;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 
         return jsonObject;
     }

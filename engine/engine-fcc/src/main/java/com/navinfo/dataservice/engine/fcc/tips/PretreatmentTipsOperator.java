@@ -21,7 +21,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -538,8 +537,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     .toString().getBytes());
 
 			// update solr
-            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
-            newSolrIndex = this.tipSaveUpdateTrackSolr(track, newSolrIndex);
+//            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+//            newSolrIndex = this.tipSaveUpdateTrackSolr(track, newSolrIndex);
 
 			solr.addTips(solrIndex);
 			solr.addTips(newSolrIndex);
@@ -732,7 +731,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             htab.put(puts);
 
             //更新solr
-            solr.addTips(solrIndexList);
+           // solr.addTips(solrIndexList);
 
 		} catch (IOException e) {
 
@@ -990,7 +989,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 			// 同步更新solr
-            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+           // solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
 			solrIndex.put("feedback", feedBack);
 
 			if (newDeep != null) {
@@ -1576,7 +1575,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 			htab.put(puts);
-            solr.addTips(solrIndexList);
+//            solr.addTips(solrIndexList);
 			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
@@ -1593,7 +1592,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	/**
 	 * @Description:判断情报矢量化的tip删除，是逻辑删除还是物理删除 判断原则：
 	 * @param rowkey
-	 * @param user
+	 * @param subTaskId
 	 * @return
 	 * @author: y
 	 * @throws Exception
@@ -1602,49 +1601,49 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public int getDelTypeByRowkeyAndUserId(String rowkey, int subTaskId)
 			throws Exception {
 		//20170720 物理删除：t_lifecycle=3，trackinfo=[]，source-->s_qSubTaskId/s_mSubTaskId=当前子任务
-        Connection hbaseConn = null;
-        Table htab = null;
-        try{
-            hbaseConn = HBaseConnector.getInstance().getConnection();
-            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+		Connection hbaseConn = null;
+		Table htab = null;
+		try{
+			hbaseConn = HBaseConnector.getInstance().getConnection();
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-            Result result = htab.get(new Get(rowkey.getBytes()));
-            if(result.isEmpty()) {
-                return 2;
-            }
+			Result result = htab.get(new Get(rowkey.getBytes()));
+			if(result.isEmpty()) {
+				return TIP_NOT_DELETE;
+			}
 
-            JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
-                    "data".getBytes(), "track".getBytes())));
-            JSONObject sourceJson = JSONObject.fromObject(new String(result.getValue(
-                    "data".getBytes(), "source".getBytes())));
-            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
-            List trackInfoList = track.getT_trackInfo();
-            int lifecycle = track.getT_lifecycle();
-            int taskType = this.getTaskType(subTaskId);//// 1，中线 4，快线
-            if(taskType == 0) {
-                return 2;
-            }
-            int tipTaskId = 0;
-            if(taskType == TaskType.Q_TASK_TYPE) {//快线子任务
-                tipTaskId = sourceJson.getInt("s_qSubTaskId");
-            }else if(taskType == TaskType.M_TASK_TYPE) {//中线子任务
-                tipTaskId = sourceJson.getInt("s_mSubTaskId");
-            }
+			JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "track".getBytes())));
+			JSONObject sourceJson = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "source".getBytes())));
+			TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+			List trackInfoList = track.getT_trackInfo();
+			int lifecycle = track.getT_lifecycle();
+			int taskType = this.getTaskType(subTaskId);//// 1，中线 4，快线
+			if(taskType == 0) {
+				return TIP_NOT_DELETE;
+			}
+			int tipTaskId = 0;
+			if(taskType == TaskType.Q_TASK_TYPE) {//快线子任务
+				tipTaskId = sourceJson.getInt("s_qSubTaskId");
+			}else if(taskType == TaskType.M_TASK_TYPE) {//中线子任务
+				tipTaskId = sourceJson.getInt("s_mSubTaskId");
+			}
 
-            int delType = 0;//默认逻辑删除0
-            if((trackInfoList == null || trackInfoList.size() == 0)
-                    && lifecycle == 3 && tipTaskId == subTaskId) {
-                delType = 1;
-            }
-            return delType;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            if(htab != null) {
-                htab.close();
-            }
-        }
-        return 2;
+			int delType = TIP_LOGICAL_DELETE;//默认逻辑删除0
+			if((trackInfoList == null || trackInfoList.size() == 0)
+					&& lifecycle == 3 && tipTaskId == subTaskId) {
+				delType = TIP_PHYSICAL_DELETE;
+			}
+			return delType;
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			if(htab != null) {
+				htab.close();
+			}
+		}
+		return TIP_NOT_DELETE;
 	}
 
 	/**
@@ -1809,7 +1808,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
 
             htab.put(puts);
-            solr.addTips(solrIndexList);
+//            solr.addTips(solrIndexList);
             TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
         } catch (Exception e) {
@@ -2165,7 +2164,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 			htab.put(puts);
-            solr.addTips(solrIndexList);
+//            solr.addTips(solrIndexList);
 		} catch (Exception e) {
 
 			throw new Exception("情报任务提交失败：" + e.getMessage(), e);

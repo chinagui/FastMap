@@ -9,18 +9,19 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
-import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.navinfo.navicommons.geo.computation.*;
-import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -84,7 +85,7 @@ public class TipsSelector {
 		JSONArray array = new JSONArray();
 
 		String rowkey = null;
-
+		Connection conn = null;
 		try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -114,16 +115,23 @@ public class TipsSelector {
             int x = jsonReq.getInt("x");
             int y = jsonReq.getInt("y");
             int z = jsonReq.getInt("z");
+			int gap = jsonReq.getInt("gap");
 			double px = MercatorProjection.tileXToPixelX(x);
 			double py = MercatorProjection.tileYToPixelY(y);
             String mdFlag = null;
             if(jsonReq.containsKey("mdFlag")) {
                 mdFlag = jsonReq.getString("mdFlag");
             }
-            TipsRequestParam param = new TipsRequestParam();
-            String query = param.getByTileWithGap(parameter); //在这里组装查询语句
-            List<JSONObject> snapshots = conn.queryTips(query, null);
-			for (JSONObject json : snapshots) {
+            TipsRequestParamSQL param = new TipsRequestParamSQL();
+			String sql = param.getByTileWithGap(parameter);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			List<TipsDao> snapshots = operator.query(sql, wkt);
+			for (TipsDao tipsDao : snapshots) {
+				JSONObject json = JSONObject.fromObject(tipsDao);
+
 				rowkey = json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();
@@ -589,14 +597,11 @@ public class TipsSelector {
 
 			}
 		} catch (Exception e) {
+			DbUtils.rollback(conn);
 			logger.error("渲染报错，数据错误：" + e.getMessage() + rowkey);
 			throw new Exception(e.getMessage() + "rowkey:" + rowkey, e);
 		} finally {
-			try {
-
-			} catch (Exception e) {
-
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return array;
 	}

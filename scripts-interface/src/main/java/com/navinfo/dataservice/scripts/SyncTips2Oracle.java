@@ -35,7 +35,7 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
-import com.navinfo.dataservice.dao.fcc.model.TipsIndexDao;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOperator;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.datahub.service.DbService;
@@ -95,7 +95,7 @@ public class SyncTips2Oracle {
 			Result[] results = null;
 			int num=0;
 			while ((results = rs.next(5000)).length > 0){
-				List<TipsIndexDao> tis = new ArrayList<TipsIndexDao>();
+				List<TipsDao> tis = new ArrayList<TipsDao>();
 				
 				for (Result result : results){
 					try{
@@ -104,12 +104,17 @@ public class SyncTips2Oracle {
 						if(num%1000==0){
 							op.save(tis);
 							conn.commit();
+							tis.clear();
 							log.info("index:"+index+",num:"+num);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);
 					}
 				}
+
+				op.save(tis);
+				conn.commit();
+				tis.clear();
 			}
 			conn.commit();
 			setTotal(index,num);
@@ -121,13 +126,13 @@ public class SyncTips2Oracle {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	private TipsIndexDao convert(Result result)throws Exception{
+	private TipsDao convert(Result result)throws Exception{
 		try{
 			if(result==null){
 				log.info("result is null");
 				return null;
 			}
-			TipsIndexDao ti = new TipsIndexDao();
+			TipsDao ti = new TipsDao();
 			
 			//rowkey
 			ti.setId(Bytes.toString(result.getRow()));
@@ -147,20 +152,20 @@ public class SyncTips2Oracle {
 			JSONObject trackJSON = JSONObject.fromObject(trackString);
 			String tDate = trackJSON.getString("t_date");
 			int lifecycle = trackJSON.getInt("t_lifecycle");
-			int command = trackJSON.getInt("t_command");
+//			int command = trackJSON.getInt("t_command");
 			int dEditMeth = trackJSON.getInt("t_dEditMeth");
 			int dEditStatus = trackJSON.getInt("t_dEditStatus");
 			int mEditMeth = trackJSON.getInt("t_mEditMeth");
 			int mEditStatus = trackJSON.getInt("t_mEditStatus");
 			int tipStatus = trackJSON.getInt("t_tipStatus");
-			ti.settDate(tDate);
-			ti.settLifecycle(lifecycle);
-			ti.settCommand(command);
-			ti.setTdEditMethod(dEditMeth);
-			ti.setTdEditStatus(dEditStatus);
-			ti.setTmEditMethod(mEditMeth);
-			ti.setTmEditStatus(mEditStatus);
-			ti.settTipStatus(tipStatus);
+			ti.setT_date(tDate);
+			ti.setT_lifecycle(lifecycle);
+//			ti.settCommand(command);
+			ti.setT_dEditMeth(dEditMeth);
+			ti.setT_dEditStatus(dEditStatus);
+			ti.setT_mEditMeth(mEditMeth);
+			ti.setT_mEditStatus(mEditStatus);
+			ti.setT_tipStatus(tipStatus);
 			
 			//track履历
 			JSONArray trackInfoArray = trackJSON.getJSONArray("t_trackInfo");
@@ -173,7 +178,7 @@ public class SyncTips2Oracle {
 				tOperateDate = lastTrack.getString("date");
 				handler = lastTrack.getInt("handler");
 			}
-			ti.settOperateDate(tOperateDate);
+			ti.setT_operateDate(tOperateDate);
 			ti.setStage(stage);
 			ti.setHandler(handler);
 			
@@ -186,11 +191,11 @@ public class SyncTips2Oracle {
 			int qSubTaskId = sourceJSON.getInt("s_qSubTaskId");
 			int mSubTaskId = sourceJSON.getInt("s_mSubTaskId");
 			
-			ti.setsSourceType(sourceType);
-			ti.setSqTaskId(qTaskId);
-			ti.setSmTaskId(mTaskId);
-			ti.setSqSubtaskId(qSubTaskId);
-			ti.setSmSubtaskId(mSubTaskId);
+			ti.setS_sourceType(sourceType);
+			ti.setS_qTaskId(qTaskId);
+			ti.setS_mTaskId(mTaskId);
+			ti.setS_qSubTaskId(qSubTaskId);
+			ti.setS_mSubTaskId(mSubTaskId);
 			
 			//统计坐标
 			Geometry wkt = locationGeo;
@@ -211,15 +216,15 @@ public class SyncTips2Oracle {
 			
 			Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deepJSON);
 
-			ti.setRelateLinks(relateMap.get("relate_links"));
-			ti.setRelateNodes(relateMap.get("relate_nodes"));
+			ti.setRelate_links(relateMap.get("relate_links"));
+			ti.setRelate_nodes(relateMap.get("relate_nodes"));
 			
-			String diffString = JSON.NULL;
-			byte[] diffBytes = result.getValue(Bytes.toBytes("data"), Bytes.toBytes("tiffDiff"));
-			if(diffBytes != null) {
-				diffString = Bytes.toString(diffBytes);
-			}
-			ti.setTipDiff(diffString);
+//			String diffString = JSON.NULL;
+//			byte[] diffBytes = result.getValue(Bytes.toBytes("data"), Bytes.toBytes("tiffDiff"));
+//			if(diffBytes != null) {
+//				diffString = Bytes.toString(diffBytes);
+//			}
+//			ti(diffString);
 
 			return ti;
 		}catch(Exception e){

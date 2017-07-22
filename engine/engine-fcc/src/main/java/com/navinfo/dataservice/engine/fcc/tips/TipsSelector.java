@@ -1283,11 +1283,11 @@ public class TipsSelector {
 					oracelConn);
 			long total = operator.querCount(
 					"select count(1) from tips_index where "
-							+ whereClause.getSql(), whereClause.getValues());
+							+ whereClause.getSql(), whereClause.getValues().toArray());
 			Map<Object, Object> data = operator.groupQuery(
 					"select s_sourcetype,count(1) from tips_index where "
 							+ whereClause.getSql() + " group by s_sourcetype",
-					whereClause.getValues());
+							whereClause.getValues().toArray());
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;
@@ -1375,7 +1375,7 @@ public class TipsSelector {
 		try {
 			tips = new TipsIndexOracleOperator(oracleConn).query(
 					"select * from tips_index where " + where.getSql(),
-					where.getValues());
+					where.getValues().toArray());
 		} finally {
 			DbUtils.closeQuietly(oracleConn);
 		}

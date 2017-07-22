@@ -239,12 +239,6 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 	}
 
-	@Override
-	public void update(TipsDao ti) throws DaoOperatorException {
-		// TODO Auto-generated method stub
-		
-	}
-
   	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;

@@ -713,7 +713,7 @@ public class TipsRequestParamSQL {
 				if (builder.length() > 0) {
 					builder.append(" AND ");
 				}
-				builder.append("stage = (1, 2, 5 ,6 ) AND t_tipStatus = 2 AND  t_dEditStatus <> 2");
+				builder.append("stage in (1, 2, 5 ,6 ) AND t_tipStatus = 2 AND  t_dEditStatus <> 2");
 
 			}
 
@@ -736,8 +736,8 @@ public class TipsRequestParamSQL {
 				if (builder.length() > 0) {
 					builder.append(" AND ");
 				}
-				builder.append(" stage = 7 AND handler:" + handler
-						+ " AND -t_dEditStatus = 2 ");
+				builder.append(" stage = 7 AND handler =" + handler
+						+ " AND t_dEditStatus <> 2 ");
 			}
 
 		}

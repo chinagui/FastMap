@@ -22,5 +22,5 @@ public interface TipsIndexOperator {
 
 	public void delete(Collection<TipsDao> tis) throws Exception;
 
-	public void update(Collection<TipsDao> tis) throws DaoOperatorException;
+	public void update(Collection<TipsDao> tis) throws Exception;
 }

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.fcc.model;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -126,6 +127,9 @@ public class TipsDao {
 	public void setWkt(Geometry wkt) {
 		this.wkt = wkt;
 	}
+	public void setWkt(String wkt) throws Exception {
+		this.wkt = GeoTranslator.wkt2Geometry(wkt);;
+	}
 	public String getTipdiff() {
 		return tipdiff;
 	}
@@ -161,6 +165,9 @@ public class TipsDao {
 	}
 	public void setWktLocation(Geometry wktLocation) {
 		this.wktLocation = wktLocation;
+	}
+	public void setWktLocation(String wktLocation) throws Exception {
+		this.wktLocation = GeoTranslator.wkt2Geometry(wktLocation);
 	}
 	public int getT_tipStatus() {
 		return t_tipStatus;

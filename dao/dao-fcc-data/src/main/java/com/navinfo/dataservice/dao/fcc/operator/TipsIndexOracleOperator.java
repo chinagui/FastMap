@@ -83,6 +83,19 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			throw new DaoOperatorException("Tips Index批量保存出错:"+e.getMessage(),e);
 		}
 	}
+	public long querCount(String sql,Object...params) throws Exception{
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<Long> resultSetHandler = new ResultSetHandler<Long>() {
+			@Override
+			public Long handle(ResultSet rs) throws SQLException {
+				while (rs.next()) {
+					return rs.getLong(1);
+				}
+				return 0L;
+			}
+		};
+		return run.query(conn, sql, resultSetHandler, params);
+	}
 
 	public List<TipsDao> query(String sql, Object... params) throws Exception{
 		List<TipsDao> result = new ArrayList<>();

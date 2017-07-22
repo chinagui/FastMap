@@ -741,8 +741,6 @@ public class SolrController {
 		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
 		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 		builder.append(")");
-		
-		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 
 		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 		List<TipsDao> tipsDao = operator.query(builder.toString());

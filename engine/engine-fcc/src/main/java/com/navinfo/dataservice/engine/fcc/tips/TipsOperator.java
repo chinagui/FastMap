@@ -626,7 +626,6 @@ public class TipsOperator {
 		TipsSelector selector=new TipsSelector();
 		String  rowkey="";
 		List<Put> puts=new ArrayList<>();
-        List<TipsDao> solrIndexList = new ArrayList<>();
 		Connection hbaseConn = null;
 		java.sql.Connection tipsConn=null;
 		Table htab = null;
@@ -660,8 +659,6 @@ public class TipsOperator {
 				//1.update solr
 				
 				json.setS_mTaskId(mTaskId);
-
-                solrIndexList.add(json);
 				
 				//2.update hbase
 				Get get = new Get(rowkey.getBytes());
@@ -687,7 +684,7 @@ public class TipsOperator {
 			
 			htab.put(puts);
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
-			operator.save(solrIndexList);
+			operator.update(tipsList);
 		} catch (Exception e) {
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);

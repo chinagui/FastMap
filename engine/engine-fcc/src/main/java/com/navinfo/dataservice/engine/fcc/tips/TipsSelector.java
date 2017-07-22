@@ -9,6 +9,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
@@ -129,8 +130,10 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			List<JSONObject> snapshots = operator.query(sql, wkt);
-			for (JSONObject json : snapshots) {
+			List<TipsDao> snapshots = operator.query(sql, wkt);
+			for (TipsDao tipsDao : snapshots) {
+				JSONObject json = JSONObject.fromObject(tipsDao);
+
 				rowkey = json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();
@@ -1895,15 +1898,11 @@ public class TipsSelector {
 	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-
-		boolean flag = conn.checkTipsMobile(wkt, date,
-				TipsUtils.notExpSourceType);
-
-		if (flag) {
-			return 1;
-		}
-
-		return 0;
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt,date,TipsUtils.notExpSourceType);
+        long count = new TipsIndexOracleOperator(oracleConn).querCount("select count(1) from tips_index where "+where+" and rownum=1",wkt);
+       
+		return (count>0?1:0);
 	}
 
 	/**
@@ -2060,20 +2059,13 @@ public class TipsSelector {
      * @throws Exception
      */
     public List<String> getCheckRowkeyList(String parameter) throws Exception {
-        TipsRequestParam param = new TipsRequestParam();
-        String query = param.getTipsCheck(parameter);
-        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-        List rowkeyList = new ArrayList();
-        long totalNum = sdList.getNumFound();
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
-                rowkeyList.add(rowkey);
-            }
-        } else {
-            // 暂先不处理
+        TipsRequestParamSQL param = new TipsRequestParamSQL();
+        String where = param.getTipsCheck(parameter);
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where);
+        List<String> rowkeyList = new ArrayList<String>();
+        for (TipsDao t:tipsList) {
+            rowkeyList.add(t.getId());
         }
         return rowkeyList;
     }
@@ -2195,43 +2187,34 @@ public class TipsSelector {
      * @throws Exception
      */
     public JSONObject statInfoTask(String parameter) throws Exception {
-        TipsRequestParam param = new TipsRequestParam();
+    	TipsRequestParamSQL param = new TipsRequestParamSQL();
         String query = param.getTipsCheck(parameter);
-        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-
-        JSONObject statObj = new JSONObject();
-        //矢量化任务Tips总数
-        long totalNum = sdList.getNumFound();
-        statObj.put("total", totalNum);
-        sdList.clear();
-        sdList = null;
-
-        JSONObject jsonReq = JSONObject.fromObject(parameter);
-        jsonReq.put("type", "2001");//测线
-        query = param.getTipsCheck(jsonReq.toString());
-        sdList = conn.queryTipsSolrDoc(query, null);
-        totalNum = sdList.getNumFound();
-        statObj.put("total2001", totalNum);
-        double length = 0;
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                JSONObject geojson = JSONObject.fromObject(snapshot
-                        .getString("g_location"));
-                length += GeometryUtils.getLinkLength(GeoTranslator
-                        .geojson2Jts(geojson));
-            }
-        } else {
-            // 暂先不处理
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        try{
+	        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			long count = operator.querCount("select count(1) from tips_index where "+query);
+	
+	        JSONObject statObj = new JSONObject();
+	        statObj.put("total", count);
+	
+	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+query+" and type=2001");
+	        int total2001 = type2001Result.size();
+			statObj.put("total2001", total2001);
+	        double length = 0;
+	        for (int i = 0; i < total2001; i++) {
+	        	TipsDao snapshot = type2001Result.get(i);
+	            JSONObject geojson = JSONObject.fromObject(snapshot.getG_location());
+	            length += GeometryUtils.getLinkLength(GeoTranslator
+	                    .geojson2Jts(geojson));
+	        }
+	        if(length != 0) {
+	            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+	        }
+	        statObj.put("length", length);
+	        return statObj;
+        }finally{
+        	DbUtils.closeQuietly(oracleConn);
         }
-        if(length != 0) {
-            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        }
-        statObj.put("length", length);
-        sdList.clear();
-        sdList = null;
-        return statObj;
     }
 
 

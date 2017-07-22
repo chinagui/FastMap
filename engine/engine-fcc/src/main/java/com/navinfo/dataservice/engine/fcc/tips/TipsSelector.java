@@ -1285,10 +1285,16 @@ public class TipsSelector {
 					"select count(1) from tips_index where "
 							+ whereClause.getSql(), whereClause.getValues()
 							.toArray());
-			Map<Object, Object> data = operator.groupQuery(
+			Map<Object, Object> dataMap = operator.groupQuery(
 					"select s_sourcetype,count(1) from tips_index where "
 							+ whereClause.getSql() + " group by s_sourcetype",
 					whereClause.getValues().toArray());
+            JSONArray data = new JSONArray();
+            for(Object key :dataMap.keySet()) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(key, dataMap.get(key));
+                data.add(jsonObject);
+            }
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;

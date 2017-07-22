@@ -10,6 +10,8 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import org.apache.commons.collections.CollectionUtils;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -17,11 +19,14 @@ import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class TipsOperator {
 
@@ -744,60 +749,69 @@ public class TipsOperator {
      * @param midTaskId
      * @throws Exception
      */
-    public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
-            throws Exception {
+    public long batchNoTaskDataByMidTask(String wkt, int midTaskId) throws Exception {
         StringBuilder builder = new StringBuilder();
-        builder.append("wkt:\"intersects(");
-        builder.append(wkt);
-        builder.append(")\"");
+        //builder.append("wkt:\"intersects(");
+        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+
         StringBuilder fqBuilder = new StringBuilder();
-        fqBuilder.append("s_qTaskId:0");
-        fqBuilder.append(" AND s_mTaskId:0");
+        fqBuilder.append(" AND s_qTaskId = 0 ");
+        fqBuilder.append(" AND s_mTaskId = 0 ");
         //20170615 过滤内业Tips
         fqBuilder.append(" AND ");
-        fqBuilder.append("-s_sourceType:80*");
+        fqBuilder.append(" s_sourceType not like '80%' ");
         fqBuilder.append(" AND ");
-        fqBuilder.append("t_tipStatus:2");
+        fqBuilder.append(" t_tipStatus = 2 ");
 
         Connection hbaseConn = null;
         Table htab = null;
+        java.sql.Connection oracleConn = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
+
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
-            long totalNum = sdList.getNumFound();
-            if(totalNum > fetchNum || totalNum == 0) {
+            //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
+            TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
+            List<TipsDao> tipsDaos = oracleOperator.query("SELECT * FROM TIPS_INDEX WHERE " + builder.toString() + fqBuilder.toString(), wkt);
+
+            if (CollectionUtils.isEmpty(tipsDaos)) {
                 return 0;
             }
             List<Put> puts = new ArrayList<>();
-            List<JSONObject> solrIndexList = new ArrayList<>();
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            //for (int i = 0; i < totalNum; i++) {
+            for (TipsDao dao : tipsDaos) {
+                //SolrDocument doc = sdList.get(i);
+
+                JSONObject snapshot = JSONObject.fromObject(dao);
                 String rowkey = snapshot.getString("id");
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
                 Result result = htab.get(get);
-                JSONObject source = JSONObject.fromObject(new String(result.getValue(
-                        "data".getBytes(), "source".getBytes())));
+                JSONObject source = JSONObject.fromObject(new String(result.getValue("data".getBytes(), "source".getBytes())));
                 Put put = new Put(rowkey.getBytes());
                 source.put("s_mTaskId", midTaskId);
-                put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
-                        .getBytes());
+                put.addColumn("data".getBytes(), "source".getBytes(), source.toString().getBytes());
                 puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("s_mTaskId", midTaskId);
-                solrIndexList.add(solrIndex);
+                //JSONObject solrIndex = solr.getById(rowkey);
+                TipsDao tipsDao = oracleOperator.getById(rowkey);
+                tipsDao.setS_mTaskId(midTaskId);
+                solrIndexList.add(tipsDao);
             }
             htab.put(puts);
-            solr.addTips(solrIndexList);
-            return totalNum;
+            //solr.addTips(solrIndexList);
+            oracleOperator.save(solrIndexList);
+            return tipsDaos.size();
         }catch (Exception e) {
+            DBUtils.rollBack(oracleConn);
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
         }finally {
+            DBUtils.closeConnection(oracleConn);
             if(htab != null) {
                 htab.close();
             }

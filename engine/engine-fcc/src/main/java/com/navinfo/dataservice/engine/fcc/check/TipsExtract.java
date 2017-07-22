@@ -10,6 +10,7 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -27,9 +29,13 @@ import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckTask;
 import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskOperator;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckPercentConfig;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.sun.tools.internal.ws.processor.model.java.JavaArrayType;
 
 /** 
  * @ClassName: TipsExtract.java
@@ -156,22 +162,50 @@ public class TipsExtract {
 			}
 			
 			//3.进行tips抽取
-			List<JSONObject> allExpTipsList=new ArrayList<JSONObject>();
-					
+			List<TipsDao> allExpTipsList=new ArrayList<TipsDao>();
+			java.sql.Connection conn=null;
+			
+			List<TipsDao> tipsDaos =null;
+			
+			//1.wkt过滤
+	        String wkt = GridUtils.grids2Wkt(grids);		
+	        try{
+				conn=DBConnector.getInstance().getTipsIdxConnection();
 			for (String type : extType) {
 				
 				int extactLimit=extactCountMap.get(type);
 				
 				TipsRequestParam param = new TipsRequestParam();
 				
-		        String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,workTaskId,workerId,0,null);
+		        String solrQuery = param.getQueryFilterSqlForCheck(workStatus,workTaskId,workerId,0,null);
 		        
-		        solrQuery=solrQuery+" AND s_sourceType:"+ type; //指定类型
+		        solrQuery=solrQuery+" AND s_sourceType="+ type; //指定类型	        
 		        
-				List<JSONObject> tips = solrConn.queryTips(solrQuery, null,extactLimit);
+		      
+		       // String solrQuery = param.getQueryFilterSqlForCheck(workStatus,subTaskId,workerId,checkerId,rowkeyList);
+		        
+		        logger.debug("tips extract query sql:"+solrQuery);
+		        
 				
-				allExpTipsList.addAll(tips);
+				//List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
+				
+				TipsIndexOracleOperator tipsIndexOracleOperator=new TipsIndexOracleOperator(conn);
+				tipsDaos = tipsIndexOracleOperator.queryWithLimit(solrQuery,extactLimit, wkt);
+				
+		        
+				//List<JSONObject> tips = solrConn.queryTips(solrQuery, null,extactLimit);
+				
+				allExpTipsList.addAll(tipsDaos);
 			}
+			
+	        }catch (Exception e) {
+				DbUtils.rollbackAndCloseQuietly(conn);
+				logger.error("queryTipsByWorkState error", e);
+				throw e;
+			}finally {
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+			
 			//4.更新tips的状态，更新 stage=7,t_dEditStatus=0,t_dEditMeth=0
 			
 			updateTipsStatus2Check(allExpTipsList,checkerId);
@@ -231,9 +265,10 @@ public class TipsExtract {
 	 * @author: y
 	 * @time:2017-5-27 下午6:02:23
 	 */
-	private void updateTipsStatus2Check(List<JSONObject> allExpTipsList,int checkerId)throws Exception {
+	private void updateTipsStatus2Check(List<TipsDao> allExpTipsList,int checkerId)throws Exception {
 		
 		 Connection hbaseConn = null;
+		 java.sql.Connection conn=null;
 	        Table htab = null;
 	        try {
 	            hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -248,19 +283,21 @@ public class TipsExtract {
 	         	int stage=7;
 	        	
 	        	String date=StringUtils.getCurrentTime();
-	        	
-	        	for (JSONObject jsonObject : allExpTipsList) {
+	        	conn=DBConnector.getInstance().getTipsIdxConnection();
+	        	TipsIndexOracleOperator tipsIndexOracleOperator=new TipsIndexOracleOperator(conn);
+	        	for (TipsDao tipsDao : allExpTipsList) {
 	        		
-	    			String rowkey=jsonObject.getString("id");
+	    			String rowkey=tipsDao.getId();
 	    			
 	    			// 获取solr数据
-		    		JSONObject solrIndex = solrConn.getById(rowkey);
-		    		solrIndex.put("t_dEditStatus", t_dEditStatus);
-		    		solrIndex.put("t_dEditMeth", t_dEditMeth);
-		    		solrIndex.put("t_date", date);
-		    		solrIndex.put("stage", stage);
-		    		solrIndex.put("handler", checkerId);
-		    		solrConn.addTips(solrIndex);
+		    		//JSONObject solrIndex = solrConn.getById(rowkey);
+	    			tipsDao.setT_dEditStatus(t_dEditStatus);
+	    			tipsDao.setT_dEditMeth(t_dEditMeth);
+	    			tipsDao.setT_date(date);
+	    			tipsDao.setStage(stage);
+	    			tipsDao.setHandler(checkerId);
+		    		//solrConn.addTips(solrIndex);
+	    			tipsIndexOracleOperator.update(tipsDao);
 	
 		            String[] queryColNames={"track"};
 		            
@@ -315,18 +352,32 @@ public class TipsExtract {
  * @author: y
  * @time:2017-5-26 下午1:45:09
  */
-	private List<JSONObject> queryTipsByWorkState(JSONArray grids,int workStatus,int checkTaskId, int subTaskId, int workerId,int checkerId,JSONArray rowkeyList
+	private List<TipsDao> queryTipsByWorkState(JSONArray grids,int workStatus,int checkTaskId, int subTaskId, int workerId,int checkerId,JSONArray rowkeyList
 			)
 			throws Exception {
 		TipsRequestParam param = new TipsRequestParam();
-		
-        String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,subTaskId,workerId,checkerId,rowkeyList);
+		//1.wkt过滤
+        String wkt = GridUtils.grids2Wkt(grids);
+        String solrQuery = param.getQueryFilterSqlForCheck(workStatus,subTaskId,workerId,checkerId,rowkeyList);
         
         logger.debug("tips extract query sql:"+solrQuery);
         
-		List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
+		java.sql.Connection conn=null;
+		List<TipsDao> tipsDaos =null;
+		//List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
+		try{
+			conn=DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator tipsIndexOracleOperator=new TipsIndexOracleOperator(conn);
+			tipsDaos = tipsIndexOracleOperator.query(solrQuery, wkt);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error("queryTipsByWorkState error", e);
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 
-		return tips;
+		return tipsDaos;
       
 	}
 	
@@ -347,7 +398,7 @@ public class TipsExtract {
 	 */
 	private Map<String,Integer> queryhasWorkTipsCount(JSONArray grids,int workStatus,int checkTaskId, int subTaskId, int workerId,int checkerId,JSONArray rowkeyList) throws Exception{
 		
-		List<JSONObject> tips = queryTipsByWorkState(grids, workStatus, checkTaskId, subTaskId, workerId, checkerId, rowkeyList);
+		List<TipsDao> tips = queryTipsByWorkState(grids, workStatus, checkTaskId, subTaskId, workerId, checkerId, rowkeyList);
 		
 		
 		if(tips==null||tips.size()==0){
@@ -356,9 +407,9 @@ public class TipsExtract {
 		}
 		
 		  Map<String, Integer> map = new HashMap<String, Integer>();
-			for (JSONObject json : tips) {
+			for (TipsDao json : tips) {
 				
-				String type =json.getString("s_sourceType");
+				String type =json.getS_sourceType();
 				
 				if (map.containsKey(type)) {
 					map.put(type, map.get(type) + 1);

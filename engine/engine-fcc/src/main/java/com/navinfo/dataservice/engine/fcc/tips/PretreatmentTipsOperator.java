@@ -1020,7 +1020,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			if (newDeep != null) {
 				solrIndex.setDeep(newDeep.toString());
 			}
-			operator.save(solrIndex);
+			operator.updateOne(solrIndex);
 
 			htab.put(put);
 

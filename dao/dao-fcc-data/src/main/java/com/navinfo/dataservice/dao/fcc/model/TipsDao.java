@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.fcc.model;
 
 import com.navinfo.dataservice.commons.util.DateUtils;
+import oracle.sql.STRUCT;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -277,10 +278,22 @@ public class TipsDao {
 		this.setS_mTaskId(rs.getInt("s_mTaskId"));
 		this.setS_qTaskId(rs.getInt("s_qTaskId"));
 		this.setS_mSubTaskId(rs.getInt("s_mSubTaskId"));
+		this.setS_qSubTaskId(rs.getInt("s_qSubTaskId"));
 		this.setS_sourceType(rs.getString("s_sourceType"));
 		this.setT_dEditStatus(rs.getInt("t_dEditStatus"));
 		this.setT_mEditStatus(rs.getInt("t_mEditStatus"));
-		this.setTipdiff(rs.getString("tipdiff"));
+		this.setT_tipStatus(rs.getInt("t_tipStatus"));
+		this.setS_project(rs.getString("s_project"));
+		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
+		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
+		try {
+			STRUCT wkt = (STRUCT) rs.getObject("wkt");
+			this.setWkt(GeoTranslator.struct2Jts(wkt));
+			STRUCT wktLocation = (STRUCT) rs.getObject("wktLocation");
+			this.setWktLocation(GeoTranslator.struct2Jts(wktLocation));
+		}catch (Exception ex){
+			throw new SQLException(ex.getMessage());
+		}
 	}
 	public void loadHbase(JSONObject hbaseTips){
 		JSONObject deep = hbaseTips.getJSONObject("deep");
@@ -290,6 +303,8 @@ public class TipsDao {
 		JSONObject geometry = hbaseTips.getJSONObject("geometry");
 		this.setG_guide(geometry.getJSONObject("g_guide").toString());
 		this.setG_location(geometry.getJSONObject("g_location").toString());
+		JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+		this.setTipdiff(tipdiff.toString());
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();

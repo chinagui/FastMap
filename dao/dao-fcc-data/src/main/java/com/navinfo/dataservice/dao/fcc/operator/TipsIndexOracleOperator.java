@@ -284,7 +284,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 	private List<TipsDao> loadHbaseProperties(Map<String, TipsDao> map) throws Exception{
     	List<TipsDao> result = new ArrayList<>();
-		String[] queryColNames = { "deep", "geometry" };
+		String[] queryColNames = { "deep", "geometry", "feedback" };
 		Map<String, JSONObject> hbaseMap = HbaseTipsQuery.getHbaseTipsByRowkeys(map.keySet(), queryColNames);
 		for (String rowkey : map.keySet()) {
 			if (!hbaseMap.containsKey(rowkey)) {

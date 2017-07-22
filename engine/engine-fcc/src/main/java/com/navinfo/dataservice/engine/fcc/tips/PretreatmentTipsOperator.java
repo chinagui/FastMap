@@ -453,6 +453,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         Table htab = null;
         java.sql.Connection tipsConn=null;
         try {
+
         	tipsConn=DBConnector.getInstance().getTipsIdxConnection();
         	TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
         	TipsDao solrIndex = operator.getById(rowkey);
@@ -474,7 +475,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
             rowkeyArray.add(newRowkey);
             rowkeyArray.add(rowkey);
-
 			TipsDao newSolrIndex = solrIndex.copy();
 			newSolrIndex.setId(newRowkey);
 
@@ -493,7 +493,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			geo1.put("g_guide", g_guide1);
 			geo2.put("g_location", g_location2);
 			geo2.put("g_guide", g_guide2);
-
 			solrIndex.setG_location(g_location1.toString());
 			newSolrIndex.setG_location( g_location2.toString());
 			solrIndex.setG_guide(g_guide1.toString());

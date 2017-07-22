@@ -311,5 +311,41 @@ public class TipsRequestParamSQL {
 		return param;
 
 	}
+	
+    public String getTipsCheckUnCommit(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subTaskId");
 
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(" t_tipStatus<>2 ");
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId=");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId=");
+            builder.append(subtaskId);
+        }
+        logger.info("getTipsCheckUnCommit:" + builder.toString());
+        return builder.toString();
+    }
+
+    public String getTaskFilterSQL(int taskId, int taskType) throws Exception {
+        StringBuilder builder = new StringBuilder();
+        if (taskType == TaskType.Q_TASK_TYPE) {
+            builder.append(" AND s_qTaskId = " + taskId);
+        } else if (taskType == TaskType.Q_SUB_TASK_TYPE) {
+            builder.append(" AND s_qSubTaskId = " + taskId);
+        } else if (taskType == TaskType.M_TASK_TYPE) {
+            builder.append(" AND s_mTaskId = " + taskId);
+        } else if (taskType == TaskType.M_SUB_TASK_TYPE) {
+            builder.append(" AND s_mSubTaskId = " + taskId);
+        }
+        throw new Exception("不支持的任务类型：" + taskType);
+    }
 }

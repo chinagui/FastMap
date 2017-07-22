@@ -152,8 +152,11 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			
 			return rowkey;
 		} catch (IOException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

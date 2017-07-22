@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.web.fcc.controller;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.*;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
@@ -14,6 +16,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
@@ -28,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.*;
 
 @Controller
@@ -851,7 +855,11 @@ public class TipsController extends BaseController {
                                 HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
         logger.info("noTaskToMidTask:" + parameter);
+
+        Connection oracleConn = null;
         try {
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             if(!jsonReq.containsKey("taskId")) {
@@ -871,13 +879,15 @@ public class TipsController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", totalNum);
 
-            response.getWriter().println(
-                    ResponseUtils.assembleRegularResult(jsonObject));
+            response.getWriter().println(ResponseUtils.assembleRegularResult(jsonObject));
             logger.info("noTaskToMidTask:" + totalNum);
         } catch (Exception e) {
+            DBUtils.rollBack(oracleConn);
             logger.error(e.getMessage(), e);
             response.getWriter().println(
                     ResponseUtils.assembleFailResult(e.getMessage()));
+        } finally {
+            DBUtils.closeConnection(oracleConn);
         }
     }
 

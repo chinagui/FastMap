@@ -285,6 +285,8 @@ public class TipsDao {
 	public void loadHbase(JSONObject hbaseTips){
 		JSONObject deep = hbaseTips.getJSONObject("deep");
 		this.setDeep(deep.toString());
+		JSONObject feedback = hbaseTips.getJSONObject("feedback");
+		this.setFeedback(feedback.toString());
 		JSONObject geometry = hbaseTips.getJSONObject("geometry");
 		this.setG_guide(geometry.getJSONObject("g_guide").toString());
 		this.setG_location(geometry.getJSONObject("g_location").toString());

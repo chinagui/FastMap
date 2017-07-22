@@ -15,22 +15,22 @@ import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
 import java.util.*;
@@ -687,73 +687,87 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		return result;
 	}
 
-	/**
-	 * @Description:提交（FC预处理完成，提交给web，提交后web可见）
-	 * @param user
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-11-16 上午11:29:03
-	 */
-	public void submit2Web(int user, int subTaskId) throws Exception {
+    /**
+     * @Description:提交（FC预处理完成，提交给web，提交后web可见）
+     * @param user
+     * @author: y
+     * @throws Exception
+     * @time:2016-11-16 上午11:29:03
+     */
+    public void submit2Web(int user, int subTaskId) throws Exception {
         Connection hbaseConn = null;
+        java.sql.Connection oracleConn = null;
         Table htab = null;
         try {
-			SolrDocumentList sdList = solr.queryHasNotSubmitPreTips(user, subTaskId);
-            long totalNum = sdList.getNumFound();
-            if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
+
+            //SolrDocumentList sdList = solr.queryHasNotSubmitPreTips(user, subTaskId);
+            List<TipsDao> tipsDaos = oracleOperator.query("SELECT * FROM TIPS_INDEX WHERE S_PROJECT = :1 AND HANDLER = :2 AND t_tipStatus = 1 AND " +
+                    "s_sourceType = 8001 ", subTaskId, user);
+            //long totalNum = sdList.getNumFound();
+            //if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+            //    return;
+            //}
+            if (CollectionUtils.isEmpty(tipsDaos)) {
                 return;
             }
 
-			List<Get> gets = new ArrayList<Get>();
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
+            List<Get> gets = new ArrayList<Get>();
+            //for (int i = 0; i < totalNum; i++) {
+            for (TipsDao dao : tipsDaos) {
+                //SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(dao);
                 String rowkey = snapshot.getString("id");
-				Get get = new Get(rowkey.getBytes());
-				get.addColumn("data".getBytes(), "track".getBytes());
-				get.addColumn("data".getBytes(), "feedback".getBytes());
-				gets.add(get);
-			}
+                Get get = new Get(rowkey.getBytes());
+                get.addColumn("data".getBytes(), "track".getBytes());
+                get.addColumn("data".getBytes(), "feedback".getBytes());
+                gets.add(get);
+            }
 
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-			Map<String, JSONObject> tipsTracks = loadTipsTrack(htab, gets);
+            Map<String, JSONObject> tipsTracks = loadTipsTrack(htab, gets);
 
-			Set<String> keys = tipsTracks.keySet();
+            Set<String> keys = tipsTracks.keySet();
             List<Put> puts = new ArrayList<>();
-            List<JSONObject> solrIndexList = new ArrayList<>();
-			for (String rowkey : keys) {
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            for (String rowkey : keys) {
 
-				// 1.更新feddback和track
-				JSONObject trackJson = tipsTracks.get(rowkey).getJSONObject("track");
+                // 1.更新feddback和track
+                JSONObject trackJson = tipsTracks.get(rowkey).getJSONObject("track");
                 TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
                 track = this.tipSubmitTrack(track, user, PretreatmentTipsOperator.PRE_TIPS_STAGE);
 
-				// 更新hbase
-				Put put = new Put(rowkey.getBytes());
-				put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
-						.toString().getBytes());
+                // 更新hbase
+                Put put = new Put(rowkey.getBytes());
+                put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
+                        .toString().getBytes());
                 puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex = this.tipSubmitTrackSolr(track, solrIndex);
-                solrIndexList.add(solrIndex);
-			}
+                //JSONObject solrIndex = solr.getById(rowkey);
+                TipsDao tipsDao = oracleOperator.getById(rowkey);
+                this.tipSubmitTrackOracle(track, tipsDao);
+
+                solrIndexList.add(tipsDao);
+            }
 
             //更新hbase
             htab.put(puts);
 
             //更新solr
-            solr.addTips(solrIndexList);
+            //solr.addTips(solrIndexList);
+            oracleOperator.save(solrIndexList);
 
-		} catch (IOException e) {
+        } catch (IOException e) {
+            DBUtils.rollBack(oracleConn);
+            logger.error(e.getMessage(), e);
 
-			logger.error(e.getMessage(), e);
-
-			throw new Exception("tips提交出错，原因：" + e.getMessage(), e);
-		}finally {
+            throw new Exception("tips提交出错，原因：" + e.getMessage(), e);
+        }finally {
+            DBUtils.closeConnection(oracleConn);
             if(htab != null) {
                 htab.close();
             }
@@ -1008,28 +1022,22 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// 同步更新solr
             solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
-			solrIndex.put("feedback", feedBack);
 
-			if (newDeep != null) {
-				solrIndex.put("deep", newDeep);
-			}
-
-			solr.addTips(solrIndex);
+			operator.updateOne(solrIndex);
 
 			htab.put(put);
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
-
+        	DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(), e);
-
 			throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(conn);
         }
 
 	}
@@ -2109,54 +2117,62 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		return relateLineUpdate.excute();
 	}
 
-	/**
-	 * @Description:情报预处理tips提交（按照任务提交）
-	 * @param user
-	 * @author: y
-	 * @param taskId
-	 * @throws Exception
-	 * @time:2017-4-14 下午2:42:25
-	 */
-	public void submitInfoJobTips2Web(int user, int taskId)
-			throws Exception {
-
-		Connection hbaseConn = null;
+    /**
+     * @Description:情报预处理tips提交（按照任务提交）
+     * @param user
+     * @author: y
+     * @param taskId
+     * @throws Exception
+     * @time:2017-4-14 下午2:42:25
+     */
+    public void submitInfoJobTips2Web(int user, int taskId) throws Exception {
+        Connection hbaseConn = null;
         Table htab = null;
 
-		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
+        java.sql.Connection oracleConn = null;
+        try {
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-			TipsSelector selector = new TipsSelector();
-			
-			int taskType=getTaskType(taskId);
-			
-			
-			if(taskType == TaskType.Q_TASK_TYPE){
-				taskType=TaskType.Q_SUB_TASK_TYPE;
-			}
-			
-			else if(taskType == TaskType.M_TASK_TYPE){
-				taskType=TaskType.M_SUB_TASK_TYPE;
-			}
+            //TipsSelector selector = new TipsSelector();
 
-			else {
-				throw new Exception("不支持的任务类型：" + taskType);
-			}
+            int taskType=getTaskType(taskId);
+
+
+            if(taskType == TaskType.Q_TASK_TYPE){
+                taskType=TaskType.Q_SUB_TASK_TYPE;
+            }
+
+            else if(taskType == TaskType.M_TASK_TYPE){
+                taskType=TaskType.M_SUB_TASK_TYPE;
+            }
+
+            else {
+                throw new Exception("不支持的任务类型：" + taskType);
+            }
 
             //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
-			SolrDocumentList sdList = selector.getTipsByTaskIdAndStatus(taskId,
-					taskType);
-            long totalNum = sdList.getNumFound();
-            if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+            //SolrDocumentList sdList = selector.getTipsByTaskIdAndStatus(taskId, taskType);
+            TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
+            String param = new TipsRequestParamSQL().getTaskFilterSQL(taskId, taskType);
+            List<TipsDao> tipsDaos = oracleOperator.query("SELECT * FROM WHERE t_tipStatus = 1 " + param);
+            //long totalNum = sdList.getNumFound();
+            //if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+            //    return;
+            //}
+            if (CollectionUtils.isEmpty(tipsDaos)) {
                 return;
             }
+
             List<Put> puts = new ArrayList<Put>();
-            List<JSONObject> solrIndexList = new ArrayList<>();
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            //for (int i = 0; i < totalNum; i++) {
+            for (TipsDao dao : tipsDaos) {
+                //SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(dao);
                 String rowkey = snapshot.getString("id");
                 Result result = htab.get(new Get(rowkey.getBytes()));
                 if(result.isEmpty()) {
@@ -2167,32 +2183,34 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
                 track = this.tipSubmitTrack(track, user, PretreatmentTipsOperator.INFO_TIPS_STAGE);
 
-				// put
-				Put put = new Put(rowkey.getBytes());
+                // put
+                Put put = new Put(rowkey.getBytes());
 
-				put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
-						.toString().getBytes());
+                put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
+                        .toString().getBytes());
 
-				puts.add(put);
+                puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex = this.tipSubmitTrackSolr(track, solrIndex);
-                solrIndexList.add(solrIndex);
-			}
+                //JSONObject solrIndex = solr.getById(rowkey);
+                TipsDao tipsDao = oracleOperator.getById(rowkey);
+                this.tipSubmitTrackOracle(track, tipsDao);
+                solrIndexList.add(tipsDao);
+            }
 
-			htab.put(puts);
-            solr.addTips(solrIndexList);
-		} catch (Exception e) {
-
-			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
-		}finally {
+            htab.put(puts);
+            //solr.addTips(solrIndexList);
+            oracleOperator.save(solrIndexList);
+        } catch (Exception e) {
+            DBUtils.rollBack(oracleConn);
+            throw new Exception("情报任务提交失败：" + e.getMessage(), e);
+        }finally {
+            DBUtils.closeConnection(oracleConn);
             if(htab != null) {
                 htab.close();
             }
         }
-
-	}
+    }
 
 	/**
 	 * 根据任务号 获取任务类型

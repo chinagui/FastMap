@@ -47,8 +47,8 @@ public class TipsUtils {
 	 * @author: y
 	 * @time:2016-12-27 上午10:08:16
 	 */
-	public static TipsIndexModel generateSolrIndex(JSONObject json, int stage) throws Exception {
-		TipsIndexModel tipsIndexModel = new TipsIndexModel();
+	public static TipsDao generateSolrIndex(JSONObject json, int stage) throws Exception {
+		TipsDao tipsIndexModel = new TipsDao();
 		tipsIndexModel.setId(json.getString("rowkey"));
 		tipsIndexModel.setStage(stage);
         tipsIndexModel.setT_date(json.getString("t_date"));//当前时间
@@ -57,7 +57,7 @@ public class TipsUtils {
         tipsIndexModel.setT_command(json.getInt("t_command"));
         tipsIndexModel.setHandler(json.getInt("t_handler"));
         tipsIndexModel.setS_sourceType(json.getString("s_sourceType"));
-        tipsIndexModel.setS_sourceCode(json.getInt("s_sourceCode"));
+
         tipsIndexModel.setG_guide(json.getString("g_guide"));
 
         JSONObject g_location = json.getJSONObject("g_location");
@@ -72,6 +72,7 @@ public class TipsUtils {
 		String sourceType = json.getString("s_sourceType");
 
 		//这个主要是g_location:目前只用于tips的下载和渲染
+		
         tipsIndexModel.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deep,
                 g_location, feedback));
 		
@@ -96,11 +97,7 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(json.getInt("t_tipStatus"));
-        //Tips上传赋值为0，无需赋值
-//        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
-//        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
-//        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
-//        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
+ 
 
 		return tipsIndexModel;
 	}

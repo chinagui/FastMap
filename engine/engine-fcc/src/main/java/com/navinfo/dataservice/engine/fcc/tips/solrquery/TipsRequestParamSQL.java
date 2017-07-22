@@ -302,7 +302,7 @@ public class TipsRequestParamSQL {
 
 	}
 
-	public String getTipsMobileWhere(String wkt, String date,
+	public String getTipsMobileWhere(String date,
 			int[] notExpSourceType) {
 		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
 
@@ -314,12 +314,17 @@ public class TipsRequestParamSQL {
 		// 过滤的类型
 		// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
 		if (notExpSourceType != null && notExpSourceType.length != 0) {
-
-			String ids = org.apache.commons.lang.StringUtils.join(
-					Arrays.asList(notExpSourceType), ",");
-
-			param += " AND s_sourceType NOT  IN (" + ids + ") ";
-
+			StringBuilder builder = new StringBuilder(" AND s_sourceType NOT  IN (");
+			for (int i = 0; i < notExpSourceType.length; i++) {
+				String fieldValue = String.valueOf(notExpSourceType[i]);
+				if (i > 0) {
+					builder.append(",");
+				}
+				builder.append("'");
+				builder.append(fieldValue);
+				builder.append("'");
+			}
+			builder.append(")");
 		}
 		return param;
 

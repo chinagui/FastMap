@@ -2193,43 +2193,34 @@ public class TipsSelector {
      * @throws Exception
      */
     public JSONObject statInfoTask(String parameter) throws Exception {
-        TipsRequestParam param = new TipsRequestParam();
+    	TipsRequestParamSQL param = new TipsRequestParamSQL();
         String query = param.getTipsCheck(parameter);
-        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-
-        JSONObject statObj = new JSONObject();
-        //矢量化任务Tips总数
-        long totalNum = sdList.getNumFound();
-        statObj.put("total", totalNum);
-        sdList.clear();
-        sdList = null;
-
-        JSONObject jsonReq = JSONObject.fromObject(parameter);
-        jsonReq.put("type", "2001");//测线
-        query = param.getTipsCheck(jsonReq.toString());
-        sdList = conn.queryTipsSolrDoc(query, null);
-        totalNum = sdList.getNumFound();
-        statObj.put("total2001", totalNum);
-        double length = 0;
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                JSONObject geojson = JSONObject.fromObject(snapshot
-                        .getString("g_location"));
-                length += GeometryUtils.getLinkLength(GeoTranslator
-                        .geojson2Jts(geojson));
-            }
-        } else {
-            // 暂先不处理
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        try{
+	        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			long count = operator.querCount("select count(1) from tips_index where "+query);
+	
+	        JSONObject statObj = new JSONObject();
+	        statObj.put("total", count);
+	
+	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+query+" and type=2001");
+	        int total2001 = type2001Result.size();
+			statObj.put("total2001", total2001);
+	        double length = 0;
+	        for (int i = 0; i < total2001; i++) {
+	        	TipsDao snapshot = type2001Result.get(i);
+	            JSONObject geojson = JSONObject.fromObject(snapshot.getG_location());
+	            length += GeometryUtils.getLinkLength(GeoTranslator
+	                    .geojson2Jts(geojson));
+	        }
+	        if(length != 0) {
+	            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+	        }
+	        statObj.put("length", length);
+	        return statObj;
+        }finally{
+        	DbUtils.closeQuietly(oracleConn);
         }
-        if(length != 0) {
-            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        }
-        statObj.put("length", length);
-        sdList.clear();
-        sdList = null;
-        return statObj;
     }
 
 

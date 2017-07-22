@@ -259,4 +259,23 @@ public class TipsRequestParamSQL {
             }
         }
     }
+    public String getTipsCheck(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+        int programType = jsonReq.getInt("programType");
+        int subtaskId = jsonReq.getInt("subTaskId");
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append("s_qSubTaskId="+subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append("s_mSubTaskId="+subtaskId);
+        }
+
+        if(jsonReq.containsKey("type")) {
+            builder.append(" AND s_sourceType=2001  AND t_lifecycle=3");
+        }
+
+        logger.info("getTipsCheck:" + builder.toString());
+        return builder.toString();
+    }
 }

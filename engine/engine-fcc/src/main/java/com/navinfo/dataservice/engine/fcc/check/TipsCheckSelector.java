@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.fcc.check;
 
+import java.sql.Clob;
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -7,19 +10,23 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckResultSelector;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckWrongSelector;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: TipsCheckSelector.java
@@ -76,16 +83,27 @@ public class TipsCheckSelector {
 				throw new Exception("没有查询到当前任务的抽检记录："+checkTaskId+"请先进行抽检！");
 			}
 			
-			String solrQuery=new TipsRequestParam ().assambleSqlForCheckQuery(worker, checker, workStatus, checkRowkeyList);
+			String where=new TipsRequestParamSQL ().assambleSqlForCheckQuery(worker, checker, workStatus, checkRowkeyList);
 			
 			if(StringUtils.isEmpty(type)){
 				
-				solrQuery=solrQuery+" and s_sourceType: "+type;
+				where=where+" and s_sourceType="+type;
+			}
+			Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			try{
+		        String ids = checkRowkeyList.join(",");
+				Clob pidClod = ConnectionUtil.createClob(oracleConn);
+				pidClod.setString(1, ids);
+				List<TipsDao> tipsDaoList = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where, pidClod);
+				List<JSONObject> tips = new ArrayList<JSONObject>();
+				for(TipsDao tip:tipsDaoList){
+					tips.add(JSONObject.fromObject(tip));
+				}
+				return tips;
+			}finally{
+				DbUtils.closeQuietly(oracleConn);
 			}
 			
-			List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
-			
-			return tips;
 			
 		}catch (Exception e) {
 			

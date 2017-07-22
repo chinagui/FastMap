@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips.solrquery;
 
+import java.sql.Clob;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -581,5 +583,42 @@ public class TipsRequestParamSQL {
 
         logger.info("getTipStat:" + builder.toString());
         return new OracleWhereClause(builder.toString(),values);
+    }
+    /**
+     * 质检查询条件
+     * @param worker
+     * @param checker
+     * @param workStatus
+     * @param rowkeyList
+     * @return
+     * @throws Exception
+     */
+    public String assambleSqlForCheckQuery(int worker,int checker,int workStatus,JSONArray rowkeyList) throws Exception{
+
+        
+        //1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
+        if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+
+            return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=2 AND t_dEditStatus=2 and handler="+worker+"");
+
+            
+    		
+
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+
+            return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=2 and handler="+checker+"");
+
+
+        }
+        //③日编质检有问题待确认tips: 取stage=7，且t_dEditStatus=1，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+
+            return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=1 and handler="+checker+"");
+
+        }
+        return "";
+
     }
 }

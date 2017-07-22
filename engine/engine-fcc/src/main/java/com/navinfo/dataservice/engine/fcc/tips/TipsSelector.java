@@ -24,6 +24,7 @@ import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
@@ -144,7 +145,8 @@ public class TipsSelector {
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
 			List<TipsDao> snapshots = operator.query(sql, wkt);
 			for (TipsDao tipsDao : snapshots) {
-				JSONObject json = JSONObject.fromObject(tipsDao);
+				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
 
 				rowkey = json.getString("id");
 
@@ -564,14 +566,19 @@ public class TipsSelector {
 
 				if (json.containsKey("tipdiff")) {
 
-					tipdiff = JSONObject.fromObject(json.getString("tipdiff"));
+					String tipdiffStr = json.getString("tipdiff");
 
-					// 坐标转换，需要根据类型转换为屏幕坐标
-					JSONObject convertGeoDiff = converDiffGeo(type, tipdiff, z,
-							px, py);
+					if(!StringUtils.isEmpty(tipdiffStr)) {
 
-					if (convertGeoDiff != null) {
-						m.put("i", convertGeoDiff);
+						tipdiff = JSONObject.fromObject(json.getString("tipdiff"));
+
+						// 坐标转换，需要根据类型转换为屏幕坐标
+						JSONObject convertGeoDiff = converDiffGeo(type, tipdiff, z,
+								px, py);
+
+						if (convertGeoDiff != null) {
+							m.put("i", convertGeoDiff);
+						}
 					}
 				}
 
@@ -1048,6 +1055,10 @@ public class TipsSelector {
 
 		if (tipdiff == null || tipdiff.isEmpty())
 			return null;
+
+		if(!tipdiff.containsKey("diff_array")){
+			return null;
+		}
 
 		JSONArray diffArr = tipdiff.getJSONArray("diff_array");
 

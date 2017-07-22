@@ -16,9 +16,13 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -78,35 +82,31 @@ public class Fm2ChargeInit {
 			long t = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			int monDbId = 0;
-			try {
-				if(dbSize==1){
-					int dbId = dbIds.iterator().next();
+			if(dbSize==1){
+				int dbId = dbIds.iterator().next();
+				if(regionMap.containsKey(dbId)){
+					monDbId = regionMap.get(dbId);
+				}
+				new Fm2ChargeExportThread(null,dbId,monDbId,chargePOIs,stats).run();
+			}else{
+				if(dbSize>10){
+					initThreadPool(10);
+				}else{
+					initThreadPool(dbSize);
+				}
+				final CountDownLatch latch = new CountDownLatch(dbSize);
+				threadPoolExecutor.addDoneSignal(latch);
+				// 执行转数据
+				for(int dbId:dbIds){
 					if(regionMap.containsKey(dbId)){
 						monDbId = regionMap.get(dbId);
 					}
-					new Fm2ChargeExportThread(null,dbId,monDbId,chargePOIs,stats).run();
-				}else{
-					if(dbSize>10){
-						initThreadPool(10);
-					}else{
-						initThreadPool(dbSize);
-					}
-					final CountDownLatch latch = new CountDownLatch(dbSize);
-					threadPoolExecutor.addDoneSignal(latch);
-					// 执行转数据
-					for(int dbId:dbIds){
-						if(regionMap.containsKey(dbId)){
-							monDbId = regionMap.get(dbId);
-						}
-						threadPoolExecutor.execute(new Fm2ChargeExportThread(latch,dbId,monDbId,chargePOIs,stats));
-					}
-					latch.await();
-					if (threadPoolExecutor.getExceptions().size() > 0) {
-						throw new Exception(threadPoolExecutor.getExceptions().get(0));
-					}
+					threadPoolExecutor.execute(new Fm2ChargeExportThread(latch,dbId,monDbId,chargePOIs,stats));
 				}
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
+				latch.await();
+				if (threadPoolExecutor.getExceptions().size() > 0) {
+					throw new Exception(threadPoolExecutor.getExceptions().get(0));
+				}
 			}
 			//3.处理各大区库数据
 			JSONArray data = new JSONArray();
@@ -186,6 +186,9 @@ public class Fm2ChargeInit {
 				//查询充电站
 				String kindCode = "230218";
 				List<Long> pidList = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
+//				Set<Long> pidList = new HashSet<Long>();
+//				pidList.add(505000108L);
+//				pidList.add(408000133L);
 				//设置查询子表
 				Set<String> selConfig = new HashSet<String>();
 				selConfig.add("IX_POI_NAME");
@@ -201,28 +204,54 @@ public class Fm2ChargeInit {
 				JSONArray poiLog = new JSONArray();
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
+					//查询充电桩子对象
+					Set<Long> childPids = new HashSet<Long>();
+					for(BasicObj obj:objs.values()){
+						IxPoiObj poi = (IxPoiObj) obj;
+						List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+						if(rows!=null && rows.size()>0){
+							for(BasicRow row:rows){
+								IxPoiChildren children = (IxPoiChildren) row;
+								childPids.add(children.getChildPoiPid());
+							}
+						}
+					}
+					Map<Long,BasicObj> objsChild = new HashMap<Long,BasicObj>();
+					if(childPids.size() > 0){
+						//设置查询子表
+						Set<String> selConfigC = new HashSet<String>();
+						selConfigC.add("IX_POI_NAME");
+						selConfigC.add("IX_POI_ADDRESS");
+						selConfigC.add("IX_POI_CHARGINGPLOT");
+						//查询数据
+						objsChild = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfigC, false,childPids, true, false);
+					}
+					
 					//设置adminId
 					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
 						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
 					}
+					//获取省市城市
+					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+					Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
 					//执行具体的转换
-					ChargePoiConvertor poiConvertor = new ChargePoiConvertor();
+					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,conn,objsChild);
 					for(BasicObj obj:objs.values()){
 						try {
-							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj,conn);
+							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj);
 							if(initPoi != null){
 								chargePoi.add(initPoi);
-							}
-							//错误日志
-							JSONArray errorLog = poiConvertor.getErrorLog();
-							for (int i = 0; i < errorLog.size(); i++) {
-								String str = errorLog.getString(i);
-								poiLog.add("dbId("+dbId+"),"+str);
 							}
 						} catch (Exception e) {
 							log.error(e.getMessage(),e);
 						}
+					}
+					//错误日志
+					JSONArray errorLog = poiConvertor.getErrorLog();
+					for (int i = 0; i < errorLog.size(); i++) {
+						String str = errorLog.getString(i);
+						poiLog.add("dbId("+dbId+"),"+str);
 					}
 					stats.put(dbId, objs.size());
 				}else{

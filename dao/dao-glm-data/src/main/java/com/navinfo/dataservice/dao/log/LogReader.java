@@ -25,6 +25,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -747,7 +749,8 @@ public class LogReader {
 	 * @throws SQLException
 	 */
 	public Collection<Long> getUpdatedObjByPids(String objName,Collection<Long> pids,String startDate,String endDate)throws SQLException{
-		if(pids==null||pids.size()==0)return null;
+		Collection<Long> updatedPids = new ArrayList<Long>();
+		if(pids==null||pids.size()==0)return updatedPids;
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P WHERE T.OP_ID=P.OP_ID AND T.OB_NM=?\n");
 		if(StringUtils.isNotEmpty(startDate)){
@@ -756,18 +759,32 @@ public class LogReader {
 		if(StringUtils.isNotEmpty(endDate)){
 			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
 		}
-		return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Collection<Long>>(){
-
-			@Override
+		Clob clobPids=null;
+		if(pids.size()>1000){
+			clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(pids, ","));
+			sb.append(" AND T.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}else{
+			sb.append(" AND T.OB_PID IN (" + StringUtils.join(pids, ",") + ")");
+		}
+		
+		ResultSetHandler<Collection<Long>> rsHandler = new ResultSetHandler<Collection<Long>>() {
 			public Collection<Long> handle(ResultSet rs) throws SQLException {
-				List<Long> result = new ArrayList<Long>();
-				while(rs.next()){
-					result.add(rs.getLong(1));
+				Collection<Long> result = new ArrayList<Long>();
+				while (rs.next()) {
+					result.add(rs.getLong("OB_PID"));
 				}
 				return result;
 			}
-			
-		},objName);
+	
+		};
+		if(clobPids==null){
+			updatedPids = new QueryRunner().query(conn, sb.toString(), rsHandler,objName);
+		}else{
+			updatedPids = new QueryRunner().query(conn, sb.toString(), rsHandler,objName,clobPids);
+		}
+		return updatedPids;
+		
 	}
 
 	/**
@@ -833,10 +850,10 @@ public class LogReader {
 	 * @return 
 	 * @throws Exception
 	 */
-	public List<Map<String,Object>> getLogByPid(String objName,String mainTabName,long objPid) throws Exception {
+	public List<Map<String,Object>> getLogByPid(String objName,long objPid) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT LO.OP_ID,LO.OP_DT,LD.* FROM LOG_OPERATION LO,LOG_DETAIL LD WHERE LO.OP_ID = LD.OP_ID ");
-		sb.append(" AND LD.OB_NM = ? AND LD.TB_NM = ? AND LD.OB_PID = ? ORDER BY LO.OP_DT ASC");
+		sb.append(" AND LD.OB_NM = ? AND LD.OB_PID = ? ORDER BY LO.OP_DT ASC");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -845,8 +862,7 @@ public class LogReader {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setString(1, objName);
-			pstmt.setString(2, mainTabName);
-			pstmt.setLong(3, objPid);
+			pstmt.setLong(2, objPid);
 			
 			resultSet = pstmt.executeQuery();
 			while(resultSet.next()){
@@ -906,17 +922,25 @@ public class LogReader {
 		String objName = "IX_POI";
 		String mainTabName = "IX_POI";
 		Collection<String> grids = null;
-		String startDate = "201510220000";
-//		String endDate = "201610230000";
+		String startDate = "201707200000";
+		String endDate = "201707230000";
 //		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate);
 		System.out.println(new Date());
 		System.out.println(new Date());
 		String objTable = "IX_POI";
-		int objPid = 407000001 ;
+		int objPid = 505000108 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
-		List<Map<String, Object>> list = new LogReader(con).getLogByPid(objTable, objTable, objPid);
-		System.out.println(new Date());
-		System.out.println(list.toString());
-//		System.out.println(flag);
+//		List<Map<String, Object>> list = new LogReader(con).getLogByPid(objTable, objPid);
+//		System.out.println(new Date());
+//		System.out.println(list.toString());
+		//判断是否为充电站
+//		List<Long> pidList = new ArrayList<Long>();
+//		pidList.add(505000108L);
+//		pidList.add(408000133L);
+//		Collection<Long> updatedObjByPids = new LogReader(con).getUpdatedObjByPids(objName, pidList, startDate, endDate);
+//		System.out.println(updatedObjByPids);
+		
+		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
+		System.out.println(updatePids);
 	}
 }

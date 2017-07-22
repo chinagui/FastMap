@@ -12,12 +12,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
-import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -31,7 +28,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -54,6 +50,16 @@ public class ChargePoiConvertor {
 		return errorLog;
 	}
 	
+	//省市城市列表
+	private Map<String, Map<String, String>> scPointAdminarea;
+	private Connection conn;
+	private Map<Long,BasicObj> objsChild;
+	
+	public ChargePoiConvertor(Map<String, Map<String, String>> scPointAdminarea, Connection conn,Map<Long, BasicObj> objsChild) {
+		this.scPointAdminarea = scPointAdminarea;
+		this.conn = conn;
+		this.objsChild = objsChild;
+	}
 	/**
 	 * 初始化
 	 * @author Han Shaoming
@@ -61,54 +67,133 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject initPoi(IxPoiObj poiObj,Connection conn) throws Exception{
-		//获取充电桩数据
-		Map<Long, BasicObj> plotMap = this.getChargePlot(poiObj, conn);
-		//过滤数据
-		boolean filterPoi = this.filterPoi(poiObj,plotMap);
-		if(!filterPoi){return null;}
-		//处理通用字段
-		JSONObject chargePoi = toJson(poiObj,plotMap,conn);
-		//处理特殊字段
-		//poi的英文名称
-		IxPoiName ixPoiName = poiObj.getOfficeOriginEngName();
-		String nameEng = "";
-		if(ixPoiName != null){
-			if(StringUtils.isNotEmpty(ixPoiName.getName())){
-				nameEng = ixPoiName.getName();
+	public JSONObject initPoi(IxPoiObj poiObj) throws Exception{
+		try {
+			//获取充电桩数据
+			Map<Long, BasicObj> plotMap = this.getChargePlot(poiObj);
+			//过滤数据
+			boolean filterPoi = this.filterPoi(poiObj,plotMap);
+			if(!filterPoi){return null;}
+			//处理通用字段
+			JSONObject chargePoi = toJson(poiObj,plotMap);
+			//处理特殊字段
+			//poi的英文名称
+			IxPoiName ixPoiName = poiObj.getOfficeOriginEngName();
+			String nameEng = "";
+			if(ixPoiName != null){
+				if(StringUtils.isNotEmpty(ixPoiName.getName())){
+					nameEng = ixPoiName.getName();
+				}
 			}
-		}
-		chargePoi.put("nameEng", nameEng);
-		//poi的英文地址
-		IxPoiAddress chAddress = poiObj.getCHAddress();
-		IxPoiAddress ixPoiAddress = poiObj.getENGAddress(chAddress.getNameGroupid());
-		String addEng = "";
-		if(ixPoiAddress != null){
-			if(StringUtils.isNotEmpty(ixPoiAddress.getFullname())){
-				addEng = ixPoiAddress.getFullname();
+			chargePoi.put("nameEng", nameEng);
+			//poi的英文地址
+			String addEng = "";
+			IxPoiAddress chAddress = poiObj.getCHAddress();
+			if(chAddress != null){
+				IxPoiAddress ixPoiAddress = poiObj.getENGAddress(chAddress.getNameGroupid());
+				if(ixPoiAddress != null){
+					if(StringUtils.isNotEmpty(ixPoiAddress.getFullname())){
+						addEng = ixPoiAddress.getFullname();
+					}
+				}
 			}
+			chargePoi.put("addEng", addEng);
+			//状态
+			chargePoi.put("lifecycle", 0);
+			//变更履历
+			JSONArray editHistory = new JSONArray();
+			chargePoi.put("editHistory", editHistory);
+			//poi记录在fm第一次建立的时间
+			String createDate = this.getCreateDate(poiObj);
+			chargePoi.put("createDate", createDate);
+			
+			return chargePoi;
+			
+		} catch (Exception e) {
+			throw new Exception("充电站pid("+poiObj.objPid()+"),"+e.getMessage(),e);
 		}
-		chargePoi.put("addEng", addEng);
-		//状态
-		chargePoi.put("lifecycle", 0);
-		//变更履历
-		JSONArray editHistory = new JSONArray();
-		chargePoi.put("editHistory", editHistory);
-		//poi记录在fm第一次建立的时间
-		String createDate = this.getCreateDate(poiObj, conn);
-		chargePoi.put("createDate", createDate);
-		
-		return chargePoi;
 	}
 	/**
 	 * 增量
 	 * @author Han Shaoming
+	 * @param objM 
 	 * @param poi
 	 * @return
+	 * @throws Exception 
 	 */
-	public JSONObject addPoi(IxPoiObj poiObj){
-		return null;
-		
+	public JSONObject addPoi(IxPoiObj poiObj, IxPoiObj objM) throws Exception{
+		try {
+			//获取充电桩数据
+			Map<Long, BasicObj> plotMap = this.getChargePlot(poiObj);
+			//过滤数据
+			boolean filterPoi = this.filterPoi(poiObj,plotMap);
+			if(!filterPoi){return null;}
+			//处理通用字段
+			JSONObject chargePoi = toJson(poiObj,plotMap);
+			//处理特殊字段
+			//poi的英文名称
+			String nameEng = "";
+			//月库中有数据取月库中的
+			if(objM != null){
+				IxPoiName ixPoiName = objM.getOfficeOriginEngName();
+				if(ixPoiName != null){
+					if(StringUtils.isNotEmpty(ixPoiName.getName())){
+						nameEng = ixPoiName.getName();
+					}
+				}
+			}else{
+				IxPoiName ixPoiName = poiObj.getOfficeOriginEngName();
+				if(ixPoiName != null){
+					if(StringUtils.isNotEmpty(ixPoiName.getName())){
+						nameEng = ixPoiName.getName();
+					}
+				}
+			}
+			chargePoi.put("nameEng", nameEng);
+			//poi的英文地址
+			String addEng = "";
+			//月库中有数据取月库中的
+			if(objM != null){
+				IxPoiAddress chAddress = objM.getCHAddress();
+				if(chAddress != null){
+					IxPoiAddress ixPoiAddress = objM.getENGAddress(chAddress.getNameGroupid());
+					if(ixPoiAddress != null){
+						if(StringUtils.isNotEmpty(ixPoiAddress.getFullname())){
+							addEng = ixPoiAddress.getFullname();
+						}
+					}
+				}
+			}else{
+				IxPoiAddress chAddress = poiObj.getCHAddress();
+				if(chAddress != null){
+					IxPoiAddress ixPoiAddress = poiObj.getENGAddress(chAddress.getNameGroupid());
+					if(ixPoiAddress != null){
+						if(StringUtils.isNotEmpty(ixPoiAddress.getFullname())){
+							addEng = ixPoiAddress.getFullname();
+						}
+					}
+				}
+			}
+			chargePoi.put("addEng", addEng);
+			//状态(桩家需要根据增量原则进行处理)
+			if(poiObj.isDeleted()){
+				//只标记删除记录
+				chargePoi.put("lifecycle", 1);
+			}else{
+				chargePoi.put("lifecycle", 0);
+			}
+			//变更履历(桩家需要根据增量原则进行处理)
+			JSONArray editHistory = new JSONArray();
+			chargePoi.put("editHistory", editHistory);
+			//poi记录在fm第一次建立的时间(桩家需要根据增量原则进行处理,除新增之外其他不做更新)
+			String createDate = this.getCreateDate(poiObj);
+			chargePoi.put("createDate", createDate);
+			
+			return chargePoi;
+			
+		} catch (Exception e) {
+			throw new Exception("充电站pid("+poiObj.objPid()+"),"+e.getMessage(),e);
+		}
 	}
 	
 	/**
@@ -118,7 +203,7 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private JSONObject toJson(IxPoiObj poiObj,Map<Long, BasicObj> plotMap,Connection conn) throws Exception{
+	private JSONObject toJson(IxPoiObj poiObj,Map<Long, BasicObj> plotMap) throws Exception{
 		JSONObject chargePoi = new JSONObject();
 		IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
 		long pid = ixPoi.getPid();
@@ -237,13 +322,13 @@ public class ChargePoiConvertor {
 		//是否检查验证过
 		chargePoi.put("validated", 1);
 		//数据检查、验证的时间,该poi在fm里更新的时间
-		Map<String, String> dataMap = this.getValidationDateAndUpdateDate(poiObj, conn, pid);
+		Map<String, String> dataMap = this.getValidationDateAndUpdateDate(poiObj);
 		String validationDate = dataMap.get("validationDate");
 		String updateDate = dataMap.get("updateDate");
 		chargePoi.put("validationDate", validationDate);
 		chargePoi.put("updateDate", updateDate);
 		//数据核实验证方法,数据质量等级
-		Map<String, Integer> vqMap = this.getValidationMethodAndQualityLevel(poiObj, pid);
+		Map<String, Integer> vqMap = this.getValidationMethodAndQualityLevel(poiObj);
 		int validationMethod = vqMap.get("validationMethod");
 		int qualityLevel = vqMap.get("qualityLevel");
 		chargePoi.put("validationMethod", validationMethod);
@@ -252,10 +337,10 @@ public class ChargePoiConvertor {
 		String authenticationMethod = this.getAuthenticationMethod(poiObj, plotMap);
 		chargePoi.put("authenticationMethod", authenticationMethod);
 		//省市名称
-		Map<String, String> proviceAndCity = this.getProviceAndCity(poiObj,pid);
-		String provice = proviceAndCity.get("provice");
+		Map<String, String> proviceAndCity = this.getProviceAndCity(poiObj);
+		String province = proviceAndCity.get("province");
 		String city = proviceAndCity.get("city");
-		chargePoi.put("provice", provice);
+		chargePoi.put("province", province);
 		chargePoi.put("city", city);
 		
 		
@@ -269,11 +354,8 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<Long,BasicObj> getChargePlot(IxPoiObj poiObj,Connection conn) throws Exception{
-		long pid = 0L;
+	private Map<Long,BasicObj> getChargePlot(IxPoiObj poiObj) throws Exception{
 		try {
-			IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
-			pid = ixPoi.getPid();
 			//获取子充电桩pid
 			List<Long> childPids = new ArrayList<Long>();
 			List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHILDREN");
@@ -283,19 +365,18 @@ public class ChargePoiConvertor {
 					childPids.add(children.getChildPoiPid());
 				}
 			}
-			//设置查询子表
-			Set<String> selConfig = new HashSet<String>();
-			selConfig.add("IX_POI_NAME");
-			selConfig.add("IX_POI_ADDRESS");
-			selConfig.add("IX_POI_CHARGINGPLOT");
-			//查询数据
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,childPids, true, false);
-			//pid=0时不转出
-			objs.remove(0);
+			Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+			for (Long childPid : childPids) {
+				//pid=0时不转出
+				if(childPid == 0){continue;}
+				if(objsChild.containsKey(childPid)){
+					objs.put(childPid, objsChild.get(childPid));
+				}
+			}
 			return objs;
 		} catch (Exception e) {
-			log.error("pid:"+pid+",查询充电桩出错:"+e.getMessage(),e);
-			throw new Exception("查询充电桩出错:"+e.getMessage(),e);
+			log.error("pid:"+poiObj.objPid()+",获取充电桩出错:"+e.getMessage(),e);
+			throw new Exception("获取充电桩出错:"+e.getMessage(),e);
 		}
 	}
 	
@@ -312,6 +393,7 @@ public class ChargePoiConvertor {
 		if(pid == 0){return false;}
 		//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
 		List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
+		if(rows == null || rows.size() == 0){return false;}
 		if(rows != null && rows.size() > 0){
 			for (BasicRow row : rows) {
 				IxPoiChargingstation ixPoiChargingstation = (IxPoiChargingstation) row;
@@ -379,11 +461,14 @@ public class ChargePoiConvertor {
 		//处理数据
 		if(map.containsKey(3)){
 			telephoneList.addAll(map.get(3));
-		}else if(map.containsKey(4)){
+		}
+		if(map.containsKey(4)){
 			telephoneList.addAll(map.get(4));
-		}else if(map.containsKey(1)){
+		}
+		if(map.containsKey(1)){
 			telephoneList.addAll(map.get(1));
-		}else if(map.containsKey(2)){
+		}	
+		if(map.containsKey(2)){
 			telephoneList.addAll(map.get(2));
 		}
 		return StringUtils.join(telephoneList, "|");
@@ -452,9 +537,9 @@ public class ChargePoiConvertor {
 									plotKindSet.add("7");
 								}
 							}
-							if(StringUtils.isNotEmpty(changeBrands)){
-								carBrand = changeBrands;
-								if(!plotKindSet.contains("0")){
+							if(!plotKindSet.contains("0")){
+								if(StringUtils.isNotEmpty(changeBrands)){
+									carBrand = changeBrands;
 									plotKindSet.add("8");
 								}
 							}
@@ -481,9 +566,7 @@ public class ChargePoiConvertor {
 											String[] openTypes = openType.split("\\|");
 											for (String open : openTypes) {
 												if("1".equals(open)){
-													//0与其它值域不共存
 													plotKindSet.add("0");
-													break;
 												}else if("2".equals(open)){
 													plotKindSet.add("5");
 												}else if("3".equals(open)){
@@ -514,7 +597,10 @@ public class ChargePoiConvertor {
 						}
 					}
 					if(plotKindSet.size() > 0){
-						plotKind = StringUtils.join(plotKindSet,"|");
+						//0与其它值域不共存
+						if(!plotKindSet.contains("0")){
+							plotKind = StringUtils.join(plotKindSet,"|");
+						}
 					}
 				}
 			}
@@ -556,12 +642,12 @@ public class ChargePoiConvertor {
 		//慢充交流可用总数(动态)
 		int sACslowableNum = 0;
 		
+		//用于插口id
+		int i = 1;
 		if(plotMap.size() != 0){
 			for (BasicObj obj : plotMap.values()) {
 				IxPoiObj plotObj = (IxPoiObj) obj;
 				IxPoi ixPoi = (IxPoi) plotObj.getMainrow();
-				//用于插口id
-				int i = 1;
 				long pid = ixPoi.getPid();
 				String fid = ixPoi.getPoiNum();
 				List<JSONObject> list = new ArrayList<JSONObject>();
@@ -571,7 +657,6 @@ public class ChargePoiConvertor {
 				if(plotRows != null && plotRows.size() > 0){
 					for (BasicRow plotRow : plotRows) {
 						try {
-							JSONObject jso = new JSONObject();
 							IxPoiChargingplot ixPoiChargingplot = (IxPoiChargingplot) plotRow;
 							String plugTypes = ixPoiChargingplot.getPlugType();
 							if(ixPoiChargingplot.getPlugNum() > socketSum){
@@ -582,8 +667,9 @@ public class ChargePoiConvertor {
 							}
 							String[] plugTypeArray = plugTypes.split("\\|");
 							for (String plugType : plugTypeArray) {
+								JSONObject jso = new JSONObject();
 								//插座的永久ID
-								String sockerPid = fid+"_"+plugType+"_"+String.valueOf(i);
+								String sockerPid = fid+"_"+plugType+"_"+i;
 								jso.put("socker_pid", sockerPid);
 								//插座所在充电桩的永久ID
 								jso.put("plot_pid", pid);
@@ -675,16 +761,7 @@ public class ChargePoiConvertor {
 								jso.put("charging_info", chargingInfo);
 								//添加数据
 								list.add(jso);
-								//处理插口数量数据
-								if(mode == 1 && acdc == 1){
-									sDCquickNum += 1;
-								}else if(mode == 1 && acdc == 0){
-									sACquickNum += 1;
-								}else if(mode == 0 && acdc == 1){
-									sDCslowNum += 1;
-								}else if(mode == 0 && acdc == 0){
-									sACslowNum += 1;
-								}
+								
 								i++;
 							}
 						} catch (Exception e) {
@@ -694,7 +771,7 @@ public class ChargePoiConvertor {
 					}
 				}
 				if(list.size() > 0){
-					//处理插口类型与插口数量不一致
+					//处理插口类型与插口数量不一致 
 					int sum = list.size();
 					if(socketSum > sum){
 						int diff = socketSum - sum;
@@ -702,14 +779,20 @@ public class ChargePoiConvertor {
 							if(j >= sum){
 								j = 0;
 							}
-							JSONObject jsonObject = list.get(j);
-							list.add(jsonObject);
+							JSONObject jsonObj = list.get(j);
+							JSONObject jso = JSONObject.fromObject(jsonObj);
+							//处理插座的永久ID
+							String socker_pid = jso.getString("socker_pid");
+							int index = socker_pid.lastIndexOf("_");
+							String socket = socker_pid.substring(0, index+1);
+							jso.put("socker_pid", socket+i);
+							list.add(jso);
+							i++;
 						}
 					}else if(socketSum < sum){
 						//报log
 						errorLog.add("pid("+pid+")的充电桩数据有问题,PLUG_TYPE数量("+sum+")大于PLUG_NUM数量("+socketSum+")");
-						int diff = sum - socketSum;
-						list.subList(0, diff).clear();
+						list.subList(socketSum, sum).clear();
 					}
 					//桩poi数据添加到sockerParams
 					sockerParams.addAll(list);
@@ -718,6 +801,21 @@ public class ChargePoiConvertor {
 		}
 		
 		//处理插座数量描述
+		for (int j = 0; j < sockerParams.size(); j++) {
+			JSONObject jso = sockerParams.getJSONObject(j);
+			int mode = jso.getInt("mode");
+			int acdc = jso.getInt("acdc");
+			//处理插口数量数据
+			if(mode == 1 && acdc == 1){
+				sDCquickNum += 1;
+			}else if(mode == 1 && acdc == 0){
+				sACquickNum += 1;
+			}else if(mode == 0 && acdc == 1){
+				sDCslowNum += 1;
+			}else if(mode == 0 && acdc == 0){
+				sACslowNum += 1;
+			}
+		}
 		sockerallNum = sockerParams.size();
 		sockerNum.put("sockerall_num", sockerallNum);
 		sockerNum.put("sDCquick_num", sDCquickNum);
@@ -903,7 +1001,7 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String, Integer> getValidationMethodAndQualityLevel(IxPoiObj poiObj,long pid) throws Exception{
+	private Map<String, Integer> getValidationMethodAndQualityLevel(IxPoiObj poiObj) throws Exception{
 		Map<String,Integer> map = new HashMap<String,Integer>();
 		int validationMethod = 0;
 		int qualityLevel = 0;
@@ -922,8 +1020,8 @@ public class ChargePoiConvertor {
 					validationMethod = 1;
 				}else if(verRecord == 3 || verRecord == 5){
 					//VER_RECORD=3或5时，该条POI转换失败，程序报LOG：VER_RECORD值域为代理店或多源
-					errorLog.add("VER_RECORD值域为代理店或多源,pid为:"+pid);
-					throw new Exception("VER_RECORD值域为代理店或多源,pid为:"+pid); 
+					errorLog.add("VER_RECORD值域为代理店或多源,pid为:"+poiObj.objPid());
+					throw new Exception("VER_RECORD值域为代理店或多源,pid为:"+poiObj.objPid()); 
 				}
 			}
 		}
@@ -990,9 +1088,11 @@ public class ChargePoiConvertor {
 						Set<String> au = new HashSet<String>();
 						if(set.contains("1") || set.contains("2") || set.contains("3") || set.contains("4")){
 							au.add("1"); 
-						}else if(set.contains("0")){
+						}
+						if(set.contains("0")){
 							au.add("0"); 
-						}else if(set.contains("5")){
+						}
+						if(set.contains("5")){
 							au.add("2");
 						}
 						if(au.size() > 0){
@@ -1013,18 +1113,16 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String,String> getProviceAndCity(IxPoiObj poiObj,long pid) throws Exception{
+	private Map<String,String> getProviceAndCity(IxPoiObj poiObj) throws Exception{
 		Map<String,String> map = new HashMap<String,String>();
-		String provice = "";
+		String province = "";
 		String city = "";
 		try {
-			long adminId = poiObj.getAdminId();
-			MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
-			Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
+			String adminId = String.valueOf(poiObj.getAdminId());
 			if(scPointAdminarea.containsKey(adminId)){
 				Map<String, String> data = scPointAdminarea.get(adminId);
-				if(StringUtils.isNotEmpty(data.get("provice"))){
-					provice = data.get("provice");
+				if(StringUtils.isNotEmpty(data.get("province"))){
+					province = data.get("province");
 				}
 				if(StringUtils.isNotEmpty(data.get("city"))){
 					city = data.get("city");
@@ -1032,10 +1130,11 @@ public class ChargePoiConvertor {
 				
 			}
 		} catch (Exception e) {
-			log.error("pid:"+pid+",查询省市名称报错,"+e.getMessage(),e);
-			throw new Exception("pid:"+pid+",查询省市名称报错,"+e.getMessage(),e);
+			e.printStackTrace();
+			log.error("pid:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
+			throw new Exception("pid:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
 		}
-		map.put("provice", provice);
+		map.put("province", province);
 		map.put("city", city);
 		return map;
 	}
@@ -1048,15 +1147,16 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String,String> getValidationDateAndUpdateDate(IxPoiObj poiObj,Connection conn,long pid) throws Exception{
+	private Map<String,String> getValidationDateAndUpdateDate(IxPoiObj poiObj) throws Exception{
 		Map<String,String> map = new HashMap<String,String>();
 		String validationDate = "20170815000000";
 		String updateDate = "20170815000000";
 		IxPoi ixPoi =(IxPoi) poiObj.getMainrow();
+		long pid = ixPoi.getPid();
 		try {
 			//获取履历
 			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), pid);
+			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(logData.size()-1);
 				String date = (String) logMap.get("date");
@@ -1101,14 +1201,14 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private String getCreateDate(IxPoiObj poiObj,Connection conn) throws Exception{
+	private String getCreateDate(IxPoiObj poiObj) throws Exception{
 		String createDate = "20170815000000";
 		IxPoi ixPoi =(IxPoi) poiObj.getMainrow();
 		long pid = ixPoi.getPid();
 		try {
 			//获取履历
 			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), pid);
+			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(0);
 				int operation = (int) logMap.get("operation");

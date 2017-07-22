@@ -1893,15 +1893,11 @@ public class TipsSelector {
 	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-
-		boolean flag = conn.checkTipsMobile(wkt, date,
-				TipsUtils.notExpSourceType);
-
-		if (flag) {
-			return 1;
-		}
-
-		return 0;
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt,date,TipsUtils.notExpSourceType);
+        long count = new TipsIndexOracleOperator(oracleConn).querCount("select count(1) from tips_index where "+where+" and rownum=1",wkt);
+       
+		return (count>0?1:0);
 	}
 
 	/**
@@ -2058,20 +2054,13 @@ public class TipsSelector {
      * @throws Exception
      */
     public List<String> getCheckRowkeyList(String parameter) throws Exception {
-        TipsRequestParam param = new TipsRequestParam();
-        String query = param.getTipsCheck(parameter);
-        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-        List rowkeyList = new ArrayList();
-        long totalNum = sdList.getNumFound();
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
-                rowkeyList.add(rowkey);
-            }
-        } else {
-            // 暂先不处理
+        TipsRequestParamSQL param = new TipsRequestParamSQL();
+        String where = param.getTipsCheck(parameter);
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where);
+        List<String> rowkeyList = new ArrayList<String>();
+        for (TipsDao t:tipsList) {
+            rowkeyList.add(t.getId());
         }
         return rowkeyList;
     }

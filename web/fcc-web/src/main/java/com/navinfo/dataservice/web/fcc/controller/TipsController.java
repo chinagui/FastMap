@@ -623,43 +623,7 @@ public class TipsController extends BaseController {
         }
     }
 
-// //     20170523 和于桐万冲确认该接口取消
-//	@RequestMapping(value = "/tip/getByWkt")
-//	public void getTipsByWkt(HttpServletRequest request,
-//							  HttpServletResponse response) throws ServletException, IOException {
-//
-//		String parameter = request.getParameter("parameter");
-//
-//		try {
-//			JSONObject jsonReq = JSONObject.fromObject(parameter);
-//
-//			String wkt = jsonReq.getString("wkt");
-//
-//			String flag = jsonReq.getString("flag");
-//
-//            if (StringUtils.isEmpty(wkt)) {
-//                throw new IllegalArgumentException("参数错误:wkt不能为空。");
-//            }
-//
-//            if (StringUtils.isNotEmpty(flag)) {
-//                throw new IllegalArgumentException("参数错误:flag不能为空。");
-//            }
-//
-//			TipsSelector selector = new TipsSelector();
-//
-//			JSONArray array = selector.searchDataByWkt(parameter, true);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleRegularResult(array));
-//
-//		} catch (Exception e) {
-//
-//			logger.error(e.getMessage(), e);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleFailResult(e.getMessage()));
-//		}
-//	}
+
 
     @RequestMapping(value = "/tip/checkInfoTask")
     public void checkInfoTask(HttpServletRequest request,
@@ -694,7 +658,7 @@ public class TipsController extends BaseController {
             List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
             Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
             TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
-            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);//TODO:需要和李娅、俊芳确认是否使用了solr
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", total);
 

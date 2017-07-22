@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.dao.fcc.operator;
 
 import java.util.Collection;
@@ -20,4 +21,6 @@ public interface TipsIndexOperator {
 	public void save(Collection<TipsDao> tis) throws DaoOperatorException;
 
 	public void delete(Collection<TipsDao> tis) throws Exception;
+  public void update(TipsDao ti) throws DaoOperatorException;
 }
+

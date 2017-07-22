@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.dao.fcc.operator;
 
 import java.sql.Clob;
@@ -198,6 +199,39 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 
 	}
+  /**
+     * 根据ID获取一条tips数据
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public TipsDao getById(String id) throws Exception {
+        String sql="select * from tips_index i where i.id=?";
+        List<TipsDao> snapshots = this.query(sql, id);
+        if (snapshots == null || snapshots.size() == 0) {
+            return null;
+        }
+        TipsDao snapshot = snapshots.get(0);
+        return snapshot;
+    }
+  	
+	/**
+     * 根据查询条件查询符合条件的所有Tips
+     * @param queryBuilder
+     * @param filterQueryBuilder
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    public List<TipsDao> queryWithLimit(String sql,int limit,Object... params) throws Exception {
+    	StringBuilder sb = new StringBuilder();
+		sb.append("WITH FINAL_TABLE AS ( ");
+		sb.append( sql );
+		sb.append(") SELECT FINAL_TABLE.* ");
+		sb.append(" FROM FINAL_TABLE");
+		sb.append(" WHERE ROWNUM <= "+limit);
+		return query(sb.toString(), params);
+    }
 
 	public void update(Collection<TipsDao> tis) throws Exception {
 		if (tis == null || tis.size() == 0) {

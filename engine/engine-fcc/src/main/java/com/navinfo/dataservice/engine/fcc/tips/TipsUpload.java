@@ -260,9 +260,9 @@ public class TipsUpload {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DBUtils.rollBack(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -1057,6 +1057,7 @@ public class TipsUpload {
 		PreparedStatement insertPstmt = null;
 		Connection hbaseConn = null;
 		Table htab = null;
+		java.sql.Connection oracleConn = null;
 		try {
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
 				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
@@ -1113,9 +1114,9 @@ public class TipsUpload {
 						insertPstmt.setString(11, problem_num);
 						insertPstmt.setString(12, "");
 						// 按照Tips统计坐标所在图幅统计
-						JSONObject solrObj = solr.getById(record.getRowkey());
-						String wkt = solrObj.getString("wkt");
-						Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+                        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+						TipsDao solrObj = operator.getById(record.getRowkey());
+						Geometry geo = solrObj.getWkt();
 						String mesh = TipsGridCalculate.calculate(geo).iterator().next().substring(0, 6);
 						insertPstmt.setInt(13, Integer.valueOf(mesh));
 						insertPstmt.setString(14, "");
@@ -1148,9 +1149,10 @@ public class TipsUpload {
 						insertPstmt.setInt(36, 0);
 
 						// 查询关联link或者测线在fcc中是否有种别Tips
-						String query = "relate_links:*|" + record.getLink_pid() + "|* OR id:" + record.getLink_pid();
-						String fQuery = "(s_sourceType:1201 AND -t_lifecycle:1) OR s_sourceType:2001";
-						List<JSONObject> snapotList = solr.queryTips(query, fQuery, 1);
+						String where = "((s_sourceType=1201 AND t_lifecycle<>1) OR s_sourceType=2001)";
+                        where += " AND (id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + record.getLink_pid() + "'))";
+                        String query = "select * from tips_index where " + where;
+                        List<TipsDao> snapotList = operator.query(query);
 						int kind = 0;// 种别直接在FCC库中获取
 						int fc = 0;// FC直接在GDB中获取
 						int linkPid = 0;
@@ -1170,8 +1172,8 @@ public class TipsUpload {
 						}
 
 						if (snapotList != null && snapotList.size() > 0) {// FCC存在
-							JSONObject kindObj = snapotList.get(0);
-							JSONObject deepObj = kindObj.getJSONObject("deep");
+                            TipsDao kindObj = snapotList.get(0);
+							JSONObject deepObj = JSONObject.fromObject(kindObj.getDeep());
 							kind = deepObj.getInt("kind");
 						}
 						insertPstmt.setInt(37, kind);
@@ -1217,12 +1219,14 @@ public class TipsUpload {
 			}
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(checkConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
 			logger.error("质检问题上传失败，原因为：" + e.getMessage());
 			e.printStackTrace();
 		} finally {
 			DBUtils.closeStatement(deletePstmt);
 			DBUtils.closeStatement(insertPstmt);
 			DbUtils.commitAndCloseQuietly(checkConn);
+            DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 
 	}

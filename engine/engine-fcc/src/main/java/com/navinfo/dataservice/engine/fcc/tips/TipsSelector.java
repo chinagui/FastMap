@@ -606,7 +606,7 @@ public class TipsSelector {
 
 			}
 		} catch (Exception e) {
-			DbUtils.rollback(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error("渲染报错，数据错误：" + e.getMessage() + rowkey);
 			throw new Exception(e.getMessage() + "rowkey:" + rowkey, e);
 		} finally {

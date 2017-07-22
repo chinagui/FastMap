@@ -289,6 +289,36 @@ public class TipsDao {
 		this.setG_guide(geometry.getJSONObject("g_guide").toString());
 		this.setG_location(geometry.getJSONObject("g_location").toString());
 	}
+	public TipsDao copy(){
+		TipsDao tipsDao = new TipsDao();
+		tipsDao.setId(this.getId());
+		tipsDao.setStage(this.getStage());
+		tipsDao.setT_operateDate(this.getT_operateDate());
+		tipsDao.setT_lifecycle(this.getT_lifecycle());
+		tipsDao.setT_command(this.getT_command());
+		tipsDao.setHandler(this.getHandler());
+		tipsDao.setS_sourceType(this.getS_sourceType());
+		tipsDao.setWkt(this.getWkt());
+		tipsDao.setTipdiff(this.getTipdiff());
+		tipsDao.setS_qTaskId(this.getS_qTaskId());
+		tipsDao.setS_mTaskId(this.getS_mTaskId());
+		tipsDao.setS_qSubTaskId(this.getS_qSubTaskId());
+		tipsDao.setS_mSubTaskId(this.getS_mSubTaskId());
+		tipsDao.setWktLocation(this.getWktLocation());
+		tipsDao.setT_tipStatus(this.getT_tipStatus());
+		tipsDao.setT_dEditMeth(this.getT_dEditMeth());
+		tipsDao.setT_mEditMeth(this.getT_mEditMeth());
+		tipsDao.setT_mEditStatus(this.getT_mEditStatus());
+		tipsDao.setT_dEditStatus(this.getT_dEditStatus());
+		tipsDao.setS_project(this.getS_project());
+		tipsDao.setDeep(this.getDeep());
+		tipsDao.setG_location(this.getG_location());
+		tipsDao.setG_guide(this.getG_guide());
+		tipsDao.setFeedback(this.getFeedback());
+		tipsDao.setRelate_links(this.getRelate_links());
+		tipsDao.setRelate_nodes(this.getRelate_nodes());
+		return tipsDao;
+	}
 	public static void main(String[] args) {
 		TipsDao ti = new TipsDao();
 		ti.setT_mEditStatus(100);

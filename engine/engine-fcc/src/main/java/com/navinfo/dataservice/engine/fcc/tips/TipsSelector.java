@@ -2000,27 +2000,7 @@ public class TipsSelector {
 		return resultArr;
 	}
 
-	/**
-	 * @Description:根据任务号+tips类型返回任务号范围内的tips
-	 * @param souceTypes
-	 *            :tips类型
-	 * @param taskId
-	 *            :任务号
-	 * @param taskType
-	 *            ：任务类型
-	 * @return
-	 * @author: y
-	 * @throws Exception
-	 * @time:2017-4-13 上午9:07:15
-	 */
-	public List<JSONObject> getTipsByTaskIdAndSourceTypes(JSONArray souceTypes,
-			int taskId, int taskType) throws Exception {
-
-		List<JSONObject> snapshots = conn.queryTipsByTaskTaskSourceTypes(
-				souceTypes, taskId, taskType);
-
-		return snapshots;
-	}
+	
 
 	/**
 	 * @Description:按照任务号查找tips

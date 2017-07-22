@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.dao.fcc.model;
 
+import com.navinfo.dataservice.commons.util.DateUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /** 
  * @ClassName: TipsDao
@@ -262,6 +266,28 @@ public class TipsDao {
 			all[i]=new String[]{getId(),raw[i]};
 		}
 		return all;
+	}
+	public void loadResultSet(ResultSet rs) throws SQLException{
+		this.setId(rs.getString("id"));
+		this.setStage(rs.getInt("stage"));
+		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date")));
+		this.setT_operateDate(DateUtils.dateToString(rs.getTimestamp("t_operateDate")));
+		this.setT_lifecycle(rs.getInt("t_lifecycle"));
+		this.setHandler(rs.getInt("handler"));
+		this.setS_mTaskId(rs.getInt("s_mTaskId"));
+		this.setS_qTaskId(rs.getInt("s_qTaskId"));
+		this.setS_mSubTaskId(rs.getInt("s_mSubTaskId"));
+		this.setS_sourceType(rs.getString("s_sourceType"));
+		this.setT_dEditStatus(rs.getInt("t_dEditStatus"));
+		this.setT_mEditStatus(rs.getInt("t_mEditStatus"));
+		this.setTipdiff(rs.getString("tipdiff"));
+	}
+	public void loadHbase(JSONObject hbaseTips){
+		JSONObject deep = hbaseTips.getJSONObject("deep");
+		this.setDeep(deep.toString());
+		JSONObject geometry = hbaseTips.getJSONObject("geometry");
+		this.setG_guide(geometry.getJSONObject("g_guide").toString());
+		this.setG_location(geometry.getJSONObject("g_location").toString());
 	}
 	public static void main(String[] args) {
 		TipsDao ti = new TipsDao();

@@ -286,44 +286,44 @@ public class TipsExtract {
 	        	conn=DBConnector.getInstance().getTipsIdxConnection();
 	        	TipsIndexOracleOperator tipsIndexOracleOperator=new TipsIndexOracleOperator(conn);
 	        	for (TipsDao tipsDao : allExpTipsList) {
-	        		
-	    			String rowkey=tipsDao.getId();
-	    			
-	    			// 获取solr数据
-		    		//JSONObject solrIndex = solrConn.getById(rowkey);
-	    			tipsDao.setT_dEditStatus(t_dEditStatus);
-	    			tipsDao.setT_dEditMeth(t_dEditMeth);
-	    			tipsDao.setT_date(date);
-	    			tipsDao.setStage(stage);
-	    			tipsDao.setHandler(checkerId);
-		    		//solrConn.addTips(solrIndex);
-	    			tipsIndexOracleOperator.update(tipsDao);
-	
-		            String[] queryColNames={"track"};
-		            
-		            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, queryColNames);
-		            
-		        	JSONObject track = oldTip.getJSONObject("track");
-		        	
-		        	JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
-		        	
-	        	
-	        	//更新hbase
-		        JSONObject newTrackInfo=TipsUtils.newTrackInfo(stage, date, checkerId);
-	        	trackInfoArr.add(newTrackInfo);
-	        	
-	        	track.put("t_dEditStatus", t_dEditStatus);
-	        	track.put("t_dEditMeth", t_dEditMeth);
-	        	track.put("t_trackInfo", trackInfoArr);
-	        	
-	        	Put put = new Put(rowkey.getBytes());
-	        	
-	        	put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
-						.getBytes());
 
-	 		    htab.put(put);
+					String rowkey = tipsDao.getId();
 
-	        }
+					// 获取solr数据
+					//JSONObject solrIndex = solrConn.getById(rowkey);
+					tipsDao.setT_dEditStatus(t_dEditStatus);
+					tipsDao.setT_dEditMeth(t_dEditMeth);
+					tipsDao.setT_date(date);
+					tipsDao.setStage(stage);
+					tipsDao.setHandler(checkerId);
+					//solrConn.addTips(solrIndex);
+					tipsIndexOracleOperator.update(tipsDao);
+
+					String[] queryColNames = {"track"};
+
+					JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, queryColNames);
+
+					JSONObject track = oldTip.getJSONObject("track");
+
+					JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+
+
+					//更新hbase
+					JSONObject newTrackInfo = TipsUtils.newTrackInfo(stage, date, checkerId);
+					trackInfoArr.add(newTrackInfo);
+
+					track.put("t_dEditStatus", t_dEditStatus);
+					track.put("t_dEditMeth", t_dEditMeth);
+					track.put("t_trackInfo", trackInfoArr);
+
+					Put put = new Put(rowkey.getBytes());
+
+					put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+							.getBytes());
+
+					htab.put(put);
+
+				}
 	        }catch (Exception e) {
 	        	
 	        	logger.error("更细质检状态出错："+e.getMessage(), e);

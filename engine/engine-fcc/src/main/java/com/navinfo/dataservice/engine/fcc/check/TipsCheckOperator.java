@@ -4,9 +4,12 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -219,11 +222,17 @@ public class TipsCheckOperator {
 		
 		
 	    Connection hbaseConn = null;
+	    java.sql.Connection conn = null;
         Table htab = null;
         try {
     		// 获取solr数据
-    		JSONObject solrIndex = solrConn.getById(rowkey);
-    		
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+    		TipsDao tipsDao = operator.getById(rowkey);
+
+    		if(tipsDao==null){
+    			throw new Exception("数据不存在");
+			}
+
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
             htab = hbaseConn.getTable(TableName
@@ -268,14 +277,14 @@ public class TipsCheckOperator {
         		
         		t_dEditMeth=1;//0 不应用；1 人工作业；2 交互式作业；3 自动化；
 			}
+
+			tipsDao.setT_dEditStatus(t_dEditStatus);
         	
-        	solrIndex.put("t_dEditStatus", t_dEditStatus);
+        	tipsDao.setT_dEditMeth(t_dEditMeth);
         	
-        	solrIndex.put("t_dEditMeth", t_dEditMeth);
+        	tipsDao.setT_date(date);
         	
-        	solrIndex.put("t_date", date);
-        	
-        	solrConn.addTips(solrIndex);
+        	operator.update(tipsDao);
         	
         	//更新hbase
         	lastTrack.put("date", date);
@@ -294,11 +303,12 @@ public class TipsCheckOperator {
  		    htab.put(put);
 
         }catch (Exception e) {
-        	
+			DbUtils.rollbackAndCloseQuietly(conn);
         	logger.error("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
-        	
         	throw new Exception("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
-		}	
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 		
 	}
 

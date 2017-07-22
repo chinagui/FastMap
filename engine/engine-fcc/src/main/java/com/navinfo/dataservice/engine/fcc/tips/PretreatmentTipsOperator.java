@@ -913,6 +913,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject deepInfo) throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
+        java.sql.Connection conn=null;
         try {
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -920,9 +921,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 			// 获取solr数据
-			JSONObject solrIndex = solr.getById(rowkey);
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			TipsDao solrIndex = operator.getById(rowkey);
 
-			String sourceType = solrIndex.getString("s_sourceType");
+			String sourceType = solrIndex.getS_sourceType();
 
 			// 获取到改钱的 feddback和track
 			JSONObject oldTip = getOldTips(rowkey, htab);

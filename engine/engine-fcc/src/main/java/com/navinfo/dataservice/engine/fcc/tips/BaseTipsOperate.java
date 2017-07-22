@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -269,6 +272,7 @@ public class BaseTipsOperate {
 	 * @time:2016-11-16 下午5:21:09
 	 */
 	public void deleteByRowkey(String rowkey, int delType) throws Exception {
+		Connection hbaseConn;
 		try {
 			//物理删除
 			if(delType==1){

@@ -929,111 +929,105 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         java.sql.Connection conn=null;
         try {
 
-			hbaseConn = HBaseConnector.getInstance().getConnection();
+            hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-			// 获取solr数据
-			conn = DBConnector.getInstance().getTipsIdxConnection();
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			TipsDao solrIndex = operator.getById(rowkey);
+            htab = hbaseConn.getTable(TableName
+                    .valueOf(HBaseConstant.tipTab));
+            // 获取solr数据
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+            TipsDao solrIndex = operator.getById(rowkey);
 
-			String sourceType = solrIndex.getS_sourceType();
+            String sourceType = solrIndex.getS_sourceType();
 
-			// 获取到改钱的 feddback和track
-			JSONObject oldTip = getOldTips(rowkey, htab);
+            // 获取到改钱的 feddback和track
+            JSONObject oldTip = getOldTips(rowkey, htab);
 
-			// 1.更新feedback和track
-			JSONObject trackJson = oldTip.getJSONObject("track");
+            // 1.更新feedback和track
+            JSONObject trackJson = oldTip.getJSONObject("track");
             TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
             track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
 
-			// 2.更新feedback
+            // 2.更新feedback
 
-			// 新增一个f_array type=3的是文字
-			JSONObject feedBack = oldTip.getJSONObject("feedback");
+            // 新增一个f_array type=3的是文字
+            JSONObject feedBack = oldTip.getJSONObject("feedback");
 
-			JSONArray f_array = feedBack.getJSONArray("f_array");
+            JSONArray f_array = feedBack.getJSONArray("f_array");
 
-			for (Object object : f_array) {
+            for (Object object : f_array) {
 
-				JSONObject obj = JSONObject.fromObject(object);
+                JSONObject obj = JSONObject.fromObject(object);
 
-				// 先删掉
+                // 先删掉
 
-				if (obj.getInt("type") == 3) {
+                if (obj.getInt("type") == 3) {
 
-					f_array.remove(obj);
+                    f_array.remove(obj);
 
-					break;
-				}
-			}
-			// 如果count=0,则说明原来没有备注，则，增加一条
+                    break;
+                }
+            }
+            // 如果count=0,则说明原来没有备注，则，增加一条
 
-			int type = 3; // 文字
+            int type = 3; // 文字
 
-			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					track.getT_date());
+            JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
+                    track.getT_date());
 
-			f_array.add(newFeedback);
+            f_array.add(newFeedback);
 
-			// 更新feedback
-			feedBack.put("f_array", f_array);
+            // 更新feedback
+            feedBack.put("f_array", f_array);
 
-			JSONObject newDeep = null;
+            JSONObject newDeep = null;
 
-			if (FC_SOURCE_TYPE.equals(sourceType) && deepInfo != null
-					&& !deepInfo.isNullObject()) {
+            if (FC_SOURCE_TYPE.equals(sourceType) && deepInfo != null
+                    && !deepInfo.isNullObject()) {
 
-				JSONObject deep = oldTip.getJSONObject("deep");
+                JSONObject deep = oldTip.getJSONObject("deep");
 
-				newDeep = deep;
+                newDeep = deep;
 
-				newDeep.put("fc", deepInfo.get("fc"));
-			}
+                newDeep.put("fc", deepInfo.get("fc"));
+            }
 
-			Put put = new Put(rowkey.getBytes());
+            Put put = new Put(rowkey.getBytes());
 
-			put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
-					.toString().getBytes());
+            put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
+                    .toString().getBytes());
 
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
-					.toString().getBytes());
+            put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
+                    .toString().getBytes());
 
-			if (newDeep != null) {
-				put.addColumn("data".getBytes(), "deep".getBytes(), newDeep
-						.toString().getBytes());
-			}
+            if (newDeep != null) {
+                put.addColumn("data".getBytes(), "deep".getBytes(), newDeep
+                        .toString().getBytes());
+            }
 
-			// 同步更新solr
-           // solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
-			solrIndex.put("feedback", feedBack);
+            // 同步更新solr
+            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
 
-			if (newDeep != null) {
-				solrIndex.put("deep", newDeep);
-			}
+            operator.updateOne(solrIndex);
 
-			solr.addTips(solrIndex);
+            htab.put(put);
 
-			htab.put(put);
+        } catch (IOException e) {
 
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-			logger.error(e.getMessage(), e);
-
-			throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
-					+ e.getMessage(), e);
-		}finally {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            logger.error(e.getMessage(), e);
+            throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
+                    + e.getMessage(), e);
+        }finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(conn);
         }
 
-	}
+    }
 
-	/**
+    /**
 	 * @Description:情报矢量化新增或者修改一个tips
 	 * @param jsonInfo
 	 *            :tips全量信息，需要符合规格定义
@@ -1886,15 +1880,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			Put put = new Put(rowkey.getBytes());
 
 			//JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
-            TipsDao
-			newSolrIndex.put("id", newRowkey);
+            TipsDao newTipsIndex = tipsIndex.copy();
+            newTipsIndex.setId(newRowkey);
+//			newSolrIndex.put("id", newRowkey);
 
 			// 1.cut line
 
 			Point point = (Point) GeoTranslator.geojson2Jts(pointGeo);
 
-			JSONObject oldGeo = JSONObject.fromObject(solrIndex
-					.get("g_location"));
+			JSONObject oldGeo = JSONObject.fromObject(tipsIndex.getG_location());
 
 
 			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
@@ -1948,18 +1942,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			geo2.put("g_guide", g_guide2);
 
-			solrIndex.put("g_location", g_location1);
+            tipsIndex.setG_location(g_location1.toString());
+			newTipsIndex.setG_location(g_location2.toString());
 
-			newSolrIndex.put("g_location", g_location2);
+            tipsIndex.setG_guide(g_guide1.toString());
+			newTipsIndex.setG_guide(g_guide2.toString());
 
-			solrIndex.put("g_guide", g_guide1);
-
-			newSolrIndex.put("g_guide", g_guide2);
-			
-			
 			// 更新wkt
-			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
-					.get("feedback"));
+			JSONObject feedbackObj = JSONObject.fromObject(tipsIndex.getFeedback());
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
@@ -1969,11 +1959,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update deep (重新计算point)
 			//更新deep.geo
-			JSONObject deep1 = JSONObject.fromObject(solrIndex.get("deep"));
+			JSONObject deep1 = JSONObject.fromObject(tipsIndex.getDeep());
 			// 几何中心点
 			deep1.put("geo",g_guide1);
 
-			JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
+			JSONObject deep2 = JSONObject.fromObject(tipsIndex.getDeep());
 
 			deep2.put("geo", g_guide2);
 			
@@ -1989,10 +1979,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             //更新新deep.id
             // ROWKEY 维护7种要素id 测线在内
             deep2.put("id", newRowkey.substring(6, newRowkey.length()));
-			
-			solrIndex.put("deep", deep1.toString());
 
-			newSolrIndex.put("deep", deep2.toString());
+            tipsIndex.setDeep(deep1.toString());
+            newTipsIndex.setDeep(deep2.toString());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep1.toString()
 					.getBytes());
@@ -2000,25 +1989,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString()
 					.getBytes());
 
-			solrIndex.put("deep", deep1);
 
-			newSolrIndex.put("deep", deep2);
-
-            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    "2001", deep1, g_location1,
+            tipsIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt("2001", deep1, g_location1,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", deep1, g_location1,
+            tipsIndex.setWktLocation(TipsImportUtils.generateSolrWkt("2001", deep1, g_location1,
                     feedbackObj));
 
-            newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    "2001", deep2, g_location2,
+            newTipsIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt("2001", deep2, g_location2,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            newSolrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-                    "2001", deep2, g_location2,
+            newTipsIndex.setWkt(TipsImportUtils.generateSolrWkt("2001", deep2, g_location2,
                     feedbackObj));
 
 			// 2.update track
@@ -2042,15 +2025,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update solr
 
-			solrIndex.put("t_date", date);
-			solrIndex.put("handler", user);
+            tipsIndex.setT_date(date);
+            tipsIndex.setHandler(user);
 
-            newSolrIndex.put("t_date", date);
-            newSolrIndex.put("handler", user);
+            newTipsIndex.setT_date(date);
+            newTipsIndex.setHandler(user);
 
-			solr.addTips(solrIndex);
-
-			solr.addTips(newSolrIndex);
+            List<TipsDao> tipsDaoList = new ArrayList<>();
+            tipsDaoList.add(tipsIndex);
+            tipsDaoList.add(newTipsIndex);
+            operator.update(tipsDaoList);
 
 			htab.put(put);
 
@@ -2058,9 +2042,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			htab.close();
 
-			resultArr.add(solrIndex);
+			resultArr.add(JSONObject.fromObject(tipsIndex));
 			
-			resultArr.add(newSolrIndex);
+			resultArr.add(JSONObject.fromObject(newTipsIndex));
 
 		} catch (Exception e) {
             DbUtils.rollback(oracleConn);

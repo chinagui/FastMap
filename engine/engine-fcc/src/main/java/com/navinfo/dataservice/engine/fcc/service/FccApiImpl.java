@@ -312,7 +312,7 @@ public class FccApiImpl implements FccApi{
             throws Exception {
 
         TipsSelector selector = new TipsSelector();
-
+        
         //根据任务查询 任务下的所有tips的grid
         Set <Integer> grids=selector.getGridsListByTask(collectTaskid,com.navinfo.dataservice.dao.fcc.TaskType.Q_TASK_TYPE);
 

@@ -234,6 +234,14 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		sb.append(" WHERE ROWNUM <= " + limit);
 		return query(sb.toString(), params);
 	}
+    
+    public void updateOne(TipsDao ti) throws Exception {
+    	Collection<TipsDao> tis=new ArrayList<TipsDao>();
+    	tis.add(ti);
+		this.delete(tis);
+		this.save(tis);
+
+	}
 
 	/***
 	 * 修改tips

@@ -175,7 +175,9 @@ public class SyncTips2Oracle {
 			if(trackInfoArray != null && trackInfoArray.size() > 0) {
 				JSONObject lastTrack = trackInfoArray.getJSONObject(trackInfoArray.size() - 1);
 				stage = lastTrack.getInt("stage");
-				tOperateDate = lastTrack.getString("date");
+				if(lastTrack.containsKey("date")){
+					tOperateDate = lastTrack.getString("date");
+				}
 				handler = lastTrack.getInt("handler");
 			}
 			ti.setT_operateDate(tOperateDate);

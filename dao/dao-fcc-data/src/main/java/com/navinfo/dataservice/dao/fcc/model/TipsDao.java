@@ -11,6 +11,8 @@ import net.sf.json.JSONObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 /** 
  * @ClassName: TipsDao
@@ -223,7 +225,7 @@ public class TipsDao {
 		this.relate_nodes = relate_nodes;
 	}
 	public Object[] toIndexMainArr(){
-		Object[] cols = new Object[18];
+		Object[] cols = new Object[19];
 		cols[0] = id;
 		cols[1] = stage;
 		cols[2] = t_date;
@@ -249,10 +251,19 @@ public class TipsDao {
 		if(StringUtils.isEmpty(getRelate_links())){
 			return null;
 		}
-		String[] raw = getRelate_links().split(",");
-		String[][] all = new String[raw.length][];
-		for(int i=0;i<raw.length;i++){
-			all[i]=new String[]{getId(),raw[i]};
+		String repStr = getRelate_links().replace("|", ",");
+		String[] raw = repStr.split(",");
+		Set<String> cols = new HashSet<String>();
+		for(String r:raw){
+			if(StringUtils.isNotEmpty(r)){
+				cols.add(r);
+			}
+		}
+		String[][] all = new String[cols.size()][];
+		int i = 0;
+		for(String col:cols){
+			all[i]=new String[]{getId(),col};
+			i++;
 		}
 		return all;
 	}
@@ -261,10 +272,19 @@ public class TipsDao {
 		if(StringUtils.isEmpty(getRelate_nodes())){
 			return null;
 		}
-		String[] raw = getRelate_nodes().split(",");
-		String[][] all = new String[raw.length][];
-		for(int i=0;i<raw.length;i++){
-			all[i]=new String[]{getId(),raw[i]};
+		String repStr = getRelate_nodes().replace("|", ",");
+		String[] raw = repStr.split(",");
+		Set<String> cols = new HashSet<String>();
+		for(String r:raw){
+			if(StringUtils.isNotEmpty(r)){
+				cols.add(r);
+			}
+		}
+		String[][] all = new String[cols.size()][];
+		int i = 0;
+		for(String col:cols){
+			all[i]=new String[]{getId(),col};
+			i++;
 		}
 		return all;
 	}
@@ -296,15 +316,23 @@ public class TipsDao {
 		}
 	}
 	public void loadHbase(JSONObject hbaseTips){
-		JSONObject deep = hbaseTips.getJSONObject("deep");
-		this.setDeep(deep.toString());
-		JSONObject feedback = hbaseTips.getJSONObject("feedback");
-		this.setFeedback(feedback.toString());
-		JSONObject geometry = hbaseTips.getJSONObject("geometry");
-		this.setG_guide(geometry.getJSONObject("g_guide").toString());
-		this.setG_location(geometry.getJSONObject("g_location").toString());
-		JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
-		this.setTipdiff(tipdiff.toString());
+		if(hbaseTips.containsKey("deep")) {
+			JSONObject deep = hbaseTips.getJSONObject("deep");
+			this.setDeep(deep.toString());
+		}
+		if(hbaseTips.containsKey("feedback")) {
+			JSONObject feedback = hbaseTips.getJSONObject("feedback");
+			this.setFeedback(feedback.toString());
+		}
+		if(hbaseTips.containsKey("geometry")) {
+			JSONObject geometry = hbaseTips.getJSONObject("geometry");
+			this.setG_guide(geometry.getJSONObject("g_guide").toString());
+			this.setG_location(geometry.getJSONObject("g_location").toString());
+		}
+		if(hbaseTips.containsKey("tipdiff")) {
+			JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+			this.setTipdiff(tipdiff.toString());
+		}
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();
@@ -337,9 +365,15 @@ public class TipsDao {
 		return tipsDao;
 	}
 	public static void main(String[] args) {
-		TipsDao ti = new TipsDao();
-		ti.setT_mEditStatus(100);
-		JSONObject jo = JSONObject.fromObject(ti);
-		System.out.println(jo.toString());
+//		TipsDao ti = new TipsDao();
+//		ti.setT_mEditStatus(100);
+//		JSONObject jo = JSONObject.fromObject(ti);
+//		System.out.println(jo.toString());
+		String str0 = "|| ,| |12|67766";
+		System.out.println(str0.replace("|", ","));
+//		String str = ",, |, ,12,47766,";
+//		for(String s:str.split(",")){
+//			System.out.println(s);
+//		}
 	}
 }

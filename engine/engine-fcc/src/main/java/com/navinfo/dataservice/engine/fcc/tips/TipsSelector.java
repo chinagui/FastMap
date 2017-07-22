@@ -78,10 +78,10 @@ public class TipsSelector {
 				snapshot.put("t", 1);
 				array.add(snapshot);
 			}
-		} catch (Exception e){
-            DbUtils.rollbackAndCloseQuietly(oracleConn);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
-		}finally {
+		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 		return array;
@@ -1283,11 +1283,12 @@ public class TipsSelector {
 					oracelConn);
 			long total = operator.querCount(
 					"select count(1) from tips_index where "
-							+ whereClause.getSql(), whereClause.getValues().toArray());
+							+ whereClause.getSql(), whereClause.getValues()
+							.toArray());
 			Map<Object, Object> data = operator.groupQuery(
 					"select s_sourcetype,count(1) from tips_index where "
 							+ whereClause.getSql() + " group by s_sourcetype",
-							whereClause.getValues().toArray());
+					whereClause.getValues().toArray());
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;
@@ -1341,7 +1342,7 @@ public class TipsSelector {
 			String parameter = paramObj.toString();
 			String query = param.getTipsDayTotal(parameter);
 			return (int) operator.querCount(
-					" select count(1) from tips_index where " + query);
+					" select count(1) from tips_index where " + query, wkt);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -1374,8 +1375,8 @@ public class TipsSelector {
 		List<TipsDao> tips = null;
 		try {
 			tips = new TipsIndexOracleOperator(oracleConn).query(
-					"select * from tips_index where " + where.getSql(),
-					where.getValues().toArray());
+					"select * from tips_index where " + where.getSql(), where
+							.getValues().toArray());
 		} finally {
 			DbUtils.closeQuietly(oracleConn);
 		}
@@ -1892,22 +1893,22 @@ public class TipsSelector {
 
 		String wkt = GridUtils.grid2Wkt(grid);
 		Connection oracleConn = null;
-        try {
-            oracleConn = DBConnector.getInstance() .getTipsIdxConnection();
-            String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
-                    TipsUtils.notExpSourceType);
-            long count = new TipsIndexOracleOperator(oracleConn).querCount(
-                    "select count(1) from tips_index where " + where
-                            + " and rownum=1", wkt);
-            return (count > 0 ? 1 : 0);
-        }catch (Exception e) {
-            DbUtils.rollbackAndCloseQuietly(oracleConn);
-            e.printStackTrace();
-        }finally {
-            DbUtils.commitAndCloseQuietly(oracleConn);
-        }
-        return 0;
-    }
+		try {
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt,
+					date, TipsUtils.notExpSourceType);
+			long count = new TipsIndexOracleOperator(oracleConn).querCount(
+					"select count(1) count from tips_index where " + where
+							+ " and rownum=1", wkt);
+			return (count > 0 ? 1 : 0);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+		}
+		return 0;
+	}
 
 	/**
 	 * 范围查询Tips 分类查询
@@ -2009,8 +2010,6 @@ public class TipsSelector {
 
 		return resultArr;
 	}
-
-
 
 	/**
 	 * @Description:按照任务号查找tips

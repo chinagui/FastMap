@@ -136,7 +136,9 @@ public class HbaseTipsQuery {
 			throw new Exception("根据rowkeys查询tips信息出错,原因："
 					+ e.getMessage(), e);
 		}finally {
-			htab.close();
+			if(htab!=null) {
+				htab.close();
+			}
 		}
 
 		long end = System.currentTimeMillis();

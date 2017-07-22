@@ -480,20 +480,20 @@ public class TipsRequestParam {
         int y = jsonReq.getInt("y");
         int z = jsonReq.getInt("z");
         int gap = jsonReq.getInt("gap");
-        
+
 
         int subtaskId=0; //web编辑才有
-     
+
         Subtask subtask = null;
         int subTaskType = 0;//3 grid粗编 4 区域粗编
-        
+
         if(jsonReq.containsKey("subtaskId")){
         	ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
         	subtaskId=jsonReq.getInt("subtaskId");
         	subtask=apiService.queryBySubtaskId(subtaskId);
         	subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
         }
-        
+
 
 
         String mdFlag = null;
@@ -589,7 +589,7 @@ public class TipsRequestParam {
                 if(jsonReq.containsKey("workStatus")) {
                     workStatus = jsonReq.getJSONArray("workStatus");
                 }
-           
+
                 //状态过滤
                 if(workStatus == null || workStatus.contains(9)
                         || (workStatus.contains(0) && workStatus.contains(1) && workStatus.contains(2))) {
@@ -599,7 +599,7 @@ public class TipsRequestParam {
                     webBuilder.append("(t_tipStatus:2)");
                 }else {
                     if (workStatus.contains(0)) {
-                    	
+
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
@@ -638,7 +638,7 @@ public class TipsRequestParam {
                     builder.append(webBuilder);
                     builder.append(")");
                 }
-                
+
                 //类型过滤
                 //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
                 //3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
@@ -647,9 +647,9 @@ public class TipsRequestParam {
                 }
                 else if(subTaskType == 4) {//4 区域粗编
                 	builder.append(" AND s_sourceType:8001  ");//预处理提交
-                    
+
                 }
-                
+
             }
         }
 

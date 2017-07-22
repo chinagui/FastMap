@@ -56,12 +56,12 @@ public class TipsExporter {
 
 			String wkt = GridUtils.grid2Wkt(gridId);
 			TipsRequestParamSQL paramSQL = new TipsRequestParamSQL();
-			String param = paramSQL.getTipsMobileWhere(wkt, date,
+			String param = paramSQL.getTipsMobileWhere(date,
 					TipsUtils.notExpSourceType);
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
 			List<TipsDao> rowkeys = operator.query(
-					"select * from tips_index  where  ", param);
+					"select * from tips_index  where  "+param, wkt);
 
 			for (TipsDao tipsDap : rowkeys) {
 				if (rowkeySet.contains(tipsDap.getId())) {

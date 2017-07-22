@@ -1341,7 +1341,7 @@ public class TipsSelector {
 			String parameter = paramObj.toString();
 			String query = param.getTipsDayTotal(parameter);
 			return (int) operator.querCount(
-					" select count(1) from tips_index where ", query);
+					" select count(1) from tips_index where " + query);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

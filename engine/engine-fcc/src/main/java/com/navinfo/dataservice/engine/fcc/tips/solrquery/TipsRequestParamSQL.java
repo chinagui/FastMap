@@ -1,8 +1,14 @@
 package com.navinfo.dataservice.engine.fcc.tips.solrquery;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -10,17 +16,9 @@ import com.navinfo.dataservice.dao.fcc.SolrQueryUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocumentList;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
 
 /**
  * Created by zhangjunfang on 2017/5/20.
@@ -264,7 +262,7 @@ public class TipsRequestParamSQL {
 		}
 	}
 
-	public String getTipsCheck(String parameter) throws Exception {
+	public String getTipsCheckWhere(String parameter) throws Exception {
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 		// solr查询语句
 		StringBuilder builder = new StringBuilder();
@@ -279,8 +277,7 @@ public class TipsRequestParamSQL {
 		if (jsonReq.containsKey("type")) {
 			builder.append(" AND s_sourceType=2001  AND t_lifecycle=3");
 		}
-
-		logger.info("getTipsCheck:" + builder.toString());
+		logger.info("getTipsCheckWhere :" + builder.toString());
 		return builder.toString();
 	}
 
@@ -311,5 +308,278 @@ public class TipsRequestParamSQL {
 		return param;
 
 	}
+	
+    public String getTipsCheckUnCommit(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subTaskId");
+        StringBuilder builder = new StringBuilder();
 
+        builder.append(" t_tipStatus<>2 ");
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId=");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId=");
+            builder.append(subtaskId);
+        }
+        logger.info("getTipsCheckUnCommit:" + builder.toString());
+        return builder.toString();
+    }
+
+    public String getTaskFilterSQL(int taskId, int taskType) throws Exception {
+        StringBuilder builder = new StringBuilder();
+        if (taskType == TaskType.Q_TASK_TYPE) {
+            builder.append(" AND s_qTaskId = " + taskId);
+        } else if (taskType == TaskType.Q_SUB_TASK_TYPE) {
+            builder.append(" AND s_qSubTaskId = " + taskId);
+        } else if (taskType == TaskType.M_TASK_TYPE) {
+            builder.append(" AND s_mTaskId = " + taskId);
+        } else if (taskType == TaskType.M_SUB_TASK_TYPE) {
+            builder.append(" AND s_mSubTaskId = " + taskId);
+        }
+        throw new Exception("不支持的任务类型：" + taskType);
+    }
+    public String getTipsWebSql(String wkt) {
+		return "select * from tips_index where "
+				+ " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' "
+				+ " AND " + SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
+	}
+	public OracleWhereClause getSnapShot(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        JSONArray grids = jsonReq.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(grids);
+        int workStatus = jsonReq.getInt("workStatus");
+        int subtaskId = jsonReq.getInt("subtaskId");
+        String sourceType = jsonReq.getString("type");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        List<Object> values = new ArrayList<Object>();
+        values.add(wkt);
+
+        //任务过滤,疑问taskBuilder为什么会为空？？？ 其实为空是有问题的
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        StringBuilder taskBuilder = null;
+        if (taskSet != null && taskSet.size() > 0) {
+            taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
+        }
+        
+        ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+        Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+        //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+        int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
+        
+        if(subTaskType!=3&subTaskType!=4){
+        	
+        	builder.append( " AND "+taskBuilder);
+        }
+       //3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+        else if(subTaskType == 3) {
+        	if(taskBuilder==null){
+        		builder.append("AND (s_sourceType=8002 AND stage in(2,7) AND t_tipStatus=2)");//接边Tips
+        	}else{
+        		
+        		builder.append("AND (( s_sourceType=8002 AND stage in (2,7) AND t_tipStatus=2)  OR  "+taskBuilder+" )");//接边Tips
+        	}
+        	
+        }
+       //4 区域粗编
+        else if(subTaskType == 4) {
+        	//20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
+        	builder.append(" AND s_sourceType=8001 AND stage in (2,5,7) AND t_tipStatus=2 ");//预处理提交
+            
+        }
+        
+        
+
+        //315过滤
+        this.getFilter315(builder);
+
+        builder.append(" AND s_sourceType=" + sourceType);
+
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
+            builder.append(" AND (");
+            builder.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
+            builder.append(")");
+        }else if(workStatus ==TipsWorkStatus.WORK_HAS_PROBLEM ) {//有问题待确认
+            builder.append(" AND stage=2 AND t_dEditStatus=1");
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
+            builder.append(" AND stage=2 AND t_dEditStatus=2");
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
+            StringBuilder allBuilder = new StringBuilder();
+            allBuilder.append(" AND ");
+            allBuilder.append("(");
+
+            allBuilder.append("(");
+            allBuilder.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1, 2, 5, 6)");
+            allBuilder.append(")");
+
+            allBuilder.append(" OR ");
+
+            allBuilder.append("(stage=2 AND t_dEditStatus in (1,2))");
+
+            allBuilder.append(")");
+
+            builder.append(allBuilder);
+        }
+        //1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+
+            builder.append(" AND  stage=7 AND t_dEditStatus=0 ");
+
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+
+            builder.append(" AND stage=7 AND t_dEditStatus=2 ");
+
+
+        }
+        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+
+            builder.append(" AND  stage=7 AND t_dEditStatus=1 ");
+
+        }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+
+            builder.append(" AND stage=7  ");
+        }
+
+        logger.info("getSnapShot:" + builder.toString());
+        return new OracleWhereClause(builder.toString(),values);
+    }
+    /**
+     * 根据子任务号获取采集任务ID
+     * @param subtaskId
+     * @return
+     * @throws Exception
+     */
+    private Set<Integer> getCollectIdsBySubTaskId(int subtaskId) throws Exception {
+        ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+        Set<Integer> taskSet = manApi.getCollectTaskIdByDaySubtask(subtaskId);
+        return taskSet;
+    }
+    private StringBuilder getSolrIntSetQueryNoAnd(Set<Integer> intSet, String fieldName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(fieldName + "in (");
+        int i = 0;
+        for (Integer filedValue : intSet) {
+            if (i > 0) {
+                builder.append(",");
+            }
+            builder.append(filedValue);
+            i++;
+        }
+        builder.append(")");
+        return builder;
+    }
+  //获取Tips个数列表 tip/getStats 接口参数
+    public OracleWhereClause getTipStat(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        JSONArray grids = jsonReq.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(grids);
+        int workStatus = jsonReq.getInt("workStatus");
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        List<Object> values = new ArrayList<Object>();
+        values.add(wkt);
+
+        ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+        Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        StringBuilder taskBuilder = null;
+        if (taskSet != null && taskSet.size() > 0) {
+            taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
+        }
+        
+        //日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+        int subTaskType = subtask.getType();//3 grid粗编 4 区域粗编
+        
+        if(subTaskType != 3 && subTaskType != 4 && taskBuilder != null){
+        	
+        	 builder.append(" AND "+taskBuilder);
+        }
+        else if(subTaskType == 3) {//3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+        	
+        	if(taskBuilder==null){
+        		
+        		builder.append("AND ( s_sourceType=8002 AND stage in (2,7) AND t_tipStatus=2)  ");//接边Tips
+        	}else{
+        		
+        		builder.append("AND (( s_sourceType=8002 AND stage=(2,7) AND t_tipStatus=2)  OR  "+taskBuilder+" )");//接边Tips
+        	}
+        	
+        	
+        }else if(subTaskType == 4) {//4 区域粗编
+        	//20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
+        	builder.append(" AND s_sourceType=8001 AND stage=(2,5,7) AND t_tipStatus=2 ");//预处理提交
+            
+        }
+
+
+        //315过滤
+        this.getFilter315(builder);
+
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
+            builder.append(" AND (");
+            builder.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
+            builder.append(")");
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
+            builder.append(" AND stage=2 AND t_dEditStatus=1");
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
+            builder.append(" AND stage=2 AND t_dEditStatus=2");
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
+            StringBuilder allBuilder = new StringBuilder();
+            allBuilder.append(" AND ");
+            allBuilder.append("(");
+
+            allBuilder.append("(");
+            allBuilder.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
+            allBuilder.append(")");
+
+            allBuilder.append(" OR ");
+
+            allBuilder.append("(stage=2 AND t_dEditStatus=(1 2))");
+
+            allBuilder.append(")");
+
+            builder.append(allBuilder);
+        }//1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+
+            builder.append(" AND stage=7 AND t_dEditStatus=0 ");
+
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+
+            builder.append(" AND stage=7 AND t_dEditStatus=2 ");
+
+
+        }
+        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+
+            builder.append(" AND stage=7 AND t_dEditStatus=1 ");
+
+        }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+
+            builder.append(" AND stage=7  ");
+        }
+
+
+        logger.info("getTipStat:" + builder.toString());
+        return new OracleWhereClause(builder.toString(),values);
+    }
 }

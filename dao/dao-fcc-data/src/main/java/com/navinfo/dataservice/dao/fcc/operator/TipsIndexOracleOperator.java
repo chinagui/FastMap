@@ -38,6 +38,10 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	private static String deleteSqlLinks = "DELETE FROM  TIPS_LINKS WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?)))";
 	private static String deleteSqlNodes = "DELETE FROM TIPS_NODES  WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?))) ";
 
+    private static String deleteOneSql = "DELETE FROM TIPS_INDEX WHERE ID = ?";
+    private static String deleteOneSqlLinks = "DELETE FROM TIPS_LINKS WHERE ID = ?";
+    private static String deleteOneSqlNodes = "DELETE FROM TIPS_NODES WHERE ID = ?";
+
 	public TipsIndexOracleOperator(Connection conn) {
 		this.conn = conn;
 		run = new QueryRunner();
@@ -109,7 +113,22 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		};
 		return run.query(conn, sql, resultSetHandler, params);
 	}
-
+	public Map<Object,Object> groupQuery(String sql,Object... params) throws Exception{
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<Map<Object,Object>> resultSetHandler = new ResultSetHandler<Map<Object,Object>>() {
+			@Override
+			public Map<Object,Object> handle(ResultSet rs) throws SQLException {
+				Map<Object,Object> res = new HashMap<Object,Object>();
+				while (rs.next()) {
+					Object key = rs.getObject(1);
+					Object value = rs.getObject(2);
+					res.put(key, value);
+				}
+				return res;
+			}
+		};
+		return run.query(conn, sql, resultSetHandler, params);
+	}
 	public List<TipsDao> query(String sql, Object... params) throws Exception {
 		List<TipsDao> result;
 		try {
@@ -290,5 +309,17 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 		return result;
 	}
+
+    @Override
+    public void delete(String rowkey) throws DaoOperatorException {
+        try{
+            run.update(conn, deleteOneSqlNodes, rowkey);
+            run.update(conn, deleteOneSqlLinks, rowkey);
+            run.update(conn, deleteOneSql, rowkey);
+        }catch(Exception e){
+            log.error("Tips Index删除出错:"+e.getMessage(),e);
+            throw new DaoOperatorException("Tips Index删除出错:"+e.getMessage(),e);
+        }
+    }
 
 }

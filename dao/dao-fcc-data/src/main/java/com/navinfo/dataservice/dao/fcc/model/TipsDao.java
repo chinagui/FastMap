@@ -223,7 +223,7 @@ public class TipsDao {
 		this.relate_nodes = relate_nodes;
 	}
 	public Object[] toIndexMainArr(){
-		Object[] cols = new Object[18];
+		Object[] cols = new Object[19];
 		cols[0] = id;
 		cols[1] = stage;
 		cols[2] = t_date;

@@ -1835,16 +1835,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		List<JSONObject> resultArr=new ArrayList<JSONObject>();
 		
-		Connection hbaseConn;
+		Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection oracleConn = null;
 		try {
 
-			JSONObject solrIndex = solr.getById(rowkey);
+			//JSONObject solrIndex = solr.getById(rowkey);
 
-			String s_sourceType = solrIndex.getString("s_sourceType");
+			//String s_sourceType = solrIndex.getString("s_sourceType");
+
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			Result result = getResultByRowKey(htab, rowkey, null);
@@ -1855,15 +1858,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 			// 0.copy一个新的tips,rowkey重新申请
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+            TipsDao tipsIndex = operator.getById(rowkey);
 
-			String newRowkey = TipsUtils.getNewRowkey(s_sourceType);
+			String newRowkey = TipsUtils.getNewRowkey(tipsIndex.getS_sourceType());
 
 			Put newPut = copyNewATips(result, newRowkey);
 
 			Put put = new Put(rowkey.getBytes());
 
-			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
-
+			//JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
+            TipsDao
 			newSolrIndex.put("id", newRowkey);
 
 			// 1.cut line
@@ -1901,7 +1907,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			int pointSize2=g_location2.getJSONArray("coordinates").size();
 
-            System.out.println("****************************************pointSize   " + pointSize);
             if(pointSize <= 1) {
                 throw new Exception("打断的点不能在link的端点");
             }else if(pointSize > 2){
@@ -1909,7 +1914,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}else{
 				g_guide1 = getSencondPoint(g_location1);
 			}
-            System.out.println("****************************************pointSize2   " + pointSize2);
+
             if(pointSize2 <= 1) {
                 throw new Exception("打断的点不能在link的端点");
             }else if(pointSize2 > 2){
@@ -2041,15 +2046,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			resultArr.add(newSolrIndex);
 
 		} catch (Exception e) {
-
+            DbUtils.rollback(oracleConn);
 			e.printStackTrace();
 
 			logger.error("测线打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());
 
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
-		}
-		
+		}finally {
+            DbUtils.commitAndCloseQuietly(oracleConn);
+        }
+
 		return resultArr;
 		
 	}

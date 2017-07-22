@@ -303,7 +303,7 @@ public class BaseTipsOperate {
 	private void logicDel(String rowkey) throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
-        java.sql.Connection oracleConn;
+        java.sql.Connection oracleConn = null;
         try {
             //修改hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -341,12 +341,14 @@ public class BaseTipsOperate {
             tipsIndexList.add(tipsIndex);
             operator.update(tipsIndexList);
         }catch (Exception e) {
+            DbUtils.rollback(oracleConn);
             e.printStackTrace();
             logger.error("逻辑删除失败"+rowkey+":", e);
         }finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(oracleConn);
         }
 
 	}

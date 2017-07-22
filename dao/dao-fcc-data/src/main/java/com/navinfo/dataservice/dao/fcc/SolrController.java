@@ -118,6 +118,87 @@ public class SolrController {
 
 	}
 
+	/**
+	 * 多个索引更新
+	 * @param jsonList
+	 * @throws JSONException
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	public void addTips(List<JSONObject> jsonList) throws JSONException,
+			SolrServerException, IOException {
+		List<SolrInputDocument> sdList = new ArrayList<>();
+		for(JSONObject json : jsonList) {
+			SolrInputDocument doc = new SolrInputDocument();
+
+			doc.addField("id", json.getString("id"));
+
+			doc.addField("wkt", json.getString("wkt"));
+
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			doc.addField("wktLocation", json.getString("wktLocation"));
+
+			doc.addField("stage", json.getInt("stage"));
+
+			doc.addField("t_operateDate", json.getString("t_operateDate"));
+
+			doc.addField("t_date", json.getString("t_date"));
+
+			doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
+
+			doc.addField("t_command", json.getInt("t_command"));
+
+			doc.addField("handler", json.getInt("handler"));
+
+			doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
+
+			doc.addField("s_sourceType", json.getString("s_sourceType"));
+
+			doc.addField("g_location", json.getString("g_location"));
+
+			doc.addField("g_guide", json.getString("g_guide"));
+
+			doc.addField("deep", json.getString("deep"));
+
+			doc.addField("feedback", json.getString("feedback"));
+
+			doc.addField("s_reliability", json.getInt("s_reliability"));
+
+			doc.addField("t_tipStatus", json.getInt("t_tipStatus"));
+			doc.addField("t_dEditStatus", json.getInt("t_dEditStatus"));
+			doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
+			doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
+			doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
+
+			if (json.containsKey("tipdiff")) {
+
+				doc.addField("tipdiff", json.getString("tipdiff"));
+			}
+
+			doc.addField("s_qTaskId", json.getInt("s_qTaskId"));
+
+			doc.addField("s_mTaskId", json.getInt("s_mTaskId"));
+
+			doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
+
+			if(json.containsKey("s_project") && StringUtils.isNotEmpty(json.getString("s_project"))) {
+				doc.addField("s_project", json.getString("s_project"));
+			}
+
+			doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
+
+			doc.addField("relate_links", json.getString("relate_links"));
+
+			doc.addField("relate_nodes", json.getString("relate_nodes"));
+
+			sdList.add(doc);
+		}
+		if(sdList.size() > 0) {
+			client.add(sdList);
+			client.commit();
+		}
+	}
+
 	public boolean checkTipsMobile(String wkt, String date, int[] notExpSourceType)
 			throws SolrServerException, IOException {
 

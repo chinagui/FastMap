@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet.SELECT;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -779,7 +778,7 @@ public class SolrController {
 		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
 		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 		builder.append(")");
-		builder.append("t_tipStatus!=" + tipStatus);
+		builder.append(" and i.t_tipStatus=" + tipStatus);
 		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 		List<TipsDao> tipsDao = operator.query(builder.toString());
 		//SolrDocumentList sdList = this.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());

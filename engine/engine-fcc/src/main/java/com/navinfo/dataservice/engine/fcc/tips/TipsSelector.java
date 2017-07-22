@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.fcc.*;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.navinfo.navicommons.database.Page;
@@ -62,16 +63,20 @@ public class TipsSelector {
 	 */
 	public JSONArray searchDataBySpatial(String wkt) throws Exception {
 		JSONArray array = new JSONArray();
-
-		List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
-
-		for (JSONObject snapshot : snapshots) {
-
-			snapshot.put("t", 1);
-
-			array.add(snapshot);
-		}
-
+		TipsRequestParamSQL param = new TipsRequestParamSQL();
+        String sql = param.getTipsWebSql(wkt);
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        try{
+	        List<TipsDao> tips =  new TipsIndexOracleOperator(oracleConn).query(sql, wkt);
+	
+			for (TipsDao tip:tips) {
+				JSONObject snapshot = JSONObject.fromObject(tip);
+				snapshot.put("t", 1);
+				array.add(snapshot);
+			}
+        }finally{
+        	DbUtils.closeQuietly(oracleConn);
+        }
 		return array;
 	}
 
@@ -1256,46 +1261,20 @@ public class TipsSelector {
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
 
-		TipsRequestParam param = new TipsRequestParam();
-        String solrQuery = param.getTipStat(parameter);
-		List<JSONObject> tips = conn.queryTips(solrQuery, null);
-
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (JSONObject json : tips) {
-			int type = Integer.valueOf(json.getInt("s_sourceType"));
-
-			if (map.containsKey(type)) {
-				map.put(type, map.get(type) + 1);
-			} else {
-				map.put(type, 1);
-			}
+		TipsRequestParamSQL param = new TipsRequestParamSQL();
+        OracleWhereClause whereClause = param.getTipStat(parameter);
+		Connection oracelConn = DBConnector.getInstance().getTipsIdxConnection();
+		try{
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracelConn);
+			long total = operator.querCount("select count(1) from tips_index where "+whereClause.getSql(), whereClause.getValues());
+			Map<Object, Object> data = operator.groupQuery("select s_sourcetype,count(1) from tips_index where "+whereClause.getSql()+" group by s_sourcetype", whereClause.getValues());
+			jsonData.put("total", total);
+			jsonData.put("rows", data);
+			return jsonData;
+		}finally{
+			DbUtils.close(oracelConn);
 		}
-
-		JSONArray data = new JSONArray();
-
-		Set<Entry<Integer, Integer>> set = map.entrySet();
-
-		int num = 0;
-
-		Iterator<Entry<Integer, Integer>> it = set.iterator();
-
-		while (it.hasNext()) {
-			Entry<Integer, Integer> en = it.next();
-
-			num += en.getValue();
-
-			JSONObject jo = new JSONObject();
-
-			jo.put(en.getKey(), en.getValue());
-
-			data.add(jo);
-		}
-
-		jsonData.put("total", num);
-
-		jsonData.put("rows", data);
-
-		return jsonData;
+		
 	}
 
 //	/**
@@ -1344,38 +1323,6 @@ public class TipsSelector {
 		return 0;
 	}
 
-//	/**
-//	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
-//	 *
-//	 * @param grids
-//	 * @param stages
-//	 * @return
-//	 * @throws Exception
-//	 */
-//	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages,
-//											  int tdStatus) throws Exception {
-//		String wkt = GridUtils.grids2Wkt(grids);
-//		return getTipsCountByStageAndTdStatusAndWkt(wkt, stages, tdStatus, null);
-//	}
-//
-//	/**
-//	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
-//	 *
-//	 * @param wkt
-//	 * @param stages
-//	 * @param tdStatus
-//	 * @return
-//	 * @throws Exception
-//	 */
-//	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages,
-//			int tdStatus, Set<Integer> collectTaskIds) throws Exception {
-//
-//		List<JSONObject> tips = conn.queryTips(wkt, stages, tdStatus, collectTaskIds);
-//
-//		int total = tips.size();
-//
-//		return total;
-//	}
 
 	/**
 	 * 获取单种类型快照
@@ -1390,15 +1337,29 @@ public class TipsSelector {
         int type = Integer.valueOf(jsonReq.getString("type"));
         int dbId = jsonReq.getInt("dbId");
 
-        TipsRequestParam param = new TipsRequestParam();
-        String query = param.getSnapShot(parameter);
-        List<JSONObject> tips = conn.queryTips(query, null);
+        TipsRequestParamSQL param = new TipsRequestParamSQL();
+        OracleWhereClause where = param.getSnapShot(parameter);
         
-        jsonData=convert2Snapshot(tips,dbId,type);
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        List<TipsDao> tips =null;
+        try{
+        	tips= new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where.getSql(), where.getValues());
+        }finally{
+        	DbUtils.closeQuietly(oracleConn);
+        }
+        List<JSONObject> tipsJsonList = convertToJsonList(tips);
+        jsonData=convert2Snapshot(tipsJsonList,dbId,type);
 
 		return jsonData;
 	}
 
+	private List<JSONObject> convertToJsonList(List<TipsDao> tips) {
+		List<JSONObject> tipsJsonList = new ArrayList<JSONObject>();
+        for(TipsDao tip:tips){
+        	tipsJsonList.add(JSONObject.fromObject(tip));
+        }
+		return tipsJsonList;
+	}
 	/**
 	 * @Description:按照快照接口的要求返回数据
 	 * @param tips
@@ -2057,7 +2018,7 @@ public class TipsSelector {
      */
     public List<String> getCheckRowkeyList(String parameter) throws Exception {
         TipsRequestParamSQL param = new TipsRequestParamSQL();
-        String where = param.getTipsCheck(parameter);
+        String where = param.getTipsCheckWhere(parameter);
         Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
         List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where);
         List<String> rowkeyList = new ArrayList<String>();
@@ -2191,16 +2152,16 @@ public class TipsSelector {
      */
     public JSONObject statInfoTask(String parameter) throws Exception {
     	TipsRequestParamSQL param = new TipsRequestParamSQL();
-        String query = param.getTipsCheck(parameter);
+        String where = param.getTipsCheckWhere(parameter);
         Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
         try{
 	        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
-			long count = operator.querCount("select count(1) from tips_index where "+query);
+			long count = operator.querCount("select count(1) from tips_index where "+where);
 	
 	        JSONObject statObj = new JSONObject();
 	        statObj.put("total", count);
 	
-	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+query+" and type=2001");
+	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+where+" and type=2001");
 	        int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 	        double length = 0;

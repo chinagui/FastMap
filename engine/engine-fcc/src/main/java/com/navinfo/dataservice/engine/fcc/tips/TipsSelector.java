@@ -2010,27 +2010,7 @@ public class TipsSelector {
 		return resultArr;
 	}
 
-	/**
-	 * @Description:根据任务号+tips类型返回任务号范围内的tips
-	 * @param souceTypes
-	 *            :tips类型
-	 * @param taskId
-	 *            :任务号
-	 * @param taskType
-	 *            ：任务类型
-	 * @return
-	 * @author: y
-	 * @throws Exception
-	 * @time:2017-4-13 上午9:07:15
-	 */
-	public List<JSONObject> getTipsByTaskIdAndSourceTypes(JSONArray souceTypes,
-			int taskId, int taskType) throws Exception {
 
-		List<JSONObject> snapshots = conn.queryTipsByTaskTaskSourceTypes(
-				souceTypes, taskId, taskType);
-
-		return snapshots;
-	}
 
 	/**
 	 * @Description:按照任务号查找tips
@@ -2076,24 +2056,15 @@ public class TipsSelector {
 	public List<String> getCheckRowkeyList(String parameter) throws Exception {
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 		String where = param.getTipsCheckWhere(parameter);
-		Connection oracleConn = null;
-        List<String> rowkeyList = new ArrayList<String>();
-        try {
-            oracleConn = DBConnector.getInstance()
-                    .getTipsIdxConnection();
-            List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn)
-                    .query("select * from tips_index where " + where);
-
-            for (TipsDao t : tipsList) {
-                rowkeyList.add(t.getId());
-            }
-        }catch (Exception e) {
-            DbUtils.rollbackAndCloseQuietly(oracleConn);
-            e.printStackTrace();
-        }finally {
-            DbUtils.commitAndCloseQuietly(oracleConn);
-        }
-        return rowkeyList;
+		Connection oracleConn = DBConnector.getInstance()
+				.getTipsIdxConnection();
+		List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn)
+				.query("select * from tips_index where " + where);
+		List<String> rowkeyList = new ArrayList<String>();
+		for (TipsDao t : tipsList) {
+			rowkeyList.add(t.getId());
+		}
+		return rowkeyList;
 	}
 
 	/**

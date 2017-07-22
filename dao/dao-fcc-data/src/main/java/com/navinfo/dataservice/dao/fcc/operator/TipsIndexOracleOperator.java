@@ -1,4 +1,3 @@
-
 package com.navinfo.dataservice.dao.fcc.operator;
 
 import java.sql.Clob;
@@ -45,7 +44,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	}
 
 	@Override
-	public List<TipsDao> searchDataByTileWithGap(String parameter) throws DaoOperatorException {
+	public List<TipsDao> searchDataByTileWithGap(String parameter)
+			throws DaoOperatorException {
 		return null;
 	}
 
@@ -63,7 +63,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			}
 		} catch (Exception e) {
 			log.error("Tips Index保存出错:" + e.getMessage(), e);
-			throw new DaoOperatorException("Tips Index保存出错:" + e.getMessage(), e);
+			throw new DaoOperatorException("Tips Index保存出错:" + e.getMessage(),
+					e);
 		}
 	}
 
@@ -79,8 +80,10 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			int i = 0;
 			for (TipsDao ti : tis) {
 				tisCols[i] = ti.toIndexMainArr();
-				links = (String[][]) ArrayUtils.addAll(links, ti.toIndexLinkArr());
-				nodes = (String[][]) ArrayUtils.addAll(nodes, ti.toIndexNodeArr());
+				links = (String[][]) ArrayUtils.addAll(links,
+						ti.toIndexLinkArr());
+				nodes = (String[][]) ArrayUtils.addAll(nodes,
+						ti.toIndexNodeArr());
 				i++;
 			}
 			run.batch(conn, insertSql, tisCols);
@@ -88,7 +91,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			run.batch(conn, insertSqlNodes, nodes);
 		} catch (Exception e) {
 			log.error("Tips Index批量保存出错:" + e.getMessage(), e);
-			throw new DaoOperatorException("Tips Index批量保存出错:" + e.getMessage(), e);
+			throw new DaoOperatorException(
+					"Tips Index批量保存出错:" + e.getMessage(), e);
 		}
 	}
 
@@ -111,7 +115,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		try {
 			ResultSetHandler<Map<String, TipsDao>> resultSetHandler = new ResultSetHandler<Map<String, TipsDao>>() {
 				@Override
-				public Map<String, TipsDao> handle(ResultSet rs) throws SQLException {
+				public Map<String, TipsDao> handle(ResultSet rs)
+						throws SQLException {
 					Map<String, TipsDao> map = new HashMap<>();
 					while (rs.next()) {
 						TipsDao dao = new TipsDao();
@@ -121,7 +126,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 					return map;
 				}
 			};
-			Map<String, TipsDao> map = run.query(conn, sql, resultSetHandler, params);
+			Map<String, TipsDao> map = run.query(conn, sql, resultSetHandler,
+					params);
 			result = loadHbaseProperties(map);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -155,8 +161,10 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			int i = 0;
 			for (TipsDao ti : tis) {
 				tisCols[i] = ti.toIndexMainArr();
-				links = (String[][]) ArrayUtils.addAll(links, ti.toIndexLinkArr());
-				nodes = (String[][]) ArrayUtils.addAll(nodes, ti.toIndexNodeArr());
+				links = (String[][]) ArrayUtils.addAll(links,
+						ti.toIndexLinkArr());
+				nodes = (String[][]) ArrayUtils.addAll(nodes,
+						ti.toIndexNodeArr());
 				i++;
 			}
 
@@ -166,45 +174,64 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 		} catch (Exception e) {
 			log.error("Tips Index批量保存出错:" + e.getMessage(), e);
-			throw new DaoOperatorException("Tips Index批量保存出错:" + e.getMessage(), e);
+			throw new DaoOperatorException(
+					"Tips Index批量保存出错:" + e.getMessage(), e);
 		}
 
 	}
-  /**
-     * 根据ID获取一条tips数据
-     * @param id
-     * @return
-     * @throws Exception
-     */
-    public TipsDao getById(String id) throws Exception {
-        String sql="select * from tips_index i where i.id=?";
-        List<TipsDao> snapshots = this.query(sql, id);
-        if (snapshots == null || snapshots.size() == 0) {
-            return null;
-        }
-        TipsDao snapshot = snapshots.get(0);
-        return snapshot;
-    }
 
 	/**
-	 * 根据查询条件查询符合条件的所有Tips
-	 * @param sql
-	 * @param limit
-	 * @param params
+	 * 根据ID获取一条tips数据
+	 * 
+	 * @param id
 	 * @return
 	 * @throws Exception
 	 */
-    public List<TipsDao> queryWithLimit(String sql,int limit,Object... params) throws Exception {
-    	StringBuilder sb = new StringBuilder();
+	public TipsDao getById(String id) throws Exception {
+		String sql = "select * from tips_index i where i.id=?";
+		List<TipsDao> snapshots = this.query(sql, id);
+		if (snapshots == null || snapshots.size() == 0) {
+			return null;
+		}
+		TipsDao snapshot = snapshots.get(0);
+		return snapshot;
+	}
+
+	/**
+	 * 根据查询条件查询符合条件的所有Tips
+	 * 
+	 * @param sql
+	 * @param limit
+	 * @return
+	 * @throws Exception
+	 */
+	public List<TipsDao> queryWithLimit(String sql, int limit, Object... params)
+			throws Exception {
+		StringBuilder sb = new StringBuilder();
 		sb.append("WITH FINAL_TABLE AS ( ");
-		sb.append( sql );
+		sb.append(sql);
 		sb.append(") SELECT FINAL_TABLE.* ");
 		sb.append(" FROM FINAL_TABLE");
-		sb.append(" WHERE ROWNUM <= "+limit);
+		sb.append(" WHERE ROWNUM <= " + limit);
 		return query(sb.toString(), params);
-    }
+	}
 
-    public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
+	/***
+	 * 修改tips
+	 * @param tis
+	 * @throws Exception
+	 */
+	@Override
+	public void update(Collection<TipsDao> tis) throws Exception {
+		if (tis == null || tis.size() == 0) {
+			return;
+		}
+		this.delete(tis);
+		this.save(tis);
+
+	}
+
+  	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
 
@@ -246,14 +273,6 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		return page;
 	}
 
-	public void update(Collection<TipsDao> tis) throws Exception {
-		if (tis == null || tis.size() == 0) {
-			return;
-		}
-		this.delete(tis);
-		this.save(tis);
-
-	}
 
 	private List<TipsDao> loadHbaseProperties(Map<String, TipsDao> map) throws Exception{
     	List<TipsDao> result = new ArrayList<>();

@@ -335,10 +335,12 @@ public class TipsExtract {
 			htab.put(puts);
 			tipsIndexOracleOperator.update(allExpTipsList);
 		} catch (Exception e) {
-
+			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error("更细质检状态出错：" + e.getMessage(), e);
 
 			throw new Exception("更新质检状态出错：" + e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

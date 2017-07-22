@@ -84,8 +84,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 	}
 
-	public List<JSONObject> query(String sql, Object... params) throws Exception{
-		List<JSONObject> result = new ArrayList<>();
+	public List<TipsDao> query(String sql, Object... params) throws Exception{
+		List<TipsDao> result = new ArrayList<>();
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -128,7 +128,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 				JSONObject geometry = hbaesTips.getJSONObject("geometry");
 				dao.setG_guide(geometry.getJSONObject("g_guide").toString());
 				dao.setG_location(geometry.getJSONObject("g_location").toString());
-				result.add(JSONObject.fromObject(dao));
+				result.add(dao);
 			}
 		}
 		catch (Exception e) {

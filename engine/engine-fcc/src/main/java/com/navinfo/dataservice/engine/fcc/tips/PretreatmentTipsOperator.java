@@ -743,7 +743,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
                 //更新solr
                 TipsDao solrIndex = operator.getById(rowkey);
-                solrIndex = this.tipSubmitTrackSolr(track, solrIndex);
+                solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
                 solrIndexList.add(solrIndex);
 			}
 
@@ -2209,7 +2209,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
                 //更新solr
                 TipsDao solrIndex = operator.getById(rowkey);
-                solrIndex = this.tipSubmitTrackSolr(track, solrIndex);
+                solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
                 solrIndexList.add(solrIndex);
 			}
 

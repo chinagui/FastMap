@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

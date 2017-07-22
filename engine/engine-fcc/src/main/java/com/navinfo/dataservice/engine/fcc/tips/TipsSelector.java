@@ -1960,13 +1960,13 @@ public class TipsSelector {
 			throws Exception {
 
 		JSONArray resultArr = new JSONArray();
-
+		Table htab = null;
 		try {
 
 			org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector
 					.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			List<Get> gets = new ArrayList<Get>();
@@ -2013,10 +2013,12 @@ public class TipsSelector {
 
 				resultArr.add(obj);
 			}
-
-			htab.close();
 		} catch (Exception e) {
 			throw new Exception("查询tips出错：" + e.getMessage(), e);
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 
 		return resultArr;
@@ -2171,14 +2173,14 @@ public class TipsSelector {
 	 * @param collectTaskIds
 	 * @return
 	 */
-	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds)
-			throws Exception {
-		List<Map> list = new ArrayList<>();
-		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds,
-				TaskType.PROGRAM_TYPE_Q);
-		Map<String, int[]> statsMap = new HashMap<>();
-		for (JSONObject snapshot : snapshots) {
-			String wkt = snapshot.getString("wkt");// 统计坐标
+
+	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
+		List<TipsDao> tipsList=this.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
+		Map<String,int[]> statsMap = new HashMap<>();
+		for(TipsDao tip : tipsList) {
+			JSONObject snapshot = JSONObject.fromObject(tip);
+			String wkt = snapshot.getString("wkt");//统计坐标
+
 			Point point = GeometryUtils.getPointByWKT(wkt);
 			Coordinate coordinate = point.getCoordinates()[0];
 			String gridId = CompGridUtil
@@ -2202,8 +2204,10 @@ public class TipsSelector {
 				statsMap.put(gridId, statsArray);
 			}
 		}
-		if (statsMap.size() > 0) {
-			for (String gridId : statsMap.keySet()) {
+
+		List<Map> list = new ArrayList<>();
+		if(statsMap.size() > 0) {
+			for(String gridId : statsMap.keySet()) {
 				Map<String, Integer> map = new HashMap<>();
 				map.put("gridId", Integer.valueOf(gridId));
 				int[] statsArray = statsMap.get(gridId);
@@ -2215,30 +2219,56 @@ public class TipsSelector {
 		return list;
 	}
 
+
+    private List<TipsDao> queryCollectTaskTips( Set<Integer> collectTaskIds, int taskType) throws Exception {
+    	StringBuilder builder = new StringBuilder();
+		String solrIndexFiled = null;
+		if (taskType == TaskType.PROGRAM_TYPE_Q) {
+			solrIndexFiled = "s_qTaskId";
+		} else if (taskType == TaskType.PROGRAM_TYPE_M) {
+			solrIndexFiled = "s_mTaskId";
+		}
+		if (collectTaskIds.size() > 0) {
+			builder.append(solrIndexFiled);
+			builder.append("in (");
+			int index = 0;
+			for (int collectTaskId : collectTaskIds) {
+				if (index != 0)
+					builder.append(",");
+				builder.append(collectTaskId);
+				index++;
+			}
+			builder.append(")");
+		}
+		logger.info("queryCollectTaskTips:" + builder.toString());
+		Connection tipsConn = DBConnector.getInstance().getTipsIdxConnection();
+		try{
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
+		return  tipsOp.query("select * from tips_index where " + builder);
+		}finally{
+			DbUtils.closeQuietly(tipsConn);
+		}
+	}
+
 	/**
-	 * 
-	 * @param parameter
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject statInfoTask(String parameter) throws Exception {
-		TipsRequestParamSQL param = new TipsRequestParamSQL();
-		String query = param.getTipsCheck(parameter);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
-		try {
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
-					oracleConn);
-			long count = operator
-					.querCount("select count(1) from tips_index where " + query);
-
-			JSONObject statObj = new JSONObject();
-			statObj.put("total", count);
-
-			List<TipsDao> type2001Result = operator
-					.query("select * from tips_index where " + query
-							+ " and type=2001");
-			int total2001 = type2001Result.size();
+     *
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public JSONObject statInfoTask(String parameter) throws Exception {
+    	TipsRequestParamSQL param = new TipsRequestParamSQL();
+        String where = param.getTipsCheckWhere(parameter);
+        Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+        try{
+	        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			long count = operator.querCount("select count(1) from tips_index where "+where);
+	
+	        JSONObject statObj = new JSONObject();
+	        statObj.put("total", count);
+	
+	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+where+" and type=2001");
+	        int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 			double length = 0;
 			for (int i = 0; i < total2001; i++) {

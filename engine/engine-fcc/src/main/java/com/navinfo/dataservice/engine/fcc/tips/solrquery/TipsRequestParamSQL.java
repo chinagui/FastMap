@@ -659,11 +659,11 @@ public class TipsRequestParamSQL {
 		 */
 
 		if (jsonReq.containsKey("wkt")) {
-			String wkt = jsonReq.getString("wkt");
+			
 			if (builder.length() > 0) {
-				builder.append(" AND sdo_relate(wkt,sdo_geometry("+wkt+",8307),'mask=anyinteract') = 'TRUE' ");
+				builder.append(" AND sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 			} else {
-				builder.append(" sdo_relate(wkt,sdo_geometry("+wkt+",8307),'mask=anyinteract') = 'TRUE' ");
+				builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 			}
 		}
 

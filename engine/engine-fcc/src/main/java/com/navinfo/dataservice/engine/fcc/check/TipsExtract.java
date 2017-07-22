@@ -297,7 +297,7 @@ public class TipsExtract {
 	    			tipsDao.setStage(stage);
 	    			tipsDao.setHandler(checkerId);
 		    		//solrConn.addTips(solrIndex);
-	    			tipsIndexOracleOperator.save(tipsDao);
+	    			tipsIndexOracleOperator.update(tipsDao);
 	
 		            String[] queryColNames={"track"};
 		            

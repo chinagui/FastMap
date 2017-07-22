@@ -64,6 +64,16 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			throw new DaoOperatorException("Tips Index保存出错:"+e.getMessage(),e);
 		}
 	}
+	
+	@Override
+	public void update(TipsDao ti) throws DaoOperatorException {
+		try{
+			
+		}catch(Exception e){
+			log.error("Tips Index保存出错:"+e.getMessage(),e);
+			throw new DaoOperatorException("Tips Index保存出错:"+e.getMessage(),e);
+		}
+	}
 
 	@Override
 	public void save(Collection<TipsDao> tis) throws DaoOperatorException {

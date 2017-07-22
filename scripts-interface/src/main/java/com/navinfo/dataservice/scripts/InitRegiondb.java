@@ -134,9 +134,6 @@ public class InitRegiondb {
 				//删除不完整记录
 				DeleteNotIntegratedData deleteNotIntegratedData= new DeleteNotIntegratedData();
 				deleteNotIntegratedData.execute(dbDay);
-				//补充图廓点对应的link和node
-				 
-				
 				//给日库和月库安装包
 				installPckUtils(dbDay,1);
 				response.put("region_"+key+"_day_utils", "success");

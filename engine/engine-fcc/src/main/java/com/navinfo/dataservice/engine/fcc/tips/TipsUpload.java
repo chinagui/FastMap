@@ -1138,7 +1138,7 @@ public class TipsUpload {
 						insertPstmt.setInt(36, 0);
 
 						// 查询关联link或者测线在fcc中是否有种别Tips
-						String where = "((s_sourceType=1201 AND t_lifecycle<>1) OR s_sourceType=2001)";
+						String where = "((s_sourceType='1201' AND t_lifecycle<>1) OR s_sourceType='2001')";
                         where += " AND (id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + record.getLink_pid() + "'))";
                         String query = "select * from tips_index where " + where;
                         List<TipsDao> snapotList = operator.query(query);

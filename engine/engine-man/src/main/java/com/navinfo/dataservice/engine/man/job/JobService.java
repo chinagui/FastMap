@@ -129,13 +129,20 @@ public class JobService {
      */
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
+        JobProgressOperator jobProgressOperator =null;
         try {
             log.info("updateJobProgress:phaseId:" + phaseId + ",status:" + status.value() + ",message:" + outParameter);
-            conn = DBConnector.getInstance().getManConnection();
-            JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
+            conn = DBConnector.getInstance().getManConnection();            
+            jobProgressOperator= new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
             conn.commit();
-
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+        }
+        //job接续步骤的执行不应该影响已有步骤的执行情况。此处后续异常不进行抛出
+        try{
             try {
                 JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
                 String message = JSON.toJSONString(jobMessage);
@@ -167,8 +174,8 @@ public class JobService {
             }
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
-            log.error(e.getMessage(), e);
-            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+            log.error("JOB继续执行失败，原因为:" + e.getMessage(), e);
+            //throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }

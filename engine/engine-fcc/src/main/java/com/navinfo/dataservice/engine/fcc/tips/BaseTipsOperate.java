@@ -60,133 +60,121 @@ public class BaseTipsOperate {
 			.getLogger(BaseTipsOperate.class);
 
 
-	/**
-	 * @Description:更新备注信息（feebacks type=3(文字)）
-	 * @param rowkey
-	 * @param user
-	 * @param memo
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-11-16 上午11:29:03
-	 */
 	public void updateFeedbackMemo(String rowkey, int user, String memo) throws Exception {
-        java.sql.Connection conn = null;
-        try {
 
-            Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-            conn = DBConnector.getInstance().getTipsIdxConnection();
-            TipsIndexOracleOperator indexOracleOperator = new TipsIndexOracleOperator(
-                    conn);
+		try {
 
-            Table htab = hbaseConn.getTable(TableName
-                    .valueOf(HBaseConstant.tipTab));
-            // 获取solr数据
-            TipsDao solrIndex = indexOracleOperator.getById(rowkey);
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-            int stage = 2;
-            // 如果是预处理的tips则stage=5
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+			//获取solr数据
+			JSONObject solrIndex = solr.getById(rowkey);
 
-            if (solrIndex.getS_sourceType().equals(
-                    PretreatmentTipsOperator.FC_SOURCE_TYPE)) {
-                stage = 5;
-            }
+			int stage=2;
+			//如果是预处理的tips则stage=5
 
-            // 获取到改钱的 feddback和track
-            JSONObject oldTip = getOldTips(rowkey, htab);
-
-            // 1.更新feddback和track
-            JSONObject track = oldTip.getJSONObject("track");
-
-            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-            String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-
-            // 新增一个trackInfo
-            JSONObject jsonTrackInfo = new JSONObject();
-
-            jsonTrackInfo.put("stage", stage);
-
-            jsonTrackInfo.put("date", date);
-
-            jsonTrackInfo.put("handler", user);
-
-            trackInfoArr.add(jsonTrackInfo);
-
-            track.put("t_trackInfo", trackInfoArr);
-
-            track.put("t_lifecycle", 2);
-
-            // 2.更新feedback
-
-            // 新增一个f_array type=3的是文字
-            JSONObject feedBack = oldTip.getJSONObject("feedback");
-
-            JSONArray f_array = feedBack.getJSONArray("f_array");
-
-            for (Object object : f_array) {
-
-                JSONObject obj = JSONObject.fromObject(object);
-
-                // 先删掉
-
-                if (obj.getInt("type") == 3) {
-
-                    f_array.remove(obj);
-
-                    break;
-                }
-            }
-
-            // 如果count=0,则说明原来没有备注，则，增加一条
-
-            int type = 3; // 文字
-
-            JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-                    date);
-
-            f_array.add(newFeedback);
-
-            // 更新feedback
-            feedBack.put("f_array", f_array);
-
-            Put put = new Put(rowkey.getBytes());
-
-            put.addColumn("data".getBytes(), "track".getBytes(), track
-                    .toString().getBytes());
-
-            put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
-                    .toString().getBytes());
-
-            // 同步更新solr
-            solrIndex.setStage(stage);
-            solrIndex.setT_date(date);
-            solrIndex.setT_lifecycle(2);
-            solrIndex.setHandler(user);
-            // solrIndex.setFeedback(feedBack.toString());
-
-            List<TipsDao> daos = new ArrayList<TipsDao>();
-            daos.add(solrIndex);
-
-            indexOracleOperator.update(daos);
-
-            htab.put(put);
-
-            htab.close();
-
-        } catch (IOException e) {
-            DbUtils.rollbackAndCloseQuietly(conn);
-            logger.error(e.getMessage(), e);
-            throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
-                    + e.getMessage(), e);
-        } finally {
-            DbUtils.commitAndCloseQuietly(conn);
-        }
-
-    }
+			if(solrIndex.getString("s_sourceType").equals(PretreatmentTipsOperator.FC_SOURCE_TYPE)){
+				stage=5;
+			}
 
 
-    /**
-	 * @Description:获取到tips改前的信息
+			// 获取到改钱的 feddback和track
+			JSONObject oldTip = getOldTips(rowkey, htab);
+
+			// 1.更新feddback和track
+			JSONObject track = oldTip.getJSONObject("track");
+
+			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+
+			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+
+			// 新增一个trackInfo
+			JSONObject jsonTrackInfo = new JSONObject();
+
+			jsonTrackInfo.put("stage", stage);
+
+			jsonTrackInfo.put("date", date);
+
+			jsonTrackInfo.put("handler", user);
+
+			trackInfoArr.add(jsonTrackInfo);
+
+			track.put("t_trackInfo", trackInfoArr);
+
+			track.put("t_lifecycle", 2);
+
+			// 2.更新feedback
+
+			// 新增一个f_array type=3的是文字
+			JSONObject feedBack = oldTip.getJSONObject("feedback");
+
+			JSONArray f_array = feedBack.getJSONArray("f_array");
+
+
+			for (Object object : f_array) {
+
+				JSONObject obj = JSONObject.fromObject(object);
+
+				//先删掉
+
+				if (obj.getInt("type") == 3) {
+
+					f_array.remove(obj);
+
+					break;
+				}
+			}
+
+			// 如果count=0,则说明原来没有备注，则，增加一条
+
+			int type = 3; // 文字
+
+			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
+					date);
+
+			f_array.add(newFeedback);
+
+			// 更新feedback
+			feedBack.put("f_array", f_array);
+
+			Put put = new Put(rowkey.getBytes());
+
+			put.addColumn("data".getBytes(), "track".getBytes(), track
+					.toString().getBytes());
+
+			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
+					.toString().getBytes());
+
+			// 同步更新solr
+
+			solrIndex.put("stage", stage);
+
+			solrIndex.put("t_date", date);
+
+			//
+			solrIndex.put("t_lifecycle", 2);
+
+			solrIndex.put("handler", user);
+
+			solrIndex.put("feedback", feedBack);
+
+			solr.addTips(solrIndex);
+
+			htab.put(put);
+
+			htab.close();
+
+		} catch (IOException e) {
+
+			logger.error(e.getMessage(), e);
+
+			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+		}
+
+	}
+
+	 /* @Description:获取到tips改前的信息
 	 * @param rowkey
 	 * @param htab
 	 * @return
@@ -463,29 +451,7 @@ public class BaseTipsOperate {
         return tipsIndex;
     }
 
-    /**
-     * FC预处理，情报矢量化
-     * 20170718 Tips提交维护Track,t_tipStatus=2，t_dEditStatus=0，
-     *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
-     *同时维护t_trackinfo
-     * @param track
-     * @param solrIndex
-     * @return
-     */
-    public JSONObject tipSubmitTrackSolr(TipsTrack track, JSONObject solrIndex) {
-        solrIndex.put("t_date", track.getT_date());
-        solrIndex.put("t_tipStatus", track.getT_tipStatus());
-        solrIndex.put("t_dEditStatus", track.getT_dEditStatus());
-        solrIndex.put("t_dEditMeth", track.getT_dEditMeth());
-        solrIndex.put("t_mEditStatus", track.getT_mEditStatus());
-        solrIndex.put("t_mEditMeth", track.getT_mEditMeth());
-        List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
-        TipsTrack.TrackInfo lastTrack = trackInfoList.get(trackInfoList.size() - 1);
-        solrIndex.put("stage", lastTrack.getStage());
-        solrIndex.put("t_operateDate", lastTrack.getDate());
-        solrIndex.put("handler", lastTrack.getHandler());
-        return solrIndex;
-    }
+    
 
     /**
      * FC预处理，情报矢量化
@@ -496,7 +462,7 @@ public class BaseTipsOperate {
      * @param tipsDao
      * @return
      */
-    public void tipSubmitTrackOracle(TipsTrack track, TipsDao tipsDao) {
+    public TipsDao tipSubmitTrackOracle(TipsTrack track, TipsDao tipsDao) {
         tipsDao.setT_date(track.getT_date());
         tipsDao.setT_tipStatus(track.getT_tipStatus());
         tipsDao.setT_dEditStatus(track.getT_dEditStatus());
@@ -508,5 +474,6 @@ public class BaseTipsOperate {
         tipsDao.setStage(lastTrack.getStage());
         tipsDao.setT_operateDate(lastTrack.getDate());
         tipsDao.setHandler(lastTrack.getHandler());
+		return tipsDao;
     }
 }

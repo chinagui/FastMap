@@ -342,7 +342,7 @@ public class TipsOperateTest2 extends InitApplication{
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+			//op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
 
 			//return new ModelAndView("jsonView", success());
 

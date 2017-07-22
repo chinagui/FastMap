@@ -175,11 +175,11 @@ public class TipsUtils {
         return tipsIndexModel;
 	}
 
-    public static TipsIndexModel generateSolrIndex(String rowkey, String operateDate,
+    public static TipsDao generateSolrIndex(String rowkey, String operateDate,
                                                    JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
-                                                   JSONObject deepJson, JSONObject feedbackJson) throws Exception {
+                                                   JSONObject deepJson,JSONObject feedbackJson) throws Exception {
 
-        TipsIndexModel tipsIndexModel = new TipsIndexModel();
+    	TipsDao tipsIndexModel = new TipsDao();
         if(trackJson.containsKey("t_trackInfo")) {
             JSONArray trackInfoArr = trackJson.getJSONArray("t_trackInfo");
             int size = trackInfoArr.size();
@@ -196,7 +196,6 @@ public class TipsUtils {
         tipsIndexModel.setT_lifecycle(trackJson.getInt("t_lifecycle"));
         tipsIndexModel.setT_command(trackJson.getInt("t_command"));
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
-        tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
 
         com.alibaba.fastjson.JSONObject fastGuide = TipsUtils.netJson2fastJson(geomJson
                 .getJSONObject("g_guide"));

@@ -129,10 +129,11 @@ public class JobService {
      */
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
-        JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
+        JobProgressOperator jobProgressOperator =null;
         try {
             log.info("updateJobProgress:phaseId:" + phaseId + ",status:" + status.value() + ",message:" + outParameter);
             conn = DBConnector.getInstance().getManConnection();            
+            jobProgressOperator= new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
             conn.commit();
         } catch (Exception e) {

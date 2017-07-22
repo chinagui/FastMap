@@ -9,6 +9,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
@@ -127,8 +128,10 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			List<JSONObject> snapshots = operator.query(sql, wkt);
-			for (JSONObject json : snapshots) {
+			List<TipsDao> snapshots = operator.query(sql, wkt);
+			for (TipsDao tipsDao : snapshots) {
+				JSONObject json = JSONObject.fromObject(tipsDao);
+
 				rowkey = json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();

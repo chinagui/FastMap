@@ -2074,20 +2074,26 @@ public class TipsSelector {
      * @throws Exception
      */
     public List<String> getUnCommitRowkeyList(String parameter) throws Exception {
-        TipsRequestParam param = new TipsRequestParam();
-        String query = param.getTipsCheckUnCommit(parameter);
-        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-        List rowkeyList = new ArrayList();
-        long totalNum = sdList.getNumFound();
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
-                rowkeyList.add(rowkey);
-            }
-        } else {
-            // 暂先不处理
+    	List<String> rowkeyList = new ArrayList<>();
+    	java.sql.Connection oracleConn = null;
+    	try{
+	        TipsRequestParamSQL param = new TipsRequestParamSQL();
+	        
+	        String query = param.getTipsCheckUnCommit(parameter);
+	        
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(oracleConn);
+	        
+			List<TipsDao> tis = tipsOp.query("select * from tips_index where " + query);
+	        
+			for(TipsDao tips: tis){
+				rowkeyList.add(tips.getId());
+			}
+        }catch(Exception e){
+        	logger.error(e.getMessage(), e);
+        }finally{
+        	DbUtils.closeQuietly(oracleConn);
         }
         return rowkeyList;
     }

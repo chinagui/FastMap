@@ -14,6 +14,7 @@ import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
@@ -169,11 +170,15 @@ public class BaseTipsOperate {
 			htab.close();
 
 		} catch (IOException e) {
-
+			
+			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(), e);
 
 			throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
+		}
+		finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

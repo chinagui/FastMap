@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.fcc.model;
 
 import com.navinfo.dataservice.commons.util.DateUtils;
+import oracle.sql.STRUCT;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -267,7 +268,7 @@ public class TipsDao {
 		}
 		return all;
 	}
-	public void loadResultSet(ResultSet rs) throws SQLException{
+	public void loadResultSet(ResultSet rs) throws Exception{
 		this.setId(rs.getString("id"));
 		this.setStage(rs.getInt("stage"));
 		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date")));
@@ -277,10 +278,19 @@ public class TipsDao {
 		this.setS_mTaskId(rs.getInt("s_mTaskId"));
 		this.setS_qTaskId(rs.getInt("s_qTaskId"));
 		this.setS_mSubTaskId(rs.getInt("s_mSubTaskId"));
+		this.setS_qSubTaskId(rs.getInt("s_qSubTaskId"));
 		this.setS_sourceType(rs.getString("s_sourceType"));
 		this.setT_dEditStatus(rs.getInt("t_dEditStatus"));
 		this.setT_mEditStatus(rs.getInt("t_mEditStatus"));
+		this.setT_tipStatus(rs.getInt("t_tipStatus"));
 		this.setTipdiff(rs.getString("tipdiff"));
+		this.setS_project(rs.getString("s_project"));
+		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
+		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
+		STRUCT wkt = (STRUCT)rs.getObject("wkt");
+		this.setWkt(GeoTranslator.struct2Jts(wkt));
+		STRUCT wktLocation = (STRUCT)rs.getObject("wktLocation");
+		this.setWktLocation(GeoTranslator.struct2Jts(wktLocation));
 	}
 	public void loadHbase(JSONObject hbaseTips){
 		JSONObject deep = hbaseTips.getJSONObject("deep");

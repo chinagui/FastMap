@@ -270,6 +270,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 				+"  FROM (SELECT t.*, rownum AS rownum_ FROM query t WHERE rownum <= ?) t "
 				+" WHERE t.rownum_ >= ? ";
 
+		log.debug(pageSql);
+
 		ResultSetHandler<Page> resultSetHandler = new ResultSetHandler<Page>() {
 			int total=0;
 			@Override
@@ -295,8 +297,12 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 		Page page = run.query(conn, pageSql, resultSetHandler, newParams);
 		Map<String, TipsDao> map = (Map<String, TipsDao>)page.getResult();
-		List<TipsDao> result = loadHbaseProperties(map);
-		page.setResult(result);
+		if(map.size()>0) {
+			List<TipsDao> result = loadHbaseProperties(map);
+			page.setResult(result);
+		}else{
+			page.setResult(new ArrayList<TipsDao>());
+		}
 		return page;
 	}
 

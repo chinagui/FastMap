@@ -268,7 +268,7 @@ public class TipsDao {
 		}
 		return all;
 	}
-	public void loadResultSet(ResultSet rs) throws Exception{
+	public void loadResultSet(ResultSet rs) throws SQLException{
 		this.setId(rs.getString("id"));
 		this.setStage(rs.getInt("stage"));
 		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date")));
@@ -287,10 +287,14 @@ public class TipsDao {
 		this.setS_project(rs.getString("s_project"));
 		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
 		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
-		STRUCT wkt = (STRUCT)rs.getObject("wkt");
-		this.setWkt(GeoTranslator.struct2Jts(wkt));
-		STRUCT wktLocation = (STRUCT)rs.getObject("wktLocation");
-		this.setWktLocation(GeoTranslator.struct2Jts(wktLocation));
+		try {
+			STRUCT wkt = (STRUCT) rs.getObject("wkt");
+			this.setWkt(GeoTranslator.struct2Jts(wkt));
+			STRUCT wktLocation = (STRUCT) rs.getObject("wktLocation");
+			this.setWktLocation(GeoTranslator.struct2Jts(wktLocation));
+		}catch (Exception ex){
+			throw new SQLException(ex.getMessage());
+		}
 	}
 	public void loadHbase(JSONObject hbaseTips){
 		JSONObject deep = hbaseTips.getJSONObject("deep");

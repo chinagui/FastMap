@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1041,6 +1042,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         Table htab = null;
         Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
+			tipsConn =DBConnector.getInstance().getTipsIdxConnection();
             JSONObject source = jsonInfo.getJSONObject("source");
             String sourceType = source.getString("s_sourceType");
 
@@ -1121,9 +1123,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			return rowkey;
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("更新tips出错：" + e.getMessage(),
 					e);
 		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
             if(htab != null) {
                 htab.close();
             }

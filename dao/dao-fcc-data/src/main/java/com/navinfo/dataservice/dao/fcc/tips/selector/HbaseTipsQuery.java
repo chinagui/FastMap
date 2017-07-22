@@ -81,15 +81,17 @@ public class HbaseTipsQuery {
 																String[] queryColNames) throws Exception{
 		long start = System.currentTimeMillis();
 		Map<String, JSONObject> map = new HashMap<>();
+		Connection hbaseConn = null;
+		Table htab = null;
 		try {
 			if(rowkeys.size()==0){
 				return map;
 			}
 
-			Connection hbaseConn = HBaseConnector
+			hbaseConn = HBaseConnector
 					.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			List<Get> gets = new ArrayList<>();
@@ -133,6 +135,8 @@ public class HbaseTipsQuery {
 
 			throw new Exception("根据rowkeys查询tips信息出错,原因："
 					+ e.getMessage(), e);
+		}finally {
+			htab.close();
 		}
 
 		long end = System.currentTimeMillis();

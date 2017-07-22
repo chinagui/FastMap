@@ -13,11 +13,14 @@ import com.navinfo.navicommons.exception.DaoOperatorException;
  * @Description: TipsOperator.java
  */
 public interface TipsIndexOperator {
-	public List<TipsDao> searchDataByTileWithGap(String parameter) throws DaoOperatorException;
+	public List<TipsDao> searchDataByTileWithGap(String parameter)
+			throws DaoOperatorException;
 
 	public void save(TipsDao ti) throws DaoOperatorException;
 
 	public void save(Collection<TipsDao> tis) throws DaoOperatorException;
 
 	public void delete(Collection<TipsDao> tis) throws Exception;
+
+	public void update(Collection<TipsDao> tis) throws Exception;
 }

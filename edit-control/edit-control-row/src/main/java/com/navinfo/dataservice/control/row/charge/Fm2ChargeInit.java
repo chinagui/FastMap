@@ -82,6 +82,12 @@ public class Fm2ChargeInit {
 			long t = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			int monDbId = 0;
+			
+			try {
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			if(dbSize==1){
 				int dbId = dbIds.iterator().next();
 				if(regionMap.containsKey(dbId)){
@@ -202,6 +208,7 @@ public class Fm2ChargeInit {
 				JSONObject jso = new JSONObject();
 				JSONArray chargePoi = new JSONArray();
 				JSONArray poiLog = new JSONArray();
+				System.out.println("dbId("+dbId+"),"+pidList.size());
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
 					//查询充电桩子对象
@@ -234,6 +241,7 @@ public class Fm2ChargeInit {
 					}
 					//获取省市城市
 					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+					System.out.println("==============================================================================="+metadataApi);
 					Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
 					//执行具体的转换
 					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,conn,objsChild);

@@ -55,11 +55,16 @@ public class RowChargeService {
 		region.setRegionId(1);
 		region.setDailyDbId(13);
 		region.setMonthlyDbId(12);
+		regionList.add(region);
+		Region region2 = new Region();
+		region2.setRegionId(18);
+		region2.setDailyDbId(329);
+		region2.setMonthlyDbId(12);
+		regionList.add(region2);
 		Region region1 = new Region();
 		region1.setRegionId(19);
 		region1.setDailyDbId(330);
 		region1.setMonthlyDbId(12);
-		regionList.add(region);
 		regionList.add(region1);
 		if(type==1){
 			//初始化

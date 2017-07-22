@@ -319,7 +319,7 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败");
+				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 			}finally{
 				DbUtils.closeQuietly(conn);
 				DbUtils.closeQuietly(connM);

@@ -116,7 +116,7 @@ public class SyncTest {
 	
 	@Test
 	public void test03() throws Exception{
-		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(2, "20010722150900", "20170723230000");
+		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(1, "20010722150900", "20170723230000");
 		System.out.println(chargePoiConvertor.toString());
 		
 	}

@@ -2119,10 +2119,10 @@ public class TipsSelector {
 	 * @return
 	 */
 	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
-		List<Map> list = new ArrayList<>();
-		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
+		List<TipsDao> tipsList=this.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
 		Map<String,int[]> statsMap = new HashMap<>();
-		for(JSONObject snapshot : snapshots) {
+		for(TipsDao tip : tipsList) {
+			JSONObject snapshot = JSONObject.fromObject(tip);
 			String wkt = snapshot.getString("wkt");//统计坐标
 			Point point = GeometryUtils.getPointByWKT(wkt);
 			Coordinate coordinate = point.getCoordinates()[0];
@@ -2146,6 +2146,7 @@ public class TipsSelector {
 				statsMap.put(gridId, statsArray);
 			}
 		}
+		List<Map> list = new ArrayList<>();
 		if(statsMap.size() > 0) {
 			for(String gridId : statsMap.keySet()) {
 				Map<String, Integer> map = new HashMap<>();
@@ -2159,7 +2160,37 @@ public class TipsSelector {
 		return list;
 	}
 
-    /**
+    private List<TipsDao> queryCollectTaskTips( Set<Integer> collectTaskIds, int taskType) throws Exception {
+    	StringBuilder builder = new StringBuilder();
+		String solrIndexFiled = null;
+		if (taskType == TaskType.PROGRAM_TYPE_Q) {
+			solrIndexFiled = "s_qTaskId";
+		} else if (taskType == TaskType.PROGRAM_TYPE_M) {
+			solrIndexFiled = "s_mTaskId";
+		}
+		if (collectTaskIds.size() > 0) {
+			builder.append(solrIndexFiled);
+			builder.append("in (");
+			int index = 0;
+			for (int collectTaskId : collectTaskIds) {
+				if (index != 0)
+					builder.append(",");
+				builder.append(collectTaskId);
+				index++;
+			}
+			builder.append(")");
+		}
+		logger.info("queryCollectTaskTips:" + builder.toString());
+		Connection tipsConn = DBConnector.getInstance().getTipsIdxConnection();
+		try{
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
+		return  tipsOp.query("select * from tips_index where " + builder);
+		}finally{
+			DbUtils.closeQuietly(tipsConn);
+		}
+	}
+
+	/**
      *
      * @param parameter
      * @return

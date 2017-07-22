@@ -84,7 +84,7 @@ public class TipsCheckSelector {
 			
 			if(StringUtils.isEmpty(type)){
 				
-				where=where+" and s_sourceType="+type;
+				where=where+" and s_sourceType='"+type+"'";
 			}
 			Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			try{

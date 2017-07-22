@@ -184,7 +184,7 @@ public class TipsExtract {
 					String solrQuery = param.getQueryFilterSqlForCheck(
 							workStatus, workTaskId, workerId, 0, null);
 
-					solrQuery = solrQuery + " AND s_sourceType=" + type; // 指定类型
+					solrQuery = solrQuery + " AND s_sourceType='" + type+"'"; // 指定类型
 
 					// String solrQuery =
 					// param.getQueryFilterSqlForCheck(workStatus,subTaskId,workerId,checkerId,rowkeyList);

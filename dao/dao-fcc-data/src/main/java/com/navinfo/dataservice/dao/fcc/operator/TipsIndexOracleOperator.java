@@ -31,7 +31,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 	private QueryRunner run;
-	private static String insertSql = "INSERT INTO TIPS_INDEX(ID,STAGE,T_DATE,T_OPERATEDATE,T_LIFECYCLE,HANDLER,S_SOURCETYPE,WKT,S_QTASKID,S_MTASKID,S_QSUBTASKID,S_MSUBTASKID,WKT_LOCATION,T_TIPSTATUS,T_DEDITSTATUS,T_MEDITSTATUS,S_PROJECT,T_DEDITMETH,T_M_EDIT_METH,RELATE_LINKS,RELATE_NODES) VALUES (?,?,TO_TIMESTAMP(?,'yyyyMMddHH24miss'),TO_TIMESTAMP(?,'yyyyMMddHH24miss'),?,?,?,SDO_GEOMETRY(?,8307),?,?,?,?,SDO_GEOMETRY(?,8307),?,?,?,?,?,?)";
+	private static String insertSql = "INSERT INTO TIPS_INDEX(ID,STAGE,T_DATE,T_OPERATEDATE,T_LIFECYCLE,HANDLER,S_SOURCETYPE,WKT,S_QTASKID,S_MTASKID,S_QSUBTASKID,S_MSUBTASKID,WKT_LOCATION,T_TIPSTATUS,T_DEDITSTATUS,T_MEDITSTATUS,S_PROJECT,T_DEDITMETH,T_MEDITMETH) VALUES (?,?,TO_TIMESTAMP(?,'yyyyMMddHH24miss'),TO_TIMESTAMP(?,'yyyyMMddHH24miss'),?,?,?,SDO_GEOMETRY(?,8307),?,?,?,?,SDO_GEOMETRY(?,8307),?,?,?,?,?,?)";
 	private static String insertSqlLinks = "INSERT INTO TIPS_LINKS(ID,LINK_ID) VALUES(?,?)";
 	private static String insertSqlNodes = "INSERT INTO TIPS_NODES(ID,NODE_ID) VALUES(?,?)";
 
@@ -57,7 +57,9 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	@Override
 	public void save(TipsDao ti) throws DaoOperatorException {
 		try {
-			run.update(conn, insertSql, ti.toIndexMainArr());
+			Object[] cols = ti.toIndexMainArr();
+			replaceLongString2Clob(cols);
+			run.update(conn, insertSql, cols);
 			String[][] links = ti.toIndexLinkArr();
 			if (links != null) {
 				run.batch(conn, insertSqlLinks, links);
@@ -72,6 +74,18 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 					e);
 		}
 	}
+	
+	private void replaceLongString2Clob(Object[] cols)throws Exception{
+		if(cols==null||cols.length==0){
+			return;
+		}
+		for(int i=0;i<cols.length;i++){
+			Object o = cols[i];
+			if(o!=null&&o instanceof String&&((String)o).length()>1000){
+				cols[i] = ConnectionUtil.createClob(conn, (String)o);
+			}
+		}
+	}
 
 	@Override
 	public void save(Collection<TipsDao> tis) throws DaoOperatorException {
@@ -84,7 +98,9 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			String[][] nodes = null;
 			int i = 0;
 			for (TipsDao ti : tis) {
-				tisCols[i] = ti.toIndexMainArr();
+				Object[] cols = ti.toIndexMainArr();
+				replaceLongString2Clob(cols);
+				tisCols[i] = cols;
 				links = (String[][]) ArrayUtils.addAll(links,
 						ti.toIndexLinkArr());
 				nodes = (String[][]) ArrayUtils.addAll(nodes,
@@ -92,8 +108,12 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 				i++;
 			}
 			run.batch(conn, insertSql, tisCols);
-			run.batch(conn, insertSqlLinks, links);
-			run.batch(conn, insertSqlNodes, nodes);
+			if(links!=null){
+				run.batch(conn, insertSqlLinks, links);
+			}
+			if(nodes!=null){
+				run.batch(conn, insertSqlNodes, nodes);
+			}
 		} catch (Exception e) {
 			log.error("Tips Index批量保存出错:" + e.getMessage(), e);
 			throw new DaoOperatorException(

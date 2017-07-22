@@ -78,8 +78,11 @@ public class TipsSelector {
 				snapshot.put("t", 1);
 				array.add(snapshot);
 			}
-		} finally {
-			DbUtils.closeQuietly(oracleConn);
+		} catch (Exception e){
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		}finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 		return array;
 	}
@@ -1888,16 +1891,23 @@ public class TipsSelector {
 	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
-		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
-				TipsUtils.notExpSourceType);
-		long count = new TipsIndexOracleOperator(oracleConn).querCount(
-				"select count(1) from tips_index where " + where
-						+ " and rownum=1", wkt);
-
-		return (count > 0 ? 1 : 0);
-	}
+		Connection oracleConn = null;
+        try {
+            oracleConn = DBConnector.getInstance() .getTipsIdxConnection();
+            String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
+                    TipsUtils.notExpSourceType);
+            long count = new TipsIndexOracleOperator(oracleConn).querCount(
+                    "select count(1) from tips_index where " + where
+                            + " and rownum=1", wkt);
+            return (count > 0 ? 1 : 0);
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+            e.printStackTrace();
+        }finally {
+            DbUtils.commitAndCloseQuietly(oracleConn);
+        }
+        return 0;
+    }
 
 	/**
 	 * 范围查询Tips 分类查询
@@ -2000,27 +2010,7 @@ public class TipsSelector {
 		return resultArr;
 	}
 
-	/**
-	 * @Description:根据任务号+tips类型返回任务号范围内的tips
-	 * @param souceTypes
-	 *            :tips类型
-	 * @param taskId
-	 *            :任务号
-	 * @param taskType
-	 *            ：任务类型
-	 * @return
-	 * @author: y
-	 * @throws Exception
-	 * @time:2017-4-13 上午9:07:15
-	 */
-	public List<JSONObject> getTipsByTaskIdAndSourceTypes(JSONArray souceTypes,
-			int taskId, int taskType) throws Exception {
 
-		List<JSONObject> snapshots = conn.queryTipsByTaskTaskSourceTypes(
-				souceTypes, taskId, taskType);
-
-		return snapshots;
-	}
 
 	/**
 	 * @Description:按照任务号查找tips

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.apache.solr.common.SolrDocumentList;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -335,5 +336,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
             throw new DaoOperatorException("Tips Index删除出错:"+e.getMessage(),e);
         }
     }
+
+	
 
 }

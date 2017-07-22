@@ -686,9 +686,11 @@ public class TipsOperator {
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 			operator.update(tipsList);
 		} catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
 		}finally {
+            DbUtils.commitAndCloseQuietly(tipsConn);
 			if(htab != null) {
                 htab.close();
             }
@@ -759,13 +761,13 @@ public class TipsOperator {
             throws Exception {
         StringBuilder builder = new StringBuilder("select * from tips_index i where (");
         
-        builder.append("s_qTaskId!=0");
-        builder.append(" AND s_mTaskId!=0");
+        builder.append("s_qTaskId=0");
+        builder.append(" AND s_mTaskId=0");
         //20170615 过滤内业Tips
         builder.append(" AND ");
-        builder.append("s_sourceType like '80%' ");
+        builder.append("s_sourceType not like '80%' ");
         builder.append(" AND ");
-        builder.append("t_tipStatus!=2");
+        builder.append("t_tipStatus=2");
         builder.append(") and ");
         
         builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");

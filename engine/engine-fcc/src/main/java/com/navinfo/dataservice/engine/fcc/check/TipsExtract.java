@@ -184,7 +184,7 @@ public class TipsExtract {
 					String solrQuery = param.getQueryFilterSqlForCheck(
 							workStatus, workTaskId, workerId, 0, null);
 
-					solrQuery = solrQuery + " AND s_sourceType=" + type; // 指定类型
+					solrQuery = solrQuery + " AND s_sourceType='" + type+"'"; // 指定类型
 
 					// String solrQuery =
 					// param.getQueryFilterSqlForCheck(workStatus,subTaskId,workerId,checkerId,rowkeyList);
@@ -339,8 +339,11 @@ public class TipsExtract {
 			logger.error("更细质检状态出错：" + e.getMessage(), e);
 
 			throw new Exception("更新质检状态出错：" + e.getMessage(), e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+		}finally {
+            DbUtils.commitAndCloseQuietly(conn);
+			if(htab != null) {
+                htab.close();
+            }
 		}
 
 	}

@@ -865,21 +865,21 @@ public class TipsRequestParam {
         int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder("select * from tips_index where ");
 
         int tipsStatus = jsonReq.getInt("tipStatus");
-        builder.append("t_tipStatus:");
+        builder.append("t_tipStatus=");
         builder.append(tipsStatus);
 
         int programType = jsonReq.getInt("programType");
 
         if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
             builder.append(" AND ");
-            builder.append("s_qSubTaskId:");
+            builder.append("s_qSubTaskId=");
             builder.append(subtaskId);
         }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
             builder.append(" AND ");
-            builder.append("s_mSubTaskId:");
+            builder.append("s_mSubTaskId=");
             builder.append(subtaskId);
         }
         logger.info("getTipsCheckTotal:" + builder.toString());

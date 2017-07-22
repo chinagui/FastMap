@@ -712,9 +712,13 @@ public class TipsOperator {
         Connection hbaseConn = null;
         Table htab = null;
         List<Put> puts = new ArrayList<>();
+        java.sql.Connection conn=null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+            List<TipsDao> tipsDaos = new ArrayList<>();
             for (String rowkey : tips) {
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
@@ -729,18 +733,24 @@ public class TipsOperator {
                 puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("s_qTaskId", taskId);
-                solrIndex.put("s_qSubTaskId", subtaskId);
-                solr.addTips(solrIndex);
+				TipsDao tipsDao = operator.getById(rowkey);
+				tipsDao.setS_qTaskId(taskId);
+				tipsDao.setS_qSubTaskId(subtaskId);
+                tipsDaos.add(tipsDao);
             }
+            operator.update(tipsDaos);
             htab.put(puts);
-            htab.close();
         }catch (Exception e) {
+        	DbUtils.rollbackAndCloseQuietly(conn);
             logger.error("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
-        }
-    }
+        }finally {
+        	DbUtils.commitAndCloseQuietly(conn);
+        	if(htab!=null){
+        		htab.close();
+			}
+		}
+	}
 
     /**
      * tips无任务批中线任务号api

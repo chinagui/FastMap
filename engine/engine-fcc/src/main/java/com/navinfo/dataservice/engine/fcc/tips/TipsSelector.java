@@ -1906,13 +1906,13 @@ public class TipsSelector {
 			throws Exception {
 
 		JSONArray resultArr = new JSONArray();
-
+		Table htab = null;
 		try {
 
 			org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector
 					.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			List<Get> gets = new ArrayList<Get>();
@@ -1959,10 +1959,12 @@ public class TipsSelector {
 
 				resultArr.add(obj);
 			}
-
-			htab.close();
 		} catch (Exception e) {
 			throw new Exception("查询tips出错：" + e.getMessage(), e);
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 
 		return resultArr;

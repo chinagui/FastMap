@@ -35,9 +35,9 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	private static String insertSqlLinks = "INSERT INTO TIPS_LINKS(ID,LINK_ID) VALUES(?,?)";
 	private static String insertSqlNodes = "INSERT INTO TIPS_NODES(ID,NODE_ID) VALUES(?,?)";
 
-	private static String deleteSql = "DELETE FROM  TIPS_INDEX  WHERE ID IN (select to_number(column_value) from table(clob_to_table(?))) ";
-	private static String deleteSqlLinks = "DELETE FROM  TIPS_LINKS WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?)))";
-	private static String deleteSqlNodes = "DELETE FROM TIPS_NODES  WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?))) ";
+	private static String deleteSql = "DELETE FROM  TIPS_INDEX  WHERE ID IN (select column_value from table(clob_to_table(?))) ";
+	private static String deleteSqlLinks = "DELETE FROM  TIPS_LINKS WHERE ID IN  (select column_value from table(clob_to_table(?)))";
+	private static String deleteSqlNodes = "DELETE FROM TIPS_NODES  WHERE ID IN  (select column_value from table(clob_to_table(?))) ";
 
     private static String deleteOneSql = "DELETE FROM TIPS_INDEX WHERE ID = ?";
     private static String deleteOneSqlLinks = "DELETE FROM TIPS_LINKS WHERE ID = ?";

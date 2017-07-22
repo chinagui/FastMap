@@ -1897,7 +1897,7 @@ public class TipsSelector {
             String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
                     TipsUtils.notExpSourceType);
             long count = new TipsIndexOracleOperator(oracleConn).querCount(
-                    "select count(1) from tips_index where " + where
+                    "select count(1) count from tips_index where " + where
                             + " and rownum=1", wkt);
             return (count > 0 ? 1 : 0);
         }catch (Exception e) {

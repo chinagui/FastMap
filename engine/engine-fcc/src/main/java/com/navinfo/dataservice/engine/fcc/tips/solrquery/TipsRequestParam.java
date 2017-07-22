@@ -206,7 +206,7 @@ public class TipsRequestParam {
         }
         
         builder.append("(");
-        builder.append("(s_sourceType in (8001,8002) AND t_tipStatus=2)");//接边Tips，预处理提交
+        builder.append("(s_sourceType in ('8001','8002') AND t_tipStatus=2)");//接边Tips，预处理提交
         if(taskBuilder != null) {
             builder.append(" OR ");
             builder.append("(");

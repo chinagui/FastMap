@@ -113,7 +113,22 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		};
 		return run.query(conn, sql, resultSetHandler, params);
 	}
-
+	public Map<Object,Object> groupQuery(String sql,Object... params) throws Exception{
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<Map<Object,Object>> resultSetHandler = new ResultSetHandler<Map<Object,Object>>() {
+			@Override
+			public Map<Object,Object> handle(ResultSet rs) throws SQLException {
+				Map<Object,Object> res = new HashMap<Object,Object>();
+				while (rs.next()) {
+					Object key = rs.getObject(1);
+					Object value = rs.getObject(2);
+					res.put(key, value);
+				}
+				return res;
+			}
+		};
+		return run.query(conn, sql, resultSetHandler, params);
+	}
 	public List<TipsDao> query(String sql, Object... params) throws Exception {
 		List<TipsDao> result;
 		try {

@@ -686,9 +686,11 @@ public class TipsOperator {
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 			operator.update(tipsList);
 		} catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
 		}finally {
+            DbUtils.commitAndCloseQuietly(tipsConn);
 			if(htab != null) {
                 htab.close();
             }

@@ -40,8 +40,9 @@ public class InitMongoDataExp {
 
 	private static Set<String> deepkcs = null;
 	private static Set<String> charingkcs = null;
-	private static List<String> collectionNm = Arrays.asList("poi_detail",
-			"poi_parking", "poi_rental");
+
+	// private static List<String> collectionNm = Arrays.asList("poi_detail",
+	// "poi_parking", "poi_rental");
 
 	public static JSONObject execute(JSONObject request) throws Exception {
 		JSONObject response = new JSONObject();
@@ -118,7 +119,7 @@ public class InitMongoDataExp {
 			mongoClient = new MongoClient(mongodbHost, mongoPort);
 			String mongoDbName = "";
 			if (expType == 0) {
-				mongoDbName = "fm_edit_deepinfo";
+				mongoDbName = "deepinfo";
 			}
 			if (expType == 1) {
 				mongoDbName = "edit_charge";
@@ -166,25 +167,24 @@ public class InitMongoDataExp {
 				if (expType == 0) {
 					String fileName = admimcode + "_poi_deep.txt";
 					pw = new PrintWriter(fileName);
-					for (String col : collectionNm) {
-						collection = db.getCollection(col);
-						MongoCursor<Document> curDeep = collection
-								.find(condition)
-								.projection(
-										Projections.include("pid", "kindCode",
-												"businessTime", "gasStation",
-												"parkings", "rental",
-												"website", "contacts",
-												"attachments", "hwEntryExit",
-												"hotel", "hospital"))
-								.iterator();
-						while (curDeep.hasNext()) {
-							count++;
+					// for (String col : collectionNm) {
+					collection = db.getCollection("poi");
+					MongoCursor<Document> curDeep = collection
+							.find(condition)
+							.projection(
+									Projections.include("pid", "kindCode",
+											"businessTime", "gasStation",
+											"parkings", "rental", "website",
+											"contacts", "attachments",
+											"hwEntryExit", "hotel", "hospital"))
+							.iterator();
+					while (curDeep.hasNext()) {
+						count++;
 
-							pw.println(curDeep.next().toJson());
-						}
+						pw.println(curDeep.next().toJson());
 					}
 				}
+				// }
 				if (expType == 1) {
 					String fileName = admimcode + "_poi_charging.txt";
 					pw = new PrintWriter(fileName);

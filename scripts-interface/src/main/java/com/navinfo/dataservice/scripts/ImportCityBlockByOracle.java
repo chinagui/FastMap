@@ -135,7 +135,7 @@ public class ImportCityBlockByOracle {
 			System.out.println("read block table over. block size:"+blocks.size());
 			//write blocks
 
-			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY,ORIGIN_GEO) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?,?)";
+			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY,ORIGIN_GEO) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?,SDO_GEOMETRY(?,8307))";
 			String updBlockGridSql = "UPDATE GRID SET BLOCK_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int bCount =0;
 			for(Block4Imp block:blocks.values()){

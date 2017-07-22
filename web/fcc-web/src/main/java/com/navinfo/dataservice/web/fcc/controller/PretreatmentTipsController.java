@@ -113,10 +113,9 @@ public class PretreatmentTipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String rowkey = jsonReq.getString("rowkey");
-			
-			int delType = 1; //默认物理删除。0：逻辑删除；1：物理删除 2:无数据
-			
-//			int user = jsonReq.getInt("user");
+
+			//默认物理删除。0：逻辑删除；1：物理删除 2:不用删除
+			int delType = PretreatmentTipsOperator.TIP_PHYSICAL_DELETE;
 
             int subTaskId = jsonReq.getInt("subTaskId");
 
@@ -130,7 +129,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
-            if(delType == 0 || delType == 1) {
+            if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
                 op.deleteByRowkey(rowkey, delType);
             }
 

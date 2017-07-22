@@ -38,6 +38,10 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 	private static String deleteSqlLinks = "DELETE FROM  TIPS_LINKS WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?)))";
 	private static String deleteSqlNodes = "DELETE FROM TIPS_NODES  WHERE ID IN  (select to_number(column_value) from table(clob_to_table(?))) ";
 
+    private static String deleteOneSql = "DELETE FROM TIPS_INDEX WHERE ID = ?";
+    private static String deleteOneSqlLinks = "DELETE FROM TIPS_LINKS WHERE ID = ?";
+    private static String deleteOneSqlNodes = "DELETE FROM TIPS_NODES WHERE ID = ?";
+
 	public TipsIndexOracleOperator(Connection conn) {
 		this.conn = conn;
 		run = new QueryRunner();
@@ -305,5 +309,17 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 		return result;
 	}
+
+    @Override
+    public void delete(String rowkey) throws DaoOperatorException {
+        try{
+            run.update(conn, deleteOneSqlNodes, rowkey);
+            run.update(conn, deleteOneSqlLinks, rowkey);
+            run.update(conn, deleteOneSql, rowkey);
+        }catch(Exception e){
+            log.error("Tips Index删除出错:"+e.getMessage(),e);
+            throw new DaoOperatorException("Tips Index删除出错:"+e.getMessage(),e);
+        }
+    }
 
 }

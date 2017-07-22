@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.dao.fcc.model;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -124,6 +127,9 @@ public class TipsDao {
 	public void setWkt(Geometry wkt) {
 		this.wkt = wkt;
 	}
+	public void setWkt(String wkt) throws Exception {
+		this.wkt = GeoTranslator.wkt2Geometry(wkt);;
+	}
 	public String getTipdiff() {
 		return tipdiff;
 	}
@@ -159,6 +165,9 @@ public class TipsDao {
 	}
 	public void setWktLocation(Geometry wktLocation) {
 		this.wktLocation = wktLocation;
+	}
+	public void setWktLocation(String wktLocation) throws Exception {
+		this.wktLocation = GeoTranslator.wkt2Geometry(wktLocation);
 	}
 	public int getT_tipStatus() {
 		return t_tipStatus;
@@ -208,8 +217,8 @@ public class TipsDao {
 	public void setRelate_nodes(String relate_nodes) {
 		this.relate_nodes = relate_nodes;
 	}
-	public Object[] toColsObjectArr(){
-		Object[] cols = new Object[21];
+	public Object[] toIndexMainArr(){
+		Object[] cols = new Object[18];
 		cols[0] = id;
 		cols[1] = stage;
 		cols[2] = t_date;
@@ -229,9 +238,30 @@ public class TipsDao {
 		cols[16] = s_project;
 		cols[17] = t_dEditMeth;
 		cols[18] = t_mEditMeth;
-		cols[19] = relate_links;
-		cols[20] = relate_nodes;
 		return cols;
+	}
+	public String[][] toIndexLinkArr(){
+		if(StringUtils.isEmpty(getRelate_links())){
+			return null;
+		}
+		String[] raw = getRelate_links().split(",");
+		String[][] all = new String[raw.length][];
+		for(int i=0;i<raw.length;i++){
+			all[i]=new String[]{getId(),raw[i]};
+		}
+		return all;
+	}
+
+	public String[][] toIndexNodeArr(){
+		if(StringUtils.isEmpty(getRelate_nodes())){
+			return null;
+		}
+		String[] raw = getRelate_nodes().split(",");
+		String[][] all = new String[raw.length][];
+		for(int i=0;i<raw.length;i++){
+			all[i]=new String[]{getId(),raw[i]};
+		}
+		return all;
 	}
 	public static void main(String[] args) {
 		TipsDao ti = new TipsDao();

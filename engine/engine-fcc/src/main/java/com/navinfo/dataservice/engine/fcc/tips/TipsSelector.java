@@ -9,6 +9,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
@@ -127,8 +128,10 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			List<JSONObject> snapshots = operator.query(sql, wkt);
-			for (JSONObject json : snapshots) {
+			List<TipsDao> snapshots = operator.query(sql, wkt);
+			for (TipsDao tipsDao : snapshots) {
+				JSONObject json = JSONObject.fromObject(tipsDao);
+
 				rowkey = json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();
@@ -2200,14 +2203,13 @@ public class TipsSelector {
 	        JSONObject statObj = new JSONObject();
 	        statObj.put("total", count);
 	
-	        List<JSONObject> type2001Result = operator.query("select * from tips_index where "+query+" and type=2001");
+	        List<TipsDao> type2001Result = operator.query("select * from tips_index where "+query+" and type=2001");
 	        int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 	        double length = 0;
 	        for (int i = 0; i < total2001; i++) {
-	        	JSONObject snapshot = type2001Result.get(i);
-	            JSONObject geojson = JSONObject.fromObject(snapshot
-	                    .getString("g_location"));
+	        	TipsDao snapshot = type2001Result.get(i);
+	            JSONObject geojson = JSONObject.fromObject(snapshot.getG_location());
 	            length += GeometryUtils.getLinkLength(GeoTranslator
 	                    .geojson2Jts(geojson));
 	        }

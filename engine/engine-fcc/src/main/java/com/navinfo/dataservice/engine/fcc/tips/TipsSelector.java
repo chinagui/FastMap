@@ -1888,15 +1888,15 @@ public class TipsSelector {
 	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
-		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt, date,
-				TipsUtils.notExpSourceType);
-		long count = new TipsIndexOracleOperator(oracleConn).querCount(
-				"select count(1) from tips_index where " + where
-						+ " and rownum=1", wkt);
-
-		return (count > 0 ? 1 : 0);
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		try{
+		String where = new TipsRequestParamSQL().getTipsMobileWhere(wkt,date,TipsUtils.notExpSourceType);
+        long count = new TipsIndexOracleOperator(oracleConn).querCount("select count(1) from tips_index where "+where+" and rownum=1",wkt);
+       
+		return (count>0?1:0);
+		}finally{
+			DbUtils.closeQuietly(oracleConn);
+		}
 	}
 
 	/**

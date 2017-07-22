@@ -311,5 +311,28 @@ public class TipsRequestParamSQL {
 		return param;
 
 	}
+	
+    public String getTipsCheckUnCommit(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subTaskId");
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(" t_tipStatus<>2 ");
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId=");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId=");
+            builder.append(subtaskId);
+        }
+        logger.info("getTipsCheckUnCommit:" + builder.toString());
+        return builder.toString();
+    }
 
 }

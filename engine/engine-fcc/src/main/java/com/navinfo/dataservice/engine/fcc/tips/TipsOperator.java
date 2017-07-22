@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -7,9 +8,12 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.log4j.Logger;
@@ -208,16 +212,24 @@ public class TipsOperator {
 			throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
+        java.sql.Connection conn = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
             htab = hbaseConn.getTable(TableName
                     .valueOf(HBaseConstant.tipTab));
 
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+
+			List<TipsDao> tips = new ArrayList<>();
+			List<Put> puts = new ArrayList<>();
             for (Object object : data) {
                 JSONObject json = JSONObject.fromObject(object);
 
                 String rowkey = json.getString("rowkey");
+
+				TipsDao tipsDao = operator.getById(rowkey);
 
                 // 1.获取到改前的 feddback和track （还有deep）
                 JSONObject oldTip = getOldTips(rowkey, htab);
@@ -238,7 +250,9 @@ public class TipsOperator {
                 int editMeth = json.getInt("editMeth");
                 if (mdFlag.equals("d")) {//日编
                     value.put("t_dEditStatus", editStatus);
+					tipsDao.setT_dEditStatus(editStatus);
                     value.put("t_dEditMeth", editMeth);
+                    tipsDao.setT_dEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_dEditStatus");
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 2);
@@ -248,7 +262,9 @@ public class TipsOperator {
                     }
                 } else if (mdFlag.equals("m")) {//月编
                     value.put("t_mEditStatus", editStatus);
+                    tipsDao.setT_mEditStatus(editStatus);
                     value.put("t_mEditMeth", editMeth);
+                    tipsDao.setT_mEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_mEditStatus");
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 3);
@@ -261,18 +277,29 @@ public class TipsOperator {
                 jsonTrackInfo.put("handler", handler);
 
                 value.put("t_date", date);
+                tipsDao.setT_date(date);
 
                 value.put("t_trackInfo", jsonTrackInfo);
 
                 updateKeyValues.put("track", value);
 
-                Put put = updateTips(rowkey, oldTip, updateKeyValues);
+                Put put = updateTips(rowkey, oldTip, updateKeyValues, tipsDao);
 
-                htab.put(put);
+                tips.add(tipsDao);
+				puts.add(put);
             }
+
+            if(tips.size()>0){
+            	operator.update(tips);
+			}
+			if(puts.size()>0) {
+				htab.put(puts);
+			}
         }catch (Exception e) {
             e.printStackTrace();
-        }finally {
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally {
+        	DbUtils.commitAndCloseQuietly(conn);
             if(htab != null) {
                 htab.close();
             }
@@ -293,7 +320,7 @@ public class TipsOperator {
 	 * @throws Exception
 	 * @time:2017-2-8 下午3:44:46
 	 */
-	private Put updateTips(String rowkey, JSONObject oldTip, JSONObject updateKeyValues)
+	private Put updateTips(String rowkey, JSONObject oldTip, JSONObject updateKeyValues, TipsDao tipsDao)
 			throws Exception {
 
 		Set<String> updateAttKeys = updateKeyValues.keySet(); // 被修改的属性
@@ -388,7 +415,7 @@ public class TipsOperator {
 				// 且source_type：solr怎么更新,如果更新的是坐标。。。那么wkt要维护
 
 				// 根据修改的字段，更新solr
-				updateSorlIndex(rowkey, updateKeyValues);
+				updateSorlIndex(tipsDao, updateKeyValues);
 
                 return put;
 
@@ -407,18 +434,14 @@ public class TipsOperator {
 
 	/**
 	 * @Description:根据修改后的字段，更新solr信息
-	 * @param rowkey
+	 * @param tipsDao
 	 * @param updateKeyValues
 	 *            ，修改了的字段。json对象
 	 * @author: y
 	 * @throws Exception 
 	 * @time:2017-2-9 上午10:02:10
 	 */
-	private void updateSorlIndex(String rowkey, JSONObject updateKeyValues) throws Exception {
-
-		// 获取solr数据
-		JSONObject solrIndex = solr.getById(rowkey);
-
+	private TipsDao updateSorlIndex(TipsDao tipsDao, JSONObject updateKeyValues) throws Exception {
 		// 更新字段
 		Set<String> updateAttKeys = updateKeyValues.keySet(); // 被修改的属性
 		for (String key : updateAttKeys) {
@@ -432,23 +455,10 @@ public class TipsOperator {
 						.getJSONObject("t_trackInfo");
 
                 if(jsonTrackInfo.containsKey("stage")) {
-                    solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+					tipsDao.setStage(jsonTrackInfo.getInt("stage"));
                 }
 
-				solrIndex.put("handler", jsonTrackInfo.getInt("handler"));
-
-				Set<String> updateTrackFiledsName = trackValues.keySet(); // 被修改的track属性
-
-				// 1.2更新track的其他字段
-				for (String filedName : updateTrackFiledsName) {
-
-					if ("t_trackInfo".equals(filedName)) {
-						continue;
-					}
-
-					solrIndex.put(filedName, trackValues.get(filedName));
-
-				}
+				tipsDao.setHandler(jsonTrackInfo.getInt("handler"));
 			}
 
 			// 暂时不修改，待补充 ??????????????????
@@ -459,12 +469,12 @@ public class TipsOperator {
 			// 暂时不修改，待完善，编辑端给的是不是编辑后合并好的，如果不是需要在这里用旧的tips信息进行合并 ?????????
 			if ("feedback".equals(key)) {
 
-				solrIndex.put("feedback", updateKeyValues.get(key));
+				tipsDao.setFeedback(updateKeyValues.get(key).toString());
 			}
 
 			if ("deep".equals(key)) {
 
-				solrIndex.put("deep", updateKeyValues.get(key));
+				tipsDao.setDeep(updateKeyValues.get(key).toString());
 			}
 			
 			//?????????有没有其他要改的？
@@ -474,25 +484,23 @@ public class TipsOperator {
 
 				if (geoJson.containsKey("g_location")) {
 
-					solrIndex.put("g_location", geoJson.get("g_location"));
+					tipsDao.setG_location(geoJson.get("g_location").toString());
 				}
 
 				if (geoJson.containsKey("g_guide")) {
 
-					solrIndex.put("g_guide", geoJson.get("g_guide"));
+					tipsDao.setG_guide(geoJson.get("g_guide").toString());
 				}
 
-				solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(solrIndex
-						.getString("s_sourceType"),
-						JSONObject.fromObject(solrIndex.get("deep")),
-						JSONObject.fromObject(solrIndex.get("g_location")),
-						JSONObject.fromObject(solrIndex.get("feedback"))));
+				tipsDao.setWkt(TipsImportUtils.generateSolrWkt(tipsDao.getS_sourceType(),
+						JSONObject.fromObject(tipsDao.getDeep()),
+						JSONObject.fromObject(tipsDao.getG_location()),
+						JSONObject.fromObject(tipsDao.getFeedback())));
 			}
 			
 		}
 
-		solr.addTips(solrIndex);
-
+		return tipsDao;
 	}
 
 	/**

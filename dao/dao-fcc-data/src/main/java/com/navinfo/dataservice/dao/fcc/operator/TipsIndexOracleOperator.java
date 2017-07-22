@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.fcc.operator;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +13,11 @@ import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
@@ -58,6 +64,16 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			throw new DaoOperatorException("Tips Index保存出错:"+e.getMessage(),e);
 		}
 	}
+	
+	@Override
+	public void update(TipsDao ti) throws DaoOperatorException {
+		try{
+			
+		}catch(Exception e){
+			log.error("Tips Index保存出错:"+e.getMessage(),e);
+			throw new DaoOperatorException("Tips Index保存出错:"+e.getMessage(),e);
+		}
+	}
 
 	@Override
 	public void save(Collection<TipsDao> tis) throws DaoOperatorException {
@@ -83,6 +99,24 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			throw new DaoOperatorException("Tips Index批量保存出错:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+     * 根据查询条件查询符合条件的所有Tips
+     * @param queryBuilder
+     * @param filterQueryBuilder
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    public List<TipsDao> queryWithLimit(String sql,int limit,Object... params) throws Exception {
+    	StringBuilder sb = new StringBuilder();
+		sb.append("WITH FINAL_TABLE AS ( ");
+		sb.append( sql );
+		sb.append(") SELECT FINAL_TABLE.* ");
+		sb.append(" FROM FINAL_TABLE");
+		sb.append(" WHERE ROWNUM <= "+limit);
+		return query(sb.toString(), params);
+    }
 	public long querCount(String sql,Object...params) throws Exception{
 		QueryRunner run = new QueryRunner();
 		ResultSetHandler<Long> resultSetHandler = new ResultSetHandler<Long>() {
@@ -150,6 +184,22 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 		return result;
 	}
+	
+	/**
+     * 根据ID获取一条tips数据
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public TipsDao getById(String id) throws Exception {
+        String sql="select * from tips_index i where i.id=?";
+        List<TipsDao> snapshots = this.query(sql, id);
+        if (snapshots == null || snapshots.size() == 0) {
+            return null;
+        }
+        TipsDao snapshot = snapshots.get(0);
+        return snapshot;
+    }
 
 	/**
 	 * @param args

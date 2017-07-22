@@ -16,4 +16,5 @@ public interface TipsIndexOperator {
 	public List<TipsDao> searchDataByTileWithGap(String parameter)throws DaoOperatorException;
 	public void save(TipsDao ti)throws DaoOperatorException;
 	public void save(Collection<TipsDao> tis)throws DaoOperatorException;
+	public void update(TipsDao ti) throws DaoOperatorException;
 }

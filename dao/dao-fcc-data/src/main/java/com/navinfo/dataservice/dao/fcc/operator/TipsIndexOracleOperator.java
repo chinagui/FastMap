@@ -121,15 +121,15 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 	}
 
-	public long querCount(String sql, Object... params) throws Exception {
+	public int querCount(String sql, Object... params) throws Exception {
 		QueryRunner run = new QueryRunner();
-		ResultSetHandler<Long> resultSetHandler = new ResultSetHandler<Long>() {
+		ResultSetHandler<Integer> resultSetHandler = new ResultSetHandler<Integer>() {
 			@Override
-			public Long handle(ResultSet rs) throws SQLException {
+			public Integer handle(ResultSet rs) throws SQLException {
 				while (rs.next()) {
-					return rs.getLong(1);
+					return rs.getInt(1);
 				}
-				return 0L;
+				return 0;
 			}
 		};
 		return run.query(conn, sql, resultSetHandler, params);

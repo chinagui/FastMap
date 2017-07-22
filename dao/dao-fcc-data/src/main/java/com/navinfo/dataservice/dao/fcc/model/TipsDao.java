@@ -316,15 +316,23 @@ public class TipsDao {
 		}
 	}
 	public void loadHbase(JSONObject hbaseTips){
-		JSONObject deep = hbaseTips.getJSONObject("deep");
-		this.setDeep(deep.toString());
-		JSONObject feedback = hbaseTips.getJSONObject("feedback");
-		this.setFeedback(feedback.toString());
-		JSONObject geometry = hbaseTips.getJSONObject("geometry");
-		this.setG_guide(geometry.getJSONObject("g_guide").toString());
-		this.setG_location(geometry.getJSONObject("g_location").toString());
-		JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
-		this.setTipdiff(tipdiff.toString());
+		if(hbaseTips.containsKey("deep")) {
+			JSONObject deep = hbaseTips.getJSONObject("deep");
+			this.setDeep(deep.toString());
+		}
+		if(hbaseTips.containsKey("feedback")) {
+			JSONObject feedback = hbaseTips.getJSONObject("feedback");
+			this.setFeedback(feedback.toString());
+		}
+		if(hbaseTips.containsKey("geometry")) {
+			JSONObject geometry = hbaseTips.getJSONObject("geometry");
+			this.setG_guide(geometry.getJSONObject("g_guide").toString());
+			this.setG_location(geometry.getJSONObject("g_location").toString());
+		}
+		if(hbaseTips.containsKey("tipdiff")) {
+			JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+			this.setTipdiff(tipdiff.toString());
+		}
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();

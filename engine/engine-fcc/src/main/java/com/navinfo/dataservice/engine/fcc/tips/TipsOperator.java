@@ -748,6 +748,8 @@ public class TipsOperator {
      * @param midTaskId
      * @throws Exception
      */
+    public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
+            throws Exception {
         StringBuilder builder = new StringBuilder("select * from tips_index i where (");
         
         builder.append("s_qTaskId!=0");
@@ -773,15 +775,14 @@ public class TipsOperator {
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
             //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
             TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
-            List<TipsDao> tipsDaos = oracleOperator.query("SELECT * FROM TIPS_INDEX WHERE " + builder.toString() + fqBuilder.toString(), wkt);
+            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), wkt);
 
             if (CollectionUtils.isEmpty(tipsDaos)) {
                 return 0;
             }
             List<Put> puts = new ArrayList<>();
             List<TipsDao> solrIndexList = new ArrayList<>();
-            for (int i = 0; i < totalNum; i++) {
-                TipsDao snapshot = sdList.get(i);
+            for (TipsDao snapshot:tipsDaos) {
                 String rowkey = snapshot.getId();
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
@@ -793,19 +794,19 @@ public class TipsOperator {
                 puts.add(put);
 
                 //更新solr
-                TipsDao solrIndex = operator.getById(rowkey);
+                TipsDao solrIndex = oracleOperator.getById(rowkey);
                 solrIndex.setS_mTaskId(midTaskId);
                 solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            operator.save(solrIndexList);
+            oracleOperator.update(solrIndexList);
             return tipsDaos.size();
         }catch (Exception e) {
-            DBUtils.rollBack(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
         }finally {
-            DBUtils.closeConnection(oracleConn);
+        	DbUtils.commitAndCloseQuietly(oracleConn);
             if(htab != null) {
                 htab.close();
             }

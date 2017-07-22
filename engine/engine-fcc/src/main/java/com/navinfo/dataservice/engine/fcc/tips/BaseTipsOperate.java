@@ -50,6 +50,10 @@ public class BaseTipsOperate {
     public static int TIP_LIFECYCLE_UPDATE = 2;
     public static int TIP_LIFECYCLE_ADD = 3;
 
+    public static int TIP_NOT_DELETE = 2;//不用执行删除
+    public static int TIP_PHYSICAL_DELETE = 1;//物理删除
+    public static int TIP_LOGICAL_DELETE = 0;//逻辑删除
+
 	protected SolrController solr = new SolrController();
 
 	private static final Logger logger = Logger
@@ -65,129 +69,102 @@ public class BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-16 上午11:29:03
 	 */
-	public void updateFeedbackMemo(String rowkey, int user, String memo) throws Exception {
-
 		try {
+            Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator indexOracleOperator = new TipsIndexOracleOperator(
+                    conn);
 
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-			//获取solr数据
-			JSONObject solrIndex = solr.getById(rowkey);
-
-			int stage=2;
-			//如果是预处理的tips则stage=5
-
-			if(solrIndex.getString("s_sourceType").equals(PretreatmentTipsOperator.FC_SOURCE_TYPE)){
-				stage=5;
-			}
+            Table htab = hbaseConn.getTable(TableName
+                    .valueOf(HBaseConstant.tipTab));
+            // 获取solr数据
+            TipsDao solrIndex = indexOracleOperator.getById(rowkey);
 
 
-			// 获取到改钱的 feddback和track
-			JSONObject oldTip = getOldTips(rowkey, htab);
-
-			// 1.更新feddback和track
-			JSONObject track = oldTip.getJSONObject("track");
-
-			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-
-			// 新增一个trackInfo
-			JSONObject jsonTrackInfo = new JSONObject();
-
-			jsonTrackInfo.put("stage", stage);
-
-			jsonTrackInfo.put("date", date);
-
-			jsonTrackInfo.put("handler", user);
-
-			trackInfoArr.add(jsonTrackInfo);
-
-			track.put("t_trackInfo", trackInfoArr);
-
-			track.put("t_lifecycle", 2);
-
-			// 2.更新feedback
-
-			// 新增一个f_array type=3的是文字
-			JSONObject feedBack = oldTip.getJSONObject("feedback");
-
-			JSONArray f_array = feedBack.getJSONArray("f_array");
+            if (solrIndex.getS_sourceType().equals(
+                    PretreatmentTipsOperator.FC_SOURCE_TYPE)) {
+                stage = 5;
+            }
 
 
-			for (Object object : f_array) {
+            // 1.更新feddback和track
+            JSONObject track = oldTip.getJSONObject("track");
 
-				JSONObject obj = JSONObject.fromObject(object);
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 
-				//先删掉
+            String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
-				if (obj.getInt("type") == 3) {
+            // 新增一个trackInfo
+            JSONObject jsonTrackInfo = new JSONObject();
 
-					f_array.remove(obj);
+            jsonTrackInfo.put("stage", stage);
 
-					break;
-				}
-			}
+            jsonTrackInfo.put("date", date);
 
-			// 如果count=0,则说明原来没有备注，则，增加一条
+            jsonTrackInfo.put("handler", user);
 
-			int type = 3; // 文字
+            trackInfoArr.add(jsonTrackInfo);
 
-			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					date);
+            track.put("t_trackInfo", trackInfoArr);
 
-			f_array.add(newFeedback);
+            track.put("t_lifecycle", 2);
 
-			// 更新feedback
-			feedBack.put("f_array", f_array);
+            // 2.更新feedback
 
-			Put put = new Put(rowkey.getBytes());
+            // 新增一个f_array type=3的是文字
+            JSONObject feedBack = oldTip.getJSONObject("feedback");
 
-			put.addColumn("data".getBytes(), "track".getBytes(), track
-					.toString().getBytes());
+            JSONArray f_array = feedBack.getJSONArray("f_array");
 
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
-					.toString().getBytes());
 
-			// 同步更新solr
+                JSONObject obj = JSONObject.fromObject(object);
 
-			solrIndex.put("stage", stage);
 
-			solrIndex.put("t_date", date);
+                if (obj.getInt("type") == 3) {
 
-			//
-			solrIndex.put("t_lifecycle", 2);
+                    f_array.remove(obj);
 
-			solrIndex.put("handler", user);
+                    break;
+                }
+            }
 
-			solrIndex.put("feedback", feedBack);
+            // 如果count=0,则说明原来没有备注，则，增加一条
 
-			solr.addTips(solrIndex);
+            int type = 3; // 文字
 
-			htab.put(put);
+            JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
+                    date);
 
-			htab.close();
+            f_array.add(newFeedback);
 
-		} catch (IOException e) {
-			
-			DbUtils.rollbackAndCloseQuietly(conn);
-			logger.error(e.getMessage(), e);
+            // 更新feedback
+            feedBack.put("f_array", f_array);
 
-			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
-		}
-		finally{
-			DbUtils.commitAndCloseQuietly(conn);
+            Put put = new Put(rowkey.getBytes());
+
+            put.addColumn("data".getBytes(), "track".getBytes(), track
+                    .toString().getBytes());
+
+            put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
+                    .toString().getBytes());
+
+
+
+
+
+            htab.close();
+
+        } catch (IOException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            logger.error(e.getMessage(), e);
+            throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
+                    + e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+
 		}
 
-	}
-
-
-
-
-
-	/**
 	 * @Description:获取到tips改前的信息
 	 * @param rowkey
 	 * @param htab
@@ -307,7 +284,7 @@ public class BaseTipsOperate {
 	private void logicDel(String rowkey) throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
-        java.sql.Connection tipsConn=null;
+        java.sql.Connection oracleConn = null;
         try {
             //修改hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -335,21 +312,24 @@ public class BaseTipsOperate {
                     .getBytes());
 
             htab.put(put);
-            tipsConn=DBConnector.getInstance().getTipsIdxConnection();
-            TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
-            //同步更新solr
-            TipsDao solrIndex = operator.getById(rowkey);
-            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
-            operator.updateOne(solrIndex);
+
+            //同步更新index
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+            TipsDao tipsIndex = operator.getById(rowkey);
+            tipsIndex = this.tipSaveUpdateTrackSolr(track, tipsIndex);
+            List<TipsDao> tipsIndexList = new ArrayList<TipsDao>();
+            tipsIndexList.add(tipsIndex);
+            operator.update(tipsIndexList);
         }catch (Exception e) {
+            DbUtils.rollback(oracleConn);
             e.printStackTrace();
-            DbUtils.rollbackAndCloseQuietly(tipsConn);
             logger.error("逻辑删除失败"+rowkey+":", e);
         }finally {
-        	DbUtils.commitAndCloseQuietly(tipsConn);
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(oracleConn);
         }
 
 	}
@@ -362,10 +342,10 @@ public class BaseTipsOperate {
 	 * @author: y
 	 * @time:2017-4-8 下午4:14:15
 	 */
-	private void physicalDel(String rowkey) throws SolrServerException,
-			IOException {
+	private void physicalDel(String rowkey) throws Exception {
 		Connection hbaseConn = null;
         Table htab = null;
+        java.sql.Connection oracleConn = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
@@ -374,17 +354,22 @@ public class BaseTipsOperate {
             Delete d1 = new Delete(rowkey.getBytes());
             list.add(d1);
 
-            // delete solr
-            solr.deleteByRowkey(rowkey);
+            // delete index
+             //solr.deleteByRowkey(rowkey);
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+            operator.delete(rowkey);
 
             htab.delete(list);
         }catch (Exception e) {
-            e.printStackTrace();
+            DbUtils.rollback(oracleConn);
             logger.error("物理删除失败:", e);
+            throw new Exception("物理删除失败rowkey:" + rowkey, e);
         }finally {
             if(htab != null) {
                 htab.close();
             }
+            DbUtils.commitAndCloseQuietly(oracleConn);
         }
     }
 
@@ -443,18 +428,18 @@ public class BaseTipsOperate {
      *t_dEditMeth=0,t_mEditStatus=0,t_mEditMeth=0
      *不维护t_trackinfo
      * @param track
-     * @param solrIndex
+     * @param tipsIndex
      * @return
      */
-    public TipsDao tipSaveUpdateTrackSolr(TipsTrack track, TipsDao solrIndex) {
-        solrIndex.setT_date(track.getT_date());
-        solrIndex.setT_lifecycle( track.getT_lifecycle());
-        solrIndex.setT_tipStatus(track.getT_tipStatus());
-        solrIndex.setT_dEditStatus(track.getT_dEditStatus());
-        solrIndex.setT_dEditMeth(track.getT_dEditMeth());
-        solrIndex.setT_mEditStatus( track.getT_mEditStatus());
-        solrIndex.setT_mEditMeth(track.getT_mEditMeth());
-        return solrIndex;
+    public TipsDao tipSaveUpdateTrackSolr(TipsTrack track, TipsDao tipsIndex) {
+        tipsIndex.setT_date(track.getT_date());
+        tipsIndex.setT_lifecycle(track.getT_lifecycle());
+        tipsIndex.setT_tipStatus(track.getT_tipStatus());
+        tipsIndex.setT_dEditStatus(track.getT_dEditStatus());
+        tipsIndex.setT_dEditMeth(track.getT_dEditMeth());
+        tipsIndex.setT_mEditStatus(track.getT_mEditStatus());
+        tipsIndex.setT_mEditMeth(track.getT_mEditMeth());
+        return tipsIndex;
     }
 
     /**
@@ -466,18 +451,18 @@ public class BaseTipsOperate {
      * @param solrIndex
      * @return
      */
-    public TipsDao tipSubmitTrackSolr(TipsTrack track, TipsDao solrIndex) {
-        solrIndex.setT_date(track.getT_date());
-        solrIndex.setT_tipStatus(track.getT_tipStatus());
-        solrIndex.setT_dEditStatus(track.getT_dEditStatus());
-        solrIndex.setT_dEditMeth( track.getT_dEditMeth());
-        solrIndex.setT_mEditStatus(track.getT_mEditStatus());
-        solrIndex.setT_mEditMeth(track.getT_mEditMeth());
+    public JSONObject tipSubmitTrackSolr(TipsTrack track, JSONObject solrIndex) {
+        solrIndex.put("t_date", track.getT_date());
+        solrIndex.put("t_tipStatus", track.getT_tipStatus());
+        solrIndex.put("t_dEditStatus", track.getT_dEditStatus());
+        solrIndex.put("t_dEditMeth", track.getT_dEditMeth());
+        solrIndex.put("t_mEditStatus", track.getT_mEditStatus());
+        solrIndex.put("t_mEditMeth", track.getT_mEditMeth());
         List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
         TipsTrack.TrackInfo lastTrack = trackInfoList.get(trackInfoList.size() - 1);
-        solrIndex.setStage(lastTrack.getStage());
-        solrIndex.setT_operateDate(lastTrack.getDate());
-        solrIndex.setHandler(lastTrack.getHandler());
+        solrIndex.put("stage", lastTrack.getStage());
+        solrIndex.put("t_operateDate", lastTrack.getDate());
+        solrIndex.put("handler", lastTrack.getHandler());
         return solrIndex;
     }
 

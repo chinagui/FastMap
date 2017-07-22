@@ -1,20 +1,18 @@
 package com.navinfo.dataservice.dao.fcc;
 
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
-import com.navinfo.dataservice.dao.fcc.model.TipsDao;
-import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.hadoop.yarn.webapp.hamlet.Hamlet.SELECT;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -28,6 +26,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class SolrController {
 
@@ -119,6 +123,87 @@ public class SolrController {
 
 		client.commit();
 
+	}
+
+	/**
+	 * 多个索引更新
+	 * @param jsonList
+	 * @throws JSONException
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	public void addTips(List<JSONObject> jsonList) throws JSONException,
+			SolrServerException, IOException {
+		List<SolrInputDocument> sdList = new ArrayList<>();
+		for(JSONObject json : jsonList) {
+			SolrInputDocument doc = new SolrInputDocument();
+
+			doc.addField("id", json.getString("id"));
+
+			doc.addField("wkt", json.getString("wkt"));
+
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			doc.addField("wktLocation", json.getString("wktLocation"));
+
+			doc.addField("stage", json.getInt("stage"));
+
+			doc.addField("t_operateDate", json.getString("t_operateDate"));
+
+			doc.addField("t_date", json.getString("t_date"));
+
+			doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
+
+			doc.addField("t_command", json.getInt("t_command"));
+
+			doc.addField("handler", json.getInt("handler"));
+
+			doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
+
+			doc.addField("s_sourceType", json.getString("s_sourceType"));
+
+			doc.addField("g_location", json.getString("g_location"));
+
+			doc.addField("g_guide", json.getString("g_guide"));
+
+			doc.addField("deep", json.getString("deep"));
+
+			doc.addField("feedback", json.getString("feedback"));
+
+			doc.addField("s_reliability", json.getInt("s_reliability"));
+
+			doc.addField("t_tipStatus", json.getInt("t_tipStatus"));
+			doc.addField("t_dEditStatus", json.getInt("t_dEditStatus"));
+			doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
+			doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
+			doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
+
+			if (json.containsKey("tipdiff")) {
+
+				doc.addField("tipdiff", json.getString("tipdiff"));
+			}
+
+			doc.addField("s_qTaskId", json.getInt("s_qTaskId"));
+
+			doc.addField("s_mTaskId", json.getInt("s_mTaskId"));
+
+			doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
+
+			if(json.containsKey("s_project") && StringUtils.isNotEmpty(json.getString("s_project"))) {
+				doc.addField("s_project", json.getString("s_project"));
+			}
+
+			doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
+
+			doc.addField("relate_links", json.getString("relate_links"));
+
+			doc.addField("relate_nodes", json.getString("relate_nodes"));
+
+			sdList.add(doc);
+		}
+		if(sdList.size() > 0) {
+			client.add(sdList);
+			client.commit();
+		}
 	}
 
 	public boolean checkTipsMobile(String wkt, String date, int[] notExpSourceType)
@@ -305,156 +390,7 @@ public class SolrController {
 		return sdList;
 	}
 
-	// /**
-	// * @Description:查询满足条件的tips
-	// * @param wkt
-	// * @param stage
-	// * @param t_dStatus
-	// * @return
-	// * @throws SolrServerException
-	// * @throws IOException
-	// * @author: y
-	// * @time:2016-10-25 下午3:17:22
-	// */
-	// public List<JSONObject> queryTips(String wkt, int stage, int t_dStatus,
-	// Set<Integer> collectTaskIds)
-	// throws SolrServerException, IOException {
-	// List<JSONObject> snapshots = new ArrayList<JSONObject>();
-	//
-	// StringBuilder builder = new StringBuilder();
-	//
-	// builder.append("wkt:\"intersects(");
-	//
-	// builder.append(wkt);
-	//
-	// builder.append(")\" ");
-	//
-	// builder.append(" AND stage:" + stage);
-	//
-	// builder.append(" AND t_dStatus:" + t_dStatus);
-	//
-	// if (collectTaskIds != null) {
-	// addTaskIdFilterSql(builder, collectTaskIds);
-	// }
-	//
-	// SolrQuery query = new SolrQuery();
-	//
-	// query.set("q", builder.toString());
-	//
-	// query.set("start", 0);
-	//
-	// query.set("rows", fetchNum);
-	//
-	// QueryResponse response = client.query(query);
-	//
-	// SolrDocumentList sdList = response.getResults();
-	//
-	// long totalNum = sdList.getNumFound();
-	//
-	// if (totalNum <= fetchNum) {
-	// for (int i = 0; i < totalNum; i++) {
-	// SolrDocument doc = sdList.get(i);
-	//
-	// JSONObject snapshot = JSONObject.fromObject(doc);
-	//
-	// snapshots.add(snapshot);
-	// }
-	// } else {
-	// // 暂先不处理
-	// }
-	//
-	// return snapshots;
-	// }
-	//
-
-	// public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages) throws
-	// SolrServerException, IOException{
-	//
-	// return queryTipsWeb(wkt, stages,null);
-	// }
-	//
-	// public List<JSONObject> queryTipsWeb(String wkt, JSONArray
-	// stages,Set<Integer> taskSet)
-	// throws SolrServerException, IOException {
-	// List<JSONObject> snapshots = new ArrayList<JSONObject>();
-	//
-	// String param = "wkt:\"intersects(" + wkt + ")\"";
-	//
-	// StringBuilder builder = new StringBuilder();
-	//
-	// if (stages.size() > 0) {
-	//
-	// builder.append("stage:(");
-	//
-	// for (int i = 0; i < stages.size(); i++) {
-	// int stage = stages.getInt(i);
-	//
-	// if (i > 0) {
-	// builder.append(" ");
-	// }
-	// builder.append(stage);
-	// }
-	//
-	// builder.append(")");
-	// }
-	//
-	// // 过滤315 web不显示的tips 20170118
-	// if (!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
-	// if ("".equals(builder.toString())) {
-	// builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
-	// } else {
-	// builder.append(" AND "
-	// + SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
-	// }
-	// }
-	//
-	// // 取掉fc预处理没有提交的tips
-	// if ("".equals(builder.toString())) {
-	// builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
-	// } else {
-	// builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
-	// }
-	//
-	// if (taskSet != null) {
-	//
-	// addTaskIdFilterSql(builder, taskSet);
-	//
-	// }
-	//
-	// SolrQuery query = new SolrQuery();
-	//
-	// query.set("q", param);
-	//
-	// if (!"".equals(builder.toString())) {
-	// query.set("fq", builder.toString());
-	// }
-	//
-	// query.set("start", 0);
-	//
-	// query.set("rows", fetchNum);
-	//
-	// // query.addField("s_sourceType");
-	//
-	// QueryResponse response = client.query(query);
-	//
-	// SolrDocumentList sdList = response.getResults();
-	//
-	// long totalNum = sdList.getNumFound();
-	//
-	// if (totalNum <= fetchNum) {
-	// for (int i = 0; i < totalNum; i++) {
-	// SolrDocument doc = sdList.get(i);
-	//
-	// JSONObject snapshot = JSONObject.fromObject(doc);
-	//
-	// snapshots.add(snapshot);
-	// }
-	// } else {
-	// // 暂先不处理
-	// }
-	//
-	// return snapshots;
-	// }
+	
 
 	public List<JSONObject> queryTipsWeb(String wkt) throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
@@ -505,14 +441,6 @@ public class SolrController {
 		return snapshots;
 	}
 
-	// public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-	// JSONArray stages, boolean filterDelete, String wktIndexName) throws
-	// SolrServerException,
-	// IOException {
-	// // 默认不是预处理的tips
-	// return queryTipsWebType(wkt, types, stages, filterDelete, false,
-	// wktIndexName, null);
-	// }
 
 	/**
 	 * 根据ID获取solr索引

@@ -5,11 +5,9 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -20,29 +18,20 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.nirobot.common.utils.GeometryConvertor;
-import com.navinfo.nirobot.common.utils.JsonUtil;
-import com.navinfo.nirobot.common.utils.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -260,9 +249,9 @@ public class TipsUpload {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DBUtils.rollBack(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -1057,6 +1046,7 @@ public class TipsUpload {
 		PreparedStatement insertPstmt = null;
 		Connection hbaseConn = null;
 		Table htab = null;
+		java.sql.Connection oracleConn = null;
 		try {
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
 				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
@@ -1113,9 +1103,9 @@ public class TipsUpload {
 						insertPstmt.setString(11, problem_num);
 						insertPstmt.setString(12, "");
 						// 按照Tips统计坐标所在图幅统计
-						JSONObject solrObj = solr.getById(record.getRowkey());
-						String wkt = solrObj.getString("wkt");
-						Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+                        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+						TipsDao solrObj = operator.getById(record.getRowkey());
+						Geometry geo = solrObj.getWkt();
 						String mesh = TipsGridCalculate.calculate(geo).iterator().next().substring(0, 6);
 						insertPstmt.setInt(13, Integer.valueOf(mesh));
 						insertPstmt.setString(14, "");
@@ -1133,7 +1123,7 @@ public class TipsUpload {
 						insertPstmt.setString(26, record.getCheck_time());
 						// 当关联的link上tips外业有采集时，该link关联的所有tips都记录常规采集任务对应的userid,
 						// 当关联link上挂接的tips全部未采集时，该字段记录为AAA.（是否采集过通过stage=1,handler=常规采集子任务userid判断）
-						String collecorUserId = this.getCollectUserId(record.getLink_pid(), userId, htab);
+						String collecorUserId = this.getCollectUserId(operator, record.getLink_pid(), userId, htab);
 						insertPstmt.setString(27, collecorUserId);
 						// 读取常规采集子任务的date
 						insertPstmt.setString(28, startDate);
@@ -1148,9 +1138,10 @@ public class TipsUpload {
 						insertPstmt.setInt(36, 0);
 
 						// 查询关联link或者测线在fcc中是否有种别Tips
-						String query = "relate_links:*|" + record.getLink_pid() + "|* OR id:" + record.getLink_pid();
-						String fQuery = "(s_sourceType:1201 AND -t_lifecycle:1) OR s_sourceType:2001";
-						List<JSONObject> snapotList = solr.queryTips(query, fQuery, 1);
+						String where = "((s_sourceType=1201 AND t_lifecycle<>1) OR s_sourceType=2001)";
+                        where += " AND (id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + record.getLink_pid() + "'))";
+                        String query = "select * from tips_index where " + where;
+                        List<TipsDao> snapotList = operator.query(query);
 						int kind = 0;// 种别直接在FCC库中获取
 						int fc = 0;// FC直接在GDB中获取
 						int linkPid = 0;
@@ -1170,8 +1161,8 @@ public class TipsUpload {
 						}
 
 						if (snapotList != null && snapotList.size() > 0) {// FCC存在
-							JSONObject kindObj = snapotList.get(0);
-							JSONObject deepObj = kindObj.getJSONObject("deep");
+                            TipsDao kindObj = snapotList.get(0);
+							JSONObject deepObj = JSONObject.fromObject(kindObj.getDeep());
 							kind = deepObj.getInt("kind");
 						}
 						insertPstmt.setInt(37, kind);
@@ -1217,45 +1208,42 @@ public class TipsUpload {
 			}
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(checkConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
 			logger.error("质检问题上传失败，原因为：" + e.getMessage());
 			e.printStackTrace();
 		} finally {
 			DBUtils.closeStatement(deletePstmt);
 			DBUtils.closeStatement(insertPstmt);
 			DbUtils.commitAndCloseQuietly(checkConn);
+            DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 
 	}
 
-	private String getCollectUserId(String linkPid, int userId, Table htab) throws Exception {
+	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
 		String collecorUserId = "AAA";
-		String query = "relate_links:*|" + linkPid + "|*";
-		String fQuery = "-stage:0";
-		List<JSONObject> relateTips = solr.queryTips(query, fQuery);
-		SolrDocumentList sdList = solr.queryTipsSolrDocFilter(query, fQuery);
-		long totalNum = sdList.getNumFound();
-		if (totalNum <= Integer.MAX_VALUE) {
-			for (int j = 0; j < totalNum; j++) {
-				SolrDocument doc = sdList.get(j);
-				JSONObject snapshot = JSONObject.fromObject(doc);
-				String rowkey = snapshot.getString("id");
 
-				JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[] { "track" });
-				JSONObject track = oldTip.getJSONObject("track");
-				JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-				for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-					JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-					int stage = trackInfoObj.getInt("stage");
-					if (stage == 1) {
-						int handler = trackInfoObj.getInt("handler");
-						if (handler == userId) {
-							collecorUserId = String.valueOf(userId);
-							break;
-						}
-					}
-				}
-			}
-		}
+        String where = "stage<>0 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + linkPid + "'))";
+        String query = "select * from tips_index where " + where;
+        List<TipsDao> relateTips = operator.query(query);
+        for (TipsDao snapshot : relateTips) {
+            String rowkey = snapshot.getId();
+
+            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+            JSONObject track = oldTip.getJSONObject("track");
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+                int stage = trackInfoObj.getInt("stage");
+                if (stage == 1) {
+                    int handler = trackInfoObj.getInt("handler");
+                    if (handler == userId) {
+                        collecorUserId = String.valueOf(userId);
+                        break;
+                    }
+                }
+            }
+        }
 		return collecorUserId;
 	}
 

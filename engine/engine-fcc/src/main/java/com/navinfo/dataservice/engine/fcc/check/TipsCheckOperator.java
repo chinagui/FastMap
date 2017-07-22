@@ -45,7 +45,7 @@ public class TipsCheckOperator {
 	
 	/**
 	 * @Description:新增质检问题记录（一个tips只能增加一条）
-	 * @param wrong
+	 * @param jsonWrong
 	 * @return
 	 * @throws Exception
 	 * @author: y
@@ -95,7 +95,7 @@ public class TipsCheckOperator {
 
 	/**
 	 * @Description:查询tips的作业时间
-	 * @param tipsRowkey
+	 * @param rowkey
 	 * @return
 	 * @author: y
 	 * @throws Exception 
@@ -211,7 +211,7 @@ public class TipsCheckOperator {
 
 	/**
 	 * @Description:修改tips质检状态
-	 * @param checkerId
+	 * @param rowkey
 	 * @param workStatus
 	 * @author: y
 	 * @param rowkey 

@@ -214,7 +214,7 @@ public class TipsOperator {
 	
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
-			DbUtils.rollback(oracleConn);
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}

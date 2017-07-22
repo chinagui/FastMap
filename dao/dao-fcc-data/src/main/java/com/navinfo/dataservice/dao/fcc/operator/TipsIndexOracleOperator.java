@@ -166,6 +166,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 					return map;
 				}
 			};
+			log.debug("tips query:"+sql);
 			Map<String, TipsDao> map = run.query(conn, sql, resultSetHandler,
 					params);
 			result = loadHbaseProperties(map);

@@ -165,7 +165,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(oracleConn);
-			htab.close();
+			if(htab != null) {
+				htab.close();
+			}
 		}
 
 	}
@@ -354,7 +356,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					+ e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
-			htab.close();
+			if(htab!=null) {
+				htab.close();
+			}
 		}
 	}
 

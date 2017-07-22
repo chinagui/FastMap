@@ -1406,7 +1406,9 @@ public class TipsSelector {
 	private List<JSONObject> convertToJsonList(List<TipsDao> tips) {
 		List<JSONObject> tipsJsonList = new ArrayList<JSONObject>();
 		for (TipsDao tip : tips) {
-			tipsJsonList.add(JSONObject.fromObject(tip));
+            JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+            JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+			tipsJsonList.add(json);
 		}
 		return tipsJsonList;
 	}

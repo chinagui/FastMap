@@ -14,6 +14,8 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -118,10 +120,10 @@ public class TipsUtils {
      * @return
      * @throws Exception
      */
-	public static TipsIndexModel generateSolrIndex(String rowkey, int stage, String operateDate, int handler,
+	public static TipsDao generateSolrIndex(String rowkey, int stage, String operateDate, int handler,
                                                JSONObject trackJson, JSONObject sourceJson, JSONObject geomJson,
                                                JSONObject deepJson, JSONObject feedbackJson) throws Exception {
-		TipsIndexModel tipsIndexModel = new TipsIndexModel();
+		TipsDao tipsIndexModel = new TipsDao();
         tipsIndexModel.setId(rowkey);
         tipsIndexModel.setStage(stage);
         tipsIndexModel.setT_date(trackJson.getString("t_date"));//当前时间
@@ -130,7 +132,6 @@ public class TipsUtils {
         tipsIndexModel.setT_command(trackJson.getInt("t_command"));
         tipsIndexModel.setHandler(handler);
         tipsIndexModel.setS_sourceType(sourceJson.getString("s_sourceType"));
-        tipsIndexModel.setS_sourceCode(sourceJson.getInt("s_sourceCode"));
         if(StringUtils.isNotEmpty(sourceJson.getString("s_project"))) {
             tipsIndexModel.setS_project(sourceJson.getString("s_project"));
         }

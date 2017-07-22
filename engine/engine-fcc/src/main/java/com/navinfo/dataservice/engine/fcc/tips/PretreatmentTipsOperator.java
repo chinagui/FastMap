@@ -9,6 +9,8 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
@@ -19,6 +21,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
@@ -73,9 +77,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject deep, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn = null;
+		java.sql.Connection oracleConn = null;
+		Table htab =null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			// 1.rowkey
@@ -143,18 +149,22 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.toString().getBytes());
 
 			// solr index json
-            TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, PretreatmentTipsOperator.PRE_TIPS_STAGE,
+            TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, PretreatmentTipsOperator.PRE_TIPS_STAGE,
                     currentDate, user, trackJson, sourceJson, jsonGeom, deepNew, feedbackObj);
-            solr.addTips(JSONObject.fromObject(tipsIndexModel));
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            new TipsIndexOracleOperator(oracleConn).save(tipsIndexModel);
 
 			List<Put> puts = new ArrayList<Put>();
 			puts.add(put);
 			htab.put(puts);
-			htab.close();
             return rowkey;
 		} catch (IOException e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
+			htab.close();
 		}
 
 	}

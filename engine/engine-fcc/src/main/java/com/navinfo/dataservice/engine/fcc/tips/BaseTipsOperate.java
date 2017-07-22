@@ -61,20 +61,25 @@ public class BaseTipsOperate {
 
 
 	public void updateFeedbackMemo(String rowkey, int user, String memo) throws Exception {
+        Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection oracleConn = null;
+        try {
 
-		try {
+			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
+
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 			//获取solr数据
-			JSONObject solrIndex = solr.getById(rowkey);
+			TipsDao tipsDao = operator.getById(rowkey);
 
 			int stage=2;
 			//如果是预处理的tips则stage=5
 
-			if(solrIndex.getString("s_sourceType").equals(PretreatmentTipsOperator.FC_SOURCE_TYPE)){
+			if(tipsDao.getS_sourceType().equals(PretreatmentTipsOperator.FC_SOURCE_TYPE)){
 				stage=5;
 			}
 
@@ -147,30 +152,25 @@ public class BaseTipsOperate {
 					.toString().getBytes());
 
 			// 同步更新solr
+            tipsDao.setStage(stage);
+            tipsDao.setT_date(date);
+            tipsDao.setT_lifecycle(TIP_LIFECYCLE_UPDATE);
+            tipsDao.setHandler(user);
 
-			solrIndex.put("stage", stage);
-
-			solrIndex.put("t_date", date);
-
-			//
-			solrIndex.put("t_lifecycle", 2);
-
-			solrIndex.put("handler", user);
-
-			solrIndex.put("feedback", feedBack);
-
-			solr.addTips(solrIndex);
+			operator.updateOne(tipsDao);
 
 			htab.put(put);
-
-			htab.close();
-
 		} catch (IOException e) {
-
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
 			logger.error(e.getMessage(), e);
 
 			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
-		}
+		}finally {
+            DbUtils.commitAndCloseQuietly(oracleConn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
 
 	}
 
@@ -331,7 +331,7 @@ public class BaseTipsOperate {
             tipsIndexList.add(tipsIndex);
             operator.update(tipsIndexList);
         }catch (Exception e) {
-            DbUtils.rollback(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
             e.printStackTrace();
             logger.error("逻辑删除失败"+rowkey+":", e);
         }finally {
@@ -371,7 +371,7 @@ public class BaseTipsOperate {
 
             htab.delete(list);
         }catch (Exception e) {
-            DbUtils.rollback(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
             logger.error("物理删除失败:", e);
             throw new Exception("物理删除失败rowkey:" + rowkey, e);
         }finally {

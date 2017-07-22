@@ -105,7 +105,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 
 	@Override
-	public void execute() throws JobException {
+	public void execute() throws JobException{
 		ManApi manApi = (ManApi)ApplicationContextUtil
 				.getBean("manApi");
 		DatahubApi datahubApi = (DatahubApi)ApplicationContextUtil
@@ -114,12 +114,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				.getBean("day2MonthSyncApi");
 		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil
 				.getBean("metadataApi");
+		long phaseId =0;
+		JSONObject logInfo =new JSONObject();
 		try {
-			JSONObject logInfo =new JSONObject();
 			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
 			int type = day2MonRequest.getType();//快线还是中线:0 中线，1 快线
 			int lot = day2MonRequest.getLot();//中线批次:0,1,2,3(快线输0)
-			long phaseId =(long) day2MonRequest.getPhaseId();
+			phaseId =(long) day2MonRequest.getPhaseId();
 			Map<Integer,List<Integer>> subTasks = (Map<Integer,List<Integer>>)day2MonRequest.getTaskInfo();
 			
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
@@ -360,6 +361,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			callDmsReleaseLockApi(jobInfo.getId());
 
 		}catch(Exception e){
+			logInfo.put("errmsg", e.getMessage());
+			if(phaseId!=0){
+				try {					
+					manApi.updateJobProgress(phaseId,3,logInfo.toString());
+				} catch (Exception e1) {
+					throw new JobException(e1.getMessage(),e1);
+				}
+			}
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
 		}

@@ -303,7 +303,6 @@ public class TipsDao {
 		this.setT_dEditStatus(rs.getInt("t_dEditStatus"));
 		this.setT_mEditStatus(rs.getInt("t_mEditStatus"));
 		this.setT_tipStatus(rs.getInt("t_tipStatus"));
-		this.setTipdiff(rs.getString("tipdiff"));
 		this.setS_project(rs.getString("s_project"));
 		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
 		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
@@ -324,6 +323,8 @@ public class TipsDao {
 		JSONObject geometry = hbaseTips.getJSONObject("geometry");
 		this.setG_guide(geometry.getJSONObject("g_guide").toString());
 		this.setG_location(geometry.getJSONObject("g_location").toString());
+		JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+		this.setTipdiff(tipdiff.toString());
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();

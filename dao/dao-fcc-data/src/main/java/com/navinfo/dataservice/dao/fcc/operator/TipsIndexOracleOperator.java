@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.apache.solr.common.SolrDocumentList;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -290,6 +291,8 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 				+"  FROM (SELECT t.*, rownum AS rownum_ FROM query t WHERE rownum <= ?) t "
 				+" WHERE t.rownum_ >= ? ";
 
+		log.debug(pageSql);
+
 		ResultSetHandler<Page> resultSetHandler = new ResultSetHandler<Page>() {
 			int total=0;
 			@Override
@@ -315,15 +318,19 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 		Page page = run.query(conn, pageSql, resultSetHandler, newParams);
 		Map<String, TipsDao> map = (Map<String, TipsDao>)page.getResult();
-		List<TipsDao> result = loadHbaseProperties(map);
-		page.setResult(result);
+		if(map.size()>0) {
+			List<TipsDao> result = loadHbaseProperties(map);
+			page.setResult(result);
+		}else{
+			page.setResult(new ArrayList<TipsDao>());
+		}
 		return page;
 	}
 
 
 	private List<TipsDao> loadHbaseProperties(Map<String, TipsDao> map) throws Exception{
     	List<TipsDao> result = new ArrayList<>();
-		String[] queryColNames = { "deep", "geometry", "feedback" };
+		String[] queryColNames = { "deep", "geometry", "feedback", "tipdiff" };
 		Map<String, JSONObject> hbaseMap = HbaseTipsQuery.getHbaseTipsByRowkeys(map.keySet(), queryColNames);
 		for (String rowkey : map.keySet()) {
 			if (!hbaseMap.containsKey(rowkey)) {
@@ -349,5 +356,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
             throw new DaoOperatorException("Tips Index删除出错:"+e.getMessage(),e);
         }
     }
+
+	
 
 }

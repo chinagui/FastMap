@@ -232,6 +232,14 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		sb.append(" WHERE ROWNUM <= "+limit);
 		return query(sb.toString(), params);
     }
+    
+    public void updateOne(TipsDao ti) throws Exception {
+    	Collection<TipsDao> tis=new ArrayList<TipsDao>();
+    	tis.add(ti);
+		this.delete(tis);
+		this.save(tis);
+
+	}
 
 	public void update(Collection<TipsDao> tis) throws Exception {
 		if (tis == null || tis.size() == 0) {
@@ -240,6 +248,12 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		this.delete(tis);
 		this.save(tis);
 
+	}
+
+	@Override
+	public void update(TipsDao ti) throws DaoOperatorException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

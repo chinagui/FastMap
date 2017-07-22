@@ -2027,9 +2027,9 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-4-14 下午4:55:04
 	 */
-	public List<JSONObject> getTipsByTaskId(int taskId, int taskType) throws Exception {
+	public List<TipsDao> getTipsByTaskId(Connection tipsConn,int taskId, int taskType) throws Exception {
 
-		List<JSONObject> snapshots=conn.queryTipsByTask(taskId,taskType);
+		List<TipsDao> snapshots=conn.queryTipsByTask(tipsConn,taskId,taskType);
 
 		return snapshots;
 
@@ -2042,8 +2042,8 @@ public class TipsSelector {
      * @return
      * @throws Exception
      */
-    public SolrDocumentList getTipsByTaskIdAndStatus(int taskId, int taskType) throws Exception {
-        SolrDocumentList sdList = conn.queryTipsByTask(taskId, taskType, 1);
+    public List<TipsDao> getTipsByTaskIdAndStatus(Connection tipsConn,int taskId, int taskType) throws Exception {	
+    	List<TipsDao> sdList = conn.queryTipsByTask(tipsConn,taskId, taskType, 1);
         return sdList;
     }
 
@@ -2100,18 +2100,26 @@ public class TipsSelector {
 	 * @time:2017-4-19 下午8:51:14
 	 */
 	public Set<Integer> getGridsListByTask(int collectTaskid, int q_TASK_TYPE) throws Exception {
-
-		List<JSONObject> tipsList=conn.queryTipsByTask(collectTaskid, q_TASK_TYPE);
+		Connection tipsConn=null;
+		List<TipsDao> tipsList=null;
+		try{
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+			tipsList=conn.queryTipsByTask(tipsConn,collectTaskid, q_TASK_TYPE);
+		}catch (Exception e) {
+			logger.error("", e);
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+		}
 
 		Set<Integer> gridsSet= new HashSet<Integer>();
 
 		Set<String> grids=new  HashSet<String>();
 
-		for (JSONObject json : tipsList) {
-
-			String wkt=json.getString("wkt");
-
-			Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
+		for (TipsDao json : tipsList) {
+			
+			Geometry geo = json.getWkt();
 
 			Set<String> grid=TipsGridCalculate.calculate(geo);
 

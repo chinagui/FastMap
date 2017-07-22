@@ -9,6 +9,7 @@ import java.util.Map;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -454,18 +455,18 @@ public class BaseTipsOperate {
      * @param solrIndex
      * @return
      */
-    public JSONObject tipSubmitTrackSolr(TipsTrack track, JSONObject solrIndex) {
-        solrIndex.put("t_date", track.getT_date());
-        solrIndex.put("t_tipStatus", track.getT_tipStatus());
-        solrIndex.put("t_dEditStatus", track.getT_dEditStatus());
-        solrIndex.put("t_dEditMeth", track.getT_dEditMeth());
-        solrIndex.put("t_mEditStatus", track.getT_mEditStatus());
-        solrIndex.put("t_mEditMeth", track.getT_mEditMeth());
+    public TipsDao tipSubmitTrackSolr(TipsTrack track, TipsDao solrIndex) {
+        solrIndex.setT_date(track.getT_date());
+        solrIndex.setT_tipStatus(track.getT_tipStatus());
+        solrIndex.setT_dEditStatus(track.getT_dEditStatus());
+        solrIndex.setT_dEditMeth( track.getT_dEditMeth());
+        solrIndex.setT_mEditStatus(track.getT_mEditStatus());
+        solrIndex.setT_mEditMeth(track.getT_mEditMeth());
         List<TipsTrack.TrackInfo> trackInfoList = track.getT_trackInfo();
         TipsTrack.TrackInfo lastTrack = trackInfoList.get(trackInfoList.size() - 1);
-        solrIndex.put("stage", lastTrack.getStage());
-        solrIndex.put("t_operateDate", lastTrack.getDate());
-        solrIndex.put("handler", lastTrack.getHandler());
+        solrIndex.setStage(lastTrack.getStage());
+        solrIndex.setT_operateDate(lastTrack.getDate());
+        solrIndex.setHandler(lastTrack.getHandler());
         return solrIndex;
     }
 

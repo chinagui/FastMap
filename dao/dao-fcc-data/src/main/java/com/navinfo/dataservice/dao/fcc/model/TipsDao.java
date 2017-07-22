@@ -269,4 +269,8 @@ public class TipsDao {
 		JSONObject jo = JSONObject.fromObject(ti);
 		System.out.println(jo.toString());
 	}
+	public TipsDao copy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

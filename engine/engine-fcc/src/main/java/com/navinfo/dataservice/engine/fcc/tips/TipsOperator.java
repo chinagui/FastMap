@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -7,6 +8,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -583,24 +586,22 @@ public class TipsOperator {
 		TipsSelector selector=new TipsSelector();
 		String  rowkey="";
 		List<Put> puts=new ArrayList<>();
-        List<JSONObject> solrIndexList = new ArrayList<>();
+        List<TipsDao> solrIndexList = new ArrayList<>();
 		Connection hbaseConn = null;
-
+		java.sql.Connection tipsConn=null;
 		Table htab = null;
 		try {
 			
 			hbaseConn=HBaseConnector.getInstance().getConnection();
-			
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 			htab=hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			
-			List<JSONObject> tipsList=selector.getTipsByTaskId(sQTaskId, TaskType.Q_TASK_TYPE);
-			for (JSONObject json : tipsList) {
+			List<TipsDao> tipsList=selector.getTipsByTaskId(tipsConn,sQTaskId, TaskType.Q_TASK_TYPE);
+			for (TipsDao json : tipsList) {
 				
-				rowkey=json.getString("id");
+				rowkey=json.getId();
 				
-				String wkt=json.getString("wkt");
-				
-				Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
+				Geometry geo =json.getWkt();
 				
 				Set<String> gridSet=TipsGridCalculate.calculate(geo);
 				
@@ -618,7 +619,7 @@ public class TipsOperator {
 				
 				//1.update solr
 				
-				json.put("s_mTaskId", mTaskId);
+				json.setS_mTaskId(mTaskId);
 
                 solrIndexList.add(json);
 				
@@ -645,7 +646,8 @@ public class TipsOperator {
 			}
 			
 			htab.put(puts);
-            solr.addTips(solrIndexList);
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			operator.save(solrIndexList);
 		} catch (Exception e) {
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
@@ -708,35 +710,38 @@ public class TipsOperator {
      */
     public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
             throws Exception {
-        StringBuilder builder = new StringBuilder();
-        builder.append("wkt:\"intersects(");
-        builder.append(wkt);
-        builder.append(")\"");
-        StringBuilder fqBuilder = new StringBuilder();
-        fqBuilder.append("s_qTaskId:0");
-        fqBuilder.append(" AND s_mTaskId:0");
+        StringBuilder builder = new StringBuilder("select * from tips_index i where (");
+        
+        builder.append("s_qTaskId!=0");
+        builder.append(" AND s_mTaskId!=0");
         //20170615 过滤内业Tips
-        fqBuilder.append(" AND ");
-        fqBuilder.append("-s_sourceType:80*");
-        fqBuilder.append(" AND ");
-        fqBuilder.append("t_tipStatus:2");
+        builder.append(" AND ");
+        builder.append("s_sourceType like '80%' ");
+        builder.append(" AND ");
+        builder.append("t_tipStatus!=2");
+        builder.append(") and ");
+        
+        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 
         Connection hbaseConn = null;
+        java.sql.Connection tipsConn=null;
         Table htab = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
-            long totalNum = sdList.getNumFound();
+            tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+            List<TipsDao> sdList = operator.query(builder.toString(), wkt);
+            //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(tipsConn,builder.toString(), fqBuilder.toString());
+            long totalNum = sdList.size();
             if(totalNum > fetchNum || totalNum == 0) {
                 return 0;
             }
             List<Put> puts = new ArrayList<>();
-            List<JSONObject> solrIndexList = new ArrayList<>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
             for (int i = 0; i < totalNum; i++) {
-                SolrDocument doc = sdList.get(i);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
+                TipsDao snapshot = sdList.get(i);
+                String rowkey = snapshot.getId();
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
                 Result result = htab.get(get);
@@ -749,12 +754,12 @@ public class TipsOperator {
                 puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("s_mTaskId", midTaskId);
+                TipsDao solrIndex = operator.getById(rowkey);
+                solrIndex.setS_mTaskId(midTaskId);
                 solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            solr.addTips(solrIndexList);
+            operator.save(solrIndexList);
             return totalNum;
         }catch (Exception e) {
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);

@@ -8,6 +8,8 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet.SELECT;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -20,6 +22,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -801,16 +804,38 @@ public class SolrController {
 	 * @throws Exception
 	 * @time:2017-4-17 下午3:23:03
 	 */
-	public List<JSONObject> queryTipsByTask(int taskId, int taskType) throws Exception {
-		StringBuilder builder = new StringBuilder(); // 默认条件全查，避免后面增加条件，都需要有AND
-
+	public List<TipsDao> queryTipsByTask(Connection tipsConn,int taskId, int taskType) throws Exception {
+		
+		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
+		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
+		builder.append(")");
+		
 		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
 
-		List<JSONObject> snapshots = this.queryTips(builder.toString(), null);
+		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+		List<TipsDao> tipsDao = operator.query(builder.toString());
 
-		return snapshots;
+		return tipsDao;
 	}
-
+	
+//	/**
+//	 * 按照任务和状态筛选Tips
+//	 * 
+//	 * @param taskId
+//	 * @param taskType
+//	 * @param tipStatus
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	public SolrDocumentList queryTipsByTask(int taskId, int taskType, int tipStatus) throws Exception {
+//		StringBuilder builder = new StringBuilder(); // 默认条件全查，避免后面增加条件，都需要有AND
+//		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
+//		StringBuilder fqBuilder = new StringBuilder();
+//		fqBuilder.append("t_tipStatus:" + tipStatus);
+//		SolrDocumentList sdList = this.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
+//		return sdList;
+//	}
+	
 	/**
 	 * 按照任务和状态筛选Tips
 	 * 
@@ -820,13 +845,15 @@ public class SolrController {
 	 * @return
 	 * @throws Exception
 	 */
-	public SolrDocumentList queryTipsByTask(int taskId, int taskType, int tipStatus) throws Exception {
-		StringBuilder builder = new StringBuilder(); // 默认条件全查，避免后面增加条件，都需要有AND
+	public List<TipsDao> queryTipsByTask(Connection tipsConn,int taskId, int taskType, int tipStatus) throws Exception {
+		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
 		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
-		StringBuilder fqBuilder = new StringBuilder();
-		fqBuilder.append("t_tipStatus:" + tipStatus);
-		SolrDocumentList sdList = this.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
-		return sdList;
+		builder.append(")");
+		builder.append("t_tipStatus!=" + tipStatus);
+		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+		List<TipsDao> tipsDao = operator.query(builder.toString());
+		//SolrDocumentList sdList = this.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
+		return tipsDao;
 	}
 
 	/**
@@ -895,25 +922,25 @@ public class SolrController {
 			if (builder.length() > 0) {
 				builder.append(" AND ");
 			}
-			builder.append("s_qTaskId :" + taskId);
+			builder.append("s_qTaskId =" + taskId);
 
 		} else if (taskType == TaskType.Q_SUB_TASK_TYPE) {
 			if (builder.length() > 0) {
 				builder.append(" AND ");
 			}
-			builder.append("s_qSubTaskId :" + taskId);
+			builder.append("s_qSubTaskId =" + taskId);
 
 		} else if (taskType == TaskType.M_TASK_TYPE) {
 			if (builder.length() > 0) {
 				builder.append(" AND ");
 			}
-			builder.append("s_mTaskId :" + taskId);
+			builder.append("s_mTaskId =" + taskId);
 
 		} else if (taskType == TaskType.M_SUB_TASK_TYPE) {
 			if (builder.length() > 0) {
 				builder.append(" AND ");
 			}
-			builder.append("s_mSubTaskId :" + taskId);
+			builder.append("s_mSubTaskId =" + taskId);
 
 		} else {
 			throw new Exception("不支持的任务类型：" + taskType);

@@ -4,22 +4,25 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.navinfo.navicommons.database.Page;
-import org.apache.commons.lang.ArrayUtils;
-import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
-
-import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocumentList;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.DaoOperatorException;
+
+import net.sf.json.JSONObject;
 
 /**
  * @ClassName: TipsIndexOracleOperator

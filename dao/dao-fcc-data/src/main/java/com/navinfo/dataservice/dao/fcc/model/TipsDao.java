@@ -11,6 +11,7 @@ import net.sf.json.JSONObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -291,8 +292,8 @@ public class TipsDao {
 	public void loadResultSet(ResultSet rs) throws SQLException{
 		this.setId(rs.getString("id"));
 		this.setStage(rs.getInt("stage"));
-		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date")));
-		this.setT_operateDate(DateUtils.dateToString(rs.getTimestamp("t_operateDate")));
+		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date"),DateUtils.DATE_COMPACTED_FORMAT));
+		this.setT_operateDate(DateUtils.dateToString(rs.getTimestamp("t_operateDate"),DateUtils.DATE_COMPACTED_FORMAT));
 		this.setT_lifecycle(rs.getInt("t_lifecycle"));
 		this.setHandler(rs.getInt("handler"));
 		this.setS_mTaskId(rs.getInt("s_mTaskId"));
@@ -316,15 +317,23 @@ public class TipsDao {
 		}
 	}
 	public void loadHbase(JSONObject hbaseTips){
-		JSONObject deep = hbaseTips.getJSONObject("deep");
-		this.setDeep(deep.toString());
-		JSONObject feedback = hbaseTips.getJSONObject("feedback");
-		this.setFeedback(feedback.toString());
-		JSONObject geometry = hbaseTips.getJSONObject("geometry");
-		this.setG_guide(geometry.getJSONObject("g_guide").toString());
-		this.setG_location(geometry.getJSONObject("g_location").toString());
-		JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
-		this.setTipdiff(tipdiff.toString());
+		if(hbaseTips.containsKey("deep")) {
+			JSONObject deep = hbaseTips.getJSONObject("deep");
+			this.setDeep(deep.toString());
+		}
+		if(hbaseTips.containsKey("feedback")) {
+			JSONObject feedback = hbaseTips.getJSONObject("feedback");
+			this.setFeedback(feedback.toString());
+		}
+		if(hbaseTips.containsKey("geometry")) {
+			JSONObject geometry = hbaseTips.getJSONObject("geometry");
+			this.setG_guide(geometry.getJSONObject("g_guide").toString());
+			this.setG_location(geometry.getJSONObject("g_location").toString());
+		}
+		if(hbaseTips.containsKey("tipdiff")) {
+			JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+			this.setTipdiff(tipdiff.toString());
+		}
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();
@@ -355,17 +364,5 @@ public class TipsDao {
 		tipsDao.setRelate_links(this.getRelate_links());
 		tipsDao.setRelate_nodes(this.getRelate_nodes());
 		return tipsDao;
-	}
-	public static void main(String[] args) {
-//		TipsDao ti = new TipsDao();
-//		ti.setT_mEditStatus(100);
-//		JSONObject jo = JSONObject.fromObject(ti);
-//		System.out.println(jo.toString());
-		String str0 = "|| ,| |12|67766";
-		System.out.println(str0.replace("|", ","));
-//		String str = ",, |, ,12,47766,";
-//		for(String s:str.split(",")){
-//			System.out.println(s);
-//		}
 	}
 }

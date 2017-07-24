@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -16,6 +17,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 
+import net.sf.json.JsonConfig;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -376,6 +378,12 @@ public class TipsUtils {
         }
 
         return obj;
+    }
+
+    public static JSONObject tipsFromJSONObject(TipsDao tipsDao) {
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
+        return json;
     }
 
     public static void main(String[] args) throws Exception {

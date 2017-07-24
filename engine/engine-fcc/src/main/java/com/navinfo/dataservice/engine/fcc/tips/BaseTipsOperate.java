@@ -49,6 +49,7 @@ public class BaseTipsOperate {
     public static int TIP_LIFECYCLE_DELETE = 1;
     public static int TIP_LIFECYCLE_UPDATE = 2;
     public static int TIP_LIFECYCLE_ADD = 3;
+	public static int TIP_LIFECYCLE_INIT = 0;//初始化
 
     public static int TIP_NOT_DELETE = 2;//不用执行删除
     public static int TIP_PHYSICAL_DELETE = 1;//物理删除
@@ -258,10 +259,9 @@ public class BaseTipsOperate {
 	 * @time:2016-11-16 下午5:21:09
 	 */
 	public void deleteByRowkey(String rowkey, int delType) throws Exception {
-		Connection hbaseConn;
 		try {
 			//物理删除
-			if(delType==1){
+			if(delType == TIP_PHYSICAL_DELETE){
 				physicalDel(rowkey);
 			}
 			//逻辑删除

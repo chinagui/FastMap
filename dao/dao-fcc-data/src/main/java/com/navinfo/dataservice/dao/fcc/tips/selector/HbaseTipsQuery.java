@@ -118,10 +118,13 @@ public class HbaseTipsQuery {
 					if (queryColNames != null && queryColNames.length != 0) {
 						for (String colName : queryColNames) {
 							// 1.update track
-							JSONObject value = JSONObject.fromObject(new String(result
-									.getValue("data".getBytes(), colName.getBytes())));
-
-							resultJson.put(colName, value);
+							byte[] bytes = result.getValue("data".getBytes(), colName.getBytes());
+							if(bytes != null){
+								JSONObject value = JSONObject.fromObject(new String(bytes));
+								resultJson.put(colName, value);
+							}else{
+								resultJson.put(colName, null);
+							}
 						}
 						map.put(new String(result.getRow()), resultJson);
 					}
@@ -136,7 +139,9 @@ public class HbaseTipsQuery {
 			throw new Exception("根据rowkeys查询tips信息出错,原因："
 					+ e.getMessage(), e);
 		}finally {
-			htab.close();
+			if(htab!=null) {
+				htab.close();
+			}
 		}
 
 		long end = System.currentTimeMillis();
@@ -144,4 +149,6 @@ public class HbaseTipsQuery {
 
 		return map;
 	}
+
+
 }

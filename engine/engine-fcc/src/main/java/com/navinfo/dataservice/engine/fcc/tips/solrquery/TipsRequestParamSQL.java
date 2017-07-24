@@ -302,7 +302,7 @@ public class TipsRequestParamSQL {
 
 	}
 
-	public String getTipsMobileWhere(String wkt, String date,
+	public String getTipsMobileWhere(String date,
 			int[] notExpSourceType) {
 		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
 
@@ -314,12 +314,17 @@ public class TipsRequestParamSQL {
 		// 过滤的类型
 		// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
 		if (notExpSourceType != null && notExpSourceType.length != 0) {
-
-			String ids = org.apache.commons.lang.StringUtils.join(
-					Arrays.asList(notExpSourceType), ",");
-
-			param += " AND s_sourceType NOT  IN (" + ids + ") ";
-
+			StringBuilder builder = new StringBuilder(" AND s_sourceType NOT  IN (");
+			for (int i = 0; i < notExpSourceType.length; i++) {
+				String fieldValue = String.valueOf(notExpSourceType[i]);
+				if (i > 0) {
+					builder.append(",");
+				}
+				builder.append("'");
+				builder.append(fieldValue);
+				builder.append("'");
+			}
+			builder.append(")");
 		}
 		return param;
 
@@ -620,21 +625,21 @@ public class TipsRequestParamSQL {
 		// 1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
 		if (workStatus == TipsWorkStatus.PREPARED_CHECKING) {
 
-			return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=2 AND t_dEditStatus=2 and handler="
+			return ("id IN  (select (column_value) from table(clob_to_table(?))) and   stage=2 AND t_dEditStatus=2 and handler="
 					+ worker + "");
 
 		}
 		// 日编已质检tips：取stage=7，且t_dEditStatus=2，且handler=质检子任务对应的质检员ID；
 		else if (workStatus == TipsWorkStatus.CHECK_HAS_FINISHED) {
 
-			return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=2 and handler="
+			return ("id IN  (select (column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=2 and handler="
 					+ checker + "");
 
 		}
 		// ③日编质检有问题待确认tips: 取stage=7，且t_dEditStatus=1，且handler=质检子任务对应的质检员ID；
 		else if (workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM) {
 
-			return ("id IN  (select to_number(column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=1 and handler="
+			return ("id IN  (select (column_value) from table(clob_to_table(?))) and   stage=7 AND t_dEditStatus=1 and handler="
 					+ checker + "");
 
 		}
@@ -659,11 +664,11 @@ public class TipsRequestParamSQL {
 		 */
 
 		if (jsonReq.containsKey("wkt")) {
-			String wkt = jsonReq.getString("wkt");
+			
 			if (builder.length() > 0) {
-				builder.append(" AND sdo_relate(wkt,sdo_geometry("+wkt+",8307),'mask=anyinteract') = 'TRUE' ");
+				builder.append(" AND sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 			} else {
-				builder.append(" sdo_relate(wkt,sdo_geometry("+wkt+",8307),'mask=anyinteract') = 'TRUE' ");
+				builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 			}
 		}
 

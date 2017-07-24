@@ -15,7 +15,7 @@ public class SolrQueryUtils {
     private static List<String> notDisplayTipTpye=new ArrayList<String>();
 	
 	public static String NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL = "";
-	
+
 	static{
 
 		/**
@@ -84,21 +84,24 @@ public class SolrQueryUtils {
         if(notDisplayTipTpye.size()!=0){
 			
 			StringBuilder builder= new StringBuilder();
-			builder.append("-s_sourceType:(");
-			
-			if (notDisplayTipTpye.size() > 0) {
 
-				for (int i = 0; i < notDisplayTipTpye.size(); i++) {
-					String type = notDisplayTipTpye.get(i);
-					if (i > 0) {
-						builder.append(" ");
-					}
-					builder.append(type);
-				}
-				builder.append(")");
-			}
-			
-			NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL=builder.toString();
+            builder.append(" s_sourceType not in (");
+
+            if (notDisplayTipTpye.size() > 0) {
+
+                for (int i = 0; i < notDisplayTipTpye.size(); i++) {
+                    String type = notDisplayTipTpye.get(i);
+                    if (i > 0) {
+                        builder.append(",");
+                    }
+                    builder.append("'");
+                    builder.append(type);
+                    builder.append("'");
+                }
+                builder.append(")");
+            }
+
+            NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL=builder.toString();
 			
 		}
 	}

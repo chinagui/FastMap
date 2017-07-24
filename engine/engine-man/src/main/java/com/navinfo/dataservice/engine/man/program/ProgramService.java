@@ -38,7 +38,6 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
-import com.navinfo.dataservice.engine.man.grid.GridOperation;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;

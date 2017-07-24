@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.dao.fcc;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
@@ -223,7 +225,7 @@ public class SolrController {
 			List<TipsDao> sdList = operator.query(builder.toString(), wkt);
 
 			for (TipsDao tipsDao:sdList) {
-				JSONObject snapshot = JSONObject.fromObject(tipsDao);
+                JSONObject snapshot = this.tipsFromJSONObject(tipsDao);
 				snapshots.add(snapshot);
 			}
 		}
@@ -301,7 +303,7 @@ public class SolrController {
 			List<TipsDao> sdList = operator.query("select * from tips_index where "+builder);
 			List<JSONObject> snapshots = new ArrayList<JSONObject>();
 			for (TipsDao tipsDao:sdList) {
-				JSONObject snapshot = JSONObject.fromObject(tipsDao);
+                JSONObject snapshot = this.tipsFromJSONObject(tipsDao);
 				snapshots.add(snapshot);
 			}
 			return snapshots;
@@ -310,5 +312,9 @@ public class SolrController {
 		}
 	}
 
-	
+    public static JSONObject tipsFromJSONObject(TipsDao tipsDao) {
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
+        return json;
+    }
 }

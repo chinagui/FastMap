@@ -13,11 +13,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.job.JobService;
+import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
@@ -550,15 +554,18 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/batchQuickTask")
 	public ModelAndView batchQuickTask(HttpServletRequest request){
 		try{	
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			//taskId,taskType
-			int dbId= dataJson.getInt("dbId");
-			JSONArray pois = dataJson.getJSONArray("pois");
-			JSONArray tips = dataJson.getJSONArray("tips");
-			int subtaskId=dataJson.getInt("subtaskId");
-			int taskId=dataJson.getInt("taskId");
+//			int dbId= dataJson.getInt("dbId");
+//			JSONArray pois = dataJson.getJSONArray("pois");
+//			JSONArray tips = dataJson.getJSONArray("tips");
+//			int subtaskId=dataJson.getInt("subtaskId");
+			int taskId = dataJson.getInt("taskId");
+			TaskService.getInstance().creatBatchQuickTaskJob(dataJson, userId, taskId);
 			
-			TaskService.getInstance().batchQuickTask(dbId,subtaskId,taskId,pois,tips);
+			
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
@@ -166,6 +167,9 @@ public class JobService {
                     case DAY2MONTH:
                         runner = new Day2MonthJobRunner();
                         break;
+                    case MID2QUICK:
+                    	runner = new TaskMedium2QuickRunner();
+                    	break;
                 }
 
                 if (runner == null) {
@@ -180,6 +184,30 @@ public class JobService {
             throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+    
+    
+    /**
+     * 中线任务转快线任务
+     *
+     * @param itemId     目标对象ID
+     * @param itemType   目标对象类型（项目、批次）
+     * @param operator   执行人
+     * @param isContinue 是否继续
+     * @return jobId
+     * @throws Exception
+     */
+    public long taskMedium2Quick(long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
+        try {
+            if(itemType != ItemType.TASK){
+                throw new Exception("不支持的对象类型 "+itemType);
+            }
+            TaskMedium2QuickRunner runner = new TaskMedium2QuickRunner();
+            return runner.run(itemId, itemType, isContinue, operator, parameter);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new Exception("执行中转快失败，原因为:" + e.getMessage(), e);
         }
     }
 

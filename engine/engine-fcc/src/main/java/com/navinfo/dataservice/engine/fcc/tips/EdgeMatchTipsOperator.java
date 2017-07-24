@@ -11,6 +11,7 @@ import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
@@ -19,10 +20,13 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 
 public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
@@ -50,9 +54,11 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 	public String create( JSONObject g_location, String content, int user, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn;
+		java.sql.Connection tipsConn=null;
+		Table htab = null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			// 1.rowkey
@@ -132,20 +138,28 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 					.toString().getBytes());
 
 			// solr index json
-			TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, stage, currentDate, user,
+			TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, stage, currentDate, user,
 					trackJson, sourceJson, jsonGeom, new JSONObject(), feedbackObj);
-			solr.addTips(JSONObject.fromObject(tipsIndexModel));
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			operator.save(tipsIndexModel);
+			//solr.addTips(JSONObject.fromObject(tipsIndexModel));
 
 			List<Put> puts = new ArrayList<Put>();
 			puts.add(put);
 			htab.put(puts);
-			htab.close();
-			htab.close();
+
 			
 			return rowkey;
 		} catch (IOException e) {
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+			if(htab != null) {
+				htab.close();
+			}
 		}
 
 	}

@@ -55,8 +55,6 @@ public class SyncTips2Solr {
 	protected static int total=0;
 	protected static VMThreadPoolExecutor poolExecutor;
 	
-	
-	
 	private String index;
 	private String tableName;
 	private SolrBulkUpdater sbu;

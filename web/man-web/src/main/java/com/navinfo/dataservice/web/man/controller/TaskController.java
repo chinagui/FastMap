@@ -563,10 +563,9 @@ public class TaskController extends BaseController {
 //			JSONArray tips = dataJson.getJSONArray("tips");
 //			int subtaskId=dataJson.getInt("subtaskId");
 			int taskId = dataJson.getInt("taskId");
-			TaskService.getInstance().creatBatchQuickTaskJob(dataJson, userId, taskId);
+			long jobId = TaskService.getInstance().creatBatchQuickTaskJob(dataJson, userId, taskId);
 			
-			
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success("jobId:"+jobId));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

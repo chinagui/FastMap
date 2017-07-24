@@ -1266,7 +1266,7 @@ public class TaskService {
 //					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
 			
 			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
 			
@@ -1346,7 +1346,7 @@ public class TaskService {
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
 			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
+					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
 					+ "         where tpt.task_id = t.task_id"
 					+ "           and rownum = 1),-1) other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
@@ -4752,9 +4752,10 @@ public class TaskService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public void creatBatchQuickTaskJob(JSONObject dataJson, long userId, int taskId) throws Exception{
+	public long creatBatchQuickTaskJob(JSONObject dataJson, long userId, int taskId) throws Exception{
 		try{
-			JobService.getInstance().taskMedium2Quick((long)taskId, ItemType.TASK, userId, false, dataJson.toString());
+			long jobId = JobService.getInstance().taskMedium2Quick((long)taskId, ItemType.TASK, userId, false, dataJson.toString());
+			return jobId;
 		}catch(Exception e){
 			log.error("创建中转快任务失败:"+e.getMessage(), e);
 			throw new Exception("创建中转快任务失败:"+e.getMessage(), e);

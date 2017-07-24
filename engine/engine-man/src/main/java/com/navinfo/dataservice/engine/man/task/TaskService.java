@@ -3928,11 +3928,11 @@ public class TaskService {
 			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
-			List<Integer> pois = queryImportantPid();
+			List<String> pois = queryImportantPid();
 			if(pois.size() > 0){
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i< pois.size(); i++){
-					sb.append(String.valueOf(pois.get(i))+",");
+					sb.append(pois.get(i)+",");
 				}
 				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
 				log.info("重要POI一览表中的POI_ID为：" + poi);
@@ -4014,10 +4014,10 @@ public class TaskService {
 	 * @throws SQLException 
 	 * 
 	 * */
-	public List<Integer> queryImportantPid() throws SQLException{
+	public List<String> queryImportantPid() throws SQLException{
 		//通过api调用
 		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<Integer> pids = api.queryImportantPid();
+		List<String> pids = api.queryImportantPid();
 		return pids;
 	}
 	

@@ -429,10 +429,10 @@ public class CollectScenario{
 			}
 			
 			String pids = sb.deleteCharAt(sb.length() - 1).toString();
-			String parameter = "d.LINK_PID";
-			if(importantPids.size() > 900){
-				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
-			}
+			//String parameter = "d.LINK_PID";
+//			if(importantPids.size() > 900){
+//				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
+//			}
 			
 			StringBuffer sqlSb = new StringBuffer();
 			sqlSb.append("update LINK_PRE_TEST d"

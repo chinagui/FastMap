@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
-import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -32,7 +31,6 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
@@ -3463,14 +3461,14 @@ public class TaskService {
 				}
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
-//			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-//			List<String> tipsPids=new ArrayList<String>(); 
-// 				for(Object tipRowkey:tips){ 
-// 					tipsPids.add(tipRowkey.toString()); 
-// 				}
-//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-//				api.batchQuickTask(taskId, subtaskId,tipsPids); 
-// 			}
+			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+			List<String> tipsPids=new ArrayList<String>(); 
+ 				for(Object tipRowkey:tips){ 
+ 					tipsPids.add(tipRowkey.toString()); 
+ 				}
+				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+ 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

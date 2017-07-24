@@ -56,7 +56,7 @@ public class JobService {
     }
     
     /**
-     * 执行tips转mark
+     * 中转快
      *
      * @param itemId     目标对象ID
      * @param itemType   目标对象类型（项目、任务、子任务）

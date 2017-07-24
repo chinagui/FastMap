@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -659,5 +660,43 @@ public class PoiEditStatus {
 		}
 		
 	}
+	
+	
+	/**
+	 * 查询鲜度验证记录
+	 * @param conn
+	 * @param dbId
+	 * @param uOrDfids
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String,Object> getFreshData(Connection conn,Long objPid) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT * FROM POI_EDIT_STATUS WHERE FRESH_VERIFIED = 1 AND PID = ?");
+			Object[] params={objPid};
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+					while (rs.next()) {
+						result.put("status", rs.getInt("STATUS"));
+						result.put("uploadDate", DateUtils.dateToString(rs.getTimestamp("UPLOAD_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+					}
+					return result;
+				}	
+			};
+			
+			QueryRunner run = new QueryRunner();
+			logger.info("getUploadDate sql:" + sb.toString());
+			return run.query(conn,sb.toString(),params,rsHandler);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("poiWithOutSubtask");
+		}
+	}
+	
 	
 }

@@ -634,4 +634,46 @@ public class IxPoiSelector {
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * 根据kindcode查询pid
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param pidList
+	 * @param isDele true:包括删除的记录
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<Long> getPidsByKindCode(Connection conn,String kindCode,boolean isDele) throws ServiceException{
+		List<Long> pids = new ArrayList<Long>();
+		if(kindCode == null){
+			return pids;
+		}
+		try{
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT DISTINCT PID FROM IX_POI WHERE KIND_CODE = "+kindCode);
+			if(!isDele){
+				sql.append(" AND U_RECORD <>2");
+			}
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long pid = rs.getLong("PID");
+						result.add(pid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getPidsByKindCode查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
+			return pids;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
 }

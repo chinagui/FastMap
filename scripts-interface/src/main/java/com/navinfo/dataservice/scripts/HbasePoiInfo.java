@@ -81,7 +81,7 @@ public class HbasePoiInfo {
 
 			cache++;
 
-			if (cache > 10000) {
+			if (cache > 200000) {
 				// insert operation
 				createMapBetweenPoiAndDbId();
 

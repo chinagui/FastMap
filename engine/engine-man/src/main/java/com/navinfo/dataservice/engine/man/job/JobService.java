@@ -55,27 +55,6 @@ public class JobService {
         }
     }
     
-    /**
-     * 中转快
-     *
-     * @param itemId     目标对象ID
-     * @param itemType   目标对象类型（项目、任务、子任务）
-     * @param operator   执行人
-     * @param isContinue 是否继续
-     * @return jobId
-     * @throws Exception
-     */
-    public long taskMedium2Quick(long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
-        try {
-            if(itemType == ItemType.LOT){
-                throw new Exception("不支持的对象类型 "+itemType);
-            }
-            return runCommonJob(JobType.MID2QUICK, itemId, itemType , operator, isContinue, parameter);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new Exception("中线转快线任务失败，原因为:" + e.getMessage(), e);
-        }
-    }
 
     /**
      * 执行日落月

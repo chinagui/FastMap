@@ -18,8 +18,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.navinfo.dataservice.engine.man.job.JobService;
-import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -4740,24 +4738,5 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-	
-	/**
-	 * 创建中转快任务
-	 * @param JSONObject
-	 * @param long
-	 * @param int
-	 * @throws Exception 
-	 * 
-	 * */
-	public long creatBatchQuickTaskJob(JSONObject dataJson, long userId, int taskId) throws Exception{
-		try{
-			long jobId = JobService.getInstance().taskMedium2Quick((long)taskId, ItemType.TASK, userId, false, dataJson.toString());
-			return jobId;
-		}catch(Exception e){
-			log.error("创建中转快任务失败:"+e.getMessage(), e);
-			throw new Exception("创建中转快任务失败:"+e.getMessage(), e);
-		}
-	}
 		
 }

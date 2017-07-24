@@ -106,4 +106,8 @@
 		class="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJob"
 		request="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJobRequest" >
 	</type>
+		<type name="taskMedium2QuickJob" 
+		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
+		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
+	</type>
 	</mapping>

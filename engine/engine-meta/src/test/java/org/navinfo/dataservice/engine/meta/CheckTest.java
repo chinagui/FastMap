@@ -8,11 +8,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
+import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
@@ -21,6 +23,7 @@ import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointKindRule.ScPointKindRule;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
+import com.navinfo.dataservice.engine.meta.service.MetadataApiImpl;
 
 public class CheckTest {
 
@@ -127,6 +130,30 @@ public class CheckTest {
 			System.out.println(scPointKindNew5List.toString());
 			System.out.println(chainNameMap.toString());
 			System.out.println(foodtypeNameMap.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test08() {
+		try {
+			Map<String, Map<String, String>> data = ScPointAdminarea.getInstance().scPointAdminareaByAdminId();
+			System.out.println(data.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test09() {
+		try {
+			MetadataApi metadataApi = new MetadataApiImpl();
+			Map<String, Map<String, String>> map = metadataApi.scPointAdminareaByAdminId();
+			
+			System.out.println(map.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();

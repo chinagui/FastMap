@@ -994,6 +994,7 @@ public class ProgramService {
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("jobs", new JSONArray());
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}

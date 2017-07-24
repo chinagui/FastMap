@@ -241,7 +241,13 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				values+=" ? ";
 				value.add(bean.getRoadLength());
 			};
-			if (bean!=null&&bean.getSourceCode()!=null && bean.getSourceCode()!=0 && StringUtils.isNotEmpty(bean.getSourceCode().toString())){
+			if (bean!=null&&bean.getReportUserId()!=0){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
+				insertPart+=" REPORT_USER_ID";
+				values+=" ? ";
+				value.add(bean.getReportUserId());
+			};
+			if (bean!=null&&bean.getSourceCode()!=0 ){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 				insertPart+=" SOURCE_CODE";
 				values+=" ? ";

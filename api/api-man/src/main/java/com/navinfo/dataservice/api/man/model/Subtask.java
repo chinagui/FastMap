@@ -35,7 +35,7 @@ public class Subtask implements Serializable{
 	private Integer type ;
 	private Integer createUserId ;
 	private Timestamp createDate ;
-	private Integer exeUserId ;
+	private int exeUserId ;
 	private Integer exeGroupId ;
 	private Integer status ;
 	private Timestamp planStartDate ;
@@ -180,11 +180,10 @@ public class Subtask implements Serializable{
 		changeFields.put("CREATE_DATE", createDate);
 		this.createDate = createDate;
 	}
-	public Integer getExeUserId() {
-		if(null==exeUserId){return 0;}
+	public int getExeUserId() {
 		return exeUserId;
 	}
-	public void setExeUserId(Integer exeUserId) {
+	public void setExeUserId(int exeUserId) {
 		changeFields.put("EXE_USER_ID", exeUserId);
 		this.exeUserId = exeUserId;
 	}

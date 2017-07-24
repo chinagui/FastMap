@@ -34,7 +34,8 @@ public class TaskMedium2QuickPhase extends JobPhase{
 			request.put("phaseId", jobProgress.getPhaseId());
 			request.put("jobId", this.job.getJobId());
 			
-			api.createJob("taskMedium2QuickJob", request,  job.getOperator(), jobRelation.getItemId(), "中转快");
+			long jobId = api.createJob("taskMedium2QuickJob", request,  job.getOperator(), jobRelation.getItemId(), "中转快");
+			jobProgress.setMessage("jobId:"+jobId);
 			jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
 			
 			return jobProgress.getStatus();

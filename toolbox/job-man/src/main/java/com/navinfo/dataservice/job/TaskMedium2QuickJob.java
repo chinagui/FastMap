@@ -49,8 +49,10 @@ public class TaskMedium2QuickJob extends AbstractJob{
     			TipsOperator tipsOperator = new TipsOperator();
         		tipsOperator.batchQuickTask(taskId, subtaskId, tipsPids);
      		}
-    		
-    		TaskService.getInstance().batchQuickTask(dbId, subtaskId, taskId, pois, tips);
+    		//poi批快线任务号
+    		if(pois != null && pois.size() > 0){
+    			TaskService.getInstance().batchQuickTask(dbId, subtaskId, taskId, pois, tips);
+    		}
     		api.updateJobProgress(phaseId, 2, "jobId:"+jobId);
     		log.info("jobId:"+jobId+",phaseId:"+phaseId);
 		} catch (Exception e) {

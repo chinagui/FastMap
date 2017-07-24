@@ -8,6 +8,7 @@ import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
 import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
@@ -53,6 +54,7 @@ public class JobService {
             throw new Exception("执行tips转mark失败，原因为:" + e.getMessage(), e);
         }
     }
+    
 
     /**
      * 执行日落月
@@ -211,6 +213,8 @@ public class JobService {
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
+		}else if(jobType == JobType.MID2QUICK){
+			runner = new TaskMedium2QuickRunner();
 		}
 		return runner;
 	}

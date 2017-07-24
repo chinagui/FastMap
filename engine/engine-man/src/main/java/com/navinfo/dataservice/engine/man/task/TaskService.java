@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -3455,14 +3455,14 @@ public class TaskService {
 				}
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
-			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-			List<String> tipsPids=new ArrayList<String>(); 
- 				for(Object tipRowkey:tips){ 
- 					tipsPids.add(tipRowkey.toString()); 
- 				}
-				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				api.batchQuickTask(taskId, subtaskId,tipsPids); 
- 			}
+//			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+//			List<String> tipsPids=new ArrayList<String>(); 
+// 				for(Object tipRowkey:tips){ 
+// 					tipsPids.add(tipRowkey.toString()); 
+// 				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+//				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+// 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -4734,7 +4734,5 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-
 		
 }

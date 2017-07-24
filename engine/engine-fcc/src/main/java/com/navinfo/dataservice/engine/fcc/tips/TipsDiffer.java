@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
 import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
 import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
 import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
@@ -28,12 +31,12 @@ public class TipsDiffer {
 	public static void tipsDiff( Map<String, String> allNeedDiffRowkeysCodeMap) throws Exception {
 		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
-		SolrBulkUpdater solrConn = null;
         Table htab = null;
-        try {
+   	 	java.sql.Connection  oraConnection=null;
+		try 
+		{
+			oraConnection = DBConnector.getInstance().getTipsIdxConnection();
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			solrConn = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
-					TipsBuilderUtils.ThreadCount);
 			Set<String> rowkeySet = allNeedDiffRowkeysCodeMap.keySet();
             htab = hbaseConn.getTable(TableName
                     .valueOf(HBaseConstant.tipTab));
@@ -52,20 +55,21 @@ public class TipsDiffer {
 					// 20170331新增，有新增的robot中没有支持的tips processor返回空
 					if (processor != null) {
 
-						processor.setSolrConn(solrConn);
+						processor.setTipsOracleConn(oraConnection);
 
 						processor.diff(rowkey, hbaseConn);
 
-						solrConn.commit();
 					}
 
 				}
 			}
 
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oraConnection);
 			logger.error(
 					"tips差分报错：rowkey:" + errRowkey + ";出错原因：" + e.getMessage(),
 					e);
+			
 			throw new Exception("tips差分报错：rowkey:" + errRowkey + ";出错原因："
 					+ e.getMessage(), e);
 		} finally {
@@ -74,13 +78,10 @@ public class TipsDiffer {
             if(htab != null) {
                 htab.close();
             }
-
-	/*		 *  * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
-			 *
-			 * if(solrConn!=null){ solrConn.close(); }*/
-
+            DbUtils.commitAndCloseQuietly(oraConnection);
 
 		}
+		
 
 	}
 

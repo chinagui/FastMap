@@ -639,21 +639,23 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 							String key = (String) keys.next();
 							JSONArray tmpPhoto = photos.getJSONArray(key);
 							if(tmpPhoto != null && !tmpPhoto.isEmpty() && tmpPhoto.size() > 0){
-								String photoName = (String) tmpPhoto.get(0);
-								String photoPid = photoName.replace(".jpg", "");
-								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
-								ixPoiPhoto.setPid(photoPid);
-								if("p1".equals(key)){
-									ixPoiPhoto.setTag(1);
-								}
-								if("p2".equals(key)){
-									ixPoiPhoto.setTag(4);
-								}
-								if("p3".equals(key)){
-									ixPoiPhoto.setTag(100);
-								}
-								if("p4".equals(key)){
-									ixPoiPhoto.setTag(100);
+								for(int i=0;i<tmpPhoto.size();i++){
+									String photoName = (String) tmpPhoto.getString(i);
+									String photoPid = photoName.replace(".jpg", "");
+									IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
+									ixPoiPhoto.setPid(photoPid);
+									if("p1".equals(key)){
+										ixPoiPhoto.setTag(1);
+									}
+									if("p2".equals(key)){
+										ixPoiPhoto.setTag(4);
+									}
+									if("p3".equals(key)){
+										ixPoiPhoto.setTag(100);
+									}
+									if("p4".equals(key)){
+										ixPoiPhoto.setTag(100);
+									}
 								}
 							}
 						}	
@@ -785,6 +787,8 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 		sb.append("               NAVI_GEOM.CREATEPOINT(:1, :2),");
 		sb.append("               'SDO_NUM_RES=1 DISTANCE=1000 UNIT=METER') = 'TRUE' ");
 		sb.append("    and r.function_class=5 ");
+		sb.append("    and r.u_record <> 2 ");
+		sb.append("    and f.u_record <> 2 ");
 		sb.append(" UNION ALL ");
 		sb.append(" select r.link_pid,r.function_class,r.geometry ");
 		sb.append("   from rd_link r, rd_link_form f ");
@@ -794,6 +798,8 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 		sb.append("               NAVI_GEOM.CREATEPOINT(:3, :4),");
 		sb.append("               'SDO_NUM_RES=1 DISTANCE=1000 UNIT=METER') = 'TRUE'");
 		sb.append("    and r.function_class<>5 ");
+		sb.append("    and r.u_record <> 2 ");
+		sb.append("    and f.u_record <> 2 ");
 		try{
 			pstmt = this.conn.prepareStatement(sb.toString());
 			pstmt.setDouble(1, x);

@@ -6,8 +6,7 @@ package com.navinfo.dataservice.engine.man.job.bean;
 public enum JobType {
     TiPS2MARK(1),
     DAY2MONTH(2),
-    NOTASK2MID(3), //无任务转中
-	MID2QUICK(4); //中转快
+    NOTASK2MID(3); //无任务转中
 
     private int value = 0;
 

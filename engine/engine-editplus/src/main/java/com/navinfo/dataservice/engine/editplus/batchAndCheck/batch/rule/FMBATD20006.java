@@ -84,8 +84,6 @@ public class FMBATD20006 extends BasicBatchRule {
                     flag.setSrcRecord(5);
                 }
 
-                flag.setVerRecord(5);
-
                 flag.setFieldVerified(0);
 
                 if (flag.getSrcRecord() == 5) {
@@ -93,11 +91,8 @@ public class FMBATD20006 extends BasicBatchRule {
                     hadSrcRecord5 = true;
                 }
 
-            } else if (poi.getHisOpType().equals(OperationType.PRE_DELETED)
-                    || poi.getHisOpType().equals(OperationType.UPDATE)) {
-
-                flag.setVerRecord(5);
             }
+            flag.setVerRecord(5);
         }
         if (hadSrcRecord5) {
 

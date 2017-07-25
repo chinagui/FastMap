@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
@@ -140,7 +142,7 @@ public class CollectScenario{
 			initLinkTable(dailyConn);
 			//将link表中的所有数据保存到目标表中，且状态为车采
 			insertLinkTableFromTempTable(dailyConn);
-//			//1-2级的直接保存为车采
+//			1-2级的直接保存为车采
 //			insertEditPreCarColectionLink(dailyConn);
 			//10级及以上不考虑采集方式直接保存
 			insertEditPreOriginalLink(dailyConn);
@@ -415,7 +417,7 @@ public class CollectScenario{
 		try{
 			//通过api调用元数据库重要POI一览表中的POI数据
 			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<Integer> importantPids = api.queryImportantPid();
+			List<String> importantPids = api.queryImportantPid();
 
 			if(importantPids == null || importantPids.size() == 0){ 
 				return; 
@@ -427,14 +429,25 @@ public class CollectScenario{
 			}
 			
 			String pids = sb.deleteCharAt(sb.length() - 1).toString();
-			String parameter = "d.LINK_PID";
-			if(importantPids.size() > 900){
-				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
-			}
+			//String parameter = "d.LINK_PID";
+//			if(importantPids.size() > 900){
+//				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
+//			}
 			
-			String sql = "update LINK_PRE_TEST d set d.RANGE = 'A' where d.LINK_PID in ("+pids+")";
+			StringBuffer sqlSb = new StringBuffer();
+			sqlSb.append("update LINK_PRE_TEST d"
+					+ "  set d.RANGE = 'A'"
+					+ "  where d.PID in (select p.pid"
+					+ "                   from ix_poi p,"
+					+ "                        (select column_value from table(clob_to_table(?))) t"
+					+ "                  where p.poi_num = t.column_value)");
+			Clob clob=ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, pids);
+			
+			String sql = sqlSb.toString();
+			
 			log.info("从元数据库中查询出的重点POI更新到临时表sql:"+sql);
-			run.execute(dailyConn, sql);
+			run.update(dailyConn, sql, clob);
 		}catch(Exception e){
 			log.error("元数据库中查询出的重点POI更新到临时表异常:"+e.getMessage(),e);
 			throw e;

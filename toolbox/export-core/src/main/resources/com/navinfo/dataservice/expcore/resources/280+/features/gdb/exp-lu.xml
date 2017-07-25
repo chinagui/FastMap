@@ -31,7 +31,7 @@
 
 
             <!--提取图廓点-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_LU_NODE
                        (PID)
@@ -48,7 +48,7 @@
 
         <step value="10">
             <!--根据图框线提取face-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_LU_FACE
                            (PID)
@@ -68,7 +68,7 @@
         </step>
         <step value="13">
             <!--根据图框线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_LU_LINK
                            (PID)
@@ -78,7 +78,7 @@
                          ]]></sql>
 
             <!--根据图廓点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_LU_LINK
                       (PID)

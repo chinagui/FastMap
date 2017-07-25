@@ -315,7 +315,7 @@
         目前仅支持按图幅提取
         -->
         <step value="13">
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
                       (PID)
@@ -418,7 +418,7 @@
         </step>
         <step value="19">
             <!--提取不在图幅内的link-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
@@ -428,7 +428,7 @@
                         WHERE P.PID = T.PID);
                     ]]></sql>
             <!--提取不在图幅内的node-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_NODE
@@ -536,7 +536,7 @@
         </step>
         <step value="19">
             <!--提取不在图幅内的link-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
@@ -653,7 +653,7 @@
                 rd_inter、rd_road、link、node
             -->
             <!--补充RD_OBJECT组成要素：rd_link-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
@@ -663,7 +663,7 @@
                         WHERE P.PID = T.PID);
                     ]]></sql>
             <!--补充RD_OBJECT组成要素：rd_node-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_NODE
@@ -700,7 +700,7 @@
                 RD_INTER 的组成要素link和node
             -->
             <!--补充RD_OBJECT组成要素：RD_INTER 的组成要素link-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
@@ -710,7 +710,7 @@
                         WHERE P.PID = T.PID);
                     ]]></sql>
             <!--补充RD_OBJECT组成要素：RD_INTER 的组成要素node-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_NODE
@@ -723,7 +723,7 @@
                 补充RD_OBJECT组成要素：
                 RD_ROAD 的组成要素link
             -->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK

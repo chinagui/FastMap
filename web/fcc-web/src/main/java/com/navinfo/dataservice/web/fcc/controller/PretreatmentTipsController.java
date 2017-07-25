@@ -198,7 +198,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType,dbId);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
 
 			JSONObject  data=new JSONObject();
 			

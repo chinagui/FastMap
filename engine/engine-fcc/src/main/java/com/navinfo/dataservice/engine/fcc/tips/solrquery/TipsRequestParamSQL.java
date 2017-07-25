@@ -74,12 +74,12 @@ public class TipsRequestParamSQL {
 				stages.add(6);
 				stages.add(7);
 				stages.add(8);
-			} else if (pType.equals("fc")) {// FC 预处理 钟小明
-				stages.add(1);
-				stages.add(2);
-				stages.add(3);
-				stages.add(5);
-				stages.add(6);
+			} else if (pType.equals("fc")) {// FC 预处理 钟小明 20170724和玉秀确认，FC预处理不限制stage
+//				stages.add(1);
+//				stages.add(2);
+//				stages.add(3);
+//				stages.add(5);
+//				stages.add(6);
 			}
 		} else {// web 刘哲
 			if ("d".equals(mdFlag)) {// 日编
@@ -142,45 +142,45 @@ public class TipsRequestParamSQL {
 
 		if (stages.size() > 0) {
 			this.getIntArrayQuery(builder, stages, "stage");
+		}
+		if (StringUtils.isNotEmpty(pType)) {
+			if (pType.equals("sl")) {// 矢量化 赵航
+			} else if (pType.equals("ms")) {// 生产管理 万冲
+				builder.append(" and t_tipStatus=2");
+				// 20170615 过滤内业Tips
+				builder.append(" and not REGEXP_LIKE(s_sourceType,'^80')");
+				// 20170510 增加中线有无过滤
+				addTaskFilterSql(noQFilter, builder);
+			} else if (pType.equals("fc")) {// FC 预处理 钟小明
+				builder.append(" AND (t_tipStatus=2 OR (s_sourceType='8001' AND t_tipStatus=1))");
+			}
+		} else {// web 刘哲
+			StringBuilder webBuilder = new StringBuilder();
+			JSONArray workStatus = null;
+			if (jsonReq.containsKey("workStatus")) {
+				workStatus = jsonReq.getJSONArray("workStatus");
+			}
 
-			if (StringUtils.isNotEmpty(pType)) {
-				if (pType.equals("sl")) {// 矢量化 赵航
-				} else if (pType.equals("ms")) {// 生产管理 万冲
-					builder.append(" and t_tipStatus=2");
-					// 20170615 过滤内业Tips
-					builder.append(" and not REGEXP_LIKE(s_sourceType,'^80')");
-					// 20170510 增加中线有无过滤
-					addTaskFilterSql(noQFilter, builder);
-				} else if (pType.equals("fc")) {// FC 预处理 钟小明
-					builder.append(" AND (t_tipStatus=2 OR (s_sourceType='8001' AND t_tipStatus=1))");
+			// 状态过滤
+			if (workStatus == null
+					|| workStatus.contains(9)
+					|| (workStatus.contains(0) && workStatus.contains(1) && workStatus
+							.contains(2))) {
+				if (webBuilder.length() > 0) {
+					webBuilder.append(" OR ");
 				}
-			} else {// web 刘哲
-				StringBuilder webBuilder = new StringBuilder();
-				JSONArray workStatus = null;
-				if (jsonReq.containsKey("workStatus")) {
-					workStatus = jsonReq.getJSONArray("workStatus");
-				}
+				webBuilder.append("(t_tipStatus=2)");
+			} else {
+				if (workStatus.contains(0)) {
 
-				// 状态过滤
-				if (workStatus == null
-						|| workStatus.contains(9)
-						|| (workStatus.contains(0) && workStatus.contains(1) && workStatus
-								.contains(2))) {
 					if (webBuilder.length() > 0) {
 						webBuilder.append(" OR ");
 					}
-					webBuilder.append("(t_tipStatus=2)");
-				} else {
-					if (workStatus.contains(0)) {
-
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
 
 //						webBuilder.append("(");
 //						webBuilder.append("(");
-						webBuilder
-								.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
+					webBuilder
+							.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
 //						webBuilder.append(")");
 //
 //						// 待质检的tips
@@ -189,41 +189,40 @@ public class TipsRequestParamSQL {
 
 //						webBuilder.append(")");
 
-					}
-					if (workStatus.contains(1)) {
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
-						webBuilder
-								.append("(stage in (2,7) AND t_dEditStatus=1)");
-					}
-					if (workStatus.contains(2)) {
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
-						webBuilder
-								.append("(stage in (2,7) AND t_dEditStatus=2)");
-					}
 				}
-
-				if (webBuilder.length() > 0) {
-					if (builder.length() > 0) {
-						builder.append(" AND ");
+				if (workStatus.contains(1)) {
+					if (webBuilder.length() > 0) {
+						webBuilder.append(" OR ");
 					}
-					builder.append("(");
-					builder.append(webBuilder);
-					builder.append(")");
+					webBuilder
+							.append("(stage in (2,7) AND t_dEditStatus=1)");
 				}
+				if (workStatus.contains(2)) {
+					if (webBuilder.length() > 0) {
+						webBuilder.append(" OR ");
+					}
+					webBuilder
+							.append("(stage in (2,7) AND t_dEditStatus=2)");
+				}
+			}
 
-				// 类型过滤
-				// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
-				// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+			if (webBuilder.length() > 0) {
+				if (builder.length() > 0) {
+					builder.append(" AND ");
+				}
+				builder.append("(");
+				builder.append(webBuilder);
+				builder.append(")");
+			}
+
+			// 类型过滤
+			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
 //				if (subTaskType == 3) {
 //					builder.append(" AND s_sourceType!='8001'");// 接边Tips
 //				} else if (subTaskType == 4) {// 4 区域粗编
 //					builder.append(" AND s_sourceType='8001'");// 预处理提交
 //				}
-			}
 		}
 
 		if (builder.length() > 0) {

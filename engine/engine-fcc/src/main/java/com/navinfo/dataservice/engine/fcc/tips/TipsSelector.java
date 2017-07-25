@@ -1434,7 +1434,7 @@ public class TipsSelector {
 
 		// 根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
-            if(!json.containsKey("deep")) {
+            if(!json.containsKey("deep")||StringUtils.isEmpty(json.getString("deep"))) {
                 continue;
             }
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));

@@ -2348,14 +2348,14 @@ public class TipsSelector {
 		return jsonObject;
 	}
 
-	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet)
+	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType)
 			throws Exception {
 		org.apache.hadoop.hbase.client.Connection hbaseConn = null;
 		Table htab = null;
 		Set<Integer> meshSet = new HashSet<>();
 		try {
 			List<JSONObject> snapshots = conn.queryCollectTaskTips(
-					collectTaskSet, TaskType.PROGRAM_TYPE_M);
+					collectTaskSet, taskType);//TaskType.PROGRAM_TYPE_M);
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			for (JSONObject snapshot : snapshots) {

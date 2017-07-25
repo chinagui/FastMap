@@ -288,11 +288,12 @@ public class SubtaskService {
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
 			}
-			//情报项目为空时，需要后台自动创建名称
-			bean=autoInforName(conn,bean);
-			// 获取subtaskId
+			// 获取subtaskId，名称赋值的时候需要用到子任务id，所以必须放在前面
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 			bean.setSubtaskId(subtaskId);
+			//情报项目为空时，需要后台自动创建名称
+			bean=autoInforName(conn,bean);
+			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
 			
@@ -1318,7 +1319,7 @@ public class SubtaskService {
 					Subtask subtask = (Subtask) iter.next();
 					//查询分配的作业组组长
 					List<Long> groupIdList = new ArrayList<Long>();
-					if(subtask.getExeUserId()!=null&&subtask.getExeUserId()!=0){
+					if(subtask.getExeUserId()!=0){
 						UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
 						groupIdList.add(Long.valueOf(userGroup.getGroupId()));
 					}else{groupIdList.add((long)subtask.getExeGroupId());}
@@ -2182,7 +2183,7 @@ public class SubtaskService {
 			List<Long> groupIdList = new ArrayList<Long>();
 			if(subtask.getExeUserId()!=0){
 				UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
-				if(userGroup.getGroupId()!=null){
+				if(userGroup.getGroupId()!=0){
 					groupIdList.add(Long.valueOf(userGroup.getGroupId()));
 				}
 			}else{

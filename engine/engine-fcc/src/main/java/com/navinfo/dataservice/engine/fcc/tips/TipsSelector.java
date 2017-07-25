@@ -2186,7 +2186,8 @@ public class TipsSelector {
 				TaskType.PROGRAM_TYPE_Q);
 		Map<String, int[]> statsMap = new HashMap<>();
 		for (TipsDao tip : tipsList) {
-			JSONObject snapshot = JSONObject.fromObject(tip);
+			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
 			String wkt = snapshot.getString("wkt");// 统计坐标
 			Point point = GeometryUtils.getPointByWKT(wkt);
 			Coordinate coordinate = point.getCoordinates()[0];

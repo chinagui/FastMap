@@ -187,6 +187,8 @@ public class InfoChangeMsgHandler implements MsgHandler {
 						}
 					}
 				}
+			}else{
+				subtask.setWorkKind(1);
 			}
 			subtask.setTaskId(task.getTaskId());
 			subtask.setPlanStartDate(task.getPlanStartDate());

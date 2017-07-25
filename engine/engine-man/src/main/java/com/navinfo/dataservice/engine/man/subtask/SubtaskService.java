@@ -288,11 +288,12 @@ public class SubtaskService {
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
 			}
-			//情报项目为空时，需要后台自动创建名称
-			bean=autoInforName(conn,bean);
-			// 获取subtaskId
+			// 获取subtaskId，名称赋值的时候需要用到子任务id，所以必须放在前面
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 			bean.setSubtaskId(subtaskId);
+			//情报项目为空时，需要后台自动创建名称
+			bean=autoInforName(conn,bean);
+			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
 			

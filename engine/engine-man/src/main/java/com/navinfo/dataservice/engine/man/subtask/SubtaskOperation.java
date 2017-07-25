@@ -811,7 +811,7 @@ public class SubtaskOperation {
 						}
 
 						//采集poi,采集一体化，日编grid粗编，质检日编grid粗编，质检日编区域粗编
-						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
+						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||4==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -1101,7 +1101,7 @@ public class SubtaskOperation {
 			);
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			log.debug("get tips stat");
-			if(3 == subtask.getType()){
+			if(3 == subtask.getType()||4 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());

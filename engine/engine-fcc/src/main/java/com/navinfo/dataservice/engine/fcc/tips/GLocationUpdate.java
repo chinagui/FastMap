@@ -57,10 +57,10 @@ public class GLocationUpdate {
 				coordinates_new.add(coordinates.get(j));
 			}
 		}
-		
+
 		g_location.put("coordinates", coordinates_new);
-		
-		json2Update.setG_location(g_location.toString());
+
+		json2Update.setG_location(GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(g_location), 1, 5).toString());
 		
 		
 		return json2Update;
@@ -163,7 +163,7 @@ public class GLocationUpdate {
 		loc=loc.buffer(GeometryUtils.convert2Degree(5));
 		
 		JSONObject g_location= GeoTranslator.jts2Geojson(loc);
-		
+
 		json.setG_location(g_location.toString());
 		
 		return json;

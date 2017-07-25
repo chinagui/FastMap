@@ -167,15 +167,13 @@ public class EdgeMatchTipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 			
-			int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
-			
-			int user=0;
+			int delType = BaseTipsOperate.TIP_PHYSICAL_DELETE; //默认物理删除。0：逻辑删除；1：物理删除
 			
 			if(jsonReq.containsKey("delType")){
 				
 				delType = jsonReq.getInt("delType");
 				
-				if (delType!=0&&delType!=1) {
+				if (delType != BaseTipsOperate.TIP_LOGICAL_DELETE && delType != BaseTipsOperate.TIP_PHYSICAL_DELETE) {
 					throw new IllegalArgumentException("参数错误：delType不在范围内【0,1】");
 				}
 				

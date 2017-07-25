@@ -1434,7 +1434,9 @@ public class TipsSelector {
 
 		// 根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
-
+            if(!json.containsKey("deep")) {
+                continue;
+            }
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 			try {
@@ -1796,9 +1798,13 @@ public class TipsSelector {
 				}
 				// 删除记录
 				else if (type == 2101) {
-					int linkPid = Integer.valueOf(deep.getString("rId"));
-					String name = map.get(linkPid);
-					m.put("e", name);
+					JSONObject linkObj = deep.getJSONObject("f");
+                    int linkType = linkObj.getInt("type");
+                    if(linkType == 1) {
+                        int linkPid = Integer.valueOf(linkObj.getString("id"));
+                        String name = map.get(linkPid);
+                        m.put("e", name);
+                    }
 				} else if (type == 1704 || type == 1510 || type == 1107
 						|| type == 1507 || type == 1511 || type == 1601
 						|| type == 1602 || type == 1509 || type == 1705

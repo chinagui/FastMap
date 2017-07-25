@@ -1,22 +1,21 @@
 package com.navinfo.dataservice.dao.fcc;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.dao.fcc.connection.SolrClientFactory;
-import com.navinfo.dataservice.dao.fcc.model.TipsDao;
-import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class SolrController {
 
@@ -98,7 +97,9 @@ public class SolrController {
 	public List<TipsDao> queryTipsByTask(Connection tipsConn,int taskId, int taskType) throws Exception {
 		
 		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
-		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
+        StringBuilder whereBuilder = new StringBuilder();
+        addTaskFilterSql(taskId, taskType, whereBuilder); // 任务号过滤
+        builder.append(whereBuilder);
 		builder.append(")");
 
 		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
@@ -118,7 +119,9 @@ public class SolrController {
 	 */
 	public List<TipsDao> queryTipsByTask(Connection tipsConn,int taskId, int taskType, int tipStatus) throws Exception {
 		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
-		addTaskFilterSql(taskId, taskType, builder); // 任务号过滤
+		StringBuilder whereBuilder = new StringBuilder();
+        addTaskFilterSql(taskId, taskType, whereBuilder); // 任务号过滤
+        builder.append(whereBuilder);
 		builder.append(")");
 		builder.append(" and i.t_tipStatus=" + tipStatus);
 		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
@@ -179,7 +182,7 @@ public class SolrController {
 	 * @return
 	 * @author: y
 	 * @throws IOException
-	 * @throws SolrServerException
+	 * @throws Exception
 	 * @time:2017-4-19 下午1:15:51
 	 */
 	public List<JSONObject> queryWebTips(String wkt, int type, JSONArray stages, boolean isPre, Set<Integer> taskList)
@@ -222,7 +225,7 @@ public class SolrController {
 			List<TipsDao> sdList = operator.query(builder.toString(), wkt);
 
 			for (TipsDao tipsDao:sdList) {
-				JSONObject snapshot = JSONObject.fromObject(tipsDao);
+                JSONObject snapshot = this.tipsFromJSONObject(tipsDao);
 				snapshots.add(snapshot);
 			}
 		}
@@ -267,7 +270,7 @@ public class SolrController {
 	 * 
 	 * @param collectTaskIds
 	 * @return
-	 * @throws SolrServerException
+	 * @throws Exception
 	 * @throws IOException
 	 * @throws SQLException 
 	 */
@@ -300,7 +303,7 @@ public class SolrController {
 			List<TipsDao> sdList = operator.query("select * from tips_index where "+builder);
 			List<JSONObject> snapshots = new ArrayList<JSONObject>();
 			for (TipsDao tipsDao:sdList) {
-				JSONObject snapshot = JSONObject.fromObject(tipsDao);
+                JSONObject snapshot = this.tipsFromJSONObject(tipsDao);
 				snapshots.add(snapshot);
 			}
 			return snapshots;
@@ -309,5 +312,9 @@ public class SolrController {
 		}
 	}
 
-	
+    public static JSONObject tipsFromJSONObject(TipsDao tipsDao) {
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
+        return json;
+    }
 }

@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -40,7 +41,13 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
  * @Description: TODO
  * 
  */
-public class TipsOperateTest {
+public class TipsOperateTest extends InitApplication {
+
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
 
 	@Test
 	public void testEdit() {
@@ -201,7 +208,7 @@ public class TipsOperateTest {
 	 @Test
 		public void testDel() {
 
-		 String parameter = "{\"rowkey\":\"022101a307336e19144eed9753865dfa3f2578\",\"subTaskId\":198}";
+		 String parameter = "{\"rowkey\":\"028001a693ba64bd1d455ca809e6486520f221\",\"subTaskId\":57}";
 			try {
 				if (StringUtils.isEmpty(parameter)) {
 					throw new IllegalArgumentException("parameter参数不能为空。");
@@ -223,7 +230,7 @@ public class TipsOperateTest {
 
 				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 
-				//delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
+				delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
 				if(delType == 0 || delType == 1) {
 					op.deleteByRowkey(rowkey, delType);

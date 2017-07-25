@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
@@ -187,7 +188,8 @@ public class TipsCheckSelector {
 			List<TipsDao> tipsDaoList=queryAllHashExtractTipsByTask(workerId, checkerId, checkTaskId, workStatus,type);
 			List<JSONObject> tips = new ArrayList<JSONObject>();
 			for(TipsDao tip:tipsDaoList){
-				tips.add(JSONObject.fromObject(tip));
+				JSONObject tipJson = TipsUtils.tipsFromJSONObject(tip);
+				tips.add(tipJson);
 			}
 			TipsSelector sel=new TipsSelector();
 			

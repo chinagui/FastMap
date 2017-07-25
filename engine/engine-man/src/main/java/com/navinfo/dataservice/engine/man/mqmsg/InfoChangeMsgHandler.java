@@ -83,9 +83,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			//新增情报
 			JSONObject dataJson = JSONObject.fromObject(message);
 			Infor infor = InforService.getInstance().create(dataJson, 0);
-			
+			int sourceCode=infor.getSourceCode();
 			//"情报对应方式”字段不为空时，自动创建项目、任务、子任务
-			if(infor.getMethod()!=null){
+			if(sourceCode==2||(sourceCode!=2&&infor.getMethod()!=null)){
 				generateManAccount(conn,infor);
 			}
 			
@@ -120,7 +120,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		program.setType(4);
 
 		program.setCollectPlanStartDate((Timestamp)getCalculatedDate(infor.getPublishDate(),1));
-		if(infor.getMethod().equals("预采集")){
+		if(infor.getSourceCode()==2){
+			program.setCollectPlanEndDate((Timestamp)getCalculatedDate(infor.getPublishDate(),3));
+		}else if(infor.getMethod().equals("预采集")){
 			program.setCollectPlanEndDate((Timestamp)getCalculatedDate(infor.getPublishDate(),7));
 		}else{
 			program.setCollectPlanEndDate((Timestamp)getCalculatedDate(infor.getPublishDate(),3));
@@ -166,6 +168,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			TaskService.getInstance().taskPushMsg(conn, 0, taskListToPublish);
 		}
 		//采集任务创建子任务
+		JSONArray subtaskIds=new JSONArray();
 		for(Task task:collectTaskList){
 			Subtask subtask = new Subtask();
 			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
@@ -173,6 +176,17 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			subtask.setStage(0);
 			if(task.getSubWorkKind(3)==1){
 				subtask.setWorkKind(3);				
+			}else if(task.getSubWorkKind(1)==1){
+				subtask.setWorkKind(1);	
+				subtask.setDescp("外业自采集情报");
+				List<UserGroup> groups = UserGroupService.getInstance().listByUser(conn,Integer.valueOf(String.valueOf(infor.getReportUserId())));
+				if(groups!=null){
+					for(UserGroup g:groups){
+						if(task.getGroupId()!=0 &&g.getGroupId()==task.getGroupId()){
+							subtask.setExeUserId(Integer.valueOf(String.valueOf(infor.getReportUserId())));
+						}
+					}
+				}
 			}
 			subtask.setTaskId(task.getTaskId());
 			subtask.setPlanStartDate(task.getPlanStartDate());
@@ -183,8 +197,12 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdList));
 				subtask.setGeometry(wkt);
 			}
-			SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+			int subtaskId=SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+			if(subtask.getExeUserId()!=0){
+				subtaskIds.add(subtaskId);
+			}
 		}
+		if(subtaskIds.size()>0){SubtaskService.getInstance().pushMsg(conn, 0, subtaskIds);}
 	}
 
 	/**

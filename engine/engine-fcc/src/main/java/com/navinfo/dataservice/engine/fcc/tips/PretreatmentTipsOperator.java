@@ -288,7 +288,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             String trackJson = new String(result
                     .getValue("data".getBytes(), "track".getBytes()));
             TipsTrack track = com.alibaba.fastjson.JSONObject.parseObject(trackJson, TipsTrack.class);
-            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 
 			// 2.update geometry
 			JSONObject geometry = JSONObject.fromObject(new String(result
@@ -323,7 +323,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			TipsDao solrIndex = tipsIndexOracleConn.getById(rowkey);
 
-			solrIndex.setT_lifecycle(PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+//			solrIndex.setT_lifecycle(PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
 			solrIndex.setT_date(track.getT_date());
 			solrIndex.setG_location(lineGeometry.toString());
 			solrIndex.setG_guide(guideNew.toString());
@@ -548,7 +548,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             String trackJson = new String(result
                     .getValue("data".getBytes(), "track".getBytes()));
             TipsTrack track = com.alibaba.fastjson.JSONObject.parseObject(trackJson, TipsTrack.class);
-            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 			JSONObject newTrack = JSONObject.fromObject(track);
 			put.addColumn("data".getBytes(), "track".getBytes(), newTrack
 					.toString().getBytes());
@@ -967,7 +967,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			// 1.更新feedback和track
 			JSONObject trackJson = oldTip.getJSONObject("track");
             TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
-            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 
 			// 2.更新feedback
 

@@ -145,6 +145,7 @@ public class ColumnSubmitJob extends AbstractJob {
 					
 				// 批处理
 				boolean isBatch164 =false;
+				boolean isBatchM0109 =false;
 				if (columnOpConf.getSubmitExebatch() == 1) {
 					log.info("执行批处理");
 					if (columnOpConf.getSubmitBatchrules() != null) {
@@ -152,8 +153,12 @@ public class ColumnSubmitJob extends AbstractJob {
 						BatchCommand batchCommand=new BatchCommand();		
 						for (String ruleId:columnOpConf.getSubmitBatchrules().split(",")) {
 							//常规提交时，这块不执行FM-BAT-20-164批处理，等抽样完成后，对未抽样的数据再执行164批处理；
-							if(isQuality==0&&ruleId.equals("FM-BAT-20-164")){
-								isBatch164=true;
+							if(isQuality == 0 && "FM-BAT-20-164".equals(ruleId)){
+								isBatch164 = true;
+								continue;
+							}
+							if(isQuality == 0 && "FM-BAT-M01-09".equals(ruleId)){
+								isBatchM0109 = true;
 								continue;
 							}
 							batchCommand.setRuleId(ruleId);
@@ -239,6 +244,15 @@ public class ColumnSubmitJob extends AbstractJob {
 						BatchCommand batchCommand=new BatchCommand();
 						batchCommand.setRuleId("FM-BAT-20-164");
 						Batch batch=new Batch(conn,comOperationResult);
+						batch.operate(batchCommand);
+						batch.setPhysiDelete(true);
+						batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+					}
+					if (isBatchM0109) {
+						log.info("执行批处理FM-BAT-M01-09");
+						BatchCommand batchCommand = new BatchCommand();
+						batchCommand.setRuleId("FM-BAT-M01-09");
+						Batch batch = new Batch(conn, comOperationResult);
 						batch.operate(batchCommand);
 						batch.setPhysiDelete(true);
 						batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);

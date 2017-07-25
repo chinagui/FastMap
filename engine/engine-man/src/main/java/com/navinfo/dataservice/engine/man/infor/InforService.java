@@ -316,7 +316,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE,i.admin_code,i.infor_code,i.method");
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE,i.admin_code,i.infor_code,i.method,i.source_code");
 			sb.append("   FROM PROGRAM P, INFOR I       ");
 			sb.append("  WHERE P.INFOR_ID = I.INFOR_ID  ");
 			sb.append("    AND P.PROGRAM_ID = " + programId);
@@ -335,6 +335,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setInforCode(rs.getString("INFOR_CODE"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
 						infor.setMethod(rs.getString("METHOD"));
+						infor.setSourceCode(rs.getInt("source_code"));
 						return infor;
 					}
 					return null;

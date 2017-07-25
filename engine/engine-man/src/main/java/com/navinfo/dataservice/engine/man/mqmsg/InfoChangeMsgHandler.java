@@ -202,7 +202,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				subtaskIds.add(subtaskId);
 			}
 		}
-		if(subtaskIds.size()>0){SubtaskService.getInstance().pushMsg(null, 0, subtaskIds);}
+		if(subtaskIds.size()>0){SubtaskService.getInstance().pushMsg(conn, 0, subtaskIds);}
 	}
 
 	/**

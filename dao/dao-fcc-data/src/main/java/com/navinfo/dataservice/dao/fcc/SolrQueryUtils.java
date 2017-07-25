@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.dao.fcc;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** 
  * @ClassName: SolrQueryUtils.java
@@ -12,9 +14,10 @@ import java.util.List;
  */
 public class SolrQueryUtils {
 	
-    private static List<String> notDisplayTipTpye=new ArrayList<String>();
+    public static Set<String> notDisplayTipTpye=new HashSet<String>();
 	
 	public static String NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL = "";
+    public static String NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001 = "";
 
 	static{
 
@@ -89,16 +92,20 @@ public class SolrQueryUtils {
 
             if (notDisplayTipTpye.size() > 0) {
 
-                for (int i = 0; i < notDisplayTipTpye.size(); i++) {
-                    String type = notDisplayTipTpye.get(i);
+                int i=0;
+                for (String type:notDisplayTipTpye) {
                     if (i > 0) {
                         builder.append(",");
                     }
                     builder.append("'");
                     builder.append(type);
                     builder.append("'");
+                    i++;
                 }
+                NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001 = builder.toString()+",'8001')";
                 builder.append(")");
+            }else{
+                NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001="s_sourceType != '8001'";
             }
 
             NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL=builder.toString();

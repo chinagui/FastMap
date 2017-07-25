@@ -4,6 +4,7 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import net.sf.json.JSONArray;
@@ -226,6 +227,7 @@ public class TipsCheckOperator {
         Table htab = null;
         try {
     		// 获取solr数据
+			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
     		TipsDao tipsDao = operator.getById(rowkey);
 

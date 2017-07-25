@@ -68,6 +68,12 @@ public class FMBATD20006 extends BasicBatchRule {
 
         IxPoi poi = (IxPoi) obj.getMainrow();
 
+        //经确认不处理删除数据
+        if(poi.getHisOpType().equals(OperationType.DELETE))
+        {
+            return;
+        }
+
         if (poiFlags == null || poiFlags.isEmpty()) {
 
             poiObj.createIxPoiFlagMethod();

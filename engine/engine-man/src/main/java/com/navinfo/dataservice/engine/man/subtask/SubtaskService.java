@@ -3104,7 +3104,9 @@ public class SubtaskService {
 					}					
 					
 					Geometry midLine=referGeo.intersection(lineGeo);
-					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
+					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
 					if(!isIn){
 						throw new Exception("线不在面内，请重新划线");
 					}

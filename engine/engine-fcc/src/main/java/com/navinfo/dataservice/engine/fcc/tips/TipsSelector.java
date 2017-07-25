@@ -180,7 +180,10 @@ public class TipsSelector {
 					}
 				}
 
-				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				JSONObject deep = null;
+                if(json.containsKey("deep")) {
+                    deep = JSONObject.fromObject(json.getString("deep"));
+                }
 
 				// fc预处理8001要求返回功能等级
 				if (type == 8001) {
@@ -2188,9 +2191,9 @@ public class TipsSelector {
 		for (TipsDao tip : tipsList) {
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
-			String wkt = snapshot.getString("wkt");// 统计坐标
-			Point point = GeometryUtils.getPointByWKT(wkt);
-			Coordinate coordinate = point.getCoordinates()[0];
+            JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
+            Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
+            Coordinate coordinate = point.getCoordinates()[0];
 			String gridId = CompGridUtil
 					.point2Grids(coordinate.x, coordinate.y)[0];
 			int tipStatus = snapshot.getInt("t_tipStatus");
@@ -2226,7 +2229,7 @@ public class TipsSelector {
 		return list;
 	}
 
-	private List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds,
+	public List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds,
 			int taskType) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String solrIndexFiled = null;
@@ -2280,7 +2283,7 @@ public class TipsSelector {
 
 			List<TipsDao> type2001Result = operator
 					.query("select * from tips_index where " + where
-							+ " and type=2001");
+							+ " and s_sourceType = '2001'");
 			int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 			double length = 0;

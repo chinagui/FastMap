@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -1261,10 +1261,9 @@ public class TaskService {
 //			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
 //					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
 			
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
 			
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
@@ -1303,7 +1302,7 @@ public class TaskService {
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
-			sb.append("	                          -1 job_status");
+			sb.append("	                          -1 tips2mark_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1341,13 +1340,17 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+//			sb.append("                      nvl((select tpt.status"
+//					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
+//					+ "         where tpt.task_id = t.task_id"
+//					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) tips2mark_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -1392,34 +1395,10 @@ public class TaskService {
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
-						task.put("progress", rs.getInt("PROGRESS"));
+						task.put("progress", rs.getInt("PROGRESS"));	
 						
-						//统计无用，后续有了再加						
-//						int convertFlag=rs.getInt("CONVERT_FLAG");
-//						if(convertFlag==1){task.put("hasNoTaskData", 0);}
-//						else{						
-//							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-//							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-//								task.put("hasNoTaskData", 0);
-//							}else{
-//								task.put("hasNoTaskData", 1);
-//							}
-//						}
-						//hasNoTaskData 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
-						int other2mediumStatus=rs.getInt("other2medium_Status");
-						
-						task.put("hasNoTaskData", 0);
-
 						int type = rs.getInt("TYPE");
 						int status = rs.getInt("STATUS");
-						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
-						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
-							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
-								task.put("hasNoTaskData", 2);
-							}else{
-								task.put("hasNoTaskData", 1);
-							}
-						}
 
 						JSONArray jobs = new JSONArray();
 						int tisp2markStatus = rs.getInt("TISP2MARK");
@@ -1436,7 +1415,24 @@ public class TaskService {
 								job.put("type", JobType.TiPS2MARK.value());
 								jobs.add(job);
 							}
+						}						
+						
+						//other2mediumJobStatus 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
+						int other2mediumStatus=rs.getInt("other2medium_Status");												
+						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
+						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
+							int other2mediumJobStatus=0;
+							if(tisp2markStatus!=-1){
+								other2mediumJobStatus=other2mediumStatus;
+							}else{
+								other2mediumJobStatus=0;
+							}
+							JSONObject job = new JSONObject();
+							job.put("status",other2mediumJobStatus);
+							job.put("type", JobType.NOTASK2MID.value());
+							jobs.add(job);
 						}
+						
 						task.put("jobs",jobs);
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -3459,14 +3455,14 @@ public class TaskService {
 				}
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
-			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-			List<String> tipsPids=new ArrayList<String>(); 
- 				for(Object tipRowkey:tips){ 
- 					tipsPids.add(tipRowkey.toString()); 
- 				}
-				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				api.batchQuickTask(taskId, subtaskId,tipsPids); 
- 			}
+//			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+//			List<String> tipsPids=new ArrayList<String>(); 
+// 				for(Object tipRowkey:tips){ 
+// 					tipsPids.add(tipRowkey.toString()); 
+// 				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+//				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+// 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -4744,7 +4740,5 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-
 		
 }

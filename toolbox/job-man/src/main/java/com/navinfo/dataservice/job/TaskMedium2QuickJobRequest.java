@@ -1,16 +1,18 @@
 package com.navinfo.dataservice.job;
 
+import java.util.List;
+
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
-
-import net.sf.json.JSONArray;
 
 public class TaskMedium2QuickJobRequest extends AbstractJobRequest{
 	
 	private int jobId;
 	private int phaseId;
-	private JSONArray pids;
+	private List<?> pois;
+	private List<?> tips;
+	
 	public int getJobId() {
 		return jobId;
 	}
@@ -19,7 +21,22 @@ public class TaskMedium2QuickJobRequest extends AbstractJobRequest{
 		this.jobId = jobId;
 	}
 
-	private JSONArray tips;
+	public List<?> getPois() {
+		return pois;
+	}
+
+	public void setPois(List<?> pois) {
+		this.pois = pois;
+	}
+
+	public List<?> getTips() {
+		return tips;
+	}
+
+	public void setTips(List<?> tips) {
+		this.tips = tips;
+	}
+
 	private int dbId;
 	private int subtaskId;
 	public int getPhaseId() {
@@ -40,22 +57,6 @@ public class TaskMedium2QuickJobRequest extends AbstractJobRequest{
 	@Override
 	public String getJobType() {
 		return "taskMedium2QuickJob";
-	}
-
-	public JSONArray getPids() {
-		return pids;
-	}
-
-	public void setPids(JSONArray pids) {
-		this.pids = pids;
-	}
-
-	public JSONArray getTips() {
-		return tips;
-	}
-
-	public void setTips(JSONArray tips) {
-		this.tips = tips;
 	}
 
 	public int getDbId() {

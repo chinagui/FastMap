@@ -3,8 +3,6 @@ package com.navinfo.dataservice.job;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -14,7 +12,6 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 /**
  * 1.中线任务转快线任务。
  *   fcc的转换调用http接口
@@ -35,8 +32,8 @@ public class TaskMedium2QuickJob extends AbstractJob{
 		long phaseId = jobRequest.getPhaseId();
 		try {
     		int dbId = jobRequest.getDbId();
-    		JSONArray pois = jobRequest.getPids();
-    		JSONArray tips = jobRequest.getTips();
+    		JSONArray pois = (JSONArray) jobRequest.getPois();
+    		JSONArray tips = (JSONArray) jobRequest.getTips();
     		int subtaskId = jobRequest.getSubtaskId();
     		int taskId = jobRequest.getTaskId();
     			

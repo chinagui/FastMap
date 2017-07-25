@@ -3924,11 +3924,11 @@ public class TaskService {
 			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
-			List<Integer> pois = queryImportantPid();
+			List<String> pois = queryImportantPid();
 			if(pois.size() > 0){
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i< pois.size(); i++){
-					sb.append(String.valueOf(pois.get(i))+",");
+					sb.append(pois.get(i)+",");
 				}
 				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
 				log.info("重要POI一览表中的POI_ID为：" + poi);
@@ -3985,14 +3985,20 @@ public class TaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			StringBuffer sb = new StringBuffer();
-			sb.append("update DATA_PLAN d set d.is_important = 1 where d.pid in("+pois+") ");
-			
+			sb.append("update DATA_PLAN d"
+					+ "   set d.is_important = 1"
+					+ " where d.pid IN (select p.pid"
+					+ "                   from ix_poi p,"
+					+ "                        (select column_value from table(clob_to_table(?))) t"
+					+ "                  where p.poi_num = t.column_value)");
+			Clob clob=ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, pois);
 			sb.append("and d.task_id = "+taskId);
 			sb.append(" and d.is_important = 0");
 			
 			String sql = sb.toString();
 			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
-			run.update(dailyConn, sql);
+			run.update(dailyConn, sql,clob);
 		}catch(Exception e){
 			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
@@ -4004,10 +4010,10 @@ public class TaskService {
 	 * @throws SQLException 
 	 * 
 	 * */
-	public List<Integer> queryImportantPid() throws SQLException{
+	public List<String> queryImportantPid() throws SQLException{
 		//通过api调用
 		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<Integer> pids = api.queryImportantPid();
+		List<String> pids = api.queryImportantPid();
 		return pids;
 	}
 	

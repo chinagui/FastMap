@@ -364,7 +364,8 @@ create table DATA_PLAN
   data_type        NUMBER(1),
   is_plan_selected NUMBER(1) default 1,
   task_id          NUMBER(10),
-  is_important     NUMBER(1) default 0
+  is_important     NUMBER(1) default 0,
+  operate_date TIMESTAMP(6)
 );
 comment on table DATA_PLAN
   is '日库外业规划数据表';

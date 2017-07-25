@@ -34,7 +34,7 @@
 
 
 			<!--提取图廓点 -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_AD_NODE
                        (PID)
@@ -51,7 +51,7 @@
 		</step>
 		<step value="10">
 			<!--根据图框线提取face -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_FACE
                            (PID)
@@ -71,7 +71,7 @@
 		</step>
 		<step value="13">
 			<!--根据图框线提取的face补link -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_LINK
                            (PID)
@@ -81,7 +81,7 @@
                          ]]></sql>
 
 			<!--根据图廓点提取link -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_AD_LINK
                       (PID)
@@ -140,7 +140,7 @@
                          ]]></sql>
 
              <!--根据face补link -->
-             <sql sqlType="dataIntegrity"><![CDATA[
+             <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_LINK
                            (PID)

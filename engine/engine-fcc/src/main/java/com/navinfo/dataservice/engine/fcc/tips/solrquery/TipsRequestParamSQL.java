@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips.solrquery;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -101,8 +98,46 @@ public class TipsRequestParamSQL {
 		}
 
 		StringBuilder builder = new StringBuilder();
+
+		boolean remove8001 = false;
+		if (stages.size() > 0 && StringUtils.isEmpty(pType)) {
+			// WEB
+			// 类型过滤
+			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+			if (subTaskType == 3) {
+//				builder.append(" AND s_sourceType!='8001'");// 接边Tips
+				remove8001 = true;
+			} else if (subTaskType == 4) {// 4 区域粗编
+//				builder.append(" AND s_sourceType='8001'");// 预处理提交
+				types = new JSONArray();
+				types.add("8001");
+			}
+		}
+
 		if (types.size() > 0) {
-			this.getStringArrayQuery(builder, types, "s_sourceType");
+			Set<String> typeSet = new HashSet<>();
+			for (int i = 0; i < types.size(); i++) {
+				typeSet.add(types.getString(i));
+			}
+			for (String type : this.getFilter315()) {
+				typeSet.remove(type);
+			}
+			if (remove8001) {//过滤8001
+				typeSet.remove("8001");
+			}
+			if (typeSet.size() > 0) {
+				this.getStringArrayQuery(builder, typeSet, "s_sourceType");
+			}
+		} else {
+			// 过滤315 web不显示的tips 20170118
+			if (remove8001) {
+				//除了要过滤的tips，还要过滤8001
+				this.getFilter315With8001(builder);
+			} else {
+				//不过滤8001
+				this.getFilter315(builder);
+			}
 		}
 
 		if (stages.size() > 0) {
@@ -142,17 +177,17 @@ public class TipsRequestParamSQL {
 							webBuilder.append(" OR ");
 						}
 
-						webBuilder.append("(");
-						webBuilder.append("(");
+//						webBuilder.append("(");
+//						webBuilder.append("(");
 						webBuilder
-								.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6)");
-						webBuilder.append(")");
+								.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
+//						webBuilder.append(")");
+//
+//						// 待质检的tips
+//						webBuilder
+//								.append(" OR (stage=7 AND t_dEditStatus=0 AND t_tipStatus=2)");
 
-						// 待质检的tips
-						webBuilder
-								.append(" OR (stage=7 AND t_dEditStatus=0 AND t_tipStatus=2)");
-
-						webBuilder.append(")");
+//						webBuilder.append(")");
 
 					}
 					if (workStatus.contains(1)) {
@@ -183,11 +218,11 @@ public class TipsRequestParamSQL {
 				// 类型过滤
 				// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
 				// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
-				if (subTaskType == 3) {
-					builder.append(" AND s_sourceType!='8001'");// 接边Tips
-				} else if (subTaskType == 4) {// 4 区域粗编
-					builder.append(" AND s_sourceType='8001'");// 预处理提交
-				}
+//				if (subTaskType == 3) {
+//					builder.append(" AND s_sourceType!='8001'");// 接边Tips
+//				} else if (subTaskType == 4) {// 4 区域粗编
+//					builder.append(" AND s_sourceType='8001'");// 预处理提交
+//				}
 			}
 		}
 		// 过滤315 web不显示的tips 20170118
@@ -202,6 +237,23 @@ public class TipsRequestParamSQL {
 		return sql;
 	}
 
+	private Set<String> getFilter315() {
+		return SolrQueryUtils.notDisplayTipTpye;
+	}
+
+	private StringBuilder getFilter315With8001(StringBuilder builder) {
+		if (StringUtils
+				.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001)) {
+			if (builder.length() == 0) {
+				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001);
+			} else {
+				builder.append(" AND "
+						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001);
+			}
+		}
+		return builder;
+	}
+
 	private StringBuilder getFilter315(StringBuilder builder) {
 		if (StringUtils
 				.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
@@ -212,6 +264,30 @@ public class TipsRequestParamSQL {
 						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
 			}
 		}
+		return builder;
+	}
+
+	private StringBuilder getStringArrayQuery(StringBuilder builder,
+											  Set<String> stringArray, String fieldName) {
+
+		if (stringArray != null) {
+			if (builder.length() > 0) {
+				builder.append(" AND");
+			}
+			builder.append(" " + fieldName + " in (");
+			int i=0;
+			for (String fieldValue : stringArray) {
+				if (i > 0) {
+					builder.append(",");
+				}
+				builder.append("'");
+				builder.append(fieldValue);
+				builder.append("'");
+				i++;
+			}
+			builder.append(")");
+		}
+
 		return builder;
 	}
 

@@ -1,13 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips.check;
 
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
-import com.navinfo.nirobot.common.storage.SolrConnector;
-import com.navinfo.nirobot.common.storage.SolrOperator;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.common.SolrDocumentList;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

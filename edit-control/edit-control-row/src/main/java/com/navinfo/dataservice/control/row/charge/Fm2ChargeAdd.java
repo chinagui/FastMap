@@ -33,8 +33,6 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.exception.ServiceRtException;
-import com.navinfo.navicommons.exception.ThreadExecuteException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -62,9 +60,9 @@ public class Fm2ChargeAdd {
 	}
 	private Fm2ChargeAdd(){}
 	
-protected VMThreadPoolExecutor threadPoolExecutor;
+	protected VMThreadPoolExecutor threadPoolExecutor;
 	
-	public JSONObject excute(List<Region> regionList,String lastSyncTime,String syncTime) throws Exception {
+	public JSONObject excute(List<Region> regionList,String lastSyncTime,String syncTime,List<Integer> dbIdList) throws Exception {
 		try {
 			JSONObject result = new JSONObject();
 			//1.处理大区库
@@ -78,6 +76,11 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 						regionMap.put(region.getDailyDbId(), region.getMonthlyDbId());
 					}
 				}
+			}
+			//是否转换特定大区库
+			if(dbIdList != null && dbIdList.size() > 0){
+				dbIds.clear();
+				dbIds.addAll(dbIdList);
 			}
 			//2.开始执行导出数据
 			log.debug("开始执行导出数据");
@@ -190,6 +193,9 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 		public void run() {
 			Connection conn=null;
 			Connection connM=null;
+			JSONObject jso = new JSONObject();
+			JSONArray poiLog = new JSONArray();
+			JSONArray chargePoi = new JSONArray();
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				connM = DBConnector.getInstance().getConnectionById(monDbId);
@@ -249,9 +255,6 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 				selConfig.add("IX_POI_CHARGINGPLOT");
 				selConfig.add("IX_POI_FLAG_METHOD");
 				//...
-				JSONObject jso = new JSONObject();
-				JSONArray chargePoi = new JSONArray();
-				JSONArray poiLog = new JSONArray();
 				if(submitPidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,submitPidList, true, false);
 					//设置adminId
@@ -316,15 +319,20 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 				}else{
 					stats.put(dbId, 0);
 				}
+				log.debug("dbId("+dbId+")转出成功。");
+				poiLog.add("dbId("+dbId+")转出成功。");
+			}catch(Exception e){
+				log.error(e.getMessage(),e);
+				log.error("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
+				poiLog.add("dbId("+dbId+")转桩家失败,原因:"+e.getMessage());
+//				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
+			}finally{
 				//处理数据
+				//处理日志
 				jso.put("data", chargePoi);
 				jso.put("log", poiLog);
 				chargePOIs.put(dbId, jso);
-				log.debug("dbId("+dbId+")转出成功。");
-			}catch(Exception e){
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
-			}finally{
+				
 				DbUtils.closeQuietly(conn);
 				DbUtils.closeQuietly(connM);
 				if(latch!=null){

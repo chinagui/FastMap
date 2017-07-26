@@ -31,8 +31,6 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.exception.ServiceRtException;
-import com.navinfo.navicommons.exception.ThreadExecuteException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -62,7 +60,7 @@ public class Fm2ChargeInit {
 	
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	
-	public JSONObject excute(List<Region> regionList) throws Exception {
+	public JSONObject excute(List<Region> regionList,List<Integer> dbIdList) throws Exception {
 		try {
 			JSONObject result = new JSONObject();
 			//1.处理大区库
@@ -76,6 +74,11 @@ public class Fm2ChargeInit {
 						regionMap.put(region.getDailyDbId(), region.getMonthlyDbId());
 					}
 				}
+			}
+			//是否转换特定大区库
+			if(dbIdList != null && dbIdList.size() > 0){
+				dbIds.clear();
+				dbIds.addAll(dbIdList);
 			}
 			//2.开始执行导出数据
 			log.debug("开始执行导出数据");
@@ -184,14 +187,14 @@ public class Fm2ChargeInit {
 		@Override
 		public void run() {
 			Connection conn=null;
+			JSONObject jso = new JSONObject();
+			JSONArray poiLog = new JSONArray();
+			JSONArray chargePoi = new JSONArray();
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				//查询充电站
 				String kindCode = "230218";
 				List<Long> pidList = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
-//				Set<Long> pidList = new HashSet<Long>();
-//				pidList.add(505000108L);
-//				pidList.add(408000133L);
 				//设置查询子表
 				Set<String> selConfig = new HashSet<String>();
 				selConfig.add("IX_POI_NAME");
@@ -202,9 +205,6 @@ public class Fm2ChargeInit {
 				selConfig.add("IX_POI_CHARGINGPLOT");
 				selConfig.add("IX_POI_FLAG_METHOD");
 				//...
-				JSONObject jso = new JSONObject();
-				JSONArray chargePoi = new JSONArray();
-				JSONArray poiLog = new JSONArray();
 				System.out.println("dbId("+dbId+"),"+pidList.size());
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
@@ -242,7 +242,7 @@ public class Fm2ChargeInit {
 					Map<Long, Map<String, Object>> freshDatas = PoiEditStatus.getFreshData(conn, pidList);
 					//获取省市城市
 					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					System.out.println("==============================================================================="+metadataApi);
+					System.out.println("================metadataApi==================="+metadataApi);
 					Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
 					//执行具体的转换
 					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,objsChild,logDatas,freshDatas);
@@ -266,15 +266,20 @@ public class Fm2ChargeInit {
 				}else{
 					stats.put(dbId, 0);
 				}
+				log.debug("dbId("+dbId+")转出成功。");
+				poiLog.add("dbId("+dbId+")转出成功。");
+			}catch(Exception e){
+				log.error(e.getMessage(),e);
+				log.error("dbId("+dbId+")转桩家失败");
+				poiLog.add("dbId("+dbId+")转桩家失败,原因:"+e.getMessage());
+//				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败");
+			}finally{
 				//处理数据
+				//处理日志
 				jso.put("data", chargePoi);
 				jso.put("log", poiLog);
 				chargePOIs.put(dbId, jso);
-				log.debug("dbId("+dbId+")转出成功。");
-			}catch(Exception e){
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败");
-			}finally{
+				
 				DbUtils.closeQuietly(conn);
 				if(latch!=null){
 					latch.countDown();

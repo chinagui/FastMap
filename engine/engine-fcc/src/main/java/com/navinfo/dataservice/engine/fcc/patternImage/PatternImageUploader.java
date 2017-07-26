@@ -38,8 +38,10 @@ public class PatternImageUploader {
 				"MEMO,"+
 				"FILE_CONTENT,"+
 			/*	"FILE_TYPE,"+*/
-				"UPDATE_TIME"+
-				") values (?,?,?,?,?,?,?,?,?,?,?,?,sysdate,?,?,?,?,sysdate)";
+				"UPDATE_TIME,"+
+			//*********2017.07.25 新增字段******
+				"ANALYZED"+
+				") values (?,?,?,?,?,?,?,?,?,?,?,?,sysdate,?,?,?,?,sysdate,0)";
 		
 
 		PreparedStatement pstmt = null;

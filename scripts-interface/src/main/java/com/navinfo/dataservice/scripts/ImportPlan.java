@@ -1,9 +1,5 @@
 package com.navinfo.dataservice.scripts;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,21 +14,12 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.navinfo.dataservice.api.man.model.Program;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -40,9 +27,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * @author songhe
+ * 线下成果导入根据blockID创建对应城市的一个program根据blockID创建三种类型的任务
+ * @author song
  * @version 1.0
- * @deprecated 线下成果导入根据blockID创建对应城市的一个program根据blockID创建三种类型的任务
  * 
  * */
 public class ImportPlan {
@@ -57,9 +44,6 @@ public class ImportPlan {
 	//这里没有tocken，没办法从tocken中获取userid，只能先写死一个数据库存在的值直接赋值
 	private static final long userID= 2;
 
-	private Workbook wb;
-	private Sheet sheet;
-	private Row row;
 	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	public static void main(String[] args) throws SQLException {
@@ -69,10 +53,10 @@ public class ImportPlan {
 		try {
 			JobScriptsInterface.initContext();
 //			String filepath = "E:/1.xls";
-			ImportPlan blockPlan = new ImportPlan(filepath);	
+			ImportPlan blockPlan = new ImportPlan();	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
-			List<Map<String, Object>> BlockPlanList = blockPlan.readExcelContent();
+			List<Map<String, Object>> BlockPlanList = blockPlan.impAddDataExcel(filepath);
 			
 			//创建项目
 			try{
@@ -139,6 +123,7 @@ public class ImportPlan {
 		}
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
+		System.out.println("执行完成");
 	}
 	
 	/**
@@ -198,16 +183,38 @@ public class ImportPlan {
 				insertPart+=" COLLECT_PLAN_END_DATE ";
 				valuePart+= "to_date('" + blockPlanMap.get("COLLECT_PLAN_END_DATE").toString() + "','yyyy-mm-dd hh24:mi:ss')";
 			};
-			if (StringUtils.isNotEmpty(blockPlanMap.get("ROAD_PLAN_TOTAL").toString())){
+//			if (StringUtils.isNotEmpty(blockPlanMap.get("ROAD_PLAN_TOTAL").toString())){
+//				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+//				insertPart+=" ROAD_PLAN_TOTAL ";
+//				valuePart+= "'" + blockPlanMap.get("ROAD_PLAN_TOTAL").toString() + "'";
+//			};
+//			if (StringUtils.isNotEmpty(blockPlanMap.get("POI_PLAN_TOTAL").toString())){
+//				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+//				insertPart+=" POI_PLAN_TOTAL ";
+//				valuePart+= "'" + blockPlanMap.get("POI_PLAN_TOTAL").toString() + "'";
+//			};
+			
+			if (StringUtils.isNotEmpty(blockPlanMap.get("ROAD_PLAN_IN").toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" ROAD_PLAN_TOTAL ";
-				valuePart+= "'" + blockPlanMap.get("ROAD_PLAN_TOTAL").toString() + "'";
+				insertPart+=" ROAD_PLAN_IN ";
+				valuePart+= "'" + blockPlanMap.get("ROAD_PLAN_IN").toString() + "'";
 			};
-			if (StringUtils.isNotEmpty(blockPlanMap.get("POI_PLAN_TOTAL").toString())){
+			if (StringUtils.isNotEmpty(blockPlanMap.get("ROAD_PLAN_OUT").toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" POI_PLAN_TOTAL ";
-				valuePart+= "'" + blockPlanMap.get("POI_PLAN_TOTAL").toString() + "'";
+				insertPart+=" ROAD_PLAN_OUT ";
+				valuePart+= "'" + blockPlanMap.get("ROAD_PLAN_OUT").toString() + "'";
 			};
+			if (StringUtils.isNotEmpty(blockPlanMap.get("POI_PLAN_IN").toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_IN ";
+				valuePart+= "'" + blockPlanMap.get("POI_PLAN_IN").toString() + "'";
+			};
+			if (StringUtils.isNotEmpty(blockPlanMap.get("POI_PLAN_OUT").toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_OUT ";
+				valuePart+= "'" + blockPlanMap.get("POI_PLAN_OUT").toString() + "'";
+			};
+			
 			if (StringUtils.isNotEmpty(blockPlanMap.get("WORK_KIND").toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" WORK_KIND ";
@@ -320,155 +327,35 @@ public class ImportPlan {
 		return count;
 	}
 	
-	/**
-	 *判断excel表格 
-	 * 
-	 * 
-	 * */
-	public ImportPlan(String filepath) {
-		if(filepath==null){
-			return;
-		}
-		String ext = filepath.substring(filepath.lastIndexOf("."));
-		try {
-			InputStream is = new FileInputStream(filepath);
-			if(".xls".equals(ext)){
-				wb = new HSSFWorkbook(is);
-			}else if(".xlsx".equals(ext)){
-				wb = new XSSFWorkbook(is);
-			}else{
-				wb=null;
-			}
-		} catch (FileNotFoundException e) {
-		} catch (IOException e) {
-		}
-	}
 	
 	/**
-	 * 读取Excel表格表头的内容
-	 * 
-	 * @param InputStream
-	 * @return String 表头内容的数组
-	 * @author songhe
-	 */
-	public String[] readExcelTitle() throws Exception{
-		if(wb==null){
-			throw new Exception("Workbook对象为空！");
-		}
-		sheet = wb.getSheetAt(0);
-		row = sheet.getRow(0);
-		// 标题总列数
-		int colNum = row.getPhysicalNumberOfCells();
-		String[] title = new String[colNum];
-		for (int i = 0; i < colNum; i++) {
-			// title[i] = getStringCellValue(row.getCell((short) i));
-			title[i] = row.getCell(i).getCellFormula();
-		}
-		return title;
-	}
-
-	/**
-	 * 读取Excel数据内容
-	 * 
-	 * @param 
-	 * @return List 包含单元格数据内容的Map对象
-	 * @author songhe
-	 */
-	public List<Map<String, Object>> readExcelContent() throws Exception{
-		if(wb==null){
-			throw new Exception("Workbook对象为空！");
-		}
-		List<Map<String, Object>> BlockPlanList = new ArrayList<>();
-		
-		sheet = wb.getSheetAt(0);
-		// 得到总行数
-		int rowNum = sheet.getLastRowNum();
-		row = sheet.getRow(0);
-		int colNum = row.getPhysicalNumberOfCells();
-		// 正文内容应该从第二行开始,第一行为表头的标题
-		for (int i = 1; i <= rowNum; i++) {
-			row = sheet.getRow(i);
-			
-			int j = 0;
-			Map<String, Object> cellValue = new HashMap<String, Object>();
-			String IS_PLAN = getCellFormatValue(row.getCell(14));
-			
-			while (j < colNum && ("1".equals(IS_PLAN))) {
-				String obj = getCellFormatValue(row.getCell(j));
-				
-				if( j == 0){
-					cellValue.put("BLOCK_ID", obj);
-				}else if(j == 1){
-					cellValue.put("BLOCK_NAME", obj);
-				}else if(j == 2){
-					cellValue.put("CITY_NAME", obj);
-				}else if(j == 3){
-					cellValue.put("COLLECT_PLAN_START_DATE", obj);
-				}else if(j == 4){
-					cellValue.put("COLLECT_PLAN_END_DATE", obj);
-				}else if(j == 5){
-					cellValue.put("ROAD_PLAN_TOTAL", obj);
-				}else if(j == 6){
-					cellValue.put("POI_PLAN_TOTAL", obj);
-				}else if(j == 7){
-					cellValue.put("WORK_KIND", obj);
-				}else if(j == 8){
-					cellValue.put("MONTH_EDIT_PLAN_START_DATE", obj);
-				}else if(j == 9){
-					cellValue.put("MONTH_EDIT_PLAN_END_DATE", obj);
-				}else if(j == 10){
-					cellValue.put("PRODUCE_PLAN_END_DATE", obj);
-				}else if(j == 11){
-					cellValue.put("PRODUCE_PLAN_START_DATE", obj);
-				}else if(j == 12){
-					cellValue.put("LOT", obj);
-				}else if(j == 13){
-					cellValue.put("DESCP", obj);
-				}else if(j == 14){
-					cellValue.put("IS_PLAN", obj);
-				}
-				j++;
-			}
-			if(cellValue.containsKey("BLOCK_ID")){
-				BlockPlanList.add(cellValue);
-			}
-		}
-		return BlockPlanList;
-	}
-
-	/**
-	 * 
-	 * 根据Cell类型设置数据
-	 * @param cell
+	 * @param 增量数据upFile
 	 * @return
-	 * @author songhe
+	 * @throws Exception 
 	 */
-	private String getCellFormatValue(Cell cell) {
-		String cellvalue = "";
-		if (cell != null) {
-			// 判断当前Cell的Type
-			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC:// 如果当前Cell的Type为NUMERIC
-			case Cell.CELL_TYPE_FORMULA: {
-				// 判断当前的cell是否为Date
-				if (HSSFDateUtil.isCellDateFormatted(cell)) {
-					cellvalue = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(HSSFDateUtil.getJavaDate(cell.getNumericCellValue()));
-				} else {// 如果是纯数字
-					cellvalue = String.valueOf((int) cell.getNumericCellValue());
-				}
-				break;
-			}
-			case Cell.CELL_TYPE_STRING:// 如果当前Cell的Type为STRING
-				// 取得当前的Cell字符串
-				cellvalue = cell.getRichStringCellValue().getString();
-				break;
-			default:// 默认的Cell值
-				cellvalue = "";
-			}
-		} else {
-			cellvalue = "";
-		}
-		return cellvalue;
+	private List<Map<String, Object>> impAddDataExcel(String upFile) throws Exception {
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		excelHeader.put("BLOCK_ID", "BLOCK_ID");
+		excelHeader.put("BLOCK_NAME", "BLOCK_NAME");
+		excelHeader.put("CITY_NAME", "CITY_NAME");
+		excelHeader.put("COLLECT_PLAN_START_DATE", "COLLECT_PLAN_START_DATE");
+		excelHeader.put("COLLECT_PLAN_END_DATE", "COLLECT_PLAN_END_DATE");
+		excelHeader.put("ROAD_PLAN_IN", "ROAD_PLAN_IN");
+		excelHeader.put("ROAD_PLAN_OUT", "ROAD_PLAN_OUT");
+		excelHeader.put("POI_PLAN_IN", "POI_PLAN_IN");
+		excelHeader.put("POI_PLAN_OUT", "POI_PLAN_OUT");
+		excelHeader.put("WORK_KIND", "WORK_KIND");
+		excelHeader.put("MONTH_EDIT_PLAN_START_DATE", "MONTH_EDIT_PLAN_START_DATE");
+		excelHeader.put("MONTH_EDIT_PLAN_END_DATE", "MONTH_EDIT_PLAN_END_DATE");
+		excelHeader.put("PRODUCE_PLAN_END_DATE", "PRODUCE_PLAN_END_DATE");		
+		excelHeader.put("PRODUCE_PLAN_START_DATE", "PRODUCE_PLAN_START_DATE");
+		excelHeader.put("LOT", "LOT");
+		excelHeader.put("DESCP", "DESCP");
+		excelHeader.put("IS_PLAN", "IS_PLAN");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		return sources;
 	}
 	
 	/**
@@ -498,32 +385,6 @@ public class ImportPlan {
 		}
 	}
 	
-//	/**
-//	 * 
-//	 * 对应cityID查询RegionId
-//	 * @param blokID
-//	 * @param conn
-//	 * @throws Exception 
-//	 * */
-//	public static int getRegionIdByBlockID(Connection conn , int blockID) throws Exception{
-//		try{
-//			QueryRunner run = new QueryRunner();
-//			String sql = "select t.region_id from CITY t,block b where t.city_id = b.city_id and b.block_id =" + blockID;
-//
-//			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-//				public Integer handle(ResultSet rs) throws SQLException {
-//					int regionId = 0;
-//					if(rs.next()){
-//						regionId  = rs.getInt("region_id");
-//					}
-//					return regionId;
-//				}
-//			};
-//			return run.query(conn, sql, rsHandler);
-//		}catch(Exception e){
-//			throw e;
-//		}
-//	}
 
 	/**
 	 * 
@@ -549,7 +410,7 @@ public class ImportPlan {
 					
 					if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){
 						//这个得特殊处理
-						List<Integer> kind = new ArrayList();
+						List<Integer> kind = new ArrayList<Integer>();
 						String result = taskDataMap.get("WORK_KIND").toString().replace("|", "");
 						for(int k = 0; k < result.length(); k++){
 							int digit = Integer.parseInt(String.valueOf(result.charAt(k)));
@@ -601,11 +462,24 @@ public class ImportPlan {
 				}
 				taskJson.put("descp", taskDataMap.get("DESCP").toString());
 				taskJson.put("createUserId", 2);
-				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){
-					taskJson.put("roadPlanTotal", Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
+//				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){
+//					taskJson.put("roadPlanTotal", Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
+//				}
+//				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_TOTAL").toString())){
+//					taskJson.put("poiPlanTotal", Integer.parseInt(taskDataMap.get("POI_PLAN_TOTAL").toString()));
+//				}
+				
+				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_IN").toString())){
+					taskJson.put("roadPlanIn", Integer.parseInt(taskDataMap.get("ROAD_PLAN_IN").toString()));
 				}
-				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_TOTAL").toString())){
-					taskJson.put("poiPlanTotal", Integer.parseInt(taskDataMap.get("POI_PLAN_TOTAL").toString()));
+				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_OUT").toString())){
+					taskJson.put("roadPlanOut", Integer.parseInt(taskDataMap.get("ROAD_PLAN_OUT").toString()));
+				}
+				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_IN").toString())){
+					taskJson.put("poiPlanIn", Integer.parseInt(taskDataMap.get("POI_PLAN_IN").toString()));
+				}
+				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_OUT").toString())){
+					taskJson.put("poiPlanOut", Integer.parseInt(taskDataMap.get("POI_PLAN_OUT").toString()));
 				}
 
 				if(StringUtils.isNotBlank(taskDataMap.get("LOT").toString())){
@@ -805,7 +679,7 @@ public class ImportPlan {
 		String city_name = "";
 		int city_id = 0;
 		
-		List<Map<String,Object>> programList = new ArrayList();
+		List<Map<String,Object>> programList = new ArrayList<Map<String, Object>>();
 		for (String key : map.keySet()) {
 			List<Map<String,Object>> blockList = map.get(key);
 			 Map<String, Object> programMap = new HashMap<>();

@@ -1450,7 +1450,7 @@ public class TaskService {
 							task.put("planEndDate",df.format(planEndDate));
 						}else{task.put("planEndDate", "");}
 						
-						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						task.put("roadPlanTotal", rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
@@ -2188,6 +2188,10 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.POI_PLAN_IN,"
+					+ "       T.POI_PLAN_OUT,"
+					+ "       T.ROAD_PLAN_IN,"
+					+ "       T.ROAD_PLAN_OUT,"
 					+ "       T.DATA_PLAN_STATUS,"
 					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
@@ -2229,7 +2233,7 @@ public class TaskService {
 						task.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 						task.setLot(rs.getInt("LOT"));
 						task.setPoiPlanTotal(rs.getInt("POI_PLAN_TOTAL"));
-						task.setRoadPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
+						task.setRoadPlanTotal(rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setBlockName(rs.getString("BLOCK_NAME"));
 						task.setWorkProperty(rs.getString("WORK_PROPERTY"));
@@ -2245,6 +2249,10 @@ public class TaskService {
 						task.setAdminName(rs.getString("ADMIN_NAME"));	
 						task.setInforStage(rs.getInt("INFOR_STAGE"));
 						task.setDataPlanStatus(rs.getInt("DATA_PLAN_STATUS"));
+						task.setPoiPlanIn(rs.getInt("POI_PLAN_IN"));
+						task.setPoiPlanOut(rs.getInt("POI_PLAN_OUT"));
+						task.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
+						task.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
@@ -2305,8 +2313,14 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
-			map.put("poiPlanTotal", task.getPoiPlanTotal());
-			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			//modify by songhe
+			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
+			map.put("roadPlanIn", task.getRoadPlanIn());
+			map.put("roadPlanOut", task.getRoadPlanOut());
+			map.put("poiPlanIn", task.getPoiPlanIn());
+			map.put("poiPlanOut", task.getPoiPlanOut());
+//			map.put("poiPlanTotal", task.getPoiPlanTotal());
+//			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
@@ -4198,6 +4212,15 @@ public class TaskService {
 				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 				String updateSql="update data_plan t set t.operate_date=sysdate where t.task_id="+ taskId;
 				run.execute(dailyConn, updateSql);
+				
+				//modify by songhe
+				//补充需求，根据dataPlan中的数据更新task表对应的统计值信息
+				int poiCount = calculateNeedWordPoiCount(dailyConn, taskId);
+				float linkLenght = calculateNeedWordLinkLength(dailyConn, taskId);
+				String updateCount = "update TASK t set t.poi_plan_total = "+poiCount+",t.road_plan_total = "+linkLenght+""
+						+ " where t.task_id = " + taskId;
+				log.info("根据dataPlan更新需要作业的数据sql:"+updateCount);
+				run.execute(con, updateCount);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(con);
@@ -4207,6 +4230,67 @@ public class TaskService {
 				DbUtils.commitAndCloseQuietly(con);
 				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中需要作业POI总数
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return int
+		 * 
+		 * */
+		public int calculateNeedWordPoiCount(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的poi总数
+				ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>(){
+					public Integer  handle(ResultSet rs) throws SQLException {
+						int result = 0;
+						if(rs.next()){
+							result = rs.getInt("count(1)");
+						}
+						return result;
+					}
+				};
+				String poiSql = "select count(1) from data_plan d where d.data_type = 1 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1";
+				log.info("计算taskId对应的data_plan中需要作业POI总数:"+poiSql);
+				return run.query(dailyConn, poiSql, rs);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中需要作业POI总数异常："+e.getMessage(), e);
+			}
+			return 0;
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中的需要作业的link长度总和
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return float
+		 * 
+		 * */
+		public float calculateNeedWordLinkLength(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的Link长度
+				ResultSetHandler<Float> rsh = new ResultSetHandler<Float>(){
+					public Float handle(ResultSet rs) throws SQLException {
+						float result = 0f;
+						if(rs.next()){
+							result = rs.getFloat("result");
+						}
+						return result;
+					}
+				};
+				String linksql = "select sum(t.length) result from RD_LINK t where t.link_pid in ("
+						+ "select d.pid from data_plan d where d.data_type = 2 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1)";
+				log.info("计算taskId对应的data_plan中的需要作业的link长度总和:"+linksql);
+				return run.query(dailyConn, linksql, rsh);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中的需要作业的link长度总和异常："+e.getMessage(), e);
+			}
+			return 0f;
 		}
 		
 		/**

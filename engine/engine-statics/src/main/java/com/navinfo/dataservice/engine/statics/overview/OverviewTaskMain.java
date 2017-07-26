@@ -208,7 +208,7 @@ public class OverviewTaskMain {
 		Integer groupId = 0;
 		Integer type = 0;
 		Integer poiPlanTotal = 0;
-		Integer roadPlanTotal = 0;
+		Float roadPlanTotal = 0f;
 		
 		String planStartDate = null;
 		String planEndDate = null;
@@ -235,6 +235,7 @@ public class OverviewTaskMain {
 			//任务poi计划量
 			poiPlanTotal = task.getPoiPlanTotal();
 			//任务road计划量
+			//modify by songhe修改为float数据类型，表示道路长度
 			roadPlanTotal = task.getRoadPlanTotal();
 
 			//计划开始时间

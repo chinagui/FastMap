@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -2341,14 +2342,14 @@ public class TipsSelector {
 		return jsonObject;
 	}
 
-	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet)
+	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType)
 			throws Exception {
 		org.apache.hadoop.hbase.client.Connection hbaseConn = null;
 		Table htab = null;
 		Set<Integer> meshSet = new HashSet<>();
 		try {
 			List<JSONObject> snapshots = conn.queryCollectTaskTips(
-					collectTaskSet, TaskType.PROGRAM_TYPE_M);
+					collectTaskSet,taskType);
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			for (JSONObject snapshot : snapshots) {

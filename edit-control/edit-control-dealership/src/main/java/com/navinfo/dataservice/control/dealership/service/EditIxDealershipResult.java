@@ -138,8 +138,9 @@ public class EditIxDealershipResult {
 			
 			if(sourceMap.get("geometry") == null || StringUtils.isBlank(sourceMap.get("geometry").toString())){
 				String addr = addChainDataEntity.getProvince()+addChainDataEntity.getCity()+addChainDataEntity.getAddress();
-				if(BaiduGeocoding.geocoder(addr)!=null){
-					addChainDataEntity.setGeometry(BaiduGeocoding.geocoder(addr));
+				Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+				if(poiGeo!=null){
+					addChainDataEntity.setGeometry(poiGeo);
 				}else{
 					throw new Exception("无法获取geometry");
 				}

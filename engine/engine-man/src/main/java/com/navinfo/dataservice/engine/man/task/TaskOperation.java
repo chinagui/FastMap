@@ -1109,7 +1109,7 @@ public class TaskOperation {
 	 * @throws Exception 
 	 * 
 	 */
-	public static Task getExtentMonthTaskGridByOtherTask(Connection conn, int otherTaskId) throws Exception {
+	public static Task getMonthTaskGridByOtherTask(Connection conn, int otherTaskId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -1119,7 +1119,7 @@ public class TaskOperation {
 					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
 					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
 					+ "     AND M.TASK_ID = UT.TASK_ID"
-					+ "     AND M.TYPE = 2"
+					//+ "     AND M.TYPE = 2"
 					+ "     AND UT.TYPE = 2"
 					+ "     AND P.TYPE = 4";
 			log.info("getExtentMonthTaskGridByOtherTask:"+sql);

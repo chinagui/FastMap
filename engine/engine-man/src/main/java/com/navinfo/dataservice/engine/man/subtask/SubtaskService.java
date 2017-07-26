@@ -2112,7 +2112,6 @@ public class SubtaskService {
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
@@ -2163,7 +2162,7 @@ public class SubtaskService {
 						if(monthChangedTasks > 0){
 							//扩充的grid也要扩到图幅范围
 							log.info("对应的月编任务扩grid后，将扩后的grid再扩充为图幅范围");
-							Task monthTasks = TaskOperation.getExtentMonthTaskGridByOtherTask(conn, subtask.getTaskId());
+							Task monthTasks = TaskOperation.getMonthTaskGridByOtherTask(conn, subtask.getTaskId());
 							
 							Set<Integer> myGrid=monthTasks.getGridIds().keySet(); 
 							Set<String> meshs=new HashSet<String>();

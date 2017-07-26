@@ -21,6 +21,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -206,6 +208,11 @@ public class Fm2ChargeInit {
 				System.out.println("dbId("+dbId+"),"+pidList.size());
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
+					//设置adminId
+					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
+					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
+					}
 					//查询充电桩子对象
 					Set<Long> childPids = new HashSet<Long>();
 					for(BasicObj obj:objs.values()){
@@ -228,18 +235,17 @@ public class Fm2ChargeInit {
 						//查询数据
 						objsChild = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfigC, false,childPids, true, false);
 					}
-					
-					//设置adminId
-					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
-					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
-						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
-					}
+					//获取履历
+					LogReader logReader = new LogReader(conn);
+					Map<Long, List<Map<String, Object>>> logDatas = logReader.getLogByPid(ObjectName.IX_POI, pidList);
+					//获取鲜度验证信息
+					Map<Long, Map<String, Object>> freshDatas = PoiEditStatus.getFreshData(conn, pidList);
 					//获取省市城市
 					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 					System.out.println("==============================================================================="+metadataApi);
 					Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
 					//执行具体的转换
-					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,conn,objsChild);
+					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,objsChild,logDatas,freshDatas);
 					for(BasicObj obj:objs.values()){
 						try {
 							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj);

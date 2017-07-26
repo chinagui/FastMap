@@ -254,6 +254,11 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 				JSONArray poiLog = new JSONArray();
 				if(submitPidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,submitPidList, true, false);
+					//设置adminId
+					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
+					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
+					}
 					//查询充电桩子对象
 					Set<Long> childPids = new HashSet<Long>();
 					for(BasicObj obj:objs.values()){
@@ -276,17 +281,16 @@ protected VMThreadPoolExecutor threadPoolExecutor;
 						//查询数据
 						objsChild = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfigC, false,childPids, true, false);
 					}
-					
-					//设置adminId
-					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
-					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
-						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
-					}
+					//获取履历
+					LogReader logReader = new LogReader(conn);
+					Map<Long, List<Map<String, Object>>> logDatas = logReader.getLogByPid(ObjectName.IX_POI, submitPidList);
+					//获取鲜度验证信息
+					Map<Long, Map<String, Object>> freshDatas = PoiEditStatus.getFreshData(conn, submitPidList);
 					//获取省市城市
 					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 					Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
 					//执行具体的转换
-					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,conn,objsChild);
+					ChargePoiConvertor poiConvertor = new ChargePoiConvertor(scPointAdminarea,objsChild,logDatas,freshDatas);
 					for(BasicObj obj:objs.values()){
 						try {
 							long pid = obj.objPid();

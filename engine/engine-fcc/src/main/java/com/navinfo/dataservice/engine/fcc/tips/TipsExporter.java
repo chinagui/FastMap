@@ -200,13 +200,17 @@ public class TipsExporter {
 				json.put("t_lifecycle", trackjson.getInt("t_lifecycle"));
 
 				json.put("t_command", trackjson.getInt("t_command"));
+                String lastDate = "";
+                if(trackjson.containsKey("t_trackInfo")) {
+                    JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
+                    if(tTrackInfo != null && tTrackInfo.size() > 0) {
+                        JSONObject lastTrackInfo = tTrackInfo.getJSONObject(tTrackInfo
+                                .size() - 1);
 
-				JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
+                        lastDate = lastTrackInfo.getString("date");
+                    }
+                }
 
-				JSONObject lastTrackInfo = tTrackInfo.getJSONObject(tTrackInfo
-						.size() - 1);
-
-				String lastDate = lastTrackInfo.getString("date");
 				// track.t_trackInfo中最后一条date赋值
 				json.put("t_operateDate", lastDate);
 
@@ -432,14 +436,16 @@ public class TipsExporter {
 				}
 
 				rowkey = new String(result.getRow());
-				JSONObject track = JSONObject.fromObject(new String(result
+                int lastStage = 0;
+                JSONObject track = JSONObject.fromObject(new String(result
 						.getValue("data".getBytes(), "track".getBytes())));
-
-				JSONArray tracks = track.getJSONArray("t_trackInfo");
-
-				JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
-
-				int lastStage = lastTrack.getInt("stage");
+				if(track.containsKey("t_trackInfo")) {
+                    JSONArray tracks = track.getJSONArray("t_trackInfo");
+                    if(tracks != null && tracks.size() > 0) {
+                        JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
+                        lastStage = lastTrack.getInt("stage");
+                    }
+				}
 
 				JSONObject source = JSONObject.fromObject(new String(result
 						.getValue("data".getBytes(), "source".getBytes())));

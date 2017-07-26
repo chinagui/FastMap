@@ -113,6 +113,6 @@ public interface FccApi {
      * @param collectTaskSet
      * @return
      */
-    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception;
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType) throws Exception;
 
 }

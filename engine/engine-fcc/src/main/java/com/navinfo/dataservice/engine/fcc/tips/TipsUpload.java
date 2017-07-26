@@ -956,9 +956,13 @@ public class TipsUpload {
 		JSONObject oldTrack = oldTips.getJSONObject("track");
 
 		int lifecycle = oldTrack.getInt("t_lifecycle");
-
+		if(!oldTrack.containsKey("t_trackInfo")) {
+			return 0;
+		}
 		JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
-
+        if(tracks == null || tracks.size() == 0) {
+            return 0;
+        }
 		String lastDate = null;
 
 		// 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据

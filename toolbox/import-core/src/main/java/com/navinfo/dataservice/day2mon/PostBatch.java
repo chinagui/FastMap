@@ -72,56 +72,90 @@ public class PostBatch {
 		postBatchOp.persistChangeLog(OperationSegment.SG_COLUMN, 0);
 	}
 	
-	private List<BasicObj> changeSourceFlag(String workItem,String sourceFlag) throws Exception {
+	/**
+	 * 20170725变更 by jch
+	 * 1、标记FM-YW-20-012数据，删除原始英文和标准英文对应的IX_POI_NAME_FLAG记录，新增一条原始flag记录，且给FLAG_CODE赋值110020010000;；
+	 * 2、标记FM-YW-20-013数据，删除原始英文和标准英文对应的IX_POI_NAME_FLAG记录，新增一条原始flag记录，且给FLAG_CODE赋值110020010000；
+  	 * 3、标记FM-YW-20-014数据，如果原始英文或标准英文的FLAG_CODE为110020070000或110020080000或110020090000，则删除这些IX_POI_NAME_FLAG记录，然后新增一条原始英文flag记录，且给FLAG_CODE赋值110020060000；
+	 *   如果是其它来源（非以上3个来源标示）标示且是标准英文的NAME_ID，则将IX_POI_NAME_FLAG.NAME_ID替换原始NAME_ID；如果是其它来源（非以上3个来源标示）标示且是原始英文的FLAG_CODE，则不处理；
+     * 4、标记FM-YW-20-017数据，删除原始英文和标准英文对应的IX_POI_NAME_FLAG记录，新增一条原始flag记录，且给FLAG_CODE赋值110020090000;
+	 * @param workItem
+	 * @param sourceFlag
+	 * @return
+	 * @throws Exception
+	 */
+	private List<BasicObj> changeSourceFlag(String workItem, String sourceFlag) throws Exception {
 		List<Long> pidList = getPidByWorkItem(workItem);
-		log.info("changeSourceFlag:"+workItem+",pids:"+pidList.toString());
+		log.info("changeSourceFlag:" + workItem + ",pids:" + pidList.toString());
 		List<BasicObj> objList = new ArrayList<BasicObj>();
-		for (Long pid:pidList) {
+		for (Long pid : pidList) {
 			List<BasicObj> allObjs = opResult.getAllObjs();
-			for (BasicObj obj:allObjs) {
+			for (BasicObj obj : allObjs) {
 				IxPoi ixPoi = (IxPoi) obj.getMainrow();
-				
+
 				if (ixPoi.getPid() == pid) {
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
+					IxPoiObj poiObj = (IxPoiObj) obj;
 					Long nameId = 0l;
-					if(CollectionUtils.isNotEmpty(nameList)){
-						for (BasicRow name:nameList) {
+					Long standardNameId = 0l;
+					if (CollectionUtils.isNotEmpty(nameList)) {
+						for (BasicRow name : nameList) {
 							IxPoiName poiName = (IxPoiName) name;
-							if (poiName.getLangCode().equals("ENG")&&poiName.getNameType()==2&&poiName.getNameClass()==1) {
-								nameId = poiName.getNameId();
+							if (poiName.getLangCode().equals("ENG") && poiName.getNameClass() == 1) {
+								if (poiName.getNameType() == 2) {
+									nameId = poiName.getNameId();
+								} else {
+									standardNameId = poiName.getNameId();
+								}
 							}
 						}
 					}
 					List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
-					if(CollectionUtils.isNotEmpty(flagList)){
-						for (BasicRow flag:flagList) {
-							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
-							if (poiFlag.getNameId() == nameId) {
-								String flagCode = poiFlag.getFlagCode();
-								if ("FM-YW-20-014".equals(workItem)){
-									if ("110020070000".equals(flagCode) || "110020080000".equals(flagCode) || "110020090000".equals(flagCode)){
-										poiFlag.setFlagCode(sourceFlag);
-									}
-								} else if ("FM-YW-20-017".equals(workItem)){
-									if (StringUtils.isEmpty(flagCode)){
-										poiFlag.setFlagCode(sourceFlag);
-									}
-								} else {
-									poiFlag.setFlagCode(sourceFlag);
+
+					if (CollectionUtils.isNotEmpty(flagList)) {
+						if ("FM-YW-20-012".equals(workItem)||"FM-YW-20-013".equals(workItem)||"FM-YW-20-017".equals(workItem)){
+							for (BasicRow flag : flagList) {
+								IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
+								if (poiFlag.getNameId() == nameId||poiFlag.getNameId() == standardNameId) {
+									poiObj.deleteSubrow(poiFlag);
 								}
 							}
-						}
+							IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+							poiFlag.setFlagCode(sourceFlag);
+							
+						}else{
+							boolean existsOrigOrStandFlag=false;
+							for (BasicRow flag : flagList) {
+								IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
+								String flagCode = poiFlag.getFlagCode();
+								if ((poiFlag.getNameId() == nameId||poiFlag.getNameId() == standardNameId)&& ("110020070000".equals(flagCode) || "110020080000".equals(flagCode)
+										|| "110020090000".equals(flagCode))) {
+									poiObj.deleteSubrow(poiFlag);
+									existsOrigOrStandFlag=true;
+								}
+							}
+							if(existsOrigOrStandFlag){
+								IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+								poiFlag.setFlagCode(sourceFlag);
+							}else{
+								for (BasicRow flag : flagList) {
+									IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
+									String flagCode = poiFlag.getFlagCode();
+									if ((poiFlag.getNameId() == standardNameId)&& !("110020070000".equals(flagCode) || "110020080000".equals(flagCode)
+											|| "110020090000".equals(flagCode))) {
+										poiFlag.setNameId(nameId);
+									}
+								}
+							}
+						}	
 					} else {
-						IxPoiObj poiObj=(IxPoiObj) obj;
-						IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
-						poiFlag.setFlagCode(sourceFlag);
-					}
-					
-					objList.add(obj);
-				}
+					IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+					poiFlag.setFlagCode(sourceFlag);
+				}}
+				objList.add(obj);
 			}
-		}
-		return objList;
+	}return objList;
+
 	}
 	
 	// 200170特殊处理

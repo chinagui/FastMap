@@ -144,41 +144,41 @@ public class TipsOperateTest2 extends InitApplication{
 		//0280017b8ead071595417cb3305ac9d8e49d73
 		
 		try{
-		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} },\"qSbuTaskId\":1}";
+            parameter="{\"geometry\":{\"coordinates\":[[116.49153,40.01378],[116.49297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null},\"qSubTaskId\":57}";
 
-		if (StringUtils.isEmpty(parameter)) {
-			throw new IllegalArgumentException("parameter参数不能为空。");
-		}
+            if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
 
-		JSONObject jsonReq = JSONObject.fromObject(parameter);
-		
-		JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
-		
-		int user = jsonReq.getInt("user");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		String sourceType = jsonReq.getString("sourceType");
-		
-		String memo=jsonReq.getString("memo");
-		
-		JSONObject deep = jsonReq.getJSONObject("deep"); //tips详细信息
-		
-		
-		if (StringUtils.isEmpty(sourceType)) {
-			throw new IllegalArgumentException("参数错误：sourceType不能为空。");
-		}
-		
-		if (tipsGeometry.isNullObject()||tipsGeometry==null) {
-			throw new IllegalArgumentException("参数错误：geometry不能为空。");
-		}
+            JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 
-        int qSubTaskId = jsonReq.getInt("qSubTaskId");
+            int user = jsonReq.getInt("user");
 
-		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+            String sourceType = jsonReq.getString("sourceType");
 
-		op.create(sourceType, tipsGeometry, user,deep, memo, qSubTaskId);
+            String memo=jsonReq.getString("memo");
+
+            JSONObject deep = jsonReq.getJSONObject("deep"); //tips详细信息
+
+
+            if (StringUtils.isEmpty(sourceType)) {
+                throw new IllegalArgumentException("参数错误：sourceType不能为空。");
+            }
+
+            if (tipsGeometry.isNullObject()||tipsGeometry==null) {
+                throw new IllegalArgumentException("参数错误：geometry不能为空。");
+            }
+
+            int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
+            PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+
+            String rowkey = op.create(sourceType, tipsGeometry, user,deep, memo, qSubTaskId);
 		
 
-		System.out.println("创建预处理tips成功");
+		System.out.println("创建预处理tips成功" + rowkey);
 		
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -195,7 +195,7 @@ public class TipsOperateTest2 extends InitApplication{
 		try{
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"user\":1664,\"taskId\":198}";
+		parameter="{\"user\":1664,\"taskId\":593}";
 		
 		//{"user":1672,"taskId":37}
 		
@@ -436,8 +436,8 @@ public class TipsOperateTest2 extends InitApplication{
 	@Test
 	public void testSaveOrUpdate() throws Exception {
 		
-		String parameter= "{\"jsonInfo\":{\"pid\":\"0220010541e88a20c24966a9bc9de099f818d3\",\"rowkey\":\"0220010541e88a20c24966a9bc9de099f818d3\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":155,\"s_qSubTaskId\":0,\"s_mSubTaskId\":198},\"geometry\":{\"g_location\":{\"type\":\"LineString\",\"coordinates\":[[116.43835,39.95437],[116.43788,39.95403],[116.43736,39.954],[116.43683,39.95397],[116.43626,39.95386],[116.43591,39.9538]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.43788,39.95403]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170720170005\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"0541e88a20c24966a9bc9de099f818d3\",\"geo\":{\"type\":\"Point\",\"coordinates\":[116.43788,39.95403]},\"src\":3,\"ln\":1,\"kind\":7,\"len\":226.19751324265795,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"},\"_originalJson\":{\"pid\":\"0220010541e88a20c24966a9bc9de099f818d3\",\"rowkey\":\"0220010541e88a20c24966a9bc9de099f818d3\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":155,\"s_qSubTaskId\":0,\"s_mSubTaskId\":198},\"geometry\":{\"g_location\":{\"coordinates\":[[116.43835,39.95437],[116.43788,39.95403],[116.43683,39.95397],[116.43591,39.9538]],\"type\":\"LineString\"},\"g_guide\":{\"coordinates\":[116.43788,39.95403],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170720170005\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"0541e88a20c24966a9bc9de099f818d3\",\"geo\":{\"coordinates\":[116.43788,39.95403],\"type\":\"Point\"},\"src\":3,\"ln\":1,\"kind\":7,\"len\":226.19751,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":1,\"dbId\":13}";
-		try {
+		String parameter= "{\"jsonInfo\":{\"pid\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"rowkey\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":2224,\"s_qSubTaskId\":0,\"s_mSubTaskId\":593},\"geometry\":{\"g_location\":{\"coordinates\":[[116.26859,39.8591],[116.26971,39.85782],[116.2685,39.85802],[116.26868,39.85747],[116.26878,39.85704]],\"type\":\"LineString\"},\"g_guide\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170724150326\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170724144455\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724144919\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724150144\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"auditRemark\":\"\",\"content\":\"测试改改\",\"date\":\"20170724152441\",\"type\":3,\"user\":1664,\"userRole\":\"\"}]},\"content\":\"测试改改\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"f0417518384d4bd1b4d8eaf3d95084fa\",\"geo\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"},\"src\":3,\"ln\":1,\"kind\":7,\"len\":389.2832,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"},\"_originalJson\":{\"pid\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"rowkey\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":2224,\"s_qSubTaskId\":0,\"s_mSubTaskId\":593},\"geometry\":{\"g_location\":{\"coordinates\":[[116.26859,39.8591],[116.26971,39.85782],[116.2685,39.85802],[116.26868,39.85747],[116.26878,39.85704]],\"type\":\"LineString\"},\"g_guide\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170724150326\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170724144455\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724144919\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724150144\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"auditRemark\":\"\",\"content\":\"测试改改\",\"date\":\"2017072415326\",\"type\":3,\"user\":1664,\"userRole\":\"\"}]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"f0417518384d4bd1b4d8eaf3d95084fa\",\"geo\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"},\"src\":3,\"ln\":1,\"kind\":7,\"len\":389.2832,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":1,\"dbId\":13}";
+        try {
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}

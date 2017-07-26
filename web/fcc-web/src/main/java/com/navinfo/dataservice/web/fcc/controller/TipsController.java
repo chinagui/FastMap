@@ -927,6 +927,7 @@ public class TipsController extends BaseController {
           }
     }
     
+    @RequestMapping(value = "/tip/poiRelateTips")
     public ModelAndView getPoiRelateTips(HttpServletRequest request) throws ServletException, IOException{
     	 String parameter = request.getParameter("parameter");
 
@@ -941,8 +942,14 @@ public class TipsController extends BaseController {
              int subTaskId = jsonReq.getInt("subTaskId");
              
              String id = jsonReq.getString("id");
+             
+             int buffer = jsonReq.getInt("buffer");
+             
+             int dbId = jsonReq.getInt("dbId");
+             
+             TipsSelector selector = new TipsSelector();
 
-             JSONArray array = null;//selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime);
+             JSONArray array = selector.searchPoiRelateTips(id,subTaskId,buffer,dbId);
              
              return new ModelAndView("jsonView", success(array));
 

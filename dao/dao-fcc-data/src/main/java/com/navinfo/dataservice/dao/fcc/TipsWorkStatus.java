@@ -25,5 +25,5 @@ public  class TipsWorkStatus {
 
     public static int CHECK_ALL = 10;//质检全部
 
-    public static int TIPS_IN_TASK = 11;//质检全部
+    public static int TIPS_IN_TASK = 11;//只渲染任务内
 }

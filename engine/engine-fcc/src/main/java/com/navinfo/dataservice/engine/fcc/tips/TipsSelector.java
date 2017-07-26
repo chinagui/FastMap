@@ -142,7 +142,10 @@ public class TipsSelector {
             TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
             List<TipsDao> snapshots = null;
             if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
-
+                OracleWhereClause where = param.getTaskRender(parameter);
+                snapshots = new TipsIndexOracleOperator(conn).query(
+                        "select * from tips_index where " + where.getSql(), where
+                                .getValues().toArray());
             }else {
                 String sql = param.getByTileWithGap(parameter);
                 snapshots = operator.query(sql, wkt);

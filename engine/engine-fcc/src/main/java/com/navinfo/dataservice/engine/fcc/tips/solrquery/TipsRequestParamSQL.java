@@ -176,18 +176,8 @@ public class TipsRequestParamSQL {
 						if (webBuilder.length() > 0) {
 							webBuilder.append(" OR ");
 						}
-
-//						webBuilder.append("(");
-//						webBuilder.append("(");
 						webBuilder
 								.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
-//						webBuilder.append(")");
-//
-//						// 待质检的tips
-//						webBuilder
-//								.append(" OR (stage=7 AND t_dEditStatus=0 AND t_tipStatus=2)");
-
-//						webBuilder.append(")");
 
 					}
 					if (workStatus.contains(1)) {
@@ -214,15 +204,6 @@ public class TipsRequestParamSQL {
 					builder.append(webBuilder);
 					builder.append(")");
 				}
-
-				// 类型过滤
-				// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
-				// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
-//				if (subTaskType == 3) {
-//					builder.append(" AND s_sourceType!='8001'");// 接边Tips
-//				} else if (subTaskType == 4) {// 4 区域粗编
-//					builder.append(" AND s_sourceType='8001'");// 预处理提交
-//				}
 			}
 
 		if (builder.length() > 0) {
@@ -547,6 +528,97 @@ public class TipsRequestParamSQL {
 		logger.info("getSnapShot:" + builder.toString());
 		return new OracleWhereClause(builder.toString(), values);
 	}
+
+    public OracleWhereClause getTaskRender(String parameter) throws Exception {
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        JSONArray workStatus = jsonReq.getJSONArray("workStatus");
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+        Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+
+        // solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        List<Object> values = new ArrayList<Object>();
+        values.add(subtask.getGeometry());
+
+        StringBuilder taskBuilder = null;
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        if (taskSet != null && taskSet.size() > 0) {
+            taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
+        }
+
+        // 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+        int subTaskType = subtask.getType();// 3 grid粗编 4 区域粗编
+
+        if (subTaskType != 3 && subTaskType != 4 && taskBuilder != null) {
+            builder.append(" AND " + taskBuilder);
+        } else if (subTaskType == 3) {// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+            builder.append(" AND ");
+            builder.append("(");
+            builder.append("s_sourceType='8002'");
+            if(taskBuilder != null) {
+                builder.append(" OR ");
+                builder.append(taskBuilder);
+            }
+            builder.append(")");
+
+        } else if (subTaskType == 4) {// 4 区域粗编
+            // 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
+            //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
+            //TODO 晓毅提供接口
+            Set<Integer> projectSet = this.getCollectIdsBySubTaskId(subtaskId);
+            StringBuilder projectBuilder = new StringBuilder();
+            this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
+            builder.append(" AND ");
+            builder.append(" s_sourceType='8001'");
+            builder.append(" AND ");
+            builder.append(projectBuilder);
+        }
+
+        builder.append(" AND t_tipStatus=2");
+        // 315过滤
+        this.getFilter315(builder);
+
+        if (subtask.getIsQuality() == 1) {//质检子任务
+            builder.append(" AND stage=7");
+            builder.append(" ANd handler=" + subtask.getExeUserId());
+        }else{//作业子任务
+            builder.append(" AND stage in(1,2,5,6)");
+        }
+
+        StringBuilder statusBuilder = new StringBuilder();
+        if (workStatus.contains(TipsWorkStatus.PREPARED_WORKING)
+                || workStatus.contains(TipsWorkStatus.PREPARED_CHECKING)) {// 待作业，待质检
+            if(statusBuilder.length() > 0) {
+                statusBuilder.append(" OR ");
+            }
+            statusBuilder.append("t_dEditStatus=0");
+        } else if (workStatus.contains(TipsWorkStatus.WORK_HAS_PROBLEM)
+                || workStatus.contains(TipsWorkStatus.CHECK_HAS_PROBLEM)) {// 有问题待确认
+            if(statusBuilder.length() > 0) {
+                statusBuilder.append(" OR ");
+            }
+            statusBuilder.append("t_dEditStatus=1");
+        } else if (workStatus.contains(TipsWorkStatus.WORK_HAS_FINISHED)
+                || workStatus.contains(TipsWorkStatus.CHECK_HAS_FINISHED)) {// 已作业,已质检
+            if(statusBuilder.length() > 0) {
+                statusBuilder.append(" OR ");
+            }
+            statusBuilder.append("t_dEditStatus=2");
+        }
+
+        if(statusBuilder.length() > 0) {
+            builder.append("(");
+            builder.append(statusBuilder);
+            builder.append(")");
+        }
+
+        logger.info("getSnapShot:" + builder.toString());
+        return new OracleWhereClause(builder.toString(), values);
+    }
 
 	/**
 	 * 根据子任务号获取采集任务ID

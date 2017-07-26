@@ -171,7 +171,7 @@ public class DataEditController extends BaseController {
 			//保存数据
 			OperationResult opResult=dealerShipEditService.saveDataService(parameter,userId);
 			//执行检查
-			int resultCount=dealerShipEditService.runDealershipCheck(parameter);
+			int resultCount=dealerShipEditService.runDealershipCheck(parameter,opResult);
 			
 			Map<String,Integer> result = new HashMap<>();
 			result.put("checkLogs", resultCount);

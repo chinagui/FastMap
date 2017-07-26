@@ -56,7 +56,7 @@ public class CloseMeshPhase extends JobPhase {
                 FccApi fccApi = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
                 Set<Integer> collectTaskSet = Day2MonthUtils.getTaskIdSet(conn, jobRelation.getItemId());
-                Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet);
+                Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet,4);
                 log.info("phaseId:"+jobProgress.getPhaseId()+",tips mesh:"+tipsMeshset.toString());
 
                 tipsMeshset.addAll(meshs);

@@ -74,12 +74,12 @@ public class TipsRequestParamSQL {
 				stages.add(6);
 				stages.add(7);
 				stages.add(8);
-			} else if (pType.equals("fc")) {// FC 预处理 钟小明
-				stages.add(1);
-				stages.add(2);
-				stages.add(3);
-				stages.add(5);
-				stages.add(6);
+			} else if (pType.equals("fc")) {// FC 预处理 钟小明 20170724和玉秀确认，FC预处理不限制stage
+//				stages.add(1);
+//				stages.add(2);
+//				stages.add(3);
+//				stages.add(5);
+//				stages.add(6);
 			}
 		} else {// web 刘哲
 			if ("d".equals(mdFlag)) {// 日编
@@ -142,7 +142,7 @@ public class TipsRequestParamSQL {
 
 		if (stages.size() > 0) {
 			this.getIntArrayQuery(builder, stages, "stage");
-
+		}
 			if (StringUtils.isNotEmpty(pType)) {
 				if (pType.equals("sl")) {// 矢量化 赵航
 				} else if (pType.equals("ms")) {// 生产管理 万冲
@@ -224,13 +224,12 @@ public class TipsRequestParamSQL {
 //					builder.append(" AND s_sourceType='8001'");// 预处理提交
 //				}
 			}
-		}
 
 		if (builder.length() > 0) {
 			builder.append(" and");
 		}
 		builder.append(" sdo_relate(wktLocation,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
-		String sql = "select * from tips_index where " + builder.toString();
+		String sql = "select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ * from tips_index where " + builder.toString();
 		logger.info("getByTileWithGap:" + sql);
 		return sql;
 	}
@@ -381,7 +380,7 @@ public class TipsRequestParamSQL {
 		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
 
 		if (date != null && !date.equals("")) {
-			param += " AND t_date > " + DateUtils.stringToTimestamp(date, null)
+			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"
 					+ " ";
 		}
 
@@ -828,7 +827,7 @@ public class TipsRequestParamSQL {
 		if (builder.length() > 0) {
 			builder.append(" AND");
 		}
-		builder.append(" " + fieldName + "in (");
+		builder.append(" " + fieldName + " in (");
 		for (int i = 0; i < intArray.size(); i++) {
 			int fieldValue = intArray.getInt(i);
 			if (i > 0) {
@@ -840,5 +839,10 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
+ 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
+		  String query = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
+				begin, end, subTaskId);
+		  return query;
+	}
 }
-

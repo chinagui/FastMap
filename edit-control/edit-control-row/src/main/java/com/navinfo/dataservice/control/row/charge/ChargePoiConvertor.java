@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.control.row.charge;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -27,7 +24,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -52,13 +48,16 @@ public class ChargePoiConvertor {
 	
 	//省市城市列表
 	private Map<String, Map<String, String>> scPointAdminarea;
-	private Connection conn;
 	private Map<Long,BasicObj> objsChild;
+	private Map<Long, List<Map<String, Object>>> logDatas;
+	private Map<Long, Map<String, Object>> freshDatas;
 	
-	public ChargePoiConvertor(Map<String, Map<String, String>> scPointAdminarea, Connection conn,Map<Long, BasicObj> objsChild) {
+	public ChargePoiConvertor(Map<String, Map<String, String>> scPointAdminarea,Map<Long, BasicObj> objsChild, 
+			Map<Long, List<Map<String, Object>>> logDatas,Map<Long, Map<String, Object>> freshDatas) {
 		this.scPointAdminarea = scPointAdminarea;
-		this.conn = conn;
 		this.objsChild = objsChild;
+		this.logDatas = logDatas;
+		this.freshDatas = freshDatas;
 	}
 	/**
 	 * 初始化
@@ -126,7 +125,7 @@ public class ChargePoiConvertor {
 			//获取充电桩数据
 			Map<Long, BasicObj> plotMap = this.getChargePlot(poiObj);
 			//过滤数据
-			boolean filterPoi = this.filterPoi(poiObj,plotMap);
+			boolean filterPoi = this.filterPoiAdd(poiObj);
 			if(!filterPoi){return null;}
 			//处理通用字段
 			JSONObject chargePoi = toJson(poiObj,plotMap);
@@ -404,6 +403,29 @@ public class ChargePoiConvertor {
 				}
 			}
 		}
+		return true;
+	}
+	
+	/**
+	 * 根据条件过滤数据(增量原则:
+	 * 其父充电站未删除，则只将桩家中对应的充电桩插口记录删除，同时更新父充电站下的详情；
+	 * -----若桩删除后父充电站下已没有非删除的桩，按照原则日库中的站也应为删除状态，
+	 * 如果站此时仍为非删除状态，则建议桩家库中的站暂时保留，防止外业又在站下新增桩记录时无法正常更新
+	 * )
+	 * 增量原则,有站没有充电桩的也要转入,在桩家(新增时)过滤,
+     * 保证原先有站有桩的数据更新为有站无桩时能够保证桩家库数据也更新
+	 * @author Han Shaoming
+	 * @param poiObj
+	 * @return 
+	 */
+	private boolean filterPoiAdd(IxPoiObj poiObj){
+		IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
+		long pid = ixPoi.getPid();
+		//当POI的pid为0时，此站或桩不转出（外业作业中的新增POI未经过行编）
+		if(pid == 0){return false;}
+		//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
+		List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
+		if(rows == null || rows.size() == 0){return false;}
 		return true;
 	}
 	
@@ -1155,8 +1177,10 @@ public class ChargePoiConvertor {
 		long pid = ixPoi.getPid();
 		try {
 			//获取履历
-			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
+			List<Map<String, Object>> logData = new ArrayList<Map<String, Object>>();
+			if(logDatas.containsKey(pid)){
+				logData = logDatas.get(pid);
+			}
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(logData.size()-1);
 				String date = (String) logMap.get("date");
@@ -1167,7 +1191,10 @@ public class ChargePoiConvertor {
 			}else{
 				//鲜度验证
 				if(poiObj.isFreshFlag()){
-					Map<String, Object> freshData = PoiEditStatus.getFreshData(conn, pid);
+					Map<String, Object> freshData = new HashMap<String,Object>();
+					if(freshDatas.containsKey(pid)){
+						freshData = freshDatas.get(pid);
+					}
 					if(freshData.size() > 0){
 						String uploadDate = (String) freshData.get("uploadDate");
 						if(StringUtils.isNotEmpty(uploadDate)){
@@ -1207,8 +1234,10 @@ public class ChargePoiConvertor {
 		long pid = ixPoi.getPid();
 		try {
 			//获取履历
-			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
+			List<Map<String, Object>> logData = new ArrayList<Map<String, Object>>();
+			if(logDatas.containsKey(pid)){
+				logData = logDatas.get(pid);
+			}
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(0);
 				int operation = (int) logMap.get("operation");

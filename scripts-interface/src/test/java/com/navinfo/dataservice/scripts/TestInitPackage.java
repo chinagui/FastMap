@@ -1,24 +1,15 @@
 package com.navinfo.dataservice.scripts;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.junit.Before;
 import org.junit.Test;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -31,7 +22,6 @@ import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterSp9;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.vividsolutions.jts.io.ParseException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -65,7 +55,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	}
 	
 	
-	@Test
+//	@Test
 	public void testMetadataDonwnload() throws Exception {
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();//F:\tabfile
@@ -85,7 +75,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -355,7 +345,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.out.println(blockGeo);*/
 	}
 	
-	@Test
+//	@Test
 	public void testExportQualityPoiReport() throws Exception{
 		JobScriptsInterface.initContext();
 		

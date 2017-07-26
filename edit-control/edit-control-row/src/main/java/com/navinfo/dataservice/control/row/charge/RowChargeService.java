@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.control.row.charge;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -45,29 +44,18 @@ public class RowChargeService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject chargePoiConvertor(int type, String lastSyncTime, String syncTime) throws Exception {
+	public JSONObject chargePoiConvertor(int type, String lastSyncTime, String syncTime,List<Integer> dbIdList) throws Exception {
 		log.info("开始数据转化,获取所有的大区库");
 		JSONObject result = null;
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		List<Region> regionList = manApi.queryRegionList();
-//		List<Region> regionList = new ArrayList<Region>();
-//		Region region = new Region();
-//		region.setRegionId(1);
-//		region.setDailyDbId(13);
-//		region.setMonthlyDbId(12);
-//		regionList.add(region);
-//		Region region1 = new Region();
-//		region1.setRegionId(19);
-//		region1.setDailyDbId(330);
-//		region1.setMonthlyDbId(12);
-//		regionList.add(region1);
 		
 		if(type==1){
 			//初始化
-			result = Fm2ChargeInit.getInstance().excute(regionList);
+			result = Fm2ChargeInit.getInstance().excute(regionList,dbIdList);
 		}else if(type==2){
 			//增量
-			result = Fm2ChargeAdd.getInstance().excute(regionList,lastSyncTime,syncTime);
+			result = Fm2ChargeAdd.getInstance().excute(regionList,lastSyncTime,syncTime,dbIdList);
 		}
 		log.info("数据转化结束");
 		return result;

@@ -42,8 +42,12 @@ public class Task implements Serializable{
 	private int lot ;
 	private int groupId;
 	private String groupName;
-	private int roadPlanTotal ;
+	private float roadPlanTotal ;
 	private int poiPlanTotal ;
+	private int roadPlanIn;
+	private int roadPlanOut;
+	private int poiPlanIn;
+	private int poiPlanOut;
 	private int latest ;
 	private int groupLeader =0; 
 	private String workProperty ;
@@ -321,7 +325,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the roadPlanTotal
 	 */
-	public int getRoadPlanTotal() {
+	public float getRoadPlanTotal() {
 		return roadPlanTotal;
 	}
 
@@ -329,7 +333,7 @@ public class Task implements Serializable{
 	/**
 	 * @param roadPlanTotal the roadPlanTotal to set
 	 */
-	public void setRoadPlanTotal(int roadPlanTotal) {
+	public void setRoadPlanTotal(float roadPlanTotal) {
 		this.roadPlanTotal = roadPlanTotal;
 		changeFields.put("ROAD_PLAN_TOTAL", roadPlanTotal);
 	}
@@ -559,6 +563,42 @@ public class Task implements Serializable{
 	public void setDataPlanStatus(int dataPlanStatus) {
 		changeFields.put("DATA_PLAN_STATUS", dataPlanStatus);
 		this.dataPlanStatus = dataPlanStatus;
+	}
+	
+	public int getRoadPlanIn() {
+		return roadPlanIn;
+	}
+
+	public void setRoadPlanIn(int roadPlanIn) {
+		changeFields.put("ROAD_PLAN_IN", roadPlanIn);
+		this.roadPlanIn = roadPlanIn;
+	}
+
+	public int getRoadPlanOut() {
+		return roadPlanOut;
+	}
+
+	public void setRoadPlanOut(int roadPlanOut) {
+		changeFields.put("ROAD_PLAN_OUT", roadPlanOut);
+		this.roadPlanOut = roadPlanOut;
+	}
+
+	public int getPoiPlanIn() {
+		return poiPlanIn;
+	}
+
+	public void setPoiPlanIn(int poiPlanIn) {
+		changeFields.put("POI_PLAN_IN", poiPlanIn);
+		this.poiPlanIn = poiPlanIn;
+	}
+
+	public int getPoiPlanOut() {
+		return poiPlanOut;
+	}
+
+	public void setPoiPlanOut(int poiPlanOut) {
+		changeFields.put("POI_PLAN_OUT", poiPlanOut);
+		this.poiPlanOut = poiPlanOut;
 	}
 
 }

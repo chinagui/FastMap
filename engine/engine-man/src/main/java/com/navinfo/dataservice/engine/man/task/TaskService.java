@@ -2327,6 +2327,7 @@ public class TaskService {
 			map.put("method", task.getMethod());
 			map.put("adminName", task.getAdminName());
 			map.put("dataPlanStatus", task.getDataPlanStatus());
+			map.put("inforStage", task.getInforStage());
 			
 			return map;
 		}catch(Exception e){

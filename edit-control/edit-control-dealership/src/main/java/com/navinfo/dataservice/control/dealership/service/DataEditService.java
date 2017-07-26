@@ -1232,7 +1232,7 @@ public class DataEditService {
 	 * @param parameter
 	 * @param userId
 	 */
-	public void saveDataService(JSONObject parameter, long userId) throws Exception {
+	public OperationResult saveDataService(JSONObject parameter, long userId) throws Exception {
 	
         Connection poiConn = null;
         Connection dealershipConn = null;
@@ -1314,6 +1314,7 @@ public class DataEditService {
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
+    			return operationResult;
             }
             
             //审核意见为转外业、转客户
@@ -1340,6 +1341,7 @@ public class DataEditService {
             DbUtils.commitAndClose(dealershipConn);
             DbUtils.commitAndClose(poiConn);
 		}
+		return null;
 	}
 	
 	public boolean isOccupied(String poiNum ,int resultId, Connection conn ) throws Exception {
@@ -2517,7 +2519,7 @@ public class DataEditService {
 		}
 	}
 	
-	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
+	public int runDealershipCheck(JSONObject jsonReq,OperationResult opResult) throws Exception{
 		log.info("start runDealershipCheck");
 		int resultCount=0;
 		Connection conn=null;
@@ -2529,7 +2531,10 @@ public class DataEditService {
              }
     		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
         	int poiDbId = poiData.getInt("dbId");
-        	int objPid = poiData.getInt("objId");
+        	BasicObj obj=opResult.getAllObjs().get(0);
+        	com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi ixPoi = (com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi) obj.getMainrow();
+        	int objPid = (int) ixPoi.getPid();
+        
     	conn=DBConnector.getInstance().getConnectionById(poiDbId);
 		log.info("要检查的数据pid:"+objPid);
 		log.info("获取要检查的数据的履历");

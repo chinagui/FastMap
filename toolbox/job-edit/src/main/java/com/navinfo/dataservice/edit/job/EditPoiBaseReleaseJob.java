@@ -287,7 +287,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
 					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
 					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
-					+ "			  AND N.RULEID IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
+					+ "			  AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
 					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
 			

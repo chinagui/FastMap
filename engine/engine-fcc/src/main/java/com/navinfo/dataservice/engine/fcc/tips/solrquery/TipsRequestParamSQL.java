@@ -229,7 +229,7 @@ public class TipsRequestParamSQL {
 			builder.append(" and");
 		}
 		builder.append(" sdo_relate(wktLocation,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
-		String sql = "select * from tips_index where " + builder.toString();
+		String sql = "select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ * from tips_index where " + builder.toString();
 		logger.info("getByTileWithGap:" + sql);
 		return sql;
 	}

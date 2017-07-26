@@ -1296,7 +1296,7 @@ public class TipsSelector {
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
 					oracelConn);
 			long total = operator.querCount(
-					"select count(1) from tips_index where "
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
 							+ whereClause.getSql(), whereClause.getValues()
 							.toArray());
 			Map<Object, Object> dataMap = operator.groupQuery(
@@ -1362,7 +1362,7 @@ public class TipsSelector {
 			String parameter = paramObj.toString();
 			String query = param.getTipsDayTotal(parameter);
 			return (int) operator.querCount(
-					" select count(1) from tips_index where " + query, wkt);
+					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where " + query, wkt);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -1925,7 +1925,7 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
-					"select count(1) count from tips_index where " + where
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where " + where
 							+ " and rownum=1", wkt);
 			return (count > 0 ? 1 : 0);
 		} catch (Exception e) {

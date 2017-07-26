@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.control.row.charge;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -27,7 +24,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -52,13 +48,16 @@ public class ChargePoiConvertor {
 	
 	//省市城市列表
 	private Map<String, Map<String, String>> scPointAdminarea;
-	private Connection conn;
 	private Map<Long,BasicObj> objsChild;
+	private Map<Long, List<Map<String, Object>>> logDatas;
+	private Map<Long, Map<String, Object>> freshDatas;
 	
-	public ChargePoiConvertor(Map<String, Map<String, String>> scPointAdminarea, Connection conn,Map<Long, BasicObj> objsChild) {
+	public ChargePoiConvertor(Map<String, Map<String, String>> scPointAdminarea,Map<Long, BasicObj> objsChild, 
+			Map<Long, List<Map<String, Object>>> logDatas,Map<Long, Map<String, Object>> freshDatas) {
 		this.scPointAdminarea = scPointAdminarea;
-		this.conn = conn;
 		this.objsChild = objsChild;
+		this.logDatas = logDatas;
+		this.freshDatas = freshDatas;
 	}
 	/**
 	 * 初始化
@@ -1178,8 +1177,10 @@ public class ChargePoiConvertor {
 		long pid = ixPoi.getPid();
 		try {
 			//获取履历
-			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
+			List<Map<String, Object>> logData = new ArrayList<Map<String, Object>>();
+			if(logDatas.containsKey(pid)){
+				logData = logDatas.get(pid);
+			}
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(logData.size()-1);
 				String date = (String) logMap.get("date");
@@ -1190,7 +1191,10 @@ public class ChargePoiConvertor {
 			}else{
 				//鲜度验证
 				if(poiObj.isFreshFlag()){
-					Map<String, Object> freshData = PoiEditStatus.getFreshData(conn, pid);
+					Map<String, Object> freshData = new HashMap<String,Object>();
+					if(freshDatas.containsKey(pid)){
+						freshData = freshDatas.get(pid);
+					}
 					if(freshData.size() > 0){
 						String uploadDate = (String) freshData.get("uploadDate");
 						if(StringUtils.isNotEmpty(uploadDate)){
@@ -1230,8 +1234,10 @@ public class ChargePoiConvertor {
 		long pid = ixPoi.getPid();
 		try {
 			//获取履历
-			LogReader lr = new LogReader(conn);
-			List<Map<String, Object>> logData = lr.getLogByPid(ObjectName.IX_POI, pid);
+			List<Map<String, Object>> logData = new ArrayList<Map<String, Object>>();
+			if(logDatas.containsKey(pid)){
+				logData = logDatas.get(pid);
+			}
 			if(logData != null && logData.size() > 0){
 				Map<String, Object> logMap = logData.get(0);
 				int operation = (int) logMap.get("operation");

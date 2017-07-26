@@ -21,8 +21,7 @@ import net.sf.json.JSONObject;
  * Created by zhangjunfang on 2017/5/20.
  */
 public class TipsRequestParamSQL {
-	private static final Logger logger = Logger
-			.getLogger(TipsRequestParamSQL.class);
+	private static final Logger logger = Logger.getLogger(TipsRequestParamSQL.class);
 
 	public String getByTileWithGap(String parameter) throws Exception {
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -33,8 +32,7 @@ public class TipsRequestParamSQL {
 		int subTaskType = 0;// 3 grid粗编 4 区域粗编
 
 		if (jsonReq.containsKey("subtaskId")) {
-			ManApi apiService = (ManApi) ApplicationContextUtil
-					.getBean("manApi");
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			subtaskId = jsonReq.getInt("subtaskId");
 			subtask = apiService.queryBySubtaskId(subtaskId);
 			subTaskType = subtask.getType();// 3 grid粗编 4 区域粗编
@@ -74,12 +72,13 @@ public class TipsRequestParamSQL {
 				stages.add(6);
 				stages.add(7);
 				stages.add(8);
-			} else if (pType.equals("fc")) {// FC 预处理 钟小明 20170724和玉秀确认，FC预处理不限制stage
-//				stages.add(1);
-//				stages.add(2);
-//				stages.add(3);
-//				stages.add(5);
-//				stages.add(6);
+			} else if (pType.equals("fc")) {// FC 预处理 钟小明
+											// 20170724和玉秀确认，FC预处理不限制stage
+				// stages.add(1);
+				// stages.add(2);
+				// stages.add(3);
+				// stages.add(5);
+				// stages.add(6);
 			}
 		} else {// web 刘哲
 			if ("d".equals(mdFlag)) {// 日编
@@ -99,17 +98,17 @@ public class TipsRequestParamSQL {
 
 		StringBuilder builder = new StringBuilder();
 
-		boolean remove8001=false;
-		if(stages.size()>0 && StringUtils.isEmpty(pType)){
+		boolean remove8001 = false;
+		if (stages.size() > 0 && StringUtils.isEmpty(pType)) {
 			// WEB
 			// 类型过滤
 			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
 			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
 			if (subTaskType == 3) {
-//				builder.append(" AND s_sourceType!='8001'");// 接边Tips
-				remove8001=true;
+				// builder.append(" AND s_sourceType!='8001'");// 接边Tips
+				remove8001 = true;
 			} else if (subTaskType == 4) {// 4 区域粗编
-//				builder.append(" AND s_sourceType='8001'");// 预处理提交
+				// builder.append(" AND s_sourceType='8001'");// 预处理提交
 				types = new JSONArray();
 				types.add("8001");
 			}
@@ -117,25 +116,25 @@ public class TipsRequestParamSQL {
 
 		if (types.size() > 0) {
 			Set<String> typeSet = new HashSet<>();
-			for(int i=0;i<types.size();i++){
+			for (int i = 0; i < types.size(); i++) {
 				typeSet.add(types.getString(i));
 			}
-			for(String type : this.getFilter315()){
+			for (String type : this.getFilter315()) {
 				typeSet.remove(type);
 			}
-			if(remove8001){//过滤8001
+			if (remove8001) {// 过滤8001
 				typeSet.remove("8001");
 			}
-			if(typeSet.size()>0) {
+			if (typeSet.size() > 0) {
 				this.getStringArrayQuery(builder, typeSet, "s_sourceType");
 			}
-		}else{
+		} else {
 			// 过滤315 web不显示的tips 20170118
-			if(remove8001){
-				//除了要过滤的tips，还要过滤8001
+			if (remove8001) {
+				// 除了要过滤的tips，还要过滤8001
 				this.getFilter315With8001(builder);
-			}else {
-				//不过滤8001
+			} else {
+				// 不过滤8001
 				this.getFilter315(builder);
 			}
 		}
@@ -143,87 +142,83 @@ public class TipsRequestParamSQL {
 		if (stages.size() > 0) {
 			this.getIntArrayQuery(builder, stages, "stage");
 		}
-			if (StringUtils.isNotEmpty(pType)) {
-				if (pType.equals("sl")) {// 矢量化 赵航
-				} else if (pType.equals("ms")) {// 生产管理 万冲
-					builder.append(" and t_tipStatus=2");
-					// 20170615 过滤内业Tips
-					builder.append(" and not REGEXP_LIKE(s_sourceType,'^80')");
-					// 20170510 增加中线有无过滤
-					addTaskFilterSql(noQFilter, builder);
-				} else if (pType.equals("fc")) {// FC 预处理 钟小明
-					builder.append(" AND (t_tipStatus=2 OR (s_sourceType='8001' AND t_tipStatus=1))");
-				}
-			} else {// web 刘哲
-				StringBuilder webBuilder = new StringBuilder();
-				JSONArray workStatus = null;
-				if (jsonReq.containsKey("workStatus")) {
-					workStatus = jsonReq.getJSONArray("workStatus");
-				}
+		if (StringUtils.isNotEmpty(pType)) {
+			if (pType.equals("sl")) {// 矢量化 赵航
+			} else if (pType.equals("ms")) {// 生产管理 万冲
+				builder.append(" and t_tipStatus=2");
+				// 20170615 过滤内业Tips
+				builder.append(" and not REGEXP_LIKE(s_sourceType,'^80')");
+				// 20170510 增加中线有无过滤
+				addTaskFilterSql(noQFilter, builder);
+			} else if (pType.equals("fc")) {// FC 预处理 钟小明
+				builder.append(" AND (t_tipStatus=2 OR (s_sourceType='8001' AND t_tipStatus=1))");
+			}
+		} else {// web 刘哲
+			StringBuilder webBuilder = new StringBuilder();
+			JSONArray workStatus = null;
+			if (jsonReq.containsKey("workStatus")) {
+				workStatus = jsonReq.getJSONArray("workStatus");
+			}
 
-				// 状态过滤
-				if (workStatus == null
-						|| workStatus.contains(9)
-						|| (workStatus.contains(0) && workStatus.contains(1) && workStatus
-								.contains(2))) {
+			// 状态过滤
+			if (workStatus == null || workStatus.contains(9)
+					|| (workStatus.contains(0) && workStatus.contains(1) && workStatus.contains(2))) {
+				if (webBuilder.length() > 0) {
+					webBuilder.append(" OR ");
+				}
+				webBuilder.append("(t_tipStatus=2)");
+			} else {
+				if (workStatus.contains(0)) {
+
 					if (webBuilder.length() > 0) {
 						webBuilder.append(" OR ");
 					}
-					webBuilder.append("(t_tipStatus=2)");
-				} else {
-					if (workStatus.contains(0)) {
 
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
+					// webBuilder.append("(");
+					// webBuilder.append("(");
+					webBuilder.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
+					// webBuilder.append(")");
+					//
+					// // 待质检的tips
+					// webBuilder
+					// .append(" OR (stage=7 AND t_dEditStatus=0 AND
+					// t_tipStatus=2)");
 
-//						webBuilder.append("(");
-//						webBuilder.append("(");
-						webBuilder
-								.append("(t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1,2,5,6,7))");
-//						webBuilder.append(")");
-//
-//						// 待质检的tips
-//						webBuilder
-//								.append(" OR (stage=7 AND t_dEditStatus=0 AND t_tipStatus=2)");
+					// webBuilder.append(")");
 
-//						webBuilder.append(")");
-
-					}
-					if (workStatus.contains(1)) {
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
-						webBuilder
-								.append("(stage in (2,7) AND t_dEditStatus=1)");
-					}
-					if (workStatus.contains(2)) {
-						if (webBuilder.length() > 0) {
-							webBuilder.append(" OR ");
-						}
-						webBuilder
-								.append("(stage in (2,7) AND t_dEditStatus=2)");
-					}
 				}
-
-				if (webBuilder.length() > 0) {
-					if (builder.length() > 0) {
-						builder.append(" AND ");
+				if (workStatus.contains(1)) {
+					if (webBuilder.length() > 0) {
+						webBuilder.append(" OR ");
 					}
-					builder.append("(");
-					builder.append(webBuilder);
-					builder.append(")");
+					webBuilder.append("(stage in (2,7) AND t_dEditStatus=1)");
 				}
-
-				// 类型过滤
-				// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
-				// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
-//				if (subTaskType == 3) {
-//					builder.append(" AND s_sourceType!='8001'");// 接边Tips
-//				} else if (subTaskType == 4) {// 4 区域粗编
-//					builder.append(" AND s_sourceType='8001'");// 预处理提交
-//				}
+				if (workStatus.contains(2)) {
+					if (webBuilder.length() > 0) {
+						webBuilder.append(" OR ");
+					}
+					webBuilder.append("(stage in (2,7) AND t_dEditStatus=2)");
+				}
 			}
+
+			if (webBuilder.length() > 0) {
+				if (builder.length() > 0) {
+					builder.append(" AND ");
+				}
+				builder.append("(");
+				builder.append(webBuilder);
+				builder.append(")");
+			}
+
+			// 类型过滤
+			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
+			// if (subTaskType == 3) {
+			// builder.append(" AND s_sourceType!='8001'");// 接边Tips
+			// } else if (subTaskType == 4) {// 4 区域粗编
+			// builder.append(" AND s_sourceType='8001'");// 预处理提交
+			// }
+		}
 
 		if (builder.length() > 0) {
 			builder.append(" and");
@@ -239,40 +234,35 @@ public class TipsRequestParamSQL {
 	}
 
 	private StringBuilder getFilter315With8001(StringBuilder builder) {
-		if (StringUtils
-				.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001)) {
+		if (StringUtils.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001)) {
 			if (builder.length() == 0) {
 				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001);
 			} else {
-				builder.append(" AND "
-						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001);
+				builder.append(" AND " + SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQLWith8001);
 			}
 		}
 		return builder;
 	}
 
 	private StringBuilder getFilter315(StringBuilder builder) {
-		if (StringUtils
-				.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
+		if (StringUtils.isNotEmpty(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
 			if (builder.length() == 0) {
 				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
 			} else {
-				builder.append(" AND "
-						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+				builder.append(" AND " + SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
 			}
 		}
 		return builder;
 	}
 
-	private StringBuilder getStringArrayQuery(StringBuilder builder,
-											  Set<String> stringArray, String fieldName) {
+	private StringBuilder getStringArrayQuery(StringBuilder builder, Set<String> stringArray, String fieldName) {
 
 		if (stringArray != null) {
 			if (builder.length() > 0) {
 				builder.append(" AND");
 			}
 			builder.append(" " + fieldName + " in (");
-			int i=0;
+			int i = 0;
 			for (String fieldValue : stringArray) {
 				if (i > 0) {
 					builder.append(",");
@@ -288,8 +278,7 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
-	private StringBuilder getStringArrayQuery(StringBuilder builder,
-			JSONArray stringArray, String fieldName) {
+	private StringBuilder getStringArrayQuery(StringBuilder builder, JSONArray stringArray, String fieldName) {
 
 		if (stringArray != null) {
 			if (builder.length() > 0) {
@@ -311,8 +300,7 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
-	private StringBuilder getIntArrayQuery(StringBuilder builder,
-			JSONArray intArray, String fieldName) {
+	private StringBuilder getIntArrayQuery(StringBuilder builder, JSONArray intArray, String fieldName) {
 		if (builder.length() > 0) {
 			builder.append(" AND");
 		}
@@ -366,22 +354,19 @@ public class TipsRequestParamSQL {
 		return builder.toString();
 	}
 
-	private void getWokerStatusFilterQuery(int woker, int cheker,
-			int workStatus, StringBuilder builder, JSONArray rowkeyList) {
+	private void getWokerStatusFilterQuery(int woker, int cheker, int workStatus, StringBuilder builder,
+			JSONArray rowkeyList) {
 		// 1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
 
-		builder.append(" AND stage=2 AND t_dEditStatus=2 AND handler=" + woker
-				+ "");
+		builder.append(" AND stage=2 AND t_dEditStatus=2 AND handler=" + woker + "");
 
 	}
 
-	public String getTipsMobileWhere(String date,
-			int[] notExpSourceType) {
+	public String getTipsMobileWhere(String date, int[] notExpSourceType) {
 		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
 
 		if (date != null && !date.equals("")) {
-			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"
-					+ " ";
+			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')" + " ";
 		}
 
 		// 过滤的类型
@@ -440,10 +425,8 @@ public class TipsRequestParamSQL {
 	}
 
 	public String getTipsWebSql(String wkt) {
-		return "select * from tips_index where "
-				+ " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' "
-				+ " AND "
-				+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
+		return "select * from tips_index where " + " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' "
+				+ " AND " + SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
 	}
 
 	public OracleWhereClause getSnapShot(String parameter) throws Exception {
@@ -483,8 +466,8 @@ public class TipsRequestParamSQL {
 				builder.append("AND (s_sourceType='8002' AND stage in(2,7) AND t_tipStatus=2)");// 接边Tips
 			} else {
 
-				builder.append("AND (( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  OR  "
-						+ taskBuilder + " )");// 接边Tips
+				builder.append(
+						"AND (( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  OR  " + taskBuilder + " )");// 接边Tips
 			}
 
 		}
@@ -514,8 +497,7 @@ public class TipsRequestParamSQL {
 			allBuilder.append("(");
 
 			allBuilder.append("(");
-			allBuilder
-					.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1, 2, 5, 6)");
+			allBuilder.append("t_tipStatus=2 AND t_dEditStatus=0 AND stage in (1, 2, 5, 6)");
 			allBuilder.append(")");
 
 			allBuilder.append(" OR ");
@@ -559,15 +541,13 @@ public class TipsRequestParamSQL {
 	 * @return
 	 * @throws Exception
 	 */
-	private Set<Integer> getCollectIdsBySubTaskId(int subtaskId)
-			throws Exception {
+	private Set<Integer> getCollectIdsBySubTaskId(int subtaskId) throws Exception {
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		Set<Integer> taskSet = manApi.getCollectTaskIdByDaySubtask(subtaskId);
 		return taskSet;
 	}
 
-	private StringBuilder getSolrIntSetQueryNoAnd(Set<Integer> intSet,
-			String fieldName) {
+	private StringBuilder getSolrIntSetQueryNoAnd(Set<Integer> intSet, String fieldName) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(fieldName + " in (");
 		int i = 0;
@@ -618,8 +598,8 @@ public class TipsRequestParamSQL {
 				builder.append(" AND ( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  ");// 接边Tips
 			} else {
 
-				builder.append(" AND (( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  OR  "
-						+ taskBuilder + " )");// 接边Tips
+				builder.append(
+						" AND (( s_sourceType='8002' AND stage in (2,7) AND t_tipStatus=2)  OR  " + taskBuilder + " )");// 接边Tips
 			}
 
 		} else if (subTaskType == 4) {// 4 区域粗编
@@ -645,8 +625,7 @@ public class TipsRequestParamSQL {
 			allBuilder.append("(");
 
 			allBuilder.append("(");
-			allBuilder
-					.append(" t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
+			allBuilder.append(" t_tipStatus=2 AND t_dEditStatus=0 AND stage in(1,2,5,6)");
 			allBuilder.append(")");
 
 			allBuilder.append(" OR ");
@@ -656,7 +635,7 @@ public class TipsRequestParamSQL {
 			allBuilder.append(")");
 
 			builder.append(allBuilder);
-		}// 1.日编待质检tips：取stage=7，且t_dEditStatus=0
+		} // 1.日编待质检tips：取stage=7，且t_dEditStatus=0
 		else if (workStatus == TipsWorkStatus.PREPARED_CHECKING) {
 
 			builder.append(" AND stage=7 AND t_dEditStatus=0 ");
@@ -692,8 +671,8 @@ public class TipsRequestParamSQL {
 	 * @return
 	 * @throws Exception
 	 */
-	public String assambleSqlForCheckQuery(int worker, int checker,
-			int workStatus, JSONArray rowkeyList) throws Exception {
+	public String assambleSqlForCheckQuery(int worker, int checker, int workStatus, JSONArray rowkeyList)
+			throws Exception {
 
 		// 1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
 		if (workStatus == TipsWorkStatus.PREPARED_CHECKING) {
@@ -737,7 +716,7 @@ public class TipsRequestParamSQL {
 		 */
 
 		if (jsonReq.containsKey("wkt")) {
-			
+
 			if (builder.length() > 0) {
 				builder.append(" AND sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 			} else {
@@ -777,10 +756,9 @@ public class TipsRequestParamSQL {
 				}
 				builder.append(" stage in (1, 2, 5, 6 ,7) AND t_tipStatus =2");
 				/*
-				 * builder.append("(");
-				 * builder.append("(stage:(1 5 6) AND t_tipStatus:2)");
-				 * builder.append(" OR "); builder.append("stage:2");
-				 * builder.append(")");
+				 * builder.append("("); builder.append(
+				 * "(stage:(1 5 6) AND t_tipStatus:2)"); builder.append(" OR ");
+				 * builder.append("stage:2"); builder.append(")");
 				 */
 			}
 			// Tips待作业量：根据子任务grid范围、项目ID、且stage=1、2、5、6且t_tipStatus=2 &&
@@ -812,8 +790,7 @@ public class TipsRequestParamSQL {
 				if (builder.length() > 0) {
 					builder.append(" AND ");
 				}
-				builder.append(" stage = 7 AND handler =" + handler
-						+ " AND t_dEditStatus <> 2 ");
+				builder.append(" stage = 7 AND handler =" + handler + " AND t_dEditStatus <> 2 ");
 			}
 
 		}
@@ -822,8 +799,7 @@ public class TipsRequestParamSQL {
 		return builder.toString();
 	}
 
-	private StringBuilder getSolrIntArrayQuery(StringBuilder builder,
-			JSONArray intArray, String fieldName) {
+	private StringBuilder getSolrIntArrayQuery(StringBuilder builder, JSONArray intArray, String fieldName) {
 		if (builder.length() > 0) {
 			builder.append(" AND");
 		}
@@ -839,5 +815,11 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
-}
+	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
+		String query = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
+				begin, end, subTaskId);
+		return query;
+	}
 
+}

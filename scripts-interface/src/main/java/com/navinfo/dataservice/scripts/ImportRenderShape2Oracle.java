@@ -41,7 +41,7 @@ public class ImportRenderShape2Oracle {
 	public static void main(String[] args) {
 
 		try {
-			/*if(args==null||args.length < 2){
+			if(args==null||args.length < 2){
 				System.out.println("ERROR:need args:shapeFile");
 				return;
 			}
@@ -55,12 +55,11 @@ public class ImportRenderShape2Oracle {
 			int deleteFlag = 1;
 			if(args.length == 3 && args[2] != null){
 				deleteFlag = Integer.parseInt(args[2]);
-			}*/
-			int deleteFlag = 1;
-//			String shapeFilePath = "F:\\shapefile\\shp\\tengxunUGC.shp";
+			}
+			/*int deleteFlag = 1;
 			String shapeFilePath = "F:\\shapefile\\shpdir";
 			String tableName = "VECTOR_TAB_SUSPECT";
-			
+			*/
 			//先判断是否清除数据
 			if(deleteFlag > 0){//当 deleteFlag > 0 则清除数据库表
 				deleteData(tableName,deleteFlag);

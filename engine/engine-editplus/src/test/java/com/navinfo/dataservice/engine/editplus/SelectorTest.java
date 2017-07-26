@@ -457,9 +457,9 @@ public class SelectorTest {
 	public void test16(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(13);
 			Set<Long> pids = new HashSet<Long>();
-			pids.add(204000038L);
+			pids.add(5792054L);
 //			pids.add(292L);
 //			pids.add(364L);
 //			pids.add(1023L);
@@ -468,6 +468,21 @@ public class SelectorTest {
 			DefaultObjConvertor df = new DefaultObjConvertor();
 			JSONArray json = df.objConvertorJson(rows.values());
 			System.out.println(json);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test17(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(13);
+			String kindCode = "230218";
+			List<Long> pids = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
+			System.out.println(pids.toString());
+			System.out.println(pids.size());
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+ * @author Xiao Xiaowen 
+ * @date 2016-01-06 下午3:33:49 
+ * @Description: TODO
+-->
+<sqls>
+    <feature name="LOG">
+        <step value="100">
+            <sql condition="mesh"><![CDATA[SELECT P.* FROM LOG_OPERATION P WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L WHERE P.OP_ID=L.OP_ID AND L.MESH_ID [mesh] AND L.COM_STA=0);]]></sql>
+            <sql condition="mesh"><![CDATA[SELECT P.* FROM LOG_DETAIL P WHERE P.MESH_ID [mesh] AND P.COM_STA=0;]]></sql>
+        </step>
+        <step value="101">
+            <sql condition="mesh"><![CDATA[DELETE FROM LOG_OPERATION P WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L WHERE P.OP_ID=L.OP_ID AND L.MESH_ID [mesh] AND L.COM_STA=0);]]></sql>
+            <sql condition="mesh"><![CDATA[DELETE FROM LOG_DETAIL P WHERE P.MESH_ID [mesh] AND P.COM_STA=0;]]></sql>
+        </step>
+    </feature>
+</sqls>

@@ -74,7 +74,7 @@ public class Check003 extends baseRule {
      * @throws Exception 查询失败
      */
     private void checkGscGeometry(IRow row, Coordinate coor, DatabaseOperator databaseOperator) throws Exception {
-        String sql = "SELECT * FROM RD_GSC T WHERE T.GEOMETRY.SDO_POINT.X = %.5f AND T.GEOMETRY.SDO_POINT.Y = %.5f";
+        String sql = "SELECT * FROM RD_GSC T WHERE T.GEOMETRY.SDO_POINT.X = %.5f AND T.GEOMETRY.SDO_POINT.Y = %.5f AND T.U_RECORD <> 2";
         List<Object> resultList = databaseOperator.exeSelect(getConn(), String.format(sql, coor.x, coor.y));
         if (CollectionUtils.isNotEmpty(resultList)) {
             setCheckResult("不允许去除有立交关系的形状点、node", String.format("[%s,%d]", row.tableName().toUpperCase(),

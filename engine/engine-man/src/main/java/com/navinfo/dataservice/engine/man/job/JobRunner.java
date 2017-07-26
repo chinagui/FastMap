@@ -79,10 +79,6 @@ public abstract class JobRunner {
                 if (jobType == JobType.DAY2MONTH && itemType == ItemType.PROJECT) {
                     throw new Exception("快线项目的日落月不能重复执行!");
                 }
-            }else if(job.getStatus() == JobStatus.FAILURE){
-                if(!isContinue){
-                    throw new Exception("有未执行完的任务，不能重新执行!");
-                }
             }
         }
 
@@ -93,8 +89,13 @@ public abstract class JobRunner {
             jobRelation.setJobId(job.getJobId());
             jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.RUNNING);
         } else {
-            if (job != null) {
-                jobOperator.updateLatest(job.getJobId(), 0);
+            if(jobType == JobType.DAY2MONTH && itemType == ItemType.LOT){
+                //按批次日落月，清空所有相关job的latest
+                jobOperator.clearLatestJobs();
+            }else {
+                if (job != null) {
+                    jobOperator.clearLatestJob(job.getJobId());
+                }
             }
             job = new Job();
             job.setJobId(jobOperator.getNextId());

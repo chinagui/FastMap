@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
+import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.control.row.quality.PoiQuality;
 import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -160,13 +161,13 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			PoiQuality poiQuality = new PoiQuality();
-			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
+//			PoiQuality poiQuality = new PoiQuality();
+//			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
 			int count=commitPoi(conn);
 			
-			log.info("开始执行poi质检提交修改count_table 任务");
-			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
-			log.info("poi质检提交修改count_table 任务完成");
+//			log.info("开始执行poi质检提交修改count_table 任务");
+//			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
+//			log.info("poi质检提交修改count_table 任务完成");
 			
 			log.info("end change poi_edit_status=3 commit ："+count+" 条");
 			JSONObject response =new JSONObject();
@@ -283,9 +284,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
 					+ " WHERE E.STATUS = 2"
 					+ "   AND NOT EXISTS (SELECT 1"
-					+ "          FROM CK_RESULT_OBJECT R"
-					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
-					+ "           AND R.PID = E.PID)"
+					+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
+					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
+					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
+					+ "			  AND N.RULEID IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
 					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
 			

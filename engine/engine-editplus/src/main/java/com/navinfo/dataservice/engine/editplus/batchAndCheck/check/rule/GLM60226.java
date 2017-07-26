@@ -63,7 +63,7 @@ public class GLM60226 extends BasicCheckRule {
      * 允许相交的RDLINK形态
      */
     private final static List<Integer> ALLOW_LINK_FORM = new ArrayList() {{
-        add(16); add(17); add(31); add(32);
+        add(16); add(17); add(22); add(31); add(32);
     }};
 
     @Override

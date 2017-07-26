@@ -273,6 +273,8 @@ public class DataPrepareService {
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
 		String localFile=returnParam.getString("filePath");
 		String chainCode = returnParam.getString("chainCode");
+//		String localFile="E:/temp/20170720162631.xls";
+//		String chainCode = "400F";
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
@@ -413,9 +415,15 @@ public class DataPrepareService {
 					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
 				}
 				resultObj = resultObjSet.get(resultId);
-				if(resultObj.getName()!=diffSub.getName()||resultObj.getAddress()!=diffSub.getAddress()){
-					log.info("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
-					throw new Exception("表表差分结果中“厂商提供名称”或“厂商提供地址”和库中不一致:uuid="+resultId);
+				if(resultObj.getName()!=null&&!(resultObj.getName().equals(diffSub.getName()))){
+					log.info("resultObj.name:"+resultObj.getName()+",diffSub.name:"+diffSub.getName());
+					log.info("表表差分结果中“厂商提供名称”和库中不一致:uuid="+resultId);
+					throw new Exception("表表差分结果中“厂商提供名称”和库中不一致:uuid="+resultId);
+				}
+				if(resultObj.getAddress()!=null&&!(resultObj.getAddress().equals(diffSub.getAddress()))){
+					log.info("resultObj.address:"+resultObj.getAddress()+",diffSub.address:"+diffSub.getAddress());
+					log.info("表表差分结果中“厂商提供地址”和库中不一致:uuid="+resultId);
+					throw new Exception("表表差分结果中“厂商提供地址”和库中不一致:uuid="+resultId);
 				}
 				resultMap.get("UPDATE").add(resultObj);
 			}else{
@@ -820,7 +828,7 @@ public class DataPrepareService {
 				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
 			}
 			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 0){
-				throw new ServiceException("第" + (i+2) + "行中：代理店品牌为空或代理店品牌表中状态不是未开启");
+				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是未开启");
 			}
 			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
 				throw new ServiceException("第" + (i+2) +"行中：厂商提供名称为空或不是全角");
@@ -1288,6 +1296,11 @@ public class DataPrepareService {
 			sb.append("        R.POI_NUM_3,                                     ");
 			sb.append("        R.POI_NUM_4,                                     ");
 			sb.append("        R.POI_NUM_5,                                     ");
+			//=====================================================================
+			//代理店 - 表库差分结果导出原则变更(6882)
+			sb.append("        R.CFM_POI_NUM,                                   ");
+			sb.append("        R.CFM_IS_ADOPTED,                                ");
+			//=====================================================================
 			sb.append("        R.SIMILARITY,                                    ");
 			sb.append("        R.DEAL_CFM_DATE,                                 ");
 			sb.append("        R.REGION_ID,                                     ");
@@ -1376,7 +1389,7 @@ public class DataPrepareService {
 								result.setDbDiff("无");
 								break;
 							case 1:
-								result.setDbDiff("无需处理");
+								result.setDbDiff("差分一致无需处理");
 								break;
 							case 2:
 								result.setDbDiff("需删除");
@@ -1394,19 +1407,19 @@ public class DataPrepareService {
 								result.setDbDiff("不代理");
 								break;
 							case 9:
-								result.setDbDiff("处理完成");
+								result.setDbDiff("外业处理完成，出品");
 								break;
 							}
 							int matchMethod = rs.getInt("MATCH_METHOD");
 							switch(matchMethod){
 							case 0:
-								result.setDbDiff("不应用");
+								result.setMatchMethod("不应用");
 								break;
 							case 1:
-								result.setDbDiff("ID匹配");
+								result.setMatchMethod("ID匹配");
 								break;
 							case 2:
-								result.setDbDiff("推荐匹配");
+								result.setMatchMethod("推荐匹配");
 								break;
 							}
 
@@ -1436,7 +1449,27 @@ public class DataPrepareService {
 							if(rs.getString("POI_NUM_5")!=null&&!rs.getString("POI_NUM_5").equals("")){
 								poiNum.add(rs.getString("POI_NUM_5"));
 							}
+							
+							//=============================================================================
+							//代理店 - 表库差分结果导出原则变更(6882)
+							result.setCfmPoiNum( rs.getString("CFM_POI_NUM"));
+							if(rs.getString("CFM_POI_NUM")!=null&&!rs.getString("CFM_POI_NUM").equals("")){
+								poiNum.add(rs.getString("CFM_POI_NUM"));
+							}
 
+							int cfmIsAdpoted = rs.getInt("CFM_IS_ADOPTED");
+							switch(cfmIsAdpoted){
+							case 0:
+								result.setCfmIsAdopted("未处理");
+								break;
+							case 1:
+								result.setCfmIsAdopted("未采纳");
+								break;
+							case 2:
+								result.setCfmIsAdopted("已采纳");
+								break;
+							}
+							//=============================================================================
 							result.setSimilarity( rs.getString("SIMILARITY"));
 							result.setDealCfmDate( rs.getString("DEAL_CFM_DATE"));
 							result.setRegionId( rs.getInt("region_id"));
@@ -1662,6 +1695,38 @@ public class DataPrepareService {
 					expDbDiffResult.setPoi5Chain(poiInfo.get("poiChain"));
 				}
 			}
+			//=================================================================================================================================
+			//代理店 - 表库差分结果导出原则变更(6882)
+			if(expDbDiffResult.getCfmPoiNum()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getCfmPoiNum())){
+				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getCfmPoiNum());
+				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+				
+				if(poiInfo.containsKey("poiName")){
+					expDbDiffResult.setCfmPoiNumName(poiInfo.get("poiName"));
+				}
+				if(poiInfo.containsKey("poiAliasName")){
+					expDbDiffResult.setCfmPoiNumAliasName(poiInfo.get("poiAliasName"));
+				}
+				if(poiInfo.containsKey("poiAddress")){
+					expDbDiffResult.setCfmPoiNumAddress(poiInfo.get("poiAddress"));
+				}
+				if(poiInfo.containsKey("poiTel")){
+					expDbDiffResult.setCfmPoiNumTel(poiInfo.get("poiTel"));
+				}
+				if(poiInfo.containsKey("poiDiff")){
+					expDbDiffResult.setCfmPoiNumDiff(poiInfo.get("poiDiff"));
+				}
+				if(poiInfo.containsKey("poiPostCode")){
+					expDbDiffResult.setCfmPoiNumPostCode(poiInfo.get("poiPostCode"));
+				}
+				if(poiInfo.containsKey("poiKindCode")){
+					expDbDiffResult.setCfmPoiNumKindCode(poiInfo.get("poiKindCode"));
+				}
+				if(poiInfo.containsKey("poiChain")){
+					expDbDiffResult.setCfmPoiNumChain(poiInfo.get("poiChain"));
+				}
+			}
+			//=================================================================================================================================
 		}
 	}
 
@@ -1713,7 +1778,7 @@ public class DataPrepareService {
 //		result.put("poiTel", poiTel);
 		
 //==========================================================================================		
-		//增加导出poi电话多条时，考虑电话优先级问题
+		//增加导出poi电话多条时，考虑电话优先级问题(7170)
 		Map<Integer, String> map = new TreeMap<>();
 		for(IxPoiContact ixPoiContact:ixPoiContactList){
 			map.put(ixPoiContact.getPriority(), ixPoiContact.getContact());

@@ -35,6 +35,13 @@ public class IxPoiDetail implements IRow {
 	private int paycard = 0;// 是 否 支 持 信用卡支付
 	private String cardtype;// 支 持 信用卡类型
 	private int hospitalClass = 0;// 医院等级
+
+	private  int michelinStar=9;//米其林星级及推荐餐厅
+
+	private  int establishment=99;//米其林舒适程度等级
+
+	private  int services=1;//米其林餐厅附属服务
+
 	private String memo;
 	private String rowId;
 	// 更新时间
@@ -142,6 +149,30 @@ public class IxPoiDetail implements IRow {
 
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
+	}
+
+	public int getMichelinStar() {
+		return michelinStar;
+	}
+
+	public void setMichelinStar(int michelinStar) {
+		this.michelinStar = michelinStar;
+	}
+
+	public int getEstablishment() {
+		return establishment;
+	}
+
+	public void setEstablishment(int establishment) {
+		this.establishment = establishment;
+	}
+
+	public int getServices() {
+		return services;
+	}
+
+	public void setServices(int services) {
+		this.services = services;
 	}
 
 	public String getRowId() {

@@ -15,6 +15,7 @@ public class Block4Imp {
 	String cityName;
 	String blockName;
 	Geometry geometry;
+	Geometry originGeomtry;
 	String wrokProperty;
 	Set<String> grids;
 	public int getCityId() {
@@ -40,6 +41,12 @@ public class Block4Imp {
 	}
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
+	}
+	public Geometry getOriginGeomtry() {
+		return originGeomtry;
+	}
+	public void setOriginGeomtry(Geometry originGeomtry) {
+		this.originGeomtry = originGeomtry;
 	}
 	public String getWrokProperty() {
 		return wrokProperty;

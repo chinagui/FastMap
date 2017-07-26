@@ -8,6 +8,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -24,18 +25,18 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class RelateTipsGuideAndAglUpdate {
 
-	private JSONObject json; // 关联tips信息（solr）
+	private TipsDao json; // 关联tips信息（solr）
 
 	private String sourceType = "";
 
-	private List<JSONObject> linesAfterCut = null; // 打断后的测线
+	private List<TipsDao> linesAfterCut = null; // 打断后的测线
 
-	public RelateTipsGuideAndAglUpdate(JSONObject json,
-			List<JSONObject> linesAfterCut) {
+	public RelateTipsGuideAndAglUpdate(TipsDao json,
+			List<TipsDao> linesAfterCut) {
 
 		this.json = json;
 
-		sourceType = json.getString("s_sourceType");
+		sourceType = json.getS_sourceType();
 
 		this.linesAfterCut = linesAfterCut;
 	}
@@ -47,7 +48,7 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @throws Exception 
 	 * @time:2017-6-27 下午1:44:01
 	 */
-	public JSONObject excute() throws Exception {
+	public TipsDao excute() throws Exception {
 		
 		//说明：包含打断的线  才更新的哦  linesAfterCut
 		
@@ -75,7 +76,7 @@ public class RelateTipsGuideAndAglUpdate {
         case "1101":// 13. 点限速 f.id  g_location到f.id的垂足
         case "1706"://27.ADAS打点   g_location到f.id
         case "1702":// 24. 铁路道口  g_location到f.id
-        case "2101":// 26.删除道路标记 null
+        case "2101":// 26.删除道路标记f.id
             return updateSimpleFPointTips();
         	
         	
@@ -115,14 +116,14 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @throws Exception 
 	 * @time:2017-7-4 下午8:16:36
 	 */
-	private JSONObject updateSimpleFPointTips() throws Exception {
+	private TipsDao updateSimpleFPointTips() throws Exception {
 		
 		//打点tips的显示坐标.
-		JSONObject g_location  =JSONObject.fromObject(json.getString("g_location")) ; 
+		JSONObject g_location  =JSONObject.fromObject(json.getG_location()) ; 
 		Point point = (Point) GeoTranslator.geojson2Jts(g_location);
 		
 		//打点tips的关联link_id
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 		JSONObject f = deep.getJSONObject("f");
 		String lineId=f.getString("id");
 		
@@ -130,11 +131,11 @@ public class RelateTipsGuideAndAglUpdate {
 		JSONObject lineLocation=null;
 		
 		//测线的坐标，如果只有一条，则就就是当前测线的坐标。如果是多条。则是tips中记录的关联测线
-		for (JSONObject line : linesAfterCut) {
+		for (TipsDao line : linesAfterCut) {
 			
-			if(lineId.equals(line.getString("id"))){
+			if(lineId.equals(line.getId())){
 				
-				lineLocation=line.getJSONObject("g_location");
+				lineLocation=JSONObject.fromObject(line.getG_location());
 				
 				break;
 			}
@@ -144,12 +145,12 @@ public class RelateTipsGuideAndAglUpdate {
 		
 		JSONObject  g_guide= getNearLeastPoint(point, lineGeo);
 		
-		json.put("g_guide", g_guide);
+		json.setG_guide(g_guide.toString());
 		
 		//1706（GPS打点） 1702  铁路道口需要同时维护g_location=g_guide
 		if("1706".equals(sourceType)||"1702".equals(sourceType)){
 			
-			json.put("g_location", g_guide);
+			json.setG_location(g_guide.toString());
 			
 		}
 		
@@ -166,14 +167,14 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @throws Exception 
 	 * @time:2017-7-4 下午8:16:36
 	 */
-	private JSONObject updateSimpleInPointTips() throws Exception {
+	private TipsDao updateSimpleInPointTips() throws Exception {
 		
 		//打点tips的显示坐标.
-		JSONObject g_location  =JSONObject.fromObject(json.getString("g_location")) ; 
+		JSONObject g_location  =JSONObject.fromObject(json.getG_location()) ; 
 		Point point = (Point) GeoTranslator.geojson2Jts(g_location);
 		
 		//打点tips的关联link_id
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 		JSONObject f = deep.getJSONObject("in");
 		String lineId=f.getString("id");
 		
@@ -181,12 +182,11 @@ public class RelateTipsGuideAndAglUpdate {
 		JSONObject lineLocation=null;
 		
 		//测线的坐标，如果只有一条，则就就是当前测线的坐标。如果是多条。则是tips中记录的关联测线
-		for (JSONObject line : linesAfterCut) {
+		for (TipsDao line : linesAfterCut) {
 			
-			if(lineId.equals(line.getString("id"))){
+			if(lineId.equals(line.getId())){
 				
-				lineLocation=line.getJSONObject("g_location");
-				
+				lineLocation=JSONObject.fromObject(line.getG_location());			
 				break;
 			}
 		}
@@ -195,7 +195,7 @@ public class RelateTipsGuideAndAglUpdate {
 		
 		JSONObject  g_guide= getNearLeastPoint(point, lineGeo);
 		
-		json.put("g_guide", g_guide);
+		json.setG_guide(g_guide.toString());
 		
 		double agl=calAngle(lineLocation, g_guide);
 		
@@ -203,7 +203,7 @@ public class RelateTipsGuideAndAglUpdate {
 			
 			deep.put("agl", agl);
 			
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 		}
 		
 		return json;
@@ -238,11 +238,11 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @throws Exception 
 	 * @time:2017-6-27 下午1:46:33
 	 */
-	private JSONObject updateAreaLine() throws Exception {
+	private TipsDao updateAreaLine() throws Exception {
 		
 		JSONArray geoArr=new JSONArray();
 		
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 		JSONArray f_array = deep.getJSONArray("f_array");
 		
@@ -252,7 +252,7 @@ public class RelateTipsGuideAndAglUpdate {
 		
 		//只有一条说明就是原有测线本身，是修形，替换g_location
 		if(linesAfterCut.size()==1){
-			String oldRowkey= linesAfterCut.get(0).getString("id");
+			String oldRowkey= linesAfterCut.get(0).getId();
 			
 			for (Object object : f_array) {
 				JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
@@ -266,8 +266,8 @@ public class RelateTipsGuideAndAglUpdate {
 	                //是当前线，则替换
 	                if (type == 2 && id.equals(oldRowkey)) {
 	                	hasOldLine=true;
-	                    geoArr.add(linesAfterCut.get(0).getJSONObject("g_location")); //新的
-	                    fInfo.put("geoF", linesAfterCut.get(0).getJSONObject("g_location")); //替换fInfo.geoF
+	                    geoArr.add(linesAfterCut.get(0).getG_location()); //新的
+	                    fInfo.put("geoF", linesAfterCut.get(0).getG_location()); //替换fInfo.geoF
 	                    f_array_new.add(fInfo); 
 	                }else{
 	                	 geoArr.add(geoF);
@@ -288,7 +288,7 @@ public class RelateTipsGuideAndAglUpdate {
 			
 			//3.如果是范围线：更新geo、更新g_guide=geo
 				
-			JSONObject gLocation=json.getJSONObject("g_location");
+			JSONObject gLocation=JSONObject.fromObject(json.getG_location());
 			
 			Geometry geometry=GeoTranslator.geojson2Jts(gLocation);
 			
@@ -299,10 +299,10 @@ public class RelateTipsGuideAndAglUpdate {
 			//2.1更新geo
 			deep.put("geo", pointGeo);
 			
-			json.put("deep", deep); //1.修改deep
+			json.setDeep(deep.toString()); //1.修改deep
 			
 			//2.2更新guide
-			json.put("g_guide",pointGeo);
+			json.setG_guide(pointGeo.toString());
 			
 		}
 
@@ -315,11 +315,11 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @author: jiayong
 	 * @time:2017-7-4 下午4:29:09
 	 */
-	private JSONObject updateStartEndPoint(){
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+	private TipsDao updateStartEndPoint(){
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 		
 		if(linesAfterCut.size() == 1){
-			String rowkey = linesAfterCut.get(0).getString("id");;
+			String rowkey = linesAfterCut.get(0).getId();
 			
 			int index = -1;//记录关联测线再关联数组中的位置
 			JSONArray f_array = deep.getJSONArray("f_array");
@@ -344,8 +344,8 @@ public class RelateTipsGuideAndAglUpdate {
 
 		if( "1507".equals(sourceType) || "1508".equals(sourceType)
 				 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)){
-			JSONObject g_location = JSONObject.fromObject(this.json.getString("g_location"));
-			JSONObject g_guide = JSONObject.fromObject(this.json.getString("g_guide"));
+			JSONObject g_location = JSONObject.fromObject(this.json.getG_location());
+			JSONObject g_guide = JSONObject.fromObject(this.json.getG_guide());
 			
 			JSONObject gSLoc = JSONObject.fromObject(deep.getString("gSLoc"));
 			JSONObject gELoc = JSONObject.fromObject(deep.getString("gELoc"));
@@ -355,9 +355,9 @@ public class RelateTipsGuideAndAglUpdate {
 			
 			deep.put("gSLoc", gSLocNew);// 新的起点
 			deep.put("gELoc", gELocNew);// 新的终点
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 			
-			json.put("g_guide", gSLocNew);
+			json.setG_guide(gSLocNew.toString());
 			//json.put("g_guide", g_guide);
 		}
 		
@@ -400,10 +400,10 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @throws Exception
 	 * @time:2017-6-27 上午10:43:24
 	 */
-	private JSONObject updateAgl(JSONObject lineLocation, JSONObject guide)
+	private TipsDao updateAgl(JSONObject lineLocation, JSONObject guide)
 			throws Exception {
 
-		JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(json.getDeep());
 
 		if (deep != null && deep.containsKey("agl")) {
 
@@ -411,7 +411,7 @@ public class RelateTipsGuideAndAglUpdate {
 
 			deep.put("agl", agl);
 
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 		}
 		return json;
 	}
@@ -515,33 +515,33 @@ public class RelateTipsGuideAndAglUpdate {
 		return newLine;
 	}
 
-	public static void main(String[] args) {
+//	public static void main(String[] args) {
+//
+//		SolrController conn = new SolrController();
+//
+//		// 关联的tips
+//		JSONObject solrIndex;
+//		try {
+//			solrIndex = conn.getById("0216045BC2F25E98B54D4991F63B57FD9EE7F6");
+//			// 测线
+//			JSONObject solrLine = conn
+//					.getById("022001091D1890CA8849EC9908F32A1667C2C2");
+//
+//			JSONObject lineLocation = JSONObject.fromObject(solrLine
+//					.getString("g_location"));
+//
+//			JSONObject guide = JSONObject.fromObject(solrIndex
+//					.getString("g_guide"));
+//
+//			RelateTipsGuideAndAglUpdate u = new RelateTipsGuideAndAglUpdate(
+//					solrIndex,null);
+//			u.updateAgl(lineLocation, guide);
+//
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
-		SolrController conn = new SolrController();
-
-		// 关联的tips
-		JSONObject solrIndex;
-		try {
-			solrIndex = conn.getById("0216045BC2F25E98B54D4991F63B57FD9EE7F6");
-			// 测线
-			JSONObject solrLine = conn
-					.getById("022001091D1890CA8849EC9908F32A1667C2C2");
-
-			JSONObject lineLocation = JSONObject.fromObject(solrLine
-					.getString("g_location"));
-
-			JSONObject guide = JSONObject.fromObject(solrIndex
-					.getString("g_guide"));
-
-			RelateTipsGuideAndAglUpdate u = new RelateTipsGuideAndAglUpdate(
-					solrIndex,null);
-			u.updateAgl(lineLocation, guide);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
+	//}
 
 }

@@ -94,6 +94,13 @@ public class Constant {
     }};
 
     public final static Map<ObjType, Class> OBJ_TYPE_CLASS_MAP = new HashMap() {{
+        put(ObjType.RDNODE, RdLink.class);
+        put(ObjType.RWNODE, RwLink.class);
+        put(ObjType.LCNODE, LcLink.class);
+        put(ObjType.LUNODE, LuLink.class);
+        put(ObjType.ADNODE,  AdLink.class);
+        put(ObjType.ZONENODE, ZoneLink.class);
+
         put(ObjType.RDLINK, RdNode.class);
         put(ObjType.RWLINK, RwNode.class);
         put(ObjType.LCLINK, LcNode.class);

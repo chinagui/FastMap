@@ -28,6 +28,8 @@ public class RdLinkLimit implements IRow {
 	private int linkPid;
 	
 	private long vehicle;
+
+	private String descript;
 	
 	protected ObjStatus status;
 	
@@ -125,6 +127,14 @@ public class RdLinkLimit implements IRow {
 		this.rowId = rowId;
 	}
 
+	public String getDescript() {
+		return descript;
+	}
+
+	public void setDescript(String descript) {
+		this.descript = descript;
+	}
+
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
@@ -205,6 +215,8 @@ public class RdLinkLimit implements IRow {
 		this.setInputTime(sourceLimit.getInputTime());
 		
 		this.setProcessFlag(sourceLimit.getProcessFlag());
+
+		this.setDescript(sourceLimit.getDescript());
 	}
 
 	@Override

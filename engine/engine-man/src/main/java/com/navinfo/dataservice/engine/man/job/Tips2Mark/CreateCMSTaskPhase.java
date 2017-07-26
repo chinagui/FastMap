@@ -116,7 +116,7 @@ public class CreateCMSTaskPhase extends JobPhase {
                     jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
+            jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
 
             return jobProgress.getStatus();
         } catch (Exception ex) {

@@ -108,4 +108,12 @@ public class BatchRule {
 		this.changeReferData = changeReferData;
 	}
 
+	@Override
+	public String toString() {
+		return "BatchRule [ruleId=" + ruleId + ", accessor=" + accessor + ", accessorType=" + accessorType
+				+ ", accessorClass=" + accessorClass + ", objNameSet=" + objNameSet + ", referSubtableMap="
+				+ referSubtableMap + ", changeReferData=" + changeReferData + "]";
+	}
+	
+
 }

@@ -43,6 +43,8 @@ public class RdMileagepile implements IObj {
 
     private int meshId;
 
+    private int editFlag = 1;
+
     private Map<String, Object> changedFields = new HashedMap();
 
     @Override
@@ -112,6 +114,8 @@ public class RdMileagepile implements IObj {
         this.source = mileagepile.source;
         this.dllx = mileagepile.dllx;
         this.geometry = mileagepile.geometry;
+
+        this.editFlag = mileagepile.editFlag;
     }
 
     @Override
@@ -299,5 +303,13 @@ public class RdMileagepile implements IObj {
 
     public void setMeshId(int meshId) {
         this.meshId = meshId;
+    }
+
+    public int getEditFlag() {
+        return editFlag;
+    }
+
+    public void setEditFlag(int editFlag) {
+        this.editFlag = editFlag;
     }
 }

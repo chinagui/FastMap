@@ -8,6 +8,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 
@@ -51,7 +52,9 @@ public class HBaseConnector {
 					Configuration conf = new Configuration();
 
 					conf.set("hbase.zookeeper.quorum", hbaseAddress);
-
+					
+					conf.setLong(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 600000);
+					
 					connection = ConnectionFactory.createConnection(conf);
 				}
 			}

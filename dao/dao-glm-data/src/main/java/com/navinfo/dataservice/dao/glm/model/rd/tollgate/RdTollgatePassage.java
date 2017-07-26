@@ -20,6 +20,9 @@ public class RdTollgatePassage implements IRow {
     private int tollForm;
     private int cardType;
     private long vehicle = 0;
+
+    private int laneType = 0;
+
     private String rowId;
     public Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -55,6 +58,13 @@ public class RdTollgatePassage implements IRow {
         this.cardType = cardType;
     }
 
+    public int getLaneType() {
+        return laneType;
+    }
+
+    public void setLaneType(int laneType) {
+        this.laneType = laneType;
+    }
 
     public String getRowId() {
         return rowId;
@@ -134,6 +144,8 @@ public class RdTollgatePassage implements IRow {
         this.tollForm = tollgate.getTollForm();
         this.cardType = tollgate.getCardType();
         this.vehicle = tollgate.vehicle;
+        this.laneType = tollgate.laneType;
+
     }
 
     @Override

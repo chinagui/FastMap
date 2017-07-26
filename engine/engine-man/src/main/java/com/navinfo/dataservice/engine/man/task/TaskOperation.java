@@ -333,6 +333,28 @@ public class TaskOperation {
 				insertPart+=" POI_PLAN_TOTAL ";
 				valuePart+=bean.getPoiPlanTotal();
 			};
+			//modify by songhe 添加road/poi_plan_in/out
+			if (changeFields.containsKey("ROAD_PLAN_IN")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" ROAD_PLAN_IN ";
+				valuePart+=bean.getRoadPlanIn();
+			};
+			if (changeFields.containsKey("ROAD_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" ROAD_PLAN_OUT ";
+				valuePart+=bean.getRoadPlanOut();
+			};
+			if (changeFields.containsKey("POI_PLAN_IN")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_IN ";
+				valuePart+=bean.getPoiPlanIn();
+			};
+			if (changeFields.containsKey("POI_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_OUT ";
+				valuePart+=bean.getPoiPlanOut();
+			};
+			
 			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PRODUCE_PLAN_START_DATE ";
@@ -345,6 +367,7 @@ public class TaskOperation {
 			};
 			String createSql = "insert into task ("+insertPart+") values("+valuePart+")";
 			
+			log.info("creatTaskSql:" + createSql);
 			run.update(conn,createSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -411,7 +434,25 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_other_reason='" + bean.getOverdueOtherReason() + "'";
 			};
+			//modify by songhe 添加road/poi_plan_in/out
+			if (changeFields.containsKey("ROAD_PLAN_IN")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" road_plan_in = " + bean.getRoadPlanIn();
+			};
+			if (changeFields.containsKey("ROAD_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" road_plan_out = " + bean.getRoadPlanOut();
+			};
+			if (changeFields.containsKey("POI_PLAN_IN")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" poi_plan_in = " + bean.getPoiPlanIn();
+			};
+			if (changeFields.containsKey("POI_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" poi_plan_out = " + bean.getPoiPlanOut();
+			};
 			updateSql+=" where TASK_ID=" + bean.getTaskId();
+			log.info("taskUpdateSql:"+updateSql);
 			run.update(conn,baseSql+updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -1324,11 +1365,12 @@ public class TaskOperation {
 					+ "   DESCP,PLAN_START_DATE,PLAN_END_DATE,LATEST,PROGRAM_ID,BLOCK_ID,REGION_ID,"
 					+ "   PRODUCE_PLAN_START_DATE,PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,"
 					+ "   POI_PLAN_TOTAL,WORK_KIND)"
-					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,NAME,DESCP,PLAN_START_DATE,"
-					+ "         PLAN_END_DATE,1,PROGRAM_ID,BLOCK_ID,REGION_ID,PRODUCE_PLAN_START_DATE,"
-					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL,WORK_KIND"
-					+ "    FROM TASK"
-					+ "   WHERE TASK_ID = "+taskId;
+					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,b.block_name||'_'||TO_CHAR(SYSDATE,'YYYYMMDD'),t.DESCP,t.PLAN_START_DATE,"
+					+ "         t.PLAN_END_DATE,1,t.PROGRAM_ID,t.BLOCK_ID,t.REGION_ID,t.PRODUCE_PLAN_START_DATE,"
+					+ "         t.PRODUCE_PLAN_END_DATE,t.TYPE,t.LOT,t.GROUP_ID,t.ROAD_PLAN_TOTAL,t.POI_PLAN_TOTAL,"
+					+ "t.WORK_KIND"
+					+ "    FROM TASK t,block b"
+					+ "   WHERE t.block_id=b.block_id AND t.TASK_ID = "+taskId;
 			String insertTaskGrid="INSERT INTO TASK_GRID_MAPPING"
 					+ "  (TASK_ID, GRID_ID, TYPE)"
 					+ "  SELECT "+newTaskId+", GRID_ID, TYPE"

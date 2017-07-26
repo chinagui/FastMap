@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -749,28 +751,51 @@ public class UserInfoOperation {
 	public static UserInfo getUserInfoByUserId(Connection conn, long userId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
+			Set<Long> userSet=new HashSet<Long>();
+			userSet.add(userId);
+			Map<Long, UserInfo> returnMap = getUserInfoByUserId(conn, userSet);
+			if(returnMap.containsKey(userId)){return returnMap.get(userId);}
+			return null;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询用户信息
+	 * @param conn
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long, UserInfo> getUserInfoByUserId(Connection conn, Set<Long> userIdSet) throws Exception {
+		// TODO Auto-generated method stub
+		try{
 			QueryRunner run = new QueryRunner();
 			// 查询用户所在组组长id
 			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL,U.USER_LEVEL USER_LEVEL,u.risk "
-					+ "FROM USER_INFO U WHERE USER_ID = ?";
-			Object[] params = {userId};		
-			ResultSetHandler<UserInfo> rsh = new ResultSetHandler<UserInfo>() {
+					+ "FROM USER_INFO U WHERE USER_ID in ("+userIdSet.toString().replace("[", "").replace("]", "")+")";
+			//Object[] params = {};		
+			ResultSetHandler<Map<Long, UserInfo>> rsh = new ResultSetHandler<Map<Long, UserInfo>>() {
 				@Override
-				public UserInfo handle(ResultSet rs) throws SQLException {
+				public Map<Long, UserInfo> handle(ResultSet rs) throws SQLException {
 					// TODO Auto-generated method stub
-					UserInfo userInfo = new UserInfo();
-					if(rs.next()){
+					Map<Long, UserInfo> users=new HashMap<Long, UserInfo>();					
+					while(rs.next()){
+						UserInfo userInfo = new UserInfo();
 						userInfo.setUserId(rs.getInt("USER_ID"));
 						userInfo.setUserRealName(rs.getString("USER_REAL_NAME"));
 						userInfo.setUserEmail(rs.getString("USER_EMAIL"));
 						userInfo.setUserLevel(rs.getInt("USER_LEVEL"));
 						userInfo.setRisk(rs.getInt("RISK"));
+						users.put(rs.getLong("USER_ID"), userInfo);
 					}
-					return userInfo;
+					return users;
 				}
 			};
-			UserInfo userInfo = run.query(conn, querySql, params, rsh);
-			return userInfo;
+			Map<Long, UserInfo> users = run.query(conn, querySql,  rsh);
+			return users;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);

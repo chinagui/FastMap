@@ -41,6 +41,8 @@ public class RdCrosswalkInfo implements IRow {
 	//过道标牌
 	private int signage;
 
+	private int nonmotorFlag = 3;
+
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -97,6 +99,14 @@ public class RdCrosswalkInfo implements IRow {
 		return rowId;
 	}
 
+	public int getNonmotorFlag() {
+		return nonmotorFlag;
+	}
+
+	public void setNonmotorFlag(int nonmotorFlag) {
+		this.nonmotorFlag = nonmotorFlag;
+	}
+
 	@Override
 	public String rowId() {
 		return this.rowId;
@@ -142,6 +152,8 @@ public class RdCrosswalkInfo implements IRow {
 		this.signage = info.signage;
 		
 		this.type = info.type;
+
+		this.nonmotorFlag = info.nonmotorFlag;
 
 		this.rowId = info.rowId;
 	}

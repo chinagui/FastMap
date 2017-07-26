@@ -75,7 +75,7 @@ public class DefaultLogFlusher extends LogFlusher {
 	
 	protected void recordFailLog2Temptable(FlushResult flushResult,Connection conn) throws Exception{
 		if (flushResult.isSuccess()) return ;
-		String sql = "insert into "+tempFailLogTable+" values(?,?)";
+		String sql = "insert into "+tempFailLogTable+" values(?,?,?)";
 		Object[][] batchParams = NaviListUtils.toArrayMatrix(flushResult.getFailedLog());
 		run.batch(conn, sql, batchParams);
 	}

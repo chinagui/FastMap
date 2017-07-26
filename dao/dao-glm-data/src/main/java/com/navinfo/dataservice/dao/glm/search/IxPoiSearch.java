@@ -153,17 +153,21 @@ public class IxPoiSearch implements ISearch {
 				m.put("mediumFlag",
 						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
 
-				Double xGuide = resultSet.getDouble("x_guide");
+				// Double xGuide = resultSet.getDouble("x_guide");
 
-				Double yGuide = resultSet.getDouble("y_guide");
+				// Double yGuide = resultSet.getDouble("y_guide");
 
-				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
+				/*
+				 * Geometry guidePoint = GeoTranslator.point2Jts(xGuide,
+				 * yGuide);
+				 * 
+				 * JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
+				 * 
+				 * Geojson.point2Pixel(guidejson, z, px, py);
+				 */
 
-				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
-
-				Geojson.point2Pixel(guidejson, z, px, py);
-
-				m.put("c", guidejson.getJSONArray("coordinates"));
+				m.put("c", resultSet.getDouble("x_guide"));
+				m.put("f", resultSet.getDouble("y_guide"));
 
 				snapshot.setM(m);
 
@@ -205,7 +209,7 @@ public class IxPoiSearch implements ISearch {
 
 		return list;
 	}
-	
+
 	/**
 	 * @Title: searchDataByTileWithGap
 	 * @Description: TODO
@@ -215,68 +219,69 @@ public class IxPoiSearch implements ISearch {
 	 * @param gap
 	 * @param taskId
 	 * @return
-	 * @throws Exception  List<SearchSnapshot>
-	 * @throws 
+	 * @throws Exception
+	 *             List<SearchSnapshot>
+	 * @throws
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年7月4日 上午10:57:18 
+	 * @date 2017年7月4日 上午10:57:18
 	 */
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap ,int taskId) throws Exception {
+			int gap, int taskId) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("WITH TMP1 AS");
-		sb.append( " (SELECT I.PID,");
-		sb.append( "         I.KIND_CODE,");
-		sb.append( "         I.INDOOR,");
-		sb.append( "         I.X_GUIDE,");
-		sb.append( "         I.Y_GUIDE,");
-		sb.append( "         I.GEOMETRY,");
-		sb.append( "         I.ROW_ID");
-		sb.append( "    FROM IX_POI I");
-		sb.append( "   WHERE SDO_RELATE(I.GEOMETRY,");
-		sb.append( "                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
-		sb.append( "     AND I.U_RECORD != 2),");
-		sb.append( " TMP2 AS");
-		sb.append( " (SELECT /*+ NO_MERGE(A),INDEX(D) */");
-		sb.append( "   PN.NAME, PN.POI_PID PID");
-		sb.append( "    FROM TMP1 A, IX_POI_NAME PN");
-		sb.append( "   WHERE PN.POI_PID = A.PID");
-		sb.append( "     AND PN.LANG_CODE = 'CHI'");
-		sb.append( "     AND PN.NAME_CLASS = 1");
-		sb.append( "     AND PN.NAME_TYPE = 2");
-		sb.append( "     AND PN.U_RECORD != 2)");
-		sb.append( " SELECT /*+ORDERED ,NO_MERGE(B)*/");
-		sb.append( " B.PID,");
-		sb.append( " B.KIND_CODE,");
-		sb.append( " B.INDOOR,");
-		sb.append( " B.X_GUIDE,");
-		sb.append( " B.Y_GUIDE,");
-		sb.append( " B.GEOMETRY,");
-		sb.append( " B.ROW_ID,");
-		sb.append( " C . NAME,");
-		sb.append( " A.IS_PLAN_SELECTED,");
-		sb.append( " A.IS_IMPORTANT,");
-		sb.append( " D.STATUS,");
-		sb.append( " D.QUICK_SUBTASK_ID,");
-		sb.append( " D.MEDIUM_SUBTASK_ID");
-		sb.append( "  FROM TMP1 B, TMP2 C, DATA_PLAN A, POI_EDIT_STATUS D");
-		sb.append( " WHERE B.PID = A.PID");
-		sb.append( "   AND B.PID = C.PID(+)");
-		sb.append( "   AND B.PID = D.PID");
-		sb.append( "   AND A.DATA_TYPE = 1");
-		sb.append( "   AND A.TASK_ID = :2");
+		sb.append(" (SELECT I.PID,");
+		sb.append("         I.KIND_CODE,");
+		sb.append("         I.INDOOR,");
+		sb.append("         I.X_GUIDE,");
+		sb.append("         I.Y_GUIDE,");
+		sb.append("         I.GEOMETRY,");
+		sb.append("         I.ROW_ID");
+		sb.append("    FROM IX_POI I");
+		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");
+		sb.append("                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+		sb.append("     AND I.U_RECORD != 2),");
+		sb.append(" TMP2 AS");
+		sb.append(" (SELECT /*+ NO_MERGE(A),INDEX(D) */");
+		sb.append("   PN.NAME, PN.POI_PID PID");
+		sb.append("    FROM TMP1 A, IX_POI_NAME PN");
+		sb.append("   WHERE PN.POI_PID = A.PID");
+		sb.append("     AND PN.LANG_CODE = 'CHI'");
+		sb.append("     AND PN.NAME_CLASS = 1");
+		sb.append("     AND PN.NAME_TYPE = 2");
+		sb.append("     AND PN.U_RECORD != 2)");
+		sb.append(" SELECT /*+ORDERED ,NO_MERGE(B)*/");
+		sb.append(" B.PID,");
+		sb.append(" B.KIND_CODE,");
+		sb.append(" B.INDOOR,");
+		sb.append(" B.X_GUIDE,");
+		sb.append(" B.Y_GUIDE,");
+		sb.append(" B.GEOMETRY,");
+		sb.append(" B.ROW_ID,");
+		sb.append(" C . NAME,");
+		sb.append(" A.IS_PLAN_SELECTED,");
+		sb.append(" A.IS_IMPORTANT,");
+		sb.append(" D.STATUS,");
+		sb.append(" D.QUICK_SUBTASK_ID,");
+		sb.append(" D.MEDIUM_SUBTASK_ID");
+		sb.append("  FROM TMP1 B, TMP2 C, DATA_PLAN A, POI_EDIT_STATUS D");
+		sb.append(" WHERE B.PID = A.PID");
+		sb.append("   AND B.PID = C.PID(+)");
+		sb.append("   AND B.PID = D.PID");
+		sb.append("   AND A.DATA_TYPE = 1");
+		sb.append("   AND A.TASK_ID = :2");
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			log.info("sql: "+sb.toString());
+			log.info("sql: " + sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-			log.info("wkt:"+wkt);
+			log.info("wkt:" + wkt);
 			pstmt.setString(1, wkt);
 			pstmt.setInt(2, taskId);
 
@@ -304,18 +309,23 @@ public class IxPoiSearch implements ISearch {
 				m.put("mediumFlag",
 						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
 
-				Double xGuide = resultSet.getDouble("x_guide");
+				/*
+				 * Double xGuide = resultSet.getDouble("x_guide");
+				 * 
+				 * Double yGuide = resultSet.getDouble("y_guide");
+				 * 
+				 * Geometry guidePoint = GeoTranslator.point2Jts(xGuide,
+				 * yGuide);
+				 * 
+				 * JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
+				 * 
+				 * Geojson.point2Pixel(guidejson, z, px, py);
+				 * 
+				 * m.put("c", guidejson.getJSONArray("coordinates"));
+				 */
+				m.put("c", resultSet.getDouble("x_guide"));
+				m.put("f", resultSet.getDouble("y_guide"));
 
-				Double yGuide = resultSet.getDouble("y_guide");
-
-				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
-
-				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
-
-				Geojson.point2Pixel(guidejson, z, px, py);
-
-				m.put("c", guidejson.getJSONArray("coordinates"));
-				
 				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
 				m.put("isImportant", resultSet.getInt("is_important"));
 
@@ -376,24 +386,24 @@ public class IxPoiSearch implements ISearch {
 				+ "SELECT TMP.*, T . NAME FROM (");
 
 		if (noQFilter != null) {
-			if(noQFilter.size() > 0){
+			if (noQFilter.size() > 0) {
 				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
-					+ "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
-					+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
+						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
+						+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
 				if (noQFilter.contains(1) && noQFilter.size() == 1) {
 					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
-	
+
 				}
 				if (noQFilter.contains(2) && noQFilter.size() == 1) {
 					sb.append(" AND B.MEDIUM_TASK_ID = 0 ");
-	
+
 				}
-			}else{
+			} else {
 				return null;
 			}
-		}else{
+		} else {
 			sb.append("SELECT A.*, 0 STATUS,0 QUICK_TASK_ID ,"
-				+ "0 MEDIUM_TASK_ID  FROM TMP1 A");
+					+ "0 MEDIUM_TASK_ID  FROM TMP1 A");
 		}
 		sb.append(" ) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
@@ -427,22 +437,26 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
-				m.put("quickFlag",
-						resultSet.getInt("quick_task_id") == 0 ? 0 : 1);
-				m.put("mediumFlag",
-						resultSet.getInt("medium_task_id") == 0 ? 0 : 1);
+				m.put("quickFlag", resultSet.getInt("quick_task_id") == 0 ? 0
+						: 1);
+				m.put("mediumFlag", resultSet.getInt("medium_task_id") == 0 ? 0
+						: 1);
 
-				Double xGuide = resultSet.getDouble("x_guide");
+				// Double xGuide = resultSet.getDouble("x_guide");
+				//
+				// Double yGuide = resultSet.getDouble("y_guide");
+				//
+				// Geometry guidePoint = GeoTranslator.point2Jts(xGuide,
+				// yGuide);
+				//
+				// JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
+				//
+				// Geojson.point2Pixel(guidejson, z, px, py);
+				//
+				// m.put("c", guidejson.getJSONArray("coordinates"));
 
-				Double yGuide = resultSet.getDouble("y_guide");
-
-				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
-
-				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
-
-				Geojson.point2Pixel(guidejson, z, px, py);
-
-				m.put("c", guidejson.getJSONArray("coordinates"));
+				m.put("c", resultSet.getDouble("x_guide"));
+				m.put("f", resultSet.getDouble("y_guide"));
 
 				snapshot.setM(m);
 
@@ -1057,7 +1071,8 @@ public class IxPoiSearch implements ISearch {
 	 */
 	public JSONArray searchColumnPoiByPid(String firstWordItem,
 			String secondWorkItem, List<Integer> pids, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules,Map<Integer,JSONObject> isProblems) throws Exception {
+			JSONObject classifyRules, JSONObject ckRules,
+			Map<Integer, JSONObject> isProblems) throws Exception {
 
 		JSONArray dataList = new JSONArray();
 
@@ -1126,7 +1141,7 @@ public class IxPoiSearch implements ISearch {
 					poiObj.put("ckRules", value);
 				}
 				// isProblem赋值
-				if(isProblems!=null&&isProblems.containsKey(pid)){	
+				if (isProblems != null && isProblems.containsKey(pid)) {
 					JSONObject isProblem = (JSONObject) isProblems.get(pid);
 					poiObj.put("isProblem", isProblem);
 				}
@@ -1575,8 +1590,8 @@ public class IxPoiSearch implements ISearch {
 
 						/**
 						 * 特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'==
-						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin
-						 * ， 取值原则：对address中字段addrName、roadName、
+						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPin
+						 * y i n ， 取值原则：对address中字段addrName、roadName、
 						 * fullName存在多音字分别获取其对应的拼音
 						 */
 						if (secondWorkItem.equals("addrPinyin")) {

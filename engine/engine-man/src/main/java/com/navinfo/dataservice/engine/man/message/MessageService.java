@@ -124,6 +124,7 @@ public class MessageService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	/**
 	 * @param msgId
 	 * @return

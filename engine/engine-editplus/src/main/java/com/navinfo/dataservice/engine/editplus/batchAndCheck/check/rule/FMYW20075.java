@@ -9,6 +9,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.utils.RdLinkFormUtils;
+import com.navinfo.dataservice.engine.editplus.utils.RdLinkUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,7 +57,7 @@ public class FMYW20075 extends BasicCheckRule {
                     if (formOfWay == 10 || formOfWay == 11 || formOfWay == 14 || formOfWay == 15 || formOfWay == 22 || formOfWay == 30
                             || formOfWay == 31 || formOfWay == 33) {
                         setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
-                                ("普通POI不能与道路形态为%s的道路关联，请确认；", formOfWay));
+                                ("普通POI不能与%s关联，请确认；", RdLinkFormUtils.formToChi(formOfWay)));
                         return;
                     }
                 }
@@ -63,18 +65,18 @@ public class FMYW20075 extends BasicCheckRule {
                 int kind = link.getKind();
                 if (kind == 1 || kind == 2 || kind == 11 || kind == 13) {
                     setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
-                            ("服务区、停车区POI不能与种别为%s的道路关联，请修改；", kind));
+                            ("服务区、停车区POI不能与%s关联，请修改；", RdLinkUtils.kindToChi(kind)));
                     return;
                 }
             }
 
-            if ("230206".equals(kindCode) || "230207".equals(kindCode)) {
+            if ("230222".equals(kindCode) || "230206".equals(kindCode) || "230207".equals(kindCode)) {
                 List<IRow> forms = link.getForms();
                 for (IRow row : forms) {
                     int formOfWay = ((RdLinkForm) row).getFormOfWay();
                     if (formOfWay == 10 || formOfWay == 11 ) {
                         setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
-                                ("服务区、停车区POI不能与道路形态为%s的道路关联，请确认", formOfWay));
+                                ("服务区、停车区POI不能与%s关联，请确认", RdLinkFormUtils.formToChi(formOfWay)));
                         return;
                     }
                 }

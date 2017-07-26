@@ -412,19 +412,6 @@ comment on column IX_POI_FLAG_METHOD.U_RECORD is '增量更新标识,值域包�
 comment on column IX_POI_FLAG_METHOD.U_FIELDS is '记录更新的英文字段名,多个之间采用半角"|"分隔 ';
 comment on column IX_POI_FLAG_METHOD.REFRESH_DATE is '格式： YYYYMMDDHHMMSS 如 20140812152100；24小时制。';
 comment on column IX_POI_FLAG_METHOD.REFRESH_DATE is '唯一标识一条记录的ID ';
- 
-comment on column POI_FLAG.VER_RECORD is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_RECORD is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_NAME_CH is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_ADDRESS is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_TELEPHONE is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_COORDINATE is '0	无;1	外业;2	内业;3	多源;4	众包;5	代理店	0';
-comment on column POI_FLAG.SRC_NAME_ENG is '0	无;1	采集（大陆与港澳）;2	官方网站搜集;3	非官方网站搜集，网站搜集后+分店名;4	基于网站搜集（专项改善））;5	品牌名/分类名+分店名翻译;6	关键词翻译程序+人工确认;7	各项目代理店;8	已训练关键词翻译程序;9	未训练关键词翻译程序	';
-comment on column POI_FLAG.SRC_NAME_POR is '0	无;1	采集（大陆与港澳）;2	官方网站搜集;3	非官方网站搜集，网站搜集后+分店名;4	基于网站搜集（专项改善））;5	品牌名/分类名+分店名翻译;6	关键词翻译程序+人工确认;7	各项目代理店;8	已训练关键词翻译程序;9	未训练关键词翻译程序	';
-comment on column POI_FLAG.FIELD_VERIFIED is '0	否;1	是';
-comment on column POI_FLAG.REFRESH_CYCLE is '0	否;1	是';
-comment on column POI_FLAG.REFRESH_DATE is '格式： YYYYMMDDHHMMSS 如 20140812152100；24小时制。	空';
-
 create table LINK_EDIT_PRE
 (
   pid          NUMBER(10) not null,

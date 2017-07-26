@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-01-24
+导出20万比例尺下的数据
+-->
+<sqls>
+    <import file="exp-rw_20w.xml"/>
+    <import file="exp-lc_20w.xml"/>
+    <import file="table-stats.xml"/>
+    <import file="exp-ck_excep.xml"/>
+    <import file="exp-m_para.xml"/>
+</sqls>

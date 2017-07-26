@@ -9,6 +9,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.utils.RdLinkFormUtils;
+import com.navinfo.dataservice.engine.editplus.utils.RdLinkUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,7 +39,7 @@ public class FMYW20076 extends BasicCheckRule {
             "230119", "230120", "230121", "230122", "230123", "230124", "230206", "230207", "230201", "230210", "230213", "230214",
             "230215", "130403", "130104");
 
-    private final static List<String> RULE_TWO = Arrays.asList("230206", "230207");
+    private final static List<String> RULE_TWO = Arrays.asList("230222", "230206", "230207");
 
     @Override
     public void runCheck(BasicObj obj) throws Exception {
@@ -87,14 +89,14 @@ public class FMYW20076 extends BasicCheckRule {
                     if (formOfWay == 14 || formOfWay == 15 || formOfWay == 20 || formOfWay == 20 || formOfWay == 22 || formOfWay == 30
                             || formOfWay == 31 || formOfWay == 33 || formOfWay == 50 || formOfWay == 52) {
                         setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
-                                ("普通POI不能与道路形态为%s道路关联，请修改", formOfWay));
+                                ("普通POI不能与%s关联，请修改", RdLinkFormUtils.formToChi(formOfWay)));
                         return;
                     }
                 }
 
                 if (kind == 8 || kind == 11 || kind == 13 || kind == 15) {
                     setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
-                            ("服务区、停车区POI不能与种别为%s的道路关联，请修改；", kind));
+                            ("服务区、停车区POI不能与%s关联，请修改；", RdLinkUtils.kindToChi(kind)));
                     return;
                 }
             }

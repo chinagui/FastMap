@@ -35,7 +35,6 @@ public class TipsLineRelateConstant {
 		noneRelate.add("2001");//测线
 		noneRelate.add("1705");//桥
 		noneRelate.add("1901");//道路名
-		noneRelate.add("2101");//（删除道路标记）
 		noneRelate.add("1803");//（挂接）
 		noneRelate.add("8001");//（FC）
 		noneRelate.add("8005");//（机场功能面）
@@ -53,6 +52,7 @@ public class TipsLineRelateConstant {
 		
 
 		//2. f.id
+		simpleF.add("2101");//（删除道路标记）
 		simpleF.add("1201"); // 种别
 		simpleF.add("1202"); // 车道数
 		

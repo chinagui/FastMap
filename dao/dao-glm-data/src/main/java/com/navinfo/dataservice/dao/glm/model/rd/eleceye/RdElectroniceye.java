@@ -61,6 +61,16 @@ public class RdElectroniceye implements IObj {
     private int highViolation;
     
     protected ObjStatus eyeStatus;
+
+    private int editFlag = 1;
+
+    public int getEditFlag() {
+        return editFlag;
+    }
+
+    public void setEditFlag(int editFlag) {
+        this.editFlag = editFlag;
+    }
     
     private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -118,6 +128,9 @@ public class RdElectroniceye implements IObj {
         this.srcFlag = source.srcFlag;
         this.creationDate = source.creationDate;
         this.highViolation = source.highViolation;
+
+        this.editFlag = source.editFlag;
+
         this.parts = new ArrayList<IRow>();
         for (IRow r : source.parts) {
             RdEleceyePart part = new RdEleceyePart();

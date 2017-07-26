@@ -167,24 +167,22 @@ public class EdgeMatchTipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 			
-			int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
-			
-			int user=0;
+			int delType = BaseTipsOperate.TIP_PHYSICAL_DELETE; //默认物理删除。0：逻辑删除；1：物理删除
 			
 			if(jsonReq.containsKey("delType")){
 				
 				delType = jsonReq.getInt("delType");
 				
-				if (delType!=0&&delType!=1) {
+				if (delType != BaseTipsOperate.TIP_LOGICAL_DELETE && delType != BaseTipsOperate.TIP_PHYSICAL_DELETE) {
 					throw new IllegalArgumentException("参数错误：delType不在范围内【0,1】");
 				}
 				
 			}
-			//逻辑删除，需要给用户
-			if(delType==0){
-				
-				user = jsonReq.getInt("user");  
-			}
+			//逻辑删除，需要给用户,20170720取消用户
+//			if(delType==0){
+//
+//				user = jsonReq.getInt("user");
+//			}
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -192,7 +190,7 @@ public class EdgeMatchTipsController extends BaseController {
 
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			op.deleteByRowkey(rowkey,delType,user);
+			op.deleteByRowkey(rowkey, delType);
 
 			return new ModelAndView("jsonView", success());
 

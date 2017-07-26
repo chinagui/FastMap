@@ -26,6 +26,7 @@ import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -107,6 +108,27 @@ public class taskTest extends InitApplication{
 	public void testClose() throws Exception
 	{
 		TaskService.getInstance().close(2190, 10001, "", "");
+	}
+	
+	@Test
+	public void testList() throws Exception
+	{
+		String parameter="{\"condition\":{\"programId\":106,\"name\":\"云南省昭通市鲁甸县郊\"},\"pageNum\":1,\"pageSize\":15,\"snapshot\":0}";
+		JSONObject dataJson = JSONObject.fromObject(parameter);			
+		JSONObject condition = new JSONObject();	
+		if(dataJson.containsKey("condition")){
+			condition=dataJson.getJSONObject("condition");
+		}			
+		int curPageNum= 1;//默认为第一页
+		if (dataJson.containsKey("pageNum")){
+			curPageNum = dataJson.getInt("pageNum");
+		}
+		int curPageSize= 20;//默认为20条记录/页
+		if (dataJson.containsKey("pageSize")){
+			curPageSize = dataJson.getInt("pageSize");
+		}
+		Page data = TaskService.getInstance().list(condition,curPageNum,curPageSize);
+		System.out.println(data.getResult());
 	}
 	
 	@Test

@@ -213,7 +213,7 @@ public class RdLinkSearchUtils {
 	 * @param direct
 	 *            限速方向
 	 * @param speedDependent
-	 *            限速类型：1:RDSPEEDLIMIT(普通点限速);2：RDSPEEDLIMIT_DEPENDENT(条件点限速)
+	 *            小于0，普通限速； 大于0，条件限速，speedDependent（限速条件值）
 	 * @return
 	 * @throws Exception
 	 */
@@ -267,6 +267,10 @@ public class RdLinkSearchUtils {
 		if (speedDependent >= 0) {
 
 			sql += " AND S.SPEED_TYPE = 3 ";
+
+		} else {
+
+			sql += " AND S.SPEED_TYPE = 0 ";
 		}
 		
 		sql += "  ) RDSPEEDLIMIT FROM TMP1 B ";

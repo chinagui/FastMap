@@ -32,12 +32,22 @@ public class RdTollgate implements IObj {
 	private int systemId;
 	private int truckFlag = 1;
 
+	private int photoFlag = 1;
+
 	public int getTruckFlag() {
 		return truckFlag;
 	}
 
 	public void setTruckFlag(int truckFlag) {
 		this.truckFlag = truckFlag;
+	}
+
+	public int getPhotoFlag() {
+		return photoFlag;
+	}
+
+	public void setPhotoFlag(int photoFlag) {
+		this.photoFlag = photoFlag;
 	}
 
 	private int locationFlag;

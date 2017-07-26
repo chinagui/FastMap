@@ -93,7 +93,7 @@ public class PretreatmentTipsController extends BaseController {
 
 	
 	/**
-	 * @Description:删除tips
+	 * @Description:情报矢量化删除tips
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -113,22 +113,25 @@ public class PretreatmentTipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String rowkey = jsonReq.getString("rowkey");
-			
-			int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
-			
-			int user = jsonReq.getInt("user");
+
+			//默认物理删除。0：逻辑删除；1：物理删除 2:不用删除
+			int delType = PretreatmentTipsOperator.TIP_PHYSICAL_DELETE;
+
+            int subTaskId = jsonReq.getInt("subTaskId");
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
-			
+
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 			
 			PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 			
-			delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
+			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
-			op.deleteByRowkey(rowkey,delType,user);
+            if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
+                op.deleteByRowkey(rowkey, delType);
+            }
 
 			return new ModelAndView("jsonView", success());
 
@@ -188,6 +191,10 @@ public class PretreatmentTipsController extends BaseController {
 			if (pointGeo==null||pointGeo.isEmpty()) {
 				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 			}
+			
+			int dbId = 0;
+			
+			//jsonReq.getInt("dbId");//大区库id. 打断维护使用  ??
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
@@ -392,7 +399,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submitInfoJobTips2Web( user,taskId);
+			op.submitInfoJobTips2Web(user,taskId);
 
 			return new ModelAndView("jsonView", success());
 
@@ -461,7 +468,7 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
-	 * @Description:（情报矢量化+FCC??）tip新增或者修改
+	 * @Description:（情报矢量化）tip新增或者修改
 	 * @param request
 	 * @return
 	 * @throws ServletException

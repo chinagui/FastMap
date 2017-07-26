@@ -4,7 +4,7 @@ package com.navinfo.dataservice.engine.man.job.bean;
  * Created by wangshishuai3966 on 2017/7/6.
  */
 public enum InvokeType {
-    ASYNC(0), SYNC(1);
+    ASYNC(0), SYNC(1);//ASYNC异步 SYNC同步
 
     private int value = 0;
 

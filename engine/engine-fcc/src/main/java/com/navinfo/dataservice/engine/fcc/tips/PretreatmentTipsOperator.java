@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -10,32 +9,32 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONString;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
-import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 /**
  * 预处理tips操作类
@@ -53,9 +52,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public static int COMMAND_INSERT = 0;
 	public static int COMMAND_UPADATE = 1;
     public static int PRE_TIPS_STAGE = 5;
-    public static int TIP_STATUS_EDIT = 1;
-    public static int TIP_STATUS_COMMIT = 2;
     public static int INFO_TIPS_STAGE = 6;
+    public static int TIP_FC_SOURCECODE = 14;
 	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
@@ -65,7 +63,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	}
 
 	/**
-	 * @Description:创建一个tips
+	 * @Description:FC预处理创建一个tips
 	 * @param sourceType
 	 * @param user
 	 *            :feedback.content
@@ -80,9 +78,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject deep, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn = null;
+		java.sql.Connection oracleConn = null;
+		Table htab =null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			// 1.rowkey
@@ -103,19 +103,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 			feedbackObj.put("f_array", f_array);
 
-			int t_lifecycle = 3;
+			int t_lifecycle = PretreatmentTipsOperator.TIP_LIFECYCLE_ADD;
 
             // 3.track
             TipsTrack track = new TipsTrack();
-            track.setT_lifecycle(t_lifecycle);
-            track.setT_date(currentDate);
-            track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
-//            track.addTrackInfo(PretreatmentTipsOperator.PRE_TIPS_STAGE, currentDate, user);
-
+            track = this.tipSaveUpdateTrack(track, t_lifecycle);
             JSONObject trackJson = JSONObject.fromObject(track);
 
             // source
-            int s_sourceCode = 14;
+            int s_sourceCode = PretreatmentTipsOperator.TIP_FC_SOURCECODE;
             TipsSource source = new TipsSource();
             source.setS_sourceCode(s_sourceCode);
             source.setS_project(String.valueOf(qSubTaskId));//快线子任务ID
@@ -154,18 +150,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.toString().getBytes());
 
 			// solr index json
-            TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, PretreatmentTipsOperator.PRE_TIPS_STAGE,
+            TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, PretreatmentTipsOperator.PRE_TIPS_STAGE,
                     currentDate, user, trackJson, sourceJson, jsonGeom, deepNew, feedbackObj);
-            solr.addTips(JSONObject.fromObject(tipsIndexModel));
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            new TipsIndexOracleOperator(oracleConn).save(tipsIndexModel);
 
 			List<Put> puts = new ArrayList<Put>();
 			puts.add(put);
 			htab.put(puts);
-			htab.close();
             return rowkey;
 		} catch (IOException e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
+			if(htab != null) {
+				htab.close();
+			}
 		}
 
 	}
@@ -263,11 +265,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user)
 			throws Exception {
 
-		Connection hbaseConn;
+		Connection hbaseConn = null;
+		java.sql.Connection oracleConn = null;
+		Table htab = null;
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String[] queryColNames = { "track", "deep", "geometry" };
@@ -281,13 +285,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			Put put = new Put(rowkey.getBytes());
 
 			// 1.update track
-			JSONObject track = JSONObject.fromObject(new String(result
-					.getValue("data".getBytes(), "track".getBytes())));
-			String date = DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT);
-			track.put("t_date", date);
-//			track = addTrackInfo(user, track, date);
-			track.put("t_lifecycle", 2);
+            String trackJson = new String(result
+                    .getValue("data".getBytes(), "track".getBytes()));
+            TipsTrack track = com.alibaba.fastjson.JSONObject.parseObject(trackJson, TipsTrack.class);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 
 			// 2.update geometry
 			JSONObject geometry = JSONObject.fromObject(new String(result
@@ -306,7 +307,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 //                    "data".getBytes(), "source".getBytes())));
 ////            source.put("s_qSubTaskId", qSubTaskId);
 
-			put.addColumn("data".getBytes(), "track".getBytes(), track
+			put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
 					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
@@ -316,33 +317,48 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.getBytes());
 
 			// update solr
-			JSONObject solrIndex = solr.getById(rowkey);
-			solrIndex.put("t_lifecycle", 2);
-			solrIndex.put("t_date", date);
-			solrIndex.put("handler", user);
-			solrIndex.put("g_location", lineGeometry);
-			solrIndex.put("g_guide", guideNew);
-			solrIndex.put("deep", deep);
-//            solrIndex.put("s_qSubTaskId", qSubTaskId);
-			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.get("feedback"));
-            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
-                    feedbackObj));
-            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
-                    feedbackObj));
-            Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(String.valueOf(FC_SOURCE_TYPE), deep);
-            solrIndex.put("relate_links", relateMap.get("relate_links"));
-            solrIndex.put("relate_nodes", relateMap.get("relate_nodes"));
-			solr.addTips(solrIndex);
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		   
+			TipsIndexOracleOperator tipsIndexOracleConn = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao solrIndex = tipsIndexOracleConn.getById(rowkey);
 
+//			solrIndex.setT_lifecycle(PretreatmentTipsOperator.TIP_LIFECYCLE_UPDATE);
+			solrIndex.setT_date(track.getT_date());
+			solrIndex.setG_location(lineGeometry.toString());
+			solrIndex.setG_guide(guideNew.toString());
+			solrIndex.setDeep(deep.toString());
+			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.getFeedback());
+			solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+
+			solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+
+            Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(String.valueOf(FC_SOURCE_TYPE), deep);
+            solrIndex.setRelate_links(relateMap.get("relate_links"));
+            solrIndex.setRelate_nodes(relateMap.get("relate_nodes"));
+
+            
+            List<TipsDao> solrIndexList = new ArrayList<TipsDao>();
+            solrIndexList.add(solrIndex);
+            tipsIndexOracleConn.update(solrIndexList);
+            
 			htab.put(put);
-			htab.close();
+			
 			return false;
 		} catch (IOException e) {
 			logger.error("tips修形出错,rowkey:" + rowkey + "原因：" + e.getMessage());
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			throw new Exception("tips修形出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+			if(htab!=null) {
+				htab.close();
+			}
 		}
 	}
 
@@ -359,6 +375,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throws Exception {
 
 		Connection hbaseConn;
+		java.sql.Connection oracleConn =null;
 		try {
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -401,15 +418,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update solr
 
-			JSONObject solrIndex = solr.getById(rowkey);
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			   
+			TipsIndexOracleOperator tipOperator = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao solrIndex = tipOperator.getById(rowkey);
 
-			solrIndex.put("t_date", date);
+			solrIndex.setT_date(date);
 
-			solrIndex.put("handler", user);
+			solrIndex.setHandler( user);
 
-			solrIndex.put("deep", deep);
+			solrIndex.setDeep(deep.toString());
 
-			solr.addTips(solrIndex);
+			tipOperator.updateOne(solrIndex);
 
 			htab.put(put);
 
@@ -420,14 +441,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		} catch (IOException e) {
 
 			logger.error("tips点移动出错,rowkey:" + rowkey + "原因：" + e.getMessage());
-
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			throw new Exception("tips点移动出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 	}
 
 	/**
-	 * @Description:打断（线几何）
+	 * @Description:FC预处理打断（线几何）
 	 * @param rowkey
 	 * @param tipGeometry
 	 * @param user
@@ -437,14 +460,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	public JSONArray breakLine(String rowkey, JSONObject tipGeometry, int user)
 			throws Exception {
-		Connection hbaseConn;
+		Connection hbaseConn = null;
 		JSONArray rowkeyArray = new JSONArray();
-		try {
+        Table htab = null;
+        java.sql.Connection tipsConn=null;
+        try {
 
-			JSONObject solrIndex = solr.getById(rowkey);
-			String s_sourceType = solrIndex.getString("s_sourceType");
+        	tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+        	TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+        	TipsDao solrIndex = operator.getById(rowkey);
+			//JSONObject solrIndex = solr.getById(rowkey);
+			String s_sourceType = solrIndex.getS_sourceType();
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			Result result = getResultByRowKey(htab, rowkey, null);
@@ -459,14 +487,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
             rowkeyArray.add(newRowkey);
             rowkeyArray.add(rowkey);
-
-			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
-			newSolrIndex.put("id", newRowkey);
+			TipsDao newSolrIndex = solrIndex.copy();
+			newSolrIndex.setId(newRowkey);
 
 			// 1.cut line
 			Point point = (Point) GeoTranslator.geojson2Jts(tipGeometry);
-			JSONObject oldGeo = JSONObject.fromObject(solrIndex
-					.get("g_location"));
+			JSONObject oldGeo = JSONObject.fromObject(solrIndex.getG_location());
 			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
 			JSONObject geo1 = new JSONObject();
 			JSONObject geo2 = new JSONObject();
@@ -479,15 +505,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			geo1.put("g_guide", g_guide1);
 			geo2.put("g_location", g_location2);
 			geo2.put("g_guide", g_guide2);
-
-			solrIndex.put("g_location", g_location1);
-			newSolrIndex.put("g_location", g_location2);
-			solrIndex.put("g_guide", g_guide1);
-			newSolrIndex.put("g_guide", g_guide2);
+			solrIndex.setG_location(g_location1.toString());
+			newSolrIndex.setG_location( g_location2.toString());
+			solrIndex.setG_guide(g_guide1.toString());
+			newSolrIndex.setG_guide(g_guide2.toString());
 
 			// 旧的feedback两个都是一样的，取一个就好了
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
-					.get("feedback"));
+					.getFeedback());
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
@@ -496,38 +521,36 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update deep (重新计算point)
 			// 如果是FC预处理的tips需求更新deep.geo
-			if (FC_SOURCE_TYPE.equals(solrIndex.getString("s_sourceType"))) {
+			if (FC_SOURCE_TYPE.equals(solrIndex.getS_sourceType())) {
 				updateFcTipDeep(solrIndex, newPut, put, newSolrIndex, g_guide1,
 						g_guide2);
 			}
 
-            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    String.valueOf(FC_SOURCE_TYPE), solrIndex.getJSONObject("deep"), g_location1,
+            solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), JSONObject.fromObject(solrIndex.getDeep()), g_location1,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-                    String.valueOf(FC_SOURCE_TYPE), solrIndex.getJSONObject("deep"), g_location1,
+            solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), JSONObject.fromObject(solrIndex.getDeep()), g_location1,
                     feedbackObj));
 
-            newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-                    String.valueOf(FC_SOURCE_TYPE), newSolrIndex.getJSONObject("deep"), g_location2,
+            newSolrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), JSONObject.fromObject(newSolrIndex.getDeep()), g_location2,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            newSolrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-                    String.valueOf(FC_SOURCE_TYPE), newSolrIndex.getJSONObject("deep"), g_location2,
+            newSolrIndex.setWktLocation( TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE),  JSONObject.fromObject(newSolrIndex.getDeep()), g_location2,
                     feedbackObj));
 
 			// update track
-			JSONObject track = JSONObject.fromObject(new String(result
-					.getValue("data".getBytes(), "track".getBytes())));
-			String date = DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT);
-            track.put("t_date", date);
-//			track = addTrackInfo(user, track, date);
+            String trackJson = new String(result
+                    .getValue("data".getBytes(), "track".getBytes()));
+            TipsTrack track = com.alibaba.fastjson.JSONObject.parseObject(trackJson, TipsTrack.class);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 			JSONObject newTrack = JSONObject.fromObject(track);
-			put.addColumn("data".getBytes(), "track".getBytes(), track
+			put.addColumn("data".getBytes(), "track".getBytes(), newTrack
 					.toString().getBytes());
 			newPut.addColumn("data".getBytes(), "track".getBytes(), newTrack
 					.toString().getBytes());
@@ -543,51 +566,27 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     .toString().getBytes());
 
 			// update solr
-			solrIndex.put("t_date", date);
-			solrIndex.put("handler", user);
-
-            newSolrIndex.put("t_date", date);
-            newSolrIndex.put("handler", user);
-
-			solr.addTips(solrIndex);
-			solr.addTips(newSolrIndex);
+            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+            newSolrIndex = this.tipSaveUpdateTrackSolr(track, newSolrIndex);
+            operator.updateOne(solrIndex);
+			operator.updateOne(newSolrIndex);
 
 			htab.put(put);
 			htab.put(newPut);
-			htab.close();
-
 			return rowkeyArray;
 		} catch (Exception e) {
 			e.printStackTrace();
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
-		}
-	}
-
-//	/**
-//	 * @Description:TOOD
-//	 * @param user
-//	 * @param track
-//	 * @return
-//	 * @author: y
-//	 * @time:2016-11-18 下午8:03:59
-//	 */
-//	private JSONObject addTrackInfo(int user, JSONObject track, String date) {
-//		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-//
-//		// 1.1 new trackInfo
-//		JSONObject jsonTrackInfo = TipsUtils.newTrackInfo(FC_DEFAULT_STAGE,
-//				date, user);
-//
-//		trackInfoArr.add(jsonTrackInfo);
-//
-//		track.put("t_trackInfo", trackInfoArr);
-//
-//		track.put("t_date", date);
-//
-//		return track;
-//	}
+		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
+    }
 
 	/**
 	 * @Description:TOOD
@@ -599,11 +598,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @author: y
 	 * @time:2016-11-18 下午7:58:46
 	 */
-	private void updateFcTipDeep(JSONObject solrIndex, Put newPut, Put put,
-			JSONObject newSolrIndex, JSONObject g_guide1, JSONObject g_guide2)
+	private void updateFcTipDeep(TipsDao solrIndex, Put newPut, Put put,
+			TipsDao newSolrIndex, JSONObject g_guide1, JSONObject g_guide2)
 			throws Exception {
 
-		JSONObject deep1 = JSONObject.fromObject(solrIndex.get("deep"));
+		JSONObject deep1 = JSONObject.fromObject(solrIndex.getDeep());
 		;
 
 		// 几何中心点
@@ -611,7 +610,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		deep1.put("geo", pointGeo1);
 
-		JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
+		JSONObject deep2 = JSONObject.fromObject(solrIndex.getDeep());
 		;
 
 		// 几何中心点
@@ -625,9 +624,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString()
 				.getBytes());
 
-		solrIndex.put("deep", deep1);
+		solrIndex.setDeep(deep1.toString());
 
-		newSolrIndex.put("deep", deep2);
+		newSolrIndex.setDeep(deep2.toString());
 
 	}
 
@@ -711,95 +710,75 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2016-11-16 上午11:29:03
 	 */
 	public void submit2Web(int user, int subTaskId) throws Exception {
-
-		try {
-
-//			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-//
-//			Subtask subtask = apiService.queryBySubtaskId(subTaskId);
-
-			List<JSONObject> snapshots = solr
-					.queryHasNotSubmitPreTips(user, subTaskId);
-
-			String currentDate = StringUtils.getCurrentTime();
+        Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection tipsConn=null;
+        try {
+        	tipsConn =DBConnector.getInstance().getTipsIdxConnection();
+        	TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+        	String sql = "select * from tips_index where s_project='"+subTaskId+"' and handler="+user+" AND t_tipStatus=1 AND s_sourceType='8001'";
+        	List<TipsDao> tips = operator.query(sql);
+            long totalNum = tips.size();
+            if(totalNum == 0) {
+                return;
+            }
 
 			List<Get> gets = new ArrayList<Get>();
-
-			for (JSONObject solrIndex : snapshots) {
-
-				String rowkey = solrIndex.getString("id");
-
+			Map<String,TipsDao> tipsMap = new HashMap<String,TipsDao>();
+            for (TipsDao tip :tips) {
+                String rowkey = tip.getId();
 				Get get = new Get(rowkey.getBytes());
-
 				get.addColumn("data".getBytes(), "track".getBytes());
-
 				get.addColumn("data".getBytes(), "feedback".getBytes());
-
 				gets.add(get);
-
-				solrIndex.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 更新t_tipStatus
-
-				solrIndex.put("t_date", currentDate); // 更新t_date
-
-//				solrIndex.put("t_lifecycle", 2);//不变
-
-				solr.addTips(solrIndex);
-
+				tipsMap.put(rowkey, tip);
 			}
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
+			hbaseConn = HBaseConnector.getInstance().getConnection();
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			Map<String, JSONObject> tipsTracks = loadTipsTrack(htab, gets);
 
 			Set<String> keys = tipsTracks.keySet();
-
+            List<Put> puts = new ArrayList<>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            
 			for (String rowkey : keys) {
 
 				// 1.更新feddback和track
-				JSONObject track = tipsTracks.get(rowkey)
-						.getJSONObject("track");
-
-				JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-				// 新增一个trackInfo
-				JSONObject jsonTrackInfo = new JSONObject();
-
-				jsonTrackInfo.put("date", currentDate);
-
-				jsonTrackInfo.put("handler", user);
-
-				jsonTrackInfo.put("stage", PretreatmentTipsOperator.PRE_TIPS_STAGE);
-
-				trackInfoArr.add(jsonTrackInfo);
-
-				track.put("t_trackInfo", trackInfoArr);
-
-//				track.put("t_lifecycle", 2);//不变
-
-				track.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 已提交
-
-				track.put("t_date", currentDate);
+				JSONObject trackJson = tipsTracks.get(rowkey).getJSONObject("track");
+                TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+                track = this.tipSubmitTrack(track, user, PretreatmentTipsOperator.PRE_TIPS_STAGE);
 
 				// 更新hbase
-
 				Put put = new Put(rowkey.getBytes());
-
-				put.addColumn("data".getBytes(), "track".getBytes(), track
+				put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
 						.toString().getBytes());
+                puts.add(put);
 
-				htab.put(put);
-
+                //更新solr
+                TipsDao solrIndex = tipsMap.get(rowkey);
+                solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
+                solrIndexList.add(solrIndex);
 			}
+
+            //更新hbase
+            htab.put(puts);
+            operator.update(solrIndexList);
+
 
 		} catch (IOException e) {
 
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("tips提交出错，原因：" + e.getMessage(), e);
-		}
-	}
+		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
+    }
 
 	/**
 	 * 从Hbase读取Tips信息（只有track）
@@ -834,16 +813,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 						"track".getBytes()));
 
 				jo.put("track", track);
-
-				/*
-				 * if (result.containsColumn("data".getBytes(),
-				 * "feedback".getBytes())) { JSONObject feedback =
-				 * JSONObject.fromObject(new String(
-				 * result.getValue("data".getBytes(), "feedback".getBytes())));
-				 * 
-				 * jo.put("feedback", feedback); } else { jo.put("feedback",
-				 * TipsUtils.OBJECT_NULL_DEFAULT_VALUE); }
-				 */
 
 				tips.put(rowkey, jo);
 			} catch (Exception e) {
@@ -976,50 +945,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	public void updateFeedbackMemoAndDeep(String rowkey, int user, String memo,
 			JSONObject deepInfo) throws Exception {
+        Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection conn=null;
+        try {
 
-		try {
+			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 			// 获取solr数据
-			JSONObject solrIndex = solr.getById(rowkey);
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			TipsDao solrIndex = operator.getById(rowkey);
 
-			String sourceType = solrIndex.getString("s_sourceType");
-
-			int stage = 2;
-			// 如果是预处理的tips则stage=5
-
-			if (solrIndex.getString("s_sourceType").equals(
-					PretreatmentTipsOperator.FC_SOURCE_TYPE)) {
-				stage = 5;
-			}
+			String sourceType = solrIndex.getS_sourceType();
 
 			// 获取到改钱的 feddback和track
 			JSONObject oldTip = getOldTips(rowkey, htab);
 
-			// 1.更新feddback和track
-			JSONObject track = oldTip.getJSONObject("track");
-
-			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-
-			// 新增一个trackInfo
-			JSONObject jsonTrackInfo = new JSONObject();
-
-			jsonTrackInfo.put("stage", stage);
-
-			jsonTrackInfo.put("date", date);
-
-			jsonTrackInfo.put("handler", user);
-
-			trackInfoArr.add(jsonTrackInfo);
-
-			track.put("t_trackInfo", trackInfoArr);
-
-			track.put("t_lifecycle", 2);
+			// 1.更新feedback和track
+			JSONObject trackJson = oldTip.getJSONObject("track");
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            track = this.tipSaveUpdateTrack(track, PretreatmentTipsOperator.TIP_LIFECYCLE_ADD);
 
 			// 2.更新feedback
 
@@ -1046,7 +994,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			int type = 3; // 文字
 
 			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					date);
+					track.getT_date());
 
 			f_array.add(newFeedback);
 
@@ -1067,7 +1015,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			Put put = new Put(rowkey.getBytes());
 
-			put.addColumn("data".getBytes(), "track".getBytes(), track
+			put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
 					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
@@ -1079,42 +1027,37 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
 			// 同步更新solr
-
-			solrIndex.put("stage", stage);
-
-			solrIndex.put("t_date", date);
-
-			//
-			solrIndex.put("t_lifecycle", 2);
-
-			solrIndex.put("handler", user);
-
-			solrIndex.put("feedback", feedBack);
+			
+            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+			solrIndex.setFeedback( feedBack.toString());
 
 			if (newDeep != null) {
-				solrIndex.put("deep", newDeep);
+				solrIndex.setDeep(newDeep.toString());
 			}
-
-			solr.addTips(solrIndex);
+			operator.updateOne(solrIndex);
 
 			htab.put(put);
-
-			htab.close();
 
 		} catch (IOException e) {
 
 			e.printStackTrace();
 
 			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 
 			throw new Exception("改备注信息出错：rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
-		}
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
 
 	}
 
 	/**
-	 * @Description:新增或者修改一个tips
+	 * @Description:情报矢量化新增或者修改一个tips
 	 * @param jsonInfo
 	 *            :tips全量信息，需要符合规格定义
 	 * @param command
@@ -1129,9 +1072,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public String saveOrUpdateTips(JSONObject jsonInfo, int command, int user, int dbId)
 			throws Exception {
 		String rowkey = "";
-		Connection hbaseConn;
-		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+		Connection hbaseConn = null;
+		java.sql.Connection tipsConn=null;
+        Table htab = null;
+        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
+			tipsConn =DBConnector.getInstance().getTipsIdxConnection();
             JSONObject source = jsonInfo.getJSONObject("source");
             String sourceType = source.getString("s_sourceType");
 
@@ -1169,7 +1115,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     }
                 }
 
-                boolean isSolrHas = TipsPreCheckUtils.hasInSolr(solr, relateId);
+                boolean isSolrHas = TipsPreCheckUtils.hasInOracle(tipsConn, relateId);
                 if(isSolrHas) {//Solr
                     logger.error("新增tips出错：原因：关联要素具有上线下分离属性Tips");
                     throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性Tips");
@@ -1177,8 +1123,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
 
             hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
 
@@ -1188,10 +1133,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
 				jsonInfo.put("rowkey", rowkey);
-				
-				System.out.println("原始rowkey:"+rowkey);
-
-				logger.info("apply new rowkey:" + rowkey);
 
 				//20170518 情报矢量化新增7种Tips deep.id赋值 灵芸and赵航
                 if(TipsStatConstant.preTipsDeepIdType.contains(sourceType)) {
@@ -1200,18 +1141,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     jsonInfo.put("deep", deepJson);
                 }
                 
-                rowkey=insertOneTips(command,jsonInfo, user, htab, date);
+                rowkey=insertOneTips(tipsConn,command,jsonInfo, user, htab, date);
 			}
 			// 修改
 			else {
 				rowkey = jsonInfo.getString("rowkey");
-				
-				System.out.println("原始rowkey:"+rowkey);
 
-				rowkey=updateOneTips(jsonInfo, user, htab, date); // 同时修改hbase和solr
+				rowkey=updateOneTips(tipsConn,jsonInfo, user, htab, date); // 同时修改hbase和solr
 			}
-			
-			htab.close();
 			
 			//需要进行tips差分
 			allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
@@ -1221,9 +1158,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			return rowkey;
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("更新tips出错：" + e.getMessage(),
 					e);
-		}
+		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
 
 	}
 
@@ -1239,7 +1182,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param command 
 	 * @time:2017-6-21 下午9:22:54
 	 */
-	private String cutByMesh(int command, JSONObject jsonInfo, int user, String sourceType,
+	private String cutByMesh(java.sql.Connection tipsConn,int command, JSONObject jsonInfo, int user, String sourceType,
 			Table htab, String date) throws Exception {
 		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
 		
@@ -1248,15 +1191,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		List<Geometry> geoList=TipsOperatorUtils.cutGeoByMeshes(geo); //按照图幅打断成多个几何
 		
 		//打断后的测线tips
-		List<JSONObject> allTips=new ArrayList<JSONObject>();
+		List<TipsDao> allTips=new ArrayList<TipsDao>();
 		String oldRowkey=jsonInfo.getString("rowkey"); //打断前的rowkey
 		
-		boolean hasModifyGlocation=hasModifyGLocation(command,oldRowkey,gLocation);
+		boolean hasModifyGlocation=hasModifyGLocation(tipsConn,command,oldRowkey,gLocation);
 		
 		//跨图幅不需要打断，直接保存
 		if(geoList==null||geoList.size()==0){
 			
-			doInsert(jsonInfo, htab, date); 
+			doInsert(tipsConn,jsonInfo, htab, date); 
 			
 			returnRowkey=oldRowkey;
 			
@@ -1265,12 +1208,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			if(hasModifyGlocation){
 				
-			    JSONObject  obj=new JSONObject();
-			    obj.put("id", oldRowkey);
-			    obj.put("g_location", gLocation);
+				TipsDao  obj=new TipsDao();
+			    obj.setId(oldRowkey);
+			    obj.setG_location(gLocation.toString());
 			    allTips.add(obj);
 			    //allTips就是当前的tips
-				maintainHookTips(oldRowkey,user, allTips,hasModifyGlocation);
+				maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation);
 			}
 			
 			
@@ -1307,11 +1250,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		    jsonInfoNew.put("deep", newDeep);
 		    
 		    //4.保存数据
-		    doInsert(jsonInfoNew, htab, date); 
+		    doInsert(tipsConn,jsonInfoNew, htab, date); 
 		    
-		    JSONObject  obj=new JSONObject();
-		    obj.put("id", newRowkey);
-		    obj.put("g_location", g_location);
+		    TipsDao  obj=new TipsDao();
+		    obj.setId(newRowkey);
+		    obj.setG_location(g_location.toString());
 		    allTips.add(obj);
 		    
 		    //返回任意一条rowkey
@@ -1323,8 +1266,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		//如果是修改的，则需要按照打断后的多根测线，维护测线上的tips
 		if(command==COMMAND_UPADATE){
-			maintainHookTips(oldRowkey,user, allTips,hasModifyGlocation);
-			deleteByRowkey( oldRowkey,  1,  user); //将旧的rowkey删除（物理删除）
+			maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation);
+			deleteByRowkey(oldRowkey, 1); //将旧的rowkey删除（物理删除）
 		}
 		
 		return returnRowkey;
@@ -1341,21 +1284,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception 
 	 * @time:2017-7-5 上午9:22:13
 	 */
-	private boolean hasModifyGLocation(int command, String oldRowkey, JSONObject gLocation) throws Exception {
+	private boolean hasModifyGLocation(java.sql.Connection tipsConn,int command, String oldRowkey, JSONObject gLocation) throws Exception {
 		
 		//新增的
 		if(command==COMMAND_INSERT){
 			
 			return false;
 		}
+        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(tipsConn);
+        TipsDao tipsDao = operator.getById(oldRowkey);
 		
-		JSONObject index = solr.getById(oldRowkey);
-		
-		if(index==null){
+		if(tipsDao == null){
 			return false;
 		}
 		
-		String oldLocation=index.getString("g_location");
+		String oldLocation = tipsDao.getG_location();
 		
 		if(!oldLocation.equals(gLocation)){
 			
@@ -1373,13 +1316,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-14 上午9:25:33
 	 */
-	private void addSolr(JSONObject jsonInfo, String currentDate)
+	private TipsDao addSolr(JSONObject jsonInfo, String currentDate)
 			throws Exception {
 		try {
-            TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(jsonInfo.getString("rowkey"), currentDate,
+            TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(jsonInfo.getString("rowkey"), currentDate,
                     jsonInfo.getJSONObject("track"), jsonInfo.getJSONObject("source"), jsonInfo.getJSONObject("geometry"),
-                    jsonInfo.getJSONObject("deep"), jsonInfo.getJSONObject("feedback"));
-			solr.addTips(JSONObject.fromObject(tipsIndexModel));
+                    jsonInfo.getJSONObject("deep"),jsonInfo.getJSONObject("feedback"));
+			return tipsIndexModel;
 		} catch (Exception e) {
 			logger.error("更新索引出错：" + e.getMessage());
 			e.printStackTrace();
@@ -1400,7 +1343,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-13 下午6:09:23
 	 */
-	private String  updateOneTips(JSONObject jsonInfo, int user, Table htab,
+	private String  updateOneTips(java.sql.Connection tipsConn,JSONObject jsonInfo, int user, Table htab,
 			String date) throws Exception {
 
 		String rowkey = jsonInfo.getString("rowkey");
@@ -1418,7 +1361,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 //			dataTrack.put("t_lifecycle", newlifeCycle);
 //			jsonInfo.put("track", dataTrack);
 
-			return insertOneTips(COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			return insertOneTips(tipsConn,COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());
@@ -1472,7 +1415,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-3-13 下午4:47:54
 	 */
-	private String insertOneTips(int command, JSONObject jsonInfo, int user, Table htab,
+	private String insertOneTips(java.sql.Connection tipsConn,int command, JSONObject jsonInfo, int user, Table htab,
 			String date) throws Exception {
 		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
 		try {
@@ -1482,11 +1425,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		     //如果是2001 测线，则需要判断按图幅打断
             if(sourceType.equals("2001")){
             	
-            	returnRowkey=cutByMesh(command,jsonInfo, user, sourceType, htab, date);
+            	returnRowkey=cutByMesh(tipsConn,command,jsonInfo, user, sourceType, htab, date);
             	
             }else{
             	
-            	doInsert(jsonInfo, htab, date);
+            	doInsert(tipsConn,jsonInfo, htab, date);
             	
             	returnRowkey=jsonInfo.getString("rowkey");
             }
@@ -1511,13 +1454,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @author: y
 	 * @time:2017-6-21 下午9:24:34
 	 */
-	private void doInsert(JSONObject jsonInfo, Table htab, String date)
-			throws IOException, Exception {
-		Put put = assembleNewPut(jsonInfo, date);
+	private void doInsert(java.sql.Connection tipsConn,JSONObject jsonInfo, Table htab, String date)
+			throws Exception {
+		Put put = assembleNewPut(jsonInfo);
 
 		htab.put(put);
-
-		addSolr(jsonInfo, date);
+		
+		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+		TipsDao solrIndex = addSolr(jsonInfo, date);
+		operator.updateOne(solrIndex);
 	}
 
 	/**
@@ -1526,10 +1471,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 *            :符合tips规格定义的json信息
 	 * @return
 	 * @author: y
-	 * @param date
+	 * @param jsonInfo
 	 * @time:2017-3-14 上午9:52:16
 	 */
-	private Put assembleNewPut(JSONObject jsonInfo, String date) {
+	private Put assembleNewPut(JSONObject jsonInfo) {
 
 		String rowkey = jsonInfo.getString("rowkey");
 
@@ -1553,8 +1498,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		// track信息需要重新组织，需要修改date时间
 
-		JSONObject track = jsonInfo.getJSONObject("track");
-
+		JSONObject trackJson = jsonInfo.getJSONObject("track");
+        TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+        if(track.getT_lifecycle() == TIP_LIFECYCLE_INIT) {
+            track.setT_lifecycle(TIP_LIFECYCLE_UPDATE);
+        }
+        track = this.tipSaveUpdateTrack(track, track.getT_lifecycle());
 //		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 //
 //		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr
@@ -1568,11 +1517,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 //
 //		track.put("t_trackInfo", trackInfoArr);
 
-		track.put("t_date", date);// 修改时间，为服务的当前时间
-//       20170711维护
-        track.put("t_tipStatus", 1);
+//		track.put("t_date", date);// 修改时间，为服务的当前时间
+////       20170711维护
+//        track.put("t_tipStatus", 1);
 
-		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+        jsonInfo.put("track", JSONObject.fromObject(track));
+		put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track).toString()
 				.getBytes());
 
 		if (jsonInfo.containsKey("recommended")) {
@@ -1623,18 +1573,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	public void batchSaveOrUpdate(JSONArray jsonInfoArr, int user, int command) throws Exception {
 
-		Connection hbaseConn;
-		
-		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+		Connection hbaseConn = null;
+		java.sql.Connection tipsConn=null;
+        Table htab = null;
+        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
 
 			List<Put> puts = new ArrayList<Put>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            
 			for (Object jsonInfo : jsonInfoArr) {
 
 				JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
@@ -1661,54 +1614,91 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     }
 				}
 
-				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
+				Put put = assembleNewPut(tipsInfo); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
 				puts.add(put);
 
-
-				addSolr(tipsInfo, date);
 				
+				TipsDao solrIndex = addSolr(tipsInfo, date);
+                solrIndexList.add(solrIndex);
 				//需要进行tips差分
 				allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
 			}
 
 			htab.put(puts);
-
-			htab.close();
-			
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			operator.update(solrIndexList);
+            //solr.addTips(solrIndexList);
 			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("批量新增tips出错：" + e.getMessage(), e);
 			throw new Exception("批量新增tips出错：" + e.getMessage(), e);
-		}
+		}finally {
+            if(htab != null) {
+                htab.close();
+            }
+            DbUtils.commitAndCloseQuietly(tipsConn);
+        }
 
 	}
 
-	// 2、licycle=3且t_trackInfo数组(最后一条)stage=6,handler=当前持有人的Tips物理删除，点击<删除>后MAP区域的Tips自动消失。
 	/**
 	 * @Description:判断情报矢量化的tip删除，是逻辑删除还是物理删除 判断原则：
 	 * @param rowkey
-	 * @param user
+	 * @param subTaskId
 	 * @return
 	 * @author: y
 	 * @throws Exception
 	 * @time:2017-4-12 下午4:07:37
 	 */
-	public int getDelTypeByRowkeyAndUserId(String rowkey, int user)
+	public int getDelTypeByRowkeyAndUserId(String rowkey, int subTaskId)
 			throws Exception {
+		//20170720 物理删除：t_lifecycle=3，trackinfo=[]，source-->s_qSubTaskId/s_mSubTaskId=当前子任务
+        Connection hbaseConn = null;
+        Table htab = null;
+        try{
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		JSONObject snappot = solr.getById(rowkey);
+            Result result = htab.get(new Get(rowkey.getBytes()));
+            if(result.isEmpty()) {
+                return TIP_NOT_DELETE;
+            }
 
-		int stage = snappot.getInt("stage");
-		int handler = snappot.getInt("handler");
-		int lifeCycle = snappot.getInt("t_lifecycle");
+            JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "track".getBytes())));
+            JSONObject sourceJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "source".getBytes())));
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            List trackInfoList = track.getT_trackInfo();
+            int lifecycle = track.getT_lifecycle();
+            int taskType = this.getTaskType(subTaskId);//// 1，中线 4，快线
+            if(taskType == 0) {
+                return TIP_NOT_DELETE;
+            }
+            int tipTaskId = 0;
+            if(taskType == TaskType.Q_TASK_TYPE) {//快线子任务
+                tipTaskId = sourceJson.getInt("s_qSubTaskId");
+            }else if(taskType == TaskType.M_TASK_TYPE) {//中线子任务
+                tipTaskId = sourceJson.getInt("s_mSubTaskId");
+            }
 
-		if (lifeCycle == 3 && handler == user && stage == 6) {
-
-			return 1;
-		}
-
-		return 0;
+            int delType = TIP_LOGICAL_DELETE;//默认逻辑删除0
+            if((trackInfoList == null || trackInfoList.size() == 0)
+                    && lifecycle == 3 && tipTaskId == subTaskId) {
+                delType = TIP_PHYSICAL_DELETE;
+            }
+            return delType;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+        }
+        return 2;
 	}
 
 	/**
@@ -1730,54 +1720,65 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public void cutMeasuringLineCut(String rowkey, JSONObject pointGeo,
 			int user, int subTaskId, int jobType) throws Exception {
 		// 第一步：按打断点，生成两个tips
+		java.sql.Connection tipsConn=null;
+		try{
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+			List<TipsDao> resultArr = breakLine2(tipsConn,rowkey, pointGeo, user);
+			//第二步 ：维护测线上挂接的tips
+			maintainHookTips(tipsConn,rowkey,user, resultArr,false);
+		}catch (Exception e) {
+			logger.error("", e);
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
+			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(tipsConn);
+		}
 		
-		List<JSONObject> resultArr = breakLine2(rowkey, pointGeo, user);
-		//第二步 ：维护测线上挂接的tips
-		maintainHookTips(rowkey,user, resultArr,false);
 
 	}
 
-	/**
-	 * @Description:维护测线上挂接的tips
-	 * @param user
-	 * @param linesAfterCut:打断后的测线(只有id和显示坐标)
-	 * @throws SolrServerException
-	 * @throws IOException
-	 * @throws Exception
-	 * @author: y
-	 * @param oldRowkey
-	 * @time:2017-6-21 下午9:37:44
-	 */
-	private void maintainHookTips(String oldRowkey, int user, List<JSONObject> linesAfterCut, boolean hasModifyGlocation)
-			throws SolrServerException, IOException, Exception {
+    /**
+     * 维护测线上挂接的tips
+     * @param tipsConn
+     * @param oldRowkey
+     * @param user
+     * @param resultArr
+     * @param hasModifyGlocation
+     * @throws SolrServerException
+     * @throws IOException
+     * @throws Exception
+     */
+	private void maintainHookTips(java.sql.Connection tipsConn,String oldRowkey, int user, List<TipsDao> resultArr, boolean hasModifyGlocation)
+			throws Exception {
 
 		// 查询关联Tips
-		//20170615 查询和原测线关联的所有Tips
-        String query = "relate_links:*|" + oldRowkey + "|*";
+		//20170615 查询和原测线关联的所有Tips		
+        String query = "select * from tips_index i where exists(select 1 from tips_links l where i.id=l.id"
+        		+ " and l.Link_Id=?)";
+        TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+        List<TipsDao> tipsDaos = operator.query(query, oldRowkey);
         
-        List<JSONObject> snapotList = solr.queryTips(query, null);
+        //List<JSONObject> snapotList = solr.queryTips(query, null);
 		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
-		for (JSONObject json : snapotList) {
+		for (TipsDao json : tipsDaos) {
 
 			//1.维护关联的测线
-			JSONObject result = json;
-			
 			//size>1说明跨图幅打断了，进行打断维护
-			if(linesAfterCut.size()>1){
+			if(resultArr.size()>1){
 				
-				result=updateRelateMeasuringLine(oldRowkey,json, linesAfterCut);
+				json=updateRelateMeasuringLine(oldRowkey,json, resultArr);
 			}
 			
 			//2.维护角度和引导坐标 (修改了坐标的才维护)
 			if(hasModifyGlocation){
 				
-				result=updateGuiderAndAgl(result,linesAfterCut); //若果是跨图幅打断linesAfterCut是多条~~。如果跨图幅没打断 linesAfterCut是一条。就是测线本身	
+				json=updateGuiderAndAgl(json,resultArr); //若果是跨图幅打断linesAfterCut是多条~~。如果跨图幅没打断 linesAfterCut是一条。就是测线本身	
 			}
 			
-			if(result!=null){
+			if(json!=null){
 				
-				updateArray.add(result);
+				updateArray.add(json);
 			}
 
 		}
@@ -1795,7 +1796,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception 
 	 * @time:2017-6-26 下午7:00:07
 	 */
-	private JSONObject updateGuiderAndAgl(JSONObject result, List<JSONObject> linesAfterCut) throws Exception {
+	private TipsDao updateGuiderAndAgl(TipsDao result, List<TipsDao> linesAfterCut) throws Exception {
 		
 		RelateTipsGuideAndAglUpdate up=new RelateTipsGuideAndAglUpdate(result, linesAfterCut);
 		
@@ -1823,17 +1824,20 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
     private void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
 
-        Connection hbaseConn;
-
-        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+        Connection hbaseConn = null;
+        java.sql.Connection tipsConn=null;
+		Table htab = null;
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
-            Table htab = hbaseConn.getTable(TableName
+            htab = hbaseConn.getTable(TableName
                     .valueOf(HBaseConstant.tipTab));
-//            String date = StringUtils.getCurrentTime();
 
             List<Put> puts = new ArrayList<Put>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
             for (Object jsonInfo : jsonInfoArr) {
 
                 JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
@@ -1857,32 +1861,37 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 //更新solr
                 JSONObject feedback=tipsInfo.getJSONObject("feedback");
                 String sourceType=tipsInfo.getString("s_sourceType");
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("deep", deep);
-                solrIndex.put("g_location",g_location);
-                solrIndex.put("g_guide",g_guide);
-                solrIndex.put("wktLocation",TipsImportUtils.generateSolrWkt(sourceType, deep,g_location, feedback));
-                solrIndex.put("wkt",TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, feedback));
+                TipsDao solrIndex = operator.getById(rowkey);
+                solrIndex.setDeep(deep.toString());
+                solrIndex.setG_location(g_location.toString());
+                solrIndex.setG_guide(g_guide.toString());
+                solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deep,g_location, feedback));
+                solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, feedback));
                 
                 Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
-                solrIndex.put("relate_links", relateMap.get("relate_links"));
-                
-                solr.addTips(solrIndex);
+                solrIndex.setRelate_links(relateMap.get("relate_links"));
+                solrIndexList.add(solrIndex);
 
                 //需要进行tips差分
                 allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
             }
 
             htab.put(puts);
-
-            htab.close();
-
+           
+            operator.update(solrIndexList);
+           // solr.addTips(solrIndexList);
             TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
         } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
             logger.error("批量新增tips出错：" + e.getMessage(), e);
             throw new Exception("批量新增tips出错：" + e.getMessage(), e);
-        }
+        }finally {
+			if(htab != null) {
+                htab.close();
+            }
+            DbUtils.commitAndCloseQuietly(tipsConn);
+		}
 
     }
 
@@ -1895,16 +1904,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @author: y
 	 * @time:2017-4-17 下午4:12:25
 	 */
-	private List<JSONObject> breakLine2(String rowkey, JSONObject pointGeo, int user) throws Exception {
+	private List<TipsDao> breakLine2(java.sql.Connection tipsConn,String rowkey, JSONObject pointGeo, int user) throws Exception {
 		
-		List<JSONObject> resultArr=new ArrayList<JSONObject>();
+		List<TipsDao> resultArr=new ArrayList<TipsDao>();
 		
 		Connection hbaseConn;
 		try {
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			TipsDao solrIndex = operator.getById(rowkey);
 
-			JSONObject solrIndex = solr.getById(rowkey);
-
-			String s_sourceType = solrIndex.getString("s_sourceType");
+			String s_sourceType = solrIndex.getS_sourceType();
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -1926,16 +1935,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			Put put = new Put(rowkey.getBytes());
 
-			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
+			TipsDao newSolrIndex = solrIndex.copy();
 
-			newSolrIndex.put("id", newRowkey);
+			newSolrIndex.setId(newRowkey);
 
 			// 1.cut line
 
 			Point point = (Point) GeoTranslator.geojson2Jts(pointGeo);
 
 			JSONObject oldGeo = JSONObject.fromObject(solrIndex
-					.get("g_location"));
+					.getG_location());
 
 
 			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
@@ -1990,18 +1999,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			geo2.put("g_guide", g_guide2);
 
-			solrIndex.put("g_location", g_location1);
+			solrIndex.setG_location(g_location1.toString());
 
-			newSolrIndex.put("g_location", g_location2);
+			newSolrIndex.setG_location(g_location2.toString());
 
-			solrIndex.put("g_guide", g_guide1);
+			solrIndex.setG_guide(g_guide1.toString());
 
-			newSolrIndex.put("g_guide", g_guide2);
+			newSolrIndex.setG_guide(g_guide2.toString());
 			
 			
 			// 更新wkt
-			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
-					.get("feedback"));
+			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.getFeedback());
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
@@ -2011,11 +2019,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update deep (重新计算point)
 			//更新deep.geo
-			JSONObject deep1 = JSONObject.fromObject(solrIndex.get("deep"));
+			JSONObject deep1 = JSONObject.fromObject(solrIndex.getDeep());
 			// 几何中心点
 			deep1.put("geo",g_guide1);
 
-			JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
+			JSONObject deep2 = JSONObject.fromObject(solrIndex.getDeep());
 
 			deep2.put("geo", g_guide2);
 			
@@ -2032,9 +2040,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             // ROWKEY 维护7种要素id 测线在内
             deep2.put("id", newRowkey.substring(6, newRowkey.length()));
 			
-			solrIndex.put("deep", deep1.toString());
+			solrIndex.setDeep(deep1.toString());
 
-			newSolrIndex.put("deep", deep2.toString());
+			newSolrIndex.setDeep(deep2.toString());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep1.toString()
 					.getBytes());
@@ -2042,24 +2050,20 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString()
 					.getBytes());
 
-			solrIndex.put("deep", deep1);
-
-			newSolrIndex.put("deep", deep2);
-
-            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+            solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
                     "2001", deep1, g_location1,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", deep1, g_location1,
+            solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt("2001", deep1, g_location1,
                     feedbackObj));
 
-            newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+            newSolrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(
                     "2001", deep2, g_location2,
                     feedbackObj));
 
             //这个主要是g_location:目前只用于tips的下载和渲染
-            newSolrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+            newSolrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(
                     "2001", deep2, g_location2,
                     feedbackObj));
 
@@ -2084,15 +2088,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// update solr
 
-			solrIndex.put("t_date", date);
-			solrIndex.put("handler", user);
+			solrIndex.setT_date(date);
+			solrIndex.setHandler(user);
 
-            newSolrIndex.put("t_date", date);
-            newSolrIndex.put("handler", user);
-
-			solr.addTips(solrIndex);
-
-			solr.addTips(newSolrIndex);
+            newSolrIndex.setT_date(date);
+            newSolrIndex.setHandler(user);
+            
+            operator.updateOne(solrIndex);
+            operator.updateOne(newSolrIndex);
 
 			htab.put(put);
 
@@ -2105,6 +2108,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			resultArr.add(newSolrIndex);
 
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(tipsConn);
 
 			e.printStackTrace();
 
@@ -2149,7 +2153,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @return 
 	 * @time:2017-4-12 下午8:37:30
 	 */
-	private JSONObject updateRelateMeasuringLine(String oldRowkey, JSONObject json, List<JSONObject> resultArr) {
+	private TipsDao updateRelateMeasuringLine(String oldRowkey, TipsDao json, List<TipsDao> resultArr) {
 		TipsRelateLineUpdate relateLineUpdate = new TipsRelateLineUpdate(oldRowkey,json,
 				resultArr);
 		return relateLineUpdate.excute();
@@ -2166,14 +2170,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public void submitInfoJobTips2Web(int user, int taskId)
 			throws Exception {
 
-		Connection hbaseConn;
+		Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection tipsConn=null;
 
-		List<Put> puts = new ArrayList<Put>();
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			TipsSelector selector = new TipsSelector();
 			
@@ -2193,54 +2198,53 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 
             //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
-			List<JSONObject> tipsList = selector.getTipsByTaskIdAndStatus(taskId,
+			List<TipsDao> sdList = selector.getTipsByTaskIdAndStatus(tipsConn,taskId,
 					taskType);
-
-			for (JSONObject json : tipsList) {
-
-				String rowkey = json.getString("id");
-
-				json.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 是否完成多源融合 0 否；1 是；
-
-				JSONObject old = getOldTips(rowkey, htab);
-
-				JSONObject oldTrack = old.getJSONObject("track");
-				oldTrack.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT);
-
-                JSONArray trackInfoArr = oldTrack.getJSONArray("t_trackInfo");
-                JSONObject trackInfo = new JSONObject();
-                trackInfo.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
-                trackInfo.put("handler", user);
-                String date = StringUtils.getCurrentTime();
-                trackInfo.put("date", date); // 修改时间，为服务的当前时间
-                trackInfoArr.add(trackInfo);
-                oldTrack.put("t_trackInfo", trackInfoArr);
-                oldTrack.put("t_date", date);
-
-                json.put("stage", PretreatmentTipsOperator.INFO_TIPS_STAGE);
-                json.put("handler", user);
-                json.put("t_date", date);
+            long totalNum = sdList.size();
+            if(totalNum > Integer.MAX_VALUE || totalNum == 0) {
+                return;
+            }
+            List<Put> puts = new ArrayList<Put>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+            for (int i = 0; i < totalNum; i++) {
+                TipsDao doc = sdList.get(i);
+                JSONObject snapshot = TipsUtils.tipsFromJSONObject(doc);
+                String rowkey = snapshot.getString("id");
+                Result result = htab.get(new Get(rowkey.getBytes()));
+                if(result.isEmpty()) {
+                    continue;
+                }
+                JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+                        "data".getBytes(), "track".getBytes())));
+                TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+                track = this.tipSubmitTrack(track, user, PretreatmentTipsOperator.INFO_TIPS_STAGE);
 
 				// put
 				Put put = new Put(rowkey.getBytes());
 
-				put.addColumn("data".getBytes(), "track".getBytes(), oldTrack
+				put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track)
 						.toString().getBytes());
 
 				puts.add(put);
 
-				solr.addTips(json); // 更新solr
-
+                //更新solr
+                TipsDao solrIndex = operator.getById(rowkey);
+                solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
+                solrIndexList.add(solrIndex);
 			}
 
 			htab.put(puts);
-
-			htab.close();
-
+			operator.update(solrIndexList);
 		} catch (Exception e) {
-
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
-		}
+		}finally {
+            if(htab != null) {
+                htab.close();
+            }
+            DbUtils.commitAndCloseQuietly(tipsConn);
+        }
 
 	}
 
@@ -2252,12 +2256,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 */
 	private int getTaskType(int taskId) throws Exception {
 		// 调用 manapi 获取 任务类型、及任务号
-		int taskType=0;
+		int taskType = 0;
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try {
 			Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(taskId);
 			if (taskMap != null) {
-				int taskIdResult = taskMap.get("taskId");
 				// 1，中线 4，快线
 				taskType = taskMap.get("programType");
 

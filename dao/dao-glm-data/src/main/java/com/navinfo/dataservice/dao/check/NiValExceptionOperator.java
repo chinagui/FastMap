@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.check;
 
 import java.security.MessageDigest;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -257,7 +260,7 @@ public class NiValExceptionOperator {
 			meshId = (int) list.get(1);
 		}
 		logg.debug("start insert ni_val:2");
-		String md5Sql = "with t as(SELECT LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>?||?||?||?))) "
+		String md5Sql = "with t as(SELECT LOWER(DBMS_CRYPTO.HASH(?||?||?||?,2)) "
 				+ "AS MD5_CODE FROM DUAL) "
 				+ "select md5_code from t minus "
 				+ "(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,t WHERE t.MD5_CODE=N.MD5_CODE "
@@ -268,8 +271,9 @@ public class NiValExceptionOperator {
 		logg.debug("start insert ni_val:2-1");
 		// String cSql =
 		// "SELECT 1 FROM NI_VAL_EXCEPTION WHERE MD5_CODE=? UNION SELECT 1 FROM CK_EXCEPTION WHERE MD5_CODE=?";
+		
 		String md5 = new QueryRunner().queryForString(conn, md5Sql, ruleId,
-				log, targets, "null");
+				log, ConnectionUtil.createClob(conn,targets), "null");
 
 		if (StringUtils.isEmpty(md5))
 			return false;
@@ -1043,6 +1047,24 @@ public class NiValExceptionOperator {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+//			String sql = "SELECT LOWER(DBMS_CRYPTO.HASH(?||?||?||?,2)) AS MD5_CODE FROM DUAL";
+			String md5Sql = "with t as(SELECT LOWER(DBMS_CRYPTO.HASH(?||?||?||?,2)) "
+					+ "AS MD5_CODE FROM DUAL) "
+					+ "select md5_code from t minus "
+					+ "(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,t WHERE t.MD5_CODE=N.MD5_CODE "
+					+ "union all SELECT C.MD5_CODE FROM CK_EXCEPTION C,t WHERE t.MD5_CODE=C.MD5_CODE )";
+			Clob c = ConnectionUtil.createClob(conn);
+			c.setString(1, null);
+			String md5 = new QueryRunner().queryForString(conn, md5Sql, "ABC","DEF",c,"null");
+			System.out.println(md5);
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
 	}
 }

@@ -1,22 +1,17 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
-import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
-import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
@@ -78,8 +73,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void depart() throws Exception {
-        RdLinkSearch search = new RdLinkSearch(DBConnector.getInstance().getConnectionById(13));
-        search.searchDataByTileWithGap(108069, 49640, 17, 10);
+        String requester = "{\"command\":\"TOPOBREAK\",\"type\":\"RDLINK\",\"dbId\":249,\"subtaskId\":505,\"objId\":[14680372," +
+                "408001028],\"data\":{\"longitude\":116.20895085842606,\"latitude\":39.80757077990377,\"nodePid\":0}}";
+        TestUtil.run(requester);
     }
 
     @Test
@@ -157,15 +153,14 @@ public class RdLinkTest extends InitApplication {
 
         System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry1));
         System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry2));
-
-        System.out.println(GeometryRelationUtils.IsLinkOnLeftOfRing(geometry1, geometry));
-        System.out.println(GeometryRelationUtils.IsLinkOnLeftOfRing(geometry2, geometry));
     }
 
     @Test
     public void delete() throws Exception {
-        MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-        metadataApi.scPointSpecKindCodeType14();
+        String requester = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"dbId\":18,\"subtaskId\":24,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.99932030154248,40.08102790254993]," +
+                "[119.99975,40.08087]]},\"catchLinks\":[{\"linkPid\":401000001,\"lon\":119.99932030154248,\"lat\":40.08102790254993}]}}";
+        TestUtil.run(requester);
     }
 
     public static void main(String[] args) throws Exception {

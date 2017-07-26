@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +29,7 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -1256,16 +1257,21 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+//			sb.append("                      NVL((SELECT J.STATUS ");
+//			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
+//					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
+			
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
+			
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
+					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
-			sb.append("                   AND T.latest=1");
+			//sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
@@ -1295,7 +1301,8 @@ public class TaskService {
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
-			sb.append("	                          -1 job_status");
+			//sb.append("	                          -1 NOTASK2MID,");
+			sb.append("	                          -1 tips2mark_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1333,16 +1340,21 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+//			sb.append("                      nvl((select tpt.status"
+//					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
+//					+ "         where tpt.task_id = t.task_id"
+//					+ "           and rownum = 1),-1) other2medium_Status,");
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
+			//sb.append("	                          -1 NOTASK2MID,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) tips2mark_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			sb.append("                   AND t.latest=1");
+			//sb.append("                   AND t.latest=1");
 			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
@@ -1383,34 +1395,10 @@ public class TaskService {
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
-						task.put("progress", rs.getInt("PROGRESS"));
+						task.put("progress", rs.getInt("PROGRESS"));	
 						
-						//统计无用，后续有了再加						
-//						int convertFlag=rs.getInt("CONVERT_FLAG");
-//						if(convertFlag==1){task.put("hasNoTaskData", 0);}
-//						else{						
-//							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-//							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-//								task.put("hasNoTaskData", 0);
-//							}else{
-//								task.put("hasNoTaskData", 1);
-//							}
-//						}
-						//hasNoTaskData 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
-						int other2mediumStatus=rs.getInt("other2medium_Status");
-						
-						task.put("hasNoTaskData", 0);
-
 						int type = rs.getInt("TYPE");
 						int status = rs.getInt("STATUS");
-						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
-						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
-							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
-								task.put("hasNoTaskData", 2);
-							}else{
-								task.put("hasNoTaskData", 1);
-							}
-						}
 
 						JSONArray jobs = new JSONArray();
 						int tisp2markStatus = rs.getInt("TISP2MARK");
@@ -1427,7 +1415,24 @@ public class TaskService {
 								job.put("type", JobType.TiPS2MARK.value());
 								jobs.add(job);
 							}
+						}						
+						
+						//other2mediumJobStatus 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
+						int other2mediumStatus=rs.getInt("other2medium_Status");												
+						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
+						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
+							int other2mediumJobStatus=0;
+							if(tisp2markStatus!=-1){
+								other2mediumJobStatus=other2mediumStatus;
+							}else{
+								other2mediumJobStatus=0;
+							}
+							JSONObject job = new JSONObject();
+							job.put("status",other2mediumJobStatus);
+							job.put("type", JobType.NOTASK2MID.value());
+							jobs.add(job);
 						}
+						
 						task.put("jobs",jobs);
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -1445,7 +1450,7 @@ public class TaskService {
 							task.put("planEndDate",df.format(planEndDate));
 						}else{task.put("planEndDate", "");}
 						
-						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						task.put("roadPlanTotal", rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
@@ -2183,6 +2188,10 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.POI_PLAN_IN,"
+					+ "       T.POI_PLAN_OUT,"
+					+ "       T.ROAD_PLAN_IN,"
+					+ "       T.ROAD_PLAN_OUT,"
 					+ "       T.DATA_PLAN_STATUS,"
 					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
@@ -2224,7 +2233,7 @@ public class TaskService {
 						task.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 						task.setLot(rs.getInt("LOT"));
 						task.setPoiPlanTotal(rs.getInt("POI_PLAN_TOTAL"));
-						task.setRoadPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
+						task.setRoadPlanTotal(rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setBlockName(rs.getString("BLOCK_NAME"));
 						task.setWorkProperty(rs.getString("WORK_PROPERTY"));
@@ -2240,6 +2249,10 @@ public class TaskService {
 						task.setAdminName(rs.getString("ADMIN_NAME"));	
 						task.setInforStage(rs.getInt("INFOR_STAGE"));
 						task.setDataPlanStatus(rs.getInt("DATA_PLAN_STATUS"));
+						task.setPoiPlanIn(rs.getInt("POI_PLAN_IN"));
+						task.setPoiPlanOut(rs.getInt("POI_PLAN_OUT"));
+						task.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
+						task.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
@@ -2300,8 +2313,14 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
-			map.put("poiPlanTotal", task.getPoiPlanTotal());
-			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			//modify by songhe
+			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
+			map.put("roadPlanIn", task.getRoadPlanIn());
+			map.put("roadPlanOut", task.getRoadPlanOut());
+			map.put("poiPlanIn", task.getPoiPlanIn());
+			map.put("poiPlanOut", task.getPoiPlanOut());
+//			map.put("poiPlanTotal", task.getPoiPlanTotal());
+//			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
@@ -2813,6 +2832,23 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return getCollectTaskIdsByTaskId(conn,taskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdsByTaskId(Connection conn,int taskId) throws ServiceException {
+		try {
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT TT.TASK_ID"
@@ -2823,8 +2859,7 @@ public class TaskService {
 					+ "   AND T.TASK_ID = " + taskId;
 			
 			log.info("getCollectTaskIdsByTaskId sql :" + sql);
-			
-			
+						
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
 				public Set<Integer> handle(ResultSet rs) throws SQLException {
 					Set<Integer> result = new HashSet<Integer>();
@@ -2840,9 +2875,7 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getCollectTaskIdsByTaskId失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 
 	/**根据任务id关闭日落月开关
@@ -3436,14 +3469,14 @@ public class TaskService {
 				}
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
-			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-			List<String> tipsPids=new ArrayList<String>(); 
- 				for(Object tipRowkey:tips){ 
- 					tipsPids.add(tipRowkey.toString()); 
- 				}
-				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				api.batchQuickTask(taskId, subtaskId,tipsPids); 
- 			}
+//			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+//			List<String> tipsPids=new ArrayList<String>(); 
+// 				for(Object tipRowkey:tips){ 
+// 					tipsPids.add(tipRowkey.toString()); 
+// 				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+//				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+// 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -3898,12 +3931,11 @@ public class TaskService {
 			
 			//获取block对应的范围
 //			String wkt = getBlockRange(taskId);
-			Map<String, Object> wktMap = BlockService.getInstance().queryWktByBlockId(task.getBlockId());
-			if(!wktMap.containsKey("originGeo") || StringUtils.isBlank(wktMap.get("originGeo").toString())){
+			Block block = BlockService.getInstance().queryByBlockId(con,task.getBlockId());
+			if(block.getOriginGeo()==null || block.getOriginGeo().isEmpty()){
 				throw new Exception("taskId:"+taskId+"对应的BlockId:"+task.getBlockId()+"对应的范围信息为空，无法进行初始化，请检查数据");
 			}
-			String wktJson = wktMap.get("originGeo").toString();
-			String wkt = Geojson.geojson2Wkt(wktJson);
+			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
 			List<Integer> pois = queryImportantPid();
@@ -3987,19 +4019,10 @@ public class TaskService {
 	 * 
 	 * */
 	public List<Integer> queryImportantPid() throws SQLException{
-		Connection conn = null;
-		try{
-			//通过api调用
-			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<Integer> pids = api.queryImportantPid();
-			return pids;
-		}catch(Exception e){
-			DbUtils.close(conn);
-			log.error("从元数据库中获取重要POI异常："+e.getMessage(),e);
-			throw e;
-		}finally{
-			DbUtils.closeQuietly(conn);
-		}
+		//通过api调用
+		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		List<Integer> pids = api.queryImportantPid();
+		return pids;
 	}
 	
 //	/**
@@ -4189,6 +4212,15 @@ public class TaskService {
 				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 				String updateSql="update data_plan t set t.operate_date=sysdate where t.task_id="+ taskId;
 				run.execute(dailyConn, updateSql);
+				
+				//modify by songhe
+				//补充需求，根据dataPlan中的数据更新task表对应的统计值信息
+				int poiCount = calculateNeedWordPoiCount(dailyConn, taskId);
+				float linkLenght = calculateNeedWordLinkLength(dailyConn, taskId);
+				String updateCount = "update TASK t set t.poi_plan_total = "+poiCount+",t.road_plan_total = "+linkLenght+""
+						+ " where t.task_id = " + taskId;
+				log.info("根据dataPlan更新需要作业的数据sql:"+updateCount);
+				run.execute(con, updateCount);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(con);
@@ -4198,6 +4230,67 @@ public class TaskService {
 				DbUtils.commitAndCloseQuietly(con);
 				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中需要作业POI总数
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return int
+		 * 
+		 * */
+		public int calculateNeedWordPoiCount(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的poi总数
+				ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>(){
+					public Integer  handle(ResultSet rs) throws SQLException {
+						int result = 0;
+						if(rs.next()){
+							result = rs.getInt("count(1)");
+						}
+						return result;
+					}
+				};
+				String poiSql = "select count(1) from data_plan d where d.data_type = 1 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1";
+				log.info("计算taskId对应的data_plan中需要作业POI总数:"+poiSql);
+				return run.query(dailyConn, poiSql, rs);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中需要作业POI总数异常："+e.getMessage(), e);
+			}
+			return 0;
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中的需要作业的link长度总和
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return float
+		 * 
+		 * */
+		public float calculateNeedWordLinkLength(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的Link长度
+				ResultSetHandler<Float> rsh = new ResultSetHandler<Float>(){
+					public Float handle(ResultSet rs) throws SQLException {
+						float result = 0f;
+						if(rs.next()){
+							result = rs.getFloat("result");
+						}
+						return result;
+					}
+				};
+				String linksql = "select sum(t.length) result from RD_LINK t where t.link_pid in ("
+						+ "select d.pid from data_plan d where d.data_type = 2 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1)";
+				log.info("计算taskId对应的data_plan中的需要作业的link长度总和:"+linksql);
+				return run.query(dailyConn, linksql, rsh);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中的需要作业的link长度总和异常："+e.getMessage(), e);
+			}
+			return 0f;
 		}
 		
 		/**
@@ -4294,15 +4387,19 @@ public class TaskService {
 				String poisql = "";
 				String linksql = "";
 				sb.append("update DATA_PLAN t set t.is_plan_selected = "+isPlanStatus+" where ");
-				sb.append("t.task_id = "+taskId+" and t.data_type in ("+type+") and t.pid in (");
+				
 				if("1".equals(type) || "1,2".equals(type)){
+					poisb.append("t.task_id = "+taskId+" and t.data_type = 1 and t.pid in (");
 					poisb.append("select p.pid from IX_POI p where sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					poisql = sb.toString()+poisb.toString();
+					log.info("根据范围规划数据更新POI："+poisql);
 					run.update(conn, poisql, wkt);
 				}
 				if("2".equals(type) || "1,2".equals(type)){
+					linksb.append("t.task_id = "+taskId+" and t.data_type = 2 and t.pid in (");
 					linksb.append("select r.link_pid from RD_LINK r where sdo_relate(r.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE')");
 					linksql = sb.toString()+linksb.toString();
+					log.info("根据范围规划数据更新link："+linksql);
 					run.update(conn, linksql, wkt);
 				}
 			}catch(Exception e){
@@ -4721,7 +4818,5 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-
 		
 }

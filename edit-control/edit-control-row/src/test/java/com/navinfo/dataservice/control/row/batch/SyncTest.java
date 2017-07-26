@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.control.row.batch;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,8 +12,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
+
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.control.row.charge.RowChargeService;
 import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncApiImpl;;
 
 /**
@@ -99,6 +107,23 @@ public class SyncTest {
 	}
 	
 	
+	@Test
+	public void test02() throws Exception{
+		
+		MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+		Map<String, Map<String, String>> scPointAdminarea = metadataApi.scPointAdminareaByAdminId();
+		System.out.println(scPointAdminarea.toString());
+		
+	}
 	
+	@Test
+	public void test03() throws Exception{
+		List<Integer> dbIds = new ArrayList<Integer>();
+//		dbIds.add(13);
+//		dbIds.add(330);
+		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(2, "20010722150900", "20170723230000",dbIds);
+		System.out.println(chargePoiConvertor.toString());
+		
+	}
 
 }

@@ -818,4 +818,39 @@ public class SubtaskController extends BaseController {
 		}
 		
 	}
+
+	/**
+	 * 日编子任务自动规划
+	 * 根据taskId获取未规划的gridId和tips统计
+	 * 将未规划的grid自动分配到几个子任务中，尽量保证每个子任务tips数量相近
+	 * 应用场景：管理平台—子任务—日编规划—自动规划按钮
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/autoPlan")
+	public ModelAndView autoPlan(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			if(!dataJson.containsKey("subtaskNum")){
+				throw new Exception("缺少subtaskNum");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new Exception("缺少taskId");
+			}
+			int taskId = dataJson.getInt("taskId");
+			int subtaskNum = dataJson.getInt("subtaskNum");
+
+			SubtaskService.getInstance().autoPlan(taskId, subtaskNum);
+
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("日编子任务自动规划接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+
+	}
 }

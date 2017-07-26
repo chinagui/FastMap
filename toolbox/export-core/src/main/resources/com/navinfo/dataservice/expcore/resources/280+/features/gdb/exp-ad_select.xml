@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-23
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////行政区划/////////////////////////////////////////////////////////-->
+    <feature name="AD_ADMIN">
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.AD_FACE
+                2.AD_FACE_TOPO
+                3.AD_LINK
+                4.AD_LINK_MESH
+                5.AD_NODE
+                6.AD_NODE_MESH
+            -->
+            <!--AD_FACE-->
+            <sql><![CDATA[SELECT P.* FROM AD_FACE P,TEMP_AD_FACE T WHERE P.FACE_PID =T.PID;]]></sql>
+            <!--AD_FACE_TOPO-->
+            <sql>
+                <![CDATA[
+                        SELECT P.*
+                          FROM AD_FACE_TOPO P, TEMP_AD_FACE T
+                         WHERE P.FACE_PID = T.PID;
+                        ]]></sql>
+            <!--AD_LINK-->
+            <sql>
+                <![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK P, TEMP_AD_LINK M
+                         WHERE P.LINK_PID = M.PID;
+                        ]]></sql>
+            <!--AD_LINK_MESH-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK_MESH P, TEMP_AD_LINK M
+                         WHERE P.LINK_PID = M.PID;
+                         ]]></sql>
+            <!--AD_NODE-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE P, TEMP_AD_NODE R
+                         WHERE P.NODE_PID = PID;
+                         ]]></sql>
+            <!--AD_NODE_MESH-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE_MESH P, TEMP_AD_NODE R
+                         WHERE P.NODE_PID = PID;
+                         ]]></sql>                         
+            <!--
+                根据临时表提取数据表：
+                1.AD_ADMIN
+                2.AD_ADMIN_NAME
+                3.AD_TOWN
+                4.AD_TOWN_NAME
+            -->
+            <sql><![CDATA[SELECT P.* FROM AD_ADMIN P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM AD_ADMIN_NAME P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM AD_ADMIN_NAME_TONE P,(SELECT P.NAME_ID FROM AD_ADMIN_NAME P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID=T.PID) T WHERE P.NAME_ID=T.NAME_ID;]]></sql>
+            <sql><![CDATA[
+                    SELECT P.*
+                      FROM AD_ADMIN_GROUP P,
+                           (SELECT DISTINCT P.GROUP_ID
+                              FROM AD_ADMIN_PART P, TEMP_AD_ADMIN_RG T
+                             WHERE P.REGION_ID_DOWN = T.PID) T
+                     WHERE P.GROUP_ID = T.GROUP_ID;
+                    ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM AD_ADMIN_PART P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID_DOWN=T.PID;]]></sql>
+             
+			 <sql><![CDATA[SELECT P.* FROM AD_ADMIN_DETAIL P WHERE P.ADMIN_ID IN(SELECT P.ADMIN_ID FROM AD_ADMIN P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID=T.PID );]]></sql>
+			
+
+        </step>
+
+		<step value="101">
+            <!--
+                根据图幅号直接删除数据表：
+                1.AD_FACE
+                2.AD_FACE_TOPO
+                3.AD_LINK
+                4.AD_LINK_MESH
+                5.AD_NODE
+                6.AD_NODE_MESH
+            -->
+            <!--AD_FACE-->
+            <sql><![CDATA[DELETE FROM AD_FACE P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_AD_FACE T ); ]]></sql>
+            <!--AD_FACE_TOPO-->
+            <sql><![CDATA[DELETE FROM AD_FACE_TOPO P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_AD_FACE T ); ]]></sql>
+            <!--AD_LINK-->
+            <sql><![CDATA[DELETE FROM AD_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_AD_LINK T ); ]]></sql>
+
+            <!--AD_LINK_MESH-->
+            <sql><![CDATA[DELETE FROM AD_LINK_MESH P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_AD_LINK T ); ]]></sql>
+            <!--AD_NODE-->
+            <sql><![CDATA[DELETE FROM AD_NODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_AD_NODE T ); ]]></sql>
+
+            <!--AD_NODE_MESH-->
+            <sql><![CDATA[DELETE FROM AD_NODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_AD_NODE T ); ]]></sql>
+
+            <!--
+                根据临时表提取数据表：
+                1.AD_ADMIN
+                2.AD_ADMIN_NAME
+                3.AD_TOWN
+                4.AD_TOWN_NAME
+            -->
+            <sql><![CDATA[DELETE FROM AD_ADMIN P WHERE P.REGION_ID IN (SELECT T.PID FROM TEMP_AD_ADMIN_RG T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM AD_ADMIN_NAME P WHERE P.REGION_ID IN (SELECT T.PID FROM TEMP_AD_ADMIN_RG T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM AD_ADMIN_NAME_TONE P
+							 WHERE P.NAME_ID IN (SELECT P.NAME_ID
+							                       FROM AD_ADMIN_NAME P, TEMP_AD_ADMIN_RG T
+							                      WHERE P.REGION_ID = T.PID);
+							 ]]></sql>
+            <sql><![CDATA[DELETE FROM AD_ADMIN_GROUP P
+							 WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_AD_ADMIN_GROUP T);
+							 ]]></sql>
+
+            <sql><![CDATA[DELETE FROM AD_ADMIN_PART P WHERE P.REGION_ID_DOWN IN(SELECT PID FROM TEMP_AD_ADMIN_RG T); ]]></sql>
+			<sql><![CDATA[DELETE FROM AD_ADMIN_DETAIL P WHERE P.ADMIN_ID IN (SELECT ADMIN_ID FROM AD_ADMIN P WHERE P.REGION_ID IN (SELECT T.PID FROM TEMP_AD_ADMIN_RG T )); ]]></sql>
+
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_AD_FACE
+					  SELECT FACE_PID
+					    FROM AD_FACE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM AD_FACE  B WHERE A.FACE_PID = B.FACE_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_AD_LINK
+					  SELECT LINK_PID
+					    FROM AD_LINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM AD_LINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_AD_NODE
+					  SELECT NODE_PID
+					    FROM AD_NODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM AD_NODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_AD_ADMIN_RG
+					  SELECT REGION_ID
+					    FROM AD_ADMIN A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM AD_ADMIN  B WHERE A.REGION_ID = B.REGION_ID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_AD_ADMIN_GROUP
+					  SELECT  GROUP_ID
+					    FROM AD_ADMIN_GROUP A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM AD_ADMIN_GROUP  B WHERE A.GROUP_ID = B.GROUP_ID);
+				]]></sql>
+        </step>
+
+
+    </feature>
+</sqls>

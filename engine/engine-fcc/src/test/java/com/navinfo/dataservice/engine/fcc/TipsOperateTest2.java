@@ -144,41 +144,41 @@ public class TipsOperateTest2 extends InitApplication{
 		//0280017b8ead071595417cb3305ac9d8e49d73
 		
 		try{
-		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} },\"qSbuTaskId\":1}";
+            parameter="{\"geometry\":{\"coordinates\":[[116.49153,40.01378],[116.49297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null},\"qSubTaskId\":57}";
 
-		if (StringUtils.isEmpty(parameter)) {
-			throw new IllegalArgumentException("parameter参数不能为空。");
-		}
+            if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
 
-		JSONObject jsonReq = JSONObject.fromObject(parameter);
-		
-		JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
-		
-		int user = jsonReq.getInt("user");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		String sourceType = jsonReq.getString("sourceType");
-		
-		String memo=jsonReq.getString("memo");
-		
-		JSONObject deep = jsonReq.getJSONObject("deep"); //tips详细信息
-		
-		
-		if (StringUtils.isEmpty(sourceType)) {
-			throw new IllegalArgumentException("参数错误：sourceType不能为空。");
-		}
-		
-		if (tipsGeometry.isNullObject()||tipsGeometry==null) {
-			throw new IllegalArgumentException("参数错误：geometry不能为空。");
-		}
+            JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 
-        int qSubTaskId = jsonReq.getInt("qSubTaskId");
+            int user = jsonReq.getInt("user");
 
-		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+            String sourceType = jsonReq.getString("sourceType");
 
-		op.create(sourceType, tipsGeometry, user,deep, memo, qSubTaskId);
+            String memo=jsonReq.getString("memo");
+
+            JSONObject deep = jsonReq.getJSONObject("deep"); //tips详细信息
+
+
+            if (StringUtils.isEmpty(sourceType)) {
+                throw new IllegalArgumentException("参数错误：sourceType不能为空。");
+            }
+
+            if (tipsGeometry.isNullObject()||tipsGeometry==null) {
+                throw new IllegalArgumentException("参数错误：geometry不能为空。");
+            }
+
+            int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
+            PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+
+            String rowkey = op.create(sourceType, tipsGeometry, user,deep, memo, qSubTaskId);
 		
 
-		System.out.println("创建预处理tips成功");
+		System.out.println("创建预处理tips成功" + rowkey);
 		
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -195,7 +195,7 @@ public class TipsOperateTest2 extends InitApplication{
 		try{
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"user\":1664,\"taskId\":26}";
+		parameter="{\"user\":1664,\"taskId\":593}";
 		
 		//{"user":1672,"taskId":37}
 		
@@ -342,7 +342,7 @@ public class TipsOperateTest2 extends InitApplication{
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+			//op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
 
 			//return new ModelAndView("jsonView", success());
 
@@ -436,15 +436,8 @@ public class TipsOperateTest2 extends InitApplication{
 	@Test
 	public void testSaveOrUpdate() throws Exception {
 		
-		String parameter="{\"jsonInfo\":{\"rowkey\":\"021601370d27cad51b49328f13fa1d8c4169a8\",\"deep\":{\"name\":\"测试测试\",\"f_array\":[{\"id\":\"1359079\",\"type\":1},{\"id\":\"1359083\",\"type\":1},{\"id\":\"1359084\",\"type\":1}],\"geo\":{\"coordinates\":[116.37257,40.11223],\"type\":\"Point\"}},\"geometry\":{\"g_location\":{\"type\":\"Polygon\",\"coordinates\":[[[116.37251,40.112022],[116.372505,40.112022],[116.37242,40.112064],[116.37242,40.112064],[116.372375,40.112095],[116.372375,40.1121],[116.37236,40.112118],[116.37235,40.11212],[116.37232,40.112194],[116.37232,40.1122],[116.37232,40.11227],[116.37232,40.112278],[116.372345,40.11232],[116.372345,40.11232],[116.37237,40.11235],[116.37237,40.112354],[116.3724,40.11238],[116.3724,40.112385],[116.37248,40.112427],[116.37248,40.112427],[116.37253,40.11244],[116.372536,40.11244],[116.37262,40.112427],[116.37263,40.112427],[116.37267,40.11242],[116.37268,40.112415],[116.37275,40.112377],[116.37276,40.11237],[116.372795,40.11231],[116.372795,40.11231],[116.37282,40.112267],[116.37282,40.11226],[116.37281,40.112186],[116.3728,40.112183],[116.372765,40.11211],[116.372765,40.112106],[116.372734,40.112076],[116.37271,40.112057],[116.3727,40.112053],[116.37264,40.112034],[116.37264,40.112034],[116.372604,40.112022],[116.3726,40.112022],[116.37251,40.112022]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.37257,40.11223]}},\"feedback\":{\"f_array\":[]},\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":2,\"s_sourceId\":\"\",\"s_sourceType\":\"1601\",\"s_reliability\":100,\"s_sourceProvider\":0,\"s_qTaskId\":0,\"s_mTaskId\":0},\"track\":{\"t_lifecycle\":2,\"t_command\":0,\"t_date\":\"20170223145230\",\"t_cStatus\":1,\"t_dStatus\":0,\"t_mStatus\":0,\"t_inMeth\":0,\"t_pStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_fStatus\":0,\"t_trackInfo\":[{\"stage\":1,\"date\":\"20170222180542\",\"handler\":2922}]}},\"user\":2922,\"command\":1}";
-		parameter = "{\"jsonInfo\":{\"pid\":\"021514e72482b6ccc2447bb69d7ea12508d9a5\",\"rowkey\":\"021514e72482b6ccc2447bb69d7ea12508d9a5\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1514\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":77,\"s_qSubTaskId\":0,\"s_mSubTaskId\":57},\"geometry\":{\"g_location\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.34104132652283,39.8750149046689],[116.34318709373473,39.87523721662278],[116.34605169296263,39.87548422905972],[116.34803652763368,39.87521251533015]],[[116.34104132652283,39.8750149046689],[116.34318709373473,39.87523721662278],[116.34606242179872,39.87548422905972],[116.34803652763368,39.87521251533015]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.34384455306706,39.87529390889243]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170525142232\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170525141958\",\"handler\":1664,\"stage\":6},{\"date\":\"20170525142319\",\"handler\":1664,\"stage\":6},{\"date\":\"20170525142232\",\"handler\":1664,\"stage\":6},{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPMAINTENANCE\",\"code\":\"1514\",\"deep\":{\"time\":\"\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.34384455306706,39.87529390889243]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.34625528696687,39.875457683312675]},\"f_array\":[{\"id\":\"0220018f869d21b3f6431397e686ea8da9e597\",\"type\":2,\"flag\":\"1|2\"}]},\"_originalJson\":{\"deep\":{\"time\":\"\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.34384455306706,39.87529390889243]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.34625528696687,39.875457683312675]},\"f_array\":[{\"id\":\"0220018f869d21b3f6431397e686ea8da9e597\",\"type\":2,\"flag\":\"1|2\"}]}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0}";
-		//parameter = "{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1205\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":77,\"s_qSubTaskId\":0,\"s_mSubTaskId\":57},\"geometry\":{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.37206375598907,39.863861330166145]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.37214585105052,39.863626624878336]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPROADSA\",\"code\":\"1205\",\"deep\":{\"f\":{\"id\":\"0220014c8847545e7b41629f0a3a9365cbc87d\",\"type\":2}},\"_originalJson\":{\"deep\":{\"f\":{\"id\":\"0220014c8847545e7b41629f0a3a9365cbc87d\",\"type\":2}}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0,\"dbId\":13}";
-		//parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1107\",\"s_sourceProvider\":0,\"s_reliability\":null,\"s_qTaskId\":0,\"s_mTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.45158052444458,39.98805384322511]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.45092887795363,39.98703773419431]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_cStatus\":0,\"t_fStatus\":0,\"t_pStatus\":0,\"t_dStatus\":0,\"t_mStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_inMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handel\":2,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"options\":{},\"geoLiveType\":\"TIPTOLLGATE\",\"code\":\"1107\",\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"},\"_originalJson\":{\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"}},\"_initHooksCalled\":true},\"user\":2,\"command\":0}";
-		//parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1116\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":107,\"s_mTaskId\":0,\"s_qSubTaskId\":321,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.78371,39.7775]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.78371,39.7775]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPGSC\",\"code\":\"1116\",\"deep\":{\"f_array\":[{\"id\":\"18057637\",\"type\":1,\"z\":0,\"seqNum\":0,\"geo\":{\"type\":\"LineString\",\"coordinates\":[[116.78371,39.7775],[116.78366,39.7775],[116.78362,39.77749]]}},{\"id\":\"18057638\",\"type\":1,\"z\":0,\"seqNum\":7,\"geo\":{\"type\":\"LineString\",\"coordinates\":[[116.78376,39.77746],[116.78373,39.77749],[116.78371,39.7775]]}},{\"id\":\"29784770\",\"type\":1,\"z\":0,\"seqNum\":4,\"geo\":{\"type\":\"LineString\",\"coordinates\":[[116.7837,39.7776],[116.78371,39.7775]]}}]},\"_originalJson\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1116\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":107,\"s_mTaskId\":0,\"s_qSubTaskId\":321,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{},\"g_guide\":{}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPGSC\",\"code\":\"1116\",\"deep\":{\"f_array\":[]}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0,\"dbId\":84}";
-		//parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":107,\"s_mTaskId\":0,\"s_qSubTaskId\":321,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"LineString\",\"coordinates\":[[116.74599,39.79339],[116.74854,39.79325],[116.75176,39.7933],[116.75418,39.79336]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.74854,39.79325]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"\",\"geo\":{\"type\":\"Point\",\"coordinates\":[116.74854,39.79325]},\"src\":3,\"ln\":1,\"kind\":7,\"len\":702.5224463625125,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"},\"_originalJson\":{\"deep\":{\"id\":\"\",\"geo\":{\"type\":\"Point\",\"coordinates\":[116.74854,39.79325]},\"src\":3,\"ln\":1,\"kind\":7,\"len\":702.5224463625125,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0,\"dbId\":84}";
-		parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":1,\"s_qSubTaskId\":0,\"s_mSubTaskId\":26},\"geometry\":{\"g_location\":{\"type\":\"LineString\",\"coordinates\":[[116.44507,39.95269],[116.44489,39.9536],[116.44488,39.95378]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.44489,39.9536]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"\",\"geo\":{\"type\":\"Point\",\"coordinates\":[116.44489,39.9536]},\"src\":3,\"ln\":1,\"kind\":7,\"len\":123.24643427804408,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"},\"_originalJson\":{\"deep\":{\"id\":\"\",\"geo\":{\"type\":\"Point\",\"coordinates\":[116.44489,39.9536]},\"src\":3,\"ln\":1,\"kind\":7,\"len\":123.24643427804408,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0,\"dbId\":84}";
-		parameter = "{\"jsonInfo\":{\"pid\":\"022101b08e6ec295b740ebb3c0bf164cf22e6e\",\"rowkey\":\"022101b08e6ec295b740ebb3c0bf164cf22e6e\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2101\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":155,\"s_qSubTaskId\":0,\"s_mSubTaskId\":198},\"geometry\":{\"g_location\":{\"coordinates\":[116.43565,39.94748],\"type\":\"Point\"},\"g_guide\":{\"coordinates\":[116.43545,39.94769],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170706165655\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[{\"user\":1664,\"userRole\":\"\",\"type\":3,\"content\":\"cdcd\",\"auditRemark\":\"\",\"date\":\"2017076164935\"}]},\"content\":\"cdcd\",\"options\":{},\"geoLiveType\":\"TIPDELETETAG\",\"code\":\"2101\",\"deep\":{\"id\":\"b08e6ec295b740ebb3c0bf164cf22e6e\",\"f\":{\"id\":\"407000252\",\"type\":1}},\"_originalJson\":{\"pid\":\"022101b08e6ec295b740ebb3c0bf164cf22e6e\",\"rowkey\":\"022101b08e6ec295b740ebb3c0bf164cf22e6e\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2101\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":155,\"s_qSubTaskId\":0,\"s_mSubTaskId\":198},\"geometry\":{\"g_location\":{\"coordinates\":[116.43565,39.94748],\"type\":\"Point\"},\"g_guide\":{\"coordinates\":[116.43545,39.94769],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170706165655\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPDELETETAG\",\"code\":\"2101\",\"deep\":{\"id\":\"b08e6ec295b740ebb3c0bf164cf22e6e\",\"f\":{\"id\":\"407000252\",\"type\":1}}},\"_initHooksCalled\":true},\"user\":1664,\"command\":1,\"dbId\":13}";
-		try {
+		String parameter= "{\"jsonInfo\":{\"pid\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"rowkey\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":2224,\"s_qSubTaskId\":0,\"s_mSubTaskId\":593},\"geometry\":{\"g_location\":{\"coordinates\":[[116.26859,39.8591],[116.26971,39.85782],[116.2685,39.85802],[116.26868,39.85747],[116.26878,39.85704]],\"type\":\"LineString\"},\"g_guide\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170724150326\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170724144455\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724144919\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724150144\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"auditRemark\":\"\",\"content\":\"测试改改\",\"date\":\"20170724152441\",\"type\":3,\"user\":1664,\"userRole\":\"\"}]},\"content\":\"测试改改\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"f0417518384d4bd1b4d8eaf3d95084fa\",\"geo\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"},\"src\":3,\"ln\":1,\"kind\":7,\"len\":389.2832,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"},\"_originalJson\":{\"pid\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"rowkey\":\"022001f0417518384d4bd1b4d8eaf3d95084fa\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"2001\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":2224,\"s_qSubTaskId\":0,\"s_mSubTaskId\":593},\"geometry\":{\"g_location\":{\"coordinates\":[[116.26859,39.8591],[116.26971,39.85782],[116.2685,39.85802],[116.26868,39.85747],[116.26878,39.85704]],\"type\":\"LineString\"},\"g_guide\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"20170724150326\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170724144455\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724144919\",\"handler\":1664,\"stage\":6},{\"date\":\"20170724150144\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"auditRemark\":\"\",\"content\":\"测试改改\",\"date\":\"2017072415326\",\"type\":3,\"user\":1664,\"userRole\":\"\"}]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPLINKS\",\"code\":\"2001\",\"deep\":{\"id\":\"f0417518384d4bd1b4d8eaf3d95084fa\",\"geo\":{\"coordinates\":[116.26971,39.85782],\"type\":\"Point\"},\"src\":3,\"ln\":1,\"kind\":7,\"len\":389.2832,\"shp\":0,\"prj\":\"\",\"sTime\":0,\"eTime\":0,\"cons\":0,\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":1,\"dbId\":13}";
+        try {
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}

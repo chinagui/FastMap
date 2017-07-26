@@ -7,7 +7,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.fcc.model.TipsSolrDao;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 
 /** 
  * @ClassName: SolrOperator
@@ -17,7 +17,7 @@ import com.navinfo.dataservice.dao.fcc.model.TipsSolrDao;
  */
 public class TipsSolrOperator {
 	
-	public List<TipsSolrDao> listByQTask(Collection<Integer> qtaskIds)throws Exception{
+	public List<TipsDao> listByQTask(Collection<Integer> qtaskIds)throws Exception{
 		
 		
 		return null;
@@ -32,7 +32,7 @@ public class TipsSolrOperator {
 		
 	}
 	
-	public void add(TipsSolrDao tips)throws Exception{
+	public void add(TipsDao tips)throws Exception{
 		SolrClient client = SolrClientFactory.getInstance().getClient();
 		SolrInputDocument doc = new SolrInputDocument();
 		//tips->doc

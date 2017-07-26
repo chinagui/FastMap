@@ -22,8 +22,11 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -746,7 +749,8 @@ public class LogReader {
 	 * @throws SQLException
 	 */
 	public Collection<Long> getUpdatedObjByPids(String objName,Collection<Long> pids,String startDate,String endDate)throws SQLException{
-		if(pids==null||pids.size()==0)return null;
+		Collection<Long> updatedPids = new ArrayList<Long>();
+		if(pids==null||pids.size()==0)return updatedPids;
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P WHERE T.OP_ID=P.OP_ID AND T.OB_NM=?\n");
 		if(StringUtils.isNotEmpty(startDate)){
@@ -755,18 +759,32 @@ public class LogReader {
 		if(StringUtils.isNotEmpty(endDate)){
 			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
 		}
-		return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Collection<Long>>(){
-
-			@Override
+		Clob clobPids=null;
+		if(pids.size()>1000){
+			clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(pids, ","));
+			sb.append(" AND T.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}else{
+			sb.append(" AND T.OB_PID IN (" + StringUtils.join(pids, ",") + ")");
+		}
+		
+		ResultSetHandler<Collection<Long>> rsHandler = new ResultSetHandler<Collection<Long>>() {
 			public Collection<Long> handle(ResultSet rs) throws SQLException {
-				List<Long> result = new ArrayList<Long>();
-				while(rs.next()){
-					result.add(rs.getLong(1));
+				Collection<Long> result = new ArrayList<Long>();
+				while (rs.next()) {
+					result.add(rs.getLong("OB_PID"));
 				}
 				return result;
 			}
-			
-		},objName);
+	
+		};
+		if(clobPids==null){
+			updatedPids = new QueryRunner().query(conn, sb.toString(), rsHandler,objName);
+		}else{
+			updatedPids = new QueryRunner().query(conn, sb.toString(), rsHandler,objName,clobPids);
+		}
+		return updatedPids;
+		
 	}
 
 	/**
@@ -823,7 +841,66 @@ public class LogReader {
 		});
 	}
 
+	
+	/**
+	 * 根据pid查询相应的履历
+	 * @param objName
+	 * @param mainTabName
+	 * @param pid
+	 * @return 
+	 * @throws Exception
+	 */
+	public Map<Long,List<Map<String,Object>>> getLogByPid(String objName,Collection<Long> objPids) throws Exception {
+		Map<Long,List<Map<String,Object>>> result = new HashMap<Long,List<Map<String,Object>>>();
+		if(objPids==null||objPids.size()==0)return result;
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT LO.OP_ID,LO.OP_DT,LD.* FROM LOG_OPERATION LO,LOG_DETAIL LD WHERE LO.OP_ID = LD.OP_ID ");
+		sb.append(" AND LD.OB_NM = '"+objName+"'");
+		
+		Clob clobPids=null;
+		if(objPids.size()>1000){
+			clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(objPids, ","));
+			sb.append(" AND LD.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}else{
+			sb.append(" AND LD.OB_PID IN (" + StringUtils.join(objPids, ",") + ")");
+		}
+		sb.append(" ORDER BY LD.OB_PID,LO.OP_DT ASC");
+		
+		log.info("根据pid查询相应的履历的sql语句:"+sb.toString());
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			if(clobPids!=null){
+				pstmt.setClob(1, clobPids);
+			}
+			
+			resultSet = pstmt.executeQuery();
+			while(resultSet.next()){
+				Map<String,Object> map = new HashMap<String,Object>();
+				long pid = resultSet.getLong("OB_PID");
+				int operation = resultSet.getInt("OP_TP");
+				String date = DateUtils.dateToString(resultSet.getTimestamp("OP_DT"),DateUtils.DATE_COMPACTED_FORMAT);
+				if(!result.containsKey(pid)){
+					result.put(pid, new ArrayList<Map<String,Object>>());
+				}
+				map.put("operation", operation);
+				map.put("date", date);
+				result.get(pid).add(map);
+			}
+			return result;
+		} catch (Exception e) {
 
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override
@@ -864,16 +941,25 @@ public class LogReader {
 		String objName = "IX_POI";
 		String mainTabName = "IX_POI";
 		Collection<String> grids = null;
-		String startDate = "201510220000";
-//		String endDate = "201610230000";
+		String startDate = "201707200000";
+		String endDate = "201707230000";
 //		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate);
 		System.out.println(new Date());
 		System.out.println(new Date());
 		String objTable = "IX_POI";
-		int objPid = 405000003 ;
-		int status = new LogReader(con).getObjectState(objPid, objTable);
+		int objPid = 505000108 ;
+//		int status = new LogReader(con).getObjectState(objPid, objTable);
+		List<Long> pidList = new ArrayList<Long>();
+		pidList.add(505000108L);
+		pidList.add(408000133L);
+		Map<Long, List<Map<String, Object>>> list = new LogReader(con).getLogByPid(objTable, pidList);
 		System.out.println(new Date());
-		System.out.println(status);
-//		System.out.println(flag);
+		System.out.println(list.toString());
+		//判断是否为充电站
+//		Collection<Long> updatedObjByPids = new LogReader(con).getUpdatedObjByPids(objName, pidList, startDate, endDate);
+//		System.out.println(updatedObjByPids);
+		
+//		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
+//		System.out.println(updatePids);
 	}
 }

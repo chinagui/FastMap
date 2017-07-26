@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+
+    <feature name="M_PARAMETER">
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM M_PARAMETER P WHERE NAME IN ('DATA_VERSION','GLM_VERSION','LANG_CODE','REGION_INFO','COORDINATE_SYS','COORDINATE_UNIT','XY_PRECISION','Z_PRECISION','ADAS_PARA');]]></sql>
+        </step>
+        <step value="101">
+            <sql><![CDATA[DELETE FROM M_PARAMETER P WHERE NAME IN ('DATA_VERSION','GLM_VERSION','LANG_CODE','REGION_INFO','COORDINATE_SYS','COORDINATE_UNIT','XY_PRECISION','Z_PRECISION','ADAS_PARA');]]></sql>
+        </step>
+    </feature>
+</sqls>

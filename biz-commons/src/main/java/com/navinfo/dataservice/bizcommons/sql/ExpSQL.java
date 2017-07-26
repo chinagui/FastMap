@@ -19,9 +19,17 @@ public class ExpSQL {
     private String condition;
     private String sqlType;
     private String tableName;
+    private String sqlExtendType;
 
+    public String getSqlExtendType() {
+		return sqlExtendType;
+	}
 
-    private String sql;
+	public void setSqlExtendType(String sqlExtendType) {
+		this.sqlExtendType = sqlExtendType;
+	}
+
+	private String sql;
     private List<Integer> argTypes = new ArrayList<Integer>();
     private List<Object> args = new ArrayList<Object>();
 

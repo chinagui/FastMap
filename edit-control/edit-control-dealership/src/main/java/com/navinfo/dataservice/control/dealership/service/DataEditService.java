@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,13 +25,16 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
@@ -47,6 +51,8 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
@@ -196,7 +202,8 @@ public class DataEditService {
 			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
 			int poiPid = run.queryForInt(poiconn, queryPoiPid);
 			NiValExceptionSelector selector = new NiValExceptionSelector(poiconn);
-			JSONArray checkResultsArr = selector.poiCheckResultList(poiPid);
+			List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+			JSONArray checkResultsArr = selector.poiCheckResultList(poiPid,checkRuleList);
 			checkErrorNum = checkResultsArr.size();
 		} catch (Exception e) {
 			throw e;
@@ -285,7 +292,9 @@ public class DataEditService {
 			
 			if(cfmPoiPid!=0){
 				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
-				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid);
+				List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid,checkRuleList);
+				
 				log.put("data", checkResultsArr);
 				log.put("total", checkResultsArr.size());
 			}
@@ -1426,6 +1435,8 @@ public class DataEditService {
 				resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
 			}
 			if(resultList!=null&&!resultList.isEmpty()){
+				
+				
 				for (IxDealershipResult result : resultList) {
 					Connection regionConn = null;
 					Connection mancon = null;
@@ -1435,7 +1446,8 @@ public class DataEditService {
 						mancon = DBConnector.getInstance().getManConnection();
 						int dbId = getDailyDbId(result.getRegionId(), mancon);
 						regionConn = DBConnector.getInstance().getConnectionById(dbId);
-						int count = queryCKLogByPoiNum(poiNum,"IX_POI",regionConn);//查询该pid下有无错误log
+						List<String> dealerShipCheckRuleList = getDealerShipCheckRule();//查询代理店检查项
+						int count = queryCKLogByPoiNum(poiNum,dealerShipCheckRuleList,regionConn);//查询该pid下有无错误log
 						if(count==0){
 							IxDealershipResult noLogResult = IxDealershipResultSelector.
 									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
@@ -1445,6 +1457,34 @@ public class DataEditService {
 							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
 							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 						}
+						
+						if(StringUtils.isNotBlank(poiNum)){//执行批处理
+							List<Long> pidList = new ArrayList<>();
+							pidList.add(selectPidByPoiNum(poiNum, regionConn).longValue());
+							Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(regionConn, pidList);
+							Set<String> tabNames = getChangeTableSet(logs);
+							// 获取poi对象
+							Map<Long, BasicObj> objs = null;
+							if (tabNames == null || tabNames.size() == 0) {
+								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, true, pidList, false, false);
+							} else {
+								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, false, pidList, false, false);
+							}
+							// 将poi对象与履历合并起来
+							ObjHisLogParser.parse(objs, logs);
+							OperationResult operationResult = new OperationResult();
+							operationResult.putAll(objs.values());
+
+							BatchCommand batchCommand = new BatchCommand();
+							batchCommand.setOperationName("BATCH_DEALERSHIP_RELEASE");
+							Batch batch = new Batch(regionConn, operationResult);
+							batch.operate(batchCommand);
+							System.out.println(batch.getName());
+							batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+						}
+						
+						
+						
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;
@@ -1454,6 +1494,9 @@ public class DataEditService {
 					}
 				}
 				
+		
+				
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1462,7 +1505,72 @@ public class DataEditService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询代理店检查规则
+	 * @return
+	 * @throws Exception
+	 */
+	private List<String>  getDealerShipCheckRule() throws Exception{
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		try {
 			
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT check_id FROM check_operation_plus WHERE operation_code = 'DEALERSHIP_SAVE'");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			List<String> dealerShipCheckRuleList = new ArrayList<>();
+			while(resultSet.next()){
+				dealerShipCheckRuleList.add(resultSet.getString(1));
+			}
+			return dealerShipCheckRuleList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+			
+	/**
+	 * 根据poiNum查找pid
+	 * @param poiNum
+	 * @param conn
+	 * @return 
+	 * @throws Exception
+	 */
+	private Integer selectPidByPoiNum(String poiNum,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select pid from ix_poi where poi_num = '"+poiNum+"'");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			if(resultSet.next()){
+				return resultSet.getInt(1);
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return null;
+		
+	}
+	
+	
 	/**
 	 * 提交时更新poi状态从0改为为3
 	 * 如果没有对应的poi_edit_status记录，则插入一条
@@ -1502,22 +1610,26 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception 
 	 */
-	private int queryCKLogByPoiNum(String poiNum,String tbNm, Connection conn) throws Exception {
+	private int queryCKLogByPoiNum(String poiNum,List<String> dealerShipCheckRuleList, Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT COUNT(1)");
 		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE,IX_POI P");
 		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
-		sb.append(" AND CO.TABLE_NAME = :1");
+		sb.append(" AND CO.TABLE_NAME = 'IX_POI'");
 		sb.append(" AND CO.PID = P.PID");
-		sb.append(" AND P.POI_NUM = :2");
+		sb.append(" AND NE.RULEID IN (");
+		for (String dealerShipCheckRule : dealerShipCheckRuleList) {
+			sb.append("'"+dealerShipCheckRule+"',");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append(") AND P.POI_NUM = :1");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, tbNm);
-			pstmt.setString(2,poiNum);
+			pstmt.setString(1,poiNum);
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
 				return resultSet.getInt(1);
@@ -1614,10 +1726,10 @@ public class DataEditService {
 				ixDealershipResult.setFbDate(map.get("fbDate").toString());
 				ixDealershipResult.setCfmMemo(map.get("cfmMemo").toString());
 				if(map.get("fbAuditRemark").toString().equals("舍弃")){
-					ixDealershipResult.setWorkflowStatus(3);
-				}else{
 					ixDealershipResult.setWorkflowStatus(9);
 					ixDealershipResult.setDealStatus(3);
+				}else{
+					ixDealershipResult.setWorkflowStatus(3);
 				}
 				ixDealershipResult.setCfmStatus(3);
 				ixDealershipResult.setFbSource(2);
@@ -1939,6 +2051,8 @@ public class DataEditService {
 			log.error("解析excel表格出现错误。原因为："+e);
 			throw new Exception("解析excel表格出错，请检查表格内是否有空行");
 		}
+		//代理店_补充数据上传增加文件检查（6879）
+		addChainDataCheck(addDataMaps);
 		
 		Connection conn = null;
 		try{
@@ -2006,6 +2120,99 @@ public class DataEditService {
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//代理店_补充数据上传增加文件检查（6879）
+	private void addChainDataCheck(List<Map<String, Object>> list) throws Exception {
+		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, List<String>> dataMap = metadataApi.scPointAdminareaDataMap();
+		Map<String, Integer> chainStatusMap = null;
+		List<Integer> historyList = Arrays.asList(1,2,3,4);
+		List<String> districtList = null;
+		List<String> kindCodeList = null;
+		Connection metaConn = null;
+		Connection dealershipConn = null;
+		try{
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			dealershipConn = DBConnector.getInstance().getDealershipConnection();
+			QueryRunner run = new QueryRunner();
+			String districtSql = "SELECT DISTRICT FROM SC_POINT_ADMINAREA WHERE REMARK = '1'";
+			String kindCodeSql = "SELECT KIND_CODE FROM SC_POINT_POICODE_NEW";
+			String chainStatusSql = "SELECT CHAIN_CODE, CHAIN_STATUS FROM IX_DEALERSHIP_CHAIN";
+			districtList = run.query(metaConn, districtSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("DISTRICT"));
+					}
+					return list;
+				}
+			});
+			kindCodeList = run.query(metaConn, kindCodeSql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> list = new ArrayList<>();
+					while(rs.next()){
+						list.add(rs.getString("KIND_CODE"));
+					}
+					return list;
+				}
+			});
+			chainStatusMap = run.query(dealershipConn, chainStatusSql, new ResultSetHandler<Map<String, Integer>>(){
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put(rs.getString("CHAIN_CODE"), rs.getInt("CHAIN_STATUS"));
+					}
+					return map;
+				}
+			});
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(metaConn);
+			DbUtils.rollbackAndCloseQuietly(dealershipConn);
+			log.error(e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(metaConn);
+			DbUtils.closeQuietly(dealershipConn);
+		}
+		
+		for (int i = 0; i < list.size(); i++) {
+			String province = list.get(i).get("province").toString();
+			String city = list.get(i).get("city").toString();
+			String project = list.get(i).get("project").toString();
+			String kindCode = list.get(i).get("kindCode").toString();
+			String chain = list.get(i).get("chain").toString();
+			String name = list.get(i).get("name").toString();
+			String address = list.get(i).get("address").toString();
+			Integer history = Integer.valueOf(list.get(i).get("history").toString()) ;
+			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
+				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
+			}
+			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
+				throw new ServiceException("第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+			}
+			if(StringUtils.isEmpty(project)){
+				throw new ServiceException("第" + (i+2) + "行中：项目为空");
+			}
+			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
+				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
+			}
+			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 1){
+				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是作业中");
+			}
+			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供名称为空或不是全角");
+			}
+			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
+				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
+			}
+			if(!historyList.contains(history)){
+				throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+			}
 		}
 	}
 	
@@ -2358,7 +2565,7 @@ public class DataEditService {
 		
 		//查询检查结果数量
 		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-		JSONArray checkResultsArr = selector.poiCheckResultList(objPid);
+		JSONArray checkResultsArr = selector.poiCheckResultList(objPid,checkCommand.getRuleIdList());
 		resultCount=checkResultsArr.size();
 		log.info("查询poi检查结果数量:" +resultCount);
 		log.info("end runDealershipCheck");

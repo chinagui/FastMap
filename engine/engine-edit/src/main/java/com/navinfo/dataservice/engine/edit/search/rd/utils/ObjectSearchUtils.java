@@ -1,29 +1,17 @@
 package com.navinfo.dataservice.engine.edit.search.rd.utils;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
-import com.navinfo.dataservice.dao.glm.search.CmgBuildlinkSearch;
-import com.navinfo.dataservice.dao.glm.search.CmgBuildnodeSearch;
-import com.navinfo.dataservice.dao.glm.search.LcLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.LcNodeSearch;
-import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
-import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
-import com.navinfo.dataservice.dao.glm.search.ZoneLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.*;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ObjectSearchUtils {
 	
@@ -109,117 +97,131 @@ public class ObjectSearchUtils {
 	 * @throws Exception
 	 */
 	public JSONObject searchObject(JSONObject condition) throws Exception {
-		
+
 		JSONObject json = new JSONObject();
 
 		ObjType type = ObjType.valueOf(condition.getString("type"));
 
 		JSONArray pids = condition.getJSONArray("pids");
-		
+
 		@SuppressWarnings("unchecked")
 		List<Integer> pidList = JSONArray.toList(pids, Integer.class,
 				JsonUtils.getJsonConfig());
-		
-		List<SearchSnapshot> list =new ArrayList<SearchSnapshot>();
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		try {
 			switch (type) {
 
-			case RDLINK:
+				case RDLINK:
 
-				RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
+					RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
 
-				list = rdLinkSearch.searchDataByLinkPids(pidList);
+					list = rdLinkSearch.searchDataByLinkPids(pidList);
 
-				break;
-			case ADLINK:
+					break;
+				case ADLINK:
 
-				AdLinkSearch adLinkSearch = new AdLinkSearch(conn);
+					AdLinkSearch adLinkSearch = new AdLinkSearch(conn);
 
-				list = adLinkSearch.searchDataByLinkPids(pidList);
+					list = adLinkSearch.searchDataByLinkPids(pidList);
 
-				break;
-			case LULINK:
+					break;
+				case LULINK:
 
-				LuLinkSearch luLinkSearch = new LuLinkSearch(conn);
+					LuLinkSearch luLinkSearch = new LuLinkSearch(conn);
 
-				list = luLinkSearch.searchDataByLinkPids(pidList);
+					list = luLinkSearch.searchDataByLinkPids(pidList);
 
-				break;
-			case LCLINK:
+					break;
+				case LCLINK:
 
-				LcLinkSearch lcLinkSearch = new LcLinkSearch(conn);
+					LcLinkSearch lcLinkSearch = new LcLinkSearch(conn);
 
-				list = lcLinkSearch.searchDataByLinkPids(pidList);
+					list = lcLinkSearch.searchDataByLinkPids(pidList);
 
-				break;
-			case ZONELINK:
+					break;
+				case ZONELINK:
 
-				ZoneLinkSearch zoneLinkSearch = new ZoneLinkSearch(conn);
+					ZoneLinkSearch zoneLinkSearch = new ZoneLinkSearch(conn);
 
-				list = zoneLinkSearch.searchDataByLinkPids(pidList);
+					list = zoneLinkSearch.searchDataByLinkPids(pidList);
 
-				break;
-			case CMGBUILDLINK:
+					break;
+				case CMGBUILDLINK:
 
-				CmgBuildlinkSearch cmgBuildlinkSearch = new CmgBuildlinkSearch(
-						conn);
+					CmgBuildlinkSearch cmgBuildlinkSearch = new CmgBuildlinkSearch(
+							conn);
 
-				list = cmgBuildlinkSearch.searchDataByLinkPids(pidList);
+					list = cmgBuildlinkSearch.searchDataByLinkPids(pidList);
 
-				break;
+					break;
 
-			case RDNODE:
+				case RDNODE:
 
-				RdNodeSearch nodeSearch = new RdNodeSearch(conn);
+					RdNodeSearch nodeSearch = new RdNodeSearch(conn);
 
-				list = nodeSearch.searchDataByNodePids(pidList);
+					list = nodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			case ADNODE:
+				case ADNODE:
 
-				AdNodeSearch adNodeSearch = new AdNodeSearch(conn);
+					AdNodeSearch adNodeSearch = new AdNodeSearch(conn);
 
-				list = adNodeSearch.searchDataByNodePids(pidList);
+					list = adNodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			case LUNODE:
+				case LUNODE:
 
-				LuNodeSearch luNodeSearch = new LuNodeSearch(conn);
+					LuNodeSearch luNodeSearch = new LuNodeSearch(conn);
 
-				list = luNodeSearch.searchDataByNodePids(pidList);
+					list = luNodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			case LCNODE:
+				case LCNODE:
 
-				LcNodeSearch lcNodeSearch = new LcNodeSearch(conn);
+					LcNodeSearch lcNodeSearch = new LcNodeSearch(conn);
 
-				list = lcNodeSearch.searchDataByNodePids(pidList);
+					list = lcNodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			case ZONENODE:
+				case ZONENODE:
 
-				ZoneNodeSearch zoneNodeSearch = new ZoneNodeSearch(conn);
+					ZoneNodeSearch zoneNodeSearch = new ZoneNodeSearch(conn);
 
-				list = zoneNodeSearch.searchDataByNodePids(pidList);
+					list = zoneNodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			case CMGBUILDNODE:
+				case CMGBUILDNODE:
 
-				CmgBuildnodeSearch cmgBuildnodeSearch = new CmgBuildnodeSearch(
-						conn);
+					CmgBuildnodeSearch cmgBuildnodeSearch = new CmgBuildnodeSearch(
+							conn);
 
-				list = cmgBuildnodeSearch.searchDataByNodePids(pidList);
+					list = cmgBuildnodeSearch.searchDataByNodePids(pidList);
 
-				break;
+					break;
 
-			default:
-				break;
+				case RDINTER:
+					RdInterSearch rdInterSearch = new RdInterSearch(conn);
+
+					list = rdInterSearch.searchDataByInterPids(pidList);
+
+					break;
+
+				case RDROAD:
+					RdRoadSearch rdRoadSearch = new RdRoadSearch(conn);
+
+					list = rdRoadSearch.searchDataByRoadPids(pidList);
+
+					break;
+
+				default:
+					break;
 			}
 
 			JSONArray array = new JSONArray();

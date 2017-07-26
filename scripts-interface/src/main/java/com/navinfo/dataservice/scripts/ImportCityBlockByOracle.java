@@ -12,11 +12,13 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -24,6 +26,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.scripts.model.Block4Imp;
@@ -36,6 +39,7 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /** 
  * @ClassName: ImportCityBlockByJson
@@ -44,6 +48,8 @@ import net.sf.json.JSONObject;
  * @Description: ImportCityBlockByJson.java
  */
 public class ImportCityBlockByOracle {
+	
+	private static Logger log = Logger.getLogger(ImportCityBlockByOracle.class);
 
 	private static QueryRunner runner = new QueryRunner();
 	/**
@@ -118,13 +124,15 @@ public class ImportCityBlockByOracle {
 					System.out.println("imp city:"+cityCount);
 				}
 			}
+			conn.commit();
 			System.out.println("imp city:"+cityCount);
 			//
 			Map<String,Block4Imp> blocks = parseBlock(conn,rawBlockTable,blockTable);
+			getBlockOriginGeometry(conn,rawBlockTable,blocks);
 			System.out.println("read block table over. block size:"+blocks.size());
 			//write blocks
 
-			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?)";
+			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY,ORIGIN_GEO) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?,SDO_GEOMETRY(?,8307))";
 			String updBlockGridSql = "UPDATE GRID SET BLOCK_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int bCount =0;
 			for(Block4Imp block:blocks.values()){
@@ -132,7 +140,9 @@ public class ImportCityBlockByOracle {
 				Geometry blockGeo = CompGridUtil.grids2Jts(block.getGrids());
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, JtsGeometryFactory.writeWKT(blockGeo));
-				run.update(conn, insBlockSql, blockId,block.getCityName(),block.getBlockName(),clob,block.getWrokProperty());
+				Clob clog2 = ConnectionUtil.createClob(conn,JtsGeometryFactory.writeWKT(block.getOriginGeomtry()));
+				
+				run.update(conn, insBlockSql, blockId,block.getCityName(),block.getBlockName(),clob,block.getWrokProperty(),clog2);
 				//update grid table
 				Clob clob2 = ConnectionUtil.createClob(conn);
 				clob2.setString(1, StringUtils.join(block.getGrids(),","));
@@ -142,6 +152,7 @@ public class ImportCityBlockByOracle {
 					System.out.println("imp block:"+bCount);
 				}
 			}
+			conn.commit();
 			System.out.println("imp block:"+bCount);
 
 			//update city admin geo
@@ -220,7 +231,10 @@ public class ImportCityBlockByOracle {
 							Block4Imp newBlock = new Block4Imp();
 							String cityName = rs.getString("CITY");
 							newBlock.setCityName(cityName);
-							String blockName =rs.getString("PROVINCE")+cityName+rs.getString("COUNTY")+rs.getString("JOB1")+rs.getString("JOB2");
+							String county = rs.getString("COUNTY");
+							String job1 = rs.getString("JOB1");
+							String job2 = rs.getString("JOB2");
+							String blockName =rs.getString("PROVINCE")+cityName+(StringUtils.isEmpty(county)?"":county)+(StringUtils.isEmpty(job1)?"":job1)+(StringUtils.isEmpty(job2)?"":job2);
 							newBlock.setBlockName(blockName);
 //							newBlock.setWrokProperty(blockJson.getString("workProperty"));
 							Set<String> grids = new HashSet<String>();
@@ -233,6 +247,42 @@ public class ImportCityBlockByOracle {
 				}
 				
 			});
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}
+		
+	}
+	public static void getBlockOriginGeometry(Connection conn,String rawBlockTable,Map<String,Block4Imp> blocks)throws Exception{
+		try{
+			System.out.println("Starting read raw block geo file...");
+			String sql = "SELECT BLOCKCODE,GEOMETRY FROM "+rawBlockTable;
+			Map<String,Geometry> geos = new QueryRunner().query(conn, sql, new ResultSetHandler<Map<String,Geometry>>(){
+
+				@Override
+				public Map<String, Geometry> handle(ResultSet rs) throws SQLException {
+					try{
+						Map<String,Geometry> geos = new HashMap<String,Geometry>();
+						while(rs.next()){
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							Geometry geo = GeoTranslator.struct2Jts(struct);
+							String blockCode = rs.getString("BLOCKCODE");
+							geos.put(blockCode, geo);
+						}
+						return geos;
+					}catch(Exception e){
+						log.error(e.getMessage(),e);
+						throw new SQLException(e.getMessage(),e);
+					}
+				}
+				
+			});
+			for(Entry<String,Geometry> entry:geos.entrySet()){
+				Block4Imp block = blocks.get(entry.getKey());
+				if(block!=null){
+					block.setOriginGeomtry(entry.getValue());
+				}
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;

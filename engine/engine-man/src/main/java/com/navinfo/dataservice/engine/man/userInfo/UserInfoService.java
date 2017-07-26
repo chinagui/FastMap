@@ -494,8 +494,20 @@ public class UserInfoService {
 	public List<UserInfo> list(UserGroup bean) throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			return list(conn,bean);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public List<UserInfo> list(Connection conn,UserGroup bean) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
 			String selectSql = "select us.* from user_info us,group_user_mapping gum where us.user_id=gum.user_id and gum.group_id=? ";
 
 			List<Object> values = new ArrayList<Object>();
@@ -527,9 +539,7 @@ public class UserInfoService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 
 	public List<String> getUploadTime(Integer userId, String deviceId) throws ServiceException {
@@ -600,7 +610,7 @@ public class UserInfoService {
 		Connection conn=null;
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item='"+firstWorkItem+"' AND u.user_id="+userId+" AND pc.type=1 ";
+		String selectSql = "SELECT pc.QC_VALUE FROM POI_COLUMN_QC_MAPPING u, POI_COLUMN_QC_CONF pc WHERE u.user_id="+userId+" AND u.qc_conf_id=pc.id AND pc.type=1 AND pc.first_work_item='"+firstWorkItem+"' ";
 		int qcLevel=0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();

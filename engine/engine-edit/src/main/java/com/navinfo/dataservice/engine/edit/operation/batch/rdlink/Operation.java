@@ -490,16 +490,16 @@ public class Operation implements IOperation {
 				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry,
 						faceGeometry)) {
 
-					if (link.getLeftRegionId() != regionId) {
+					if (link.getRightRegionId() != regionId) {
 
-						link.changedFields().put("leftRegionId", regionId);
+						link.changedFields().put("rightRegionId", regionId);
 					}
 
 				} else {
 
-					if (link.getRightRegionId() != regionId) {
+					if (link.getLeftRegionId() != regionId) {
 
-						link.changedFields().put("rightRegionId", regionId);
+						link.changedFields().put("leftRegionId", regionId);
 					}
 				}
 			}

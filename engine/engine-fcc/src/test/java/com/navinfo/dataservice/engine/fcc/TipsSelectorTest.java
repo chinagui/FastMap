@@ -4,24 +4,18 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.fcc.tips.*;
-import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JsonConfig;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,17 +23,19 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
-import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
+import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class TipsSelectorTest extends InitApplication {
 
@@ -154,7 +150,7 @@ public class TipsSelectorTest extends InitApplication {
 			//web 区域粗编 subtaskId=395.  有2个1601+1个8001返回一个8001则ok
 			parameter="{\"subtaskId\":395,\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"],\"workStatus\":[0],\"x\":108073,\"y\":49646,\"z\":17}";
 			// web grid粗编。晶任务号换为575  有2个1601+1个8001   返回 有2个1601则ok
-			parameter="{\"subtaskId\":575,\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"],\"workStatus\":[0],\"x\":108073,\"y\":49646,\"z\":17}";
+			parameter="{\"pType\":\"ms\",\"subtaskId\":575,\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"],\"workStatus\":[0],\"x\":108073,\"y\":49646,\"z\":17}";
 			
 			System.out.println("reusut:----------------------------------\n"
 			
@@ -190,108 +186,7 @@ public class TipsSelectorTest extends InitApplication {
 		}
 	}
 
-	/**
-	 *
-	 */
-	@Test
-	public void testOther() {
-
-		try {
-            JSONObject paramObj = new JSONObject();
-            paramObj.put("statType", "total");
-            //paramObj.put("wkt", wkt);
-            Set<Integer> collectTaskIds = new HashSet<>();
-            collectTaskIds.add(417);
-            paramObj.put("taskIds", collectTaskIds);
-            TipsRequestParam param = new TipsRequestParam();
-            String parameter = paramObj.toString();
-            String query = param.getTipsDayTotal(parameter);
-            SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
-            long totalNum = sdList.getNumFound();
-            System.out.println("**************************************************");
-            System.out.println("**************************************************");
-            System.out.println("**************************************************");
-            System.out.println(query);
-            System.out.println(totalNum);
-
-            paramObj = new JSONObject();
-            paramObj.put("statType", "dFinished");
-            //paramObj.put("wkt", wkt);
-            paramObj.put("taskIds", collectTaskIds);
-            parameter = paramObj.toString();
-            query = param.getTipsDayTotal(parameter);
-            sdList = conn.queryTipsSolrDoc(query, null);
-            totalNum = sdList.getNumFound();
-            System.out.println("**************************************************");
-            System.out.println("**************************************************");
-            System.out.println("**************************************************");
-            System.out.println(query);
-            System.out.println(totalNum);
-//			TipsSelector selector = new TipsSelector();
-//			String parameter = "{\"subTaskId\":188,\"programType\":1}";
-//			System.out.println("**************************************************");
-//			System.out.println(selector.statInfoTask(parameter));
-//            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-//            JSONArray gridList = manApi.getGridIdsByTaskId(2190);
-//            String wkt = GridUtils.grids2Wkt(gridList);
-//            TipsOperator tipsOperator = new TipsOperator();
-//            long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, 2190);
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put("total", totalNum);
-//            TipsSelector selector = new TipsSelector();
-//            String parameter = "{tipStatus:1,subTaskId:249,programType:4,curPage:1,pageSize:10}";
-//            JSONObject jsonObject = selector.listInfoTipsByPage(parameter);
-//            System.out.println("**************************************************");
-//            System.out.println(jsonObject.toString());
-
-//            System.out.println("**************************************************");
-////            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
-//            System.out.println("**************************************************");
-//            System.out.println("**************************************************");
-//            System.out.println("**************************************************");
-            TipsSelector selector = new TipsSelector();
-            Set<Integer> subTaskIds = new HashSet<>();
-            subTaskIds.add(605);
-            Set<Integer> meshSet = selector.getTipsMeshIdSet(subTaskIds);
-            for(Integer mesh : meshSet) {
-                System.out.println(mesh);
-            }
-//            System.out.println(operator.updateInfoCheckResult(8, 1, 1));
-//            System.out.println("**************************************************");
-//            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());
-			//JSONObject obj=solrSelector.searchDataByRowkey("111503249654");
-			
-			/*JSONObject geojson = JSONObject.fromObject(obj
-					.getString("g_location"));
-			// 渲染的坐标都是屏幕坐标
-			Geojson.coord2Pixel(geojson, 18, 5.5283968E7, 2.5481728E7);*/
-
-			//System.out.println("geojson:"+geojson);
-			
-			
-			
-			
-			/*String geo1="{\"coordinates\":[[116.48576,40.00849],[116.48582,40.00857],[116.48591,40.00866],[116.486,40.00876],[116.48613,40.00888],[116.48625,40.00902],[116.48633,40.00911],[116.48641,40.00918],[116.48645,40.00922]],\"type\":\"LineString\"}";
-			String geo2="{\"coordinates\":[[116.48604,40.00812],[116.48617,40.00823],[116.48629,40.00837],[116.48643,40.00853],[116.48656,40.0087],[116.48669,40.00884],[116.48676,40.00893],[116.48681,40.00899],[116.48675,40.00902],[116.48655,40.00902],[116.48635,40.00901]],\"type\":\"LineString\"}";
-			String geo3="{\"coordinates\":[[116.48577,40.00902],[116.48581,40.00897],[116.48594,40.00889],[116.48606,40.00879],[116.48619,40.00867],[116.4863,40.00855],[116.48637,40.00848],[116.48644,40.00841],[116.48649,40.00837],[116.48655,40.00834],[116.48652,40.00842],[116.48643,40.00856]],\"type\":\"LineString\"}";
-			String geo4="{\"coordinates\":[[116.48617,40.00905],[116.48623,40.00901],[116.48635,40.00889],[116.48646,40.00874],[116.48654,40.00858],[116.48659,40.00842],[116.48659,40.00835]],\"type\":\"LineString\"}";
-			String geo5="{\"coordinates\":[[116.48631,40.0081],[116.48639,40.00818],[116.4865,40.00827],[116.48664,40.00838],[116.48678,40.00851],[116.48692,40.00864],[116.48707,40.00876],[116.48725,40.00891],[116.48743,40.00905],[116.48762,40.00918]],\"type\":\"LineString\"}";
-			        
-				
-			System.out.println(Geojson.geojson2Wkt(geo1)+",");
-			System.out.println(Geojson.geojson2Wkt(geo2)+",");
-			System.out.println(Geojson.geojson2Wkt(geo3)+",");
-			System.out.println(Geojson.geojson2Wkt(geo4)+",");
-			System.out.println(Geojson.geojson2Wkt(geo5));*/
-
-//			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
-//
-//			System.out.println(o.getString("fc").equals("null"));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	//根据网格获取tips统计
 	@Test
@@ -310,11 +205,56 @@ public class TipsSelectorTest extends InitApplication {
 
 
 	//根据rowkey获取单个tips的详细信息
-	//@Test
+	@Test
 	public void testSearchDataByRowkey() {
 		try {
-			System.out.println("sorl by rowkey:");
-			System.out.println(solrSelector.searchDataByRowkey("73c0077b-e950-4079-9d3b-c7454c4109f9"));
+//			System.out.println("sorl by rowkey:");
+//			System.out.println(solrSelector.searchDataByRowkey("73c0077b-e950-4079-9d3b-c7454c4109f9"));
+            Set<Integer> collectTaskIds = new HashSet<>();
+            collectTaskIds.add(5799999);
+			List<TipsDao> tipsList = solrSelector.queryCollectTaskTips(collectTaskIds,
+					TaskType.PROGRAM_TYPE_Q);
+			Map<String, int[]> statsMap = new HashMap<>();
+			for (TipsDao tip : tipsList) {
+				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
+				JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
+				Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
+				Coordinate coordinate = point.getCoordinates()[0];
+                System.out.println("*******************************************************");
+                System.out.println(coordinate.x);
+				String gridId = CompGridUtil
+						.point2Grids(coordinate.x, coordinate.y)[0];
+				int tipStatus = snapshot.getInt("t_tipStatus");
+				int dEditStatus = snapshot.getInt("t_dEditStatus");
+				if (statsMap.containsKey(gridId)) {
+					int[] statsArray = statsMap.get(gridId);
+					if (tipStatus == 2 && dEditStatus != 2) {// 未完成
+						statsArray[0] += 1;
+					} else if (tipStatus == 2 && dEditStatus == 2) {// 已完成
+						statsArray[1] += 1;
+					}
+				} else {
+					int[] statsArray = new int[] { 0, 0 };
+					if (tipStatus == 2 && dEditStatus != 2) {// 未完成
+						statsArray[0] += 1;
+					} else if (tipStatus == 2 && dEditStatus == 2) {// 已完成
+						statsArray[1] += 1;
+					}
+					statsMap.put(gridId, statsArray);
+				}
+			}
+			List<Map> list = new ArrayList<>();
+			if (statsMap.size() > 0) {
+				for (String gridId : statsMap.keySet()) {
+					Map<String, Integer> map = new HashMap<>();
+					map.put("gridId", Integer.valueOf(gridId));
+					int[] statsArray = statsMap.get(gridId);
+					map.put("finished", statsArray[1]);
+					map.put("unfinished", statsArray[0]);
+					list.add(map);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -325,14 +265,20 @@ public class TipsSelectorTest extends InitApplication {
 	@Test
 	public void testSearchDataBySpatial() {
 		try {
-			JSONArray stages = new JSONArray();
-			stages.add(1);
-			stages.add(2);
-			JSONArray ja =
-					solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",10,1901,stages);
-			//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+//			JSONArray stages = new JSONArray();
+//			stages.add(1);
+//			stages.add(2);
+//			JSONArray ja =
+//					solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",10,1901,stages);
+//			//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+//
+//			System.out.println(ja.size()+"  "+ja.toString());
 
-			System.out.println(ja.size()+"  "+ja.toString());
+//            String parameter = "{\"subTaskId\":198,\"programType\":1}";
+//            System.out.println(solrSelector.statInfoTask(parameter));
+
+            solrSelector.checkUpdate(
+                    "59567233" ,"20160101010101");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -427,192 +373,9 @@ public class TipsSelectorTest extends InitApplication {
 		return String.valueOf(sum);
 	}
 
-	@Test
-	public  void  testQuerySolr(){
-
-		System.out.println("查询rowkey");
-		JSONArray grids = JSONArray
-				.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
-
-		grids=JSONArray.fromObject("[59567120,59557611,59557610,60550500,59557613,59557612,60550501,60550502,60550503,59557603,59557602,60550510,60550511,60550513,60550512,59556530,59557630,59557631,60550521,60550520,60550523,60550522,59557620,59557621,59557622,59557623,60550432,60550433]");
-
-		grids=new JSONArray();
-
-		JSONArray stages = new JSONArray();
-		stages.add(1);
-		stages.add(2);
-		stages.add(5);
-		//没找到：1113  1202
-		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线、2001
-		//1102、1103 、1104、1106、1111、1113、1202、1207、1208、1304、1305、1404、1405、1502
-
-		//int [] types={1102,1103,1104,1106,1111,1113,1202,1207,1208,1304,1305,1404,1405,1502};
-
-		//int [] types={1507,1512,1511,1516,1517,1605,1606,1601,1602,1804};
-
-		int [] types={};
-
-		//int [] types={1202,1207,1304,1305};
-		
-	/*		for (int i = 0; i < types.length; i++) {*/
-		int type = 0;
-		String wkt;
-		try {
-			//wkt = GridUtils.grids2Wkt(grids);
-
-			wkt="";
-			List<JSONObject> tips = null;//conn.queryTipsWeb(wkt, type, stages,false);
-			if(tips==null||tips.size()==0){
-				System.out.println("type:"+type+"在"+grids+"没有找到");
-			}
-			System.out.println("共找到："+tips.size()+"条数据");
-			//int count=0;
-			String ids="";
-			for (JSONObject json : tips) {
-				ids+=","+json.get("id");
-				//System.out.println(json.get("id").toString());
-				//updateOld2Null(json.get("id").toString());
-				//if(!json.containsKey("s_qSubTaskId")){
-				update(json.get("id").toString());
-				//	}
-
-				//count ++;
-				//	if(count==1) break;
-			}
-			if(StringUtils.isNotEmpty(ids)){
-				System.out.println("type:"+type+"找到数据rowkeys:"+ids);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-			/*}*/
-
-	    		
-	/*    }*/
 
 
 
-
-	/**
-	 * 修改tips(增加三个字段)
-	 *
-	 * @param rowkey
-	 * @return
-	 * @throws Exception
-	 */
-	public  boolean update(String rowkey)
-			throws Exception {
-
-		try{
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-
-			Get get = new Get(rowkey.getBytes());
-
-			//get.addColumn("data".getBytes(), "source".getBytes());
-
-			get.addColumn("data".getBytes(), "track".getBytes());
-
-			Result result = htab.get(get);
-
-			if (result.isEmpty()) {
-				return false;
-			}
-
-			Put put = new Put(rowkey.getBytes());
-
-			/*JSONObject source = JSONObject.fromObject(new String(result.getValue(
-					"data".getBytes(), "source".getBytes())));
-					
-		    source.put("s_qSubTaskId", 0);
-			
-			source.put("s_mSubTaskId", 0);
-			
-			put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
-					.getBytes());
-*/
-
-			JSONObject track = JSONObject.fromObject(new String(result.getValue(
-					"data".getBytes(), "track".getBytes())));
-
-			if(track.containsKey("t_trackInfo")){
-				return true;
-			}
-			JSONArray trackInfo = new JSONArray();
-
-			System.out.println(rowkey);
-
-			JSONObject solrIndex = conn.getById(rowkey);
-
-			int lifecycle=solrIndex.getInt("t_lifecycle");
-			int stage=solrIndex.getInt("stage");
-			int handler=solrIndex.getInt("handler");
-			int command=solrIndex.getInt("t_command");
-			String t_operateDate=solrIndex.getString("t_operateDate");
-			String currentDate=solrIndex.getString("t_date");
-			int t_cStatus=solrIndex.getInt("t_cStatus");
-			int t_dStatus=solrIndex.getInt("t_dStatus");
-			int t_mStatus=solrIndex.getInt("t_mStatus");
-			int t_inMeth=solrIndex.getInt("t_inMeth");
-			int t_pStatus=solrIndex.getInt("t_pStatus");
-			int t_dInProc=solrIndex.getInt("t_dInProc");
-			int t_mInProc=solrIndex.getInt("t_mInProc");
-
-			int t_fStatus=0;
-			if(solrIndex.containsKey("t_fStatus")){
-				t_fStatus=solrIndex.getInt("t_fStatus");
-			}
-
-
-//			track =TipsUtils.generateTrackJson(lifecycle, stage, handler, command, trackInfo,
-//					t_operateDate, currentDate, t_cStatus,
-//					t_dStatus, t_mStatus, t_inMeth, t_pStatus, t_dInProc, t_mInProc, t_fStatus);
-			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
-					.getBytes());
-			
-			/*for (Object obj:trackInfo) {
-							
-							JSONObject info=JSONObject.fromObject(obj);
-							
-							info.put("stage", 1);
-							trackInfo.add(info);
-							
-							if(i==1) break;
-							
-							
-						}*/
-
-
-
-
-
-			htab.put(put);
-
-			htab.close();
-			
-			/*JSONObject solrIndex = conn.getById(rowkey);
-			solrIndex.put("s_qSubTaskId", 0);
-			solrIndex.put("s_mSubTaskId", 0);
-			
-			solrIndex.put("wktLocation",solrIndex.getString("wkt"));
-			
-			if(!solrIndex.containsKey("s_mTaskId")){
-				solrIndex.put("s_mTaskId", 0);
-				solrIndex.put("s_qTaskId", 0);
-				
-				solrIndex.put("t_fStatus", 0);
-			}
-			conn.addTips(solrIndex);*/
-		}catch (Exception e) {
-			System.out.println("error:"+rowkey);
-			e.printStackTrace();
-		}
-
-		return true;
-	}
 
 
 	/**
@@ -650,131 +413,6 @@ public class TipsSelectorTest extends InitApplication {
 			System.out.println(d);
 		}
 	}
-/*		
-		public static void main(String[] args) {
-			
-			TipsSelectorTest test=new TipsSelectorTest();
-			try {
-				test.update("0220011d8405593377421c984adc368b877abe");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}*/
-
-
-//	//@Test
-//	public void testSubTaskCount(){
-//		FccApiImpl imp=new  FccApiImpl();
-//		JSONArray grids=new JSONArray();
-//		grids.add(60560302);
-//		grids.add(59567332);
-//		grids.add(59567322);
-//		JSONObject result;
-//		try {
-//			result = imp.getSubTaskStats(grids);
-//			System.out.println(result);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//	}
-
-	//修改一下solr中的所有数据的wkt
-	public static void main2(String[] args) {
-
-
-		int fetchNum = Integer.MAX_VALUE;
-
-		SolrQuery query = new SolrQuery();
-
-		query.set("start", 0);
-
-		query.set("rows", fetchNum); //1510  1507  1514  1512  1514
-
-		//query.set("q", "s_sourceType:(1512 1510 1507 1514 1507) AND stage :(1 2 3) AND id:(\"021514d7a97574fe9e48f98a4dcdb4948cd321\")");
-
-		//query.set("q", "s_sourceType:(1512 1510 1507 1514 1507 1511  ) AND stage :(1 2 3) ");
-
-		//query.set("q", "s_sourceType:(8002 ) AND stage :(1 2 3) ");
-
-		query.set("q", " stage :(1 2 3)  AND s_sourceType:( * NOT \"8001\" NOT \"8002\" NOT \"1501\")");
-
-
-		HttpSolrClient client = SolrConnector.getInstance().getClient();
-
-		QueryResponse response;
-		try {
-			response = client.query(query);
-
-			SolrDocumentList sdList = response.getResults();
-
-			long totalNum = sdList.getNumFound();
-
-			if (totalNum <= fetchNum) {
-				for (int i = 0; i < totalNum; i++) {
-					SolrDocument doc = sdList.get(i);
-
-					JSONObject snapshot = JSONObject.fromObject(doc);
-
-					System.out.println(snapshot.get("id"));
-
-					JSONObject  feedbacksO=snapshot.getJSONObject("feedback");
-
-					JSONArray feedbacks=null;
-
-					if(feedbacksO!=null){
-						feedbacks=feedbacksO.getJSONArray("f_array");
-					}
-
-					String sourceType=snapshot.getString("s_sourceType");
-
-					JSONObject g_location=JSONObject.fromObject(snapshot.getString("g_location"))  ;
-
-					String wkt=generateSolrWkt(snapshot.getString("id"),sourceType,g_location,feedbacks);
-
-					// wkt=generateSolrWkt(sourceType,g_location,feedbacks);
-
-					System.out.println("new wkt:"+wkt);
-
-					boolean isUpdate=false;
-					if(!wkt.equals(snapshot.getString("wkt"))){
-						snapshot.put("wkt", wkt);
-						isUpdate=true;
-					}
-
-					if(!snapshot.containsKey("t_inStatus")){
-						snapshot.put("t_inStatus", 0);
-						isUpdate=true;
-					}
-
-					if(!snapshot.containsKey("t_inMeth")){
-						snapshot.put("t_inMeth", 0);
-						isUpdate=true;
-					}
-
-					if(isUpdate){
-						conn.addTips(snapshot);
-					}
-
-
-				}
-			} else {
-				// 暂先不处理
-			}
-			client.commit();
-		} catch (Exception e) {
-
-			e.printStackTrace();
-		}
-
-
-
-
-
-
-	}
-
 
 
 	public static String generateSolrWkt(String rowkey , String sourceType,
@@ -941,7 +579,7 @@ public class TipsSelectorTest extends InitApplication {
 
 		try {
 
-			JSONObject data = selector.searchDataByRowkeyNew("021109nirobot17032500026");
+			JSONObject data = selector.searchDataByRowkeyNew("1113025593515");
 			System.out.println(data);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

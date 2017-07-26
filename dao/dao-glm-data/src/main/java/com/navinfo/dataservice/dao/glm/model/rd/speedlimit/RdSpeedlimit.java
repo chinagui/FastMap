@@ -67,6 +67,16 @@ public class RdSpeedlimit implements IObj {
 	private String rowId;
 	
 	private int tollgateFlag;
+
+	private int editFlag = 1;
+
+	public int getEditFlag() {
+		return editFlag;
+	}
+
+	public void setEditFlag(int editFlag) {
+		this.editFlag = editFlag;
+	}
 	
 	public int getTollgateFlag() {
 		return tollgateFlag;

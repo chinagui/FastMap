@@ -254,7 +254,7 @@ public class SubtaskOperation {
 		}
 	}
 	
-	public static void closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
+	public static int closeBySubtaskList(Connection conn,List<Integer> closedSubtaskList) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String closedSubtaskStr = "(";
@@ -265,7 +265,7 @@ public class SubtaskOperation {
 					+ "set S.STATUS=0 "
 					+ "where S.SUBTASK_ID in "
 					+ closedSubtaskStr 
-					+ " AND (S.TYPE!=4 OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
+					+ " AND (S.TYPE!=4 or s.descp like '%预处理%' OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"	
 					+ "          FROM SUBTASK SS, SUBTASK_GRID_MAPPING SM, TASK_GRID_MAPPING TM"
 					+ "         WHERE SS.SUBTASK_ID = SM.SUBTASK_ID"
 					+ "           AND SM.GRID_ID = TM.GRID_ID"
@@ -275,7 +275,7 @@ public class SubtaskOperation {
 					+ "           AND S.TASK_ID = TM.TASK_ID"
 					+ "           AND SS.TYPE = 3)))";
 			log.info("关闭SQL："+updateSql);
-			run.update(conn,updateSql);
+			return run.update(conn,updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
@@ -811,7 +811,7 @@ public class SubtaskOperation {
 						}
 
 						//采集poi,采集一体化，日编grid粗编，质检日编grid粗编，质检日编区域粗编
-						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
+						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||4==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -1101,7 +1101,7 @@ public class SubtaskOperation {
 			);
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			log.debug("get tips stat");
-			if(3 == subtask.getType()){
+			if(3 == subtask.getType()||4 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
@@ -1978,12 +1978,12 @@ public class SubtaskOperation {
 			//收信人列表
 			List<UserInfo> receiverList = new ArrayList<UserInfo>();
 			if(subtask.getExeUserId()!=0){
-				UserInfo receiver = UserInfoService.getInstance().getUserInfoByUserId(subtask.getExeUserId());
+				UserInfo receiver =  UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
 				receiverList.add(receiver);
 			}else if(subtask.getExeGroupId()!=0){
 				UserGroup bean = new UserGroup();
 				bean.setGroupId(subtask.getExeGroupId());
-				receiverList = UserInfoService.getInstance().list(bean);
+				receiverList = UserInfoService.getInstance().list(conn,bean);
 			}
 			if(receiverList==null||receiverList.size()==0){return;}
 			UserInfo pushObj = UserInfoOperation.getUserInfoByUserId(conn, userId);
@@ -2913,11 +2913,11 @@ public class SubtaskOperation {
 	 * @param subtaskId
 	 * @throws Exception 
 	 */
-	public static void closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
+	public static int closeBySubtaskId(Connection conn, int subtaskId) throws Exception {
 		try{
 			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
 			closedSubtaskList.add(subtaskId);
-			closeBySubtaskList(conn, closedSubtaskList);
+			return closeBySubtaskList(conn, closedSubtaskList);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);

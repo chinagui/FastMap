@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -20,8 +21,8 @@ import net.sf.json.JSONObject;
  */
 public class TipsRelateLineUpdate {
 
-	private JSONObject json; // tips信息（solr）
-	private List<JSONObject> cutLines; // 打断后的测线
+	private TipsDao json; // tips信息（solr）
+	private List<TipsDao> cutLines; // 打断后的测线
 	private String sourceType = "";
 	private String oldRowkey=""; //打断前测线的rowkey
 	
@@ -50,15 +51,15 @@ public class TipsRelateLineUpdate {
 	 * @param json2
 	 * @param resultArr
 	 */
-	public TipsRelateLineUpdate(String oldRowkey,JSONObject json2, List<JSONObject> resultArr) {
+	public TipsRelateLineUpdate(String oldRowkey,TipsDao json2, List<TipsDao> resultArr) {
 		this.json = json2;
-		sourceType = json.getString("s_sourceType");
+		sourceType = json.getS_sourceType();
 		cutLines=resultArr;
 		this.oldRowkey=oldRowkey;
 		
 	}
 
-	public JSONObject excute() {
+	public TipsDao excute() {
 
 		switch (sourceType) {
             case "1803":// 2.挂接 null
@@ -113,7 +114,7 @@ public class TipsRelateLineUpdate {
             case "1901":// 25. 道路名 null
                 return null;
             case "2101":// 26.删除道路标记 null
-                return null;
+            	return updateSimpleF();
             case "1706"://27.ADAS打点 f.id
                 return updateSimpleF();
             case "1806"://28.草图
@@ -124,7 +125,7 @@ public class TipsRelateLineUpdate {
 
 	}
 
-	private JSONObject updateJCTTips() {
+	private TipsDao updateJCTTips() {
 		// TODO Auto-generated method stub
 		return updateSimpleF();
 	}
@@ -137,7 +138,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:10:36
 	 */
-	private JSONObject updateConstruction() {
+	private TipsDao updateConstruction() {
 		return updateFArray_Id();
 
 	}
@@ -148,7 +149,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:10:04
 	 */
-	private JSONObject updateTunnel() {
+	private TipsDao updateTunnel() {
 		return updateFArray_Id();
 
 	}
@@ -159,7 +160,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:09:26
 	 */
-	private JSONObject updateBridgeTips() {
+	private TipsDao updateBridgeTips() {
 		return updateFArray_Id();
 
 	}
@@ -170,7 +171,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:08:54
 	 */
-	private JSONObject updateLineAttrTips() {
+	private TipsDao updateLineAttrTips() {
 		return updateFArray_Id();
 
 	}
@@ -181,7 +182,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:08:42
 	 */
-	private JSONObject updateWalkStreetTips() {
+	private TipsDao updateWalkStreetTips() {
 		return updateFArray_Id();
 
 	}
@@ -192,7 +193,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:08:20
 	 */
-	private JSONObject updateUpDownSeparateLine() {
+	private TipsDao updateUpDownSeparateLine() {
 		return updateFArray_Id();
 
 	}
@@ -203,11 +204,11 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:08:04
 	 */
-	private JSONObject updateRestrictionTips() {
+	private TipsDao updateRestrictionTips() {
 
 		boolean hasMeasuringLine = false;
 
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 		//out:[o_array].[out].id
 		JSONArray o_array = deep.getJSONArray("o_array");
@@ -232,11 +233,11 @@ public class TipsRelateLineUpdate {
                         String outId = out.getString("id");
                         if (outType == 2 && outId.equals(oldRowkey)) {
 
-                            JSONObject nearLink = getNearlestLineId();
+                        	TipsDao nearLink = getNearlestLineId();
                             
-                            out.put("id", nearLink.getString("id"));
+                            out.put("id", nearLink.getId());
 
-                            JSONObject  geo = nearLink.getJSONObject("g_location");
+                            JSONObject  geo = JSONObject.fromObject(nearLink.getG_location());
                             Geometry lineGeo = GeoTranslator.geojson2Jts(geo);
                             Geometry midGeo = GeometryUtils.getMidPointByLine(lineGeo);
                             out.put("geo", GeoTranslator.jts2Geojson(midGeo));
@@ -269,8 +270,8 @@ public class TipsRelateLineUpdate {
             String inId = in.getString("id");
             if (inType == 2 && inId.equals(oldRowkey)) {
             	
-                JSONObject nearLink = getNearlestLineId();
-                String id = nearLink.getString("id");
+            	TipsDao nearLink = getNearlestLineId();
+                String id = nearLink.getId();
                 in.put("id", id);
                 deep.put("in", in);// 新的
                 hasMeasuringLine = true;
@@ -280,7 +281,7 @@ public class TipsRelateLineUpdate {
 		// 如果有测线，则修改，并返回
 		if (hasMeasuringLine) {
 
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 
 			return json;
 		}
@@ -295,11 +296,11 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:07:50
 	 */
-	private JSONObject updateRdLaneTips() {
+	private TipsDao updateRdLaneTips() {
 
 		boolean hasMeasuringLine = false;
 
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 		// out:[o_array].[d_array].out.id(out是对象)
 		JSONArray o_array = deep.getJSONArray("o_array");
@@ -325,10 +326,10 @@ public class TipsRelateLineUpdate {
                         int outType = out.getInt("type");
                         String outId = out.getString("id");
                         if (outType == 2 && outId.equals(oldRowkey)) {
-                            JSONObject nearLink = getNearlestLineId();
-                            String id = nearLink.getString("id");
+                        	TipsDao nearLink = getNearlestLineId();
+                            String id = nearLink.getId();
                             out.put("id", id);
-                            JSONObject geo = nearLink.getJSONObject("g_location");
+                            JSONObject geo = JSONObject.fromObject(nearLink.getG_location());
                             Geometry lineGeo = GeoTranslator.geojson2Jts(geo);
                             Geometry midGeo = GeometryUtils.getMidPointByLine(lineGeo);
                             out.put("geo", GeoTranslator.jts2Geojson(midGeo));
@@ -357,8 +358,8 @@ public class TipsRelateLineUpdate {
             int inType = in.getInt("type");
             String inId = in.getString("id");
             if (inType == 2 && inId.equals(oldRowkey)) {
-                JSONObject nearLink = getNearlestLineId();
-                String id = nearLink.getString("id");
+            	TipsDao nearLink = getNearlestLineId();
+                String id = nearLink.getId();
                 in.put("id", id);
                 deep.put("in", in);// 新的
                 hasMeasuringLine = true;
@@ -368,7 +369,7 @@ public class TipsRelateLineUpdate {
 		// 如果有测线，则修改，并返回
 		if (hasMeasuringLine) {
 
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 
 			return json;
 		}
@@ -383,7 +384,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:07:31
 	 */
-	private JSONObject updateSpeedLimitTips() {
+	private TipsDao updateSpeedLimitTips() {
 
 		return updateSimpleF();
 
@@ -394,8 +395,8 @@ public class TipsRelateLineUpdate {
 	 * 
 	 * @return
 	 */
-	private JSONObject updateSimpleF() {
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+	private TipsDao updateSimpleF() {
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 		JSONObject f = deep.getJSONObject("f");
 
@@ -404,11 +405,11 @@ public class TipsRelateLineUpdate {
             int type = f.getInt("type");
             String id = f.getString("id");
             if (type == 2 && id.equals(oldRowkey)) {
-                JSONObject nearLink = getNearlestLineId();
-                String nearId = nearLink.getString("id");
+            	TipsDao nearLink = getNearlestLineId();
+                String nearId = nearLink.getId();
                 f.put("id", nearId);
                 deep.put("f", f);
-                json.put("deep", deep);
+                json.setDeep(deep.toString());
                 return json;
             }
         }
@@ -423,21 +424,20 @@ public class TipsRelateLineUpdate {
 	 * @author: y
 	 * @time:2017-4-17 下午5:55:08
 	 */
-	private JSONObject getNearlestLineId() {
+	private TipsDao getNearlestLineId() {
 		// tip的引导坐标
-		JSONObject g_guide = JSONObject.fromObject(this.json
-				.getString("g_guide"));
+		JSONObject g_guide = JSONObject.fromObject(this.json.getG_guide());
 
 		Point point = (Point) GeoTranslator.geojson2Jts(g_guide);
 
 		// 打断后的测线显示坐标,计算 tips的引导坐标到显示坐标的距离，取最近的测线作为引导link
 		
 		 Double minDistinct=null;
-		 JSONObject nearlastLink=null;
+		 TipsDao nearlastLink=null;
 		 
-		 for (JSONObject jsonObject : cutLines) {
+		 for (TipsDao jsonObject : cutLines) {
 			
-			 JSONObject g_location1 = jsonObject.getJSONObject("g_location");
+			 JSONObject g_location1 = JSONObject.fromObject(jsonObject.getG_location());
 			 Geometry geo1 = GeoTranslator.geojson2Jts(g_location1);
 			 double distinct=point.distance(geo1);
 			 if(minDistinct==null||distinct<minDistinct){
@@ -454,11 +454,11 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:07:15
 	 */
-	private JSONObject updateTollgateTips() {
+	private TipsDao updateTollgateTips() {
 
 		boolean hasMeasuringLine = false;
 
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 
 		// in.id
@@ -468,8 +468,8 @@ public class TipsRelateLineUpdate {
             int inType = in.getInt("type");
             String inId = in.getString("id");
             if (inType == 2 && inId.equals(oldRowkey)) {
-                JSONObject nearLink = getNearlestLineId();
-                String nearId = nearLink.getString("id");
+            	TipsDao nearLink = getNearlestLineId();
+                String nearId = nearLink.getId();
                 in.put("id", nearId);
                 deep.put("in", in);// 新的
                 hasMeasuringLine = true;
@@ -484,8 +484,8 @@ public class TipsRelateLineUpdate {
             int outType = out.getInt("type");
             String outId = out.getString("id");
             if (outType == 2 && outId.equals(oldRowkey)) {
-                JSONObject nearLink = getNearlestLineId();
-                String nearId = nearLink.getString("id");
+            	TipsDao nearLink = getNearlestLineId();
+                String nearId = nearLink.getId();
                 out.put("id", nearId);
                 deep.put("out", out);// 新的
                 hasMeasuringLine = true;
@@ -495,7 +495,7 @@ public class TipsRelateLineUpdate {
 		// 如果有测线，则修改，并返回
 		if (hasMeasuringLine) {
 
-			json.put("deep", deep);
+			json.setDeep(deep.toString());
 
 			return json;
 		}
@@ -509,16 +509,16 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:06:58
 	 */
-	private JSONObject updateTrafficSignalTips() {
+	private TipsDao updateTrafficSignalTips() {
 
 		return updateFAarrary_F();
 
 	}
 
-	private JSONObject updateFAarrary_F() {
+	private TipsDao updateFAarrary_F() {
 		boolean hasMeasuringLine = false;
         try {
-            JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+            JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
             JSONArray f_array = deep.getJSONArray("f_array");
 
@@ -536,10 +536,10 @@ public class TipsRelateLineUpdate {
                     // 关联link是测线的
                     if (type == 2 && id.equals(oldRowkey)) {
 
-                        JSONObject nearLink = getNearlestLineId();
-                        String nearId = nearLink.getString("id");
+                    	TipsDao nearLink = getNearlestLineId();
+                        String nearId = nearLink.getId();
                         f.put("id", nearId);
-                        JSONObject geo  = nearLink.getJSONObject("g_location");
+                        JSONObject geo  = JSONObject.fromObject(nearLink.getG_location());
                         Geometry lineGeo = GeoTranslator.geojson2Jts(geo);
                         Geometry midGeo = GeometryUtils.getMidPointByLine(lineGeo);
                         fInfo.put("geo", GeoTranslator.jts2Geojson(midGeo));
@@ -557,7 +557,7 @@ public class TipsRelateLineUpdate {
             if (hasMeasuringLine) {
                 deep.put("f_array", f_array_new);// 新的
 
-                json.put("deep", deep);
+                json.setDeep(deep.toString());
                 return json;
             }
         }catch (Exception e) {
@@ -572,7 +572,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:06:25
 	 */
-	private JSONObject updateRampTips() {
+	private TipsDao updateRampTips() {
 		return updateSimpleF();
 
 	}
@@ -583,7 +583,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:06:23
 	 */
-	private JSONObject updatePATips() {
+	private TipsDao updatePATips() {
 		return updateSimpleF();
 
 	}
@@ -594,7 +594,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午10:06:20
 	 */
-	private JSONObject updateSATips() {
+	private TipsDao updateSATips() {
 		return updateSimpleF();
 
 	}
@@ -605,7 +605,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午9:59:13
 	 */
-	private JSONObject updateKindLaneTips() {
+	private TipsDao updateKindLaneTips() {
 		return updateSimpleF();
 
 	}
@@ -616,7 +616,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午9:58:32
 	 */
-	private JSONObject updateHookTips() {
+	private TipsDao updateHookTips() {
 		return null;
 
 	}
@@ -627,7 +627,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午9:58:25
 	 */
-	private JSONObject updateGSCTips() {
+	private TipsDao updateGSCTips() {
 
 		return updateFArray_Id();
 
@@ -641,10 +641,10 @@ public class TipsRelateLineUpdate {
 	 * @author: 
 	 * @time:2017-6-22 上午9:19:53
 	 */
-	private JSONObject updateFArray_Id() {
+	private TipsDao updateFArray_Id() {
 		boolean hasMeasuringLine = false;
 
-		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 
 		JSONArray f_array = deep.getJSONArray("f_array");
 
@@ -674,9 +674,9 @@ public class TipsRelateLineUpdate {
 	           	 }
                 if (type == 2 && id.equals(oldRowkey)) {
                 	
-                	 for (JSONObject json : cutLines) {
-            			 JSONObject newGeo = json.getJSONObject("g_location");
-            			 String idNew=json.getString("id");
+                	 for (TipsDao json : cutLines) {
+            			 JSONObject newGeo = JSONObject.fromObject(json.getG_location());
+            			 String idNew=json.getId();
             			 JSONObject newFInfo =JSONObject.fromObject(fInfo);//创建一个新的
             			 newFInfo.put("id", idNew);
             			 //只有立交有geo
@@ -709,7 +709,7 @@ public class TipsRelateLineUpdate {
 
 			deep.put("f_array", f_array_new);// 新的
 
-			json.put("deep", deep); //1.修改deep
+			json.setDeep(deep.toString()); //1.修改deep
 			//int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines
 			//json=GLocationUpdate.updateAreaLineLocation(index,json,sourceType,cutLines);
 			
@@ -740,7 +740,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午9:58:15
 	 */
-	private JSONObject updateKindTips() {
+	private TipsDao updateKindTips() {
 
 		return updateSimpleF();
 
@@ -752,7 +752,7 @@ public class TipsRelateLineUpdate {
 	 * @return
 	 * @time:2017-4-13 上午9:58:10
 	 */
-	private JSONObject updateLinkDirTips() {
+	private TipsDao updateLinkDirTips() {
 		return updateSimpleF();
 
 	}

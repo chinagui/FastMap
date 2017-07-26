@@ -39,6 +39,8 @@ public class IxPoiPhoto implements IRow {
 
 	private int tag = 1; // 标识
 
+	private int originPid;//原始照片号码
+
 	private String rowId;
 
 	private int uRecord = 0;
@@ -113,6 +115,14 @@ public class IxPoiPhoto implements IRow {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
+	}
+
+	public int getOriginPid() {
+		return originPid;
+	}
+
+	public void setOriginPid(int originPid) {
+		this.originPid = originPid;
 	}
 
 	@Override

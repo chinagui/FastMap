@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -7,16 +8,25 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import org.apache.commons.collections.CollectionUtils;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class TipsOperator {
 
@@ -40,145 +50,174 @@ public class TipsOperator {
 	 */
 	public boolean update(String rowkey, int handler, String pid, String mdFlag, int editStatus, int editMeth)
 			throws Exception {
+		java.sql.Connection oracleConn = null;
+		try{
 
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-		Table htab = hbaseConn
-				.getTable(TableName.valueOf(HBaseConstant.tipTab));
-
-		Get get = new Get(rowkey.getBytes());
-
-		get.addColumn("data".getBytes(), "track".getBytes());
-
-		if (StringUtils.isNotEmpty(pid)) {
-			get.addColumn("data".getBytes(), "deep".getBytes());
-		}
-
-		Result result = htab.get(get);
-
-		if (result.isEmpty()) {
-			return false;
-		}
-
-		Put put = new Put(rowkey.getBytes());
-
-		JSONObject track = JSONObject.fromObject(new String(result.getValue(
-				"data".getBytes(), "track".getBytes())));
-
-		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-//        int editStatus = json.getInt("editStatus");
-//        int editMeth = json.getInt("editMeth");
-
-        JSONObject jsonTrackInfo = new JSONObject();
-        if(mdFlag.equals("d")) {//日编
-            int oldEStatus = track.getInt("t_dEditStatus");
-            if (oldEStatus == 0 && editStatus != 0) {
-                jsonTrackInfo.put("stage", 2);
-            }
-            if(oldEStatus != 0 && editStatus == 0) {
-                jsonTrackInfo.put("stage", -1);
-            }
-            track.put("t_dEditStatus", editStatus);
-            track.put("t_dEditMeth", editMeth);
-        }else if(mdFlag.equals("m")) {//月编
-            int oldEStatus = track.getInt("t_mEditStatus");
-            if (oldEStatus == 0 && editStatus != 0) {
-                jsonTrackInfo.put("stage", 3);
-            }
-            if(oldEStatus != 0 && editStatus == 0) {
-                jsonTrackInfo.put("stage", -1);
-            }
-            track.put("t_mEditStatus", editStatus);
-            track.put("t_mEditMeth", editMeth);
-        }
-
-        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
-        if(jsonTrackInfo.containsKey("stage")) {
-            int curStage = jsonTrackInfo.getInt("stage");
-            if(trackInfoArr.size() == 0) {
-                // 更新hbase 增一个trackInfo
-                if(curStage != -1) {
-                    trackInfoArr.add(jsonTrackInfo);
-                }
-            }else {
-                int lastStage = lastTrack.getInt("stage");
-                if(lastStage == curStage) {//更新
-                    lastTrack.put("date", date);
-                    lastTrack.put("handler", handler);
-                    trackInfoArr.remove(trackInfoArr.size()-1);
-                    trackInfoArr.add(lastTrack);
-                }else{//新增
-                    if(curStage == -1 && trackInfoArr.size() >= 2) {
-                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
-                        int lastSecondStage = lastSecondTrack.getInt("stage");
-                        jsonTrackInfo.put("stage", lastSecondStage);
-                    }
-                    trackInfoArr.add(jsonTrackInfo);
-                }
-            }
-        } else {
-            lastTrack.put("date", date);
-            lastTrack.put("handler", handler);
-            trackInfoArr.remove(trackInfoArr.size()-1);
-            trackInfoArr.add(lastTrack);
-        }
-
-		track.put("t_trackInfo", trackInfoArr);
-
-		track.put("t_date", date);
-
-		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
-				.getBytes());
-
-		String newDeep = null;
-
-		if (StringUtils.isNotEmpty(pid)) {
-
-			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
-					"data".getBytes(), "deep".getBytes())));
-			if (deep.containsKey("id")) {
-				deep.put("id", String.valueOf(pid));
-
-				newDeep = deep.toString();
-
-				put.addColumn("data".getBytes(), "deep".getBytes(), deep
-						.toString().getBytes());
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+	
+			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+	
+			Get get = new Get(rowkey.getBytes());
+	
+			get.addColumn("data".getBytes(), "track".getBytes());
+	
+			if (StringUtils.isNotEmpty(pid)) {
+				get.addColumn("data".getBytes(), "deep".getBytes());
 			}
+	
+			Result result = htab.get(get);
+	
+			if (result.isEmpty()) {
+				return false;
+			}
+	
+			Put put = new Put(rowkey.getBytes());
+	
+			JSONObject track = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "track".getBytes())));
+	
+			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+	//        int editStatus = json.getInt("editStatus");
+	//        int editMeth = json.getInt("editMeth");
+	
+	        JSONObject jsonTrackInfo = new JSONObject();
+	        if(mdFlag.equals("d")) {//日编
+	            int oldEStatus = track.getInt("t_dEditStatus");
+	            if (oldEStatus == 0 && editStatus != 0) {
+	                jsonTrackInfo.put("stage", 2);
+	            }
+	            if(oldEStatus != 0 && editStatus == 0) {
+	                jsonTrackInfo.put("stage", -1);
+	            }
+	            track.put("t_dEditStatus", editStatus);
+	            track.put("t_dEditMeth", editMeth);
+	        }else if(mdFlag.equals("m")) {//月编
+	            int oldEStatus = track.getInt("t_mEditStatus");
+	            if (oldEStatus == 0 && editStatus != 0) {
+	                jsonTrackInfo.put("stage", 3);
+	            }
+	            if(oldEStatus != 0 && editStatus == 0) {
+	                jsonTrackInfo.put("stage", -1);
+	            }
+	            track.put("t_mEditStatus", editStatus);
+	            track.put("t_mEditMeth", editMeth);
+	        }
+	
+	        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+	        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
+	        if(jsonTrackInfo.containsKey("stage")) {
+	            int curStage = jsonTrackInfo.getInt("stage");
+	            if(trackInfoArr.size() == 0) {
+	                // 更新hbase 增一个trackInfo
+	                if(curStage != -1) {
+	                    trackInfoArr.add(jsonTrackInfo);
+	                }
+	            }else {
+	                int lastStage = lastTrack.getInt("stage");
+	                if(lastStage == curStage) {//更新
+	                    lastTrack.put("date", date);
+	                    lastTrack.put("handler", handler);
+	                    trackInfoArr.remove(trackInfoArr.size()-1);
+	                    trackInfoArr.add(lastTrack);
+	                }else{//新增
+	                    if(curStage == -1 && trackInfoArr.size() >= 2) {
+	                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
+	                        int lastSecondStage = lastSecondTrack.getInt("stage");
+	                        jsonTrackInfo.put("stage", lastSecondStage);
+	                    }
+	                    trackInfoArr.add(jsonTrackInfo);
+	                }
+	            }
+	        } else {
+	            lastTrack.put("date", date);
+	            lastTrack.put("handler", handler);
+	            trackInfoArr.remove(trackInfoArr.size()-1);
+	            trackInfoArr.add(lastTrack);
+	        }
+	
+			track.put("t_trackInfo", trackInfoArr);
+	
+			track.put("t_date", date);
+	
+			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+					.getBytes());
+	
+			String newDeep = null;
+	
+			if (StringUtils.isNotEmpty(pid)) {
+	
+				JSONObject deep = JSONObject.fromObject(new String(result.getValue(
+						"data".getBytes(), "deep".getBytes())));
+				if (deep.containsKey("id")) {
+					deep.put("id", String.valueOf(pid));
+	
+					newDeep = deep.toString();
+	
+					put.addColumn("data".getBytes(), "deep".getBytes(), deep
+							.toString().getBytes());
+				}
+			}
+//			JSONObject solrIndex = solr.getById(rowkey);
+			
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(oracleConn);
+			
+			TipsDao tips = tipsOp.getById(rowkey);
+			
+			List<TipsDao> newTis = new ArrayList<>();
+			
+			if(tips != null){
+		        if(jsonTrackInfo.containsKey("stage")) {
+		        	tips.setStage(jsonTrackInfo.getInt("stage"));
+		        }
+		        tips.setT_date(date);
+				if (mdFlag.equals("d")) {// 日编
+					tips.setT_dEditStatus(editStatus);
+					tips.setT_dEditMeth(editMeth);
+				} else if (mdFlag.equals("m")) {// 月编
+					tips.setT_mEditStatus(editStatus);
+					tips.setT_mEditMeth(editMeth);
+				}
+				tips.setHandler(handler);
+				if (newDeep != null) {
+					tips.setDeep(newDeep);
+				}
+				newTis.add(tips);
+			}
+			
+			tipsOp.update(newTis);
+			
+//	        if(jsonTrackInfo.containsKey("stage")) {
+//	            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+//	        }
+//	
+//			solrIndex.put("t_date", date);
+//	
+//	        if(mdFlag.equals("d")) {//日编
+//	            solrIndex.put("t_dEditStatus", editStatus);
+//	            solrIndex.put("t_dEditMeth", editMeth);
+//	        }else if(mdFlag.equals("m")) {//月编
+//	            solrIndex.put("t_mEditStatus", editStatus);
+//	            solrIndex.put("t_mEditMeth", editMeth);
+//	        }
+//	
+//			solrIndex.put("handler", handler);
+//	
+//			if (newDeep != null) {
+//				solrIndex.put("deep", newDeep);
+//			}
+//	
+//			solr.addTips(solrIndex);
+	
+			htab.put(put);
+	
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-
-		JSONObject solrIndex = solr.getById(rowkey);
-
-        if(jsonTrackInfo.containsKey("stage")) {
-            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
-        }
-
-		solrIndex.put("t_date", date);
-
-        if(mdFlag.equals("d")) {//日编
-            solrIndex.put("t_dEditStatus", editStatus);
-            solrIndex.put("t_dEditMeth", editMeth);
-        }else if(mdFlag.equals("m")) {//月编
-            solrIndex.put("t_mEditStatus", editStatus);
-            solrIndex.put("t_mEditMeth", editMeth);
-        }
-
-
-
-	/*	if (0 == lifecycle) {
-			solrIndex.put("t_lifecycle", 2);
-		}*/
-
-		solrIndex.put("handler", handler);
-
-		if (newDeep != null) {
-			solrIndex.put("deep", newDeep);
-		}
-
-		solr.addTips(solrIndex);
-
-		htab.put(put);
-
 		return true;
 	}
 
@@ -208,16 +247,24 @@ public class TipsOperator {
 			throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
+        java.sql.Connection conn = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
             htab = hbaseConn.getTable(TableName
                     .valueOf(HBaseConstant.tipTab));
 
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+
+			List<TipsDao> tips = new ArrayList<>();
+			List<Put> puts = new ArrayList<>();
             for (Object object : data) {
                 JSONObject json = JSONObject.fromObject(object);
 
                 String rowkey = json.getString("rowkey");
+
+				TipsDao tipsDao = operator.getById(rowkey);
 
                 // 1.获取到改前的 feddback和track （还有deep）
                 JSONObject oldTip = getOldTips(rowkey, htab);
@@ -238,7 +285,9 @@ public class TipsOperator {
                 int editMeth = json.getInt("editMeth");
                 if (mdFlag.equals("d")) {//日编
                     value.put("t_dEditStatus", editStatus);
+					tipsDao.setT_dEditStatus(editStatus);
                     value.put("t_dEditMeth", editMeth);
+                    tipsDao.setT_dEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_dEditStatus");
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 2);
@@ -248,7 +297,9 @@ public class TipsOperator {
                     }
                 } else if (mdFlag.equals("m")) {//月编
                     value.put("t_mEditStatus", editStatus);
+                    tipsDao.setT_mEditStatus(editStatus);
                     value.put("t_mEditMeth", editMeth);
+                    tipsDao.setT_mEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_mEditStatus");
                     if (oldEStatus == 0 && editStatus != 0) {
                         jsonTrackInfo.put("stage", 3);
@@ -261,18 +312,29 @@ public class TipsOperator {
                 jsonTrackInfo.put("handler", handler);
 
                 value.put("t_date", date);
+                tipsDao.setT_date(date);
 
                 value.put("t_trackInfo", jsonTrackInfo);
 
                 updateKeyValues.put("track", value);
 
-                Put put = updateTips(rowkey, oldTip, updateKeyValues);
+                Put put = updateTips(rowkey, oldTip, updateKeyValues, tipsDao);
 
-                htab.put(put);
+                tips.add(tipsDao);
+				puts.add(put);
             }
+
+            if(tips.size()>0){
+            	operator.update(tips);
+			}
+			if(puts.size()>0) {
+				htab.put(puts);
+			}
         }catch (Exception e) {
             e.printStackTrace();
-        }finally {
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally {
+        	DbUtils.commitAndCloseQuietly(conn);
             if(htab != null) {
                 htab.close();
             }
@@ -293,7 +355,7 @@ public class TipsOperator {
 	 * @throws Exception
 	 * @time:2017-2-8 下午3:44:46
 	 */
-	private Put updateTips(String rowkey, JSONObject oldTip, JSONObject updateKeyValues)
+	private Put updateTips(String rowkey, JSONObject oldTip, JSONObject updateKeyValues, TipsDao tipsDao)
 			throws Exception {
 
 		Set<String> updateAttKeys = updateKeyValues.keySet(); // 被修改的属性
@@ -388,7 +450,7 @@ public class TipsOperator {
 				// 且source_type：solr怎么更新,如果更新的是坐标。。。那么wkt要维护
 
 				// 根据修改的字段，更新solr
-				updateSorlIndex(rowkey, updateKeyValues);
+				updateSorlIndex(tipsDao, updateKeyValues);
 
                 return put;
 
@@ -407,18 +469,14 @@ public class TipsOperator {
 
 	/**
 	 * @Description:根据修改后的字段，更新solr信息
-	 * @param rowkey
+	 * @param tipsDao
 	 * @param updateKeyValues
 	 *            ，修改了的字段。json对象
 	 * @author: y
 	 * @throws Exception 
 	 * @time:2017-2-9 上午10:02:10
 	 */
-	private void updateSorlIndex(String rowkey, JSONObject updateKeyValues) throws Exception {
-
-		// 获取solr数据
-		JSONObject solrIndex = solr.getById(rowkey);
-
+	private TipsDao updateSorlIndex(TipsDao tipsDao, JSONObject updateKeyValues) throws Exception {
 		// 更新字段
 		Set<String> updateAttKeys = updateKeyValues.keySet(); // 被修改的属性
 		for (String key : updateAttKeys) {
@@ -432,23 +490,10 @@ public class TipsOperator {
 						.getJSONObject("t_trackInfo");
 
                 if(jsonTrackInfo.containsKey("stage")) {
-                    solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+					tipsDao.setStage(jsonTrackInfo.getInt("stage"));
                 }
 
-				solrIndex.put("handler", jsonTrackInfo.getInt("handler"));
-
-				Set<String> updateTrackFiledsName = trackValues.keySet(); // 被修改的track属性
-
-				// 1.2更新track的其他字段
-				for (String filedName : updateTrackFiledsName) {
-
-					if ("t_trackInfo".equals(filedName)) {
-						continue;
-					}
-
-					solrIndex.put(filedName, trackValues.get(filedName));
-
-				}
+				tipsDao.setHandler(jsonTrackInfo.getInt("handler"));
 			}
 
 			// 暂时不修改，待补充 ??????????????????
@@ -459,12 +504,12 @@ public class TipsOperator {
 			// 暂时不修改，待完善，编辑端给的是不是编辑后合并好的，如果不是需要在这里用旧的tips信息进行合并 ?????????
 			if ("feedback".equals(key)) {
 
-				solrIndex.put("feedback", updateKeyValues.get(key));
+				tipsDao.setFeedback(updateKeyValues.get(key).toString());
 			}
 
 			if ("deep".equals(key)) {
 
-				solrIndex.put("deep", updateKeyValues.get(key));
+				tipsDao.setDeep(updateKeyValues.get(key).toString());
 			}
 			
 			//?????????有没有其他要改的？
@@ -474,25 +519,23 @@ public class TipsOperator {
 
 				if (geoJson.containsKey("g_location")) {
 
-					solrIndex.put("g_location", geoJson.get("g_location"));
+					tipsDao.setG_location(geoJson.get("g_location").toString());
 				}
 
 				if (geoJson.containsKey("g_guide")) {
 
-					solrIndex.put("g_guide", geoJson.get("g_guide"));
+					tipsDao.setG_guide(geoJson.get("g_guide").toString());
 				}
 
-				solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(solrIndex
-						.getString("s_sourceType"),
-						JSONObject.fromObject(solrIndex.get("deep")),
-						JSONObject.fromObject(solrIndex.get("g_location")),
-						JSONObject.fromObject(solrIndex.get("feedback"))));
+				tipsDao.setWkt(TipsImportUtils.generateSolrWkt(tipsDao.getS_sourceType(),
+						JSONObject.fromObject(tipsDao.getDeep()),
+						JSONObject.fromObject(tipsDao.getG_location()),
+						JSONObject.fromObject(tipsDao.getFeedback())));
 			}
 			
 		}
 
-		solr.addTips(solrIndex);
-
+		return tipsDao;
 	}
 
 	/**
@@ -584,23 +627,20 @@ public class TipsOperator {
 		String  rowkey="";
 		List<Put> puts=new ArrayList<>();
 		Connection hbaseConn = null;
-
+		java.sql.Connection tipsConn=null;
 		Table htab = null;
 		try {
 			
 			hbaseConn=HBaseConnector.getInstance().getConnection();
+			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
+			htab=hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			
-			htab=hbaseConn
-					.getTable(TableName.valueOf(HBaseConstant.tipTab));
-			
-			List<JSONObject> tipsList=selector.getTipsByTaskId(sQTaskId, TaskType.Q_TASK_TYPE);
-			for (JSONObject json : tipsList) {
+			List<TipsDao> tipsList=selector.getTipsByTaskId(tipsConn,sQTaskId, TaskType.Q_TASK_TYPE);
+			for (TipsDao json : tipsList) {
 				
-				rowkey=json.getString("id");
+				rowkey=json.getId();
 				
-				String wkt=json.getString("wkt");
-				
-				Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
+				Geometry geo =json.getWkt();
 				
 				Set<String> gridSet=TipsGridCalculate.calculate(geo);
 				
@@ -618,9 +658,7 @@ public class TipsOperator {
 				
 				//1.update solr
 				
-				json.put("s_mTaskId", mTaskId);
-				
-				solr.addTips(json);
+				json.setS_mTaskId(mTaskId);
 				
 				//2.update hbase
 				Get get = new Get(rowkey.getBytes());
@@ -645,12 +683,17 @@ public class TipsOperator {
 			}
 			
 			htab.put(puts);
-			
-			htab.close();
-			
+			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+			operator.update(tipsList);
 		} catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
 			logger.error("快转中：更新中线出错："+e.getMessage(), e);
 			throw new Exception("快转中：更新中线出错："+e.getMessage(), e);
+		}finally {
+            DbUtils.commitAndCloseQuietly(tipsConn);
+			if(htab != null) {
+                htab.close();
+            }
 		}
 		
 		
@@ -668,9 +711,13 @@ public class TipsOperator {
         Connection hbaseConn = null;
         Table htab = null;
         List<Put> puts = new ArrayList<>();
+        java.sql.Connection conn=null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            conn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+            List<TipsDao> tipsDaos = new ArrayList<>();
             for (String rowkey : tips) {
                 //更新hbase
                 Get get = new Get(rowkey.getBytes());
@@ -685,18 +732,24 @@ public class TipsOperator {
                 puts.add(put);
 
                 //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("s_qTaskId", taskId);
-                solrIndex.put("s_qSubTaskId", subtaskId);
-                solr.addTips(solrIndex);
+				TipsDao tipsDao = operator.getById(rowkey);
+				tipsDao.setS_qTaskId(taskId);
+				tipsDao.setS_qSubTaskId(subtaskId);
+                tipsDaos.add(tipsDao);
             }
+            operator.update(tipsDaos);
             htab.put(puts);
-            htab.close();
         }catch (Exception e) {
+        	DbUtils.rollbackAndCloseQuietly(conn);
             logger.error("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
-        }
-    }
+        }finally {
+        	DbUtils.commitAndCloseQuietly(conn);
+        	if(htab!=null){
+        		htab.close();
+			}
+		}
+	}
 
     /**
      * tips无任务批中线任务号api
@@ -706,56 +759,66 @@ public class TipsOperator {
      */
     public long batchNoTaskDataByMidTask(String wkt, int midTaskId)
             throws Exception {
-        StringBuilder builder = new StringBuilder();
-        builder.append("wkt:\"intersects(");
-        builder.append(wkt);
-        builder.append(")\"");
-        builder.append(" AND s_qTaskId:0");
-        builder.append(" AND s_mTaskId:0");
+        StringBuilder builder = new StringBuilder("select * from tips_index i where (");
+        
+        builder.append("s_qTaskId=0");
+        builder.append(" AND s_mTaskId=0");
         //20170615 过滤内业Tips
         builder.append(" AND ");
-        builder.append("-s_sourceType:80*");
+        builder.append("s_sourceType not like '80%' ");
         builder.append(" AND ");
-        builder.append("t_tipStatus:2");
+        builder.append("t_tipStatus=2");
+        builder.append(") and ");
+        
+        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 
         Connection hbaseConn = null;
+        java.sql.Connection tipsConn=null;
         Table htab = null;
-        List<Put> puts = new ArrayList<>();
+        java.sql.Connection oracleConn = null;
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
-            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), null);
-            long totalNum = sdList.getNumFound();
-            if (totalNum <= fetchNum) {
-                for (int i = 0; i < totalNum; i++) {
-                    SolrDocument doc = sdList.get(i);
-                    JSONObject snapshot = JSONObject.fromObject(doc);
-                    String rowkey = snapshot.getString("id");
-                    //更新hbase
-                    Get get = new Get(rowkey.getBytes());
-                    Result result = htab.get(get);
-                    JSONObject source = JSONObject.fromObject(new String(result.getValue(
-                            "data".getBytes(), "source".getBytes())));
-                    Put put = new Put(rowkey.getBytes());
-                    source.put("s_mTaskId", midTaskId);
-                    put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
-                            .getBytes());
-                    puts.add(put);
 
-                    //更新solr
-                    JSONObject solrIndex = solr.getById(rowkey);
-                    solrIndex.put("s_mTaskId", midTaskId);
-                    solr.addTips(solrIndex);
-                }
-            } else {
-                // 暂先不处理
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
+            TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
+            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), wkt);
+
+            if (CollectionUtils.isEmpty(tipsDaos)) {
+                return 0;
+            }
+            List<Put> puts = new ArrayList<>();
+            List<TipsDao> solrIndexList = new ArrayList<>();
+            for (TipsDao snapshot:tipsDaos) {
+                String rowkey = snapshot.getId();
+                //更新hbase
+                Get get = new Get(rowkey.getBytes());
+                Result result = htab.get(get);
+                JSONObject source = JSONObject.fromObject(new String(result.getValue("data".getBytes(), "source".getBytes())));
+                Put put = new Put(rowkey.getBytes());
+                source.put("s_mTaskId", midTaskId);
+                put.addColumn("data".getBytes(), "source".getBytes(), source.toString().getBytes());
+                puts.add(put);
+
+                //更新solr
+                TipsDao solrIndex = oracleOperator.getById(rowkey);
+                solrIndex.setS_mTaskId(midTaskId);
+                solrIndexList.add(solrIndex);
             }
             htab.put(puts);
-            htab.close();
-            return totalNum;
+            oracleOperator.update(solrIndexList);
+            return tipsDaos.size();
         }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
             logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
             throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
+        }finally {
+        	DbUtils.commitAndCloseQuietly(oracleConn);
+            if(htab != null) {
+                htab.close();
+            }
         }
     }
 

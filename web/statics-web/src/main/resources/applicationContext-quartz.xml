@@ -17,7 +17,7 @@
 <!--                 <ref bean="poiDayStatics_Trigger" /> -->
                 <ref bean="poiDayStat_Trigger" />
                 <ref bean="poiMonthStat_Trigger" />
-                <ref bean="poiQualityInitCountTable_Trigger" />
+<!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
             </list>
         </property>
         <property name="quartzProperties">
@@ -102,11 +102,11 @@
         <property name="jobDetail" ref="poiMonthStat_detail" />
         <property name="cronExpression" value="0 * * * * ?" />
     </bean>
-    <bean id="poiQualityInitCountTable_Trigger"
-          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="poiQualityInitCountTable_detail" />
-        <property name="cronExpression" value="0 0 11 * * ?" />
-    </bean>
+<!--     <bean id="poiQualityInitCountTable_Trigger" -->
+<!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
+<!--         <property name="jobDetail" ref="poiQualityInitCountTable_detail" /> -->
+<!--         <property name="cronExpression" value="0 0 * * * ?" /> -->
+<!--     </bean> -->
     
     <!--  外业生产时长监控 -->
     <bean id="poiDayStatics_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -124,16 +124,16 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
-    <bean id="poiQualityInitCountTable_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="poiQualityInitCountTable" />
-        <property name="targetMethod" value="start" />
-        <property name="concurrent" value="false" />
-    </bean>
+<!--     <bean id="poiQualityInitCountTable_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> -->
+<!--         <property name="targetObject" ref="poiQualityInitCountTable" /> -->
+<!--         <property name="targetMethod" value="start" /> -->
+<!--         <property name="concurrent" value="false" /> -->
+<!--     </bean> -->
    
 	<!--  业务逻辑处理类 -->
 	<bean id="poiDayStatics" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsStarter"/>
 	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
 	<bean id="poiMonthStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiMonthStatStarter"/>
-	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/>
+<!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
 	
 </beans>

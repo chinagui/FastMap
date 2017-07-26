@@ -51,7 +51,7 @@ public class SubtaskTest extends InitApplication{
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
 		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
-		String parameter ="{\"id1\":263,\"id2\":264}"; 
+		String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -68,7 +68,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":135,\"name\":\"北京市北京市通州区郊区郊区_20170503_韩雪松\",\"status\":2,\"type\":0,\"referId\":100,\"stage\":0,\"descp\":\"不规则圈\",\"workKind\":1,\"planStartDate\":\"20170712\",\"planEndDate\":\"20170712\",\"exeUserId\":1664,\"hasQuality\":0}";
+		String parameter ="{\"taskId\":78,\"name\":\"北京市北京市城区西站南站20170427_韩雪松\",\"status\":2,\"type\":1,\"stage\":0,\"descp\":\"\",\"workKind\":1,\"planStartDate\":\"20170720\",\"planEndDate\":\"20170720\",\"exeUserId\":1664,\"hasQuality\":0,\"referId\":499}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -83,7 +83,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testPushMsg() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="[572]";
+		String parameter ="[1254]";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -93,10 +93,10 @@ public class SubtaskTest extends InitApplication{
 		System.out.print(mString);
 	}	
 	
-//	@Test
+	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(362,1);
+		Map<String, Object> result = service.query(584,1);
 		System.out.print(result);
 	}
 	@Test
@@ -203,7 +203,7 @@ public class SubtaskTest extends InitApplication{
 	//创建质检圈(测试)
 	@Test
 	public void testQualityCreate() throws Exception {
-		String parameter = "{\"subtaskId\":178,\"geometry\":\"POLYGON((116.34384155273436 39.889718875996685,116.33079528808595 39.86653357724533,116.3733673095703 39.88128876522249,116.35276794433594 39.892353073034826,116.34384155273436 39.889718875996685))\"}";
+		String parameter = "{\"subtaskId\":184,\"geometry\":\"POLYGON((116.29989624023439 39.891826241725596,116.29714965820311 39.86600654754002,116.35139465332031 39.87338459498892,116.29989624023439 39.891826241725596))\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}

@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.Job;
 import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.navicommons.database.QueryRunner;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import java.sql.Connection;
@@ -58,7 +58,7 @@ public class JobOperator {
      */
     public Job getLatestJob(long itemId, ItemType itemType, final JobType jobType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=?";
+
         ResultSetHandler<Job> resultSetHandler = new ResultSetHandler<Job>() {
             @Override
             public Job handle(ResultSet rs) throws SQLException {
@@ -70,7 +70,13 @@ public class JobOperator {
                 return null;
             }
         };
-        return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+        if(jobType==JobType.DAY2MONTH && itemType==ItemType.LOT){
+            String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_type=? and j.type=?";
+            return run.query(conn, sql, resultSetHandler, itemType.value(), jobType.value());
+        }else {
+            String sql = "select j.* from job j,job_relation jr where j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=?";
+            return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+        }
     }
 
     public Job getByJobId(long jobId) throws SQLException {
@@ -133,10 +139,20 @@ public class JobOperator {
         run.update(conn, sql, status.value(), phaseId);
     }
 
-    public void updateLatest(long jobId, int latest) throws SQLException {
+    public void clearLatestJob(long jobId) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "update job set latest=? where job_id=?";
-        run.update(conn, sql, latest, jobId);
+        String sql = "update job set latest=0 where job_id=?";
+        run.update(conn, sql, jobId);
+    }
+
+    /**
+     * 清空按批次日落月的job的latest
+     * @throws SQLException
+     */
+    public void clearLatestJobs() throws SQLException {
+        QueryRunner run = new QueryRunner();
+        String sql = "UPDATE JOB J SET J.LATEST=0 WHERE EXISTS(SELECT NULL FROM JOB_RELATION JR WHERE JR.JOB_ID=J.JOB_ID AND JR.ITEM_TYPE=4) AND J.TYPE=2";
+        run.update(conn, sql);
     }
 
     /**
@@ -149,7 +165,6 @@ public class JobOperator {
      */
     public JSONArray getJobProgressStatus(long itemId, ItemType itemType, JobType jobType) throws SQLException {
         QueryRunner run = new QueryRunner();
-        String sql = "select jp.phase_id,jp.phase,jp.status,jp.out_parameter from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=? order by phase asc";
 
         ResultSetHandler<JSONArray> resultSetHandler = new ResultSetHandler<JSONArray>() {
             @Override
@@ -166,6 +181,34 @@ public class JobOperator {
                 return array;
             }
         };
+
+        String sql = "select jp.phase_id,jp.phase,jp.status,jp.out_parameter from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and j.latest=1 and jr.item_id=? and jr.item_type=? and j.type=? order by phase asc";
         return run.query(conn, sql, resultSetHandler, itemId, itemType.value(), jobType.value());
+    }
+
+    /**
+     * 获取按批次日落月的进度
+     * @return
+     * @throws SQLException
+     */
+    public JSONObject getDay2MonthLotJobProgressStatus() throws SQLException {
+        QueryRunner run = new QueryRunner();
+
+        ResultSetHandler<JSONObject> resultSetHandler = new ResultSetHandler<JSONObject>() {
+            @Override
+            public JSONObject handle(ResultSet rs) throws SQLException {
+                if (rs.next()) {
+                    JSONObject json = new JSONObject();
+                    json.put("phaseId", rs.getLong("phase_id"));
+                    json.put("status", rs.getInt("status"));
+                    json.put("message", rs.getString("out_parameter"));
+                    json.put("lot", rs.getInt("item_id"));
+                    return json;
+                }
+                return null;
+            }
+        };
+        String sql = "select jp.phase_id,jp.status,jp.out_parameter,jr.item_id from job_progress jp,job_relation jr,job j where jp.job_id=jr.job_id and j.job_id=jr.job_id and jp.phase=1 and j.latest=1 and jr.item_type=4 and j.type=2 order by phase_id desc";
+        return run.query(conn, sql, resultSetHandler);
     }
 }

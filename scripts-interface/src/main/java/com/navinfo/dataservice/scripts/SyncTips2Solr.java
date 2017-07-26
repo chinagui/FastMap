@@ -28,8 +28,10 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.navinfo.dataservice.engine.fcc.tips.TipsLineRelateQuery;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
@@ -49,19 +51,18 @@ public class SyncTips2Solr {
 	
 	public static Logger log = Logger.getLogger(SyncTips2Solr.class);
 	
+	protected static Set<String> syncCols = new HashSet<String>();
 	protected static int total=0;
 	protected static VMThreadPoolExecutor poolExecutor;
 	
-	
-	
 	private String index;
 	private String tableName;
-	private SolrController sc;
+	private SolrBulkUpdater sbu;
 	
 	public SyncTips2Solr(String tableName,String index){
 		this.tableName=tableName;
 		this.index=index;
-		sc=new SolrController();
+		sbu=new SolrBulkUpdater(TipsImportUtils.QueueSize, TipsImportUtils.ThreadCount);
 	}
 	
 	public void doSync()throws Exception{
@@ -80,13 +81,19 @@ public class SyncTips2Solr {
 		int num=0;
 		while ((results = rs.next(5000)).length > 0){
 			for (Result result : results){
-				sc.addTips(convert(result));
+				try{
+					sbu.addTips(convert(result));
+				}catch(Exception e){
+					log.error(e.getMessage(),e);
+				}
 				num++;
-				if(num%1000==0){
+				if(num%10000==0){
+					sbu.commit();
 					log.info("index:"+index+",num:"+num);
 				}
 			}
 		}
+		sbu.commit();
 		setTotal(index,num);
 		htab.close();
 	}
@@ -101,7 +108,7 @@ public class SyncTips2Solr {
 			//rowkey
 			json.put("id", Bytes.toString(result.getRow()));
 			
-			log.info("rowkey:"+Bytes.toString(result.getRow()));
+			//log.info("rowkey:"+Bytes.toString(result.getRow()));
 			
 			//显示坐标
 			String geoString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("geometry")));
@@ -110,9 +117,15 @@ public class SyncTips2Solr {
 			Geometry locationGeo = GeoTranslator.geojson2Jts(locationJSON);
 			String locationWkt = GeoTranslator.jts2Wkt(locationGeo);
 			JSONObject guideJSON = geoJSON.getJSONObject("g_guide");
-			json.put("wktLocation", locationWkt);
-			json.put("g_location", locationJSON);
-			json.put("g_guide", guideJSON);
+			if(syncCols.contains("wktLocation")){
+				json.put("wktLocation", locationWkt);
+			}
+			if(syncCols.contains("g_location")){
+				json.put("g_location", locationJSON);
+			}
+			if(syncCols.contains("g_guide")){
+				json.put("g_guide", guideJSON);
+			}
 			
 			//track
 			String trackString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("track")));
@@ -125,14 +138,30 @@ public class SyncTips2Solr {
 			int mEditMeth = trackJSON.getInt("t_mEditMeth");
 			int mEditStatus = trackJSON.getInt("t_mEditStatus");
 			int tipStatus = trackJSON.getInt("t_tipStatus");
-			json.put("t_date", tDate);
-			json.put("t_lifecycle", lifecycle);
-			json.put("t_command", command);
-			json.put("t_dEditMeth", dEditMeth);
-			json.put("t_dEditStatus", dEditStatus);
-			json.put("t_mEditMeth", mEditMeth);
-			json.put("t_mEditStatus", mEditStatus);
-			json.put("t_tipStatus", tipStatus);
+			if(syncCols.contains("t_date")){
+				json.put("t_date", tDate);
+			}
+			if(syncCols.contains("t_lifecycle")){
+				json.put("t_lifecycle", lifecycle);
+			}
+			if(syncCols.contains("t_command")){
+				json.put("t_command", command);
+			}
+			if(syncCols.contains("t_dEditMeth")){
+				json.put("t_dEditMeth", dEditMeth);
+			}
+			if(syncCols.contains("t_dEditStatus")){
+				json.put("t_dEditStatus", dEditStatus);
+			}
+			if(syncCols.contains("t_mEditMeth")){
+				json.put("t_mEditMeth", mEditMeth);
+			}
+			if(syncCols.contains("t_mEditStatus")){
+				json.put("t_mEditStatus", mEditStatus);
+			}
+			if(syncCols.contains("t_tipStatus")){
+				json.put("t_tipStatus", tipStatus);
+			}
 			
 			//track履历
 			JSONArray trackInfoArray = trackJSON.getJSONArray("t_trackInfo");
@@ -145,9 +174,15 @@ public class SyncTips2Solr {
 				tOperateDate = lastTrack.getString("date");
 				handler = lastTrack.getInt("handler");
 			}
-			json.put("t_operateDate", tOperateDate);
-			json.put("stage", stage);
-			json.put("handler", handler);
+			if(syncCols.contains("t_operateDate")){
+				json.put("t_operateDate", tOperateDate);
+			}
+			if(syncCols.contains("stage")){
+				json.put("stage", stage);
+			}
+			if(syncCols.contains("handler")){
+				json.put("handler", handler);
+			}
 			
 			//source
 			String sourceString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("source")));
@@ -159,18 +194,35 @@ public class SyncTips2Solr {
 			int mTaskId = sourceJSON.getInt("s_mTaskId");
 			int qSubTaskId = sourceJSON.getInt("s_qSubTaskId");
 			int mSubTaskId = sourceJSON.getInt("s_mSubTaskId");
-			json.put("s_sourceType", sourceType);
-			json.put("s_sourceCode", sourceCode);
-			json.put("s_reliability", reliability);
-			json.put("s_qTaskId", qTaskId);
-			json.put("s_mTaskId", mTaskId);
-			json.put("s_qSubTaskId", qSubTaskId);
-			json.put("s_mSubTaskId", mSubTaskId);
+			if(syncCols.contains("s_sourceType")){
+				json.put("s_sourceType", sourceType);
+			}
+			if(syncCols.contains("s_sourceCode")){
+				json.put("s_sourceCode", sourceCode);
+			}
+			if(syncCols.contains("s_reliability")){
+				json.put("s_reliability", reliability);
+			}
+			if(syncCols.contains("s_qTaskId")){
+				json.put("s_qTaskId", qTaskId);
+			}
+			if(syncCols.contains("s_mTaskId")){
+				json.put("s_mTaskId", mTaskId);
+			}
+			if(syncCols.contains("s_qSubTaskId")){
+				json.put("s_qSubTaskId", qSubTaskId);
+			}
+			if(syncCols.contains("s_mSubTaskId")){
+				json.put("s_mSubTaskId", mSubTaskId);
+			}
 			
 			//统计坐标
 			String wkt = locationWkt;
 			String deepString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("deep")));
-			json.put("deep", deepString);
+
+			if(syncCols.contains("deep")){
+				json.put("deep", deepString);
+			}
 			JSONObject deepJSON  = JSONObject.fromObject(deepString);
 			if(TipsStatConstant.gSLocTipsType.contains(sourceType)) {
 				JSONObject gSLocJSON = deepJSON.getJSONObject("gSLoc");
@@ -181,22 +233,33 @@ public class SyncTips2Solr {
 				Geometry ggeoGeo = GeoTranslator.geojson2Jts(ggeoJSON);
 				wkt = GeoTranslator.jts2Wkt(ggeoGeo);
 			}
-			json.put("wkt", wkt);
+			if(syncCols.contains("wkt")){
+				json.put("wkt", wkt);
+			}
 			
 			
 			String feedbackString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("feedback")));
-			json.put("feedback", feedbackString);
+			if(syncCols.contains("feedback")){
+				json.put("feedback", feedbackString);
+			}
 			
 			Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deepJSON);
-			json.put("relate_links", relateMap.get("relate_links"));
-			json.put("relate_nodes", relateMap.get("relate_nodes"));
+
+			if(syncCols.contains("relate_links")){
+				json.put("relate_links", relateMap.get("relate_links"));
+			}
+			if(syncCols.contains("relate_nodes")){
+				json.put("relate_nodes", relateMap.get("relate_nodes"));
+			}
 			
 			String diffString = JSON.NULL;
 			byte[] diffBytes = result.getValue(Bytes.toBytes("data"), Bytes.toBytes("tiffDiff"));
 			if(diffBytes != null) {
 				diffString = Bytes.toString(diffBytes);
 			}
-			json.put("tipdiff", diffString);
+			if(syncCols.contains("tipdiff")){
+				json.put("tipdiff", diffString);
+			}
 			
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
@@ -287,17 +350,20 @@ public class SyncTips2Solr {
 	 */
 	public static void main(String[] args) {
 		try{
-			Map<String,String> map = new HashMap<String,String>();
-			if(args.length!=2){
-				System.out.println("ERROR:need args:-ihtable xxx");
+			if(args.length<2){
+				System.out.println("ERROR:need args:htable col1[ col2 col3]");
 				return;
 			}
-			for(int i=0; i<args.length;i+=2){
-			        map.put(args[i], args[i+1]);
-		    }
-			String ihtable = map.get("-ihtable");
+			String ihtable = args[0];
 			if(StringUtils.isEmpty(ihtable)){
-				System.out.println("ERROR:need args:-ihtable xxx");
+				System.out.println("ERROR:need args:htable col1[ col2 col3]");
+				return;
+			}
+			for(int i=1; i<args.length;i++){
+				syncCols.add(args[i]);
+		    }
+			if(syncCols.size()==0){
+				System.out.println("ERROR:need args:htable col1[ col2 col3]");
 				return;
 			}
 			initPoolExecutor();

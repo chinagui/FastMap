@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2011-06-16 highway提取 -->
+<sqls>
+
+	<!--///////////////////////////////////////////////////土地覆盖///////////////////////////////////////////////////////// -->
+	<feature name="HW">
+		<!-- 高速提取原则: 1.提取原则和CRF一致 2.根据node和link提取设施 3.根据设施提取其它设施 4.提取设施关联属性 -->
+
+		<step value="13">
+			<!--HW_POSITION LINK_PID -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_POSITION
+                          (PID)
+                         (SELECT P.POSITION_PID
+                              FROM HW_POSITION P, TEMP_FILTER_RD_LINK T
+                             WHERE P.LINK_PID = T.PID);
+                        ]]></sql>
+			<!--HW_POSITION NODE_PID -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_POSITION
+                          (PID)
+                         (SELECT P.POSITION_PID
+                              FROM HW_POSITION P, TEMP_FILTER_RD_NODE T
+                             WHERE P.NODE_PID = T.PID);
+
+                        ]]></sql>
+
+
+			<!--HW_ROUTE LINK_PID -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_ROUTE
+                          (PID)
+                         (SELECT P.ROUTE_PID
+                              FROM HW_ROUTE P, TEMP_FILTER_RD_LINK T
+                             WHERE P.LINK_PID = T.PID
+                          );
+                        ]]></sql>
+			<!--HW_ROUTE NODE_PID -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_ROUTE
+                          (PID)
+                         (SELECT P.ROUTE_PID
+                              FROM HW_ROUTE P, TEMP_FILTER_RD_NODE T
+                             WHERE P.NODE_PID = T.PID
+                          );
+                        ]]></sql>
+		</step>
+
+		<step value="16">
+			<!--TEMP_HW_ESTAB -->
+			<sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                        INTO TEMP_HW_ESTAB
+                          (PID)
+                         (SELECT P.ESTAB_PID
+                              FROM HW_ESTAB_ROUTE_POS P, TEMP_HW_POSITION T
+                             WHERE P.POSITION_PID = T.PID
+                          );
+                    ]]></sql>
+
+			<!--TEMP_HW_ESTAB -->
+			<sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                        INTO TEMP_HW_ESTAB
+                          (PID)
+                         (SELECT P.ESTAB_PID
+                              FROM HW_ESTAB_ROUTE_POS P, TEMP_HW_ROUTE T
+                             WHERE P.ROUTE_PID = T.PID
+                          );
+                    ]]></sql>
+		</step>
+
+
+
+
+		<step value="19">
+			<!--TEMP_HW_ESTAB去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HW_ESTAB A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HW_ESTAB B WHERE A.PID = B.PID);
+                    ]]></sql>
+		</step>
+
+		<!--查找主并设施 -->
+		<step value="22">
+			<!--根据HW_ID查找并表设施 -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_ESTAB
+                          (PID)
+                         ( SELECT C.ESTAB_PID
+                           FROM HW_ESTAB_MAIN M, HW_ESTAB_CONTAIN C, TEMP_HW_ESTAB T
+                          WHERE M.GROUP_ID = C.GROUP_ID
+                            AND M.ESTAB_PID = T.PID
+                         UNION ALL
+                         SELECT M.ESTAB_PID
+                           FROM HW_ESTAB_MAIN M, HW_ESTAB_CONTAIN C, TEMP_HW_ESTAB T
+                          WHERE M.GROUP_ID = C.GROUP_ID
+                            AND C.ESTAB_PID = T.PID
+                         );
+                        ]]></sql>
+		</step>
+
+		<step value="25">
+			<!--TEMP_HW_ESTAB去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HW_ESTAB A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HW_ESTAB B WHERE A.PID = B.PID);
+                    ]]></sql>
+		</step>
+		<step value="28">
+			<!--TEMP_HW_ESTAB去 0 和-1 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HW_ESTAB A WHERE (A.PID=0 OR A.PID=-1);
+                    ]]></sql>
+		</step>
+
+
+		<!--查找rd_link -->
+		<step value="31">
+			<!--补充HW_POSITION -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_POSITION
+                          (PID)
+                         (SELECT P.POSITION_PID
+                              FROM HW_ESTAB_ROUTE_POS P, TEMP_HW_ESTAB T
+                             WHERE P.ESTAB_PID = T.PID);
+                        ]]></sql>
+			<!--补充HW_ROUTE -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HW_ROUTE
+                          (PID)
+                         (SELECT P.ROUTE_PID
+                              FROM HW_ESTAB_ROUTE_POS P, TEMP_HW_ESTAB T
+                             WHERE P.ESTAB_PID = T.PID);
+                        ]]></sql>
+
+		</step>
+		<step value="34">
+			<!--TEMP_HW_POSITION去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HW_POSITION A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HW_POSITION B WHERE A.PID = B.PID);
+                    ]]></sql>
+			<!--TEMP_HW_ROUTE去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HW_ROUTE A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HW_ROUTE B WHERE A.PID = B.PID);
+                    ]]></sql>
+		</step>
+		<step value="37">
+			<!--补充HW_POSITION组成要素：rd_link -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM HW_POSITION P, TEMP_HW_POSITION T
+                        WHERE P.POSITION_PID = T.PID);
+                    ]]></sql>
+
+			<!--补充HW_POSITION组成要素：rd_node -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM HW_POSITION P, TEMP_HW_POSITION T
+                        WHERE P.POSITION_PID = T.PID);
+                    ]]></sql>
+			<!--补充HW_ESTAB_JCT组成要素：JCTLINK_PID -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.JCTLINK_PID
+                         FROM HW_ESTAB_JCT P, TEMP_HW_ESTAB T
+                        WHERE P.S_ESTAB_PID = T.PID
+                      	union all   
+                       SELECT P.JCTLINK_PID
+                         FROM HW_ESTAB_JCT P, TEMP_HW_ESTAB T
+                        WHERE P.E_ESTAB_PID = T.PID 
+                        );
+                    ]]></sql>
+
+
+			<!--补充HW_ROUTE组成要素：rd_link -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM HW_ROUTE P, TEMP_HW_ROUTE T
+                        WHERE P.ROUTE_PID = T.PID);
+                    ]]></sql>
+
+			<!--补充HW_ROUTE组成要素：rd_NODE -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM HW_ROUTE P, TEMP_HW_ROUTE T
+                        WHERE P.ROUTE_PID = T.PID);
+                    ]]></sql>
+		</step>
+
+		<!--查找HWY_JUNCTION -->
+		<step value="13">
+			<sql ><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HWY_JUNCTION
+                          (PID)
+                         (SELECT P.JUNC_PID
+                              FROM HWY_JUNCTION P, TEMP_FILTER_RD_LINK T
+                             WHERE P.IN_LINK_PID = T.PID 
+                          UNION 
+                          SELECT P1.JUNC_PID
+                              FROM HWY_JUNCTION P1, TEMP_FILTER_RD_LINK T1
+                             WHERE P1.OUT_LINK_PID = T1.PID);
+                        ]]></sql>
+       </step>
+       <step value="14">
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HWY_JCT	
+                          (PID)
+                         (SELECT distinct P.JCT_PID
+                              FROM HWY_JCT P, TEMP_HWY_JUNCTION T
+                             WHERE P.S_JUNC_PID = T.PID
+                          union
+                           SELECT distinct P.JCT_PID
+                              FROM HWY_JCT P, TEMP_HWY_JUNCTION T
+                             WHERE P.E_JUNC_PID = T.PID  
+                          );
+                        ]]></sql>
+      </step>
+      <step value="15">
+		  <!--补充HWY_JUNCTION -->
+				<sql sqlType="dataIntegrity"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HWY_JUNCTION
+                          (PID)
+                         (SELECT distinct P.S_JUNC_PID
+                              FROM HWY_JCT p , TEMP_HWY_JCT T
+                              where P.JCT_PID = T.PID);
+                        ]]></sql>
+                <sql sqlType="dataIntegrity"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_HWY_JUNCTION
+                          (PID)
+                         (SELECT distinct P.E_JUNC_PID
+                             FROM HWY_JCT p , TEMP_HWY_JCT T
+                             where P.JCT_PID = T.PID);
+                        ]]></sql>
+		</step>
+		
+		<step value="16">
+		                        	<!--补充RD_LINK和RD_NODE -->
+         		<sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT distinct CN.IN_LINK_PID
+                             FROM TEMP_HWY_JUNCTION N, HWY_JUNCTION CN
+                            WHERE N.PID = CN.JUNC_PID
+                            union
+                            SELECT distinct CN.LINK_PID
+                             FROM TEMP_HWY_JCT N, HWY_JCT_LINK CN
+                            WHERE N.PID = CN.JCT_PID
+                            );
+                        ]]></sql>
+                 <sql sqlType="dataIntegrity">
+                 <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_NODE
+                          (PID)
+                          (SELECT distinct CN.NODE_PID
+                             FROM TEMP_HWY_JUNCTION N, HWY_JUNCTION CN
+                            WHERE N.PID = CN.JUNC_PID
+                            );
+                        ]]></sql>
+        </step>
+
+		<step value="19">
+			<!--TEMP_HWY_JUNCTION去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HWY_JUNCTION A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HWY_JUNCTION B WHERE A.PID = B.PID);
+                    ]]></sql>
+                    
+                   <!--TEMP_HWY_JCT去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_HWY_JCT A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_HWY_JCT B WHERE A.PID = B.PID);
+                    ]]></sql>
+		</step>
+
+
+		<step value="100">
+			<!-- 根据图幅号直接提取数据表： 1.HW_POSITION 2.HW_ESTAB_JCT 3.HW_ROUTE 4.HW_ESTAB 
+				5.HW_ESTAB_MAIN 6.HW_ESTAB_CONTAIN 7.HW_ESTAB_SA 8.HW_ESTAB_NAME 9.HW_ESTAB_ROUTE_POS -->
+			<!--HW_POSITION -->
+			<sql><![CDATA[SELECT P.* FROM HW_POSITION P,TEMP_HW_POSITION T WHERE P.POSITION_PID=T.PID; ]]></sql>
+			<!--HW_ESTAB_JCT -->
+			<sql><![CDATA[SELECT P.*
+						  FROM HW_ESTAB_JCT P, TEMP_HW_ESTAB T
+						 WHERE P.S_ESTAB_PID = T.PID
+						UNION 
+						SELECT P.*
+						  FROM HW_ESTAB_JCT P, TEMP_HW_ESTAB T
+						 WHERE P.E_ESTAB_PID = T.PID;
+ 			]]></sql>
+			<!--HW_ESTAB_ROUTE_POS -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB_ROUTE_POS P,TEMP_HW_ESTAB T WHERE P.ESTAB_PID=T.PID; ]]></sql>
+			<!--HW_ROUTE -->
+			<sql><![CDATA[SELECT P.* FROM HW_ROUTE P,TEMP_HW_ROUTE T WHERE P.ROUTE_PID=T.PID; ]]></sql>
+			<!--HW_ESTAB -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB P,TEMP_HW_ESTAB T WHERE P.PID=T.PID; ]]></sql>
+			<!--HW_ESTAB_MAIN -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB_MAIN P,TEMP_HW_ESTAB T WHERE P.ESTAB_PID=T.PID; ]]></sql>
+			<!--HW_ESTAB_CONTAIN -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB_CONTAIN P,TEMP_HW_ESTAB T WHERE P.ESTAB_PID=T.PID; ]]></sql>
+			<!--HW_ESTAB_SA -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB_SA P,TEMP_HW_ESTAB T WHERE P.ESTAB_PID=T.PID; ]]></sql>
+			<!--HW_ESTAB_NAME -->
+			<sql><![CDATA[SELECT P.* FROM HW_ESTAB_NAME P,TEMP_HW_ESTAB T WHERE P.ESTAB_PID=T.PID; ]]></sql>
+			<!--HWY_JUNCTION -->
+			<sql><![CDATA[SELECT P.* FROM HWY_JUNCTION P,TEMP_HWY_JUNCTION T WHERE P.JUNC_PID=T.PID; ]]></sql>
+			<sql><![CDATA[SELECT P.* FROM HWY_JUNCTION_NAME P,TEMP_HWY_JUNCTION T WHERE P.JUNC_PID=T.PID; ]]></sql>
+			<sql><![CDATA[SELECT P.* FROM HWY_SAPA P,TEMP_HWY_JUNCTION T WHERE P.JUNC_PID=T.PID; ]]></sql>
+			<!--HWY_JCT -->
+			<sql><![CDATA[SELECT P.* FROM HWY_JCT P,TEMP_HWY_JCT T WHERE P.JCT_PID=T.PID; ]]></sql>
+			<sql><![CDATA[SELECT P.* FROM HWY_JCT_LINK P,TEMP_HWY_JCT T WHERE P.JCT_PID=T.PID; ]]></sql>
+			
+		</step>
+
+        <step value="101">
+            <!--
+                根据图幅号删除数据表：
+                1.HW_POSITION
+                2.HW_JCT
+                3.HW_LOGOMARK
+                4.HW_ROUTE
+                5.HW_ESTAB
+                6.HW_ESTAB_MAIN
+                7.HW_ESTAB_CONTAIN
+                8.HW_ESTAB_NODE
+
+                NEW
+                1、HW_ESTAB
+                2、HW_ESTAB_MAIN
+                3、HW_ESTAB_CONTAIN
+                4、HW_ESTAB_JCT
+                5、HW_ESTAB_NAME
+                6、HW_ESTAB_ROUTE_POS
+                7、HW_ESTAB_SA
+                8、HW_POSITION
+                9、HW_ROUTE
+            -->
+            <!--HW_POSITION -->
+            <sql><![CDATA[DELETE FROM HW_POSITION P WHERE p.POSITION_PID IN (SELECT PID FROM TEMP_HW_POSITION);]]></sql>
+            <!--HW_ESTAB_JCT -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_JCT P WHERE p.S_ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB) OR p.E_ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ESTAB_ROUTE_POS -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_ROUTE_POS P WHERE p.ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ROUTE -->
+            <sql><![CDATA[DELETE FROM HW_ROUTE P WHERE P.ROUTE_PID IN (SELECT PID FROM TEMP_HW_ROUTE);]]></sql>
+            <!--HW_ESTAB -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB P WHERE p.PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ESTAB_MAIN -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_MAIN P WHERE p.ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ESTAB_CONTAIN -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_CONTAIN P WHERE p.ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ESTAB_SA -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_SA P WHERE p.ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+            <!--HW_ESTAB_NAME -->
+            <sql><![CDATA[DELETE FROM HW_ESTAB_NAME P WHERE p.ESTAB_PID IN (SELECT PID FROM TEMP_HW_ESTAB);]]></sql>
+
+			<!--HWY_JUNCTION -->
+			 <sql><![CDATA[DELETE FROM HWY_JUNCTION P WHERE P.JUNC_PID IN (SELECT PID FROM TEMP_HWY_JUNCTION);]]></sql>
+			 <sql><![CDATA[DELETE FROM HWY_JUNCTION_NAME P WHERE P.JUNC_PID IN (SELECT PID FROM TEMP_HWY_JUNCTION);]]></sql>
+			 <sql><![CDATA[DELETE FROM HWY_SAPA P WHERE P.JUNC_PID IN (SELECT PID FROM TEMP_HWY_JUNCTION);]]></sql>
+			 <sql><![CDATA[DELETE FROM HWY_JCT P WHERE P.JCT_PID IN (SELECT PID FROM TEMP_HWY_JCT);]]></sql>
+			 <sql><![CDATA[DELETE FROM HWY_JCT_LINK P WHERE P.JCT_PID IN (SELECT PID FROM TEMP_HWY_JCT);]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_HW_POSITION
+					  SELECT POSITION_PID
+					    FROM HW_POSITION A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM HW_POSITION  B WHERE A.POSITION_PID = B.POSITION_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_HW_ROUTE
+					  SELECT ROUTE_PID
+					    FROM HW_ROUTE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM HW_ROUTE  B WHERE A.ROUTE_PID = B.ROUTE_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_HW_ESTAB
+					  SELECT PID
+					    FROM HW_ESTAB A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM HW_ESTAB  B WHERE A.PID = B.PID);
+				]]></sql>
+		
+		<!--  200新增 -->
+			  <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_HWY_JUNCTION
+					  SELECT JUNC_PID
+					    FROM HWY_JUNCTION A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM HWY_JUNCTION  B WHERE A.JUNC_PID = B.JUNC_PID);
+				]]></sql>
+				
+				 <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_HWY_JCT
+					  SELECT JCT_PID
+					    FROM HWY_JCT A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM HWY_JCT  B WHERE A.JCT_PID = B.JCT_PID);
+				]]></sql>
+        </step>
+
+	</feature>
+</sqls>

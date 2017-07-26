@@ -48,6 +48,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 public class ProgramService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -933,10 +934,7 @@ public class ProgramService {
 					+ "         0 STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS,"
-					+ "         1 OPEN_TASK,"
-					+ "         -1 TIPS2MARK,"
-					+ "         -1 DAY2MONTH,"
+					+ "         C.PLAN_STATUS"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS = 0"
 					+ "  UNION ALL"
@@ -947,14 +945,7 @@ public class ProgramService {
 					+ "         P.STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
-					+ "         C.PLAN_STATUS,"
-					+ "       (SELECT COUNT(1) FROM TASK T WHERE T.PROGRAM_ID=P.PROGRAM_ID AND T.STATUS!=0 AND T.TYPE=0) OPEN_TASK,"
-					+ "       NVL((SELECT J.STATUS"
-					+ "            FROM JOB_RELATION JR,JOB J"
-					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) TIPS2MARK,"
-					+ "       NVL((SELECT J.STATUS"
-					+ "            FROM JOB_RELATION JR,JOB J"
-					+ "            WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=2 AND J.LATEST=1 AND JR.ITEM_ID=P.PROGRAM_ID AND JR.ITEM_TYPE=1 ),-1) DAY2MONTH"
+					+ "         C.PLAN_STATUS"
 					+ "    FROM PROGRAM P, INFOR C"
 					+ "   WHERE P.INFOR_ID = C.INFOR_ID"
 					+ "     AND P.LATEST = 1"
@@ -1003,7 +994,7 @@ public class ProgramService {
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-					map.put("jobs", getJobArray(rs));
+					map.put("jobs", new JSONArray());
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1151,7 +1142,7 @@ public class ProgramService {
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "           AND T.LATEST = 1"
+					+ "           AND T.LATEST = 1 and t.type!=2"
 					+ "           AND T.STATUS !=0)"
 					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
 					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
@@ -1289,7 +1280,7 @@ public class ProgramService {
 					+ "   AND NOT EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "           AND T.LATEST = 1"
+					+ "           AND T.LATEST = 1 and t.type!=2"
 					+ "           AND T.STATUS != 0)),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
@@ -2046,8 +2037,12 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+					if(t.getType()==0&&infor.getSourceCode()==2){
+						t.setWorkKind("1|0|0|0");
+					}else if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
+					}else{
+						t.setWorkKind("1|0|0|0");
 					}
 					UserGroup group =null;
 					/*web端有人触发的情报项目发布，导致的采集任务创建，则不赋组；
@@ -2069,7 +2064,23 @@ public class ProgramService {
 					
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
-					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);					
+					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);	
+					//快线月编任务需要按照图幅扩展grid
+					if(t.getType()==2){
+						Set<Integer> myGrid=t.getGridIds().keySet(); 
+						Set<String> meshs=new HashSet<String>();
+						for(Integer gridTmp:myGrid){
+							meshs.add(String.valueOf(gridTmp/100));
+						}
+						for(String meshTmp:meshs){
+							Set<String> allGrid = CompGridUtil.mesh2Grid(meshTmp);
+							for(String gridExt:allGrid){
+								if(!myGrid.contains(Integer.valueOf(gridExt))){
+									t.getGridIds().put(Integer.valueOf(gridExt), 2);
+								}
+							}
+						}
+					}
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}
 			}

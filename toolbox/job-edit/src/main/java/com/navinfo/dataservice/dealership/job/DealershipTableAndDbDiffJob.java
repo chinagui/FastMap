@@ -282,9 +282,12 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				resultIds = "(";
 				resultIds += StringUtils.join(resultIdList.toArray(), ",") + ")";
 			}
+		
 			StringBuffer sb = new StringBuffer();
-			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY "
-					+ "from IX_DEALERSHIP_RESULT r where r.deal_src_diff= " + dealSrcDiff);
+			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY, ");
+			sb.append(" r.is_deleted,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.cfm_is_adopted,r.poi_kind_code,r.poi_chain,");
+			sb.append(" r.poi_name,r.poi_name_short,r.poi_address,r.poi_tel,r.poi_post_code,r.poi_x_display,r.poi_y_display,r.poi_x_guide,r.poi_y_guide");
+			sb.append(" from IX_DEALERSHIP_RESULT r where r.deal_src_diff= " + dealSrcDiff);
 			if (sourceType==1||sourceType==5){
 				sb.append(" and r.workflow_status=0 and r.chain in "+chains);
 			}else if (sourceType==2){
@@ -297,7 +300,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				@Override
 				public List handle(ResultSet rs) throws SQLException {
 
-					List resultList = new ArrayList();
+					List<IxDealershipResult> resultList = new ArrayList();
 					while (rs.next()) {
 						IxDealershipResult dealResult = new IxDealershipResult();
 						dealResult.setResultId(rs.getInt("result_id"));
@@ -322,6 +325,24 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 							e.printStackTrace();
 						}
 
+						 dealResult.setIsDeleted(rs.getInt("is_deleted"));
+						 dealResult.setPoiNum1(rs.getString("poi_num_1"));
+						 dealResult.setPoiNum2(rs.getString("poi_num_2"));
+						 dealResult.setPoiNum3(rs.getString("poi_num_3"));
+						 dealResult.setPoiNum4(rs.getString("poi_num_4"));
+						 dealResult.setPoiNum5(rs.getString("poi_num_5"));
+						 dealResult.setCfmIsAdopted(rs.getInt("cfm_is_adopted"));
+						 dealResult.setPoiKindCode(rs.getString("poi_kind_code"));
+						 dealResult.setPoiChain(rs.getString("poi_chain"));
+						 dealResult.setPoiName(rs.getString("poi_name"));
+						 dealResult.setPoiNameShort(rs.getString("poi_name_short"));
+						 dealResult.setPoiAddress(rs.getString("poi_address"));
+						 dealResult.setPoiTel(rs.getString("poi_tel"));
+						 dealResult.setPoiPostCode(rs.getString("poi_post_code"));
+						 dealResult.setPoiXDisplay(rs.getDouble("poi_x_display"));
+						 dealResult.setPoiYDisplay(rs.getDouble("poi_y_display"));
+						 dealResult.setPoiXGuide(rs.getDouble("poi_x_guide"));
+						 dealResult.setPoiYGuide(rs.getDouble("poi_y_guide"));
 						resultList.add(dealResult);
 
 					}

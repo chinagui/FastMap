@@ -61,6 +61,7 @@ public class ServiceStatInfoLoader{
 		log.info("service访问地址:"+url);
 		List<StatInfo> resultList = new ArrayList<StatInfo>();
 		try {
+			String endpoint = "FM-service-"+host;
 			String data = ServiceInvokeUtil.invokeByGet(url);
 			JSONObject jso = JSONObject.fromObject(data);
 			JSONArray jsa = jso.getJSONArray("list");
@@ -109,9 +110,10 @@ public class ServiceStatInfoLoader{
 					log.info("本次数据,访问次数:"+hits+"响应时间:"+durationsSum+"接口状态:"+systemErrors);
 					//保存数据
 					int step = 300;
+					
 					//访问次数
 					StatInfo statInfoVisitCount = new StatInfo();
-					statInfoVisitCount.setEndpoint(host);
+					statInfoVisitCount.setEndpoint(endpoint);
 					statInfoVisitCount.setMetric(metricVisitCount);
 					statInfoVisitCount.setTimestemp(time);
 					statInfoVisitCount.setStep(step);
@@ -121,7 +123,7 @@ public class ServiceStatInfoLoader{
 					resultList.add(statInfoVisitCount);
 					//响应时间
 					StatInfo statInfoResTime = new StatInfo();
-					statInfoResTime.setEndpoint(host);
+					statInfoResTime.setEndpoint(endpoint);
 					statInfoResTime.setMetric(metricResTime);
 					statInfoResTime.setTimestemp(time);
 					statInfoResTime.setStep(step);
@@ -131,7 +133,7 @@ public class ServiceStatInfoLoader{
 					resultList.add(statInfoResTime);
 					//接口状态
 					StatInfo statInfoInterfaceStatus = new StatInfo();
-					statInfoInterfaceStatus.setEndpoint(host);
+					statInfoInterfaceStatus.setEndpoint(endpoint);
 					statInfoInterfaceStatus.setMetric(metricInterfaceStatus);
 					statInfoInterfaceStatus.setTimestemp(time);
 					statInfoInterfaceStatus.setStep(step);
@@ -165,7 +167,7 @@ public class ServiceStatInfoLoader{
 				int step = 300;
 				//访问次数
 				StatInfo statInfoVisitCount = new StatInfo();
-				statInfoVisitCount.setEndpoint(host);
+				statInfoVisitCount.setEndpoint(endpoint);
 				statInfoVisitCount.setMetric(metricTotalVisitCount);
 				statInfoVisitCount.setTimestemp(time);
 				statInfoVisitCount.setStep(step);

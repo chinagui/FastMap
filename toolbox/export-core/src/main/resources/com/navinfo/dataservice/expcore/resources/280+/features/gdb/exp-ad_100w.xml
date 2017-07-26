@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-01-24
+导出100万的行政区划数据
+//TODO:没有建索引
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////行政区划/////////////////////////////////////////////////////////-->
+    <feature name="AD_ADMIN">
+        <!--
+            行政区划提取原则:
+            1.LINK、NODE直接根据图幅号提取
+        -->
+<!--        <step value="7">
+            <sql condition="mesh"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_LINK
+                           (PID)
+                           (SELECT P.LINK_PID FROM AD_LINK_MESH_100W P WHERE P.MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_LINK
+                           (PID)
+                           (SELECT P.LINK_PID FROM AD_LINK_100W P
+                                WHERE SDO_ANYINTERACT(P.GEOMETRY,
+                                              [area]) = 'TRUE'
+                           );
+                         ]]></sql>
+            &lt;!&ndash;link关联的node信息,并去重&ndash;&gt;
+            <sql condition="mesh"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AD_NODE
+                            (PID)
+                            (SELECT DISTINCT P.NODE_PID FROM AD_NODE_MESH_100W P WHERE P.MESH_ID [mesh]);
+
+                         ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AD_NODE
+                            (PID)
+                            (SELECT DISTINCT P.NODE_PID FROM AD_NODE_100W P
+                                WHERE SDO_ANYINTERACT(P.GEOMETRY,
+                                              [area]) = 'TRUE'
+                            );
+
+                         ]]></sql>
+        </step>-->
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.AD_LINK_100W
+                2.AD_LINK_MESH_100W
+                3.AD_NODE_100W
+                4.AD_NODE_MESH_100W
+            -->
+            <!--AD_LINK_100W-->
+   <!--         <sql>
+                <![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK_100W P, TEMP_AD_LINK M
+                         WHERE P.LINK_PID = M.PID;
+                        ]]></sql>
+            &lt;!&ndash;AD_LINK_MESH_100W&ndash;&gt;
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK_MESH_100W P, TEMP_AD_LINK M
+                         WHERE P.LINK_PID = M.PID;
+                         ]]></sql>
+            &lt;!&ndash;AD_NODE_100W&ndash;&gt;
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE_100W P, TEMP_AD_NODE R
+                         WHERE P.NODE_PID = PID;
+                         ]]></sql>
+            &lt;!&ndash;AD_NODE_MESH_100W&ndash;&gt;
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE_MESH_100W P, TEMP_AD_NODE R
+                         WHERE P.NODE_PID = PID;
+                         ]]></sql>
+            -->
+
+
+            <sql>
+                <![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK_100W P;
+                        ]]></sql>
+            <!--AD_LINK_MESH_100W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM AD_LINK_MESH_100W P;
+                         ]]></sql>
+            <!--AD_NODE_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE_100W P;
+                         ]]></sql>
+            <!--AD_NODE_MESH_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM AD_NODE_MESH_100W P;
+                         ]]></sql>
+        </step>
+    </feature>
+</sqls>

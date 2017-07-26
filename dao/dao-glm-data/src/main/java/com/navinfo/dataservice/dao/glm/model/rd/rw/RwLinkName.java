@@ -17,21 +17,22 @@ import net.sf.json.JSONObject;
 
 /**
  * 铁路:LINK名称表
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class RwLinkName implements IRow {
 
 	private int linkPid;
-	
+
 	private int nameGroupid;
-	
+
 	private String rowId;
-	
+
 	protected String name;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getLinkPid() {
 		return linkPid;
 	}
@@ -39,7 +40,7 @@ public class RwLinkName implements IRow {
 	public void setLinkPid(int linkPid) {
 		this.linkPid = linkPid;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -63,8 +64,12 @@ public class RwLinkName implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("name");
+		}
 
 		return json;
+
 	}
 
 	@Override
@@ -120,7 +125,7 @@ public class RwLinkName implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-		RwLinkName rwLinkName = (RwLinkName)row;
+		RwLinkName rwLinkName = (RwLinkName) row;
 		this.setRowId(rwLinkName.getRowId());
 		this.setName(rwLinkName.getName());
 		this.setNameGroupid(rwLinkName.getNameGroupid());

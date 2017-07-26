@@ -47,6 +47,8 @@ public class JtsGeometryFactory {
 		return factory.createLinearRing(coordinates);
 	}
 	public static LineString createLineString(Coordinate[] coordinates){
+	
+		
 		return factory.createLineString(coordinates);
 	}
 	public static LineString createLineString(CoordinateSequence coordinates){

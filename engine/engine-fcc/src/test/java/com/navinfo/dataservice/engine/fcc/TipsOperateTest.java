@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -40,7 +41,13 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
  * @Description: TODO
  * 
  */
-public class TipsOperateTest {
+public class TipsOperateTest extends InitApplication {
+
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
 
 	@Test
 	public void testEdit() {
@@ -201,7 +208,7 @@ public class TipsOperateTest {
 	 @Test
 		public void testDel() {
 
-		 String parameter = "{\"rowkey\":\"02160160f648f9b3c748a6a517e63a3a04b9a3\",\"user\":2922}";
+		 String parameter = "{\"rowkey\":\"028001a693ba64bd1d455ca809e6486520f221\",\"subTaskId\":57}";
 			try {
 				if (StringUtils.isEmpty(parameter)) {
 					throw new IllegalArgumentException("parameter参数不能为空。");
@@ -211,21 +218,23 @@ public class TipsOperateTest {
 
 				String rowkey = jsonReq.getString("rowkey");
 				
-				int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
-				
-				int user = jsonReq.getInt("user");
+				int delType=0; //默认物理删除。0：逻辑删除；1：物理删除
+
+                int subTaskId = jsonReq.getInt("subTaskId");
 
 				if (StringUtils.isEmpty(rowkey)) {
 					throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 				}
-				
+
 				EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
-				
-//				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
-//
-//				delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
-				//rowkey = "";
-				op.deleteByRowkey(rowkey,1,user);
+
+				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
+
+				delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
+
+				if(delType == 0 || delType == 1) {
+					op.deleteByRowkey(rowkey, delType);
+				}
 
 			} catch (Exception e) {
 				e.printStackTrace();

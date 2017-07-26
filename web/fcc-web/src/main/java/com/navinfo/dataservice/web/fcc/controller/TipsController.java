@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.web.fcc.controller;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.*;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
@@ -14,6 +16,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
@@ -28,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.*;
 
 @Controller
@@ -623,43 +627,7 @@ public class TipsController extends BaseController {
         }
     }
 
-// //     20170523 和于桐万冲确认该接口取消
-//	@RequestMapping(value = "/tip/getByWkt")
-//	public void getTipsByWkt(HttpServletRequest request,
-//							  HttpServletResponse response) throws ServletException, IOException {
-//
-//		String parameter = request.getParameter("parameter");
-//
-//		try {
-//			JSONObject jsonReq = JSONObject.fromObject(parameter);
-//
-//			String wkt = jsonReq.getString("wkt");
-//
-//			String flag = jsonReq.getString("flag");
-//
-//            if (StringUtils.isEmpty(wkt)) {
-//                throw new IllegalArgumentException("参数错误:wkt不能为空。");
-//            }
-//
-//            if (StringUtils.isNotEmpty(flag)) {
-//                throw new IllegalArgumentException("参数错误:flag不能为空。");
-//            }
-//
-//			TipsSelector selector = new TipsSelector();
-//
-//			JSONArray array = selector.searchDataByWkt(parameter, true);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleRegularResult(array));
-//
-//		} catch (Exception e) {
-//
-//			logger.error(e.getMessage(), e);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleFailResult(e.getMessage()));
-//		}
-//	}
+
 
     @RequestMapping(value = "/tip/checkInfoTask")
     public void checkInfoTask(HttpServletRequest request,
@@ -694,7 +662,7 @@ public class TipsController extends BaseController {
             List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
             Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
             TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
-            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);//TODO:需要和李娅、俊芳确认是否使用了solr
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", total);
 
@@ -887,7 +855,11 @@ public class TipsController extends BaseController {
                                 HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
         logger.info("noTaskToMidTask:" + parameter);
+
+        Connection oracleConn = null;
         try {
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             if(!jsonReq.containsKey("taskId")) {
@@ -907,14 +879,78 @@ public class TipsController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", totalNum);
 
-            response.getWriter().println(
-                    ResponseUtils.assembleRegularResult(jsonObject));
+            response.getWriter().println(ResponseUtils.assembleRegularResult(jsonObject));
             logger.info("noTaskToMidTask:" + totalNum);
         } catch (Exception e) {
+            DBUtils.rollBack(oracleConn);
             logger.error(e.getMessage(), e);
             response.getWriter().println(
                     ResponseUtils.assembleFailResult(e.getMessage()));
+        } finally {
+            DBUtils.closeConnection(oracleConn);
         }
     }
 
+    @RequestMapping(value="/tip/exportGps")
+    public ModelAndView getGpsAndDeleteLinkTips(HttpServletRequest request) throws ServletException, IOException {
+    	  String parameter = request.getParameter("parameter");
+
+          try {
+
+              if (StringUtils.isEmpty(parameter)) {
+                  throw new IllegalArgumentException("parameter参数不能为空。");
+              }
+
+              JSONObject jsonReq = JSONObject.fromObject(parameter);
+              
+              int subTaskId = jsonReq.getInt("subTaskId");
+              
+              String beginTime = jsonReq.getString("beginTime");
+              
+              String endTime = jsonReq.getString("endTime");
+              
+              int pageSize = jsonReq.getInt("pageSize");
+              
+              int curPage = jsonReq.getInt("pageNum");
+
+              TipsSelector selector = new TipsSelector();
+
+              JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime,pageSize,curPage);
+              
+              return new ModelAndView("jsonView", success(array));
+
+          } catch (Exception e) {
+
+              logger.error(e.getMessage(), e);
+
+              return new ModelAndView("jsonView", fail(e.getMessage()));
+          }
+    }
+    
+    public ModelAndView getPoiRelateTips(HttpServletRequest request) throws ServletException, IOException{
+    	 String parameter = request.getParameter("parameter");
+
+         try {
+
+             if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+             }
+
+             JSONObject jsonReq = JSONObject.fromObject(parameter);
+             
+             int subTaskId = jsonReq.getInt("subTaskId");
+             
+             String id = jsonReq.getString("id");
+
+             JSONArray array = null;//selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime);
+             
+             return new ModelAndView("jsonView", success(array));
+
+         } catch (Exception e) {
+
+             logger.error(e.getMessage(), e);
+
+             return new ModelAndView("jsonView", fail(e.getMessage()));
+         }
+    }
 }

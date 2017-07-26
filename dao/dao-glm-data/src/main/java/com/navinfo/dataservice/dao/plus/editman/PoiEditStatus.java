@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.plus.editman;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +24,8 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -268,10 +271,10 @@ public class PoiEditStatus {
 		}
 	}
 	
-	public static void main(String[] args) throws Exception{
-
-		System.out.println("ok");
-	}
+//	public static void main(String[] args) throws Exception{
+//
+//		System.out.println("ok");
+//	}
 
 	/**
 	 * 新增POI对象在poi_edit_status表中新增一条初始状态的记录
@@ -660,4 +663,67 @@ public class PoiEditStatus {
 		
 	}
 	
+	
+	/**
+	 * 查询鲜度验证记录
+	 * @param conn
+	 * @param dbId
+	 * @param uOrDfids
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<Long,Map<String, Object>> getFreshData(Connection conn,Collection<Long> objPids) throws Exception {
+		Map<Long,Map<String, Object>> dataList = new HashMap<Long,Map<String, Object>>();
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT * FROM POI_EDIT_STATUS WHERE FRESH_VERIFIED = 1 ");
+			Clob clobPids=null;
+			if(objPids.size()>1000){
+				clobPids = conn.createClob();
+				clobPids.setString(1, StringUtils.join(objPids, ","));
+				sb.append(" AND PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+			}else{
+				sb.append(" AND PID IN (" + StringUtils.join(objPids, ",") + ")");
+			}
+
+			ResultSetHandler<Map<Long,Map<String, Object>>> rsHandler = new ResultSetHandler<Map<Long,Map<String, Object>>>() {
+				public Map<Long,Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					Map<Long,Map<String, Object>> data = new HashMap<Long,Map<String, Object>>();
+					while (rs.next()) {
+						Map<String,Object> result = new HashMap<String,Object>();
+						long pid = rs.getLong("PID");
+						int status = rs.getInt("STATUS");
+						String uploadDate = DateUtils.dateToString(rs.getTimestamp("UPLOAD_DATE"),DateUtils.DATE_COMPACTED_FORMAT);
+						result.put("status", status);
+						result.put("uploadDate", uploadDate);
+						data.put(pid,result);
+					}
+					return data;
+				}	
+			};
+			
+			logger.info("getUploadDate sql:" + sb.toString());
+			if(clobPids==null){
+				dataList = new QueryRunner().query(conn, sb.toString(), rsHandler);
+			}else{
+				dataList = new QueryRunner().query(conn, sb.toString(), rsHandler,clobPids);
+			}
+			return dataList;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("poiWithOutSubtask");
+		}
+	}
+	
+//	public static void main(String[] args) throws Exception {
+//		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
+//				"fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1");
+//		List<Long> pidList = new ArrayList<Long>();
+//		pidList.add(407000002L);
+//		pidList.add(502000007L);
+//		Map<Long, Map<String, Object>> list = getFreshData(con, pidList);
+//		System.out.println(list.toString());
+//	}
 }

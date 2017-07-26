@@ -173,7 +173,7 @@ public class DataEditController extends BaseController {
 			int resultCount=dealerShipEditService.runDealershipCheck(parameter);
 			
 			Map<String,Integer> result = new HashMap<>();
-			result.put("data", resultCount);
+			result.put("checkLogs", resultCount);
 
 			return new ModelAndView("jsonView", success(result));
 

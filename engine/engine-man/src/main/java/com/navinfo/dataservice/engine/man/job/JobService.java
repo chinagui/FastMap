@@ -1,16 +1,19 @@
 package com.navinfo.dataservice.engine.man.job;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
+import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -45,13 +48,13 @@ public class JobService {
             if(itemType == ItemType.LOT){
                 throw new Exception("不支持的对象类型 "+itemType);
             }
-            Tips2MarkJobRunner runner = new Tips2MarkJobRunner();
-            return runner.run(itemId, itemType, isContinue, operator, parameter);
+            return runCommonJob(JobType.TiPS2MARK,itemId, itemType , operator,isContinue, parameter);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("执行tips转mark失败，原因为:" + e.getMessage(), e);
         }
     }
+    
 
     /**
      * 执行日落月
@@ -68,8 +71,7 @@ public class JobService {
             if(itemType != ItemType.LOT && itemType != ItemType.PROJECT){
                 throw new Exception("不支持的对象类型 "+itemType);
             }
-            Day2MonthJobRunner runner = new Day2MonthJobRunner();
-            return runner.run(itemId, itemType, isContinue, operator, parameter);
+            return runCommonJob(JobType.DAY2MONTH,itemId, itemType , operator,isContinue, parameter);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("执行日落月失败，原因为:" + e.getMessage(), e);
@@ -100,6 +102,26 @@ public class JobService {
     }
 
     /**
+     * 获取按批次日落月的进度
+     * @return
+     * @throws Exception
+     */
+    public JSONObject getDay2MonthLotJobProgress() throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getManConnection();
+            JobOperator jobOperator = new JobOperator(conn);
+            return jobOperator.getDay2MonthLotJobProgressStatus();
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("获取JOB状态失败，原因为:" + e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+    /**
      * 更新Job步骤的状态，并继续执行Job
      *
      * @param phaseId
@@ -109,13 +131,20 @@ public class JobService {
      */
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
+        JobProgressOperator jobProgressOperator =null;
         try {
             log.info("updateJobProgress:phaseId:" + phaseId + ",status:" + status.value() + ",message:" + outParameter);
-            conn = DBConnector.getInstance().getManConnection();
-            JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
+            conn = DBConnector.getInstance().getManConnection();            
+            jobProgressOperator= new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
             conn.commit();
-
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+        }
+        //job接续步骤的执行不应该影响已有步骤的执行情况。此处后续异常不进行抛出
+        try{
             try {
                 JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
                 String message = JSON.toJSONString(jobMessage);
@@ -137,15 +166,7 @@ public class JobService {
                 if (job == null) {
                     throw new Exception("phaseId:" + phaseId + "对应的job不存在！");
                 }
-                JobRunner runner = null;
-                switch (job.getType()) {
-                    case TiPS2MARK:
-                        runner = new Tips2MarkJobRunner();
-                        break;
-                    case DAY2MONTH:
-                        runner = new Day2MonthJobRunner();
-                        break;
-                }
+                JobRunner runner = jobFactory(job.getType());
 
                 if (runner == null) {
                     throw new Exception("不支持的任务类型：jobid " + job.getJobId() + ",type " + job.getType().value());
@@ -155,8 +176,8 @@ public class JobService {
             }
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
-            log.error(e.getMessage(), e);
-            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+            log.error("JOB继续执行失败，原因为:" + e.getMessage(), e);
+            //throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }
@@ -165,4 +186,36 @@ public class JobService {
     private static class SingletonHolder {
         private static final JobService INSTANCE = new JobService();
     }
+
+	public long runCommonJob(JobType jobType, long itemId, ItemType itemType, long operator, boolean isContinue, String parameter) throws Exception {
+		log.info("start runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
+		try {
+			JobRunner runner = jobFactory(jobType);
+            long jobId= runner.run(itemId, itemType, isContinue, operator, parameter);
+            log.info("end runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
+            return jobId;
+		} catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new Exception("执行JOB失败，原因为:" + e.getMessage(), e);
+        }
+	}
+	
+	/**
+	 * 根据jobType获取执行类
+	 * @param jobType
+	 * @return
+	 */
+	private JobRunner jobFactory(JobType jobType){
+		JobRunner runner=null;
+		if(jobType==JobType.DAY2MONTH){
+			runner= new Day2MonthJobRunner();
+		}else if(jobType==JobType.NOTASK2MID){
+			runner= new NoTask2MediumJobRunner();
+		}else if(jobType==JobType.TiPS2MARK){
+			runner= new Tips2MarkJobRunner();
+		}else if(jobType == JobType.MID2QUICK){
+			runner = new TaskMedium2QuickRunner();
+		}
+		return runner;
+	}
 }

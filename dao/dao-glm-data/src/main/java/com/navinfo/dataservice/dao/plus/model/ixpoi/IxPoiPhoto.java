@@ -15,9 +15,10 @@ public class IxPoiPhoto extends BasicRow {
 	protected String status ;
 	protected String memo ;
 	protected int tag = 1;
+	
 	//*******2017.07.18*******
 	protected int originPid;
-	
+
 	public IxPoiPhoto (long objPid){
 		super(objPid);
 		setPoiPid(objPid);

@@ -56,36 +56,7 @@ public class UserGroupController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/userGroup/update")
-	public ModelAndView update(HttpServletRequest request){
-		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(dataJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			UserGroupService.getInstance().update(bean);			
-			return new ModelAndView("jsonView", success("修改成功"));
-		}catch(Exception e){
-			log.error("修改失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	@RequestMapping(value = "/userGroup/delete")
-	public ModelAndView delete(HttpServletRequest request){
-		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(dataJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			UserGroupService.getInstance().delete(bean);			
-			return new ModelAndView("jsonView", success("删除成功"));
-		}catch(Exception e){
-			log.error("删除失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
+	
 	@RequestMapping(value = "/userGroup/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			

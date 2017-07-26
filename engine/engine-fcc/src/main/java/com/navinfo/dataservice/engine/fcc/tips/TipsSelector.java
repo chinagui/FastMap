@@ -180,7 +180,10 @@ public class TipsSelector {
 					}
 				}
 
-				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				JSONObject deep = null;
+                if(json.containsKey("deep")) {
+                    deep = JSONObject.fromObject(json.getString("deep"));
+                }
 
 				// fc预处理8001要求返回功能等级
 				if (type == 8001) {
@@ -1434,7 +1437,9 @@ public class TipsSelector {
 
 		// 根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
-
+            if(!json.containsKey("deep")||StringUtils.isEmpty(json.getString("deep"))) {
+                continue;
+            }
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 			try {
@@ -1796,9 +1801,13 @@ public class TipsSelector {
 				}
 				// 删除记录
 				else if (type == 2101) {
-					int linkPid = Integer.valueOf(deep.getString("rId"));
-					String name = map.get(linkPid);
-					m.put("e", name);
+					JSONObject linkObj = deep.getJSONObject("f");
+                    int linkType = linkObj.getInt("type");
+                    if(linkType == 1) {
+                        int linkPid = Integer.valueOf(linkObj.getString("id"));
+                        String name = map.get(linkPid);
+                        m.put("e", name);
+                    }
 				} else if (type == 1704 || type == 1510 || type == 1107
 						|| type == 1507 || type == 1511 || type == 1601
 						|| type == 1602 || type == 1509 || type == 1705
@@ -2180,10 +2189,11 @@ public class TipsSelector {
 				TaskType.PROGRAM_TYPE_Q);
 		Map<String, int[]> statsMap = new HashMap<>();
 		for (TipsDao tip : tipsList) {
-			JSONObject snapshot = JSONObject.fromObject(tip);
-			String wkt = snapshot.getString("wkt");// 统计坐标
-			Point point = GeometryUtils.getPointByWKT(wkt);
-			Coordinate coordinate = point.getCoordinates()[0];
+			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
+            JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
+            Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
+            Coordinate coordinate = point.getCoordinates()[0];
 			String gridId = CompGridUtil
 					.point2Grids(coordinate.x, coordinate.y)[0];
 			int tipStatus = snapshot.getInt("t_tipStatus");
@@ -2219,7 +2229,7 @@ public class TipsSelector {
 		return list;
 	}
 
-	private List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds,
+	public List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds,
 			int taskType) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String solrIndexFiled = null;
@@ -2273,7 +2283,7 @@ public class TipsSelector {
 
 			List<TipsDao> type2001Result = operator
 					.query("select * from tips_index where " + where
-							+ " and type=2001");
+							+ " and s_sourceType = '2001'");
 			int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 			double length = 0;
@@ -2341,14 +2351,14 @@ public class TipsSelector {
 		return jsonObject;
 	}
 
-	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet)
+	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType)
 			throws Exception {
 		org.apache.hadoop.hbase.client.Connection hbaseConn = null;
 		Table htab = null;
 		Set<Integer> meshSet = new HashSet<>();
 		try {
 			List<JSONObject> snapshots = conn.queryCollectTaskTips(
-					collectTaskSet, TaskType.PROGRAM_TYPE_M);
+					collectTaskSet, taskType);//TaskType.PROGRAM_TYPE_M);
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			for (JSONObject snapshot : snapshots) {

@@ -123,7 +123,7 @@ public class HbaseTipsQuery {
 								JSONObject value = JSONObject.fromObject(new String(bytes));
 								resultJson.put(colName, value);
 							}else{
-								resultJson.put(colName, null);
+								resultJson.put(colName, "{}");
 							}
 						}
 						map.put(new String(result.getRow()), resultJson);

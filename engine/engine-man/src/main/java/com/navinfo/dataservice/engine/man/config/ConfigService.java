@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.config;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 
@@ -166,6 +168,29 @@ public class ConfigService {
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getMetaConnection();
+			mangeMesh(conn,dataJson);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("查询配置错误", e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 图幅闸开关接口
+	 * 原则：
+	 * 1.	根据openFlag，对图幅进行开关操作
+	 * 2.	Action有值，则对action对应的图幅操作
+	 * 3.	mediumAction有值，则对meshList图幅操作开关+mediumAction对应的MEDIUM1_FLAG/MEDIUM2_FLAG=1
+	 * 4.	mediumAction无值，meshList有值，则对meshList图幅操作开关
+	 * 5.	仅openFlag有值，对全部图幅进行操作
+	 * @param dataJson
+	 * @throws Exception 
+	 */
+	public void mangeMesh(Connection metaConn,JSONObject dataJson) throws Exception {
+		try{
 			int openFlag=dataJson.getInt("openFlag");
 			
 			String addUpdate="";
@@ -176,27 +201,32 @@ public class ConfigService {
 			MEDIUM2_FLAG*/
 			if(dataJson.containsKey("mediumAction")){
 				int mediumAction=dataJson.getInt("mediumAction");
-				if(mediumAction==1){addUpdate=",s.MEDIUM1_FLAG=1";}
-				if(mediumAction==2){addUpdate=",s.MEDIUM2_FLAG=1";}
+				addUpdate=",s.MEDIUM"+mediumAction+"_FLAG=1";
+			}
+			if(dataJson.containsKey("quickAction")){
+				int quickAction=dataJson.getInt("quickAction");
+				addUpdate=",s.QUICK"+quickAction+"_FLAG=1";
 			}
 			String sql="update SC_PARTITION_MESHLIST s set s.open_flag="+openFlag+addUpdate+" where 1=1";
 			
 			if(dataJson.containsKey("action")){
 				sql=sql+" and s.action="+dataJson.getInt("action");
 			}
-			
+			Clob clob=null;
 			if(dataJson.containsKey("meshList")){
-				sql=sql+" and s.mesh in ('"+dataJson.getString("meshList").replaceAll(",", "'")+"')";
+				//sql=sql+" and s.mesh in ('"+dataJson.getString("meshList").replaceAll(",", "'")+"')";				
+				sql=sql+" and s.mesh in (select column_value from table(clob_to_table(?)))";
+				clob=ConnectionUtil.createClob(metaConn);
+				clob.setString(1, dataJson.getString("meshList"));
 			}	
-			
+			log.info(sql);
 			QueryRunner runner=new QueryRunner();
-			runner.update(conn, sql);
+			if(clob==null){runner.update(metaConn, sql);}
+			else{runner.update(metaConn, sql,clob);}
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(metaConn);
 			log.error("查询配置错误", e);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

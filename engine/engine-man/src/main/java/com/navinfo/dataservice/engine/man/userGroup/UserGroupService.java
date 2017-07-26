@@ -69,83 +69,7 @@ public class UserGroupService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void update(UserGroup bean)throws ServiceException{
-		Connection conn = null;
-		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			
-			String updateSql = "update user_group set GROUP_ID=?, GROUP_NAME=?, GROUP_TYPE=?, LEADER_ID=? where 1=1 ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getGroupId()!=null && StringUtils.isNotEmpty(bean.getGroupId().toString())){
-				updateSql+=" and GROUP_ID=? ";
-				values.add(bean.getGroupId());
-			};
-			if (bean!=null&&bean.getGroupName()!=null && StringUtils.isNotEmpty(bean.getGroupName().toString())){
-				updateSql+=" and GROUP_NAME=? ";
-				values.add(bean.getGroupName());
-			};
-			if (bean!=null&&bean.getGroupType()!=null && StringUtils.isNotEmpty(bean.getGroupType().toString())){
-				updateSql+=" and GROUP_TYPE=? ";
-				values.add(bean.getGroupType());
-			};
-			if (bean!=null&&bean.getLeaderId()!=null && StringUtils.isNotEmpty(bean.getLeaderId().toString())){
-				updateSql+=" and LEADER_ID=? ";
-				values.add(bean.getLeaderId());
-			};
-			run.update(conn, 
-					   updateSql, 
-					   values.toArray(),
-					   values.toArray()
-					   );
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	public void delete(UserGroup bean)throws ServiceException{
-		Connection conn = null;
-		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			
-			String deleteSql = "delete from  user_group where 1=1 ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getGroupId()!=null && StringUtils.isNotEmpty(bean.getGroupId().toString())){
-				deleteSql+=" and GROUP_ID=? ";
-				values.add(bean.getGroupId());
-			};
-			if (bean!=null&&bean.getGroupName()!=null && StringUtils.isNotEmpty(bean.getGroupName().toString())){
-				deleteSql+=" and GROUP_NAME=? ";
-				values.add(bean.getGroupName());
-			};
-			if (bean!=null&&bean.getGroupType()!=null && StringUtils.isNotEmpty(bean.getGroupType().toString())){
-				deleteSql+=" and GROUP_TYPE=? ";
-				values.add(bean.getGroupType());
-			};
-			if (bean!=null&&bean.getLeaderId()!=null && StringUtils.isNotEmpty(bean.getLeaderId().toString())){
-				deleteSql+=" and LEADER_ID=? ";
-				values.add(bean.getLeaderId());
-			};
-			if (values.size()==0){
-	    		run.update(conn, deleteSql);
-	    	}else{
-	    		run.update(conn, deleteSql,values.toArray());
-	    	}
-	    	
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+	
 	public Page list(UserGroup bean ,final int currentPageNum)throws ServiceException{
 		Connection conn = null;
 		try{
@@ -154,7 +78,7 @@ public class UserGroupService {
 			
 			String selectSql = "select * from user_group where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getGroupId()!=null && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (bean!=null&&bean.getGroupId()!=0){
 				selectSql+=" and GROUP_ID=? ";
 				values.add(bean.getGroupId());
 			};
@@ -211,7 +135,7 @@ public class UserGroupService {
 					
 			String selectSql = "select * from user_group where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getGroupId()!=null && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (bean!=null&&bean.getGroupId()!=0){
 				selectSql+=" and GROUP_ID=? ";
 				values.add(bean.getGroupId());
 			};
@@ -265,7 +189,7 @@ public class UserGroupService {
 			
 			String selectSql = "select * from user_group where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getGroupId()!=null && StringUtils.isNotEmpty(bean.getGroupId().toString())){
+			if (bean!=null&&bean.getGroupId()!=0){
 				selectSql+=" and GROUP_ID=? ";
 				values.add(bean.getGroupId());
 			};
@@ -314,14 +238,26 @@ public class UserGroupService {
 	public List<UserGroup> listByUser(UserInfo userInfo)throws ServiceException{
 		Connection conn = null;
 		try{
+			conn = DBConnector.getInstance().getManConnection();	    	
+	    	return listByUser(conn,userInfo.getUserId());	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public List<UserGroup> listByUser(Connection conn,int userId)throws ServiceException{
+		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
 					
 			String selectSql = "select ug.GROUP_ID"
 					+ ",ug.GROUP_NAME"
 					+ " from user_group ug,group_user_mapping gum"
 					+ " where ug.group_id = gum.group_id"
-					+ " and gum.user_id = " + userInfo.getUserId();
+					+ " and gum.user_id = " + userId;
 
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
 				public List<UserGroup> handle(ResultSet rs) throws SQLException {
@@ -344,8 +280,6 @@ public class UserGroupService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

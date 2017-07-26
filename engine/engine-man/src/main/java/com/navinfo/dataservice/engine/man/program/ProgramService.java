@@ -2037,8 +2037,12 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+					if(t.getType()==0&&infor.getSourceCode()==2){
+						t.setWorkKind("1|0|0|0");
+					}else if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
+					}else{
+						t.setWorkKind("1|0|0|0");
 					}
 					UserGroup group =null;
 					/*web端有人触发的情报项目发布，导致的采集任务创建，则不赋组；

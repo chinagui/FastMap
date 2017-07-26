@@ -1,15 +1,17 @@
 package com.navinfo.dataservice.engine.fcc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JsonConfig;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -203,11 +205,56 @@ public class TipsSelectorTest extends InitApplication {
 
 
 	//根据rowkey获取单个tips的详细信息
-	//@Test
+	@Test
 	public void testSearchDataByRowkey() {
 		try {
-			System.out.println("sorl by rowkey:");
-			System.out.println(solrSelector.searchDataByRowkey("73c0077b-e950-4079-9d3b-c7454c4109f9"));
+//			System.out.println("sorl by rowkey:");
+//			System.out.println(solrSelector.searchDataByRowkey("73c0077b-e950-4079-9d3b-c7454c4109f9"));
+            Set<Integer> collectTaskIds = new HashSet<>();
+            collectTaskIds.add(5799999);
+			List<TipsDao> tipsList = solrSelector.queryCollectTaskTips(collectTaskIds,
+					TaskType.PROGRAM_TYPE_Q);
+			Map<String, int[]> statsMap = new HashMap<>();
+			for (TipsDao tip : tipsList) {
+				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
+				JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
+				Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
+				Coordinate coordinate = point.getCoordinates()[0];
+                System.out.println("*******************************************************");
+                System.out.println(coordinate.x);
+				String gridId = CompGridUtil
+						.point2Grids(coordinate.x, coordinate.y)[0];
+				int tipStatus = snapshot.getInt("t_tipStatus");
+				int dEditStatus = snapshot.getInt("t_dEditStatus");
+				if (statsMap.containsKey(gridId)) {
+					int[] statsArray = statsMap.get(gridId);
+					if (tipStatus == 2 && dEditStatus != 2) {// 未完成
+						statsArray[0] += 1;
+					} else if (tipStatus == 2 && dEditStatus == 2) {// 已完成
+						statsArray[1] += 1;
+					}
+				} else {
+					int[] statsArray = new int[] { 0, 0 };
+					if (tipStatus == 2 && dEditStatus != 2) {// 未完成
+						statsArray[0] += 1;
+					} else if (tipStatus == 2 && dEditStatus == 2) {// 已完成
+						statsArray[1] += 1;
+					}
+					statsMap.put(gridId, statsArray);
+				}
+			}
+			List<Map> list = new ArrayList<>();
+			if (statsMap.size() > 0) {
+				for (String gridId : statsMap.keySet()) {
+					Map<String, Integer> map = new HashMap<>();
+					map.put("gridId", Integer.valueOf(gridId));
+					int[] statsArray = statsMap.get(gridId);
+					map.put("finished", statsArray[1]);
+					map.put("unfinished", statsArray[0]);
+					list.add(map);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -218,14 +265,20 @@ public class TipsSelectorTest extends InitApplication {
 	@Test
 	public void testSearchDataBySpatial() {
 		try {
-			JSONArray stages = new JSONArray();
-			stages.add(1);
-			stages.add(2);
-			JSONArray ja =
-					solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",10,1901,stages);
-			//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+//			JSONArray stages = new JSONArray();
+//			stages.add(1);
+//			stages.add(2);
+//			JSONArray ja =
+//					solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",10,1901,stages);
+//			//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+//
+//			System.out.println(ja.size()+"  "+ja.toString());
 
-			System.out.println(ja.size()+"  "+ja.toString());
+//            String parameter = "{\"subTaskId\":198,\"programType\":1}";
+//            System.out.println(solrSelector.statInfoTask(parameter));
+
+            solrSelector.checkUpdate(
+                    "59567233" ,"20160101010101");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

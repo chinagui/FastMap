@@ -273,7 +273,7 @@ public class TipsCheckTest extends InitApplication {
 		
 		JSONObject pa = new JSONObject();
 		pa.put("checkStatus", 1);
-		pa.put("rowkey", "0280020f4d849b6c614766afb99d0dd744bf6c");
+		pa.put("rowkey", "11170110935773");
 
 		String parameter = pa.toString();
 

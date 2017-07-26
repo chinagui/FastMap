@@ -229,7 +229,7 @@ public class TipsRequestParamSQL {
 			builder.append(" and");
 		}
 		builder.append(" sdo_relate(wktLocation,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
-		String sql = "select * from tips_index where " + builder.toString();
+		String sql = "select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ * from tips_index where " + builder.toString();
 		logger.info("getByTileWithGap:" + sql);
 		return sql;
 	}
@@ -839,5 +839,10 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
+ 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
+		  String query = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
+				begin, end, subTaskId);
+		  return query;
+	}
 }
-

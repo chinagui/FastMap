@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -15,12 +16,12 @@ import java.util.regex.Pattern;
 public class SplitUtil {
 
 
-    public static String split(String sourceText){
+    public static String split(String sourceText, List<Integer> wordIndex){
         sourceText = ConvertUtil.convertHalf2Full(sourceText);
 
         sourceText = ConvertUtil.removeRepeatSpace(sourceText);
 
-        sourceText = splitWords(sourceText);
+        sourceText = splitWords(sourceText, wordIndex);
 
         sourceText = joinSingleLetter(sourceText);
 
@@ -56,7 +57,7 @@ public class SplitUtil {
         return result.toString();
     }
 
-    private static String splitWords(String sourceText) {
+    private static String splitWords(String sourceText, List<Integer> wordIndex) {
         StringBuffer result = new StringBuffer();
 
         for(String subText : sourceText.split("/")){
@@ -88,7 +89,7 @@ public class SplitUtil {
                         }
                     }
                     if(flag){
-                        index++;
+                        wordIndex.add(index++);
                         wordValue = wordValue + "/";
                     }
                 }else {

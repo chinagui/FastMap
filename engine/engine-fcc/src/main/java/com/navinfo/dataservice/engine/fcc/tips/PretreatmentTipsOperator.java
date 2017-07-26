@@ -1754,12 +1754,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		// 查询关联Tips
 		//20170615 查询和原测线关联的所有Tips		
         String query = "select * from tips_index i where exists(select 1 from tips_links l where i.id=l.id"
-        		+ " and l.id=?)";
+        		+ " and l.Link_Id=? )";
         TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
         List<TipsDao> tipsDaos = operator.query(query, oldRowkey);
         
         //List<JSONObject> snapotList = solr.queryTips(query, null);
-		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
+        List<TipsDao>  updateResult=new  ArrayList<TipsDao>();//维护后的tips （json） List
 
 		for (TipsDao json : tipsDaos) {
 
@@ -1778,12 +1778,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			if(json!=null){
 				
-				updateArray.add(json);
+				updateResult.add(json);
 			}
 
 		}
 		//更新后的数据进行更新（只更新了deep+relate_links+g_location+g_guide+solr还需要更新wkt和wktLocation!!）
-		saveUpdateData(updateArray,user);
+		saveUpdateData(updateResult,user);
 	}
 
 	
@@ -1813,16 +1813,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param user 
 	 * @throws Exception 
 	 */
-	private void saveUpdateData(JSONArray updateArray, int user) throws Exception {
+	private void saveUpdateData( List<TipsDao>  updateResult, int user) throws Exception {
 		try {
-			batchUpdateRelateTips(updateArray);
+			batchUpdateRelateTips(updateResult);
 		} catch (Exception e) {
 		logger.error("测线打断，批量修改出错，"+e.getMessage());
 		throw new Exception("测线打断，批量修改出错，"+e.getMessage(), e);
 		}
 	}
 
-    private void batchUpdateRelateTips(JSONArray jsonInfoArr) throws Exception {
+    private void batchUpdateRelateTips(List<TipsDao> updateResult) throws Exception {
 
         Connection hbaseConn = null;
         java.sql.Connection tipsConn=null;
@@ -1838,17 +1838,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             List<TipsDao> solrIndexList = new ArrayList<>();
             tipsConn=DBConnector.getInstance().getTipsIdxConnection();
             TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
-            for (Object jsonInfo : jsonInfoArr) {
+            for (TipsDao dao : updateResult) {
 
-                JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
+                //JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
 
-                String rowkey = tipsInfo.getString("id");
-                JSONObject g_location=tipsInfo.getJSONObject("g_location");
-                JSONObject g_guide=tipsInfo.getJSONObject("g_guide");
+                String rowkey = dao.getId();
+                JSONObject g_location=JSONObject.fromObject(dao.getG_location());
+                JSONObject g_guide=JSONObject.fromObject(dao.getG_guide());
                 
                 //更新hbase
                 Put put = new Put(rowkey.getBytes());
-                JSONObject deep = tipsInfo.getJSONObject("deep"); //更新deep
+                JSONObject deep = JSONObject.fromObject(dao.getDeep()); //更新deep
                 put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString()
                         .getBytes());
                 JSONObject geometry=new JSONObject(); //更新geometry
@@ -1858,19 +1858,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                         .getBytes());
                 puts.add(put);
 
-                //更新solr
-                JSONObject feedback=tipsInfo.getJSONObject("feedback");
-                String sourceType=tipsInfo.getString("s_sourceType");
-                TipsDao solrIndex = operator.getById(rowkey);
-                solrIndex.setDeep(deep.toString());
-                solrIndex.setG_location(g_location.toString());
-                solrIndex.setG_guide(g_guide.toString());
-                solrIndex.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deep,g_location, feedback));
-                solrIndex.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, feedback));
+                //更新 wkt 及wktLocation  relate_links
+                JSONObject feedback=JSONObject.fromObject(dao.getFeedback());
+                String sourceType=dao.getS_sourceType();
+                dao.setWktLocation(TipsImportUtils.generateSolrWkt(sourceType, deep,g_location, feedback));
+                dao.setWkt(TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, feedback));
                 
                 Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deep);
-                solrIndex.setRelate_links(relateMap.get("relate_links"));
-                solrIndexList.add(solrIndex);
+                dao.setRelate_links(relateMap.get("relate_links"));
+                solrIndexList.add(dao);
 
                 //需要进行tips差分
                 allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);

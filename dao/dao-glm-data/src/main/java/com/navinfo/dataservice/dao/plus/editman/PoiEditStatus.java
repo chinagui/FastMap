@@ -679,7 +679,7 @@ public class PoiEditStatus {
 			sb.append("SELECT * FROM POI_EDIT_STATUS WHERE FRESH_VERIFIED = 1 ");
 			Clob clobPids=null;
 			if(objPids.size()>1000){
-				clobPids = conn.createClob();
+				clobPids = ConnectionUtil.createClob(conn);
 				clobPids.setString(1, StringUtils.join(objPids, ","));
 				sb.append(" AND PID IN (select to_number(column_value) from table(clob_to_table(?)))");
 			}else{

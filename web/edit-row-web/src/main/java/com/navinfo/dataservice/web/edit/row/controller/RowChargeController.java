@@ -55,6 +55,7 @@ public class RowChargeController extends BaseController{
 			if (paraJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			log.info("editRow/poi/charge/download接口参数:"+paraJson.toString());
 			if(!paraJson.containsKey("type")){
 				throw new IllegalArgumentException("parameter参数中type不能为空。");
 			}

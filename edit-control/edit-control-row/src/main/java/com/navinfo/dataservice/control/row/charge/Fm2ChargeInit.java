@@ -250,6 +250,7 @@ public class Fm2ChargeInit {
 						try {
 							JSONObject initPoi = poiConvertor.initPoi((IxPoiObj) obj);
 							if(initPoi != null){
+								initPoi.put("dbId", dbId);
 								chargePoi.add(initPoi);
 							}
 						} catch (Exception e) {

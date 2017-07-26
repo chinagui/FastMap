@@ -839,5 +839,10 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
+ 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
+		  String query = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
+				begin, end, subTaskId);
+		  return query;
+	}
 }
-

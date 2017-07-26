@@ -2415,6 +2415,65 @@ public class TipsSelector {
 		}
 		return meshSet;
 	}
+	
+	/**
+	 * 加载tips<时间段限制，子任务范围限制，status = 2， >
+	 * @param subTaskId
+	 * @param beginTime
+	 * @param endTime
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage) throws Exception {
+		JSONArray array = new JSONArray();
+		
+		TipsRequestParamSQL param = new TipsRequestParamSQL();
+		
+		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime);
+		
+		Connection oracleConn = DBConnector.getInstance()
+				.getTipsIdxConnection();
+		
+		TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+		
+		try {
+			Page page = operator.queryPage(sql, curPage, pageSize);
+
+			long totalNum = page.getTotalCount();
+			
+			if (totalNum <= Integer.MAX_VALUE) {
+				List<TipsDao> tipsDaoList = (ArrayList<TipsDao>) page.getResult();
+				
+				for (TipsDao tip : tipsDaoList) {
+					JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+					
+					JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+					
+					array.add(json);
+				}
+				
+			} else {
+				// 暂先不处理
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+		}
+		return array;
+	}
+	
+	public void searchPoiRelateTips(int id,int subTaskId){
+		//A、库中状态为未处理且没有形状删除的测线tips，建30米buffer（POI显示坐标），落在buffer范围内的非删除状态的POI且该POI的引导坐标未落入该测线上（3m内－引导坐标）
+		//日库状态为未处理且没有形状删除的测线tips：fusion_result.source.s_sourceType= 2001（测线）且fusion_result.track.t_trackInfo.stage=1、2、5、6，且fusion_result.track. t_tipStatus=2 且fusion_result.track.t_dEditStatus=0 或1;且fusion_result.source.s_sourceType为2101（删除道路）中关联fusion_result.deep.f.id不是该测线；
+		
+		//B、库中状态为已处理且没有形状删除的测线tips，建30米buffer（POI显示坐标），落在buffer范围内的非删除状态的POI且该POI的引导坐标关联在测线上（3m内－引导坐标）
+		//日库状态为已处理且没有形状删除的测线tips：fusion_result.track.t_trackInfo.stage=2，且fusion_result.track.t_dEditStatus=2且fusion_result.source.s_sourceType为2101（删除道路）中关联fusion_result.deep.f.id不是该测线；
+		
+		
+		//C、形状删除的Tips关联的link且该link存在或逻辑删除，且该POI的引导link是该link的pid，或建30米buffer（POI显示坐标），落在buffer范围内的非删除状态的POI，且POI引导坐标在该道路link上（3米－引导坐标）；——注意去重
+	}
 
 	public static void main(String[] args) throws Exception {
 		// String parameter =

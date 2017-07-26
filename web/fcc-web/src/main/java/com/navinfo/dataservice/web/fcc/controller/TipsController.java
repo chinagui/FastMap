@@ -597,13 +597,13 @@ public class TipsController extends BaseController {
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-            JSONArray grids = jsonReq.getJSONArray("grids");
+//            JSONArray grids = jsonReq.getJSONArray("grids");
 
             int subtaskId = jsonReq.getInt("subtaskId");
 
-            if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
+//            if (grids==null||grids.size()==0) {
+//                throw new IllegalArgumentException("参数错误:grids不能为空。");
+//            }
 
             if(!jsonReq.containsKey("workStatus")) {
                 throw new IllegalArgumentException("参数错误:workStatus不能为空。");

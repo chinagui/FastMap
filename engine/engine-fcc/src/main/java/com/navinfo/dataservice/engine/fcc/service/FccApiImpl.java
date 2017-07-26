@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -45,21 +46,16 @@ public class FccApiImpl implements FccApi{
      * 任务卡片统计：taskType=1是质检任务
      */
     @Override
-    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception {
+    public JSONObject getSubTaskStatsByWkt(int subtaskId, String wkt, int subTaskType,int handler, int isQuality) throws Exception {
         JSONObject result = new JSONObject();
-
-        if (wkt == null || wkt.isEmpty()) {
-
-            throw new IllegalArgumentException("参数错误:wkt不能为空。");
-        }
 
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量
-        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total",taskType,handler);
+        int total = selector.getTipsDayTotal(subtaskId, wkt, subTaskType,handler, isQuality, "total");
 
         //统计日编待作业
-        int prepared = selector.getTipsDayTotal(wkt, collectTaskIds, "prepared",taskType,handler);
+        int prepared = selector.getTipsDayTotal(subtaskId, wkt, subTaskType,handler, isQuality, "prepared");
 
         result.put("total", total);
 

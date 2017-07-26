@@ -1896,29 +1896,24 @@ public class Transaction {
         }
     }
 
-    private List<IObj> listLinkByNodePid(int pid, ObjType tpye) throws Exception {
+    private List<IObj> listLinkByNodePid(int nodePid, ObjType tpye) throws Exception {
         List<IObj> objs = new ArrayList<>();
         switch (tpye) {
             case RDNODE:
-                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(pid, false));  break;
-            case LCNODE:
-                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
-            case LUNODE:
-                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
-            case ADNODE:
-                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
-            case ZONENODE:
-                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(pid, false)); break;
             case RDLINK:
-                objs.add((IObj) new AbstractSelector(RdLink.class, process.getConn()).loadById(pid, false)); break;
+                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(nodePid, false));  break;
+            case LCNODE:
             case LCLINK:
-                objs.add((IObj) new AbstractSelector(LcLink.class, process.getConn()).loadById(pid, false)); break;
+                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case LUNODE:
             case LULINK:
-                objs.add((IObj) new AbstractSelector(LuLink.class, process.getConn()).loadById(pid, false)); break;
+                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case ADNODE:
             case ADLINK:
-                objs.add((IObj) new AbstractSelector(AdLink.class, process.getConn()).loadById(pid, false)); break;
+                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case ZONENODE:
             case ZONELINK:
-                objs.add((IObj) new AbstractSelector(ZoneLink.class, process.getConn()).loadById(pid, false)); break;
+                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
         }
         return objs;
     }

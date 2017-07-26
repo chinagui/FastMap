@@ -54,7 +54,6 @@ public class TranslateTest {
         //System.out.println(convert.convert("陕西县道210"));
         //System.out.println(convert.convert("县210道"));
         System.out.println(convert.convert("锦业二路与丈北路十字"));
-        convert.setPinyin("jin ye er lu he dong ba bei lu shi zi");
         System.out.println(convert.convert("锦业二路与丈北路十字"));
     }
 }

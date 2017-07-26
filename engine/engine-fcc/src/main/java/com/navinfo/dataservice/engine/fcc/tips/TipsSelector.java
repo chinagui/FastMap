@@ -677,7 +677,7 @@ public class TipsSelector {
 	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
 		// 2.1deep.time(一级属性)
 		if (type == 1304 || type == 1305 || type == 1203 || type == 1514
-				|| type == 1507 || type == 1517 || type == 1515 || type == 1516) {
+				|| type == 1507 || type == 1517 || type == 1515 || type == 1516 || type == 1520) {
 
 			if (!StringUtils.isEmpty(deep.getString("time"))) {
 
@@ -688,7 +688,7 @@ public class TipsSelector {
 		// 2.2二级属性.不同tips类型不同解析方式
 
 		// [c_array].time
-		else if (1308 == type) {
+		else if (1308 == type || 1104 == type) {
 
 			JSONArray c_array = deep.getJSONArray("c_array");
 

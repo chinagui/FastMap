@@ -15,10 +15,9 @@ public class IxPoiPhoto extends BasicRow {
 	protected String status ;
 	protected String memo ;
 	protected int tag = 1;
-	
 	//*******2017.07.18*******
-	protected int originPid;
-
+	protected long originPid;
+	
 	public IxPoiPhoto (long objPid){
 		super(objPid);
 		setPoiPid(objPid);
@@ -73,11 +72,11 @@ public class IxPoiPhoto extends BasicRow {
 		}
 	}
 	//*******2017.07.18*******
-	public int getOriginPid() {
+	public long getOriginPid() {
 		return originPid;
 	}
 
-	public void setOriginPid(int originPid) {
+	public void setOriginPid(long originPid) {
 		this.originPid = originPid;
 	}
 

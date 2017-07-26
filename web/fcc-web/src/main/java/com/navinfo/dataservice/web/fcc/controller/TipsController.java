@@ -891,4 +891,66 @@ public class TipsController extends BaseController {
         }
     }
 
+    @RequestMapping(value="/tip/exportGps")
+    public ModelAndView getGpsAndDeleteLinkTips(HttpServletRequest request) throws ServletException, IOException {
+    	  String parameter = request.getParameter("parameter");
+
+          try {
+
+              if (StringUtils.isEmpty(parameter)) {
+                  throw new IllegalArgumentException("parameter参数不能为空。");
+              }
+
+              JSONObject jsonReq = JSONObject.fromObject(parameter);
+              
+              int subTaskId = jsonReq.getInt("subTaskId");
+              
+              String beginTime = jsonReq.getString("beginTime");
+              
+              String endTime = jsonReq.getString("endTime");
+              
+              int pageSize = jsonReq.getInt("pageSize");
+              
+              int curPage = jsonReq.getInt("pageNum");
+
+              TipsSelector selector = new TipsSelector();
+
+              JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime,pageSize,curPage);
+              
+              return new ModelAndView("jsonView", success(array));
+
+          } catch (Exception e) {
+
+              logger.error(e.getMessage(), e);
+
+              return new ModelAndView("jsonView", fail(e.getMessage()));
+          }
+    }
+    
+    public ModelAndView getPoiRelateTips(HttpServletRequest request) throws ServletException, IOException{
+    	 String parameter = request.getParameter("parameter");
+
+         try {
+
+             if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+             }
+
+             JSONObject jsonReq = JSONObject.fromObject(parameter);
+             
+             int subTaskId = jsonReq.getInt("subTaskId");
+             
+             String id = jsonReq.getString("id");
+
+             JSONArray array = null;//selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime);
+             
+             return new ModelAndView("jsonView", success(array));
+
+         } catch (Exception e) {
+
+             logger.error(e.getMessage(), e);
+
+             return new ModelAndView("jsonView", fail(e.getMessage()));
+         }
+    }
 }

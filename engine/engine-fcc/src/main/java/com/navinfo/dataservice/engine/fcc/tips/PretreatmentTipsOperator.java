@@ -1754,7 +1754,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		// 查询关联Tips
 		//20170615 查询和原测线关联的所有Tips		
         String query = "select * from tips_index i where exists(select 1 from tips_links l where i.id=l.id"
-        		+ " and l.id=?)";
+        		+ " and l.Link_Id=?)";
         TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
         List<TipsDao> tipsDaos = operator.query(query, oldRowkey);
         

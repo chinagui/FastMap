@@ -105,7 +105,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(176,1);
+		Map<String, Object> result = service.query(172,1);
 		System.out.print(result);
 	}
 	@Test

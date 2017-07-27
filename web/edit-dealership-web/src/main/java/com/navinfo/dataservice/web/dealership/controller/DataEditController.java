@@ -21,6 +21,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -168,9 +169,9 @@ public class DataEditController extends BaseController {
 			}
 			long userId = tokenObj.getUserId();
 			//保存数据
-			dealerShipEditService.saveDataService(parameter,userId);
+			OperationResult opResult=dealerShipEditService.saveDataService(parameter,userId);
 			//执行检查
-			int resultCount=dealerShipEditService.runDealershipCheck(parameter);
+			int resultCount=dealerShipEditService.runDealershipCheck(parameter,opResult);
 			
 			Map<String,Integer> result = new HashMap<>();
 			result.put("checkLogs", resultCount);

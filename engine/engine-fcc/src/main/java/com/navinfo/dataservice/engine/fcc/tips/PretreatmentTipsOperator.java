@@ -1767,7 +1767,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			//size>1说明跨图幅打断了，进行打断维护
 			if(resultArr.size()>1){
 				
-				json=updateRelateMeasuringLine(oldRowkey,json, resultArr,dbId);
+				json=updateRelateMeasuringLine(tipsConn,oldRowkey,json, resultArr,dbId);
 			}
 			
 			//2.维护角度和引导坐标 (修改了坐标的才维护)
@@ -2144,15 +2144,17 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @Description:根据tips类型，修改tips的关联测线
 	 * @param json：需要被维护的tips solr
 	 * @author: y
+	 * @param tipsConn 
 	 * @param oldRowkey :打断前测线的rowkey
 	 * @param resultArr :打断后的Links
 	 * @param dbId 
 	 * @return 
+	 * @throws Exception 
 	 * @time:2017-4-12 下午8:37:30
 	 */
-	private TipsDao updateRelateMeasuringLine(String oldRowkey, TipsDao json, List<TipsDao> resultArr, int dbId) {
+	private TipsDao updateRelateMeasuringLine(java.sql.Connection tipsConn, String oldRowkey, TipsDao json, List<TipsDao> resultArr, int dbId) throws Exception {
 		TipsRelateLineUpdate relateLineUpdate = new TipsRelateLineUpdate(oldRowkey,json,
-				resultArr,dbId);
+				resultArr,dbId,tipsConn);
 		return relateLineUpdate.excute();
 	}
 

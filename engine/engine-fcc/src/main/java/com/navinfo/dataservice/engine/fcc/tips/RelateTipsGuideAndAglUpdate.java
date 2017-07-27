@@ -393,6 +393,7 @@ public class RelateTipsGuideAndAglUpdate {
 	 * @time:2017-7-4 下午4:29:09
 	 */
 	private TipsDao updateSeparationLine() throws Exception{
+		
 		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
 		
 		
@@ -405,17 +406,18 @@ public class RelateTipsGuideAndAglUpdate {
 
 		int index = -1;//记录关联测线再关联数组中的位置
 		
+		//==1是判断 只有修形 ，且没有跨图幅打断的情况
 		if(linesAfterCut.size() == 1){
-		//	String rowkey = linesAfterCut.get(0).getId();
+		    String rowkey = linesAfterCut.get(0).getId();
 			JSONArray f_array = deep.getJSONArray("f_array");
 			for(int i = 0; i < f_array.size(); i++){
 				JSONObject fInfo = JSONObject.fromObject(f_array.get(i)); // 是个对象
 				if(fInfo != null && fInfo.containsKey("type")) {
 	                int type = fInfo.getInt("type");
 	                String id = fInfo.getString("id");
-	              /*  if (type == 2 && id.equals(rowkey)) {
+	                if (type == 2 && id.equals(rowkey)) {
 	                	index = i;
-	                } */
+	                } 
 	                //其他测线
 	                if(type==2){
 	                	
@@ -430,8 +432,8 @@ public class RelateTipsGuideAndAglUpdate {
 			
 		}
 		//更新g_location
-		//==-1，说明就没有关联到当前测线，实际这样的情况应该不存在
-		//if(index ==-1)  return json;
+		//==-1，说明打断维护过了，或者没找到关联（理论不存在）
+		if(index ==-1)  return json;
 		//RDLink的几何
 		if(StringUtils.isNotEmpty(linkPidStr)){
 			linkPidStr=linkPidStr.substring(1);

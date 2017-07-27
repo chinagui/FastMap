@@ -25,7 +25,7 @@ public class ScPointFieldAttentionPoi {
 	public static final ScPointFieldAttentionPoi getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
-	public List<Integer> queryImportantPid() throws SQLException {
+	public List<String> queryImportantPid() throws SQLException {
 
 		Connection conn = null;
 		try{
@@ -33,11 +33,11 @@ public class ScPointFieldAttentionPoi {
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "select t.poi_num from SC_POINT_FIELD_ATTENTIONPOI t";
-			ResultSetHandler<List<Integer>> rs = new ResultSetHandler<List<Integer>>(){
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-				List<Integer> pids = new ArrayList<>();
+			ResultSetHandler<List<String>> rs = new ResultSetHandler<List<String>>(){
+				public List<String> handle(ResultSet rs) throws SQLException {
+				List<String> pids = new ArrayList<>();
 				while(rs.next()){
-					pids.add(rs.getInt("poi_num"));
+					pids.add(rs.getString("poi_num"));
 				}
 				return pids;
 			}

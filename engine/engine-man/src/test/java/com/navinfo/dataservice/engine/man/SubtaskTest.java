@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -51,7 +53,8 @@ public class SubtaskTest extends InitApplication{
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
 		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
-		String parameter ="{\"id1\":372,\"id2\":375}"; 
+		String parameter ="{\"lineWkt\":\"LINESTRING(115.9964 40.37375,116.04309 40.24704,116.33148 40.15579)\"}"; 
+		//String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -60,7 +63,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=135;
+		int taskId=37;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}
@@ -68,7 +71,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testCreate() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter ="{\"taskId\":78,\"name\":\"北京市北京市城区西站南站20170427_韩雪松\",\"status\":2,\"type\":1,\"stage\":0,\"descp\":\"\",\"workKind\":1,\"planStartDate\":\"20170720\",\"planEndDate\":\"20170720\",\"exeUserId\":1664,\"hasQuality\":0,\"referId\":499}";
+		String parameter ="{\"taskId\":97,\"status\":2,\"type\":7,\"stage\":2,\"descp\":\"\",\"planStartDate\":\"20170705\",\"planEndDate\":\"20170821\",\"exeGroupId\":\"2\",\"hasQuality\":0}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -78,6 +81,12 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.create(0,dataJson);			
+	}	
+	
+	@Test
+	public void testClose() throws Exception {
+		SubtaskService service = SubtaskService.getInstance();
+		service.close(717, 0);			
 	}	
 	
 	@Test
@@ -96,7 +105,7 @@ public class SubtaskTest extends InitApplication{
 	@Test
 	public void testQuery() throws Exception {
 		SubtaskService service = SubtaskService.getInstance();
-		Map<String, Object> result = service.query(584,1);
+		Map<String, Object> result = service.query(176,1);
 		System.out.print(result);
 	}
 	@Test
@@ -125,8 +134,8 @@ public class SubtaskTest extends InitApplication{
 	
 	@Test
 	public void testListByUser() throws Exception {
-		//AccessToken tokenObj=AccessTokenFactory.validate("00000457J3IIA2L1D2F0330FDCAA27180F845D3AAF67B5F3");
-		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000,\"stage\":0}");
+		AccessToken tokenObj=AccessTokenFactory.validate("000001XZJ5J8V8XP9D54FECB54D3EAD70774ADACE263BF8B");
+		JSONObject dataJson = JSONObject.fromObject("{\"platForm\":1,\"snapshot\":1,\"status\":1,\"pageSize\":1000}");
 		int curPageNum= 1;//默认为第一页
 		if(dataJson.containsKey("pageNum")){
 			curPageNum = dataJson.getInt("pageNum");
@@ -149,8 +158,8 @@ public class SubtaskTest extends InitApplication{
 			dataJson.remove("platForm");
 		}
 		if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
-			//dataJson.put("exeUserId", (int)tokenObj.getUserId());
-			dataJson.put("exeUserId", 1664);
+			dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			//dataJson.put("exeUserId", 1664);
 		}
         Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
         System.out.print(page.getResult());			

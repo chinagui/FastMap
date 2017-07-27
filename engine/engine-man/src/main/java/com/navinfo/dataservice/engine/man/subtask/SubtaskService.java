@@ -1835,9 +1835,13 @@ public class SubtaskService {
 		try {
 			// 持久化
 			QueryRunner run = new QueryRunner();
-			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID =" + subtaskId;	
+			//modify by songhe
+			//删除子任务的同时，如果有对应的质检子任务也同时删除
+			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID = "+subtaskId+" or "
+					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";	
 			run.update(conn,updateSql);
-			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID =" + subtaskId;
+			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID = "+subtaskId+" or "
+					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";
 			run.update(conn,updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

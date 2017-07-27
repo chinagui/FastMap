@@ -2546,7 +2546,7 @@ public class TipsSelector {
 
 			for (TipsDao tip : tipsList) {
 
-				Geometry tipGeo = GeoTranslator.transform(tip.getWkt(), 0.00001, 5);
+				Geometry tipGeo = GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
 
 				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
 

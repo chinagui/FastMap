@@ -20,11 +20,30 @@ public class TipsStatConstant {
     //统计坐标为Geo的tips类型
 	public static final List<String> gGeoTipsType = new ArrayList<>();
 
-    //315过滤的tips类型
-	public static final List<String> filterTipsType = new ArrayList<>();
-
     //情报预处理新增Tips需要deep.id赋值的Tips类型
 	public static final List<String> preTipsDeepIdType = new ArrayList<>();
+
+	//质检上传linkpid赋值的Tips类型 exp.id
+	public static final List<String> fieldQCExpIdType = new ArrayList<>();
+
+    //质检上传linkpid赋值的Tips类型 f.id
+    public static final List<String> fieldQCFIdType = new ArrayList<>();
+
+    //质检上传linkpid赋值的Tips类型 f.id and node
+    public static final List<String> fieldQCFIdNodeType = new ArrayList<>();
+
+    //质检上传linkpid赋值的Tips类型 in.id
+    public static final List<String> fieldQCInIdType = new ArrayList<>();
+
+    //质检上传linkpid赋值的Tips类型 out.id
+    public static final List<String> fieldQCOutIdType = new ArrayList<>();
+
+
+    //质检上传linkpid赋值的Tips类型 farray.id
+    public static final List<String> fieldQCFArrayIdType = new ArrayList<>();
+
+    //质检上传linkpid赋值的Tips类型 parray.id
+    public static final List<String> fieldQCPArrayIdType = new ArrayList<>();
 
 	static{
 		//统计坐标为g_location的tips类型
@@ -147,26 +166,6 @@ public class TipsStatConstant {
 		gGeoTipsType.add("2201");
         gGeoTipsType.add("2202");
 
-		//315web编辑平台屏蔽Tips
-		filterTipsType.add("1108");
-		filterTipsType.add("1110");
-		filterTipsType.add("1112");
-		filterTipsType.add("1113");
-		filterTipsType.add("1114");
-		filterTipsType.add("1115");
-		filterTipsType.add("1204");
-		filterTipsType.add("1303");
-		filterTipsType.add("1306");
-		filterTipsType.add("1307");
-		filterTipsType.add("1308");
-		filterTipsType.add("1310");
-		filterTipsType.add("1311");
-		filterTipsType.add("1401");
-		filterTipsType.add("1402");
-		filterTipsType.add("1406");
-		filterTipsType.add("1409");
-		filterTipsType.add("1707");
-
         //情报预处理新增Tips需要deep.id赋值的Tips类型
         preTipsDeepIdType.add("2001");
         preTipsDeepIdType.add("1301");
@@ -175,6 +174,97 @@ public class TipsStatConstant {
         preTipsDeepIdType.add("1107");
         preTipsDeepIdType.add("2101");
         preTipsDeepIdType.add("1302");
-	}
+
+        fieldQCExpIdType.add("1307");
+
+        fieldQCFIdType.add("1101");
+        fieldQCFIdType.add("1109");
+        fieldQCFIdType.add("1110");
+        fieldQCFIdType.add("1111");
+        fieldQCFIdType.add("1113");
+        fieldQCFIdType.add("1114");
+        fieldQCFIdType.add("1117");
+        fieldQCFIdType.add("1201");
+        fieldQCFIdType.add("1202");
+        fieldQCFIdType.add("1203");
+        fieldQCFIdType.add("1205");
+        fieldQCFIdType.add("1206");
+        fieldQCFIdType.add("1207");
+        fieldQCFIdType.add("1208");
+        fieldQCFIdType.add("1211");
+        fieldQCFIdType.add("1212");
+        fieldQCFIdType.add("1213");
+        fieldQCFIdType.add("1214");
+        fieldQCFIdType.add("1304");
+        fieldQCFIdType.add("1305");
+        fieldQCFIdType.add("1308");
+        fieldQCFIdType.add("1311");
+        fieldQCFIdType.add("1707");
+        fieldQCFIdType.add("2101");
+
+        fieldQCFIdNodeType.add("1115");
+        fieldQCFIdNodeType.add("1701");
+        fieldQCFIdNodeType.add("1702");
+        fieldQCFIdNodeType.add("1704");
+        fieldQCFIdNodeType.add("1706");
+
+        fieldQCInIdType.add("1103");
+        fieldQCInIdType.add("1104");
+        fieldQCInIdType.add("1105");
+        fieldQCInIdType.add("1107");
+        fieldQCInIdType.add("1108");
+        fieldQCInIdType.add("1112");
+        fieldQCInIdType.add("1301");
+        fieldQCInIdType.add("1302");
+        fieldQCInIdType.add("1303");
+        fieldQCInIdType.add("1306");
+        fieldQCInIdType.add("1401");
+        fieldQCInIdType.add("1402");
+        fieldQCInIdType.add("1403");
+        fieldQCInIdType.add("1404");
+        fieldQCInIdType.add("1405");
+        fieldQCInIdType.add("1406");
+        fieldQCInIdType.add("1407");
+        fieldQCInIdType.add("1409");
+        fieldQCInIdType.add("1410");
+        fieldQCInIdType.add("1703");
+        fieldQCInIdType.add("1804");
+
+        fieldQCOutIdType.add("1106");
+
+        fieldQCFArrayIdType.add("1116");
+        fieldQCFArrayIdType.add("1204");
+        fieldQCFArrayIdType.add("1310");
+        fieldQCFArrayIdType.add("1501");
+        fieldQCFArrayIdType.add("1502");
+        fieldQCFArrayIdType.add("1503");
+        fieldQCFArrayIdType.add("1504");
+        fieldQCFArrayIdType.add("1505");
+        fieldQCFArrayIdType.add("1506");
+        fieldQCFArrayIdType.add("1507");
+        fieldQCFArrayIdType.add("1508");
+        fieldQCFArrayIdType.add("1509");
+        fieldQCFArrayIdType.add("1510");
+        fieldQCFArrayIdType.add("1511");
+        fieldQCFArrayIdType.add("1512");
+        fieldQCFArrayIdType.add("1513");
+        fieldQCFArrayIdType.add("1514");
+        fieldQCFArrayIdType.add("1515");
+        fieldQCFArrayIdType.add("1516");
+        fieldQCFArrayIdType.add("1517");
+        fieldQCFArrayIdType.add("1518");
+        fieldQCFArrayIdType.add("1519");
+        fieldQCFArrayIdType.add("1520");
+        fieldQCFArrayIdType.add("1601");
+        fieldQCFArrayIdType.add("1602");
+        fieldQCFArrayIdType.add("1604");
+        fieldQCFArrayIdType.add("1605");
+        fieldQCFArrayIdType.add("1606");
+        fieldQCFArrayIdType.add("1607");
+
+        fieldQCPArrayIdType.add("2203");
+        fieldQCPArrayIdType.add("2204");
+
+    }
 
 }

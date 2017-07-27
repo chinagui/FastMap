@@ -944,9 +944,9 @@ public class TipsController extends BaseController {
              
              TipsSelector selector = new TipsSelector();
 
-             selector.searchPoiRelateTips(Integer.valueOf(id),subTaskId,buffer,dbId);
+			JSONArray array = selector.searchPoiRelateTips(id, subTaskId, buffer, dbId);
              
-             return new ModelAndView("jsonView", success());
+             return new ModelAndView("jsonView", success(array));
 
          } catch (Exception e) {
 

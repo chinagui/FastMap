@@ -601,6 +601,19 @@ public class TipsSelectorTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testSelectorPoi(){
+		TipsSelector selector = new TipsSelector();
+		
+		try{
+			JSONArray result = selector.searchPoiRelateTips("0220014a20f45489b740e6a93122e1f2c94f4e", 0, 30, 330);
+			System.out.println(result.toString());
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	public static void main(String[] args) {
 

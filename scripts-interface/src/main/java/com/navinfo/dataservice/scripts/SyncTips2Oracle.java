@@ -168,7 +168,9 @@ public class SyncTips2Oracle {
 				if(lastTrack.containsKey("date")){
 					tOperateDate = lastTrack.getString("date");
 				}
-				handler = lastTrack.getInt("handler");
+				if(lastTrack.containsKey("handler")){
+					handler = lastTrack.getInt("handler");
+				}
 			}
 			ti.setT_operateDate(tOperateDate);
 			ti.setStage(stage);

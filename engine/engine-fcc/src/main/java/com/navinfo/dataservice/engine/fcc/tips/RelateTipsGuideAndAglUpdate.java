@@ -1,21 +1,31 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
-import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * @ClassName: RelateTipsGuideAndAglUpdate.java
@@ -30,15 +40,23 @@ public class RelateTipsGuideAndAglUpdate {
 	private String sourceType = "";
 
 	private List<TipsDao> linesAfterCut = null; // 打断后的测线
+	
+	Connection tipsConn=null; //tips 索引库连接
+	
+	private int dbId;
 
 	public RelateTipsGuideAndAglUpdate(TipsDao json,
-			List<TipsDao> linesAfterCut) {
+			List<TipsDao> linesAfterCut, int dbId, Connection tipsConn) {
 
 		this.json = json;
 
 		sourceType = json.getS_sourceType();
 
 		this.linesAfterCut = linesAfterCut;
+		
+		this.dbId=dbId;
+		
+		this.tipsConn=tipsConn;
 	}
 
 	/**
@@ -94,7 +112,6 @@ public class RelateTipsGuideAndAglUpdate {
             
     
          // 起终点类
-        //case "1501":// 21.上下分离
         case "1507":// 22.步行街
         case "1508":// 23.公交专用道
         case "1510":// 24.桥 
@@ -102,6 +119,8 @@ public class RelateTipsGuideAndAglUpdate {
         case "1514":// 26.施工 
             return updateStartEndPoint();
             
+        case "1501":// 21.上下分离  
+        	return updateSeparationLine();
        
 	    default:
 		    return null;
@@ -364,6 +383,195 @@ public class RelateTipsGuideAndAglUpdate {
 		return json;
 	}
 	
+	
+	
+	/**
+	 * @Description:起终点类
+	 * @return
+	 * @author: jiayong
+	 * @throws Exception 
+	 * @time:2017-7-4 下午4:29:09
+	 */
+	private TipsDao updateSeparationLine() throws Exception{
+		
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
+		
+		
+		List<Geometry> linkGeos=new ArrayList<Geometry>();
+		
+		String linePidStr=""; //测线的pid  因为有其他组成的测线，需要查询其坐标
+		
+		String linkPidStr=""; //link的pid
+		
+
+		int index = -1;//记录关联测线再关联数组中的位置
+		
+		//==1是判断 只有修形 ，且没有跨图幅打断的情况
+		if(linesAfterCut.size() == 1){
+		    String rowkey = linesAfterCut.get(0).getId();
+			JSONArray f_array = deep.getJSONArray("f_array");
+			for(int i = 0; i < f_array.size(); i++){
+				JSONObject fInfo = JSONObject.fromObject(f_array.get(i)); // 是个对象
+				if(fInfo != null && fInfo.containsKey("type")) {
+	                int type = fInfo.getInt("type");
+	                String id = fInfo.getString("id");
+	                if (type == 2 && id.equals(rowkey)) {
+	                	index = i;
+	                } 
+	                //其他测线
+	                if(type==2){
+	                	
+	                	linePidStr+=",'"+fInfo.getString("id")+"'";
+	                }
+	                //拿到关联线是link的pid
+	                if(type == 1){
+	                	linkPidStr+=","+fInfo.getString("id");
+	                }
+	            }
+			}
+			
+		}
+		//更新g_location
+		//==-1，说明打断维护过了，或者没找到关联（理论不存在）
+		if(index ==-1)  return json;
+		//RDLink的几何
+		if(StringUtils.isNotEmpty(linkPidStr)){
+			linkPidStr=linkPidStr.substring(1);
+			List<Geometry> rdLinkGeos=getRdLinkGeoFromGdb(linkPidStr);
+			linkGeos.addAll(rdLinkGeos);
+		}
+		
+		//其他测线的几何
+		if(StringUtils.isNotEmpty(linePidStr)){
+			linePidStr=linePidStr.substring(1);
+			List<Geometry> lineGeos=getLineGeoFromTipsOra(linePidStr);
+			linkGeos.addAll(lineGeos);
+		}
+		
+		//当前测线的几何
+		/*JSONObject g_location = JSONObject.fromObject(linesAfterCut.get(0).getG_location());
+		Geometry geo = GeoTranslator.geojson2Jts(g_location);
+		linkGeos.add(geo);*/
+		
+		////数据维护
+		JSONObject gSLoc = JSONObject.fromObject(deep.getString("gSLoc"));
+		JSONObject gELoc = JSONObject.fromObject(deep.getString("gELoc"));
+		JSONObject gSLocNew=getNearlestLineId(gSLoc,linkGeos);
+		JSONObject gELocNew = getNearlestLineId(gELoc,linkGeos);
+		
+		deep.put("gSLoc", gSLocNew);// 新的起点
+		deep.put("gELoc", gELocNew);// 新的终点
+		
+		json.setDeep(deep.toString());
+		json.setG_guide(gSLocNew.toString());
+		json.setG_location(gSLocNew.toString());
+		
+		return json;
+	}
+	
+	/**
+	 * @Description:获取离起点最近的点
+	 * @param gSLoc
+	 * @param linkGeos
+	 * @return
+	 * @author: y
+	 * @time:2017-7-26 下午8:16:21
+	 */
+	private JSONObject getNearlestLineId(JSONObject gSLoc,
+			List<Geometry> linkGeos) {
+		Point point = (Point) GeoTranslator.geojson2Jts(gSLoc);
+		Double minDistinct=null;
+		Geometry nearlastLink=null;
+		
+		for (Geometry geometry : linkGeos) {
+			double distinct=point.distance(geometry);
+			 if(minDistinct==null||distinct<minDistinct){
+				 minDistinct=distinct; 
+				 nearlastLink = geometry;
+			 }
+		}
+		
+		return getNearLeastPoint(point,nearlastLink);
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param linePidStr
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-7-26 下午8:03:16
+	 */
+	private List<Geometry> getLineGeoFromTipsOra(String linePidStr) throws Exception {
+		
+		List<Geometry> result=new ArrayList<Geometry>();
+		
+		String sql="select * from  TIPS_INDEX  where id in("+linePidStr+")";
+		
+		TipsIndexOracleOperator op=new TipsIndexOracleOperator(tipsConn);
+		
+		List<TipsDao> daoList=op.query(sql,null);
+		
+		if(daoList!=null){
+			
+			for (TipsDao tipsDao : daoList) {
+				JSONObject g_location = JSONObject.fromObject(tipsDao.getG_location());
+				Geometry geo = GeoTranslator.geojson2Jts(g_location);
+				result.add(geo);
+			}
+		}
+		
+		
+		return result;
+	}
+
+	/**
+	 * @Description:从大区库查询link的坐标
+	 * @param linkPidStr:这里应该不会超过1000个，暂且不用clob
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-7-26 下午7:36:10
+	 */
+	private List<Geometry> getRdLinkGeoFromGdb(String linkPidStr) throws Exception {
+		Connection conn=null;
+		
+		List<Geometry> geoList=new ArrayList<Geometry>();
+		
+		String sql="select geometry from rd_link  where link_pid in("+linkPidStr+")";
+				
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			QueryRunner runner=new QueryRunner();
+			ResultSetHandler<List<Geometry>> resultSetHandler = new ResultSetHandler<List<Geometry>>() {
+				@Override
+				public List<Geometry> handle(ResultSet rs)
+						throws SQLException {
+					List<Geometry>  geoList= new ArrayList<Geometry>();
+					while (rs.next()) {
+						STRUCT geometry=(STRUCT)rs.getObject("geometry");
+						try {
+							geoList.add(GeoTranslator.struct2Jts(geometry));
+						} catch (Exception e) {
+							throw new SQLException(e.getMessage());
+						}
+					}
+					return geoList;
+				}
+			};
+			
+			geoList=runner.query(conn, sql, resultSetHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	
+		return geoList;
+	}
+
 	/**
 	 * @Description:TOOD
 	 * @return

@@ -2734,4 +2734,46 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 根据子任务获取同项目下的粗编子任务列表
+	 * @param int
+	 * @throws Exception 
+	 * 
+	 * */
+	public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("select st.subtask_id from  SUBTASK st where st.task_id in (");
+			sb.append("select t.task_id from TASK t where t.program_id =(");
+			sb.append("SELECT T.PROGRAM_ID FROM SUBTASK S, TASK T, PROGRAM P");
+			sb.append(" WHERE S.TASK_ID = T.TASK_ID AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND S.SUBTASK_ID = "+subTaskId+"))");
+			sb.append(" and st.type = 4");
+			
+			log.info("queryRudeSubTaskBySubTask sql :" + sb.toString());
+
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> result = new ArrayList<Integer>();
+					while(rs.next()){
+						result.add(rs.getInt("subtask_id"));
+					}
+					return result;
+				}
+			};
+			return run.query(conn, sb.toString(), rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 }

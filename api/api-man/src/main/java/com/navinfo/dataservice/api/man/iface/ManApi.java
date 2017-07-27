@@ -264,5 +264,13 @@ public interface ManApi{
     public JSONArray getGridIdsByTaskId(int taskId) throws Exception;
     
     public JSONArray getAdminCodeAndProvince() throws Exception;
+    
+    /**
+     * 获取子任务下同项目的区域粗编子任务Id列表
+     * @param int subTaskId
+     * @throws Exception
+     * 
+     * */
+    public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception;
 }
 

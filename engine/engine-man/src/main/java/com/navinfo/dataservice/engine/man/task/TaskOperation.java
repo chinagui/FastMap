@@ -333,6 +333,28 @@ public class TaskOperation {
 				insertPart+=" POI_PLAN_TOTAL ";
 				valuePart+=bean.getPoiPlanTotal();
 			};
+			//modify by songhe 添加road/poi_plan_in/out
+			if (changeFields.containsKey("ROAD_PLAN_IN")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" ROAD_PLAN_IN ";
+				valuePart+=bean.getRoadPlanIn();
+			};
+			if (changeFields.containsKey("ROAD_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" ROAD_PLAN_OUT ";
+				valuePart+=bean.getRoadPlanOut();
+			};
+			if (changeFields.containsKey("POI_PLAN_IN")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_IN ";
+				valuePart+=bean.getPoiPlanIn();
+			};
+			if (changeFields.containsKey("POI_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" POI_PLAN_OUT ";
+				valuePart+=bean.getPoiPlanOut();
+			};
+			
 			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" PRODUCE_PLAN_START_DATE ";
@@ -345,6 +367,7 @@ public class TaskOperation {
 			};
 			String createSql = "insert into task ("+insertPart+") values("+valuePart+")";
 			
+			log.info("creatTaskSql:" + createSql);
 			run.update(conn,createSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -411,7 +434,25 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_other_reason='" + bean.getOverdueOtherReason() + "'";
 			};
+			//modify by songhe 添加road/poi_plan_in/out
+			if (changeFields.containsKey("ROAD_PLAN_IN")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" road_plan_in = " + bean.getRoadPlanIn();
+			};
+			if (changeFields.containsKey("ROAD_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" road_plan_out = " + bean.getRoadPlanOut();
+			};
+			if (changeFields.containsKey("POI_PLAN_IN")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" poi_plan_in = " + bean.getPoiPlanIn();
+			};
+			if (changeFields.containsKey("POI_PLAN_OUT")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" poi_plan_out = " + bean.getPoiPlanOut();
+			};
 			updateSql+=" where TASK_ID=" + bean.getTaskId();
+			log.info("taskUpdateSql:"+updateSql);
 			run.update(conn,baseSql+updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -1095,6 +1136,47 @@ public class TaskOperation {
 					+ "     AND P.TYPE = 4";
 			log.info("根据项目调整月编任务sql："+sql);
 			return run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+	
+	/**
+	 * 快线项目下，根据某个任务id获取与他同项目下的月编任务的扩展grid
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception 
+	 * 
+	 */
+	public static Task getMonthTaskGridByOtherTask(Connection conn, int otherTaskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "  SELECT UT.TASK_ID, M.GRID_ID, M.TYPE"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "   WHERE T.TASK_ID = "+otherTaskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					//+ "     AND M.TYPE = 2"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4";
+			log.info("getExtentMonthTaskGridByOtherTask:"+sql);
+			ResultSetHandler<Task> rsHandler = new ResultSetHandler<Task>() {
+				public Task handle(ResultSet rs) throws SQLException {
+					Task task=new Task();
+					Map<Integer,Integer> gridMap = new HashMap<Integer,Integer>();
+					while (rs.next()) {
+						task.setTaskId(rs.getInt("TASK_ID"));
+						gridMap.put(rs.getInt("GRID_ID"), rs.getInt("TYPE"));
+					}
+					task.setGridIds(gridMap);
+					return task;
+				}
+			};
+			return run.query(conn, sql, rsHandler);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);

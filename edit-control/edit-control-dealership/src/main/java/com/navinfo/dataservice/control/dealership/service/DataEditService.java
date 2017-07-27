@@ -1232,7 +1232,7 @@ public class DataEditService {
 	 * @param parameter
 	 * @param userId
 	 */
-	public void saveDataService(JSONObject parameter, long userId) throws Exception {
+	public OperationResult saveDataService(JSONObject parameter, long userId) throws Exception {
 	
         Connection poiConn = null;
         Connection dealershipConn = null;
@@ -1314,6 +1314,7 @@ public class DataEditService {
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
+    			return operationResult;
             }
             
             //审核意见为转外业、转客户
@@ -1340,6 +1341,7 @@ public class DataEditService {
             DbUtils.commitAndClose(dealershipConn);
             DbUtils.commitAndClose(poiConn);
 		}
+		return null;
 	}
 	
 	public boolean isOccupied(String poiNum ,int resultId, Connection conn ) throws Exception {
@@ -2067,10 +2069,17 @@ public class DataEditService {
 			List<Integer> resultIdList = new ArrayList<>();
 			List<String> chainCodeList = new ArrayList<>();
 			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
+			boolean flag = false;
 			for(Map<String, Object> map : addDataMaps){
+				chainCode = map.get("chain").toString();
+				
+				chainCodeList.add(chainCode);
 				if(StringUtils.isBlank(map.get("number").toString())){
 					log.info("开始新增无序号的数据");
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+					addResultId2ResultIdList(resultIdList, resultIds);
+					flag = true;
 					continue;
 				}
 //				resultId = Integer.parseInt(map.get("number").toString());
@@ -2080,6 +2089,9 @@ public class DataEditService {
 				//新增
 				if("3".equals(history)){
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+					addResultId2ResultIdList(resultIdList, resultIds);
+					flag = true;
 					log.info("补充增量数据新增完成");
 				}
 				//上传的resultID在库中不存在，异常
@@ -2090,36 +2102,39 @@ public class DataEditService {
 				if("1".equals(history) || "2".equals(history) || "4".equals(history)){
 					if("3".equals(map.get("dealStatus").toString()) && "9".equals(map.get("workFlowStatus").toString())){
 						editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+						HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+						addResultId2ResultIdList(resultIdList, resultIds);
+						flag = true;
 						log.info("补充增量数据新增完成");
 					}else{
 						editIxDealershipResult.editIxDealershipResult(conn ,addChainDataEntity, "update", map, userId);
 						log.info("补充增量数据更新完成");
 					}
 				}
-				chainCode = map.get("chain").toString();
-				
-				chainCodeList.add(chainCode);
-			}
-			HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
-			Iterator<Integer> it = resultIds.iterator();
-			while (it.hasNext()){
-				resultIdList.add(it.next());
 			}
 			
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			if(chainCodeList.size() > 0){
-				updateStatusByChain(conn, chainCodeList);
-			}
-			updateReulteData(conn, resultIdList);
+//			if(chainCodeList.size() > 0){
+//				updateStatusByChain(conn, chainCodeList);
+//			}
+//			updateReulteData(conn, resultIdList);
 			resultMap.put("resultIdList", resultIdList);
 			resultMap.put("chainCodeList", chainCodeList);
+			resultMap.put("flag", flag);
 			return resultMap;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private void addResultId2ResultIdList(List<Integer> resultIdList,HashSet<Integer> resultIds) {
+		Iterator<Integer> it = resultIds.iterator();
+		if (it.hasNext()){
+			resultIdList.add(it.next());
 		}
 	}
 	
@@ -2188,7 +2203,8 @@ public class DataEditService {
 			String chain = list.get(i).get("chain").toString();
 			String name = list.get(i).get("name").toString();
 			String address = list.get(i).get("address").toString();
-			Integer history = Integer.valueOf(list.get(i).get("history").toString()) ;
+			String his = list.get(i).get("history").toString();
+			
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
 				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
@@ -2210,8 +2226,12 @@ public class DataEditService {
 			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
 				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
 			}
-			if(!historyList.contains(history)){
-				throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+			if(StringUtils.isEmpty(his)){
+				throw new ServiceException("第" + (i+2) + "行中：变更履历为空");
+			} else {
+				if(!historyList.contains(Integer.valueOf(his))){
+					throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+				}
 			}
 		}
 	}
@@ -2225,12 +2245,12 @@ public class DataEditService {
 	public HashSet<Integer> queryResultIdsForNoNumber(Connection conn) throws Exception{
 		try {
 			QueryRunner run = new QueryRunner();
-			String sql = "select RESULT_SEQ.currval as id from IX_DEALERSHIP_RESULT";
+			String sql = "SELECT RESULT_SEQ.CURRVAL AS ID FROM DUAL";
 			ResultSetHandler<HashSet<Integer>> rs = new ResultSetHandler<HashSet<Integer>>() {
 				@Override
 				public HashSet<Integer> handle(ResultSet rs) throws SQLException {
 					HashSet<Integer> hs = new HashSet<Integer>();
-					while(rs.next()){
+					if(rs.next()){
 						hs.add(rs.getInt("id"));
 					}
 					return hs;
@@ -2330,7 +2350,7 @@ public class DataEditService {
 				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
 					dealStatus = statusMap.get("dealStatus").toString();
-					if("9".equals(workFlowStatus) && !"3".equals(dealStatus)){
+					if("2".equals(dealStatus)){
 						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
@@ -2472,8 +2492,7 @@ public class DataEditService {
 			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
 			sbTel.append(" WHERE I.POI_NUM =:1");
 			sbTel.append(" AND I.PID = C.POI_PID");
-			sbTel.append(" AND ((C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0) OR");
-			sbTel.append(" C.CONTACT_DEPART IN (32, 16, 8))");
+			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8)");
 			sbTel.append(" AND C.U_RECORD <> 2");
 			
 			pstmt = conn.prepareStatement(sbTel.toString());
@@ -2486,7 +2505,7 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				if (resultSet.getInt("CONTACT_DEPART")==32){
+				if (resultSet.getInt("CONTACT_DEPART")==0&&resultSet.getInt("CONTACT_TYPE")!=3){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
 					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
@@ -2517,7 +2536,7 @@ public class DataEditService {
 		}
 	}
 	
-	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
+	public int runDealershipCheck(JSONObject jsonReq,OperationResult opResult) throws Exception{
 		log.info("start runDealershipCheck");
 		int resultCount=0;
 		Connection conn=null;
@@ -2529,7 +2548,10 @@ public class DataEditService {
              }
     		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
         	int poiDbId = poiData.getInt("dbId");
-        	int objPid = poiData.getInt("objId");
+        	BasicObj obj=opResult.getAllObjs().get(0);
+        	com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi ixPoi = (com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi) obj.getMainrow();
+        	int objPid = (int) ixPoi.getPid();
+        
     	conn=DBConnector.getInstance().getConnectionById(poiDbId);
 		log.info("要检查的数据pid:"+objPid);
 		log.info("获取要检查的数据的履历");

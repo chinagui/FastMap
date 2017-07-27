@@ -58,28 +58,31 @@ public class PermitCheckLinkSnapSamelink extends baseRule {
      */
     private void verifySameLink(CheckCommand checkCommand, IRow row) throws Exception {
         RdSameLinkSelector selector = new RdSameLinkSelector(getConn());
-        List<RdSameLink> sameLinks = selector.loadSameLinkByNodeAndTableName(
-                row.parentPKValue(), row.tableName().toUpperCase(), false);
+        RdSameLinkPart sameLinkPart = selector.loadLinkPartByLink(row.parentPKValue(), row.tableName().toUpperCase(), false);
+
+        if (null == sameLinkPart) {
+            return;
+        }
+
+        RdSameLink sameLink = (RdSameLink) selector.loadById(sameLinkPart.getGroupId(), false);
 
         logger.debug(String.format("PermitCheckLinkSnapSamelink {ObjType: %s, Pid: %d}", row.objType(), row.parentPKValue()));
 
-        for (RdSameLink sameLink : sameLinks) {
-            RdSameLinkPart sameLinkPart = CheckGeometryUtils.getMainLink(sameLink.getParts(), getConn());
-            if (sameLinkPart.getTableName().toUpperCase().equals(row.tableName().toUpperCase())
-                    && sameLinkPart.getLinkPid() == row.parentPKValue()) {
-                return;
-            }
+        sameLinkPart = CheckGeometryUtils.getMainLink(sameLink.getParts(), getConn());
+        if (sameLinkPart.getTableName().toUpperCase().equals(row.tableName().toUpperCase())
+                && sameLinkPart.getLinkPid() == row.parentPKValue()) {
+            return;
+        }
 
-            boolean flag = false;
-            for (IRow r : checkCommand.getGlmList()) {
-                if (r.tableName().toUpperCase().equals(row.tableName().toUpperCase())
-                        && sameLinkPart.getLinkPid() == row.parentPKValue()) {
-                    flag = true;
-                }
+        boolean flag = false;
+        for (IRow r : checkCommand.getGlmList()) {
+            if (r.tableName().toUpperCase().equals(row.tableName().toUpperCase())
+                    && sameLinkPart.getLinkPid() == row.parentPKValue()) {
+                flag = true;
             }
-            if (!flag) {
-                setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), row.parentPKValue()), 0);
-            }
+        }
+        if (!flag) {
+            setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), row.parentPKValue()), 0);
         }
     }
 

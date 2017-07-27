@@ -27,7 +27,7 @@
      exp-simple-rd-link.xml文件内去除clean-data.xml, clean-index.xml
      *.xml中替换by-mesh,by-area为mesh,area,
   3) ck,log,m_para一般不变动
-
+  4) 添加修改不补毛边xml 添加 sqlExtendType
 3. tools
   1) exp-shared.xml-->tools\remove-dup.xml
                 从二代脚本内部把<step value="109">整个节点拷贝过来，替换相同节点

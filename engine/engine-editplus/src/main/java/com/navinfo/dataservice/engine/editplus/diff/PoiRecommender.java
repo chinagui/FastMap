@@ -131,7 +131,13 @@ public class PoiRecommender {
 				String adminCodeStr = String.valueOf(adminCode);
 				//省份、城市的json
 				JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
-				fastPoi.setProvnm(resultJson.getString("province"));
+				if(resultJson!=null){
+					fastPoi.setProvnm(resultJson.getString("province"));
+				}else
+				{
+					fastPoi.setProvnm(null);
+				}
+				
 				poiList.add(fastPoi);
 			}
 		} catch (Exception e) {

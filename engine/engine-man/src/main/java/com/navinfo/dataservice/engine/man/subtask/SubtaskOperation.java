@@ -748,6 +748,9 @@ public class SubtaskOperation {
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
+			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
+				sb.append(" and t.lot = "+dataJson.getInt("lot"));
+			}
 			sb.append(" and (st.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql + ")");
 
 			if (dataJson.containsKey("stage")){

@@ -1968,12 +1968,13 @@ public class SubtaskService {
 			if(userGroup!=null&&!userGroup.isEmpty()){
 				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
 			}
-			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
-					+ "  FROM SUBTASK T"
+			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT, TK.LOT"
+					+ "  FROM SUBTASK T, TASK TK"
 					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
 					+ "   AND T.STATUS = 1"
+					+ "   AND T.TASK_ID = TK.TASK_ID"
 //					+ "   AND T.STAGE != 0"
-					+ " GROUP BY T.STAGE, T.TYPE"
+					+ " GROUP BY T.STAGE, T.TYPE, TK.LOT"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
 			log.info("staticWithType swl:" + sql);
@@ -1990,6 +1991,7 @@ public class SubtaskService {
 						int type=rs.getInt("TYPE");
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
+						int lot = rs.getInt("LOT");
 						String name="";
 //						if(stage==1){name+="日编 - ";}
 //						else if(stage==0){name+="采集 - ";}
@@ -2004,11 +2006,19 @@ public class SubtaskService {
 						else if(type==4){name+="一体化_区域粗编_日编";}
 						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
-						else if(type==7){name+="POI专项_月编";}
+						else if(type==7){name+="POI专项_月编";
+						if(lot == 0){
+							name += "(无批次)";
+						}else if(lot == 1){name += "(一批)";}
+						 else if(lot == 2){name += "(二批)";}
+						 else if(lot == 3){name += "(三批)";}
+						 else{name += "("+lot+"批)";}
+						}
 						else if(type==8){name+="道路_Grid精编";}
 						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
+						subResult.put("lot", lot);
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);

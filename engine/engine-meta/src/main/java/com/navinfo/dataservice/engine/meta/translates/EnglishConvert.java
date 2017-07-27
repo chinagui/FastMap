@@ -2,10 +2,9 @@ package com.navinfo.dataservice.engine.meta.translates;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -36,9 +35,22 @@ public class EnglishConvert {
     private String adminCode = "";
 
     /**
+     * 处理过多音字后的拼音内容
+     */
+    private List<String> pinyins;
+
+    /**
+     * 记录未查询到对应英文的汉字下标
+     */
+    private List<Integer> wordIndex = new ArrayList<>();
+
+    /**
      * 数组下标偏移量（由于汉字后均后跟随空格）
      */
     private final static Integer OFFSET = 2;
+
+    private final static String SPLIT_WORD = " ";
+
 
     public EnglishConvert() {
     }
@@ -49,13 +61,6 @@ public class EnglishConvert {
         }
     }
 
-    public EnglishConvert(String convertType, String adminCode) {
-        if (TranslateConstant.HANDLE_POLYPHONIC_WORD.equals(convertType)) {
-            this.convertPolyhonic = true;
-        }
-        this.adminCode = adminCode;
-    }
-
     /**
      * Setter method for property <tt>adminCode</tt>.
      *
@@ -63,6 +68,18 @@ public class EnglishConvert {
      */
     public void setAdminCode(String adminCode) {
         this.adminCode = adminCode;
+    }
+
+    /**
+     * 英文翻译接口
+     *
+     * @param sourceText 待转换为英文的字符串
+     * @param pinyin 已处理完多音字的拼音文本
+     * @return 翻译后字符串
+     */
+    public String convert(String sourceText, String pinyin) {
+        this.pinyins = new ArrayList(Arrays.asList(org.apache.commons.lang.StringUtils.split(pinyin, SPLIT_WORD)));
+        return convert(sourceText);
     }
 
     /**
@@ -80,7 +97,7 @@ public class EnglishConvert {
         try {
             result = this.replaceKeyWord(sourceText);
 
-            result = SplitUtil.split(result);
+            result = SplitUtil.split(result, wordIndex);
 
             result = ConvertUtil.convertNoWord(result);
 
@@ -254,7 +271,6 @@ public class EnglishConvert {
                     String pinyinTwo = map.get("py2");
                     String curAdminArea = map.get("adminArea");
 
-
                     if (StringUtils.isNotEmpty(curAdminArea) && adminCode.startsWith(curAdminArea)) {
                         result.append(pinyinOne).append(" ");
                     } else {
@@ -281,14 +297,22 @@ public class EnglishConvert {
 
         // Character[] characters = connChineseCharacter(chars);
 
+        Iterator<Integer> indexIterator = wordIndex.iterator();
+
         for (Character character : chars) {
             if (ConvertUtil.isChinese(character)) {
-                if (TranslateDictData.getInstance().getDictDictionary().containsKey(String.valueOf(character))) {
-                    List<String> pinyins = TranslateDictData.getInstance().getDictDictionary().get(String.valueOf(character));
-                    if (convertPolyhonic) {
-                        // TODO 暂不处理多音字
-                    } else {
-                        result.append(pinyins.iterator().next());
+                if (CollectionUtils.isEmpty(pinyins)) {
+                    if (TranslateDictData.getInstance().getDictDictionary().containsKey(String.valueOf(character))) {
+                        List<String> pinyins = TranslateDictData.getInstance().getDictDictionary().get(String.valueOf(character));
+                        if (convertPolyhonic) {
+                            // TODO 暂不处理多音字
+                        } else {
+                            result.append(pinyins.iterator().next());
+                        }
+                    }
+                } else {
+                    if (indexIterator.hasNext()) {
+                        result.append(pinyins.get(indexIterator.next()));
                     }
                 }
             } else {

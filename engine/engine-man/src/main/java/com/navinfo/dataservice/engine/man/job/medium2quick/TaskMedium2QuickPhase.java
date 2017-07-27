@@ -25,7 +25,8 @@ public class TaskMedium2QuickPhase extends JobPhase{
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
             
             //业务
@@ -33,27 +34,30 @@ public class TaskMedium2QuickPhase extends JobPhase{
 			JSONObject request = JSONObject.fromObject(job.getParameter());
 			request.put("phaseId", jobProgress.getPhaseId());
 			request.put("jobId", this.job.getJobId());
+			request.put("taskId", this.jobRelation.getItemId());
 			
 			long jobId = api.createJob("taskMedium2QuickJob", request,  job.getOperator(), jobRelation.getItemId(), "中转快");
 			jobProgress.setMessage("jobId:"+jobId);
-			jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
+			jobProgressOperator.updateStatus(jobProgress);
 			
-			return jobProgress.getStatus();
+			
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
+            jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("TaskMedium2QuickPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+        return jobProgress.getStatus();
 	}
 
 	@Override

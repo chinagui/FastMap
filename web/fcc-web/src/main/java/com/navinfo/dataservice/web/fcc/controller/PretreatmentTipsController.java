@@ -192,13 +192,11 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 			}
 			
-			int dbId = 0;
-			
-			//jsonReq.getInt("dbId");//大区库id. 打断维护使用  ??
+			int dbId =jsonReq.getInt("dbId");//大区库id. 打断维护使用  
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType,dbId);
 
 			JSONObject  data=new JSONObject();
 			

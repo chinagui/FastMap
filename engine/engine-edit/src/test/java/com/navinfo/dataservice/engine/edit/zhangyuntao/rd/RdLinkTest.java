@@ -157,18 +157,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void delete() throws Exception {
-        RdLink link = (RdLink) new RdLinkSelector(DBConnector.getInstance().getConnectionById(13)).loadById(504000536, false);
-        Geometry linkGeo = GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        ZoneFace face = (ZoneFace) new ZoneFaceSelector(DBConnector.getInstance().getConnectionById(13)).loadById(402000024, false);
-        Geometry faceGeo = GeoTranslator.transform(face.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(linkGeo, faceGeo));
-
-        face = (ZoneFace) new ZoneFaceSelector(DBConnector.getInstance().getConnectionById(13)).loadById(507000019, false);
-        faceGeo = GeoTranslator.transform(face.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(linkGeo, faceGeo));
+        String requester = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"dbId\":18,\"subtaskId\":24,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.99932030154248,40.08102790254993]," +
+                "[119.99975,40.08087]]},\"catchLinks\":[{\"linkPid\":401000001,\"lon\":119.99932030154248,\"lat\":40.08102790254993}]}}";
+        TestUtil.run(requester);
     }
 
     public static void main(String[] args) throws Exception {

@@ -11,16 +11,16 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -34,14 +34,13 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.hbase.async.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -108,7 +107,7 @@ public class TipsSelector {
 			if (jsonReq.containsKey("pType")) {
 				pType = jsonReq.getString("pType");
 			}
-
+            boolean isInTask = false;
 			if (StringUtils.isEmpty(pType) || pType.equals("web")) {
 				JSONArray workStatus = null;
 				if (jsonReq.containsKey("workStatus")) {
@@ -117,6 +116,9 @@ public class TipsSelector {
 				if (workStatus == null || workStatus.size() == 0) {
 					return array;
 				}
+                if(workStatus.contains(TipsWorkStatus.TIPS_IN_TASK)) {
+                    isInTask = true;
+                }
 			} else if (pType.equals("ms")) {
 				JSONArray noQFilter = null;
 				if (jsonReq.containsKey("noQFilter")) {
@@ -138,12 +140,24 @@ public class TipsSelector {
 				mdFlag = jsonReq.getString("mdFlag");
 			}
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
-			String sql = param.getByTileWithGap(parameter);
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			List<TipsDao> snapshots = operator.query(sql, wkt);
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+            List<TipsDao> snapshots = null;
+            if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
+                OracleWhereClause where = param.getTaskRender(parameter);
+                snapshots = new TipsIndexOracleOperator(conn).query(
+                        "select  /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ *  from tips_index where " + where.getSql(), where
+                                .getValues().toArray());
+                logger.info("tileInTask: " + where.getSql());
+            }else {
+                String sql = param.getByTileWithGap(parameter);
+                snapshots = operator.query(sql, wkt);
+            }
+            if(snapshots == null || snapshots.size() == 0) {
+                return array;
+            }
 			for (TipsDao tipsDao : snapshots) {
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 				JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
@@ -677,7 +691,7 @@ public class TipsSelector {
 	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
 		// 2.1deep.time(一级属性)
 		if (type == 1304 || type == 1305 || type == 1203 || type == 1514
-				|| type == 1507 || type == 1517 || type == 1515 || type == 1516) {
+				|| type == 1507 || type == 1517 || type == 1515 || type == 1516 || type == 1520) {
 
 			if (!StringUtils.isEmpty(deep.getString("time"))) {
 
@@ -688,7 +702,7 @@ public class TipsSelector {
 		// 2.2二级属性.不同tips类型不同解析方式
 
 		// [c_array].time
-		else if (1308 == type) {
+		else if (1308 == type || 1104 == type) {
 
 			JSONArray c_array = deep.getJSONArray("c_array");
 
@@ -1296,7 +1310,7 @@ public class TipsSelector {
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
 					oracelConn);
 			long total = operator.querCount(
-					"select count(1) from tips_index where "
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
 							+ whereClause.getSql(), whereClause.getValues()
 							.toArray());
 			Map<Object, Object> dataMap = operator.groupQuery(
@@ -1336,33 +1350,21 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
-	 * @param wkt
-	 * @param collectTaskIds
-	 * @param collectTaskIds
+	 * @param subtaskId
 	 * @param statType
 	 *            统计类型：total，prepared
-	 * @param taskType
-	 *            1是 质检任务、作业任务
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsDayTotal(String wkt, Set<Integer> collectTaskIds,
-			String statType, int taskType, int handler) throws Exception {
+	public int getTipsDayTotal(int subtaskId, String wkt, int subTaskType,int handler, int isQuality, String statType) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
-			JSONObject paramObj = new JSONObject();
-			paramObj.put("statType", statType);
-			paramObj.put("wkt", wkt);
-			paramObj.put("collectTaskIds", collectTaskIds);
-			paramObj.put("taskType", taskType);
-			paramObj.put("handler", handler);
-			String parameter = paramObj.toString();
-			String query = param.getTipsDayTotal(parameter);
+			String query = param.getTipsDayTotal(subtaskId, subTaskType, handler, isQuality, statType);
 			return (int) operator.querCount(
-					" select count(1) from tips_index where " + query, wkt);
+					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where " + query, wkt);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -1925,7 +1927,7 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
-					"select count(1) count from tips_index where " + where
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where " + where
 							+ " and rownum=1", wkt);
 			return (count > 0 ? 1 : 0);
 		} catch (Exception e) {
@@ -2414,6 +2416,242 @@ public class TipsSelector {
 			}
 		}
 		return meshSet;
+	}
+	
+	/**
+	 * 加载tips<时间段限制，子任务范围限制，status = 2， >
+	 * @param subTaskId
+	 * @param beginTime
+	 * @param endTime
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage) throws Exception {
+		JSONArray array = new JSONArray();
+		
+		TipsRequestParamSQL param = new TipsRequestParamSQL();
+		
+		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime);
+		
+		Connection oracleConn = null;
+
+		try {
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+
+			Page page = operator.queryPage(sql, curPage, pageSize);
+
+			long totalNum = page.getTotalCount();
+			
+			if (totalNum <= Integer.MAX_VALUE) {
+				List<TipsDao> tipsDaoList = (ArrayList<TipsDao>) page.getResult();
+				
+				for (TipsDao tip : tipsDaoList) {
+					JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+					
+					JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+					
+					array.add(json);
+				}
+				
+			} else {
+				// 暂先不处理
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+		}
+		return array;
+	}
+	
+	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId) throws Exception {
+		// A、库中状态为未处理且没有形状删除的测线tips
+		String unhandleGps = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS IN (0,1) AND T_TIPSTATUS = 2 AND S_QSUBTASKID = %d AND S_SOURCETYPE = 2001 AND STAGE IN (1,2,5,6) AND ID = '%s'",
+				subTaskId, id);
+
+		// B、库中状态为已处理且没有形状删除的测线tips
+		String handleGps = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS = 2 AND S_QSUBTASKID = %d AND S_SOURCETYPE = 2001 AND STAGE = 2 AND ID = '%s'",
+				subTaskId, id);
+
+		// C、形状删除的Tips关联的link且该link存在或逻辑删除，且该POI的引导link是该link的pid
+		String deleteLinks = String.format(
+				"SELECT * FROM TIPS_INDEX WHERE S_QSUBTASKID = %d AND S_SOURCETYPE = 2101 AND ID = '%s'", subTaskId, id);
+
+		Connection oracleConn = null;
+
+		List<IxPoi> result = new ArrayList<>();
+
+		JSONArray array = new JSONArray();
+
+		try {
+			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+
+			List<TipsDao> unhandleGpsList = operator.query(unhandleGps);
+			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false));
+			}
+
+			List<TipsDao> handleGpsList = operator.query(handleGps);
+			if (handleGpsList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+				result.addAll(GetRelatePois(handleGpsList, dbId, buffer, false, true));
+			}
+
+			List<TipsDao> deleteLinksList = operator.query(deleteLinks);
+			if (deleteLinksList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true));
+			}
+
+			for(IxPoi poi:result){
+				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				JSONObject obj = JSONObject.fromObject(poi,jsonConfig);
+				array.add(obj);
+			}
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+		}
+
+		return array;
+	}
+
+	/**
+	 * tips点位30米buffer的poi集合,引导坐标距离link/测线距离是否在3m以内（已处理）/以外（未处理）
+	 * @param tipsList
+	 * @param dbId
+	 * @param buffer
+	 * @param isDeleteLink
+	 * @throws Exception
+	 */
+	private List<IxPoi> GetRelatePois(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,boolean isHandle) throws Exception {
+		Connection conn = null;
+		List<IxPoi> poiList = new ArrayList<>();
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			PreparedStatement pstmt = null;
+
+			ResultSet resultSet = null;
+
+			Geometry pointBuffer = null;
+
+			for (TipsDao tip : tipsList) {
+
+				Geometry tipGeo = GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
+
+				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
+
+				String wkt = GeoTranslator.jts2Wkt(pointBuffer);  //buffer
+
+				String sql = String.format(
+						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract') = 'TRUE'",
+						wkt);
+
+				pstmt = conn.prepareStatement(sql);
+
+				resultSet = pstmt.executeQuery();
+
+				while (resultSet.next()) {
+
+					IxPoi ixPoi = new IxPoi();
+
+					ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
+
+					if (isDeleteLink) {
+
+						String relateId = getDeepRelateId(tip);
+
+						if (relateId.equals(Integer.toString(ixPoi.getLinkPid())) == false) {
+							continue;
+						}
+					}
+
+					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
+					double distance = tip.getWktLocation().distance(guidPoint);
+
+					if (isHandle == false && distance < 3) {
+						continue;
+					}
+					if (isHandle == true && distance > 3) {
+						continue;
+					}
+
+					poiList.add(ixPoi);
+				}
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return poiList;
+	}
+
+	/**
+	 * 形状删除的测线tips
+	 *
+	 * @param subTaskId
+	 * @param tipsId
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isRelateDeleteLinkTips(int subTaskId, String tipsId) throws Exception {
+		boolean isDeleteTips = false;
+
+		String query = String.format("SELECT * FROM TIPS_INDEX WHERE S_QSUBTASKID=%d AND S_SOURCETYPE = 2101",
+				subTaskId);
+
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
+		try {
+			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(query);
+
+			for (TipsDao tip : tips) {
+
+				String id = getDeepRelateId(tip);
+
+				if (tipsId.equals(id)) {
+					isDeleteTips = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(oracleConn);
+		}
+		return isDeleteTips;
+	}
+
+	private String getDeepRelateId(TipsDao tip){
+		String relateID = null;
+
+		String deep = tip.getDeep();
+
+		if (deep == null || deep.isEmpty()) {
+			return relateID;
+		}
+
+		JSONObject deepObj = JSONObject.fromObject(deep);
+		JSONObject f = deepObj.getJSONObject("f");
+
+		if (f.isNullObject()) {
+			return relateID;
+		}
+
+		relateID = f.getString("id");
+		return relateID;
 	}
 
 	public static void main(String[] args) throws Exception {

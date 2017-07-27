@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.dao;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
@@ -55,8 +57,11 @@ public class IxPoiSearchTest {
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
 
-			Map<String, Object> uploadDate = PoiEditStatus.getFreshData(conn, 787100481L);
-			System.out.println(uploadDate);
+			List<Long> pidList = new ArrayList<Long>();
+			pidList.add(407000002L);
+			pidList.add(502000007L);
+			Map<Long, Map<String, Object>> list = PoiEditStatus.getFreshData(conn, pidList);
+			System.out.println(list.toString());
 			log.info("end");
 			
 		}catch(Exception e){

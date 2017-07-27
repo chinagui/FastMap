@@ -850,26 +850,45 @@ public class LogReader {
 	 * @return 
 	 * @throws Exception
 	 */
-	public List<Map<String,Object>> getLogByPid(String objName,long objPid) throws Exception {
+	public Map<Long,List<Map<String,Object>>> getLogByPid(String objName,Collection<Long> objPids) throws Exception {
+		Map<Long,List<Map<String,Object>>> result = new HashMap<Long,List<Map<String,Object>>>();
+		if(objPids==null||objPids.size()==0)return result;
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT LO.OP_ID,LO.OP_DT,LD.* FROM LOG_OPERATION LO,LOG_DETAIL LD WHERE LO.OP_ID = LD.OP_ID ");
-		sb.append(" AND LD.OB_NM = ? AND LD.OB_PID = ? ORDER BY LO.OP_DT ASC");
+		sb.append(" AND LD.OB_NM = '"+objName+"'");
+		
+		Clob clobPids=null;
+		if(objPids.size()>1000){
+			clobPids = ConnectionUtil.createClob(conn);
+			clobPids.setString(1, StringUtils.join(objPids, ","));
+			sb.append(" AND LD.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}else{
+			sb.append(" AND LD.OB_PID IN (" + StringUtils.join(objPids, ",") + ")");
+		}
+		sb.append(" ORDER BY LD.OB_PID,LO.OP_DT ASC");
+		
+		log.info("根据pid查询相应的履历的sql语句:"+sb.toString());
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, objName);
-			pstmt.setLong(2, objPid);
+			if(clobPids!=null){
+				pstmt.setClob(1, clobPids);
+			}
 			
 			resultSet = pstmt.executeQuery();
 			while(resultSet.next()){
 				Map<String,Object> map = new HashMap<String,Object>();
-				map.put("operation", resultSet.getInt("OP_TP"));
-				map.put("date", DateUtils.dateToString(resultSet.getTimestamp("OP_DT"),DateUtils.DATE_COMPACTED_FORMAT));
-				result.add(map);
+				long pid = resultSet.getLong("OB_PID");
+				int operation = resultSet.getInt("OP_TP");
+				String date = DateUtils.dateToString(resultSet.getTimestamp("OP_DT"),DateUtils.DATE_COMPACTED_FORMAT);
+				if(!result.containsKey(pid)){
+					result.put(pid, new ArrayList<Map<String,Object>>());
+				}
+				map.put("operation", operation);
+				map.put("date", date);
+				result.get(pid).add(map);
 			}
 			return result;
 		} catch (Exception e) {
@@ -930,17 +949,17 @@ public class LogReader {
 		String objTable = "IX_POI";
 		int objPid = 505000108 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
-//		List<Map<String, Object>> list = new LogReader(con).getLogByPid(objTable, objPid);
-//		System.out.println(new Date());
-//		System.out.println(list.toString());
+		List<Long> pidList = new ArrayList<Long>();
+		pidList.add(505000108L);
+		pidList.add(408000133L);
+		Map<Long, List<Map<String, Object>>> list = new LogReader(con).getLogByPid(objTable, pidList);
+		System.out.println(new Date());
+		System.out.println(list.toString());
 		//判断是否为充电站
-//		List<Long> pidList = new ArrayList<Long>();
-//		pidList.add(505000108L);
-//		pidList.add(408000133L);
 //		Collection<Long> updatedObjByPids = new LogReader(con).getUpdatedObjByPids(objName, pidList, startDate, endDate);
 //		System.out.println(updatedObjByPids);
 		
-		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
-		System.out.println(updatePids);
+//		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
+//		System.out.println(updatePids);
 	}
 }

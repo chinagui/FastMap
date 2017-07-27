@@ -152,7 +152,7 @@ public class FMYW20206 extends BasicCheckRule {
 		if(nameSub!=null){
 			for (char nameSubStr : nameSub.toCharArray()) {
 				String subStr = String.valueOf(nameSubStr);
-				if(!map.get("DIGIT_F").contains(subStr)&&!map.get("SYMBOL_F").contains(subStr)){
+				if(!map.get("DIGIT_H").contains(subStr)&&!map.get("SYMBOL_H").contains(subStr)){
 					errorList.add(subStr);
 				}
 			}

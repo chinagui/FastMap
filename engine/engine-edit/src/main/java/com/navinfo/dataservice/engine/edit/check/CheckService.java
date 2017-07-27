@@ -23,6 +23,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.selector.CkRuleSelector;
 import com.navinfo.dataservice.dao.check.selector.CkSuiteSelector;
+import com.navinfo.dataservice.dao.log.LogGridStat;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -110,9 +112,24 @@ public class CheckService {
 				
 			}
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
-			List<Integer> grids= new ArrayList<Integer>();
-			if(subtaskObj.getGridIds() != null && subtaskObj.getGridIds().size() >0){
-				 grids= subtaskObj.getGridIds();
+//			List<Integer> grids= new ArrayList<Integer>();
+//			if(subtaskObj.getGridIds() != null && subtaskObj.getGridIds().size() >0){
+//				 grids= subtaskObj.getGridIds();
+//			}
+			List<Integer> grids = null;
+			Connection conn = null;
+			try{
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+				LogGridStat stat = new LogGridStat(conn);
+				grids = stat.statGridsBySubtaskId(subtaskObj.getSubtaskId());
+				if(grids==null||grids.size()==0){
+					throw new Exception("子任务（"+subtaskObj.getSubtaskId()+"）中作业范围为空，不需要执行检查。");
+				}
+			}catch(Exception e){
+				log.error("获取作业范围grids出错："+e.getMessage(),e);
+				throw e;
+			}finally{
+				DbUtils.closeQuietly(conn);
 			}
 //			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
 //				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();

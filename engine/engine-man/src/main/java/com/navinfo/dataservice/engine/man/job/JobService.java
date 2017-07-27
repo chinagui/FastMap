@@ -15,6 +15,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -204,7 +205,9 @@ public class JobService {
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
-		}
+		}else if(jobType == JobType.MID2QUICK){		
+ -			runner = new TaskMedium2QuickRunner();		
+  		}
 		return runner;
 	}
 }

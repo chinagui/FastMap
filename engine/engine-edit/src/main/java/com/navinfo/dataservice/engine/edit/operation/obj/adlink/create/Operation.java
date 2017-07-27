@@ -160,9 +160,11 @@ public class Operation implements IOperation {
 					} else {
 						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
                         // 创建图幅覆盖线时防止重复创建
-						if (geoList.contains(geomInter.toString()) || geoList.contains(geomInter.reverse().toString()))
+						if (geoList.contains(geomInter.toString()) || geoList.contains(geomInter.reverse().toString())) {
                             continue;
-                        else
+                        } else {
+                            geoList.add(geomInter.toString());
+                        }
 						AdLinkOperateUtils.createAdLinkWithMesh(geomInter, maps, result);
 					}
 				}

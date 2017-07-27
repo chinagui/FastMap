@@ -1103,15 +1103,20 @@ public abstract class MeshUtils {
     }
 
     public static void main(String[] args) throws Exception {
-		Set<Integer> meshes = new HashSet<Integer>();
-		meshes.add(95277);
+//		Set<Integer> meshes = new HashSet<Integer>();
+//		meshes.add(95277);
 //		meshes.add(595672);
 //		meshes.add(595661);
+//		
+//		double[] xy = meshs2Rect(meshes);
+//		String wkt  = mesh2WKT("95671");
+//		System.out.println(wkt);
+//		
+		String[] ms = point2Meshes(114.074,22.312);
+		for(String s:ms){
+			System.out.println(s);
+		}
 		
-		double[] xy = meshs2Rect(meshes);
-		String wkt  = mesh2WKT("95671");
-		
-		System.out.println(wkt);
 		
 		
 		

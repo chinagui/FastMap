@@ -66,6 +66,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -1990,6 +1991,7 @@ public class SubtaskService {
 						int type=rs.getInt("TYPE");
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
+//						int lot = rs.getInt("LOT");
 						String name="";
 //						if(stage==1){name+="日编 - ";}
 //						else if(stage==0){name+="采集 - ";}
@@ -2004,11 +2006,19 @@ public class SubtaskService {
 						else if(type==4){name+="一体化_区域粗编_日编";}
 						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
-						else if(type==7){name+="POI专项_月编";}
+						else if(type==7){name+="POI专项_月编";
+//						if(lot == 0){
+//							name += "(无批次)";
+//						}else if(lot == 1){name += "(一批)";}
+//						 else if(lot == 2){name += "(二批)";}
+//						 else if(lot == 3){name += "(三批)";}
+//						 else{name += "("+lot+"批)";}
+						}
 						else if(type==8){name+="道路_Grid精编";}
 						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
+//						subResult.put("lot", lot);
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);
@@ -2112,7 +2122,6 @@ public class SubtaskService {
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
@@ -2161,6 +2170,27 @@ public class SubtaskService {
 						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
 						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
 						if(monthChangedTasks > 0){
+							//扩充的grid也要扩到图幅范围
+							log.info("对应的月编任务扩grid后，将扩后的grid再扩充为图幅范围");
+							Task monthTasks = TaskOperation.getMonthTaskGridByOtherTask(conn, subtask.getTaskId());
+							
+							Set<Integer> myGrid=monthTasks.getGridIds().keySet(); 
+							Set<String> meshs=new HashSet<String>();
+							for(Integer gridTmp:myGrid){
+								meshs.add(String.valueOf(gridTmp/100));
+							}
+							Map<Integer,Integer> newGrids=new HashMap<Integer,Integer>();
+							for(String meshTmp:meshs){
+								Set<String> allGrid = CompGridUtil.mesh2Grid(meshTmp);
+								for(String gridExt:allGrid){
+									if(!myGrid.contains(Integer.valueOf(gridExt))){
+										newGrids.put(Integer.valueOf(gridExt), 2);
+									}
+								}
+							}
+							TaskOperation.insertTaskGridMapping(conn,monthTasks.getTaskId(), newGrids);
+							
+							
 							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
 							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
 							//获取对应采集/日编子任务对应的同任务下的快线月编子任务
@@ -3105,7 +3135,9 @@ public class SubtaskService {
 					}					
 					
 					Geometry midLine=referGeo.intersection(lineGeo);
-					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
+					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
 					if(!isIn){
 						throw new Exception("线不在面内，请重新划线");
 					}

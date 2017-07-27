@@ -14,6 +14,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
+import com.vividsolutions.jts.geom.Geometry;
 
 
 
@@ -296,9 +297,10 @@ public class DiffService {
 								addr += resultDpAttrDiff.getCity();
 							}
 							addr += resultDpAttrDiff.getAddress();
-								
-							if(BaiduGeocoding.geocoder(addr)!=null){
-								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+							
+							Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+							if(poiGeo!=null){
+								resultDpAttrDiff.setGeometry(poiGeo);
 							}else{
 								throw new Exception("无法获取geometry");
 							}
@@ -323,8 +325,9 @@ public class DiffService {
 				insertList.add(resultDpAttrDiff);
 				if(resultDpAttrDiff.getGeometry()==null){
 					String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
-					if(BaiduGeocoding.geocoder(addr)!=null){
-						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+					if(poiGeo!=null){
+						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
 						throw new Exception("无法获取geometry");
 					}
@@ -387,9 +390,9 @@ public class DiffService {
 						addr += resultDpAttrDiff.getCity();
 					}
 					addr += resultDpAttrDiff.getAddress();
-						
-					if(BaiduGeocoding.geocoder(addr)!=null){
-						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+					if(poiGeo!=null){
+						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
 						throw new Exception("无法获取geometry");
 					}

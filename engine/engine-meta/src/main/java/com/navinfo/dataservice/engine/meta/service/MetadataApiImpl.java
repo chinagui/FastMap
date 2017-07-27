@@ -1001,7 +1001,7 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	//获取重要POI的PID
 	@Override
-	public List<Integer> queryImportantPid() throws SQLException {
+	public List<String> queryImportantPid() throws SQLException {
 		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
 	}
 	

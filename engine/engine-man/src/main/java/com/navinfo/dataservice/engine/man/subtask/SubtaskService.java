@@ -1837,11 +1837,11 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			//modify by songhe
 			//删除子任务的同时，如果有对应的质检子任务也同时删除
-			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID = "+subtaskId+" or "
-					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";	
-			run.update(conn,updateSql);
-			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID = "+subtaskId+" or "
+			String updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID = "+subtaskId+" or "
 					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";
+			run.update(conn,updateSql);
+			updateSql = "delete from SUBTASK S where S.SUBTASK_ID = "+subtaskId+" or "
+					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";	
 			run.update(conn,updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

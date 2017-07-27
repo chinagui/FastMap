@@ -37,7 +37,7 @@ public class CharingStationImporter {
 
 		IxPoiChargingStation station = new IxPoiChargingStation();
 
-		station.setPid(PidUtil.getInstance().applyPoiHotelId());
+		station.setPid(PidUtil.getInstance().applyPoiChargingstationId());
 
 		station.setPoiPid(poi.getInt("pid"));
 		station.setChargingType(JsonUtils.getInt(stationObj, "type"));

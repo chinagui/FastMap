@@ -143,14 +143,7 @@ public class JobService {
         }
         //job接续步骤的执行不应该影响已有步骤的执行情况。此处后续异常不进行抛出
         try{
-            try {
-                JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
-                String message = JSON.toJSONString(jobMessage);
-                log.info("publishManJobMsg:"+message);
-                SysMsgPublisher.publishManJobMsg(message, jobMessage.getOperator());
-            } catch (Exception ex) {
-                log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
-            }
+        	jobProgressOperator.pushMsg(phaseId);
 
             if (status == JobProgressStatus.FAILURE) {
                 //步骤失败，更新job状态为失败，停止执行

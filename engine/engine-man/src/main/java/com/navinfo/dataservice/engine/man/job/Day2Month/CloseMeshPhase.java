@@ -5,6 +5,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
+import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -41,7 +42,8 @@ public class CloseMeshPhase extends JobPhase {
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             //业务逻辑
@@ -70,22 +72,25 @@ public class CloseMeshPhase extends JobPhase {
                 }
             }
             //更新状态为成功
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
-            return jobProgress.getStatus();
+            jobProgress.setStatus(JobProgressStatus.SUCCESS);
+            jobProgressOperator.updateStatus(jobProgress);
+            //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             DbUtils.rollback(meta);
+            jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setOutParameter(ex.getMessage());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("CloseMeshPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
             DbUtils.commitAndCloseQuietly(meta);
         }
+        return jobProgress.getStatus();
     }
 }

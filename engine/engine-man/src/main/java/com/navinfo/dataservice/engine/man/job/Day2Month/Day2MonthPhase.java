@@ -5,6 +5,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
+import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -37,7 +38,8 @@ public class Day2MonthPhase extends JobPhase {
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             int lot = 0;
@@ -56,22 +58,24 @@ public class Day2MonthPhase extends JobPhase {
             JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
             long jobId = jobApi.createJob("day2MonSync", jobDataJson, job.getOperator(), jobRelation.getItemId(), "日落月");
             jobProgress.setMessage("jobId:" + jobId);
-            jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
-            return jobProgress.getStatus();
+            jobProgressOperator.updateStatus(jobProgress);
+            
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
+            jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("Day2MonthPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+        return jobProgress.getStatus();
     }
 }

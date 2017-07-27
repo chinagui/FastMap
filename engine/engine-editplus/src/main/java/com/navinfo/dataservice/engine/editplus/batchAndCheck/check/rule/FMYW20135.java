@@ -97,7 +97,7 @@ public class FMYW20135 extends BasicCheckRule {
         Pattern p5 = Pattern.compile(".*[一二三四五六七八九]+[层楼]+.*");
         Matcher m5 = p5.matcher(strContent);
 
-        return (m1.matches() && m2.matches() && m3.matches() && m4.matches() && m5.matches());
+        return (m1.matches() || m2.matches() || m3.matches() || m4.matches() || m5.matches());
     }
 
 

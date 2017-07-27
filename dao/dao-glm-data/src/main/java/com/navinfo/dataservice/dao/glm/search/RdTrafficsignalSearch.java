@@ -65,7 +65,7 @@ public class RdTrafficsignalSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 		
-		String sql = "WITH tmp1 AS (	SELECT a.geometry,a.node_pid FROM rd_node a,rd_cross_node b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,tmp1.geometry as geometry  from RD_TRAFFICSIGNAL a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
+		String sql = "WITH tmp1 AS (	SELECT a.geometry,a.node_pid FROM rd_node a,rd_cross_node b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,a.link_pid,tmp1.geometry as geometry  from RD_TRAFFICSIGNAL a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
 		
 		PreparedStatement pstmt = null;
 
@@ -86,10 +86,13 @@ public class RdTrafficsignalSearch implements ISearch {
 
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
-
+				JSONObject m = new JSONObject();
 				snapshot.setT(27);
 
 				snapshot.setI(resultSet.getInt("pid"));
+				
+				m.put("a", resultSet.getInt("link_pid"));
+				snapshot.setM(m);
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

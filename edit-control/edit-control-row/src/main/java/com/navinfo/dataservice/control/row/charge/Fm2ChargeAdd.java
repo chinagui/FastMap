@@ -303,6 +303,7 @@ public class Fm2ChargeAdd {
 							}
 							JSONObject addPoi = poiConvertor.addPoi((IxPoiObj) obj,objM);
 							if(addPoi != null){
+								addPoi.put("dbId", dbId);
 								chargePoi.add(addPoi);
 							}
 						} catch (Exception e) {

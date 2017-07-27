@@ -20,6 +20,7 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -1051,8 +1052,13 @@ public class TipsUpload {
 		Connection hbaseConn = null;
 		Table htab = null;
 		java.sql.Connection oracleConn = null;
+        java.sql.Connection regionDBConn = null;
 		try {
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
+                oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+                int dbId = subtask.getDbId();
+                regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
+
 				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
 				ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 				Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
@@ -1094,6 +1100,11 @@ public class TipsUpload {
 						deletePstmt.setString(1, problem_num);
 						deletePstmt.addBatch();
 
+						// 按照Tips统计坐标所在图幅统计
+						TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+						TipsDao solrObj = operator.getById(record.getRowkey());
+						String linkPidString = getQualityLinkPid(solrObj, regionDBConn);
+                        record.setLink_pid(linkPidString);
 						insertPstmt.setString(1, "");
 						insertPstmt.setString(2, groupName);
 						insertPstmt.setString(3, record.getLink_pid());
@@ -1106,9 +1117,6 @@ public class TipsUpload {
 						insertPstmt.setString(10, "");
 						insertPstmt.setString(11, problem_num);
 						insertPstmt.setString(12, "");
-						// 按照Tips统计坐标所在图幅统计
-                        TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
-						TipsDao solrObj = operator.getById(record.getRowkey());
 						Geometry geo = solrObj.getWkt();
 						String mesh = TipsGridCalculate.calculate(geo).iterator().next().substring(0, 6);
 						insertPstmt.setInt(13, Integer.valueOf(mesh));
@@ -1155,8 +1163,6 @@ public class TipsUpload {
 							e.printStackTrace();
 						}
 						if (linkPid != 0) {
-							int dbId = subtask.getDbId();
-							java.sql.Connection regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
 							JSONObject linkObj = TipsImportUtils.queryLinkKindFC(regionDBConn, String.valueOf(linkPid));
 							if (linkObj != null) {
 								kind = linkObj.getInt("kind");
@@ -1213,6 +1219,7 @@ public class TipsUpload {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(checkConn);
             DbUtils.rollbackAndCloseQuietly(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(regionDBConn);
 			logger.error("质检问题上传失败，原因为：" + e.getMessage());
 			e.printStackTrace();
 		} finally {
@@ -1220,33 +1227,88 @@ public class TipsUpload {
 			DBUtils.closeStatement(insertPstmt);
 			DbUtils.commitAndCloseQuietly(checkConn);
             DbUtils.commitAndCloseQuietly(oracleConn);
+            DbUtils.commitAndCloseQuietly(regionDBConn);
 		}
 
 	}
 
-	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
-		String collecorUserId = "AAA";
-
-        String where = "stage<>0 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + linkPid + "'))";
-        String query = "select * from tips_index where " + where;
-        List<TipsDao> relateTips = operator.query(query);
-        for (TipsDao snapshot : relateTips) {
-            String rowkey = snapshot.getId();
-
-            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-            JSONObject track = oldTip.getJSONObject("track");
-            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-                int stage = trackInfoObj.getInt("stage");
-                if (stage == 1) {
-                    int handler = trackInfoObj.getInt("handler");
-                    if (handler == userId) {
-                        collecorUserId = String.valueOf(userId);
-                        break;
+    private String getQualityLinkPid(TipsDao tipsDao, java.sql.Connection regionDBConn) throws Exception {
+        String linkPid = "";
+        try{
+            String deep = tipsDao.getDeep();
+            String sourceType = tipsDao.getS_sourceType();
+            if(StringUtils.isNotEmpty(deep)) {
+                JSONObject deepJson = JSONObject.fromObject(deep);
+                if (TipsStatConstant.fieldQCExpIdType.contains(sourceType)) {//exp.id
+                    JSONObject exp = deepJson.getJSONObject("exp");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFIdType.contains(sourceType)) {//f.id
+                    JSONObject exp = deepJson.getJSONObject("f");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFIdNodeType.contains(sourceType)) {
+                    //f.type<>3时，取f.id;f.type=3时，取该node关联的任意一条link
+                    JSONObject exp = deepJson.getJSONObject("f");
+                    int type = exp.getInt("type");
+                    String id = exp.getString("id");
+                    if (type != 3) {
+                        linkPid = exp.getString("id");
+                    } else {
+                        //TODO 该node关联的任意一条link
+                        String nodeLink = TipsImportUtils.queryNodeRelateLink(regionDBConn, id);
+                        if (StringUtils.isNotEmpty(nodeLink)) {
+                            linkPid = nodeLink;
+                        }
+                    }
+                } else if (TipsStatConstant.fieldQCInIdType.contains(sourceType)) {//in.id
+                    JSONObject exp = deepJson.getJSONObject("in");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCOutIdType.contains(sourceType)) {//out.id
+                    JSONObject exp = deepJson.getJSONObject("out");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFArrayIdType.contains(sourceType)) {//farray.id
+                    JSONArray fArray = deepJson.getJSONArray("f_array");
+                    if (fArray != null && fArray.size() > 0) {
+                        JSONObject fObj = fArray.getJSONObject(0);
+                        linkPid = fObj.getString("id");
+                    }
+                } else if (TipsStatConstant.fieldQCPArrayIdType.contains(sourceType)) {//parray.id
+                    JSONArray pArray = deepJson.getJSONArray("p_array");
+                    if (pArray != null && pArray.size() > 0) {
+                        JSONObject pObj = pArray.getJSONObject(0);
+                        JSONObject fObj = pObj.getJSONObject("f");
+                        linkPid = fObj.getString("id");
                     }
                 }
             }
+        }catch (Exception e) {
+            throw new Exception("getQualityLinkPid获取linkpid失败！");
+        }
+        return linkPid;
+    }
+
+	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
+		String collecorUserId = "AAA";
+
+        String where = "stage=1 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + linkPid + "') AND ROWNUM = 1";
+        String query = "select * from tips_index where " + where;
+        List<TipsDao> relateTips = operator.query(query);
+        for (TipsDao snapshot : relateTips) {
+            collecorUserId = String.valueOf(snapshot.getHandler());
+
+//            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+//            JSONObject track = oldTip.getJSONObject("track");
+//            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+//            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+//                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+//                int stage = trackInfoObj.getInt("stage");
+//                if (stage == 1) {
+//                    int handler = trackInfoObj.getInt("handler");
+//                    if (handler == userId) {
+//                        collecorUserId = String.valueOf(userId);
+//                        break;
+//                    }
+//                }
+//            }
         }
 		return collecorUserId;
 	}

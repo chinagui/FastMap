@@ -444,7 +444,7 @@ public interface MetadataApi {
 	public int getCrowdTruck(String kindCode) throws Exception;
 	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
 	 //获取元数据库中重要POI的数据
-	public List<Integer> queryImportantPid() throws SQLException;
+	public List<String> queryImportantPid() throws SQLException;
 
 	 /**
 	  * @param reliability范围

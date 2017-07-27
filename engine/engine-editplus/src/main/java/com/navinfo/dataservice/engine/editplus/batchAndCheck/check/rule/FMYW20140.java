@@ -34,8 +34,16 @@ public class FMYW20140 extends BasicCheckRule {
 
         if (addresses == null || addresses.size() == 0) {
 
+            IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+            String strLog = "PID=" + poi.getPid() + "地址为空";
+
+            setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), strLog);
+
             return;
         }
+
+        String fullName = null;
 
         for (IxPoiAddress address : addresses) {
 
@@ -46,16 +54,23 @@ public class FMYW20140 extends BasicCheckRule {
                 continue;
             }
 
-            String fullName = address.getFullname() == null ? "" : address.getFullname();
+            fullName = address.getFullname();
 
-            if (fullName.isEmpty()) {
+            if (fullName == null || fullName.isEmpty()) {
 
-                IxPoi poi = (IxPoi) poiObj.getMainrow();
+                fullName = null;
 
-                String strLog = "PID=" + poi.getPid() + "地址为空";
-
-                setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), strLog);
+                break;
             }
+        }
+
+        if (fullName == null) {
+
+            IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+            String strLog = "PID=" + poi.getPid() + "地址为空";
+
+            setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), strLog);
         }
     }
 

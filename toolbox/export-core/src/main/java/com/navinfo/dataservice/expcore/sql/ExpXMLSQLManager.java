@@ -181,7 +181,7 @@ public class ExpXMLSQLManager {
             if (!fileContent.excludeSql(id)) {
                 ExpSQL expSQL = new ExpSQL(id, sql);
                 expSQL.setCondition(condition);
-                expSQL.setSqlType(sqlType);;
+                expSQL.setSqlType(sqlType);
                 expSQL.setSqlExtendType(sqlExtendType);
 //                log.debug(expSQL.getSql());
                 //TODO:正式环境请注释生成临时表脚本的功能

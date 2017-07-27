@@ -28,6 +28,7 @@ import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.CpRegionProvinceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
@@ -433,5 +434,16 @@ public class ManApiImpl implements ManApi {
 	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		return SubtaskService.getInstance().getSubtaskInfoByQuality(qualitySubtaskId);
+	}
+
+	/**
+	 * 根据子任务Id查询同项目下的区域粗编子任务列表
+	 * @param int subTaskId
+	 * @throws Exception
+	 * 
+	 * */
+	@Override
+	public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception {
+		return ProgramService.getInstance().queryRudeSubTaskBySubTask(subTaskId);
 	}
 }

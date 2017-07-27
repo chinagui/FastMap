@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -118,36 +117,9 @@ public class QualityService {
 				int StkId = run.queryForInt(manConn, queryStkIdSql, subtaskId);
 				queryUserIdAndOpDtSql.append("		AND LA.STK_ID = ");
 				queryUserIdAndOpDtSql.append(StkId);
-				queryUserIdAndOpDtSql.append("		ORDER BY LO.OP_DT DESC)");
-				queryUserIdAndOpDtSql.append("WHERE ROWNUM = 1");
-				JSONObject userIdAndTimeJson = run.query(regiondbConn, queryUserIdAndOpDtSql.toString(),
-						userIdAndTimeHandler);
-				long usId = userIdAndTimeJson.getLong("usId");
-				// 当usId = 0时，采集员姓名返回空串
-				resultJson.put("usId", usId);
-				UserInfo userInfoByUserId = apiService.getUserInfoByUserId(usId);
-				String collectorUser = userInfoByUserId.getUserRealName();
-				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				long currentTime = userIdAndTimeJson.getLong("opDt");
-				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
+				resultJsonHandler(queryUserIdAndOpDtSql, regiondbConn, run, resultJson);
 			} else {
-				queryUserIdAndOpDtSql.append("		ORDER BY LO.OP_DT DESC)");
-				queryUserIdAndOpDtSql.append("WHERE ROWNUM = 1");
-				JSONObject userIdAndTimeJson = run.query(regiondbConn, queryUserIdAndOpDtSql.toString(),
-						userIdAndTimeHandler);
-				long usId = userIdAndTimeJson.getLong("usId");
-				String collectorUser = null;
-				long currentTime = 0L;
-				if (usId == userId) {
-					collectorUser = "AAA";
-					currentTime = System.currentTimeMillis();
-				} else {
-					collectorUser = apiService.getUserInfoByUserId(usId).getUserRealName();
-					currentTime = userIdAndTimeJson.getLong("opDt");
-				}
-				resultJson.put("collectorUser", collectorUser == null ? "" : collectorUser);
-				resultJson.put("collectorTime", currentTime == 0 ? "" : DateUtils.longToString(currentTime, "yyyy.MM.dd"));
-				resultJson.put("usId", usId);
+				resultJsonHandler(queryUserIdAndOpDtSql, regiondbConn, run, resultJson);
 			}
 			return resultJson;
 		} catch (Exception e) {
@@ -161,6 +133,29 @@ public class QualityService {
 		}
 	}
 
+	private void resultJsonHandler (StringBuilder queryUserIdAndOpDtSql, Connection regiondbConn, QueryRunner run, JSONObject resultJson) throws Exception{
+		queryUserIdAndOpDtSql.append("		ORDER BY LO.OP_DT DESC)");
+		queryUserIdAndOpDtSql.append("WHERE ROWNUM = 1");
+		JSONObject userIdAndTimeJson = run.query(regiondbConn, queryUserIdAndOpDtSql.toString(),
+				userIdAndTimeHandler);
+		long usId;
+		String collectorUser;
+		String currentTime;
+		if(userIdAndTimeJson == null || userIdAndTimeJson.isEmpty()){
+			usId = 0L;
+			collectorUser = "AAA";
+			currentTime = "";
+		} else {
+			usId = userIdAndTimeJson.getLong("usId");
+			collectorUser = String.valueOf(userIdAndTimeJson.getLong("usId"));
+			currentTime = DateUtils.longToString(userIdAndTimeJson.getLong("opDt"), "yyyy.MM.dd");
+		}
+		resultJson.put("usId", usId);
+		resultJson.put("collectorUser", collectorUser);
+		resultJson.put("collectorTime", currentTime);
+	}
+	
+	
 	/**
 	 * userId和采集时间的结果集处理器
 	 * 当查询不到结果时，则usId = 0   并且   opDt = 0（最终时间返回：1970.01.01） 
@@ -171,9 +166,6 @@ public class QualityService {
 			if (rs.next()) {
 				object.put("usId", rs.getLong("us_id"));
 				object.put("opDt", rs.getTimestamp("op_dt").getTime());
-			} else {
-				object.put("usId", 0L);
-				object.put("opDt", 0L);
 			}
 			return object;
 		}
@@ -550,12 +542,9 @@ public class QualityService {
 				if("AAA".equals(collectorUser)){
 					conditions.add("MEMO_USER");
 					StringBuilder sb = new StringBuilder();
-					sb.append("SELECT EXE_USER_ID FROM SUBTASK WHERE QUALITY_SUBTASK_ID = ").append(subtaskId);
+					sb.append("SELECT EXE_USER_ID FROM SUBTASK WHERE SUBTASK_ID = (SELECT SUBTASK_ID FROM SUBTASK WHERE QUALITY_SUBTASK_ID = ").append(subtaskId).append(")");
 					int memoUser = run.queryForInt(manConn, sb.toString());
 					params.add(String.valueOf(memoUser));
-				} else {
-					conditions.add("MEMO_USER");
-					params.add(collectorUser);
 				}
 				
 				StringBuilder builder = new StringBuilder();

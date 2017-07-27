@@ -182,7 +182,7 @@ public class ExecuteSql {
 								.getSqlType())
 						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
 								.getSqlExtendType())) {
-					// log.debug("非毛边导出,"+expSQL.getSqlType()+"："+expSQL.getSql());
+					log.debug("非毛边导出,"+expSQL.getSqlType()+"："+expSQL.getSql()+":"+expSQL.getSqlExtendType());
 					filterSqlList.add(expSQL);
 				}
 			}

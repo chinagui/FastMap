@@ -859,7 +859,7 @@ public class LogReader {
 		
 		Clob clobPids=null;
 		if(objPids.size()>1000){
-			clobPids = conn.createClob();
+			clobPids = ConnectionUtil.createClob(conn);
 			clobPids.setString(1, StringUtils.join(objPids, ","));
 			sb.append(" AND LD.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
 		}else{

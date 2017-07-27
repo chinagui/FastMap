@@ -66,6 +66,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -1850,97 +1851,48 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
-					+ "  FROM subtask_refer t, subtask s"
-					+ " where s.refer_id(+) = t.id";
+			String whereSql="";
 			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
-				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+				whereSql +=  " AND T.block_id = "+json.getInt("blockId");
 			}
 			if (json.containsKey("wkt")) {
-				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+				whereSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
+			String selectSql = " WITH TMP AS"
+					+ " (SELECT T.ID,"
+					+ "         MAX(CASE S.STATUS"
+					+ "               WHEN 1 THEN"
+					+ "                3"
+					+ "               ELSE"
+					+ "                NVL(S.STATUS, 0)"
+					+ "             END) STATUS"
+					+ "    FROM SUBTASK_REFER T, SUBTASK S"
+					+ "   WHERE S.REFER_ID(+) = T.ID"
+					+ whereSql
+					+ "   GROUP BY T.ID)"
+					+ " SELECT TMP.ID, TMP.STATUS, R.GEOMETRY"
+					+ "  FROM TMP, SUBTASK_REFER R"
+					+ " WHERE TMP.ID = R.ID";
+			
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
-					List<HashMap<String,Integer>> countList = new ArrayList<HashMap<String,Integer>>();
-					int tempId = 0;
-					int count0=0;//status:0//0没有对应子任务（subtask表refer_id），或者对应的子任务都处于关闭状态
-					int count1=0;//1存在开启状态的子任务
-					int count2=0;//2不存在开启状态子任务，但存在草稿状态子任务
-					HashMap<String,Integer> countMap = null;
-					while(rs.next()){
+					while(rs.next()){				
+						HashMap<String,Object> map = new HashMap<String,Object>();
+						map.put("id", rs.getInt("ID"));
+						int status=rs.getInt("status");
+						if(status==3){map.put("status", 1);}
+						else{map.put("status", status);}
 						try {
-							
-							HashMap<String,Object> map = new HashMap<String,Object>();
-							int id = rs.getInt("ID");
-							int status = rs.getInt("status");
-							
-							if (tempId!=id) {
-								map.put("id",id);
-								try {
-									STRUCT struct=(STRUCT)rs.getObject("geometry");
-									String clobStr = GeoTranslator.struct2Wkt(struct);
-									map.put("geometry", Geojson.wkt2Geojson(clobStr));
-								} catch (Exception e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-								
-								tempId = id;
-								countMap = new HashMap<>();
-								countMap.put("id", id);
-								count0=0;
-								count1=0;
-								count2=0;
-								countList.add(countMap);
-							}
-							
-							if(status==0){
-								count0++;
-							}else if(status==1){
-								count1++;
-							}else if(status==2){
-								count2++;
-							}
-							
-							countMap.put("count0", count0);
-							countMap.put("count1", count1);
-							countMap.put("count2", count2);
-							
-							if(null!=map&&!map.isEmpty()){
-								list.add(map);
-							}
-							
-							
-						} catch (Exception e) {
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}						
-					}
-					
-					
-					for (HashMap<String, Object> map : list) {
-						for (HashMap<String, Integer> countIdMap : countList) {
-							if((int)map.get("id")==(int)countIdMap.get("id")){
-								int countId0 = countIdMap.get("count0");
-								int countId1 = countIdMap.get("count1");
-								int countId2 = countIdMap.get("count2");
-								if(countId0>0&&countId1==0&&countId2==0){
-									map.put("status", 0);
-									break;
-								}
-								if(countId1>0){
-									map.put("status", 1);
-									break;
-								}
-								if(countId1==0&&countId2>0){
-									map.put("status", 2);
-									break;
-								}
-							}
-						}
-					}
-					
+							e1.printStackTrace();
+						}							
+						list.add(map);		
+					}					
 					return list;
 				}	    		
 	    	}		;
@@ -1990,6 +1942,7 @@ public class SubtaskService {
 						int type=rs.getInt("TYPE");
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
+//						int lot = rs.getInt("LOT");
 						String name="";
 //						if(stage==1){name+="日编 - ";}
 //						else if(stage==0){name+="采集 - ";}
@@ -2004,11 +1957,19 @@ public class SubtaskService {
 						else if(type==4){name+="一体化_区域粗编_日编";}
 						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
-						else if(type==7){name+="POI专项_月编";}
+						else if(type==7){name+="POI专项_月编";
+//						if(lot == 0){
+//							name += "(无批次)";
+//						}else if(lot == 1){name += "(一批)";}
+//						 else if(lot == 2){name += "(二批)";}
+//						 else if(lot == 3){name += "(三批)";}
+//						 else{name += "("+lot+"批)";}
+						}
 						else if(type==8){name+="道路_Grid精编";}
 						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
+//						subResult.put("lot", lot);
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);
@@ -2112,7 +2073,6 @@ public class SubtaskService {
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
 				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
@@ -2161,6 +2121,27 @@ public class SubtaskService {
 						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
 						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
 						if(monthChangedTasks > 0){
+							//扩充的grid也要扩到图幅范围
+							log.info("对应的月编任务扩grid后，将扩后的grid再扩充为图幅范围");
+							Task monthTasks = TaskOperation.getMonthTaskGridByOtherTask(conn, subtask.getTaskId());
+							
+							Set<Integer> myGrid=monthTasks.getGridIds().keySet(); 
+							Set<String> meshs=new HashSet<String>();
+							for(Integer gridTmp:myGrid){
+								meshs.add(String.valueOf(gridTmp/100));
+							}
+							Map<Integer,Integer> newGrids=new HashMap<Integer,Integer>();
+							for(String meshTmp:meshs){
+								Set<String> allGrid = CompGridUtil.mesh2Grid(meshTmp);
+								for(String gridExt:allGrid){
+									if(!myGrid.contains(Integer.valueOf(gridExt))){
+										newGrids.put(Integer.valueOf(gridExt), 2);
+									}
+								}
+							}
+							TaskOperation.insertTaskGridMapping(conn,monthTasks.getTaskId(), newGrids);
+							
+							
 							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
 							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());
 							//获取对应采集/日编子任务对应的同任务下的快线月编子任务
@@ -3105,7 +3086,9 @@ public class SubtaskService {
 					}					
 					
 					Geometry midLine=referGeo.intersection(lineGeo);
-					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
+					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
+					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
 					if(!isIn){
 						throw new Exception("线不在面内，请重新划线");
 					}

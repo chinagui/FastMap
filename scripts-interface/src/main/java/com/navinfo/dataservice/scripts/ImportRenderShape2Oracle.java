@@ -40,8 +40,11 @@ public class ImportRenderShape2Oracle {
 	 */
 	public static void main(String[] args) {
 
+		System.out.println("args.length : "+args.length);
 		try {
-			/*if(args==null||args.length < 2){
+			Long beginTime1 = System.currentTimeMillis(); 
+			
+			if(args==null||args.length < 2){
 				System.out.println("ERROR:need args:shapeFile");
 				return;
 			}
@@ -55,16 +58,17 @@ public class ImportRenderShape2Oracle {
 			int deleteFlag = 1;
 			if(args.length == 3 && args[2] != null){
 				deleteFlag = Integer.parseInt(args[2]);
-			}*/
-			int deleteFlag = 1;
-//			String shapeFilePath = "F:\\shapefile\\shp\\tengxunUGC.shp";
+			}
+			/*int deleteFlag = 1;
 			String shapeFilePath = "F:\\shapefile\\shpdir";
-			String tableName = "VECTOR_TAB_SUSPECT";
+			String tableName = "VECTOR_TAB_SUSPECT";*/
 			
 			//先判断是否清除数据
 			if(deleteFlag > 0){//当 deleteFlag > 0 则清除数据库表
+				Long beginTime = System.currentTimeMillis(); 
 				deleteData(tableName,deleteFlag);
-				System.out.println(tableName +" 表数据一清空!");
+				Long endTime = System.currentTimeMillis(); 
+				System.out.println(tableName +" 表数据一清空!"+" 耗时："+(endTime-beginTime)/1000+" 秒.");
 			}
 			
 			File shapeFile = new File(shapeFilePath);
@@ -86,16 +90,17 @@ public class ImportRenderShape2Oracle {
 		                            	continue;
 		                            } else if (filefileName.endsWith(".shp")) { // 判断文件名是否以.shp结尾
 		                               System.out.println("正在读取文件: "+filefiles[j].getAbsolutePath());
-		                               imp(filefiles[j],tableName);
+//		                               imp(filefiles[j],tableName);
+		                               impBatch(filefiles[j],tableName);
 		                            } else {
 		                                continue;
 		                            }
 		                        }
 		                    }
 		                } else if (fileName.endsWith(".shp")) { // 判断文件名是否以.shp结尾
-		                   
 		                	 System.out.println("正在读取文件: "+files[i].getAbsolutePath());
-                             imp(files[i],tableName);
+//                           imp(files[i],tableName);
+		                	 impBatch(files[i],tableName);
 		                } else {
 		                    continue;
 		                }
@@ -103,10 +108,11 @@ public class ImportRenderShape2Oracle {
 		        }
 			}else{
 				System.out.println("正在读取文件: "+shapeFile.getAbsolutePath());
-				imp(shapeFile,tableName);
+//				imp(shapeFile,tableName);
+				impBatch(shapeFile,tableName);
 			}
-			
-			System.out.println("Over.");
+			Long endTime1 = System.currentTimeMillis(); 
+			System.out.println(" 总共耗时："+(endTime1-beginTime1)/1000+" 秒. "+"Over.");
 			System.exit(0);
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
@@ -120,7 +126,7 @@ public class ImportRenderShape2Oracle {
 		PreparedStatement stmt = null;
 		try{
 
-			WKTReader r = new WKTReader();
+//			WKTReader r = new WKTReader();
 			DbInfo manInfo = DbService.getInstance().getOnlyDbByBizType("fmRender");
 
 			OracleSchema manSchema = new OracleSchema(
@@ -140,6 +146,90 @@ public class ImportRenderShape2Oracle {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	//***** 批处理 插入***********
+	public static void impBatch(File shapeFile, String tableName)throws Exception{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		try{
+
+			WKTReader r = new WKTReader();
+			DbInfo manInfo = DbService.getInstance().getOnlyDbByBizType("fmRender");
+
+			OracleSchema manSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(manInfo.getConnectParam()));
+			conn = manSchema.getPoolDataSource().getConnection();
+			
+			List<ShapeModel> vtsList = parseShape(shapeFile);
+			
+			int count = 0;
+			int commitCount = 1000;
+			if(vtsList != null && vtsList.size() >0 ){
+				//判断上传文件的数量级
+				if(vtsList.size() < 50000){
+					commitCount = 500;
+				}
+				
+			   String insCitySql = "INSERT INTO "+tableName+" (RID,GEOMETRY) VALUES ("+tableName+"_SEQ.NEXTVAL,SDO_GEOMETRY(?,8307))";
+			   conn.setAutoCommit(false);      
+			   Long beginTime = System.currentTimeMillis(); 
+			   //构造预处理statement     
+			   pst = conn.prepareStatement(insCitySql);    
+			   
+			   
+				for(ShapeModel vts:vtsList){
+					count++;
+					String geo = vts.getGeometry();
+					if(geo != null ){
+						Geometry geo_mls = r.read(geo);
+//				        System.out.println(geo_mls.getGeometryType());
+				        if(geo_mls instanceof MultiLineString){
+//				        	LineString[] lineStrings = new LineString[geo_mls.getNumGeometries()];	
+				        	for (int k = 0; k < geo_mls.getNumGeometries(); k++) {
+				    			LineString ls = (LineString) geo_mls.getGeometryN(k);
+//				    			System.out.println(ls);
+				    			Clob clob = ConnectionUtil.createClob(conn);
+								clob.setString(1, ls.toString());
+								
+								pst.setClob(1, clob); 
+				    		}
+				        }else if(geo_mls instanceof LineString){
+				        	Clob clob = ConnectionUtil.createClob(conn);
+							clob.setString(1, geo_mls.toString());
+							
+							pst.setClob(1, clob); 
+				        }
+//						System.out.println(count);
+					}
+					//添加到批处理
+				    pst.addBatch();
+				    
+					if(count%commitCount == 0){//每1000次提交一次     
+						pst.executeBatch();      
+					    conn.commit();      
+					    pst.clearBatch(); 
+						System.out.println(shapeFile.getAbsolutePath() +"已导入数据数量为  count: "+count);
+					}
+				}
+				  pst.executeBatch();
+				  conn.commit(); 
+				  Long endTime = System.currentTimeMillis();      
+				  
+				  pst.close();      
+				  conn.close();     
+				System.out.println(shapeFile.getAbsolutePath() +" 总共导入数据: "+count+" 条.");
+				System.out.println(" 耗时："+(endTime-beginTime)/1000+" 秒."); 
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(pst);
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	
 	
 	public static void imp(File shapeFile, String tableName)throws Exception{

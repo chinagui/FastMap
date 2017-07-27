@@ -1945,6 +1945,7 @@ public class Transaction {
         StringBuffer patter = new StringBuffer("^(");
 
         patter.append("RD_LINK|RD_NODE|RD_LANE");
+        patter.append("RW_NODE|RW_LINK|RW_FEATURE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
         patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");

@@ -1142,6 +1142,47 @@ public class TaskOperation {
 		}
 		
 	}
+	
+	/**
+	 * 快线项目下，根据某个任务id获取与他同项目下的月编任务的扩展grid
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception 
+	 * 
+	 */
+	public static Task getMonthTaskGridByOtherTask(Connection conn, int otherTaskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "  SELECT UT.TASK_ID, M.GRID_ID, M.TYPE"
+					+ "    FROM TASK_GRID_MAPPING M, PROGRAM P, TASK T, TASK UT"
+					+ "   WHERE T.TASK_ID = "+otherTaskId
+					+ "     AND UT.PROGRAM_ID = T.PROGRAM_ID"
+					+ "     AND P.PROGRAM_ID = UT.PROGRAM_ID"
+					+ "     AND M.TASK_ID = UT.TASK_ID"
+					//+ "     AND M.TYPE = 2"
+					+ "     AND UT.TYPE = 2"
+					+ "     AND P.TYPE = 4";
+			log.info("getExtentMonthTaskGridByOtherTask:"+sql);
+			ResultSetHandler<Task> rsHandler = new ResultSetHandler<Task>() {
+				public Task handle(ResultSet rs) throws SQLException {
+					Task task=new Task();
+					Map<Integer,Integer> gridMap = new HashMap<Integer,Integer>();
+					while (rs.next()) {
+						task.setTaskId(rs.getInt("TASK_ID"));
+						gridMap.put(rs.getInt("GRID_ID"), rs.getInt("TYPE"));
+					}
+					task.setGridIds(gridMap);
+					return task;
+				}
+			};
+			return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 
 	/**
 	 * @param conn

@@ -148,8 +148,9 @@ public class TipsSelector {
             if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
                 OracleWhereClause where = param.getTaskRender(parameter);
                 snapshots = new TipsIndexOracleOperator(conn).query(
-                        "select * from tips_index where " + where.getSql(), where
+                        "select  /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ *  from tips_index where " + where.getSql(), where
                                 .getValues().toArray());
+                logger.info("tileInTask: " + where.getSql());
             }else {
                 String sql = param.getByTileWithGap(parameter);
                 snapshots = operator.query(sql, wkt);
@@ -2433,12 +2434,12 @@ public class TipsSelector {
 		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime);
 		
 		Connection oracleConn = null;
-			
+
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
-			
+
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
-			
+
 			Page page = operator.queryPage(sql, curPage, pageSize);
 
 			long totalNum = page.getTotalCount();
@@ -2484,13 +2485,13 @@ public class TipsSelector {
 		Connection oracleConn = null;
 
 		List<IxPoi> result = new ArrayList<>();
-		
+
 		JSONArray array = new JSONArray();
 
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
-			
+
 			List<TipsDao> unhandleGpsList = operator.query(unhandleGps);
 			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
 				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false));
@@ -2505,11 +2506,11 @@ public class TipsSelector {
 			if (deleteLinksList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
 				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true));
 			}
-			
+
 			for(IxPoi poi:result){
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 				JSONObject obj = JSONObject.fromObject(poi,jsonConfig);
-				array.add(obj); 
+				array.add(obj);
 			}
 
 		} catch (Exception e) {
@@ -2518,10 +2519,10 @@ public class TipsSelector {
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		
+
 		return array;
 	}
-	
+
 	/**
 	 * tips点位30米buffer的poi集合,引导坐标距离link/测线距离是否在3m以内（已处理）/以外（未处理）
 	 * @param tipsList
@@ -2573,7 +2574,7 @@ public class TipsSelector {
 							continue;
 						}
 					}
-					
+
 					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
 					double distance = tip.getWktLocation().distance(guidPoint);
 
@@ -2595,10 +2596,10 @@ public class TipsSelector {
 		}
 		return poiList;
 	}
-	
+
 	/**
 	 * 形状删除的测线tips
-	 * 
+	 *
 	 * @param subTaskId
 	 * @param tipsId
 	 * @return
@@ -2609,16 +2610,16 @@ public class TipsSelector {
 
 		String query = String.format("SELECT * FROM TIPS_INDEX WHERE S_QSUBTASKID=%d AND S_SOURCETYPE = 2101",
 				subTaskId);
-		
+
 		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
-		
+
 		try {
 			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(query);
 
 			for (TipsDao tip : tips) {
-	
+
 				String id = getDeepRelateId(tip);
-				
+
 				if (tipsId.equals(id)) {
 					isDeleteTips = true;
 					break;
@@ -2635,9 +2636,9 @@ public class TipsSelector {
 
 	private String getDeepRelateId(TipsDao tip){
 		String relateID = null;
-		
+
 		String deep = tip.getDeep();
-		
+
 		if (deep == null || deep.isEmpty()) {
 			return relateID;
 		}
@@ -2652,7 +2653,7 @@ public class TipsSelector {
 		relateID = f.getString("id");
 		return relateID;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		// String parameter =
 		// "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";

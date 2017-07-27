@@ -18,8 +18,8 @@ public class Audio {
 	private String a_uploadDate;
 	
 	private String a_fileName;
-	
-	
+
+	private int a_sourceId = 2;
 
 	private List<String> a_tag;
 	
@@ -82,5 +82,11 @@ public class Audio {
 	}
 
 
-	
+	public int getA_sourceId() {
+		return a_sourceId;
+	}
+
+	public void setA_sourceId(int a_sourceId) {
+		this.a_sourceId = a_sourceId;
+	}
 }

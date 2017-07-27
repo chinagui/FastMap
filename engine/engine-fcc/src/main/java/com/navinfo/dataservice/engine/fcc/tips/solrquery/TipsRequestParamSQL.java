@@ -612,6 +612,7 @@ public class TipsRequestParamSQL {
 
         if(statusBuilder.length() > 0) {
             builder.append("(");
+            builder.append(" AND ");
             builder.append(statusBuilder);
             builder.append(")");
         }

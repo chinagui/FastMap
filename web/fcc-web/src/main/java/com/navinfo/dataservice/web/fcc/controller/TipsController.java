@@ -553,11 +553,6 @@ public class TipsController extends BaseController {
 
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-            JSONArray grids = jsonReq.getJSONArray("grids");
-            if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
-
             String type = jsonReq.getString("type");
             if (StringUtils.isEmpty(type)) {
                 throw new IllegalArgumentException("参数错误:type不能为空。");
@@ -949,9 +944,9 @@ public class TipsController extends BaseController {
              
              TipsSelector selector = new TipsSelector();
 
-             JSONArray array = selector.searchPoiRelateTips(id,subTaskId,buffer,dbId);
+             selector.searchPoiRelateTips(Integer.valueOf(id),subTaskId,buffer,dbId);
              
-             return new ModelAndView("jsonView", success(array));
+             return new ModelAndView("jsonView", success());
 
          } catch (Exception e) {
 

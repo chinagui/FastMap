@@ -144,8 +144,9 @@ public class TipsSelector {
             if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
                 OracleWhereClause where = param.getTaskRender(parameter);
                 snapshots = new TipsIndexOracleOperator(conn).query(
-                        "select * from tips_index where " + where.getSql(), where
+                        "select  /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ *  from tips_index where " + where.getSql(), where
                                 .getValues().toArray());
+                logger.info("tileInTask: " + where.getSql());
             }else {
                 String sql = param.getByTileWithGap(parameter);
                 snapshots = operator.query(sql, wkt);
@@ -2461,7 +2462,7 @@ public class TipsSelector {
 		return array;
 	}
 	
-	public void searchPoiRelateTips(int id,int subTaskId){
+	public void searchPoiRelateTips(int id,int subTaskId, int buffer, int dbId){
 		//A、库中状态为未处理且没有形状删除的测线tips，建30米buffer（POI显示坐标），落在buffer范围内的非删除状态的POI且该POI的引导坐标未落入该测线上（3m内－引导坐标）
 		//日库状态为未处理且没有形状删除的测线tips：fusion_result.source.s_sourceType= 2001（测线）且fusion_result.track.t_trackInfo.stage=1、2、5、6，且fusion_result.track. t_tipStatus=2 且fusion_result.track.t_dEditStatus=0 或1;且fusion_result.source.s_sourceType为2101（删除道路）中关联fusion_result.deep.f.id不是该测线；
 		

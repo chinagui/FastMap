@@ -9,6 +9,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
+import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -41,13 +42,16 @@ public class CreateCMSTaskPhase extends JobPhase {
         try {
             conn = DBConnector.getInstance().getManConnection();
             jobProgressOperator = new JobProgressOperator(conn);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
             //更新状态为进行中
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
             conn.commit();
 
             if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
                 //如果无数据，不需要创建cms任务
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
+            	jobProgress.setStatus(JobProgressStatus.SUCCESS);
+                //jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
+                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
                 return jobProgress.getStatus();
             }
 
@@ -116,7 +120,9 @@ public class CreateCMSTaskPhase extends JobPhase {
                     jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
-            jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
+            JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+
+           // jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
 
             return jobProgress.getStatus();
         } catch (Exception ex) {
@@ -126,7 +132,8 @@ public class CreateCMSTaskPhase extends JobPhase {
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
                 jobProgress.setOutParameter(ex.getMessage());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                //jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
             }
             throw ex;
         } finally {

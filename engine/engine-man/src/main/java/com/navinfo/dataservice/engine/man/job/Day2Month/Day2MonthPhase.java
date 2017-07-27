@@ -5,6 +5,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
+import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -37,6 +38,7 @@ public class Day2MonthPhase extends JobPhase {
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
             jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
             conn.commit();
 
@@ -62,11 +64,12 @@ public class Day2MonthPhase extends JobPhase {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
+            jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
             }
             throw ex;
         } finally {

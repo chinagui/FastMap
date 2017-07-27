@@ -206,7 +206,7 @@ public class JobService {
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		
- -			runner = new TaskMedium2QuickRunner();		
+ 			runner = new TaskMedium2QuickRunner();		
   		}
 		return runner;
 	}

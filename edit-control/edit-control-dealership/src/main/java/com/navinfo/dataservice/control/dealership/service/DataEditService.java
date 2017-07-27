@@ -2492,8 +2492,7 @@ public class DataEditService {
 			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
 			sbTel.append(" WHERE I.POI_NUM =:1");
 			sbTel.append(" AND I.PID = C.POI_PID");
-			sbTel.append(" AND ((C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0) OR");
-			sbTel.append(" C.CONTACT_DEPART IN (32, 16, 8))");
+			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8)");
 			sbTel.append(" AND C.U_RECORD <> 2");
 			
 			pstmt = conn.prepareStatement(sbTel.toString());
@@ -2506,7 +2505,7 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				if (resultSet.getInt("CONTACT_DEPART")==32){
+				if (resultSet.getInt("CONTACT_DEPART")==0&&resultSet.getInt("CONTACT_TYPE")!=3){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
 					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}

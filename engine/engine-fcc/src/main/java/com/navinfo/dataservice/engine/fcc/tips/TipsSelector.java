@@ -16,11 +16,9 @@ import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -34,14 +32,11 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.hbase.async.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -108,7 +103,7 @@ public class TipsSelector {
 			if (jsonReq.containsKey("pType")) {
 				pType = jsonReq.getString("pType");
 			}
-
+            boolean isInTask = false;
 			if (StringUtils.isEmpty(pType) || pType.equals("web")) {
 				JSONArray workStatus = null;
 				if (jsonReq.containsKey("workStatus")) {
@@ -117,6 +112,9 @@ public class TipsSelector {
 				if (workStatus == null || workStatus.size() == 0) {
 					return array;
 				}
+                if(workStatus.contains(TipsWorkStatus.TIPS_IN_TASK)) {
+                    isInTask = true;
+                }
 			} else if (pType.equals("ms")) {
 				JSONArray noQFilter = null;
 				if (jsonReq.containsKey("noQFilter")) {
@@ -138,12 +136,23 @@ public class TipsSelector {
 				mdFlag = jsonReq.getString("mdFlag");
 			}
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
-			String sql = param.getByTileWithGap(parameter);
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			List<TipsDao> snapshots = operator.query(sql, wkt);
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+            List<TipsDao> snapshots = null;
+            if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
+                OracleWhereClause where = param.getTaskRender(parameter);
+                snapshots = new TipsIndexOracleOperator(conn).query(
+                        "select * from tips_index where " + where.getSql(), where
+                                .getValues().toArray());
+            }else {
+                String sql = param.getByTileWithGap(parameter);
+                snapshots = operator.query(sql, wkt);
+            }
+            if(snapshots == null || snapshots.size() == 0) {
+                return array;
+            }
 			for (TipsDao tipsDao : snapshots) {
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 				JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
@@ -677,7 +686,7 @@ public class TipsSelector {
 	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
 		// 2.1deep.time(一级属性)
 		if (type == 1304 || type == 1305 || type == 1203 || type == 1514
-				|| type == 1507 || type == 1517 || type == 1515 || type == 1516) {
+				|| type == 1507 || type == 1517 || type == 1515 || type == 1516 || type == 1520) {
 
 			if (!StringUtils.isEmpty(deep.getString("time"))) {
 
@@ -688,7 +697,7 @@ public class TipsSelector {
 		// 2.2二级属性.不同tips类型不同解析方式
 
 		// [c_array].time
-		else if (1308 == type) {
+		else if (1308 == type || 1104 == type) {
 
 			JSONArray c_array = deep.getJSONArray("c_array");
 
@@ -1336,31 +1345,19 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
-	 * @param wkt
-	 * @param collectTaskIds
-	 * @param collectTaskIds
+	 * @param subtaskId
 	 * @param statType
 	 *            统计类型：total，prepared
-	 * @param taskType
-	 *            1是 质检任务、作业任务
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsDayTotal(String wkt, Set<Integer> collectTaskIds,
-			String statType, int taskType, int handler) throws Exception {
+	public int getTipsDayTotal(int subtaskId, String wkt, int subTaskType,int handler, int isQuality, String statType) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
-			JSONObject paramObj = new JSONObject();
-			paramObj.put("statType", statType);
-			paramObj.put("wkt", wkt);
-			paramObj.put("collectTaskIds", collectTaskIds);
-			paramObj.put("taskType", taskType);
-			paramObj.put("handler", handler);
-			String parameter = paramObj.toString();
-			String query = param.getTipsDayTotal(parameter);
+			String query = param.getTipsDayTotal(subtaskId, subTaskType, handler, isQuality, statType);
 			return (int) operator.querCount(
 					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where " + query, wkt);
 

@@ -2064,16 +2064,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     feedbackObj));
 
 			// 2.update track
-
-			JSONObject track = JSONObject.fromObject(new String(result
+			JSONObject trackJson = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
-
-			String date = DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT);
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            if(track.getT_lifecycle() == TIP_LIFECYCLE_INIT) {
+                track.setT_lifecycle(TIP_LIFECYCLE_UPDATE);
+            }
+            track = this.tipSaveUpdateTrack(track, track.getT_lifecycle());
 
 //			track = addTrackInfo(user, track, date);
-            track.put("t_date", date);
-
 			JSONObject newTrack = JSONObject.fromObject(track);
 
 			put.addColumn("data".getBytes(), "track".getBytes(), track
@@ -2083,13 +2082,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.toString().getBytes());
 
 			// update solr
-
-			solrIndex.setT_date(date);
 			solrIndex.setHandler(user);
-
-            newSolrIndex.setT_date(date);
             newSolrIndex.setHandler(user);
-            
+
+            solrIndex = this.tipSaveUpdateTrackSolr(track, solrIndex);
+            newSolrIndex = this.tipSaveUpdateTrackSolr(track, newSolrIndex);
+
             operator.updateOne(solrIndex);
             operator.updateOne(newSolrIndex);
 

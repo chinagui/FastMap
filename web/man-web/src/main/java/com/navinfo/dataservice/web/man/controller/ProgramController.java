@@ -263,4 +263,28 @@ public class ProgramController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/**
+	 * 根据子任务获取同项目下的粗编子任务列表
+	 * @param request
+	 * 
+	 * */
+	@RequestMapping(value = "/program/rudeSubTask")
+	public ModelAndView queryRudeSubTaskBySubTask(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("subTaskId")){
+				throw new IllegalArgumentException("subTaskId不能为空。");
+			}
+			int subTaskId = dataJson.getInt("subTaskId");
+			List<Integer> data = service.queryRudeSubTaskBySubTask(subTaskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取粗编子任务失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 }

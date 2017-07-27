@@ -208,6 +208,10 @@ public class ConfigService {
 				addUpdate=",s.QUICK"+quickAction+"_FLAG=1";
 			}
 			String sql="update SC_PARTITION_MESHLIST s set s.open_flag="+openFlag+addUpdate+" where 1=1";
+			//快线项目日落月关图幅时，只有批次不一致的才关闭图幅
+			if(dataJson.containsKey("quickAction")){
+				sql=sql+" and s.action!="+dataJson.getInt("quickAction");
+			}
 			
 			if(dataJson.containsKey("action")){
 				sql=sql+" and s.action="+dataJson.getInt("action");

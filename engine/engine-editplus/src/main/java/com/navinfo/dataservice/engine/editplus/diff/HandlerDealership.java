@@ -231,8 +231,8 @@ public class HandlerDealership {
 
 			for (int i = 0; i < diffFinishResultList.size(); i++) {
 				IxDealershipResult dealResult = diffFinishResultList.get(i);
-				log.info("resultId:" + dealResult.getResultId() + ",province:" + dealResult.getProvince()+",city:"+dealResult.getCity()+",address:"+dealResult.getAddress());
 				updateResultObj(dealResult, dbMap);
+				log.info("resultId:" + dealResult.getResultId() + ",province:" + dealResult.getProvince()+",city:"+dealResult.getCity()+",address:"+dealResult.getAddress()+",cfm_poi_num:"+dealResult.getCfmPoiNum());
 
 				Object[] obj = new Object[] { dealResult.getWorkflowStatus(), dealResult.getIsDeleted(),
 						dealResult.getMatchMethod(), dealResult.getPoiNum1(), dealResult.getPoiNum2(),
@@ -303,8 +303,8 @@ public class HandlerDealership {
 			sb.append(" (SELECT C.POI_PID,");
 			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
 			sb.append("    FROM IX_POI_CONTACT C,IX_POI I");
-			sb.append("   WHERE  C.POI_PID = I.PID AND I.POI_NUM=:2 AND (C.CONTACT_DEPART IN (32, 16, 8)");
-			sb.append("      OR (C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0))");
+			sb.append("   WHERE  C.POI_PID = I.PID AND I.POI_NUM=:2 ");
+			sb.append("      AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
 			sb.append("     AND C.U_RECORD <> 2");
 			sb.append("   GROUP BY C.POI_PID)");
 			sb.append(" SELECT POI_NUM,");

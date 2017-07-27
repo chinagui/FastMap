@@ -1855,97 +1855,48 @@ public class SubtaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = " SELECT t.id, t.geometry, nvl(s.status, 0) status"
-					+ "  FROM subtask_refer t, subtask s"
-					+ " where s.refer_id(+) = t.id";
+			String whereSql="";
 			if (json.containsKey("blockId")&&json.getInt("blockId")!=0) {
-				selectSql +=  " AND T.block_id = "+json.getInt("blockId");
+				whereSql +=  " AND T.block_id = "+json.getInt("blockId");
 			}
 			if (json.containsKey("wkt")) {
-				selectSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+				whereSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
+			String selectSql = " WITH TMP AS"
+					+ " (SELECT T.ID,"
+					+ "         MAX(CASE S.STATUS"
+					+ "               WHEN 1 THEN"
+					+ "                3"
+					+ "               ELSE"
+					+ "                NVL(S.STATUS, 0)"
+					+ "             END) STATUS"
+					+ "    FROM SUBTASK_REFER T, SUBTASK S"
+					+ "   WHERE S.REFER_ID(+) = T.ID"
+					+ whereSql
+					+ "   GROUP BY T.ID)"
+					+ " SELECT TMP.ID, TMP.STATUS, R.GEOMETRY"
+					+ "  FROM TMP, SUBTASK_REFER R"
+					+ " WHERE TMP.ID = R.ID";
+			
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
-					List<HashMap<String,Integer>> countList = new ArrayList<HashMap<String,Integer>>();
-					int tempId = 0;
-					int count0=0;//status:0//0没有对应子任务（subtask表refer_id），或者对应的子任务都处于关闭状态
-					int count1=0;//1存在开启状态的子任务
-					int count2=0;//2不存在开启状态子任务，但存在草稿状态子任务
-					HashMap<String,Integer> countMap = null;
-					while(rs.next()){
+					while(rs.next()){				
+						HashMap<String,Object> map = new HashMap<String,Object>();
+						map.put("id", rs.getInt("ID"));
+						int status=rs.getInt("status");
+						if(status==3){map.put("status", 1);}
+						else{map.put("status", status);}
 						try {
-							
-							HashMap<String,Object> map = new HashMap<String,Object>();
-							int id = rs.getInt("ID");
-							int status = rs.getInt("status");
-							
-							if (tempId!=id) {
-								map.put("id",id);
-								try {
-									STRUCT struct=(STRUCT)rs.getObject("geometry");
-									String clobStr = GeoTranslator.struct2Wkt(struct);
-									map.put("geometry", Geojson.wkt2Geojson(clobStr));
-								} catch (Exception e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-								
-								tempId = id;
-								countMap = new HashMap<>();
-								countMap.put("id", id);
-								count0=0;
-								count1=0;
-								count2=0;
-								countList.add(countMap);
-							}
-							
-							if(status==0){
-								count0++;
-							}else if(status==1){
-								count1++;
-							}else if(status==2){
-								count2++;
-							}
-							
-							countMap.put("count0", count0);
-							countMap.put("count1", count1);
-							countMap.put("count2", count2);
-							
-							if(null!=map&&!map.isEmpty()){
-								list.add(map);
-							}
-							
-							
-						} catch (Exception e) {
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}						
-					}
-					
-					
-					for (HashMap<String, Object> map : list) {
-						for (HashMap<String, Integer> countIdMap : countList) {
-							if((int)map.get("id")==(int)countIdMap.get("id")){
-								int countId0 = countIdMap.get("count0");
-								int countId1 = countIdMap.get("count1");
-								int countId2 = countIdMap.get("count2");
-								if(countId0>0&&countId1==0&&countId2==0){
-									map.put("status", 0);
-									break;
-								}
-								if(countId1>0){
-									map.put("status", 1);
-									break;
-								}
-								if(countId1==0&&countId2>0){
-									map.put("status", 2);
-									break;
-								}
-							}
-						}
-					}
-					
+							e1.printStackTrace();
+						}							
+						list.add(map);		
+					}					
 					return list;
 				}	    		
 	    	}		;

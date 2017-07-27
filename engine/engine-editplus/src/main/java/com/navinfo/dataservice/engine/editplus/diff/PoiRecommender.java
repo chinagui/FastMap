@@ -76,8 +76,8 @@ public class PoiRecommender {
 			sb.append(" (SELECT C.POI_PID,");
 			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
 			sb.append("    FROM IX_POI_CONTACT C,A ");
-			sb.append("   WHERE  C.POI_PID = A.PID AND (C.CONTACT_DEPART IN (32, 16, 8)");
-			sb.append("      OR (C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0))");
+			sb.append("   WHERE  C.POI_PID = A.PID ");
+			sb.append("     AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
 			sb.append("     AND C.U_RECORD <> 2");
 			sb.append("   GROUP BY C.POI_PID)");
 			sb.append(" SELECT POI_NUM,");
@@ -131,7 +131,13 @@ public class PoiRecommender {
 				String adminCodeStr = String.valueOf(adminCode);
 				//省份、城市的json
 				JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
-				fastPoi.setProvnm(resultJson.getString("province"));
+				if(resultJson!=null){
+					fastPoi.setProvnm(resultJson.getString("province"));
+				}else
+				{
+					fastPoi.setProvnm(null);
+				}
+				
 				poiList.add(fastPoi);
 			}
 		} catch (Exception e) {

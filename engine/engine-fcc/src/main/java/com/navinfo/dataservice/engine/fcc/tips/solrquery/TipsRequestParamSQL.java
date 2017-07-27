@@ -270,7 +270,7 @@ public class TipsRequestParamSQL {
 	}
 
     private StringBuilder getIntArrayQueryFromString(StringBuilder builder,
-                                              Set<Integer> stringArray, String fieldName) {
+                                              List<Integer> stringArray, String fieldName) {
 
         if (stringArray != null) {
             if (builder.length() > 0) {
@@ -493,7 +493,7 @@ public class TipsRequestParamSQL {
             // 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
             //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
             //TODO 晓毅提供接口
-            Set<Integer> projectSet = this.getCollectIdsBySubTaskId(subtaskId);
+            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
             builder.append(" AND ");
@@ -569,7 +569,7 @@ public class TipsRequestParamSQL {
             // 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
             //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
             //TODO 晓毅提供接口
-            Set<Integer> projectSet = this.getCollectIdsBySubTaskId(subtaskId);
+            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
             builder.append(" AND ");
@@ -695,7 +695,7 @@ public class TipsRequestParamSQL {
 			// 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
             //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
             //TODO 晓毅提供接口
-            Set<Integer> projectSet = this.getCollectIdsBySubTaskId(subtaskId);
+            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
             builder.append(" AND ");
@@ -796,7 +796,8 @@ public class TipsRequestParamSQL {
             // 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
             //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
             //TODO 晓毅提供接口
-            Set<Integer> projectSet = this.getCollectIdsBySubTaskId(subtaskId);
+            ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
             builder.append(" AND ");

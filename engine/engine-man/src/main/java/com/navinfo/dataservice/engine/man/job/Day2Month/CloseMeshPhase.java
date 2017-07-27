@@ -68,6 +68,7 @@ public class CloseMeshPhase extends JobPhase {
                 	JSONObject dataJson=new JSONObject();
                 	dataJson.put("openFlag", 0);
                 	dataJson.put("quickAction", lot);
+                	
                 	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
 //                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG=0,QUICK"+lot+"_FLAG=1 WHERE MESH IN "
 //                            + tipsMeshset.toString().replace("[", "(").replace("]", ")");

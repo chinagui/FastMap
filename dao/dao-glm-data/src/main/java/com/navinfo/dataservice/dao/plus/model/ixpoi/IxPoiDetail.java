@@ -25,7 +25,7 @@ public class IxPoiDetail extends BasicRow {
 	//********2017.07.18********
 	protected int michelinStar ;
 	protected int establishment ;
-	protected int services ;
+	protected long services ;
 	
 	public IxPoiDetail (long objPid){
 		super(objPid);
@@ -153,11 +153,11 @@ public class IxPoiDetail extends BasicRow {
 		this.establishment = establishment;
 	}
 
-	public int getServices() {
+	public long getServices() {
 		return services;
 	}
 
-	public void setServices(int services) {
+	public void setServices(long services) {
 		this.services = services;
 	}
 

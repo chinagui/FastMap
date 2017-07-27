@@ -43,7 +43,7 @@ public class CloseMeshPhase extends JobPhase {
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
             jobProgress.setStatus(JobProgressStatus.RUNNING);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             //业务逻辑
@@ -73,8 +73,8 @@ public class CloseMeshPhase extends JobPhase {
             }
             //更新状态为成功
             jobProgress.setStatus(JobProgressStatus.SUCCESS);
-            JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
-            return jobProgress.getStatus();
+            jobProgressOperator.updateStatus(jobProgress);
+            //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
@@ -83,13 +83,14 @@ public class CloseMeshPhase extends JobPhase {
             jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setOutParameter(ex.getMessage());
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("CloseMeshPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
             DbUtils.commitAndCloseQuietly(meta);
         }
+        return jobProgress.getStatus();
     }
 }

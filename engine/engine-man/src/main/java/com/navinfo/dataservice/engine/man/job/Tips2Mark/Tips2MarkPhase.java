@@ -44,7 +44,7 @@ public class Tips2MarkPhase extends JobPhase {
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
             jobProgress.setStatus(JobProgressStatus.RUNNING);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             //业务逻辑
@@ -128,7 +128,7 @@ public class Tips2MarkPhase extends JobPhase {
                     .getBean("fccApi");
             fccApi.tips2Aumark(parameter);
 
-            return jobProgress.getStatus();
+            //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
@@ -138,12 +138,14 @@ public class Tips2MarkPhase extends JobPhase {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                jobProgressOperator.updateStatus(jobProgress);
+                //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("Tips2MarkPhase end:phaseId "+jobProgress.getPhaseId()+",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+        return jobProgress.getStatus();
     }
 }

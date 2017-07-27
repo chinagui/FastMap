@@ -27,7 +27,7 @@ public class NoTask2MediumPhase extends JobPhase {
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
             jobProgress.setStatus(JobProgressStatus.RUNNING);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
             
             
@@ -38,8 +38,8 @@ public class NoTask2MediumPhase extends JobPhase {
 			long jobId=api.createJob("taskOther2MediumJob", request,  job.getOperator(), jobRelation.getItemId(), "无任务采集成果入中");
 			
 			jobProgress.setMessage("jobId:" + jobId);
-            jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
-            return jobProgress.getStatus();
+            jobProgressOperator.updateStatus(jobProgress);
+            //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
@@ -49,13 +49,14 @@ public class NoTask2MediumPhase extends JobPhase {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("NoTask2MediumPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+        return jobProgress.getStatus();
 	}
 
 	@Override

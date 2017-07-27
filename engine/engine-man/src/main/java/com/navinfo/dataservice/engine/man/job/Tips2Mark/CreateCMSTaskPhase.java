@@ -35,7 +35,7 @@ public class CreateCMSTaskPhase extends JobPhase {
     }
 
     @Override
-    public JobProgressStatus run() throws Exception {
+    public JobProgressStatus run() throws Exception{
         log.info("CreateCMSTaskPhase start:phaseId "+jobProgress.getPhaseId());
         Connection conn = null;
         JobProgressOperator jobProgressOperator = null;
@@ -44,14 +44,14 @@ public class CreateCMSTaskPhase extends JobPhase {
             jobProgressOperator = new JobProgressOperator(conn);
             jobProgress.setStatus(JobProgressStatus.RUNNING);
             //更新状态为进行中
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
                 //如果无数据，不需要创建cms任务
             	jobProgress.setStatus(JobProgressStatus.SUCCESS);
-                //jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+            	jobProgressOperator.updateStatus(jobProgress);
+                //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
                 return jobProgress.getStatus();
             }
 
@@ -120,9 +120,9 @@ public class CreateCMSTaskPhase extends JobPhase {
                     jobProgress.setOutParameter("cms error:" + res.get("msg").toString());
                 }
             }
-            JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+            //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
 
-           // jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
+            jobProgressOperator.updateStatus(jobProgress);
 
             return jobProgress.getStatus();
         } catch (Exception ex) {
@@ -132,13 +132,14 @@ public class CreateCMSTaskPhase extends JobPhase {
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setStatus(JobProgressStatus.FAILURE);
                 jobProgress.setOutParameter(ex.getMessage());
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
-                //jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("CreateCMSTaskPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+		return jobProgress.getStatus();
     }
 }

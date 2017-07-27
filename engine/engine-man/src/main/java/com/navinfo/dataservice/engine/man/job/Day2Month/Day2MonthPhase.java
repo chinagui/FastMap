@@ -39,7 +39,7 @@ public class Day2MonthPhase extends JobPhase {
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
             jobProgress.setStatus(JobProgressStatus.RUNNING);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             int lot = 0;
@@ -58,8 +58,8 @@ public class Day2MonthPhase extends JobPhase {
             JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
             long jobId = jobApi.createJob("day2MonSync", jobDataJson, job.getOperator(), jobRelation.getItemId(), "日落月");
             jobProgress.setMessage("jobId:" + jobId);
-            jobProgressOperator.updateStatus(jobProgress, jobProgress.getStatus());
-            return jobProgress.getStatus();
+            jobProgressOperator.updateStatus(jobProgress);
+            
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
@@ -69,12 +69,13 @@ public class Day2MonthPhase extends JobPhase {
                 JSONObject out = new JSONObject();
                 out.put("errmsg",ex.getMessage());
                 jobProgress.setOutParameter(out.toString());
-                JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("Day2MonthPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
         }
+        return jobProgress.getStatus();
     }
 }

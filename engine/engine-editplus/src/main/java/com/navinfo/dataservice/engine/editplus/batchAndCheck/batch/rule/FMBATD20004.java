@@ -71,12 +71,13 @@ public class FMBATD20004 extends BasicBatchRule {
 			boolean flagCode1=false;
 			boolean flagCode3=false;
 			boolean flagCode4=false;
-			
-			for(IxPoiFlag ixPoiFlag:ixPoiFlags){
-				if(ixPoiFlag.getFlagCode().equals("110001110000")){flagCode0=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000260000")){flagCode1=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000270000")){flagCode3=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000290000")){flagCode4=true;}
+			if(ixPoiFlags!=null&&ixPoiFlags.size()>0){
+				for(IxPoiFlag ixPoiFlag:ixPoiFlags){
+					if(ixPoiFlag.getFlagCode().equals("110001110000")){flagCode0=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000260000")){flagCode1=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000270000")){flagCode3=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000290000")){flagCode4=true;}
+				}
 			}
 			
 			//处理poi_flag
@@ -166,8 +167,12 @@ public class FMBATD20004 extends BasicBatchRule {
 	}
 	private void delIxPoiFlag(IxPoiObj poiObj,String flagCode) throws Exception {
 		List<IxPoiFlag> ixPoiFlags = poiObj.getIxPoiFlags();
-		for(IxPoiFlag ixPoiFlag:ixPoiFlags){
-			poiObj.deleteSubrow(ixPoiFlag);
+		if(ixPoiFlags!=null&&ixPoiFlags.size()>0){
+			for(IxPoiFlag ixPoiFlag:ixPoiFlags){
+				if(flagCode.equals(ixPoiFlag.getFlagCode())){
+					poiObj.deleteSubrow(ixPoiFlag);
+				}
+			}
 		}
 	}
 

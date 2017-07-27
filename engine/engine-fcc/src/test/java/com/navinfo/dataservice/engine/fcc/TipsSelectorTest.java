@@ -191,8 +191,7 @@ public class TipsSelectorTest extends InitApplication {
 	//根据网格获取tips统计
 	@Test
 	public void testGetStats() {
-		String parameter = "{\"subtaskId\":26,\"grids\":[60561412,60561413,60561410,60561411,60561420,60561421,60561422,60561423,60561431\n" +
-				",60561430,60561433,60561400,60561432,60561401,60561402,60561403],\"mdFlag\":\"d\",\"workStatus\":0}";
+		String parameter = "{\"subtaskId\":367,\"workStatus\":120}";
 
 //		String parameter = "{\"grids\":[59567311,59567312],\"subtaskId\":188,\"workStatus\":9}";
 //

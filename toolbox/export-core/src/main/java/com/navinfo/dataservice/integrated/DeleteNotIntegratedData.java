@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * 
@@ -77,7 +79,7 @@ public class DeleteNotIntegratedData {
 			this.replenishRdLinkData(ds);
 
 		} catch (Exception e) {
-			log.error("", e);
+			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
 			if (ds != null) {
@@ -99,32 +101,32 @@ public class DeleteNotIntegratedData {
 	 * @throws SQLException
 	 */
 	private void insertTempRdLink(DataSource ds) throws SQLException {
-
-		QueryRunner runner = new QueryRunner();
 		Connection conn = null;
+		PreparedStatement pstmt = null;
 		try {
 			conn = ds.getConnection();
+
 			String ids = org.apache.commons.lang.StringUtils.join(
 					this.getMeshes(), ",");
+			log.debug("meshes ===" +ids);
 
 			String sql = "";
-			String sqlInsert = "INSERT /*+append*/  INTO  TEMP_NOT_INTEGRATED_DATA  SELECT *FROM RD_LINK WHERE MESH_ID ";
+			String sqlInsert = "INSERT /*+append*/  INTO  TEMP_RDLINK_NOMESH_DATA  SELECT *FROM RD_LINK WHERE MESH_ID ";
 			Clob pidClod = null;
-			if (this.getMeshes().size() > 1000) {
-				pidClod = ConnectionUtil.createClob(ds.getConnection());
-				pidClod.setString(1, ids);
-				sql = sqlInsert
-						+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
-			} else {
-				sql = sqlInsert + " NOT IN (" + ids + ")";
-			}
-			log.debug(sql);
-			runner.execute(ds, sql);
+			pidClod = ConnectionUtil.createClob(conn);
+			pidClod.setString(1, ids);
+			sql = sqlInsert
+					+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidClod);
+			pstmt.executeUpdate();
 		} catch (Exception e) {
 			log.error(e.getMessage() + "导出接边LINK报错", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		} finally {
 			if (conn != null) {
+				DBUtils.closeStatement(pstmt);
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 
@@ -140,30 +142,33 @@ public class DeleteNotIntegratedData {
 	 */
 	private void deleteRdLinkData(DataSource ds) throws SQLException {
 		Connection conn = null;
+		PreparedStatement pstmt = null;
 		try {
 
-			QueryRunner runner = new QueryRunner();
+	
 			conn = ds.getConnection();
 			String ids = org.apache.commons.lang.StringUtils.join(
 					this.getMeshes(), ",");
 
 			String sql = "";
+			log.debug("meshes ===" +ids);
 			String sqlInsert = "DELETE FROM  RD_LINK WHERE MESH_ID ";
-			Clob pidClod = null;
-			if (this.getMeshes().size() > 1000) {
-				pidClod = ConnectionUtil.createClob(conn);
-				pidClod.setString(1, ids);
-				sql = sqlInsert
-						+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
-			} else {
-				sql = sqlInsert + " NOT IN (" + ids + ")";
-			}
-			runner.execute(conn, sql);
+			Clob pidClod = ConnectionUtil.createClob(conn);
+			pidClod.setString(1, ids);
+			sql = sqlInsert
+					+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidClod);
+			pstmt.executeUpdate();
+
 		} catch (Exception e) {
 			log.error(e.getMessage() + "删除接边LINK报错", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		} finally {
 			if (conn != null) {
+				DBUtils.closeStatement(pstmt);
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 
@@ -181,12 +186,13 @@ public class DeleteNotIntegratedData {
 		try {
 			conn = ds.getConnection();
 			QueryRunner runner = new QueryRunner();
-			String sql = "INSERT /*+append*/  INTO   RD_LINK  SELECT * FROM TEMP_RDLINK_NOMESH_DATA WHERE ";
+			String sql = "INSERT /*+append*/  INTO   RD_LINK  SELECT * FROM TEMP_RDLINK_NOMESH_DATA ";
 			log.debug(sql);
 			runner.execute(conn, sql);
 		} catch (Exception e) {
 			log.error(e.getMessage() + "补充接边LINK报错", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		} finally {
 			if (conn != null) {
 				DbUtils.commitAndCloseQuietly(conn);

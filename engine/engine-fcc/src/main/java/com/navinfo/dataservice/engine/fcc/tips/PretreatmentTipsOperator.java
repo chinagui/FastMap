@@ -1141,13 +1141,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     jsonInfo.put("deep", deepJson);
                 }
                 
-                rowkey=insertOneTips(tipsConn,command,jsonInfo, user, htab, date);
+                rowkey=insertOneTips(tipsConn,command,jsonInfo, user, htab, date,dbId);
 			}
 			// 修改
 			else {
 				rowkey = jsonInfo.getString("rowkey");
 
-				rowkey=updateOneTips(tipsConn,jsonInfo, user, htab, date); // 同时修改hbase和solr
+				rowkey=updateOneTips(tipsConn,jsonInfo, user, htab, date,dbId); // 同时修改hbase和solr
 			}
 			
 			//需要进行tips差分
@@ -1183,7 +1183,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2017-6-21 下午9:22:54
 	 */
 	private String cutByMesh(java.sql.Connection tipsConn,int command, JSONObject jsonInfo, int user, String sourceType,
-			Table htab, String date) throws Exception {
+			Table htab, String date,int dbId) throws Exception {
 		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
 		
 		JSONObject gLocation = jsonInfo.getJSONObject("geometry").getJSONObject("g_location");
@@ -1213,7 +1213,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			    obj.setG_location(gLocation.toString());
 			    allTips.add(obj);
 			    //allTips就是当前的tips
-				maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation);
+				maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation,dbId);
 			}
 			
 			
@@ -1266,7 +1266,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		//如果是修改的，则需要按照打断后的多根测线，维护测线上的tips
 		if(command==COMMAND_UPADATE){
-			maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation);
+			maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation,dbId);
 			deleteByRowkey(oldRowkey, 1); //将旧的rowkey删除（物理删除）
 		}
 		
@@ -1344,7 +1344,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2017-3-13 下午6:09:23
 	 */
 	private String  updateOneTips(java.sql.Connection tipsConn,JSONObject jsonInfo, int user, Table htab,
-			String date) throws Exception {
+			String date,int dbId) throws Exception {
 
 		String rowkey = jsonInfo.getString("rowkey");
 		try {
@@ -1361,7 +1361,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 //			dataTrack.put("t_lifecycle", newlifeCycle);
 //			jsonInfo.put("track", dataTrack);
 
-			return insertOneTips(tipsConn,COMMAND_UPADATE,jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			return insertOneTips(tipsConn,COMMAND_UPADATE,jsonInfo, user, htab, date,dbId); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());
@@ -1416,7 +1416,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2017-3-13 下午4:47:54
 	 */
 	private String insertOneTips(java.sql.Connection tipsConn,int command, JSONObject jsonInfo, int user, Table htab,
-			String date) throws Exception {
+			String date,int dbId) throws Exception {
 		String returnRowkey ="";//返回给web的rowkey，打断的话没返回打断后的任意一条
 		try {
 			JSONObject source = jsonInfo.getJSONObject("source");
@@ -1425,7 +1425,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		     //如果是2001 测线，则需要判断按图幅打断
             if(sourceType.equals("2001")){
             	
-            	returnRowkey=cutByMesh(tipsConn,command,jsonInfo, user, sourceType, htab, date);
+            	returnRowkey=cutByMesh(tipsConn,command,jsonInfo, user, sourceType, htab, date,dbId);
             	
             }else{
             	
@@ -1436,7 +1436,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 		} catch (Exception e) {
 			logger.error("新增tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
-			throw new Exception("新增tips出错：" + e.getMessage() + "\n" + jsonInfo,
+			throw new Exception("新增tips出错：" + e.getMessage() + "\n" ,
 					e);
 		}
 		
@@ -1718,14 +1718,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2017-4-12 下午8:24:43
 	 */
 	public void cutMeasuringLineCut(String rowkey, JSONObject pointGeo,
-			int user, int subTaskId, int jobType) throws Exception {
+			int user, int subTaskId, int jobType,int dbId) throws Exception {
 		// 第一步：按打断点，生成两个tips
 		java.sql.Connection tipsConn=null;
 		try{
 			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 			List<TipsDao> resultArr = breakLine2(tipsConn,rowkey, pointGeo, user);
 			//第二步 ：维护测线上挂接的tips
-			maintainHookTips(tipsConn,rowkey,user, resultArr,false);
+			maintainHookTips(tipsConn,rowkey,user, resultArr,false,dbId);
 		}catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
@@ -1748,7 +1748,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
      * @throws IOException
      * @throws Exception
      */
-	private void maintainHookTips(java.sql.Connection tipsConn,String oldRowkey, int user, List<TipsDao> resultArr, boolean hasModifyGlocation)
+	private void maintainHookTips(java.sql.Connection tipsConn,String oldRowkey, int user, List<TipsDao> resultArr, boolean hasModifyGlocation,int dbId)
 			throws Exception {
 
 		// 查询关联Tips
@@ -1767,13 +1767,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			//size>1说明跨图幅打断了，进行打断维护
 			if(resultArr.size()>1){
 				
-				json=updateRelateMeasuringLine(oldRowkey,json, resultArr);
+				json=updateRelateMeasuringLine(oldRowkey,json, resultArr,dbId);
 			}
 			
 			//2.维护角度和引导坐标 (修改了坐标的才维护)
 			if(hasModifyGlocation){
 				
-				json=updateGuiderAndAgl(json,resultArr); //若果是跨图幅打断linesAfterCut是多条~~。如果跨图幅没打断 linesAfterCut是一条。就是测线本身	
+				json=updateGuiderAndAgl(tipsConn,json,resultArr,dbId); //若果是跨图幅打断resultArr是多条~~。如果跨图幅没打断 resultArr是一条。就是测线本身	
 			}
 			
 			if(json!=null){
@@ -1792,13 +1792,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param result
 	 * @return
 	 * @author: y
+	 * @param tipsConn 
 	 * @param linesAfterCut 
+	 * @param dbId 
 	 * @throws Exception 
 	 * @time:2017-6-26 下午7:00:07
 	 */
-	private TipsDao updateGuiderAndAgl(TipsDao result, List<TipsDao> linesAfterCut) throws Exception {
+	private TipsDao updateGuiderAndAgl(java.sql.Connection tipsConn, TipsDao result, List<TipsDao> linesAfterCut, int dbId) throws Exception {
 		
-		RelateTipsGuideAndAglUpdate up=new RelateTipsGuideAndAglUpdate(result, linesAfterCut);
+		RelateTipsGuideAndAglUpdate up=new RelateTipsGuideAndAglUpdate(result, linesAfterCut,dbId,tipsConn);
 		
 		result=up.excute();
 		
@@ -2144,12 +2146,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @author: y
 	 * @param oldRowkey :打断前测线的rowkey
 	 * @param resultArr :打断后的Links
+	 * @param dbId 
 	 * @return 
 	 * @time:2017-4-12 下午8:37:30
 	 */
-	private TipsDao updateRelateMeasuringLine(String oldRowkey, TipsDao json, List<TipsDao> resultArr) {
+	private TipsDao updateRelateMeasuringLine(String oldRowkey, TipsDao json, List<TipsDao> resultArr, int dbId) {
 		TipsRelateLineUpdate relateLineUpdate = new TipsRelateLineUpdate(oldRowkey,json,
-				resultArr);
+				resultArr,dbId);
 		return relateLineUpdate.excute();
 	}
 

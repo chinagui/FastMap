@@ -25,6 +25,7 @@ public class TipsRelateLineUpdate {
 	private List<TipsDao> cutLines; // 打断后的测线
 	private String sourceType = "";
 	private String oldRowkey=""; //打断前测线的rowkey
+	private int dbId;
 	
 	/**
 	 * @param json
@@ -50,12 +51,14 @@ public class TipsRelateLineUpdate {
 	/**
 	 * @param json2
 	 * @param resultArr
+	 * @param dbId 
 	 */
-	public TipsRelateLineUpdate(String oldRowkey,TipsDao json2, List<TipsDao> resultArr) {
+	public TipsRelateLineUpdate(String oldRowkey,TipsDao json2, List<TipsDao> resultArr, int dbId) {
 		this.json = json2;
 		sourceType = json.getS_sourceType();
 		cutLines=resultArr;
 		this.oldRowkey=oldRowkey;
+		this.dbId=dbId;
 		
 	}
 

@@ -34,6 +34,12 @@ public class FMYW20140 extends BasicCheckRule {
 
         if (addresses == null || addresses.size() == 0) {
 
+            IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+            String strLog = "PID=" + poi.getPid() + "地址为空";
+
+            setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), strLog);
+
             return;
         }
 

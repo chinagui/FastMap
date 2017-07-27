@@ -92,6 +92,7 @@ public class RdTrafficsignalSearch implements ISearch {
 				snapshot.setI(resultSet.getInt("pid"));
 				
 				m.put("a", resultSet.getInt("link_pid"));
+				snapshot.setM(m);
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

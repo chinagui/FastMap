@@ -9,6 +9,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -302,8 +303,9 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
             String languageType = jsonReq.getString("languageType");
             String word = jsonReq.getString("word");
+            String pinyin = jsonReq.optString("pinyin", "");
             EnglishConvert englishConvert = new EnglishConvert();
-            String result = englishConvert.convert(word);
+            String result = englishConvert.convert(word, pinyin);
             if (result != null) {
                 JSONObject json = new JSONObject();
                 json.put("eng", result);

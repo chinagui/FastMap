@@ -14,6 +14,8 @@ public class SearchSnapshot implements ISerializable {
 
 	private int i;
 
+	private int dbId;
+
 	private JSONArray g;
 
 	private JSONObject m;
@@ -50,11 +52,20 @@ public class SearchSnapshot implements ISerializable {
 			obj.put("g", this.getG());
 
 			obj.put("m", this.getM());
+			obj.put("d", this.getDbId());
 
 			return obj;
 		} else {
 			return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 		}
+	}
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
 	}
 
 	@Override
@@ -65,6 +76,7 @@ public class SearchSnapshot implements ISerializable {
 		this.setG(json.getJSONArray("g"));
 		this.setT(json.getInt("t"));
 		this.setM(json.getJSONObject("m"));
+		this.setDbId(json.getInt("d"));
 		return false;
 	}
 

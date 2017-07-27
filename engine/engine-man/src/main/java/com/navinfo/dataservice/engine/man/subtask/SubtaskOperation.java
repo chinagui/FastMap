@@ -1,30 +1,8 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -44,10 +22,18 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /** 
  * @ClassName: SubtaskOperation
@@ -1107,7 +1093,7 @@ public class SubtaskOperation {
 			if(3 == subtask.getType()||4 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getSubtaskId(), subtask.getGeometry(), subtask.getType(), subtask.getExeUserId(), subtask.getIsQuality());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));

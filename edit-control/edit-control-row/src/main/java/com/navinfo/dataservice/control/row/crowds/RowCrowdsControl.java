@@ -355,7 +355,7 @@ public class RowCrowdsControl {
 			dbId = qRunner.queryForString(manConn, manQuery, grid);
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
-			throw new Exception("数据未获取到大区库信息，不入库");
+			throw new Exception("数据未获取到大区库信息");
 		}finally{
 			DbUtils.commitAndClose(manConn);
 		}
@@ -381,13 +381,16 @@ public class RowCrowdsControl {
 	 * @param x
 	 * @param y
 	 * @return
-	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	public JSONObject getTelephone(double x, double y) throws SQLException{
+	public JSONObject getTelephone(double x, double y) throws Exception{
 		JSONObject result = new JSONObject();
 		Connection conn = null;
 		try{
 			String dbId = getDailyDbId(x, y);
+			if(StringUtils.isEmpty(dbId)){
+				throw new Exception("数据未获取到大区库信息");
+			}
 			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 			AdFaceSelector faceSeletor = new AdFaceSelector(conn);
 			Geometry geometry = GeoTranslator.point2Jts(x, y);
@@ -406,6 +409,7 @@ public class RowCrowdsControl {
 		}catch(Exception e){
 			e.printStackTrace();
 			result = null;
+			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
 		}
@@ -414,7 +418,7 @@ public class RowCrowdsControl {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println(getDailyDbId(116.330015199342, 39.9264604897165));
+		System.out.println(getGrid(116.3303428, 39.92670278));
 	}
 
 }

@@ -50,6 +50,19 @@ public class taskTest extends InitApplication{
 		}
 				
 	}
+	
+	@Test
+	public void taskTestQuery() throws Exception {
+		try {
+			// TODO Auto-generated constructor stub
+			String parameter = "{\"tasks\":[{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"workKind\":[],\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":0},{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":2}]}";
+			JSONObject dataJson = JSONObject.fromObject(parameter);				
+			TaskService.getInstance().query(22);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+				
+	}
 	@Test
 	public void taskTestUpdate() throws Exception {
 		// TODO Auto-generated constructor stub

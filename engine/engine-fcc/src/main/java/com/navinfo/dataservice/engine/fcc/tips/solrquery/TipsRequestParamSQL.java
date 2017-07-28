@@ -850,7 +850,7 @@ public class TipsRequestParamSQL {
 		
 		int programType = obj.getInt("programType");
 		
-		query.append("SELECT * FROM TIPS_INDEX WHERE  T_TIPSTATUS = 2 AND S_SOURCETYPE IN (2001,2101)");
+		query.append("SELECT * FROM TIPS_INDEX WHERE T_TIPSTATUS = 2 AND S_SOURCETYPE IN (2001,2101)");
 		
 		if(programType == TaskType.PROGRAM_TYPE_Q){
 			query.append(" AND S_QSUBTASKID = " + subTaskId);

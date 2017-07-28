@@ -276,7 +276,7 @@ public class ExportQualityPoiReport {
 	public static void main(String[] args) throws Exception {
 		initContext();
 		System.out.println("args.length:" + args.length);
-		if (args == null || args.length != 1) {
+		if (args == null || args.length != 2) {
 			System.out.println("ERROR:need args:");
 			return;
 		}

@@ -843,10 +843,23 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
- 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
-		  String query = String.format(
-				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
-				begin, end, subTaskId);
-		  return query;
+	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end, String order) {
+		String query = "";
+
+		if (order == null || order.isEmpty() || order.contains("-") == false) {
+
+			query = String.format(
+					"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
+					begin, end, subTaskId);
+		} else {
+			String[] orders = order.split("-");
+
+			String type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
+
+			query = String.format(
+					"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101) ORDER BY %s %s",
+					begin, end, subTaskId, type, orders[1]);
+		}
+		return query;
 	}
 }

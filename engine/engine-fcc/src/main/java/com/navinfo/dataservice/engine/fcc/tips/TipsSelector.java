@@ -2426,12 +2426,12 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage) throws Exception {
+	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage,String order) throws Exception {
 		JSONArray array = new JSONArray();
 		
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
-		
-		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime);
+
+		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, order);
 		
 		Connection oracleConn = null;
 

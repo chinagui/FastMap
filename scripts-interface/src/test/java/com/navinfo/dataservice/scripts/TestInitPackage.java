@@ -355,4 +355,14 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
+	
+	@Test
+	public void testExportColumnQcQualityRate() throws Exception{
+		JobScriptsInterface.initContext();
+		
+		ExportColumnQcQualityRate.execute("20170514","20170715");
+
+		System.out.println("Over.");
+		System.exit(0);
+	}
 }

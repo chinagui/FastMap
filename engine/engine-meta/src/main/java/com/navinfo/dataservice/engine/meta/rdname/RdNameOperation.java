@@ -111,14 +111,14 @@ public RdName saveName(RdName rdName) throws Exception {
 
 			Integer nameId = rdName.getNameId();
 			Integer nameGroupid = rdName.getNameGroupid();
-			System.out.println("before: nameId:"+nameId + " nameGroupid:"+nameGroupid);
+			
 			if (rdName.getNameId() == null) {
 				nameId = applyPid();
 			}
 			if (rdName.getNameGroupid() == null) {
 				nameGroupid = applyPid();
 			}
-			System.out.println("after: nameId:"+nameId + " nameGroupid:"+nameGroupid);
+
 			pstmt.setLong(1, nameId);
 			pstmt.setLong(2, nameGroupid);
 			pstmt.setString(3, rdName.getLangCode());

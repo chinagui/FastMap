@@ -3653,20 +3653,19 @@ public class SubtaskService {
 				tipsNum += Integer.parseInt(map.get("finished").toString());
 				tipsNum += Integer.parseInt(map.get("unfinished").toString());
 			}
-			List<Map> resultReturn = new ArrayList<Map>();
 			//从统计信息中移除已规划的gird
 			for(int i = 0; i < result.size(); i++){
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
-				if(!grids.contains(gridId)){
-					resultReturn.add(map);
+				if(grids.contains(gridId)){
+					result.remove(i);
 				}
 			}
 			
 			//从移除已规划数据的list中统计未规划的grid和tips数量
-			int unPlanGridNum = resultReturn.size();
+			int unPlanGridNum = result.size();
 			int unPlanTipsNum = 0;
-			for(Map<String, Object> map : resultReturn){
+			for(Map<String, Object> map : result){
 				convertList.add(map);
 				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
 //				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());

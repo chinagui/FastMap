@@ -284,7 +284,7 @@ public class DataEditService {
 				matchPois.add(poi);
 			}
 
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois, connPoi);
 			JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
 			
 			//返回cfm_poi_num检查log
@@ -292,7 +292,7 @@ public class DataEditService {
 			
 			if(cfmPoiPid!=0){
 				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
-				List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+				List<String> checkRuleList = selector.loadByOperationName("DEALERSHIP_SAVE");
 				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid,checkRuleList);
 				
 				log.put("data", checkResultsArr);
@@ -346,6 +346,7 @@ public class DataEditService {
 		dealershipMap.put("dbId", dbId);
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
+		dealershipMap.put("dealSrcDiff", dealership.getDealSrcDiff());
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
@@ -1903,7 +1904,7 @@ public class DataEditService {
 			
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
 			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, null);
 			return poiArray;
 			
 		}catch (Exception e) {

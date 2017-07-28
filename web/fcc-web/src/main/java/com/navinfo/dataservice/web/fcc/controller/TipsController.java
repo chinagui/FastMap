@@ -898,7 +898,7 @@ public class TipsController extends BaseController {
 
               JSONObject jsonReq = JSONObject.fromObject(parameter);
               
-              int subTaskId = jsonReq.getInt("subTaskId");
+              int subTaskId = jsonReq.getInt("subtaskId");
               
               String beginTime = jsonReq.getString("beginTime");
               
@@ -934,7 +934,7 @@ public class TipsController extends BaseController {
 
              JSONObject jsonReq = JSONObject.fromObject(parameter);
              
-             int subTaskId = jsonReq.getInt("subTaskId");
+             int subTaskId = jsonReq.getInt("subtaskId");
              
              String id = jsonReq.getString("id");
              

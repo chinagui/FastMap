@@ -904,16 +904,22 @@ public class TipsController extends BaseController {
               
               String endTime = jsonReq.getString("endTime");
               
+              if(beginTime == null || beginTime.isEmpty() || endTime == null || endTime.isEmpty()){
+            	  throw new IllegalArgumentException("参数错误:起止时间不能为空。");
+              }
+              
               int pageSize = jsonReq.getInt("pageSize");
               
               int curPage = jsonReq.getInt("pageNum");
               
-              String order = jsonReq.getString("order");
+              if(pageSize == 0 || curPage == 0){
+            	  throw new IllegalArgumentException("参数错误:分页数据不能为0");
+              }
 
               TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime, pageSize, curPage,
-					order);
+			JSONObject array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime, pageSize, curPage,
+					jsonReq);
               
               return new ModelAndView("jsonView", success(array));
 

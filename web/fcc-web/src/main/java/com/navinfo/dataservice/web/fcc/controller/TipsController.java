@@ -907,10 +907,13 @@ public class TipsController extends BaseController {
               int pageSize = jsonReq.getInt("pageSize");
               
               int curPage = jsonReq.getInt("pageNum");
+              
+              String order = jsonReq.getString("order");
 
               TipsSelector selector = new TipsSelector();
 
-              JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime,pageSize,curPage);
+			JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime, pageSize, curPage,
+					order);
               
               return new ModelAndView("jsonView", success(array));
 

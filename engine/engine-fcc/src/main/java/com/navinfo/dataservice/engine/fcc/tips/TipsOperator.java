@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -787,7 +788,7 @@ public class TipsOperator {
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
             //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
             TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
-            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), wkt);
+            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), ConnectionUtil.createClob(tipsConn, wkt));
 
             if (CollectionUtils.isEmpty(tipsDaos)) {
                 return 0;

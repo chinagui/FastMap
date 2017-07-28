@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -61,7 +62,7 @@ public class TipsExporter {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
 			List<TipsDao> rowkeys = operator.query(
-					"select * from tips_index  where  "+param, wkt);
+					"select * from tips_index  where  "+param, ConnectionUtil.createClob(conn, wkt));
 
 			for (TipsDao tipsDap : rowkeys) {
 				if (rowkeySet.contains(tipsDap.getId())) {

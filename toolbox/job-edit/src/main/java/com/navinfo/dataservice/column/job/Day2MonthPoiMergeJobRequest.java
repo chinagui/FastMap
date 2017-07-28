@@ -96,6 +96,6 @@ public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 	}
 
 	public void setLot(int lot) {
-		lot = lot;
+		this.lot = lot;
 	}
 }

@@ -898,19 +898,28 @@ public class TipsController extends BaseController {
 
               JSONObject jsonReq = JSONObject.fromObject(parameter);
               
-              int subTaskId = jsonReq.getInt("subTaskId");
+              int subTaskId = jsonReq.getInt("subtaskId");
               
               String beginTime = jsonReq.getString("beginTime");
               
               String endTime = jsonReq.getString("endTime");
               
+              if(beginTime == null || beginTime.isEmpty() || endTime == null || endTime.isEmpty()){
+            	  throw new IllegalArgumentException("参数错误:起止时间不能为空。");
+              }
+              
               int pageSize = jsonReq.getInt("pageSize");
               
               int curPage = jsonReq.getInt("pageNum");
+              
+              if(pageSize == 0 || curPage == 0){
+            	  throw new IllegalArgumentException("参数错误:分页数据不能为0");
+              }
 
               TipsSelector selector = new TipsSelector();
 
-              JSONArray array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime,pageSize,curPage);
+			JSONObject array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime, pageSize, curPage,
+					jsonReq);
               
               return new ModelAndView("jsonView", success(array));
 
@@ -934,7 +943,7 @@ public class TipsController extends BaseController {
 
              JSONObject jsonReq = JSONObject.fromObject(parameter);
              
-             int subTaskId = jsonReq.getInt("subTaskId");
+             int subTaskId = jsonReq.getInt("subtaskId");
              
              String id = jsonReq.getString("id");
              

@@ -843,25 +843,31 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
-	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end, String order) {
-		String query = "";
+	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end, JSONObject obj) {
+		StringBuilder query = new StringBuilder();
+		
+		String order = obj.getString("order");
+		
+		int programType = obj.getInt("programType");
+		
+		query.append("SELECT * FROM TIPS_INDEX WHERE  T_TIPSTATUS = 2 AND S_SOURCETYPE IN (2001,2101)");
+		
+		if(programType == TaskType.PROGRAM_TYPE_Q){
+			query.append(" AND S_QSUBTASKID = " + subTaskId);
+		}else if(programType == TaskType.PROGRAM_TYPE_M){
+			query.append(" AND S_MSUBTASKID = " + subTaskId);
+		}
+		
+		query.append(" AND T_DATE >= to_timestamp('" + begin + " 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
+		query.append(" AND T_DATE <= to_timestamp('" + end + " 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
 
-		if (order == null || order.isEmpty() || order.contains("-") == false) {
-
-			query = String.format(
-					"SELECT * FROM TIPS_INDEX WHERE T_DATE >= to_timestamp('%s 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9') AND T_DATE <= to_timestamp('%s 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9') "
-							+ "AND T_TIPSTATUS = 2 AND (S_QSUBTASKID = %d or S_MSUBTASKID = %d) AND S_SOURCETYPE IN (2001,2101)",
-					begin, end, subTaskId, subTaskId);
-		} else {
+		if (order != null && order.isEmpty() == false && order.contains("-")) {
 			String[] orders = order.split("-");
 
 			String type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
-
-			query = String.format(
-					"SELECT * FROM TIPS_INDEX WHERE T_DATE >= to_timestamp('%s 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9') AND T_DATE <= to_timestamp('%s 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9') "
-							+ "AND T_TIPSTATUS = 2 AND (S_QSUBTASKID = %d or S_MSUBTASKID = %d) AND S_SOURCETYPE IN (2001,2101) AND S_SOURCETYPE IN (2001,2101) ORDER BY %s %s",
-					begin, end, subTaskId, subTaskId, type, orders[1]);
+			
+			query.append(" ORDER BY " + type + " " + orders[1]);
 		}
-		return query;
+		return query.toString();
 	}
 }

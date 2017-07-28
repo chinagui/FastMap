@@ -2426,12 +2426,12 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage,String order) throws Exception {
-		JSONArray array = new JSONArray();
+	public JSONObject searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage,JSONObject obj) throws Exception {
+		JSONObject result = new JSONObject();
 		
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
-		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, order);
+		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, obj);
 		
 		Connection oracleConn = null;
 
@@ -2444,27 +2444,36 @@ public class TipsSelector {
 
 			long totalNum = page.getTotalCount();
 			
+			result.put("total", totalNum);
+			
+			JSONArray array = new JSONArray();
+			
 			if (totalNum <= Integer.MAX_VALUE) {
+				
 				List<TipsDao> tipsDaoList = (ArrayList<TipsDao>) page.getResult();
 				
-				for (TipsDao tip : tipsDaoList) {
-					JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				for (TipsDao tip : tipsDaoList) {					
+					JSONObject json = new JSONObject();
 					
-					JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+					json.put("rowkey", tip.getId());
+					json.put("status", tip.getT_tipStatus());
+					json.put("type", tip.getS_sourceType());
+					json.put("date", tip.getT_date());
 					
 					array.add(json);
-				}
-				
+				}	
 			} else {
 				// 暂先不处理
 			}
+			
+			result.put("tips", array);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		return array;
+		return result;
 	}
 	
 	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId) throws Exception {

@@ -1835,9 +1835,13 @@ public class SubtaskService {
 		try {
 			// 持久化
 			QueryRunner run = new QueryRunner();
-			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID =" + subtaskId;	
+			//modify by songhe
+			//删除子任务的同时，如果有对应的质检子任务也同时删除
+			String updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID = "+subtaskId+" or "
+					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";
 			run.update(conn,updateSql);
-			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID =" + subtaskId;
+			updateSql = "delete from SUBTASK S where S.SUBTASK_ID = "+subtaskId+" or "
+					+ "S.SUBTASK_ID =(select t.quality_subtask_id from SUBTASK t where t.is_quality = 0 and t.subtask_id = "+subtaskId+")";	
 			run.update(conn,updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -3649,19 +3653,20 @@ public class SubtaskService {
 				tipsNum += Integer.parseInt(map.get("finished").toString());
 				tipsNum += Integer.parseInt(map.get("unfinished").toString());
 			}
+			List<Map> resultReturn = new ArrayList<Map>();
 			//从统计信息中移除已规划的gird
 			for(int i = 0; i < result.size(); i++){
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
-				if(grids.contains(gridId)){
-					result.remove(i);
+				if(!grids.contains(gridId)){
+					resultReturn.add(map);
 				}
 			}
 			
 			//从移除已规划数据的list中统计未规划的grid和tips数量
-			int unPlanGridNum = result.size();
+			int unPlanGridNum = resultReturn.size();
 			int unPlanTipsNum = 0;
-			for(Map<String, Object> map : result){
+			for(Map<String, Object> map : resultReturn){
 				convertList.add(map);
 				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
 //				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());

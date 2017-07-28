@@ -23,7 +23,7 @@ public class Photo {
 
 	private String a_subtitle;
 
-	private int a_sourceId;
+	private int a_sourceId = 2;
 
 	private double a_direction;
 

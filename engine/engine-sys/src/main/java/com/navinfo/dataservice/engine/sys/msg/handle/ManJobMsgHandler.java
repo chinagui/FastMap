@@ -18,14 +18,18 @@ public class ManJobMsgHandler implements MsgHandler {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	@Override
 	public void handle(String message) {
+		try{
 		//日志
-		log.info("订阅的MANJOB消息数据:"+message);
-		//解析message
-		JSONObject jo = JSONObject.fromObject(message);
-		long auditor = (Integer) jo.get("auditor");
-		String jobMessage =  jo.getJSONObject("jobMessage").toString();
-		//websocket实时发送消息
-		MsgManJobWebSocketHandler.getInstance().sendMessageToUser(Long.toString(auditor), new TextMessage(jobMessage));
+			log.info("订阅的MANJOB消息数据:"+message);
+			//解析message
+			JSONObject jo = JSONObject.fromObject(message);
+			long auditor = (Integer) jo.get("auditor");
+			String jobMessage =  jo.getJSONObject("jobMessage").toString();
+			//websocket实时发送消息
+			MsgManJobWebSocketHandler.getInstance().sendMessageToUser(Long.toString(auditor), new TextMessage(jobMessage));
+		}catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 }

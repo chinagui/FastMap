@@ -96,10 +96,10 @@ public class ScPartitionMeshlistSelector {
 			if (meshs.size() > 1000) {
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, StringUtils.join(meshs, ","));
-				sb.append(" where spm.MESH_ID in (select column_value from table(clob_to_table(?))) ");
+				sb.append(" where spm.MESH in (select column_value from table(clob_to_table(?))) ");
 				values.add(clob);
 			} else {
-				sb.append(" where spm.MESH_ID IN (" + StringUtils.join(meshs, ",") + ")");
+				sb.append(" where spm.MESH IN (" + StringUtils.join(meshs, ",") + ")");
 			}
 			
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
@@ -150,10 +150,10 @@ public class ScPartitionMeshlistSelector {
 			if (meshs.size() > 1000) {
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, StringUtils.join(meshs, ","));
-				sb.append(" where spm.MESH_ID in (select column_value from table(clob_to_table(?))) ");
+				sb.append(" where spm.MESH in (select column_value from table(clob_to_table(?))) ");
 				values.add(clob);
 			} else {
-				sb.append(" where spm.MESH_ID IN (" + StringUtils.join(meshs, ",") + ")");
+				sb.append(" where spm.MESH IN (" + StringUtils.join(meshs, ",") + ")");
 			}
 			
 			if(action!=0){

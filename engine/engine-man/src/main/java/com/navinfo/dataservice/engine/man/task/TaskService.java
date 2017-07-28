@@ -1229,7 +1229,7 @@ public class TaskService {
 			sb.append("                     END");
 			sb.append("                  END");
 			sb.append("               END ORDER_STATUS");
-			sb.append("          FROM (SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("          FROM (SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
@@ -1278,7 +1278,7 @@ public class TaskService {
 			sb.append("	             AND p.latest=1");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
-			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("	                          0             TASK_ID,");
 			sb.append("	                          NULL          NAME,");
 			sb.append("	                          4             STATUS,");
@@ -1312,7 +1312,7 @@ public class TaskService {
 			sb.append("	                   WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("	                     AND T.LATEST = 1)");
 			sb.append("	          UNION");
-			sb.append("           SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("           SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
@@ -1454,6 +1454,7 @@ public class TaskService {
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
+						task.put("programType", rs.getInt("programType"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -1554,6 +1555,7 @@ public class TaskService {
 						
 						task.put("groupId",0);
 						task.put("groupName","");
+						task.put("programType",1);
 						
 						task.put("planStartDate", "");
 						task.put("planEndDate", "");

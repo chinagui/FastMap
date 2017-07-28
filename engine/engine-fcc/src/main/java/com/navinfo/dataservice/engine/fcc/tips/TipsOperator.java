@@ -104,6 +104,9 @@ public class TipsOperator {
 	        }
 	
 	        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+	        jsonTrackInfo.put("date", date);
+	        jsonTrackInfo.put("handler", handler);
+	        
 	        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
 	        if(jsonTrackInfo.containsKey("stage")) {
 	            int curStage = jsonTrackInfo.getInt("stage");

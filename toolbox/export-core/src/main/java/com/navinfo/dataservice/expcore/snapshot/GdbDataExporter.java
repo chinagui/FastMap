@@ -8,7 +8,8 @@ import java.util.Date;
 import java.util.Set;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
-
+import com.fastmap.NdsSqliteEncryptor;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -44,7 +45,7 @@ public class GdbDataExporter {
 
 		// create a database connection
 		sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
-				+ "/tmp/gdbdata.sqlite", config.toProperties());
+				+ "/tmp/gdbdata_une.sqlite", config.toProperties());
 		Statement stmt = sqliteConn.createStatement();
 		stmt.setQueryTimeout(30); // set timeout to 30 sec.
 
@@ -89,7 +90,27 @@ public class GdbDataExporter {
 		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		sqliteConn.close();
+		
+		System.out.println("......Start......");
+		//获取 NdsSqliteEncryptor 实例
+		NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
+		try {
+			//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
+			encryptor.encryptDataBase(dir + "/tmp/gdbdata_une.sqlite",dir + "/tmp/gdbdata.sqlite", PropConstant.gdbSqlitePassword);
+			
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+		System.out.println("....加密成功..End......");
 
+		//删除原有sqlite 数据库
+		File fileOld = new File(dir + "/tmp/gdbdata_une.sqlite");
+		if(fileOld.exists() && fileOld.isFile()){
+			fileOld.delete();
+			System.out.println(" 删除未加密sqlite 数据库成功!");
+		}
+		
 		String zipfile = dir + "/" + operateDate + ".zip";
 		// 压缩文件
 		ZipUtils.zipFile(dir + "/tmp/", zipfile);

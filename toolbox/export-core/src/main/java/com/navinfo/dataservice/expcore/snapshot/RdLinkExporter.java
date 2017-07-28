@@ -490,7 +490,7 @@ public class RdLinkExporter {
 			JSONArray styleFactors, int multiDigitized) {
 		int style = -1;
 		int count = 0;
-		
+		boolean flag = false;//判断是否含交叉口内道路
 		if (multiDigitized == 1) {
 			style = 32;
 			count+=1;
@@ -505,6 +505,7 @@ public class RdLinkExporter {
 		}
 
 		if (formList.contains(50)) {
+			flag = true;
 			style = 33;
 			count+=1;
 		}
@@ -573,8 +574,14 @@ public class RdLinkExporter {
 			count+=1;
 		}
 
-		if (count >= 2 ) {
-			style = 36;
+		if (count >= 2) {
+			if(flag){
+				//当含有以上属性两种或两种以上并且时forms.form包含50
+				style = 33;
+			}else{
+				style = 36;
+			}
+			
 		}
 		
 		if (count == 0) {

@@ -118,4 +118,6 @@ public class PropConstant {
 	public static final String mapspotterInfoFeedBack="mapspotter.info.feedback.url";
 	
 	public static final String manPassword="man.password";
+	
+	public static final String gdbSqlitePassword="gdbsqlite.password";
 }

@@ -69,9 +69,9 @@ public class PoiSave {
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			JSONObject poiData = json.getJSONObject("data");
+			String poiData = json.get("data").toString();
 
-			if (poiData.size() == 0 && operType == OperType.UPDATE
+			if (poiData.length() == 0 && operType == OperType.UPDATE
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
 				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);
@@ -164,11 +164,14 @@ public class PoiSave {
 					}	
 				}
 				result = editApiImpl.runPoi(json);
-				if (OperType.CREATE != operType) {
-					pid = json.getInt("objId");
-					sb.append(",").append(String.valueOf(pid));
-				} else {
+				if (OperType.CREATE == operType) {
 					pid = result.getInt("pid");
+					sb.append(",").append(String.valueOf(pid));
+				} else if(OperType.BATCHMOVE == operType){
+					sb.append(result);
+				}
+				else {
+					pid = json.getInt("objId");
 					sb.append(",").append(String.valueOf(pid));
 				}
 				sb.deleteCharAt(0);

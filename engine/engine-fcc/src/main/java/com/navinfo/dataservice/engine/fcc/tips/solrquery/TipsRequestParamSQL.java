@@ -861,13 +861,6 @@ public class TipsRequestParamSQL {
 		query.append(" AND T_DATE >= to_timestamp('" + begin + " 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
 		query.append(" AND T_DATE <= to_timestamp('" + end + " 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
 
-		if (order != null && order.isEmpty() == false && order.contains("-")) {
-			String[] orders = order.split("-");
-
-			String type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
-			
-			query.append(" ORDER BY " + type + " " + orders[1]);
-		}
 		return query.toString();
 	}
 }

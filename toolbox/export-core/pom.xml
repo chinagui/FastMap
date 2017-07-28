@@ -61,9 +61,14 @@
 			<groupId>org.apache.uima</groupId>
 			<artifactId>uimaj-core</artifactId>
 		</dependency>
-		      <dependency>
-    	<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>datahub</artifactId>
-    </dependency>
+		<dependency>
+	    	<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>datahub</artifactId>
+	    </dependency>
+	    <dependency>
+		  <groupId>com.nds</groupId>
+		  <artifactId>sqlite-encryptor</artifactId>
+		  <version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

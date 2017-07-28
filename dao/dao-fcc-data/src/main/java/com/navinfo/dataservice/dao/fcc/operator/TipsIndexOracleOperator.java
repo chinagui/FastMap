@@ -275,7 +275,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 	}
 
-  	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
+	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
 
@@ -318,6 +318,59 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			List<TipsDao> result = loadHbaseProperties(map);
 			page.setResult(result);
 		}else{
+			page.setResult(new ArrayList<TipsDao>());
+		}
+		return page;
+	}
+	
+	public Page queryPageSort(String sql, final int pageNum, final int pageSize, String order, Object... params)
+			throws Exception {
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+
+		StringBuilder newsql = new StringBuilder();
+		newsql.append("WITH query AS (" + sql + ")");
+		newsql.append(" SELECT b.*,(SELECT COUNT(1) FROM query) AS TOTAL_RECORD_NUM FROM");
+		newsql.append(" (SELECT a.* ,rownum row_num FROM");
+		newsql.append(" (SELECT t.* FROM query t");
+		if (order != null && order.isEmpty() == false) {
+			newsql.append(" ORDER BY t." + order);
+		}
+		newsql.append(") a ) b where b.row_num<=? and b.row_num>=?");
+		String pageSql = newsql.toString();
+
+		log.debug(pageSql);
+
+		ResultSetHandler<Page> resultSetHandler = new ResultSetHandler<Page>() {
+			int total = 0;
+
+			@Override
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page(pageNum);
+				page.setPageSize(pageSize);
+				List<TipsDao> map = new ArrayList<>();
+				while (rs.next()) {
+					TipsDao dao = new TipsDao();
+					dao.loadResultSet(rs);
+					map.add(dao);
+					total = rs.getInt("TOTAL_RECORD_NUM");
+				}
+				page.setTotalCount(total);
+				page.setResult(map);
+				return page;
+			}
+		};
+		Object[] newParams = new Object[params.length + 2];
+		System.arraycopy(params, 0, newParams, 0, params.length);
+		newParams[params.length] = pageEndNum;
+		newParams[params.length + 1] = pageStartNum;
+
+		Page page = run.query(conn, pageSql, resultSetHandler, newParams);
+
+		List<TipsDao> map = (List<TipsDao>) page.getResult();
+		if (map.size() > 0) {
+			page.setResult(map);
+		} else {
 			page.setResult(new ArrayList<TipsDao>());
 		}
 		return page;

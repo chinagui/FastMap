@@ -2439,8 +2439,19 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			
+			String order = obj.getString("order");
+			String type ="";
 
-			Page page = operator.queryPage(sql, curPage, pageSize);
+			if (order != null && order.isEmpty() == false && order.contains("-")) {
+				String[] orders = order.split("-");
+
+				type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
+				
+				type += " " + orders[1];
+			}
+			
+			Page page = operator.queryPageSort(sql, curPage, pageSize, type);
 
 			long totalNum = page.getTotalCount();
 			

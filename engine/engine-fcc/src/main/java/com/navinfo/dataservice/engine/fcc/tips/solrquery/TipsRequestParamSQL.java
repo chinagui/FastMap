@@ -849,16 +849,18 @@ public class TipsRequestParamSQL {
 		if (order == null || order.isEmpty() || order.contains("-") == false) {
 
 			query = String.format(
-					"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
-					begin, end, subTaskId);
+					"SELECT * FROM TIPS_INDEX WHERE T_DATE >= to_timestamp('%s 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9') AND T_DATE <= to_timestamp('%s 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9') "
+							+ "AND T_TIPSTATUS = 2 AND (S_QSUBTASKID = %d or S_MSUBTASKID = %d) AND S_SOURCETYPE IN (2001,2101)",
+					begin, end, subTaskId, subTaskId);
 		} else {
 			String[] orders = order.split("-");
 
 			String type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
 
 			query = String.format(
-					"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101) ORDER BY %s %s",
-					begin, end, subTaskId, type, orders[1]);
+					"SELECT * FROM TIPS_INDEX WHERE T_DATE >= to_timestamp('%s 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9') AND T_DATE <= to_timestamp('%s 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9') "
+							+ "AND T_TIPSTATUS = 2 AND (S_QSUBTASKID = %d or S_MSUBTASKID = %d) AND S_SOURCETYPE IN (2001,2101) AND S_SOURCETYPE IN (2001,2101) ORDER BY %s %s",
+					begin, end, subTaskId, subTaskId, type, orders[1]);
 		}
 		return query;
 	}

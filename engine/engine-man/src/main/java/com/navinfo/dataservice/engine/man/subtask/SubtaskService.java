@@ -3769,12 +3769,14 @@ public class SubtaskService {
 			}
 			//创建子任务
 			int[] sums = kmeans.getCounts();
-
+			Task task=TaskService.getInstance().queryNoGeoByTaskId(conn, taskId);
 			for( Integer index : gridMaps.keySet()){
 				Map<Integer, Integer> gridMap = gridMaps.get(index);
 				Subtask subtask = new Subtask();
 				subtask.setGridIds(gridMap);
 				subtask.setType(3);//一体化grid粗编
+				subtask.setPlanStartDate(task.getPlanStartDate());
+				subtask.setPlanEndDate(task.getPlanEndDate());
 				subtask.setTaskId(taskId);
 				subtask.setStage(1); //日编
 				subtask.setDescp("自动规划创建");

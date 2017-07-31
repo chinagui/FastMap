@@ -2177,6 +2177,29 @@ public class TaskService {
 	 */
 	public Task queryByTaskId(Connection conn,int taskId) throws Exception {
 		try{
+			Task task=queryNoGeoByTaskId(conn,taskId);
+			//获取任务grid和geo
+			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
+			task.setGridIds(gridIds);
+			
+			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
+			String wkt = GridUtils.grids2Wkt(jsonArray);
+			task.setGeometry(Geojson.wkt2Geojson(wkt));
+			
+			return task;	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * 返回task详细信息
+	 * 包含block,program,几何信息
+	 */
+	public Task queryNoGeoByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run=new QueryRunner();
 			String sql="SELECT T.TASK_ID,"
 					+ "       T.NAME,"
@@ -2262,14 +2285,6 @@ public class TaskService {
 
 			};
 			Task task=run.query(conn, sql, rsHandler);
-			//获取任务grid和geo
-			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
-			task.setGridIds(gridIds);
-			
-			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
-			String wkt = GridUtils.grids2Wkt(jsonArray);
-			task.setGeometry(Geojson.wkt2Geojson(wkt));
-			
 			return task;	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

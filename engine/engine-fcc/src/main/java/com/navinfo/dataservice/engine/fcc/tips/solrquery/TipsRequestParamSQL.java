@@ -846,7 +846,7 @@ public class TipsRequestParamSQL {
 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end, JSONObject obj) {
 		StringBuilder query = new StringBuilder();
 		
-		String order = obj.getString("order");
+		//String order = obj.getString("order");
 		
 		int programType = obj.getInt("programType");
 		

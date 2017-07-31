@@ -2440,8 +2440,12 @@ public class TipsSelector {
 
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 			
-			String order = obj.getString("order");
-			String type ="";
+			String order = "";
+			String type = "";
+			
+			if(obj.containsKey("order")){
+				order = obj.getString("order");
+			}
 
 			if (order != null && order.isEmpty() == false && order.contains("-")) {
 				String[] orders = order.split("-");

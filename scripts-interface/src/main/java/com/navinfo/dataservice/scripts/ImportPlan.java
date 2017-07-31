@@ -49,10 +49,10 @@ public class ImportPlan {
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
 		JSONArray programUpdateIDs = new JSONArray();
-//		String filepath = String.valueOf(args[0]);
+		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-			String filepath = "E:/1.xls";
+//			String filepath = "E:/1.xls";
 			ImportPlan blockPlan = new ImportPlan();	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据

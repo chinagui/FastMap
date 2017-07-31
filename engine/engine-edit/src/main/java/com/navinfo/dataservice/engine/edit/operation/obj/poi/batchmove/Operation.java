@@ -63,7 +63,7 @@ public class Operation implements IOperation {
 					moveCommand);
 			
 			moveOperation.run(result);
-
+			
 		}
 		return null;
 	}

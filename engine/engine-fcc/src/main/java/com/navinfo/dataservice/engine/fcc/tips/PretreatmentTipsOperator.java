@@ -2074,9 +2074,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             track = this.tipSaveUpdateTrack(track, track.getT_lifecycle());
 
 //			track = addTrackInfo(user, track, date);
+            JSONObject trackJson2 = JSONObject.fromObject(track);
 			JSONObject newTrack = JSONObject.fromObject(track);
 
-			put.addColumn("data".getBytes(), "track".getBytes(), track
+			put.addColumn("data".getBytes(), "track".getBytes(), trackJson2
 					.toString().getBytes());
 
 			newPut.addColumn("data".getBytes(), "track".getBytes(), newTrack

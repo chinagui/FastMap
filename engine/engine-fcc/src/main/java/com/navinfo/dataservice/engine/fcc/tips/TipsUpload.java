@@ -242,9 +242,6 @@ public class TipsUpload {
 
 			htab.close();
 
-			// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap, conn);
-
 			// 道路名入元数据库
 			importRoadNameToMeta();
 
@@ -254,6 +251,9 @@ public class TipsUpload {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+
+        // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
+        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 

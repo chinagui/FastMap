@@ -1555,7 +1555,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		if (jsonInfo.containsKey("old")) {
 
 			put.addColumn("data".getBytes(), "old".getBytes(), jsonInfo
-					.getJSONArray("old").toString().getBytes());
+					.getJSONObject("old").toString().getBytes());
 		}
 		return put;
 	}

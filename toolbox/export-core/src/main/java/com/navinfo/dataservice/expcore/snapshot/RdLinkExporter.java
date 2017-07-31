@@ -490,7 +490,7 @@ public class RdLinkExporter {
 			JSONArray styleFactors, int multiDigitized) {
 		int style = -1;
 		int count = 0;
-		
+		boolean flag = false;//判断是否含交叉口内道路
 		if (multiDigitized == 1) {
 			style = 32;
 			count+=1;
@@ -505,6 +505,7 @@ public class RdLinkExporter {
 		}
 
 		if (formList.contains(50)) {
+			flag = true;
 			style = 33;
 			count+=1;
 		}
@@ -524,25 +525,12 @@ public class RdLinkExporter {
 			style = 12;
 			count+=1;
 		}
-		/*if (formList.contains(22)) {
-			style = 14;
+		//风景路线
+		if (formList.contains(60)) {
+			style = 17;
 			count+=1;
-		}*/
-
-		/*if (formList.contains(24)) {
-			
-			style = 14;
-			count+=1;
-		}*/
-
-		/*if (formList.contains(30)) {
-			style = 14;
-			count+=1;
-		}*/
-
-		/*if (formList.contains(34)) {
-			return 12;
-		}*/
+		}
+		
 
 		List<Integer> styleList = new ArrayList<>();
 //		System.out.println("styleFactors:  "+styleFactors);
@@ -572,9 +560,17 @@ public class RdLinkExporter {
 			style = 37;
 			count+=1;
 		}
+		
+		
 
-		if (count >= 2 ) {
-			style = 36;
+		if (count >= 2) {
+			if(flag){
+				//当含有以上属性两种或两种以上并且时forms.form包含50
+				style = 33;
+			}else{
+				style = 36;
+			}
+			
 		}
 		
 		if (count == 0) {

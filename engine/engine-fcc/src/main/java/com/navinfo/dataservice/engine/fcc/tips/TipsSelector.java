@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.fcc.*;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
@@ -2426,45 +2427,95 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage) throws Exception {
-		JSONArray array = new JSONArray();
+	public JSONObject searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage,JSONObject obj) throws Exception {
+		JSONObject result = new JSONObject();
 		
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
-		
-		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime);
+
+		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, obj);
 		
 		Connection oracleConn = null;
+		
+		Connection conn = null;
 
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			
+			String type = "";
+			String order = "";
+			
+			if(obj.containsKey("order")){
+				order = obj.getString("order");
+			}
 
-			Page page = operator.queryPage(sql, curPage, pageSize);
+			if (order != null && order.isEmpty() == false && order.contains("-")) {
+				String[] orders = order.split("-");
+
+				type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
+				
+				type += " " + orders[1];
+			}
+			
+			Page page = operator.queryPageSort(sql, curPage, pageSize, type);
 
 			long totalNum = page.getTotalCount();
 			
+			result.put("total", totalNum);
+			
+			JSONArray array = new JSONArray();
+			
 			if (totalNum <= Integer.MAX_VALUE) {
+				
 				List<TipsDao> tipsDaoList = (ArrayList<TipsDao>) page.getResult();
 				
-				for (TipsDao tip : tipsDaoList) {
-					JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+				for (TipsDao tip : tipsDaoList) {					
+					JSONObject json = new JSONObject();
 					
-					JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+					json.put("rowkey", tip.getId());
+					json.put("status", tip.getT_tipStatus());
+					json.put("type", tip.getS_sourceType());
+					json.put("date", tip.getT_date());
+					
+					json.put("location",GeoTranslator.jts2Geojson(tip.getWkt()));
+					json.put("relateInfo", getRelateGeo(tip));
 					
 					array.add(json);
-				}
-				
+				}	
 			} else {
 				// 暂先不处理
 			}
+			
+			result.put("tips", array);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		return array;
+		return result;
+	}
+	
+	private JSONObject getRelateGeo(TipsDao tips) throws Exception{
+		JSONObject geo = null;
+		
+		if(tips.getS_sourceType().equals("2001")){
+			
+			geo = GeoTranslator.jts2Geojson(tips.getWktLocation());
+			
+		}else if(tips.getS_sourceType().equals("2101")){
+			
+			String deep = tips.getDeep();
+
+			if (deep == null || deep.isEmpty()) {
+				return geo;
+			}
+
+			JSONObject deepObj = JSONObject.fromObject(deep);
+			geo = deepObj.getJSONObject("f");		
+		}
+		return geo;		
 	}
 	
 	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId) throws Exception {
@@ -2653,7 +2704,7 @@ public class TipsSelector {
 		relateID = f.getString("id");
 		return relateID;
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		// String parameter =
 		// "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";

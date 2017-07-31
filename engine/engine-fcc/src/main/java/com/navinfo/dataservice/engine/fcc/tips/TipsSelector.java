@@ -50,8 +50,6 @@ public class TipsSelector {
 
 	private static final Logger logger = Logger.getLogger(TipsSelector.class);
 
-	public static String TIP_OLD_KEY_NAME = "old";
-
 	private SolrController conn = new SolrController();
 
 	public TipsSelector() {
@@ -1264,16 +1262,9 @@ public class TipsSelector {
 
 			for (KeyValue kv : list) {
 				String key = new String(kv.qualifier());
-				if (key.equals(TIP_OLD_KEY_NAME)) {
-					JSONArray arrayJson = JSONArray.fromObject(new String(kv
-							.value()));
-					json.put(key, arrayJson);
-				} else {
-					JSONObject injson = JSONObject.fromObject(new String(kv
-							.value()));
-					json.put(key, injson);
-				}
-
+				JSONObject injson = JSONObject.fromObject(new String(kv
+						.value()));
+				json.put(key, injson);
 				/*
 				 * if (key.equals("feedback")) { json.put("feedback", injson); }
 				 * else { json.putAll(injson); }
@@ -2392,14 +2383,18 @@ public class TipsSelector {
 				if (!result.isEmpty()) {
 					JSONObject oldTip = JSONObject.fromObject(new String(result
 							.getValue("data".getBytes(), "old".getBytes())));
-					JSONObject oldGeoJson = JSONObject.fromObject(oldTip
-							.getString("o_location"));
-					Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
-					Set<Integer> olcMeshSet = this
-							.calculateGeometeryMesh(oldGeo);
-					if (olcMeshSet != null && olcMeshSet.size() > 0) {
-						meshSet.addAll(olcMeshSet);
-					}
+                    JSONArray oldArray = oldTip.getJSONArray("old_array");
+                    if(oldArray != null && oldArray.size() > 0) {
+                        JSONObject oldJson = oldArray.getJSONObject(oldArray.size() - 1);
+                        JSONObject oldGeoJson = JSONObject.fromObject(oldJson
+                                .getString("o_location"));
+                        Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+                        Set<Integer> oldMeshSet = this
+                                .calculateGeometeryMesh(oldGeo);
+                        if (oldMeshSet != null && oldMeshSet.size() > 0) {
+                            meshSet.addAll(oldMeshSet);
+                        }
+                    }
 				}
 			}
 		} catch (Exception e) {

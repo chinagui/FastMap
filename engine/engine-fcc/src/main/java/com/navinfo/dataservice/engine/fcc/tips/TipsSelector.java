@@ -166,10 +166,6 @@ public class TipsSelector {
             }
 			for (TipsDao tipsDao : snapshots) {
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-                System.out.println("*****************" + tipsDao.getId());
-                if(tipsDao.getId().equals("02180611c8f451b64e46f5b8e0d207403235c7")){
-                    System.out.println();
-                }
 				JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
 
 				rowkey = json.getString("id");
@@ -286,7 +282,8 @@ public class TipsSelector {
 						|| type == 1404 || type == 1804 || type == 1108
 						|| type == 1112 || type == 1306 || type == 1410
 						|| type == 1310 || type == 1204 || type == 1311
-						|| type == 1308 || type == 1114 || type == 1115) {
+						|| type == 1308 || type == 1114 || type == 1115
+                        || type == 1301 || type == 1302) {
 
 					if (deep.containsKey("agl")) {
 						m.put("c", String.valueOf(deep.getDouble("agl")));
@@ -405,7 +402,20 @@ public class TipsSelector {
 							|| type == 1404 || type == 1406 || type == 1407
 							|| type == 1409 || type == 1410) {
 						m.put("d", deep.getString("ptn"));
-					}
+					}else if(type == 1301) {//20170731新增 车信返回进入要素
+                        m.put("d", deep.getJSONArray("info"));
+                    }else if(type == 1302) {//20170731新增 交限返回限制代码
+                        JSONArray oArray = deep.getJSONArray("o_array");
+                        JSONArray oInfoArray = new JSONArray();
+                        if(oArray != null && oArray.size() > 0) {
+                            for(int oIndex = 0; oIndex < oArray.size(); oIndex ++) {
+                                JSONObject outObj = oArray.getJSONObject(oIndex);
+                                int oInfo = outObj.getInt("oInfo");
+                                oInfoArray.add(oInfo);
+                            }
+                        }
+                        m.put("d", oInfoArray);
+                    }
 				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
 				} else if (type == 1102) {

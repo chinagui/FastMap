@@ -168,7 +168,12 @@ public class PoiSave {
 					pid = result.getInt("pid");
 					sb.append(",").append(String.valueOf(pid));
 				} else if(OperType.BATCHMOVE == operType){
-					sb.append(result);
+					JSONArray logs = result.getJSONArray("log");
+					for(int i = 0; i<logs.size();i++){
+						JSONObject single = logs.getJSONObject(i);
+						pid = single.getInt("pid");
+						sb.append(",").append(String.valueOf(pid));
+					}
 				}
 				else {
 					pid = json.getInt("objId");

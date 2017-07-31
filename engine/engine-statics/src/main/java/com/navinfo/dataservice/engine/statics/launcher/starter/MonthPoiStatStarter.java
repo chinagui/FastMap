@@ -8,7 +8,7 @@ import com.navinfo.dataservice.engine.statics.launcher.StatJobStarter;
  * @date 2017年5月25日
  * @Description: PoiMonthStatStarter.java
  */
-public class PoiMonthStatStarter extends StatJobStarter {
+public class MonthPoiStatStarter extends StatJobStarter {
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.engine.statics.launcher.StatJobStarter#jobType()
@@ -16,7 +16,7 @@ public class PoiMonthStatStarter extends StatJobStarter {
 	@Override
 	public String jobType() {
 		// TODO Auto-generated method stub
-		return "poiMonthStat";
+		return "monthPoiStat";
 	}
 
 }

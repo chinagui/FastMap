@@ -108,7 +108,7 @@ public class IxPoiSearch implements ISearch {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID "
+		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
 				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
 				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
@@ -117,6 +117,7 @@ public class IxPoiSearch implements ISearch {
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
 				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_SUBTASK_ID,0) QUICK_SUBTASK_ID ,nvl(B.MEDIUM_SUBTASK_ID,0) MEDIUM_SUBTASK_ID  FROM TMP1 A LEFT JOIN "
 				+ "POI_EDIT_STATUS B ON A.PID = B.PID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -168,6 +169,7 @@ public class IxPoiSearch implements ISearch {
 
 				m.put("c", resultSet.getDouble("x_guide"));
 				m.put("f", resultSet.getDouble("y_guide"));
+				m.put("l", resultSet.getInt("link_pid"));
 
 				snapshot.setM(m);
 
@@ -239,6 +241,7 @@ public class IxPoiSearch implements ISearch {
 		sb.append("         I.Y_GUIDE,");
 		sb.append("         I.GEOMETRY,");
 		sb.append("         I.ROW_ID");
+		sb.append("         I.LINK_PID");
 		sb.append("    FROM IX_POI I");
 		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");
 		sb.append("                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
@@ -260,6 +263,7 @@ public class IxPoiSearch implements ISearch {
 		sb.append(" B.Y_GUIDE,");
 		sb.append(" B.GEOMETRY,");
 		sb.append(" B.ROW_ID,");
+		sb.append(" B.LINK_PID,");
 		sb.append(" C . NAME,");
 		sb.append(" A.IS_PLAN_SELECTED,");
 		sb.append(" A.IS_IMPORTANT,");
@@ -325,6 +329,7 @@ public class IxPoiSearch implements ISearch {
 				 */
 				m.put("c", resultSet.getDouble("x_guide"));
 				m.put("f", resultSet.getDouble("y_guide"));
+				m.put("l", resultSet.getInt("link_pid"));
 
 				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
 				m.put("isImportant", resultSet.getInt("is_important"));
@@ -376,7 +381,7 @@ public class IxPoiSearch implements ISearch {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID "
+		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
 				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
 				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
@@ -457,6 +462,7 @@ public class IxPoiSearch implements ISearch {
 
 				m.put("c", resultSet.getDouble("x_guide"));
 				m.put("f", resultSet.getDouble("y_guide"));
+				m.put("l", resultSet.getInt("link_pid"));
 
 				snapshot.setM(m);
 

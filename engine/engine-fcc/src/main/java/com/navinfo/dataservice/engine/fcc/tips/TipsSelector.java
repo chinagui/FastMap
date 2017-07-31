@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.fcc.*;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
@@ -2434,6 +2435,8 @@ public class TipsSelector {
 		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, obj);
 		
 		Connection oracleConn = null;
+		
+		Connection conn = null;
 
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
@@ -2475,6 +2478,9 @@ public class TipsSelector {
 					json.put("type", tip.getS_sourceType());
 					json.put("date", tip.getT_date());
 					
+					json.put("location",GeoTranslator.jts2Geojson(tip.getWkt()));
+					json.put("relateInfo", getRelateGeo(tip));
+					
 					array.add(json);
 				}	
 			} else {
@@ -2489,6 +2495,27 @@ public class TipsSelector {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
 		return result;
+	}
+	
+	private JSONObject getRelateGeo(TipsDao tips) throws Exception{
+		JSONObject geo = null;
+		
+		if(tips.getS_sourceType().equals("2001")){
+			
+			geo = GeoTranslator.jts2Geojson(tips.getWktLocation());
+			
+		}else if(tips.getS_sourceType().equals("2101")){
+			
+			String deep = tips.getDeep();
+
+			if (deep == null || deep.isEmpty()) {
+				return geo;
+			}
+
+			JSONObject deepObj = JSONObject.fromObject(deep);
+			geo = deepObj.getJSONObject("f");		
+		}
+		return geo;		
 	}
 	
 	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId) throws Exception {
@@ -2677,7 +2704,7 @@ public class TipsSelector {
 		relateID = f.getString("id");
 		return relateID;
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		// String parameter =
 		// "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";

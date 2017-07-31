@@ -1562,6 +1562,7 @@ public class TaskService {
 						task.put("roadPlanTotal", 0);
 						task.put("poiPlanTotal", 0);
 						task.put("orderStatus", 5);
+						task.put("jobs", new JSONArray());
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					

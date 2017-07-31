@@ -106,19 +106,12 @@ public class DeleteNotIntegratedData {
 		try {
 			conn = ds.getConnection();
 
-			String ids = org.apache.commons.lang.StringUtils.join(
-					this.getMeshes(), ",");
-			log.debug("meshes ===" +ids);
-
-			String sql = "";
-			String sqlInsert = "INSERT /*+append*/  INTO  TEMP_RDLINK_NOMESH_DATA  SELECT *FROM RD_LINK WHERE MESH_ID ";
-			Clob pidClod = null;
-			pidClod = ConnectionUtil.createClob(conn);
-			pidClod.setString(1, ids);
-			sql = sqlInsert
-					+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
+			/*
+			 * String ids = org.apache.commons.lang.StringUtils.join(
+			 * this.getMeshes(), ","); log.debug("meshes ===" +ids);
+			 */
+			String sql = "INSERT /*+append*/  INTO  TEMP_RDLINK_NOMESH_DATA  SELECT *FROM RD_LINK WHERE MESH_ID NOT IN (select mesh_id from m_mesh_type where type =1  ) ";
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setClob(1, pidClod);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			log.error(e.getMessage() + "导出接边LINK报错", e);
@@ -145,21 +138,21 @@ public class DeleteNotIntegratedData {
 		PreparedStatement pstmt = null;
 		try {
 
-	
 			conn = ds.getConnection();
-			String ids = org.apache.commons.lang.StringUtils.join(
-					this.getMeshes(), ",");
-
-			String sql = "";
-			log.debug("meshes ===" +ids);
-			String sqlInsert = "DELETE FROM  RD_LINK WHERE MESH_ID ";
-			Clob pidClod = ConnectionUtil.createClob(conn);
-			pidClod.setString(1, ids);
-			sql = sqlInsert
-					+ " NOT IN (select to_number(column_value) from table(clob_to_table(?)))";
-
+			/*
+			 * String ids = org.apache.commons.lang.StringUtils.join(
+			 * this.getMeshes(), ",");
+			 * 
+			 * String sql = ""; log.debug("meshes ===" + ids);
+			 */
+			String sql = "DELETE FROM  RD_LINK WHERE MESH_ID NOT IN ( select mesh_id from m_mesh_type where type =1 ) ";
+			/*
+			 * Clob pidClod = ConnectionUtil.createClob(conn);
+			 * pidClod.setString(1, ids); sql = sqlInsert +
+			 * " NOT IN (select to_number(column_value) from table(clob_to_table(?)))"
+			 * ;
+			 */
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setClob(1, pidClod);
 			pstmt.executeUpdate();
 
 		} catch (Exception e) {

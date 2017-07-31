@@ -156,33 +156,35 @@ public class TipsOperateTest extends InitApplication {
 		try{
 
 		// String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
-		 String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
-		 if (StringUtils.isEmpty(parameter)) {
-             throw new IllegalArgumentException("parameter参数不能为空。");
-         }
-		    
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			//{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+		    String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
+		    parameter = "{\"mdFlag\":\"d\",\"handler\":1315,\"data\":[{\"rowkey\":\"028002b4eb017e06fd4690a2473409a33bc39b\",\"editStatus\"" +
+                    ":2,\"editMeth\":1}]}";
+            if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+            }
 
-			JSONArray data = jsonReq.getJSONArray("data");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int handler = jsonReq.getInt("handler");
-			
-			String mdFlag= jsonReq.getString("mdFlag");
-			
-			 if (data==null||data.size()==0) {
-	                throw new IllegalArgumentException("参数错误:data不能为空");
-	         }
-			
-			 if (StringUtils.isEmpty(mdFlag)) {
-	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
-	         }
-			
-			  //值域验证
-         if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
-         	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
-         }
+            //{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+
+            JSONArray data = jsonReq.getJSONArray("data");
+
+            int handler = jsonReq.getInt("handler");
+
+            String mdFlag= jsonReq.getString("mdFlag");
+
+             if (data==null||data.size()==0) {
+                    throw new IllegalArgumentException("参数错误:data不能为空");
+             }
+
+             if (StringUtils.isEmpty(mdFlag)) {
+                    throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+             }
+
+                  //值域验证
+             if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+                 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+             }
 
 			TipsOperator op = new TipsOperator();
 

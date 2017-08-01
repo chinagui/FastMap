@@ -273,7 +273,7 @@ public class DataEditService {
 					adoptedPoiPid.add(poiPid);
 				}
 				
-				if(corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
+				if(corresDealership.getCfmPoiNum()!=null&&corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
 					cfmPoiPid=poiPid;
 				}
 				

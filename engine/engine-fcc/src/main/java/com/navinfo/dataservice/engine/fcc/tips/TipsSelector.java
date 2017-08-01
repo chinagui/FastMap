@@ -118,9 +118,9 @@ public class TipsSelector {
 					return array;
 				}
 
-                if(workStatus.size() == 1 && workStatus.get(0) == 11) {
-                    return array;
-                }
+//                if(workStatus.size() == 1 && workStatus.get(0) == 11) {
+//                    return array;
+//                }
 
                 if(workStatus.contains(TipsWorkStatus.TIPS_IN_TASK)) {
                     isInTask = true;

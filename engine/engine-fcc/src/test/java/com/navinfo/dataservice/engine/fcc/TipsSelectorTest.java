@@ -616,9 +616,11 @@ public class TipsSelectorTest extends InitApplication {
 			//JSONArray result = selector.searchPoiRelateTips("0220014a20f45489b740e6a93122e1f2c94f4e", 0, 30, 330);
 			JSONObject obj = new JSONObject ();
 			obj.put("programType", 1);
-			obj.put("order", "type-asc");
+			obj.put("order", "lifecycle-asc");
 			obj.put("dbId", 13);
-			JSONObject result = selector.searchGpsAndDeleteLinkTips(649, "2017-07-28", "2017-07-31", 20, 1,obj);
+			//JSONObject result = selector.searchGpsAndDeleteLinkTips(649, "2017-07-28", "2017-07-31", 20, 1,obj);
+			
+			JSONArray result = selector.searchPoiRelateTips("02200198b6885076094a3391a2702025daee56", 649, 30, 13, 1);
 			System.out.println(result.toString());
 		}
 		catch(Exception e){

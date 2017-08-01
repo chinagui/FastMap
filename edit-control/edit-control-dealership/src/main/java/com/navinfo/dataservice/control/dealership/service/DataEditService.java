@@ -715,22 +715,23 @@ public class DataEditService {
 			log.info("resultId" + resultId + "在日库中对应的内容为空");
 			return;
 		}
+		String dailyPoiChain = resultKindCode.get("poi_chain").toString();
+		String dailytPoiCode = resultKindCode.get("poi_kind_code").toString();
 		//元数据库中数据
-		Map<String, Object> metaKindCode = getMetaKindCode(chainCode);
+		Map<String, Object> metaKindCode = getMetaKindCode(chainCode, dailytPoiCode);
 		if(metaKindCode == null || metaKindCode.size() == 0){
 			log.info("resultId" + resultId + "在元数据库中对应的内容为空");
 			return;
 		}
-		String dailyPoiChain = resultKindCode.get("poi_chain").toString();
-		String dailytPoiCode = resultKindCode.get("poi_kind_code").toString();
+
 		String MetaPoiChain = metaKindCode.get("poi_chain").toString();
 		String MetaPoiCode = metaKindCode.get("poi_kind_code").toString();
 		if(dailyPoiChain.equals(MetaPoiChain) && dailytPoiCode.equals(MetaPoiCode)){
-			String MetaKindChain = metaKindCode.get("r_kind_chain").toString();
-			String MetaKind = metaKindCode.get("r_kind").toString();
+//			String MetaKindChain = metaKindCode.get("r_kind_chain").toString();
+//			String MetaKind = metaKindCode.get("r_kind").toString();
 			//调用POI分类和品牌赋值方法
 			log.info(resultId+"调用POI分类和品牌赋值方法");
-			editResultTableBrands(resultId, MetaKindChain, MetaKind, con);
+			editResultTableBrands(resultId, dailyPoiChain, dailytPoiCode);
 			//调用生成POI履历
 			log.info(resultId+"调用生成POI履历");
 			JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId);
@@ -893,12 +894,12 @@ public class DataEditService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public Map<String, Object> getMetaKindCode(String chainCode) throws SQLException{
+	public Map<String, Object> getMetaKindCode(String chainCode, String dailytPoiCode) throws SQLException{
 		Connection Metacon = null;
 		try{
 			Metacon = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
-			String sql = "select t.r_kind_chain, t.r_kind,t.poikind,t.poikind_chain from SC_POINT_KIND_INNER2OUT t where t.r_kind_chain ='"+chainCode+"'";
+			String sql = "select t.r_kind_chain, t.r_kind,t.poikind,t.poikind_chain from SC_POINT_KIND_INNER2OUT t where t.r_kind_chain ='"+chainCode+"' and t.poikind ='"+dailytPoiCode+"'";
 			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
 				@Override
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
@@ -927,14 +928,20 @@ public class DataEditService {
 	 * @param MetaKind
 	 * @throws Exception 
 	 * */
-	public void editResultTableBrands(int resultId, String brand, String kindCode, Connection con) throws Exception{
+	public void editResultTableBrands(int resultId, String poiChain, String poiKindCode) throws Exception{
+		Connection Metacon = null;
 		try{
+			Metacon = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t "
-					+ "set t.poi_kind_code = '"+kindCode+"', t.poi_chain = '"+brand+"' where t.RESULT_ID ="+resultId;
-			run.execute(con, sql);
+			String sql = "update SC_POINT_KIND_INNER2OUT t set t.r_kind = t.poikind, t.r_kind_chain = t.poikind_chain where t.poikind_chain = '"+poiChain+"' and t.poikind = "+poiKindCode+"";
+			log.info("POI品牌和分类赋值方法sql:" + sql);
+			run.execute(Metacon, sql);
 		}catch(Exception e){
+			log.error("POI品牌和分类赋值方法异常:" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(Metacon);
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(Metacon);
 		}
 	}
 	

@@ -273,7 +273,7 @@ public class DataEditService {
 					adoptedPoiPid.add(poiPid);
 				}
 				
-				if(corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
+				if(corresDealership.getCfmPoiNum()!=null&&corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
 					cfmPoiPid=poiPid;
 				}
 				
@@ -284,7 +284,7 @@ public class DataEditService {
 				matchPois.add(poi);
 			}
 
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois, connPoi);
 			JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
 			
 			//返回cfm_poi_num检查log
@@ -292,7 +292,7 @@ public class DataEditService {
 			
 			if(cfmPoiPid!=0){
 				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
-				List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+				List<String> checkRuleList = selector.loadByOperationName("DEALERSHIP_SAVE");
 				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid,checkRuleList);
 				
 				log.put("data", checkResultsArr);
@@ -346,6 +346,9 @@ public class DataEditService {
 		dealershipMap.put("dbId", dbId);
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
+		dealershipMap.put("dealSrcDiff", dealership.getDealSrcDiff());
+		dealershipMap.put("dealStatus", dealership.getDealStatus());
+		
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
@@ -1910,7 +1913,7 @@ public class DataEditService {
 			
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
 			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, null);
 			return poiArray;
 			
 		}catch (Exception e) {
@@ -1943,6 +1946,7 @@ public class DataEditService {
 		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			StringBuilder sb = new StringBuilder();
 			boolean flag = false;
+			boolean need2Degree = false;//需要两公里扩圈
 			Geometry point = null;
 			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
 				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
@@ -1954,17 +1958,18 @@ public class DataEditService {
 					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
 					point = new WKTReader().read(wkt);
 					sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+					need2Degree = true;
+					assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 					point = point.buffer(GeometryUtils.convert2Degree(2000));
 				}else{
-					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
+					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p,ad_admin ad ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
-						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						need2Degree = true;
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
 						point = new WKTReader().read(wkt);
@@ -1978,10 +1983,12 @@ public class DataEditService {
 			if(flag){
 				pstmt.setString(1, poiNum);
 			}else{
-			    String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
-				Clob geom = ConnectionUtil.createClob(conn);			
-				geom.setString(1, wkt);
-			    pstmt.setClob(1,geom);
+				if(need2Degree){
+					String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+					Clob geom = ConnectionUtil.createClob(conn);			
+					geom.setString(1, wkt);
+				    pstmt.setClob(1,geom);
+				}
 			}
 			rs = pstmt.executeQuery();
 
@@ -2010,8 +2017,9 @@ public class DataEditService {
 	 * @param name
 	 * @param address
 	 * @param telephone
+	 * @param need2Degree 需要2公里扩圈 
 	 */
-	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone){
+	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone,boolean need2Degree){
 		if(StringUtils.isNotBlank(name)){
 			sb.append(", ix_poi_name pn ");
 		}
@@ -2021,7 +2029,10 @@ public class DataEditService {
 		if(StringUtils.isNotBlank(telephone)){
 			sb.append(", ix_poi_contact pc ");
 		}
-		sb.append("WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" WHERE 1=1 ");
+		if(need2Degree){
+			sb.append("AND sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		}
 		if(StringUtils.isNotBlank(name)){
 			sb.append("AND p.pid = pn.poi_pid AND pn.name_class = 1 AND pn.name_type  = 2 AND pn.lang_code = 'CHI'"
 					+ " AND pn.name LIKE '%"+name+"%' ");
@@ -2332,6 +2343,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 */
 	public void checkImpAddData(Connection conn, List<Map<String, Object>> addDataMaps) throws Exception{
+		List<Integer> dealStatusList = Arrays.asList(0,1,2);
 		for(Map<String, Object> addDataMap : addDataMaps){
 			try{
 				String resultId = addDataMap.get("number").toString();
@@ -2341,7 +2353,6 @@ public class DataEditService {
 				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
 					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
 				}
-				
 				if(StringUtils.isBlank(resultId)){
 					continue;
 				}
@@ -2351,22 +2362,26 @@ public class DataEditService {
 					continue;
 				}
 				String workFlowStatus = null;
-				String dealStatus = null;
+				int dealStatus = 0;
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值不为3(非新增)，
 				//且上传文件中“序号”在RESULT表result_id中存在,且(workflow_status=9 and deal_status<>3),则该文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					dealStatus = statusMap.get("dealStatus").toString();
-					if("2".equals(dealStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
+					dealStatus = (int) statusMap.get("dealStatus");
+					if(2 == dealStatus){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值为2(删除)，
-				//且传文件中“序号”在RESULT表result_id中存在，且RESULT表中工艺状态为“外业处理完成，出品”即9，则该文件不可以上传
+				//且传文件中“序号”在RESULT表result_id中存在，且代理点状态为{0,1,2}，则文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && "2".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					if("9".equals(workFlowStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+					dealStatus = (int) statusMap.get("dealStatus");
+//					if("9".equals(workFlowStatus)){
+//						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+//					}
+					if(dealStatusList.contains(dealStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				addDataMap.put("workFlowStatus", workFlowStatus);

@@ -659,7 +659,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -686,6 +686,7 @@ public class SubtaskService {
 						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
+						subtask.setQualityMethod(rs.getInt("QUALITY_METHOD"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -845,13 +846,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
-						int qualityMethod=rs.getInt("QUALITY_METHOD");
-						JSONArray qualityMethodArray=new JSONArray();
-						if(qualityMethod==3){
-							qualityMethodArray.add(1);
-							qualityMethodArray.add(2);
-						}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
-						subtask.put("qualityMethod", qualityMethodArray);
+						
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -934,6 +929,15 @@ public class SubtaskService {
 					result.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
 					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
+					
+					int qualityMethod=subtaskQuality.getQualityMethod();
+					JSONArray qualityMethodArray=new JSONArray();
+					if(qualityMethod==3){
+						qualityMethodArray.add(1);
+						qualityMethodArray.add(2);
+					}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
+					result.put("qualityMethod", qualityMethodArray);
+					
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
 					if(userInfo!=null){
 						result.put("qualityExeUserName",userInfo.getUserRealName());

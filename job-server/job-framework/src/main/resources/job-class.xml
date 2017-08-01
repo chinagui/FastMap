@@ -110,4 +110,8 @@
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>
+	<type name="subtaskStat"
+		class="com.navinfo.dataservice.job.statics.manJob.SubtaskJob"
+		request="com.navinfo.dataservice.job.statics.manJob.SubtaskJobRequest" >
+	</type>
 	</mapping>

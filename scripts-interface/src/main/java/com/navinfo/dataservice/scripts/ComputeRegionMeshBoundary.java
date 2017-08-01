@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
@@ -55,7 +56,7 @@ public class ComputeRegionMeshBoundary {
 		},regionId);
 	}
 	
-	public static void createSqliteDb(String dir,String fileName,Map<Integer,Set<String>> regionMeshes)throws Exception{
+	public static void writeSqliteDb(String dir,String fileName,Map<Integer,Set<String>> regionMeshes)throws Exception{
 		File file = new File(dir);
 
 		if (file.exists()) {
@@ -111,6 +112,19 @@ public class ComputeRegionMeshBoundary {
 		sqliteConn.close();
 	}
 	
+	public static void writeJsonFile(Map<Integer,Set<String>> regionMeshes)throws Exception{
+
+		JSONArray ja = new JSONArray();
+		for(Entry<Integer,Set<String>> entry:regionMeshes.entrySet()){
+			JSONObject jo = new JSONObject();
+			jo.put("regionId", entry.getKey());
+			Geometry geo = MeshUtils.meshes2Jts(entry.getValue());
+			jo.put("boundary", geo.toText());
+			ja.add(jo);
+		}
+		log.info(ja.toString());
+	}
+	
 	/**
 	 * @param args
 	 */
@@ -126,15 +140,24 @@ public class ComputeRegionMeshBoundary {
 			for(int i:regionIds){
 				regionMeshes.put(i, getSingleRegionMeshes(conn,i));
 			}
-			JSONArray ja = new JSONArray();
-			for(Entry<Integer,Set<String>> entry:regionMeshes.entrySet()){
-				JSONObject jo = new JSONObject();
-				jo.put("regionId", entry.getKey());
-				Geometry geo = MeshUtils.meshes2Jts(entry.getValue());
-				jo.put("boundary", geo.toText());
-				ja.add(jo);
+			//
+			//writeJsonFile(regionMeshes);
+			//
+			if(args.length!=2){
+				System.out.println("ERROR:need args:dir filename");
+				return;
 			}
-			log.info(ja.toString());
+			String dir = args[0];
+			if(StringUtils.isEmpty(dir)){
+				System.out.println("ERROR:need args:dir filename");
+				return;
+			}
+			String fileName = args[1];
+			if(StringUtils.isEmpty(fileName)){
+				System.out.println("ERROR:need args:dir filename");
+				return;
+			}
+			writeSqliteDb(dir,fileName,regionMeshes);
 			
 		}catch(Exception e){
 			log.error(e.getMessage(),e);

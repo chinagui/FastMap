@@ -292,8 +292,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							List<Integer> logMeshes = grids2meshs(logGrids);
 							List<Integer> closeMeshes = metaApi.getMeshsFromPartition(logMeshes,0,0);//查询关闭的图幅
 							
-							log.info("以下关闭图幅内的数据履历未日落月："+closeMeshes.toString());
 							filterGrids.addAll(meshs2grids(closeMeshes));
+							log.info("以下关闭图幅内的数据履历未日落月："+closeMeshes.toString());
 							
 							logMeshes.removeAll(closeMeshes);//拿所有的未关闭的meshes申请DMS锁；
 							Map<Integer,String> dmsLockInfo =new HashMap<Integer,String>();
@@ -301,8 +301,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							
 							List<Integer> dmsLockMeshes = new ArrayList<Integer>();
 							dmsLockMeshes.addAll(dmsLockInfo.keySet());
-							log.info("以下未申请到DMS锁的图幅，未日落月："+dmsLockMeshes.toString());
+							
 							filterGrids.addAll(meshs2grids(dmsLockMeshes));
+							log.info("以下未申请到DMS锁的图幅，未日落月："+dmsLockMeshes.toString());
 
 							doMediumSync(region,filterGrids,null,null,datahubApi,d2mSyncApi,manApi);
 
@@ -456,7 +457,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Connection monthConn=getConnectByRegion(region,datahubApi,"month");
 		OracleSchema monthDbSchema=getSchemaByRegion(region,datahubApi,"month");
 		
-		LogMover logMover = null;
 		LogSelector logSelector = null;
 		
 		String tempPoiGLinkTab ="";
@@ -918,7 +918,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			ServiceInvokeUtil http =new ServiceInvokeUtil();
 			//String msUrl ="http://192.168.3.228:8086/VMWeb/springmvc/vmmanager/day2mounth/releaseLock?";
 			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.day2mounthReleaseLock);
-			String json=http.invoke(msUrl,parMap,100);
+			String json=http.invoke(msUrl,parMap,1000);
 			log.info("调用DMS解锁接口:"+json);
 		 } catch (Exception e) {
 			 log.debug("调用DMS解锁接口:"+e.getMessage());
@@ -941,7 +941,16 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			JSONObject jsonReq = JSONObject.fromObject(callDmsGetLockApi(parameter));
 			if(jsonReq.getInt("errcode")==0){
 				if(jsonReq.get("data")!=null){
-					dmsLockMeshes =(Map<Integer,String>) jsonReq.get("data");
+					JSONObject json = JSONObject.fromObject(jsonReq.get("data"));
+					for(Object obj:json.keySet()){
+						int key=0;
+						if(obj instanceof Integer){  
+							key=(int) obj;
+						}else if(obj instanceof String){  
+							key =Integer.parseInt(String.valueOf(obj));
+			            }
+						dmsLockMeshes.put(key, (String) json.get(obj));
+					}
 				}
 				
 			}
@@ -961,7 +970,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			ServiceInvokeUtil http =new ServiceInvokeUtil();
 			//String msUrl ="http://192.168.3.228:8086/VMWeb/springmvc/vmmanager/day2mounth/getLock?";
 			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.day2mounthGetLock);
-			json=http.invoke(msUrl,parMap,100);
+			json=http.invoke(msUrl,parMap,1000);
 			log.info("调用DMS加锁接口:"+json);
 		 } catch (Exception e) {
 			 log.debug("调用DMS加锁接口:"+e.getMessage());

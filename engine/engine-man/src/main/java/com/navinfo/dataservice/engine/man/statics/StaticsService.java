@@ -2727,13 +2727,13 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", df.format(planStartDate));
+							overView.put("actualStartDate", overView.get("planStartDate"));
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
 							if(status==0){
-								overView.put("actualEndDate", df.format(planEndDate));
+								overView.put("actualEndDate", overView.get("planEndDate"));
 							}else{
 								overView.put("actualEndDate", null);
 							}							

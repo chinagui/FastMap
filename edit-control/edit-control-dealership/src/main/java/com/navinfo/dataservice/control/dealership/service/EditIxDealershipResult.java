@@ -90,7 +90,7 @@ public class EditIxDealershipResult {
 			addChainDataEntity.setCfmPoiNum(cfmPoiNum);
 			addChainDataEntity.setCfmIsAdopted(0);
 			if(sourceMap.get("sourceId") != null && StringUtils.isNotBlank(sourceMap.get("sourceId").toString())){
-				addChainDataEntity.setSourceId(Integer.valueOf(sourceMap.get("sourceId").toString()));
+				addChainDataEntity.setSourceId(Integer.parseInt(sourceMap.get("sourceId").toString()));
 			}
 			if(StringUtils.isNotBlank(map.get("history").toString())){
 				addChainDataEntity.setDealSrcDiff(Integer.valueOf(map.get("history").toString()));

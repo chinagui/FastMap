@@ -347,6 +347,8 @@ public class DataEditService {
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 		dealershipMap.put("dealSrcDiff", dealership.getDealSrcDiff());
+		dealershipMap.put("dealStatus", dealership.getDealStatus());
+		
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
@@ -2326,13 +2328,14 @@ public class DataEditService {
 	 * @throws Exception 
 	 */
 	public void checkImpAddData(Connection conn, List<Map<String, Object>> addDataMaps) throws Exception{
+		List<Integer> dealStatusList = Arrays.asList(0,1,2);
 		for(Map<String, Object> addDataMap : addDataMaps){
 			try{
 				String resultId = addDataMap.get("number").toString();
 				String history = addDataMap.get("history").toString();
 				log.info("上传的增量数据序号即resultID为：" + resultId+"上传的变更履历为：" + history);
 				//若补充数据上传文件中“序号”没有值且文件中“变更履历”的值必须为3(新增)，可以上传，否则不可上传文件
-				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
+				if(StringUtils.isNotBlank(resultId) || !"3".equals(history)){
 					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
 				}
 				
@@ -2345,22 +2348,26 @@ public class DataEditService {
 					continue;
 				}
 				String workFlowStatus = null;
-				String dealStatus = null;
+				int dealStatus = 0;
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值不为3(非新增)，
 				//且上传文件中“序号”在RESULT表result_id中存在,且(workflow_status=9 and deal_status<>3),则该文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					dealStatus = statusMap.get("dealStatus").toString();
+					dealStatus = (int) statusMap.get("dealStatus");
 					if("2".equals(dealStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值为2(删除)，
-				//且传文件中“序号”在RESULT表result_id中存在，且RESULT表中工艺状态为“外业处理完成，出品”即9，则该文件不可以上传
+				//且传文件中“序号”在RESULT表result_id中存在，且代理点状态为{0,1,2}，则文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && "2".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					if("9".equals(workFlowStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+					dealStatus = (int) statusMap.get("dealStatus");
+//					if("9".equals(workFlowStatus)){
+//						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+//					}
+					if(dealStatusList.contains(dealStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				addDataMap.put("workFlowStatus", workFlowStatus);

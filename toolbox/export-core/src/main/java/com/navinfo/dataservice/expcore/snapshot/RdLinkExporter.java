@@ -380,6 +380,16 @@ public class RdLinkExporter {
 				}
 			}
 		}
+		//*********zl 2017.08.01 未验证道路*********
+		int develop_state = rs.getInt("DEVELOP_STATE");
+		if(develop_state == 2){
+			JSONObject jo = new JSONObject();
+
+			jo.put("factor", 97);
+
+			styleFactors.add(jo);
+		}
+		//********************************
 
 		json.put("styleFactors", styleFactors);
 
@@ -561,6 +571,11 @@ public class RdLinkExporter {
 			count+=1;
 		}
 		
+		//未验证道路
+		if (styleList.contains(97)) {
+			style = 42;
+			count+=1;
+		}
 		
 
 		if (count >= 2) {

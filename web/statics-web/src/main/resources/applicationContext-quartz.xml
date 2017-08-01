@@ -16,7 +16,7 @@
                 <!-- WorkTimePlan定时调度任务： 利用了复杂调度器，每天凌晨2：00启动-->
 <!--                 <ref bean="poiDayStatics_Trigger" /> -->
                 <ref bean="poiDayStat_Trigger" />
-                <ref bean="poiMonthStat_Trigger" />
+                <ref bean="monthPoiStat_Trigger" />
 <!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
             </list>
         </property>
@@ -97,10 +97,11 @@
         <property name="jobDetail" ref="poiDayStat_detail" />
         <property name="cronExpression" value="0 0/3 * * * ?" />
     </bean>
-    <bean id="poiMonthStat_Trigger"
+    
+    <bean id="monthPoiStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="poiMonthStat_detail" />
-        <property name="cronExpression" value="0 * * * * ?" />
+        <property name="jobDetail" ref="monthPoiStat_detail" />
+        <property name="cronExpression" value="0 0 0/1 * * ?" />
     </bean>
 <!--     <bean id="poiQualityInitCountTable_Trigger" -->
 <!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
@@ -119,8 +120,9 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
-    <bean id="poiMonthStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="poiMonthStat" />
+    
+    <bean id="monthPoiStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="monthPoiStat" />
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
@@ -133,7 +135,8 @@
 	<!--  业务逻辑处理类 -->
 	<bean id="poiDayStatics" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsStarter"/>
 	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
-	<bean id="poiMonthStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiMonthStatStarter"/>
+	
+	<bean id="monthPoiStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.MonthPoiStatStarter"/>
 <!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
 	
 </beans>

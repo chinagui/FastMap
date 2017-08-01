@@ -242,9 +242,6 @@ public class TipsUpload {
 
 			htab.close();
 
-			// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
-
 			// 道路名入元数据库
 			importRoadNameToMeta();
 
@@ -254,6 +251,9 @@ public class TipsUpload {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+
+        // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
+        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -1150,9 +1150,26 @@ public class TipsUpload {
 						insertPstmt.setInt(36, 0);
 
 						// 查询关联link或者测线在fcc中是否有种别Tips
-						String where = "((s_sourceType='1201' AND t_lifecycle<>1) OR s_sourceType='2001')";
-                        where += " AND (id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + record.getLink_pid() + "'))";
-                        String query = "select * from tips_index where " + where;
+//						String where = "((t.s_sourceType='1201' AND t.t_lifecycle<>1) OR t.s_sourceType='2001')";
+//                        where += " AND (t.id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE t.id=l.id and L.LINK_ID = '" + record.getLink_pid() + "'))";
+//                        String query = "select * from tips_index t where " + where;
+						String query = "WITH TMP AS\n" +
+                                " (SELECT ID\n" +
+                                "    FROM TIPS_INDEX T\n" +
+                                "   WHERE T.ID = '" + record.getLink_pid() + "'\n" +
+                                "     AND T.S_SOURCETYPE = '2001'\n" +
+                                "  UNION\n" +
+                                "  SELECT ID\n" +
+                                "    FROM TIPS_INDEX T\n" +
+                                "   WHERE T.S_SOURCETYPE = '1201'\n" +
+                                "     AND T.T_LIFECYCLE <> 1\n" +
+                                "     AND EXISTS (SELECT 1\n" +
+                                "            FROM TIPS_LINKS L\n" +
+                                "           WHERE T.ID = L.ID\n" +
+                                "             AND L.LINK_ID = '" + record.getLink_pid() + "'))\n" +
+                                "SELECT *\n" +
+                                "  FROM TIPS_INDEX T\n" +
+                                " WHERE EXISTS (SELECT 1 FROM TMP TT WHERE TT.ID = T.ID)";
                         List<TipsDao> snapotList = operator.query(query);
 						int kind = 0;// 种别直接在FCC库中获取
 						int fc = 0;// FC直接在GDB中获取
@@ -1289,8 +1306,8 @@ public class TipsUpload {
 	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
 		String collecorUserId = "AAA";
 
-        String where = "stage=1 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE L.LINK_ID = '" + linkPid + "') AND ROWNUM = 1";
-        String query = "select * from tips_index where " + where;
+        String where = "t.stage=1 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE t.id=l.id AND L.LINK_ID = '" + linkPid + "') AND ROWNUM = 1";
+        String query = "select * from tips_index t where " + where;
         List<TipsDao> relateTips = operator.query(query);
         for (TipsDao snapshot : relateTips) {
             collecorUserId = String.valueOf(snapshot.getHandler());

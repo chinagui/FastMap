@@ -1152,10 +1152,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			//需要进行tips差分
 			allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
-			
-			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
-			return rowkey;
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
@@ -1167,7 +1164,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 htab.close();
             }
         }
-
+        //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
+		TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+        return rowkey;
 	}
 
 	/**
@@ -1556,7 +1555,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		if (jsonInfo.containsKey("old")) {
 
 			put.addColumn("data".getBytes(), "old".getBytes(), jsonInfo
-					.getJSONArray("old").toString().getBytes());
+					.getJSONObject("old").toString().getBytes());
 		}
 		return put;
 	}
@@ -1629,7 +1628,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 			operator.update(solrIndexList);
             //solr.addTips(solrIndexList);
-			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(tipsConn);
@@ -1641,6 +1639,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
             DbUtils.commitAndCloseQuietly(tipsConn);
         }
+        //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
+        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -1877,8 +1877,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             htab.put(puts);
            
             operator.update(solrIndexList);
-           // solr.addTips(solrIndexList);
-            TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(tipsConn);
@@ -1890,7 +1888,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
             DbUtils.commitAndCloseQuietly(tipsConn);
 		}
-
+        //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
+        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
     }
 
 
@@ -2075,9 +2074,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             track = this.tipSaveUpdateTrack(track, track.getT_lifecycle());
 
 //			track = addTrackInfo(user, track, date);
+            JSONObject trackJson2 = JSONObject.fromObject(track);
 			JSONObject newTrack = JSONObject.fromObject(track);
 
-			put.addColumn("data".getBytes(), "track".getBytes(), track
+			put.addColumn("data".getBytes(), "track".getBytes(), trackJson2
 					.toString().getBytes());
 
 			newPut.addColumn("data".getBytes(), "track".getBytes(), newTrack

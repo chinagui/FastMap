@@ -186,7 +186,7 @@ public class DataPrepareController extends BaseController {
 	}
 	
 	/**
-	 * 精编保存接口
+	 * 库差分接口
 	 * @param request
 	 * @return
 	 * @throws ServletException

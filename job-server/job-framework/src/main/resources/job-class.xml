@@ -85,9 +85,9 @@
 		class="com.navinfo.dataservice.job.statics.manJob.DayPoiJob"
 		request="com.navinfo.dataservice.job.statics.manJob.DayPoiStatJobRequest" >
 	</type>
-	<type name="poiMonthStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJobRequest" >
+	<type name="monthPoiStat"
+		class="com.navinfo.dataservice.job.statics.manJob.MonthPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.MonthPoiJobRequest" >
 	</type>
 	<type name="DealershipTableAndDbDiffJob"
 		class="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJob"

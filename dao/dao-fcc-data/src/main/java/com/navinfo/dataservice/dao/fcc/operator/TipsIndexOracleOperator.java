@@ -369,13 +369,26 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 		List<TipsDao> map = (List<TipsDao>) page.getResult();
 		if (map.size() > 0) {
-			page.setResult(map);
+			List<TipsDao> result = loadHbasePropertiesByList(map);
+			page.setResult(result);
 		} else {
 			page.setResult(new ArrayList<TipsDao>());
 		}
 		return page;
 	}
 
+	private List<TipsDao> loadHbasePropertiesByList(List<TipsDao> allTips) throws Exception{
+		List<TipsDao> result = new ArrayList<>();
+		
+		for(TipsDao tip:allTips){
+			Map<String,TipsDao> tipInfo = new HashMap<>();
+			tipInfo.put(tip.getId(), tip);
+			result.addAll(loadHbaseProperties(tipInfo));
+		}
+		
+		return result;
+	}
+	
 
 	private List<TipsDao> loadHbaseProperties(Map<String, TipsDao> map) throws Exception{
     	List<TipsDao> result = new ArrayList<>();

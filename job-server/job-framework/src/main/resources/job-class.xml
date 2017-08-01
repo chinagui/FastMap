@@ -110,4 +110,8 @@
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>
+	<type name="dayPlanJob"
+		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
+	</type>
 	</mapping>

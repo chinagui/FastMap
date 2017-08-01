@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -13,6 +16,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.apache.uima.pear.util.FileUtil;
+import org.sqlite.SQLiteConfig;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
@@ -50,6 +55,62 @@ public class ComputeRegionMeshBoundary {
 		},regionId);
 	}
 	
+	public static void createSqliteDb(String dir,String fileName,Map<Integer,Set<String>> regionMeshes)throws Exception{
+		File file = new File(dir);
+
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		file.mkdirs();
+
+		// load the sqlite-JDBC driver using the current class loader
+		Class.forName("org.sqlite.JDBC");
+
+		Connection sqliteConn = null;
+
+		// enabling dynamic extension loading
+		// absolutely required by SpatiaLite
+		SQLiteConfig config = new SQLiteConfig();
+		config.enableLoadExtension(true);
+
+		// create a database connection
+		sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
+				+ "/regionBoundary.sqlite", config.toProperties());
+		Statement stmt = sqliteConn.createStatement();
+		stmt.setQueryTimeout(30); // set timeout to 30 sec.
+
+		// loading SpatiaLite
+		stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
+
+		// enabling Spatial Metadata
+		// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
+		// GEOMETRY_COLUMNS
+		stmt.execute("SELECT InitSpatialMetadata()");
+
+		sqliteConn.setAutoCommit(false);
+		
+		//create table
+		stmt.execute("create table region_boundary(region_id text primary key)");
+		stmt.execute("select addgeometrycolumn('region_boundary','boundary',4326,'GEOMETRY','XY')");//add GEOMETRY column
+		stmt.execute("select createspatialindex('region_boundary','boundary')");
+		log.info("table created.");
+		//insert rows
+		String sql = "insert into region_boundary values(?, GeomFromText(?, 4326))";
+		PreparedStatement prep = sqliteConn.prepareStatement(sql);
+		for(Entry<Integer,Set<String>> entry:regionMeshes.entrySet()){
+			prep.setString(1, String.valueOf(entry.getKey()));
+			Geometry geo = MeshUtils.meshes2Jts(entry.getValue());
+			prep.setString(2, geo.toText());
+			prep.executeUpdate();
+			log.info("region:"+entry.getKey()+" inserted");
+		}
+		sqliteConn.commit();
+		prep.close();
+		stmt.close();
+		sqliteConn.close();
+	}
+	
 	/**
 	 * @param args
 	 */
@@ -61,12 +122,12 @@ public class ComputeRegionMeshBoundary {
 					DbConnectConfig.createConnectConfig(tiInfo.getConnectParam()));
 			conn = schema.getPoolDataSource().getConnection();
 			int[] regionIds = new int[]{13};
-			Map<Integer,Set<String>> regionGrids = new HashMap<Integer,Set<String>>();
+			Map<Integer,Set<String>> regionMeshes = new HashMap<Integer,Set<String>>();
 			for(int i:regionIds){
-				regionGrids.put(i, getSingleRegionMeshes(conn,i));
+				regionMeshes.put(i, getSingleRegionMeshes(conn,i));
 			}
 			JSONArray ja = new JSONArray();
-			for(Entry<Integer,Set<String>> entry:regionGrids.entrySet()){
+			for(Entry<Integer,Set<String>> entry:regionMeshes.entrySet()){
 				JSONObject jo = new JSONObject();
 				jo.put("regionId", entry.getKey());
 				Geometry geo = MeshUtils.meshes2Jts(entry.getValue());

@@ -951,9 +951,15 @@ public class TipsController extends BaseController {
              
              int dbId = jsonReq.getInt("dbId");
              
+             int programType = jsonReq.getInt("programType");
+             
+			if (id.isEmpty() || buffer == 0 || subTaskId == 0 || programType == 0) {
+				throw new IllegalArgumentException("参数错误");
+			}
+
              TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchPoiRelateTips(id, subTaskId, buffer, dbId);
+			JSONArray array = selector.searchPoiRelateTips(id, subTaskId, buffer, dbId, programType);
              
              return new ModelAndView("jsonView", success(array));
 

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -272,5 +273,13 @@ public interface ManApi{
      * 
      * */
     public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception;
+    
+    /**
+	 * 查询MAN_TIMELINE
+	 * objName:program,task,subtask,infor
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
 }
 

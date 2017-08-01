@@ -36,6 +36,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -445,5 +446,15 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception {
 		return ProgramService.getInstance().queryRudeSubTaskBySubTask(subTaskId);
+	}
+	
+	/**
+	 * 查询MAN_TIMELINE
+	 * objName:program,task,subtask,infor
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
+		return TimelineService.queryManTimelineByObjName(objName);
 	}
 }

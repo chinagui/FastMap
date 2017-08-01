@@ -3,5 +3,9 @@
 	<group name="poiDayStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsGroupStarter">
 		<job name="poiDayStatics"/>
 	</group>
+	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
+		<job name="monthPoiStat"/>
+		<job name="poiDayStat"/>
+	</group>
 	
 </mapping>

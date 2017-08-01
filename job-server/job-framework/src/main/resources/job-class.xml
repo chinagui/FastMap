@@ -110,7 +110,7 @@
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>
-	<type name="dayPlanJob"
+	<type name="dayPlanStat"
 		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
 		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
 	</type>

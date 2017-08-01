@@ -281,7 +281,7 @@ public class LogWriter {
 				data.put("result", result);
 				data.put("log", "");
 			} else {
-				data.put("result", 0);
+				data.put("result", -1);
 				data.put("log", "新增已存在-接边履历重复");
 			}
 			return data;

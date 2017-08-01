@@ -19,6 +19,7 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -233,4 +234,13 @@ public class taskTest extends InitApplication{
 		System.out.println(data);
 	}
 	
+	@Test
+	public void test01() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		String objName = "subtask";
+		Map<Long, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		System.out.println(data.toString());
+		
+	}
 }

@@ -1939,6 +1939,7 @@ public class DataEditService {
 		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			StringBuilder sb = new StringBuilder();
 			boolean flag = false;
+			boolean need2Degree = false;//需要两公里扩圈
 			Geometry point = null;
 			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
 				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
@@ -1950,17 +1951,18 @@ public class DataEditService {
 					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
 					point = new WKTReader().read(wkt);
 					sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+					need2Degree = true;
+					assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 					point = point.buffer(GeometryUtils.convert2Degree(2000));
 				}else{
-					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
+					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p,ad_admin ad ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
-						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						need2Degree = true;
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
 						point = new WKTReader().read(wkt);
@@ -1974,10 +1976,12 @@ public class DataEditService {
 			if(flag){
 				pstmt.setString(1, poiNum);
 			}else{
-			    String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
-				Clob geom = ConnectionUtil.createClob(conn);			
-				geom.setString(1, wkt);
-			    pstmt.setClob(1,geom);
+				if(need2Degree){
+					String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+					Clob geom = ConnectionUtil.createClob(conn);			
+					geom.setString(1, wkt);
+				    pstmt.setClob(1,geom);
+				}
 			}
 			rs = pstmt.executeQuery();
 
@@ -2006,8 +2010,9 @@ public class DataEditService {
 	 * @param name
 	 * @param address
 	 * @param telephone
+	 * @param need2Degree 需要2公里扩圈 
 	 */
-	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone){
+	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone,boolean need2Degree){
 		if(StringUtils.isNotBlank(name)){
 			sb.append(", ix_poi_name pn ");
 		}
@@ -2017,7 +2022,10 @@ public class DataEditService {
 		if(StringUtils.isNotBlank(telephone)){
 			sb.append(", ix_poi_contact pc ");
 		}
-		sb.append("WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" WHERE 1=1 ");
+		if(need2Degree){
+			sb.append("AND sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		}
 		if(StringUtils.isNotBlank(name)){
 			sb.append("AND p.pid = pn.poi_pid AND pn.name_class = 1 AND pn.name_type  = 2 AND pn.lang_code = 'CHI'"
 					+ " AND pn.name LIKE '%"+name+"%' ");

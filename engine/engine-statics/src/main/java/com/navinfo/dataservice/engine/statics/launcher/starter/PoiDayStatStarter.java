@@ -10,12 +10,8 @@ import com.navinfo.dataservice.engine.statics.launcher.StatJobStarter;
  */
 public class PoiDayStatStarter extends StatJobStarter {
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.statics.launcher.StatJobStarter#jobType()
-	 */
 	@Override
 	public String jobType() {
-		// TODO Auto-generated method stub
 		return "poiDayStat";
 	}
 

@@ -82,8 +82,8 @@
 		request="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJobRequest" >
 	</type>
 	<type name="poiDayStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJobRequest" >
+		class="com.navinfo.dataservice.job.statics.manJob.DayPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPoiStatJobRequest" >
 	</type>
 	<type name="poiMonthStat"
 		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"

@@ -225,11 +225,18 @@ public class PoiSaveTest {
 	
 	@Test
 	public void testPoiSave() throws Exception{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"longitude\":116.53563993930817,\"latitude\":40.12263193681172,\"x_guide\":116.47556321879917,\"y_guide\":40.012627581597485,\"linkPid\":88026353,\"name\":\"555\",\"kindCode\":\"110200\"}}";
+		String parameter = "{\"command\":\"BATCHMOVE\",\"type\":\"IXPOI\",\"dbId\":13,\"subtaskId\":114,\"data\":[{\"location\":[116.43889,39.94855],"
+				+ "\"guidePoint\":[116.43889,39.94864099308741],\"guideLink\":41575389,\"pid\":509000133},{\"location\":[116.655,39.927],"
+				+ "\"guidePoint\":[116.4551,39.92487],\"guideLink\":476052,\"pid\":2806}]}}";
+		
+		
 		PoiSave ps = new PoiSave();
 		JSONObject res = ps.save(parameter, 2);
 		System.out.println(res);
 	}
+	
+	
+	
 	
 	
 }

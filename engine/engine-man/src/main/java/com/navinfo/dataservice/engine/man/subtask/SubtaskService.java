@@ -659,7 +659,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -686,6 +686,7 @@ public class SubtaskService {
 						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
+						subtask.setQualityMethod(rs.getInt("QUALITY_METHOD"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -845,13 +846,7 @@ public class SubtaskService {
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
-						int qualityMethod=rs.getInt("QUALITY_METHOD");
-						JSONArray qualityMethodArray=new JSONArray();
-						if(qualityMethod==3){
-							qualityMethodArray.add(1);
-							qualityMethodArray.add(2);
-						}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
-						subtask.put("qualityMethod", qualityMethodArray);
+						
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -934,6 +929,15 @@ public class SubtaskService {
 					result.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
 					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
+					
+					int qualityMethod=subtaskQuality.getQualityMethod();
+					JSONArray qualityMethodArray=new JSONArray();
+					if(qualityMethod==3){
+						qualityMethodArray.add(1);
+						qualityMethodArray.add(2);
+					}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
+					result.put("qualityMethod", qualityMethodArray);
+					
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
 					if(userInfo!=null){
 						result.put("qualityExeUserName",userInfo.getUserRealName());
@@ -1920,17 +1924,39 @@ public class SubtaskService {
 			
 			//获取用户所在组
 			List<Integer> userGroup = UserInfoOperation.getUserGroup(conn, (int)userId);
-			String groupSql="";
-			if(userGroup!=null&&!userGroup.isEmpty()){
-				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
+			//modify by songhe
+			//针对专项月编子任务type = 7 的情况，单独需要按批次进行分类操作，并在每条数据里面返回批次lot的结果
+			//只有type = 7 的情况下返回正常的库里面存的批次，其他类型的子任务批次全部赋值为0
+			StringBuffer sb = new StringBuffer();
+			sb.append(" SELECT T.STAGE, T.TYPE, T.LOT, COUNT(1) TYPE_COUNT  FROM (");
+			sb.append(" SELECT T.STAGE, T.TYPE, TK.LOT FROM SUBTASK T, TASK TK");
+			sb.append(" WHERE (T.EXE_USER_ID = "+userId);
+			if(userGroup != null && !userGroup.isEmpty()){
+				sb.append(" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")"));
 			}
-			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
-					+ "  FROM SUBTASK T"
-					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
-					+ "   AND T.STATUS = 1"
-//					+ "   AND T.STAGE != 0"
-					+ " GROUP BY T.STAGE, T.TYPE"
-					+ " ORDER BY T.STAGE, T.TYPE";
+			sb.append(" )AND T.STATUS = 1 AND T.TYPE = 7 AND T.TASK_ID = TK.TASK_ID");
+			sb.append(" UNION ALL");
+			sb.append(" SELECT T.STAGE, T.TYPE, 0 FROM SUBTASK T");
+			sb.append(" WHERE (T.EXE_USER_ID = "+userId);
+			if(userGroup != null && !userGroup.isEmpty()){
+				sb.append(" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")"));
+			}
+			sb.append(") AND T.STATUS = 1 AND T.TYPE != 7) T");
+			sb.append(" GROUP BY T.STAGE, T.TYPE, T.LOT");
+			sb.append(" ORDER BY T.STAGE, T.TYPE");
+			String sql = sb.toString();
+			
+//			String groupSql="";
+//			if(userGroup!=null&&!userGroup.isEmpty()){
+//				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
+//			}
+//			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
+//					+ "  FROM SUBTASK T"
+//					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
+//					+ "   AND T.STATUS = 1"
+////					+ "   AND T.STAGE != 0"
+//					+ " GROUP BY T.STAGE, T.TYPE"
+//					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
 			log.info("staticWithType swl:" + sql);
 			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
@@ -1946,7 +1972,7 @@ public class SubtaskService {
 						int type=rs.getInt("TYPE");
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
-//						int lot = rs.getInt("LOT");
+						int lot = rs.getInt("LOT");
 						String name="";
 //						if(stage==1){name+="日编 - ";}
 //						else if(stage==0){name+="采集 - ";}
@@ -1962,18 +1988,18 @@ public class SubtaskService {
 						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
 						else if(type==7){name+="POI专项_月编";
-//						if(lot == 0){
-//							name += "(无批次)";
-//						}else if(lot == 1){name += "(一批)";}
-//						 else if(lot == 2){name += "(二批)";}
-//						 else if(lot == 3){name += "(三批)";}
-//						 else{name += "("+lot+"批)";}
+						if(lot == 0){
+							name += "(无批次)";
+						}else if(lot == 1){name += "(一批)";}
+						 else if(lot == 2){name += "(二批)";}
+						 else if(lot == 3){name += "(三批)";}
+						 else{name += "("+lot+"批)";}
 						}
 						else if(type==8){name+="道路_Grid精编";}
 						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
-//						subResult.put("lot", lot);
+						subResult.put("lot", lot);
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);
@@ -3653,19 +3679,20 @@ public class SubtaskService {
 				tipsNum += Integer.parseInt(map.get("finished").toString());
 				tipsNum += Integer.parseInt(map.get("unfinished").toString());
 			}
+			List<Map> resultReturn = new ArrayList<Map>();
 			//从统计信息中移除已规划的gird
 			for(int i = 0; i < result.size(); i++){
 				Map<String, Object> map = result.get(i);
 				int gridId = Integer.parseInt(map.get("gridId").toString());
-				if(grids.contains(gridId)){
-					result.remove(i);
+				if(!grids.contains(gridId)){
+					resultReturn.add(map);
 				}
 			}
 			
 			//从移除已规划数据的list中统计未规划的grid和tips数量
-			int unPlanGridNum = result.size();
+			int unPlanGridNum = resultReturn.size();
 			int unPlanTipsNum = 0;
-			for(Map<String, Object> map : result){
+			for(Map<String, Object> map : resultReturn){
 				convertList.add(map);
 				unPlanTipsNum += Integer.parseInt(map.get("unfinished").toString());
 //				unPlanTipsNum += Integer.parseInt(map.get("finished").toString());

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips.solrquery;
 
 import java.util.*;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -451,7 +452,7 @@ public class TipsRequestParamSQL {
 				+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
 	}
 
-	public OracleWhereClause getSnapShot(String parameter) throws Exception {
+	public OracleWhereClause getSnapShot(String parameter, java.sql.Connection tipsConn) throws Exception {
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 		int workStatus = jsonReq.getInt("workStatus");
 		int subtaskId = jsonReq.getInt("subtaskId");
@@ -466,7 +467,7 @@ public class TipsRequestParamSQL {
 
 		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
-		values.add(subtask.getGeometry());
+        values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
         StringBuilder taskBuilder = null;
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
@@ -529,7 +530,7 @@ public class TipsRequestParamSQL {
 		return new OracleWhereClause(builder.toString(), values);
 	}
 
-    public OracleWhereClause getTaskRender(String parameter) throws Exception {
+    public OracleWhereClause getTaskRender(String parameter, java.sql.Connection tipsConn) throws Exception {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
         JSONArray workStatus = jsonReq.getJSONArray("workStatus");
         int subtaskId = jsonReq.getInt("subtaskId");
@@ -542,7 +543,7 @@ public class TipsRequestParamSQL {
 
         builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
         List<Object> values = new ArrayList<Object>();
-        values.add(subtask.getGeometry());
+        values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
         StringBuilder taskBuilder = null;
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
@@ -596,13 +597,15 @@ public class TipsRequestParamSQL {
                 statusBuilder.append(" OR ");
             }
             statusBuilder.append("t_dEditStatus=0");
-        } else if (workStatus.contains(TipsWorkStatus.WORK_HAS_PROBLEM)
+        }
+        if (workStatus.contains(TipsWorkStatus.WORK_HAS_PROBLEM)
                 || workStatus.contains(TipsWorkStatus.CHECK_HAS_PROBLEM)) {// 有问题待确认
             if(statusBuilder.length() > 0) {
                 statusBuilder.append(" OR ");
             }
             statusBuilder.append("t_dEditStatus=1");
-        } else if (workStatus.contains(TipsWorkStatus.WORK_HAS_FINISHED)
+        }
+        if (workStatus.contains(TipsWorkStatus.WORK_HAS_FINISHED)
                 || workStatus.contains(TipsWorkStatus.CHECK_HAS_FINISHED)) {// 已作业,已质检
             if(statusBuilder.length() > 0) {
                 statusBuilder.append(" OR ");
@@ -652,7 +655,7 @@ public class TipsRequestParamSQL {
 	}
 
 	// 获取Tips个数列表 tip/getStats 接口参数
-	public OracleWhereClause getTipStat(String parameter) throws Exception {
+	public OracleWhereClause getTipStat(String parameter, java.sql.Connection tipsConn) throws Exception {
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 //		JSONArray grids = jsonReq.getJSONArray("grids");
 //		String wkt = GridUtils.grids2Wkt(grids);
@@ -667,8 +670,7 @@ public class TipsRequestParamSQL {
 
 		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
-		values.add(subtask.getGeometry());
-
+		values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
 		Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
 		StringBuilder taskBuilder = null;
@@ -843,10 +845,24 @@ public class TipsRequestParamSQL {
 		return builder;
 	}
 
- 	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end) {
-		  String query = String.format(
-				"SELECT * FROM TIPS_INDEX WHERE T_DATE > to_timestamp('%s','yyyy-mm-dd') AND T_DATE < to_timestamp('%s','yyyy-mm-dd') AND T_TIPSTATUS = 2 AND S_QSUBTASKID=%d AND S_SOURCETYPE IN (2001,2101)",
-				begin, end, subTaskId);
-		  return query;
+	public String getGpsAndDeleteLinkQuery(int subTaskId, String begin, String end, JSONObject obj) {
+		StringBuilder query = new StringBuilder();
+		
+		//String order = obj.getString("order");
+		
+		int programType = obj.getInt("programType");
+		
+		query.append("SELECT * FROM TIPS_INDEX WHERE T_TIPSTATUS = 2 AND S_SOURCETYPE IN (2001,2101)");
+		
+		if(programType == TaskType.PROGRAM_TYPE_Q){
+			query.append(" AND S_QSUBTASKID = " + subTaskId);
+		}else if(programType == TaskType.PROGRAM_TYPE_M){
+			query.append(" AND S_MSUBTASKID = " + subTaskId);
+		}
+		
+		query.append(" AND T_DATE >= to_timestamp('" + begin + " 00:00:0.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
+		query.append(" AND T_DATE <= to_timestamp('" + end + " 23:59:59.000000000','yyyy-mm-dd hh24:mi:ss.ff9')");
+
+		return query.toString();
 	}
 }

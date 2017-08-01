@@ -2335,10 +2335,9 @@ public class DataEditService {
 				String history = addDataMap.get("history").toString();
 				log.info("上传的增量数据序号即resultID为：" + resultId+"上传的变更履历为：" + history);
 				//若补充数据上传文件中“序号”没有值且文件中“变更履历”的值必须为3(新增)，可以上传，否则不可上传文件
-				if(StringUtils.isNotBlank(resultId) || !"3".equals(history)){
+				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
 					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
 				}
-				
 				if(StringUtils.isBlank(resultId)){
 					continue;
 				}
@@ -2354,7 +2353,7 @@ public class DataEditService {
 				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
 					dealStatus = (int) statusMap.get("dealStatus");
-					if("2".equals(dealStatus)){
+					if(2 == dealStatus){
 						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}

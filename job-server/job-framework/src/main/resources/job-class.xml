@@ -110,8 +110,15 @@
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>
+<<<<<<< .mine
 	<type name="subtaskStat"
 		class="com.navinfo.dataservice.job.statics.manJob.SubtaskJob"
 		request="com.navinfo.dataservice.job.statics.manJob.SubtaskJobRequest" >
 	</type>
+=======
+	<type name="dayPlanStat"
+		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
+	</type>
+>>>>>>> .theirs
 	</mapping>

@@ -525,25 +525,12 @@ public class RdLinkExporter {
 			style = 12;
 			count+=1;
 		}
-		/*if (formList.contains(22)) {
-			style = 14;
+		//风景路线
+		if (formList.contains(60)) {
+			style = 17;
 			count+=1;
-		}*/
-
-		/*if (formList.contains(24)) {
-			
-			style = 14;
-			count+=1;
-		}*/
-
-		/*if (formList.contains(30)) {
-			style = 14;
-			count+=1;
-		}*/
-
-		/*if (formList.contains(34)) {
-			return 12;
-		}*/
+		}
+		
 
 		List<Integer> styleList = new ArrayList<>();
 //		System.out.println("styleFactors:  "+styleFactors);
@@ -573,6 +560,8 @@ public class RdLinkExporter {
 			style = 37;
 			count+=1;
 		}
+		
+		
 
 		if (count >= 2) {
 			if(flag){

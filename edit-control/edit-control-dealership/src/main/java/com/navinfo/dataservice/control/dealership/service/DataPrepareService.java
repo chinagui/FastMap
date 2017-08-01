@@ -391,6 +391,7 @@ public class DataPrepareService {
 		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 		List<CpRegionProvince> cpRegionList = api.listCpRegionProvince();
 		Map<String, Integer> cpRegionMap=new HashMap<String, Integer>();
+		Map<Integer,Integer> oldSourceIdMap=new HashMap<Integer,Integer>();
 		for(CpRegionProvince region:cpRegionList){
 			cpRegionMap.put(region.getProvince(), region.getRegionId());
 		}
@@ -408,6 +409,14 @@ public class DataPrepareService {
 			if(resultId==0&&oldSourceId==0){
 				log.info("表表差分结果中存在“UUID”和“旧一览表ID”都为0或字符串，数据错误");
 				throw new Exception("表表差分结果中存在“UUID”和“旧一览表ID”都为0或字符串，数据错误");
+			}
+			if(oldSourceId!=0){
+				if(oldSourceIdMap.containsKey(oldSourceId)){
+					log.info("表表差分结果中“旧一览表ID”不唯一,旧一览表ID="+oldSourceId);
+					throw new Exception("表表差分结果中“旧一览表ID”不唯一,旧一览表ID="+oldSourceId);
+				}else{
+					oldSourceIdMap.put(oldSourceId, oldSourceId);
+				}
 			}
 			if(resultId!=0){
 				if(!resultObjSet.containsKey(resultId)){

@@ -51,12 +51,55 @@ public class TipsOperateTest extends InitApplication {
 
 	@Test
 	public void testEdit() {
+		
+		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"022001346610674F2C4822904C7C3E2C8CC5B3\",\"pid\":508000041,\"editStatus\":2,\"editMeth\":2}";
+		
+		
 
 		TipsOperator operate = new TipsOperator();
 
 		try {
-			operate.update("021901b0ad67e145be477bb1d2202181edfc84", 0, null,
-					"m", 0 ,0 );
+			 if (StringUtils.isEmpty(parameter)) {
+	                throw new IllegalArgumentException("parameter参数不能为空。");
+	            }
+			  JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+	            String rowkey = jsonReq.getString("rowkey");
+
+	            //int stage = jsonReq.getInt("stage");
+
+	            int handler = jsonReq.getInt("handler");
+
+	            String mdFlag= jsonReq.getString("mdFlag");
+
+	            int editStatus = jsonReq.getInt("editStatus");
+	            int editMeth = jsonReq.getInt("editMeth");
+
+	            if (StringUtils.isEmpty(rowkey)) {
+	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
+	            }
+
+	            if (StringUtils.isEmpty(mdFlag)) {
+	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+	            }
+
+	            //值域验证
+	            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+	                throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+	            }
+
+
+	            String pid = null;
+
+	            if (jsonReq.containsKey("pid")) {
+	                pid = jsonReq.getString("pid");
+	            }
+
+	            TipsOperator op = new TipsOperator();
+
+	            op.update(rowkey, handler, pid, mdFlag, editStatus, editMeth);
+	            
+	            System.out.println("----------------修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -113,33 +156,35 @@ public class TipsOperateTest extends InitApplication {
 		try{
 
 		// String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
-		 String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
-		 if (StringUtils.isEmpty(parameter)) {
-             throw new IllegalArgumentException("parameter参数不能为空。");
-         }
-		    
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			//{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+		    String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
+		    parameter = "{\"mdFlag\":\"d\",\"handler\":1315,\"data\":[{\"rowkey\":\"028002b4eb017e06fd4690a2473409a33bc39b\",\"editStatus\"" +
+                    ":2,\"editMeth\":1}]}";
+            if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+            }
 
-			JSONArray data = jsonReq.getJSONArray("data");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int handler = jsonReq.getInt("handler");
-			
-			String mdFlag= jsonReq.getString("mdFlag");
-			
-			 if (data==null||data.size()==0) {
-	                throw new IllegalArgumentException("参数错误:data不能为空");
-	         }
-			
-			 if (StringUtils.isEmpty(mdFlag)) {
-	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
-	         }
-			
-			  //值域验证
-         if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
-         	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
-         }
+            //{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+
+            JSONArray data = jsonReq.getJSONArray("data");
+
+            int handler = jsonReq.getInt("handler");
+
+            String mdFlag= jsonReq.getString("mdFlag");
+
+             if (data==null||data.size()==0) {
+                    throw new IllegalArgumentException("参数错误:data不能为空");
+             }
+
+             if (StringUtils.isEmpty(mdFlag)) {
+                    throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+             }
+
+                  //值域验证
+             if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+                 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+             }
 
 			TipsOperator op = new TipsOperator();
 

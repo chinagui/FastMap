@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.fcc;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
@@ -222,7 +223,7 @@ public class SolrController {
 
 			builder.append(" order by t_operateDate desc");
 
-			List<TipsDao> sdList = operator.query(builder.toString(), wkt);
+			List<TipsDao> sdList = operator.query(builder.toString(), ConnectionUtil.createClob(conn, wkt));
 
 			for (TipsDao tipsDao:sdList) {
                 JSONObject snapshot = this.tipsFromJSONObject(tipsDao);

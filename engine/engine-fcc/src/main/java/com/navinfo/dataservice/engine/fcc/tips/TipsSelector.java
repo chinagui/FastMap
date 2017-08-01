@@ -67,13 +67,10 @@ public class TipsSelector {
 		JSONArray array = new JSONArray();
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
-		Connection oracleConn = null;
+		String sql = param.getTipsWebSql(wkt);
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
-            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
-            String sql = param.getTipsWebSql(wkt);
-			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(
-					sql, ConnectionUtil.createClob(oracleConn, wkt));
-
+			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(sql, wkt);
 			for (TipsDao tip : tips) {
 				JSONObject snapshot = JSONObject.fromObject(tip);
 				snapshot.put("t", 1);
@@ -108,7 +105,7 @@ public class TipsSelector {
 			if (jsonReq.containsKey("pType")) {
 				pType = jsonReq.getString("pType");
 			}
-            boolean isInTask = false;
+			boolean isInTask = false;
 			if (StringUtils.isEmpty(pType) || pType.equals("web")) {
 				JSONArray workStatus = null;
 				if (jsonReq.containsKey("workStatus")) {
@@ -125,6 +122,7 @@ public class TipsSelector {
                 if(workStatus.contains(TipsWorkStatus.TIPS_IN_TASK)) {
                     isInTask = true;
                 }
+
 			} else if (pType.equals("ms")) {
 				JSONArray noQFilter = null;
 				if (jsonReq.containsKey("noQFilter")) {
@@ -164,6 +162,7 @@ public class TipsSelector {
             if(snapshots == null || snapshots.size() == 0) {
                 return array;
             }
+
 			for (TipsDao tipsDao : snapshots) {
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 				JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
@@ -178,8 +177,7 @@ public class TipsSelector {
 
 				snapshot.setT(String.valueOf(type));
 
-				JSONObject geojson = JSONObject.fromObject(json
-						.getString("g_location"));
+				JSONObject geojson = JSONObject.fromObject(json.getString("g_location"));
 				// 渲染的坐标都是屏幕坐标
 				Geojson.coord2Pixel(geojson, z, px, py);
 
@@ -201,9 +199,9 @@ public class TipsSelector {
 				}
 
 				JSONObject deep = null;
-                if(json.containsKey("deep")) {
-                    deep = JSONObject.fromObject(json.getString("deep"));
-                }
+				if (json.containsKey("deep")) {
+					deep = JSONObject.fromObject(json.getString("deep"));
+				}
 
 				// fc预处理8001要求返回功能等级
 				if (type == 8001) {
@@ -217,16 +215,14 @@ public class TipsSelector {
 				}
 
 				// 20170412赵航输入，转为屏幕坐标
-				JSONObject g_guide = JSONObject.fromObject(json
-						.getString("g_guide"));
+				JSONObject g_guide = JSONObject.fromObject(json.getString("g_guide"));
 				Geojson.coord2Pixel(g_guide, z, px, py);
 
 				// 8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
 
 				// g字段重新赋值的（显示坐标：取Tips的geo）
-				if (type == 1604 || type == 1601 || type == 1602
-						|| type == 1605 || type == 1606 || type == 1607) {
+				if (type == 1604 || type == 1601 || type == 1602 || type == 1605 || type == 1606 || type == 1607) {
 
 					JSONObject deepGeo = deep.getJSONObject("geo");
 
@@ -238,8 +234,7 @@ public class TipsSelector {
 
 				if (type == 1201) {
 					m.put("c", String.valueOf(deep.getInt("kind")));
-				} else if (type == 2001 || type == 1901 || type == 2201
-						|| type == 2002) {
+				} else if (type == 2001 || type == 1901 || type == 2201 || type == 2002) {
 
 					JSONObject geo = deep.getJSONObject("geo");
 
@@ -259,14 +254,12 @@ public class TipsSelector {
 								// geoP
 								JSONObject geoP = pInfo.getJSONObject("geoP");
 								Geojson.coord2Pixel(geoP, z, px, py);
-								JSONArray geoPArray = geoP
-										.getJSONArray("coordinates");
+								JSONArray geoPArray = geoP.getJSONArray("coordinates");
 								allGeoPArray.add(geoPArray);
 
 								// access
 								String access = pInfo.getString("access");
-								JSONArray accessArray = TipsSelectorUtils
-										.getCrossStreetAccess(access);
+								JSONArray accessArray = TipsSelectorUtils.getCrossStreetAccess(access);
 								allAccessArray.add(accessArray);
 							}
 						}
@@ -284,7 +277,6 @@ public class TipsSelector {
 						|| type == 1310 || type == 1204 || type == 1311
 						|| type == 1308 || type == 1114 || type == 1115
                         || type == 1301 || type == 1302) {
-
 					if (deep.containsKey("agl")) {
 						m.put("c", String.valueOf(deep.getDouble("agl")));
 					}
@@ -320,8 +312,7 @@ public class TipsSelector {
 						JSONArray arr = deep.getJSONArray("info");
 						if (arr != null) {
 							for (Object object : arr) {
-								String info = JSONObject.fromObject(object)
-										.getString("info");
+								String info = JSONObject.fromObject(object).getString("info");
 								arrResult.add(info);
 							}
 						}
@@ -330,11 +321,9 @@ public class TipsSelector {
 
 					else if (type == 1109) {
 
-						String tp = TipsSelectorUtils.convertElecEyeKind(deep
-								.getInt("tp"));
+						String tp = TipsSelectorUtils.convertElecEyeKind(deep.getInt("tp"));
 
-						String loc = TipsSelectorUtils
-								.convertElecEyeLocation(deep.getInt("loc"));
+						String loc = TipsSelectorUtils.convertElecEyeLocation(deep.getInt("loc"));
 
 						double value = deep.getDouble("value");
 
@@ -374,8 +363,7 @@ public class TipsSelector {
 						boolean flag = false;
 						if (arr != null && arr.size() != 0) {
 							for (Object object : arr) {
-								JSONObject timeObj = JSONObject
-										.fromObject(object);
+								JSONObject timeObj = JSONObject.fromObject(object);
 								String time = timeObj.getString("time");
 								if (StringUtils.isEmpty(time)) {
 									flag = true;
@@ -398,9 +386,8 @@ public class TipsSelector {
 						m.put("d", String.valueOf(deep.getInt("se")));
 						m.put("e", String.valueOf(deep.getInt("value")));
 						m.put("f", String.valueOf(deep.getInt("flag")));
-					} else if (type == 1401 || type == 1402 || type == 1403
-							|| type == 1404 || type == 1406 || type == 1407
-							|| type == 1409 || type == 1410) {
+					} else if (type == 1401 || type == 1402 || type == 1403 || type == 1404 || type == 1406
+							|| type == 1407 || type == 1409 || type == 1410) {
 						m.put("d", deep.getString("ptn"));
 					}else if(type == 1301) {//20170731新增 车信返回进入要素
                         m.put("d", deep.getJSONArray("info"));
@@ -441,12 +428,9 @@ public class TipsSelector {
 					m.put("d", geoN.getJSONArray("coordinates"));
 				} else if (type == 1202) {
 					m.put("c", String.valueOf(deep.getInt("num")));
-				} else if (type == 1510 || type == 1514 || type == 1501
-						|| type == 1515 || type == 1502 || type == 1503
-						|| type == 1504 || type == 1505 || type == 1506
-						|| type == 1508 || type == 1513 || type == 1512
-						|| type == 1516 || type == 1507 || type == 1511
-						|| type == 1517 || type == 1509 || type == 1518
+				} else if (type == 1510 || type == 1514 || type == 1501 || type == 1515 || type == 1502 || type == 1503
+						|| type == 1504 || type == 1505 || type == 1506 || type == 1508 || type == 1513 || type == 1512
+						|| type == 1516 || type == 1507 || type == 1511 || type == 1517 || type == 1509 || type == 1518
 						|| type == 1520) {// 20170707 第十迭代新增1520
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 					Geojson.coord2Pixel(gSLoc, z, px, py);
@@ -455,8 +439,7 @@ public class TipsSelector {
 					m.put("c", gSLoc.getJSONArray("coordinates"));
 					m.put("d", gELoc.getJSONArray("coordinates"));
 
-					if (type == 1510 || type == 1507 || type == 1511
-							|| type == 1509) {
+					if (type == 1510 || type == 1507 || type == 1511 || type == 1509) {
 
 						m.put("e", deep.getString("name"));
 					} else if (type == 1518) {
@@ -476,21 +459,16 @@ public class TipsSelector {
 						String vtName = "";
 						// 类型拼接
 						for (Object vt : vts) {
-							vtName += "、"
-									+ TipsSelectorUtils
-											.convertUsageFeeVehicleType(Integer
-													.parseInt(String
-															.valueOf(vt)));
+							vtName += "、" + TipsSelectorUtils
+									.convertUsageFeeVehicleType(Integer.parseInt(String.valueOf(vt)));
 						}
 						if (StringUtils.isNotEmpty(vtName)) {
 
 							vtName = vtName.substring(1);
 						}
-						m.put("e", TipsSelectorUtils.convertUsageFeeType(tp)
-								+ "|" + time + "|" + vtName);
+						m.put("e", TipsSelectorUtils.convertUsageFeeType(tp) + "|" + time + "|" + vtName);
 					}
-				} else if (type == 1604 || type == 1601 || type == 1602
-						|| type == 1605 || type == 1606) {
+				} else if (type == 1604 || type == 1601 || type == 1602 || type == 1605 || type == 1606) {
 
 					m.put("c", geojson.getJSONArray("coordinates"));
 
@@ -503,8 +481,7 @@ public class TipsSelector {
 
 				else if (type == 1801 || type == 1806 || type == 8002) {
 
-					JSONObject feebackObj = JSONObject.fromObject(json
-							.getString("feedback"));
+					JSONObject feebackObj = JSONObject.fromObject(json.getString("feedback"));
 
 					JSONArray f_array = feebackObj.getJSONArray("f_array");
 
@@ -514,8 +491,7 @@ public class TipsSelector {
 						JSONObject feedback = f_array.getJSONObject(j);
 
 						if (feedback.getInt("type") == 6) {
-							JSONArray content = feedback
-									.getJSONArray("content");
+							JSONArray content = feedback.getJSONArray("content");
 
 							for (int i = 0; i < content.size(); i++) {
 								JSONObject obj = content.getJSONObject(i);
@@ -573,8 +549,7 @@ public class TipsSelector {
 							jsonObject.put("z", f.getInt("z"));
 							JSONObject geoJson = f.getJSONObject("geo");
 							Geojson.coord2Pixel(geoJson, z, px, py);
-							jsonObject.put("geo",
-									geoJson.getJSONArray("coordinates"));
+							jsonObject.put("geo", geoJson.getJSONArray("coordinates"));
 							cArray.add(jsonObject);
 						}
 					}
@@ -605,13 +580,12 @@ public class TipsSelector {
 
 					String tipdiffStr = json.getString("tipdiff");
 
-					if(!StringUtils.isEmpty(tipdiffStr)) {
+					if (!StringUtils.isEmpty(tipdiffStr)) {
 
 						tipdiff = JSONObject.fromObject(json.getString("tipdiff"));
 
 						// 坐标转换，需要根据类型转换为屏幕坐标
-						JSONObject convertGeoDiff = converDiffGeo(type, tipdiff, z,
-								px, py);
+						JSONObject convertGeoDiff = converDiffGeo(type, tipdiff, z, px, py);
 
 						if (convertGeoDiff != null) {
 							m.put("i", convertGeoDiff);
@@ -689,8 +663,7 @@ public class TipsSelector {
 
 				JSONObject info = JSONObject.fromObject(object);
 
-				if (info.getInt("type") == 1 || info.getInt("type") == 2
-						|| info.getInt("type") == 3) {
+				if (info.getInt("type") == 1 || info.getInt("type") == 2 || info.getInt("type") == 3) {
 
 					m.put("k", 1);
 
@@ -710,8 +683,8 @@ public class TipsSelector {
 	 */
 	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
 		// 2.1deep.time(一级属性)
-		if (type == 1304 || type == 1305 || type == 1203 || type == 1514
-				|| type == 1507 || type == 1517 || type == 1515 || type == 1516 || type == 1520) {
+		if (type == 1304 || type == 1305 || type == 1203 || type == 1514 || type == 1507 || type == 1517 || type == 1515
+				|| type == 1516 || type == 1520) {
 
 			if (!StringUtils.isEmpty(deep.getString("time"))) {
 
@@ -881,8 +854,7 @@ public class TipsSelector {
 	 * @author: y
 	 * @time:2017-2-20 下午2:02:17
 	 */
-	private void getOutNumAndGeo(int type, int z, double px, double py,
-			JSONObject m, JSONObject deep) {
+	private void getOutNumAndGeo(int type, int z, double px, double py, JSONObject m, JSONObject deep) {
 
 		JSONArray reusltArr = new JSONArray();
 
@@ -908,8 +880,7 @@ public class TipsSelector {
 					 * 
 					 * for (Object object3 : outArr) {
 					 */
-					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
-							py, out);
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, out);
 
 					reusltArr.add(obj);
 					// }
@@ -934,8 +905,7 @@ public class TipsSelector {
 
 					for (Object object3 : o_array) {
 
-						JSONObject obj = assembleOutNumAndGeoResultFromObj(z,
-								px, py, object3);
+						JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, object3);
 
 						reusltArr.add(obj);
 					}
@@ -961,8 +931,7 @@ public class TipsSelector {
 
 					JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
 
-					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
-							py, outObj);
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, outObj);
 
 					reusltArr.add(obj);
 
@@ -983,8 +952,7 @@ public class TipsSelector {
 
 				JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
 
-				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py,
-						outObj);
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, outObj);
 
 				reusltArr.add(obj);
 
@@ -1008,8 +976,7 @@ public class TipsSelector {
 
 					JSONObject outInfo = JSONObject.fromObject(object2);
 
-					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
-							py, outInfo);
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, outInfo);
 
 					reusltArr.add(obj);
 
@@ -1031,8 +998,7 @@ public class TipsSelector {
 
 				JSONObject outObj = dInfo.getJSONObject("f"); // 是个对象
 
-				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py,
-						outObj);
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px, py, outObj);
 
 				reusltArr.add(obj);
 
@@ -1056,8 +1022,7 @@ public class TipsSelector {
 	 * @author: y
 	 * @time:2017-2-20 下午2:06:29
 	 */
-	private JSONObject assembleOutNumAndGeoResultFromObj(int z, double px,
-			double py, Object object3) {
+	private JSONObject assembleOutNumAndGeoResultFromObj(int z, double px, double py, Object object3) {
 		JSONObject outInfo = JSONObject.fromObject(object3);
 
 		int num = outInfo.getInt("num");
@@ -1087,13 +1052,12 @@ public class TipsSelector {
 	 * @param z
 	 * @time:2017-2-13下午1:34:53
 	 */
-	private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
-			double px, double py) {
+	private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z, double px, double py) {
 
 		if (tipdiff == null || tipdiff.isEmpty())
 			return null;
 
-		if(!tipdiff.containsKey("diff_array")){
+		if (!tipdiff.containsKey("diff_array")) {
 			return null;
 		}
 
@@ -1107,8 +1071,7 @@ public class TipsSelector {
 
 			if (json.containsKey("geometry")) {
 
-				JSONObject geojson = JSONObject.fromObject(json
-						.getString("geometry"));
+				JSONObject geojson = JSONObject.fromObject(json.getString("geometry"));
 				// 渲染的坐标都是屏幕坐标
 				Geojson.coord2Pixel(geojson, z, px, py);
 
@@ -1218,8 +1181,7 @@ public class TipsSelector {
 
 			for (KeyValue kv : list) {
 				System.out.println(new String(kv.qualifier()));
-				JSONObject injson = JSONObject
-						.fromObject(new String(kv.value()));
+				JSONObject injson = JSONObject.fromObject(new String(kv.value()));
 
 				String key = new String(kv.qualifier());
 
@@ -1238,8 +1200,7 @@ public class TipsSelector {
 		return json;
 	}
 
-	public JSONArray searchDataByRowkeyNew(JSONArray rowkeyArray)
-			throws Exception {
+	public JSONArray searchDataByRowkeyNew(JSONArray rowkeyArray) throws Exception {
 		JSONArray data = new JSONArray();
 		for (int i = 0; i < rowkeyArray.size(); i++) {
 			String rowkey = rowkeyArray.getString(i);
@@ -1273,9 +1234,13 @@ public class TipsSelector {
 
 			for (KeyValue kv : list) {
 				String key = new String(kv.qualifier());
-				JSONObject injson = JSONObject.fromObject(new String(kv
-						.value()));
-				json.put(key, injson);
+				if (key.equals(TIP_OLD_KEY_NAME)) {
+					JSONArray arrayJson = JSONArray.fromObject(new String(kv.value()));
+					json.put(key, arrayJson);
+				} else {
+					JSONObject injson = JSONObject.fromObject(new String(kv.value()));
+					json.put(key, injson);
+				}
 				/*
 				 * if (key.equals("feedback")) { json.put("feedback", injson); }
 				 * else { json.putAll(injson); }
@@ -1316,26 +1281,22 @@ public class TipsSelector {
 		JSONObject jsonData = new JSONObject();
 
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
-		Connection oracelConn = null;
+
+		OracleWhereClause whereClause = param.getTipStat(parameter);
+		Connection oracelConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
-            oracelConn = DBConnector.getInstance().getTipsIdxConnection();
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
-					oracelConn);
-            OracleWhereClause whereClause = param.getTipStat(parameter, oracelConn);
-			long total = operator.querCount(
-					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
-							+ whereClause.getSql(), whereClause.getValues()
-							.toArray());
-			Map<Object, Object> dataMap = operator.groupQuery(
-					"select s_sourcetype,count(1) from tips_index where "
-							+ whereClause.getSql() + " group by s_sourcetype",
-					whereClause.getValues().toArray());
-            JSONArray data = new JSONArray();
-            for(Object key :dataMap.keySet()) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(key, dataMap.get(key));
-                data.add(jsonObject);
-            }
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracelConn);
+			long total = operator
+					.querCount("select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
+							+ whereClause.getSql(), whereClause.getValues().toArray());
+			Map<Object, Object> dataMap = operator.groupQuery("select s_sourcetype,count(1) from tips_index where "
+					+ whereClause.getSql() + " group by s_sourcetype", whereClause.getValues().toArray());
+			JSONArray data = new JSONArray();
+			for (Object key : dataMap.keySet()) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put(key, dataMap.get(key));
+				data.add(jsonObject);
+			}
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;
@@ -1369,7 +1330,8 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsDayTotal(int subtaskId, String wkt, int subTaskType,int handler, int isQuality, String statType) throws Exception {
+	public int getTipsDayTotal(int subtaskId, String wkt, int subTaskType, int handler, int isQuality, String statType)
+			throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
@@ -1377,8 +1339,9 @@ public class TipsSelector {
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
 			String query = param.getTipsDayTotal(subtaskId, subTaskType, handler, isQuality, statType);
 			return (int) operator.querCount(
-					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ " +
-                            "count(1) from tips_index where " + query, ConnectionUtil.createClob(conn, wkt));
+
+					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where " + query,
+					wkt);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -1405,14 +1368,13 @@ public class TipsSelector {
 
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
-		Connection oracleConn = null;
+
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 		List<TipsDao> tips = null;
 		try {
-            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
-            OracleWhereClause where = param.getSnapShot(parameter, oracleConn);
-			tips = new TipsIndexOracleOperator(oracleConn).query(
-					"select * from tips_index where " + where.getSql(), where
-							.getValues().toArray());
+			tips = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where " + where.getSql(),
+					where.getValues().toArray());
+
 		} finally {
 			DbUtils.closeQuietly(oracleConn);
 		}
@@ -1425,8 +1387,8 @@ public class TipsSelector {
 	private List<JSONObject> convertToJsonList(List<TipsDao> tips) {
 		List<JSONObject> tipsJsonList = new ArrayList<JSONObject>();
 		for (TipsDao tip : tips) {
-            JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-            JSONObject json = JSONObject.fromObject(tip, jsonConfig);
+			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+			JSONObject json = JSONObject.fromObject(tip, jsonConfig);
 			tipsJsonList.add(json);
 		}
 		return tipsJsonList;
@@ -1442,8 +1404,7 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-5-26 下午6:00:53
 	 */
-	public JSONArray convert2Snapshot(List<JSONObject> tips, int dbId, int type)
-			throws Exception {
+	public JSONArray convert2Snapshot(List<JSONObject> tips, int dbId, int type) throws Exception {
 
 		JSONArray jsonData = new JSONArray();
 
@@ -1453,16 +1414,14 @@ public class TipsSelector {
 
 		// 根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
-            if(!json.containsKey("deep")||StringUtils.isEmpty(json.getString("deep"))) {
-                continue;
-            }
+			if (!json.containsKey("deep") || StringUtils.isEmpty(json.getString("deep"))) {
+				continue;
+			}
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 			try {
-				if (type == 1201 || type == 1203 || type == 1101
-						|| type == 1109 || type == 1111 || type == 1113
-						|| type == 1202 || type == 1207 || type == 1208
-						|| type == 1304 || type == 1305 || type == 1308
+				if (type == 1201 || type == 1203 || type == 1101 || type == 1109 || type == 1111 || type == 1113
+						|| type == 1202 || type == 1207 || type == 1208 || type == 1304 || type == 1305 || type == 1308
 						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
 
@@ -1473,12 +1432,9 @@ public class TipsSelector {
 					}
 				}
 
-				else if (type == 1301 || type == 1407 || type == 1302
-						|| type == 1403 || type == 1401 || type == 1402
-						|| type == 1405 || type == 1406 || type == 1409
-						|| type == 1105 || type == 1107 || type == 1703
-						|| type == 1404 || type == 1804 || type == 1108
-						|| type == 1112 || type == 1303 || type == 1306
+				else if (type == 1301 || type == 1407 || type == 1302 || type == 1403 || type == 1401 || type == 1402
+						|| type == 1405 || type == 1406 || type == 1409 || type == 1105 || type == 1107 || type == 1703
+						|| type == 1404 || type == 1804 || type == 1108 || type == 1112 || type == 1303 || type == 1306
 						|| type == 1410) {
 					JSONObject f = deep.getJSONObject("in");
 					if (f != null && !f.isNullObject()) {
@@ -1493,12 +1449,9 @@ public class TipsSelector {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
 					}
-				} else if (type == 1604 || type == 1514 || type == 1515
-						|| type == 1502 || type == 1503 || type == 1504
-						|| type == 1505 || type == 1506 || type == 1508
-						|| type == 1513 || type == 1512 || type == 1516
-						|| type == 1517 || type == 1605 || type == 1606
-						|| type == 1310 || type == 1204) {
+				} else if (type == 1604 || type == 1514 || type == 1515 || type == 1502 || type == 1503 || type == 1504
+						|| type == 1505 || type == 1506 || type == 1508 || type == 1513 || type == 1512 || type == 1516
+						|| type == 1517 || type == 1605 || type == 1606 || type == 1310 || type == 1204) {
 					JSONArray a = deep.getJSONArray("f_array");
 					if (a != null) {
 						for (int i = 0; i < a.size(); i++) {
@@ -1515,17 +1468,13 @@ public class TipsSelector {
 					JSONObject fObj = deep.getJSONObject("f");
 					int type2101 = fObj.getInt("type");
 					if (type2101 == 1) {// 1道路LINK 2测线
-						linkPids.add(Integer.valueOf(Integer.valueOf(fObj
-								.getString("id"))));
+						linkPids.add(Integer.valueOf(Integer.valueOf(fObj.getString("id"))));
 					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				logger.error(
-						"data error：" + json.get("id") + ":" + e.getMessage(),
-						e.getCause());
-				throw new Exception("data error：" + json.get("id") + ":"
-						+ e.getMessage(), e.getCause());
+				logger.error("data error：" + json.get("id") + ":" + e.getMessage(), e.getCause());
+				throw new Exception("data error：" + json.get("id") + ":" + e.getMessage(), e.getCause());
 
 			}
 
@@ -1563,8 +1512,7 @@ public class TipsSelector {
 
 				snapshot.setT(json.getString("s_sourceType"));
 
-				JSONObject glocation = JSONObject.fromObject(json
-						.getString("g_location"));
+				JSONObject glocation = JSONObject.fromObject(json.getString("g_location"));
 
 				snapshot.setG(glocation.getJSONArray("coordinates"));
 
@@ -1583,14 +1531,12 @@ public class TipsSelector {
 
 				String operateDate = json.getString("t_operateDate");
 
-				m.put("f",
-						DateUtils.stringToLong(operateDate, "yyyyMMddHHmmss"));
+				m.put("f", DateUtils.stringToLong(operateDate, "yyyyMMddHHmmss"));
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 				// 几个g需要显示：取Tips的geo
-				if (type == 1604 || type == 1601 || type == 1602
-						|| type == 1605 || type == 1606 || type == 1607) {
+				if (type == 1604 || type == 1601 || type == 1602 || type == 1605 || type == 1606 || type == 1607) {
 
 					JSONObject deepGeo = deep.getJSONObject("geo");
 
@@ -1600,10 +1546,8 @@ public class TipsSelector {
 
 				// e字段的返回结果，不同类型不同
 				// f
-				if (type == 1201 || type == 1203 || type == 1101
-						|| type == 1109 || type == 1111 || type == 1113
-						|| type == 1202 || type == 1207 || type == 1208
-						|| type == 1304 || type == 1305 || type == 1308
+				if (type == 1201 || type == 1203 || type == 1101 || type == 1109 || type == 1111 || type == 1113
+						|| type == 1202 || type == 1207 || type == 1208 || type == 1304 || type == 1305 || type == 1308
 						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
 					if (f != null && !f.isNullObject()) {
@@ -1647,8 +1591,7 @@ public class TipsSelector {
 							String valueStr = "";
 
 							for (Object object : arr) {
-								double value = Double
-										.valueOf(object.toString());
+								double value = Double.valueOf(object.toString());
 								valueStr += "|" + Math.round(value);
 
 							}
@@ -1657,8 +1600,7 @@ public class TipsSelector {
 								valueStr = valueStr.substring(1);
 							}
 							name += "(" + valueStr + "km/h)";
-						} else if (type == 1101 || type == 1111 || type == 1114
-								|| type == 1115) {
+						} else if (type == 1101 || type == 1111 || type == 1114 || type == 1115) {
 
 							double value = deep.getDouble("value");
 
@@ -1686,12 +1628,9 @@ public class TipsSelector {
 				}
 				// in
 
-				else if (type == 1301 || type == 1407 || type == 1302
-						|| type == 1403 || type == 1401 || type == 1402
-						|| type == 1405 || type == 1406 || type == 1409
-						|| type == 1105 || type == 1107 || type == 1703
-						|| type == 1404 || type == 1804 || type == 1108
-						|| type == 1112 || type == 1303 || type == 1306
+				else if (type == 1301 || type == 1407 || type == 1302 || type == 1403 || type == 1401 || type == 1402
+						|| type == 1405 || type == 1406 || type == 1409 || type == 1105 || type == 1107 || type == 1703
+						|| type == 1404 || type == 1804 || type == 1108 || type == 1112 || type == 1303 || type == 1306
 						|| type == 1410 || type == 1104) {
 					JSONObject f = deep.getJSONObject("in");
 
@@ -1765,12 +1704,9 @@ public class TipsSelector {
 					}
 				}
 				// f_array
-				else if (type == 1604 || type == 1514 || type == 1515
-						|| type == 1502 || type == 1503 || type == 1504
-						|| type == 1505 || type == 1506 || type == 1508
-						|| type == 1513 || type == 1512 || type == 1516
-						|| type == 1517 || type == 1605 || type == 1606
-						|| type == 1310 || type == 1204) {
+				else if (type == 1604 || type == 1514 || type == 1515 || type == 1502 || type == 1503 || type == 1504
+						|| type == 1505 || type == 1506 || type == 1508 || type == 1513 || type == 1512 || type == 1516
+						|| type == 1517 || type == 1605 || type == 1606 || type == 1310 || type == 1204) {
 					JSONArray a = deep.getJSONArray("f_array");
 					if (a != null) {
 						boolean hasLink = false;
@@ -1781,8 +1717,7 @@ public class TipsSelector {
 
 								hasLink = true;
 
-								int linkPid = Integer
-										.valueOf(f.getString("id"));
+								int linkPid = Integer.valueOf(f.getString("id"));
 
 								if (map.containsKey(linkPid)) {
 
@@ -1818,16 +1753,14 @@ public class TipsSelector {
 				// 删除记录
 				else if (type == 2101) {
 					JSONObject linkObj = deep.getJSONObject("f");
-                    int linkType = linkObj.getInt("type");
-                    if(linkType == 1) {
-                        int linkPid = Integer.valueOf(linkObj.getString("id"));
-                        String name = map.get(linkPid);
-                        m.put("e", name);
-                    }
-				} else if (type == 1704 || type == 1510 || type == 1107
-						|| type == 1507 || type == 1511 || type == 1601
-						|| type == 1602 || type == 1509 || type == 1705
-						|| type == 1607) {
+					int linkType = linkObj.getInt("type");
+					if (linkType == 1) {
+						int linkPid = Integer.valueOf(linkObj.getString("id"));
+						String name = map.get(linkPid);
+						m.put("e", name);
+					}
+				} else if (type == 1704 || type == 1510 || type == 1107 || type == 1507 || type == 1511 || type == 1601
+						|| type == 1602 || type == 1509 || type == 1705 || type == 1607) {
 
 					String name = deep.getString("name");
 
@@ -1857,9 +1790,7 @@ public class TipsSelector {
 				}
 				// 里程桩
 				else if (type == 1707) {
-					m.put("e",
-							deep.getString("rdName") + "("
-									+ deep.getString("num") + ")");
+					m.put("e", deep.getString("rdName") + "(" + deep.getString("num") + ")");
 				} else if (type == 1501) {
 					m.put("e", "上下线分离");
 				} else if (type == 1801) {
@@ -1895,11 +1826,8 @@ public class TipsSelector {
 				jsonData.add(snapshot.Serialize(null));
 
 			} catch (Exception e) {
-				logger.error(
-						"data convert error：rowkey:" + json.get("id")
-								+ e.getMessage(), e.getCause());
-				throw new Exception("data convert error：rowkey:"
-						+ json.get("id") + e.getMessage(), e.getCause());
+				logger.error("data convert error：rowkey:" + json.get("id") + e.getMessage(), e.getCause());
+				throw new Exception("data convert error：rowkey:" + json.get("id") + e.getMessage(), e.getCause());
 			}
 
 		}
@@ -1915,8 +1843,7 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-4-19 下午1:32:21
 	 */
-	private Set<Integer> getTaskIdsUnderSameProject(int subtaskId)
-			throws Exception {
+	private Set<Integer> getTaskIdsUnderSameProject(int subtaskId) throws Exception {
 		// 调用 manapi 获取 任务类型、及任务号
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 
@@ -1941,8 +1868,11 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
-					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where " + where
-							+ " and rownum=1", ConnectionUtil.createClob(oracleConn, wkt));
+
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where "
+							+ where + " and rownum=1",
+					wkt);
+
 			return (count > 0 ? 1 : 0);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
@@ -1960,14 +1890,12 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type,
-			JSONArray stages) throws Exception {
+	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type, JSONArray stages) throws Exception {
 		JSONArray array = new JSONArray();
 
 		// 查询日编或者月编任务对应的采集任务ID
 		Set<Integer> taskList = getTaskIdsUnderSameProject(editTaskId);
-		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages,
-				false, taskList);
+		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages, false, taskList);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -1987,15 +1915,13 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-2-18 下午3:34:09
 	 */
-	public JSONArray searchDataByRowkeyArr(JSONArray rowkeyArr)
-			throws Exception {
+	public JSONArray searchDataByRowkeyArr(JSONArray rowkeyArr) throws Exception {
 
 		JSONArray resultArr = new JSONArray();
 		Table htab = null;
 		try {
 
-			org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector
-					.getInstance().getConnection();
+			org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
@@ -2023,11 +1949,9 @@ public class TipsSelector {
 				List<Cell> ceList = result.listCells();
 				if (ceList != null && ceList.size() > 0) {
 					for (Cell cell : ceList) {
-						String value = Bytes.toString(cell.getValueArray(),
-								cell.getValueOffset(), cell.getValueLength());
-						String colName = Bytes.toString(
-								cell.getQualifierArray(),
-								cell.getQualifierOffset(),
+						String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),
+								cell.getValueLength());
+						String colName = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),
 								cell.getQualifierLength());
 
 						JSONObject injson = JSONObject.fromObject(value);
@@ -2063,11 +1987,9 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-4-14 下午4:55:04
 	 */
-	public List<TipsDao> getTipsByTaskId(Connection tipsConn, int taskId,
-			int taskType) throws Exception {
+	public List<TipsDao> getTipsByTaskId(Connection tipsConn, int taskId, int taskType) throws Exception {
 
-		List<TipsDao> snapshots = conn.queryTipsByTask(tipsConn, taskId,
-				taskType);
+		List<TipsDao> snapshots = conn.queryTipsByTask(tipsConn, taskId, taskType);
 
 		return snapshots;
 
@@ -2081,10 +2003,8 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<TipsDao> getTipsByTaskIdAndStatus(Connection tipsConn,
-			int taskId, int taskType) throws Exception {
-		List<TipsDao> sdList = conn.queryTipsByTask(tipsConn, taskId, taskType,
-				1);
+	public List<TipsDao> getTipsByTaskIdAndStatus(Connection tipsConn, int taskId, int taskType) throws Exception {
+		List<TipsDao> sdList = conn.queryTipsByTask(tipsConn, taskId, taskType, 1);
 		return sdList;
 	}
 
@@ -2098,8 +2018,7 @@ public class TipsSelector {
 	public List<String> getCheckRowkeyList(String parameter) throws Exception {
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 		String where = param.getTipsCheckWhere(parameter);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 		List<TipsDao> tipsList = new TipsIndexOracleOperator(oracleConn)
 				.query("select * from tips_index where " + where);
 		List<String> rowkeyList = new ArrayList<String>();
@@ -2116,8 +2035,7 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> getUnCommitRowkeyList(String parameter)
-			throws Exception {
+	public List<String> getUnCommitRowkeyList(String parameter) throws Exception {
 		List<String> rowkeyList = new ArrayList<>();
 		java.sql.Connection oracleConn = null;
 		try {
@@ -2127,11 +2045,9 @@ public class TipsSelector {
 
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
-			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(
-					oracleConn);
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(oracleConn);
 
-			List<TipsDao> tis = tipsOp.query("select * from tips_index where "
-					+ query);
+			List<TipsDao> tis = tipsOp.query("select * from tips_index where " + query);
 
 			for (TipsDao tips : tis) {
 				rowkeyList.add(tips.getId());
@@ -2153,14 +2069,12 @@ public class TipsSelector {
 	 * @throws Exception
 	 * @time:2017-4-19 下午8:51:14
 	 */
-	public Set<Integer> getGridsListByTask(int collectTaskid, int q_TASK_TYPE)
-			throws Exception {
+	public Set<Integer> getGridsListByTask(int collectTaskid, int q_TASK_TYPE) throws Exception {
 		Connection tipsConn = null;
 		List<TipsDao> tipsList = null;
 		try {
 			tipsConn = DBConnector.getInstance().getTipsIdxConnection();
-			tipsList = conn.queryTipsByTask(tipsConn, collectTaskid,
-					q_TASK_TYPE);
+			tipsList = conn.queryTipsByTask(tipsConn, collectTaskid, q_TASK_TYPE);
 		} catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
@@ -2199,19 +2113,16 @@ public class TipsSelector {
 	 * @param collectTaskIds
 	 * @return
 	 */
-	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds)
-			throws Exception {
-		List<TipsDao> tipsList = this.queryCollectTaskTips(collectTaskIds,
-				TaskType.PROGRAM_TYPE_Q);
+	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
+		List<TipsDao> tipsList = this.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
 		Map<String, int[]> statsMap = new HashMap<>();
 		for (TipsDao tip : tipsList) {
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
-            JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
-            Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
-            Coordinate coordinate = point.getCoordinates()[0];
-			String gridId = CompGridUtil
-					.point2Grids(coordinate.x, coordinate.y)[0];
+			JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标
+			Geometry point = GeometryUtils.getPointFromGeo(GeoTranslator.geojson2Jts(geoJson));
+			Coordinate coordinate = point.getCoordinates()[0];
+			String gridId = CompGridUtil.point2Grids(coordinate.x, coordinate.y)[0];
 			int tipStatus = snapshot.getInt("t_tipStatus");
 			int dEditStatus = snapshot.getInt("t_dEditStatus");
 			if (statsMap.containsKey(gridId)) {
@@ -2245,8 +2156,7 @@ public class TipsSelector {
 		return list;
 	}
 
-	public List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds,
-			int taskType) throws Exception {
+	public List<TipsDao> queryCollectTaskTips(Set<Integer> collectTaskIds, int taskType) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String solrIndexFiled = null;
 		if (taskType == TaskType.PROGRAM_TYPE_Q) {
@@ -2269,8 +2179,7 @@ public class TipsSelector {
 		logger.info("queryCollectTaskTips:" + builder.toString());
 		Connection tipsConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
-			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(
-					tipsConn);
+			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
 			return tipsOp.query("select * from tips_index where " + builder);
 		} finally {
 			DbUtils.closeQuietly(tipsConn);
@@ -2286,33 +2195,26 @@ public class TipsSelector {
 	public JSONObject statInfoTask(String parameter) throws Exception {
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 		String where = param.getTipsCheckWhere(parameter);
-		Connection oracleConn = DBConnector.getInstance()
-				.getTipsIdxConnection();
+		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
-					oracleConn);
-			long count = operator
-					.querCount("select count(1) from tips_index where " + where);
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+			long count = operator.querCount("select count(1) from tips_index where " + where);
 
 			JSONObject statObj = new JSONObject();
 			statObj.put("total", count);
 
 			List<TipsDao> type2001Result = operator
-					.query("select * from tips_index where " + where
-							+ " and s_sourceType = '2001'");
+					.query("select * from tips_index where " + where + " and s_sourceType = '2001'");
 			int total2001 = type2001Result.size();
 			statObj.put("total2001", total2001);
 			double length = 0;
 			for (int i = 0; i < total2001; i++) {
 				TipsDao snapshot = type2001Result.get(i);
-				JSONObject geojson = JSONObject.fromObject(snapshot
-						.getG_location());
-				length += GeometryUtils.getLinkLength(GeoTranslator
-						.geojson2Jts(geojson));
+				JSONObject geojson = JSONObject.fromObject(snapshot.getG_location());
+				length += GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
 			}
 			if (length != 0) {
-				length = new BigDecimal(length).setScale(2,
-						BigDecimal.ROUND_HALF_UP).doubleValue();
+				length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 			}
 			statObj.put("length", length);
 			return statObj;
@@ -2367,21 +2269,18 @@ public class TipsSelector {
 		return jsonObject;
 	}
 
-	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType)
-			throws Exception {
+	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet, int taskType) throws Exception {
 		org.apache.hadoop.hbase.client.Connection hbaseConn = null;
 		Table htab = null;
 		Set<Integer> meshSet = new HashSet<>();
 		try {
-			List<JSONObject> snapshots = conn.queryCollectTaskTips(
-					collectTaskSet, taskType);//TaskType.PROGRAM_TYPE_M);
+			List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet, taskType);// TaskType.PROGRAM_TYPE_M);
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			for (JSONObject snapshot : snapshots) {
 				String rowkey = snapshot.getString("id");
 				// 当前geometery
-				JSONObject gLocation = JSONObject.fromObject(snapshot
-						.getString("g_location"));
+				JSONObject gLocation = JSONObject.fromObject(snapshot.getString("g_location"));
 				Geometry curGeo = GeoTranslator.geojson2Jts(gLocation);
 				Set<Integer> curMeshSet = this.calculateGeometeryMesh(curGeo);
 				if (curMeshSet != null && curMeshSet.size() > 0) {
@@ -2392,20 +2291,15 @@ public class TipsSelector {
 				get.addColumn("data".getBytes(), "old".getBytes());
 				Result result = htab.get(get);
 				if (!result.isEmpty()) {
-					JSONObject oldTip = JSONObject.fromObject(new String(result
-							.getValue("data".getBytes(), "old".getBytes())));
-                    JSONArray oldArray = oldTip.getJSONArray("old_array");
-                    if(oldArray != null && oldArray.size() > 0) {
-                        JSONObject oldJson = oldArray.getJSONObject(oldArray.size() - 1);
-                        JSONObject oldGeoJson = JSONObject.fromObject(oldJson
-                                .getString("o_location"));
-                        Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
-                        Set<Integer> oldMeshSet = this
-                                .calculateGeometeryMesh(oldGeo);
-                        if (oldMeshSet != null && oldMeshSet.size() > 0) {
-                            meshSet.addAll(oldMeshSet);
-                        }
-                    }
+					JSONObject oldTip = JSONObject
+							.fromObject(new String(result.getValue("data".getBytes(), "old".getBytes())));
+					JSONObject oldGeoJson = JSONObject.fromObject(oldTip.getString("o_location"));
+					Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+					Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
+					if (olcMeshSet != null && olcMeshSet.size() > 0) {
+						meshSet.addAll(olcMeshSet);
+					}
+
 				}
 			}
 		} catch (Exception e) {
@@ -2421,8 +2315,7 @@ public class TipsSelector {
 				|| geometry.getGeometryType() == GeometryTypeName.MULTIPOINT) {
 			for (int i = 0; i < geometry.getNumGeometries(); i++) {
 				Geometry subGeo = geometry.getGeometryN(i);
-				String[] meshes = CompGeometryUtil
-						.geo2MeshesWithoutBreak(subGeo);
+				String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(subGeo);
 				for (String mesh : meshes) {
 					meshSet.add(Integer.valueOf(mesh));
 				}
@@ -2435,94 +2328,113 @@ public class TipsSelector {
 		}
 		return meshSet;
 	}
-	
+
 	/**
 	 * 加载tips<时间段限制，子任务范围限制，status = 2， >
+	 * 
 	 * @param subTaskId
 	 * @param beginTime
 	 * @param endTime
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject searchGpsAndDeleteLinkTips(int subTaskId,String beginTime,String endTime,int pageSize,int curPage,JSONObject obj) throws Exception {
+	public JSONObject searchGpsAndDeleteLinkTips(int subTaskId, String beginTime, String endTime, int pageSize,
+			int curPage, JSONObject obj) throws Exception {
 		JSONObject result = new JSONObject();
-		
+
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
 		String sql = param.getGpsAndDeleteLinkQuery(subTaskId, beginTime, endTime, obj);
-		
+
 		Connection oracleConn = null;
-		
+
 		Connection conn = null;
 
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
-			
+
+			conn = DBConnector.getInstance().getConnectionById(obj.getInt("dbId"));
+
+			RdLinkSelector selector = new RdLinkSelector(conn);
+
 			String type = "";
 			String order = "";
-			
-			if(obj.containsKey("order")){
+
+			if (obj.containsKey("order")) {
 				order = obj.getString("order");
 			}
 
 			if (order != null && order.isEmpty() == false && order.contains("-")) {
 				String[] orders = order.split("-");
 
-				type = orders[0].equals("type") == true ? "S_SOURCETYPE" : "T_DATE";
-				
+				switch (orders[0]) {
+				case "type":
+					type = "S_SOURCETYPE";
+					break;
+				case "time":
+					type = "T_DATE";
+					break;
+				case "lifecycle":
+					type = "T_LIFECYCLE";
+					break;
+				}
+
 				type += " " + orders[1];
 			}
-			
+
 			Page page = operator.queryPageSort(sql, curPage, pageSize, type);
 
 			long totalNum = page.getTotalCount();
-			
+
 			result.put("total", totalNum);
-			
+
 			JSONArray array = new JSONArray();
-			
+
 			if (totalNum <= Integer.MAX_VALUE) {
-				
+
 				List<TipsDao> tipsDaoList = (ArrayList<TipsDao>) page.getResult();
-				
-				for (TipsDao tip : tipsDaoList) {					
+
+				for (TipsDao tip : tipsDaoList) {
 					JSONObject json = new JSONObject();
-					
+
 					json.put("rowkey", tip.getId());
-					json.put("status", tip.getT_tipStatus());
+					json.put("status", tip.getT_lifecycle());
 					json.put("type", tip.getS_sourceType());
 					json.put("date", tip.getT_date());
-					
-					json.put("location",GeoTranslator.jts2Geojson(tip.getWkt()));
-					json.put("relateInfo", getRelateGeo(tip));
-					
+
+					json.put("location", GeoTranslator.jts2Geojson(tip.getWkt()));
+					json.put("relateInfo", getRelateGeo(tip, selector, operator));
+
 					array.add(json);
-				}	
+				}
 			} else {
 				// 暂先不处理
 			}
-			
+
 			result.put("tips", array);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
+			DbUtils.rollbackAndClose(conn);
 			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
+			DbUtils.closeQuietly(conn);
 		}
 		return result;
 	}
-	
-	private JSONObject getRelateGeo(TipsDao tips) throws Exception{
+
+	private JSONObject getRelateGeo(TipsDao tips, RdLinkSelector selector, TipsIndexOracleOperator operator)
+			throws Exception {
 		JSONObject geo = null;
-		
-		if(tips.getS_sourceType().equals("2001")){
-			
+
+		if (tips.getS_sourceType().equals("2001")) {
+
 			geo = GeoTranslator.jts2Geojson(tips.getWktLocation());
-			
-		}else if(tips.getS_sourceType().equals("2101")){
-			
+
+		} else if (tips.getS_sourceType().equals("2101")) {
+
 			String deep = tips.getDeep();
 
 			if (deep == null || deep.isEmpty()) {
@@ -2530,25 +2442,46 @@ public class TipsSelector {
 			}
 
 			JSONObject deepObj = JSONObject.fromObject(deep);
-			geo = deepObj.getJSONObject("f");		
+			JSONObject f = deepObj.getJSONObject("f");
+
+			if (f.isNullObject()) {
+				return geo;
+			}
+
+			int type = f.getInt("type");
+			String id = f.getString("id");
+
+			if (type == 1) {
+				RdLink link = (RdLink) selector.loadById(Integer.valueOf(id), false);
+
+				geo = GeoTranslator.jts2Geojson(link.getGeometry(), 0.00001, 5);
+
+			} else if (type == 2) {
+				TipsDao gps = operator.getById(id);
+
+				geo = GeoTranslator.jts2Geojson(gps.getWktLocation());
+			}
 		}
-		return geo;		
+		return geo;
 	}
-	
-	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId) throws Exception {
+
+	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId, int programType) throws Exception {
+		String taskInfo = programType == TaskType.PROGRAM_TYPE_Q ? "S_QSUBTASKID" : "S_MSUBTASKID";
+		
 		// A、库中状态为未处理且没有形状删除的测线tips
 		String unhandleGps = String.format(
-				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS IN (0,1) AND T_TIPSTATUS = 2 AND S_QSUBTASKID = %d AND S_SOURCETYPE = 2001 AND STAGE IN (1,2,5,6) AND ID = '%s'",
-				subTaskId, id);
+				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS IN (0,1) AND T_TIPSTATUS = 2 AND %s = %d AND S_SOURCETYPE = 2001 AND STAGE IN (1,2,5,6) AND ID = '%s'",
+				taskInfo, subTaskId, id);
 
 		// B、库中状态为已处理且没有形状删除的测线tips
 		String handleGps = String.format(
-				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS = 2 AND S_QSUBTASKID = %d AND S_SOURCETYPE = 2001 AND STAGE = 2 AND ID = '%s'",
-				subTaskId, id);
+				"SELECT * FROM TIPS_INDEX WHERE T_DEDITSTATUS = 2 AND %s = %d AND S_SOURCETYPE = 2001 AND STAGE = 2 AND ID = '%s'",
+				taskInfo, subTaskId, id);
 
 		// C、形状删除的Tips关联的link且该link存在或逻辑删除，且该POI的引导link是该link的pid
 		String deleteLinks = String.format(
-				"SELECT * FROM TIPS_INDEX WHERE S_QSUBTASKID = %d AND S_SOURCETYPE = 2101 AND ID = '%s'", subTaskId, id);
+				"SELECT * FROM TIPS_INDEX WHERE %s = %d AND S_SOURCETYPE = 2101 AND ID = '%s'", taskInfo, subTaskId,
+				id);
 
 		Connection oracleConn = null;
 
@@ -2556,28 +2489,28 @@ public class TipsSelector {
 
 		JSONArray array = new JSONArray();
 
-		try {
+		try {	
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 
 			List<TipsDao> unhandleGpsList = operator.query(unhandleGps);
-			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
 				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false));
 			}
 
 			List<TipsDao> handleGpsList = operator.query(handleGps);
-			if (handleGpsList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+			if (handleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
 				result.addAll(GetRelatePois(handleGpsList, dbId, buffer, false, true));
 			}
 
 			List<TipsDao> deleteLinksList = operator.query(deleteLinks);
-			if (deleteLinksList.size() > 0 && isRelateDeleteLinkTips(subTaskId, id) == false) {
+			if (deleteLinksList.size() > 0 ) {
 				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true));
 			}
 
-			for(IxPoi poi:result){
+			for (IxPoi poi : result) {
 				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-				JSONObject obj = JSONObject.fromObject(poi,jsonConfig);
+				JSONObject obj = JSONObject.fromObject(poi, jsonConfig);
 				array.add(obj);
 			}
 
@@ -2593,13 +2526,15 @@ public class TipsSelector {
 
 	/**
 	 * tips点位30米buffer的poi集合,引导坐标距离link/测线距离是否在3m以内（已处理）/以外（未处理）
+	 * 
 	 * @param tipsList
 	 * @param dbId
 	 * @param buffer
 	 * @param isDeleteLink
 	 * @throws Exception
 	 */
-	private List<IxPoi> GetRelatePois(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,boolean isHandle) throws Exception {
+	private List<IxPoi> GetRelatePois(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,
+			boolean isHandle) throws Exception {
 		Connection conn = null;
 		List<IxPoi> poiList = new ArrayList<>();
 
@@ -2618,7 +2553,7 @@ public class TipsSelector {
 
 				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
 
-				String wkt = GeoTranslator.jts2Wkt(pointBuffer);  //buffer
+				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
 
 				String sql = String.format(
 						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract') = 'TRUE'",
@@ -2673,11 +2608,11 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean isRelateDeleteLinkTips(int subTaskId, String tipsId) throws Exception {
+	private boolean isRelateDeleteLinkTips(String taskInfo, int subTaskId, String tipsId) throws Exception {
 		boolean isDeleteTips = false;
 
-		String query = String.format("SELECT * FROM TIPS_INDEX WHERE S_QSUBTASKID=%d AND S_SOURCETYPE = 2101",
-				subTaskId);
+		String query = String.format("SELECT * FROM TIPS_INDEX WHERE %s = %d AND S_SOURCETYPE = 2101",
+				taskInfo, subTaskId);
 
 		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 
@@ -2702,7 +2637,7 @@ public class TipsSelector {
 		return isDeleteTips;
 	}
 
-	private String getDeepRelateId(TipsDao tip){
+	private String getDeepRelateId(TipsDao tip) {
 		String relateID = null;
 
 		String deep = tip.getDeep();
@@ -2721,7 +2656,7 @@ public class TipsSelector {
 		relateID = f.getString("id");
 		return relateID;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		// String parameter =
 		// "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";
@@ -2753,7 +2688,8 @@ public class TipsSelector {
 		// Set<Integer> taskIds = new HashSet<>();
 		// taskIds.add(25);
 		// taskIds.add(121);
-		// selector.getTipsDayTotal("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",
+		// selector.getTipsDayTotal("POLYGON ((116.25 39.75, 116.375 39.75,
+		// 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",
 		// taskIds,"total");
 		// JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
 		// types, mdFlag, "wktLocation", noQFilter);
@@ -2765,8 +2701,7 @@ public class TipsSelector {
 		// parameter =
 		// "{\"pType\":\"fc\",\"gap\":10,\"types\":[\"1107\",\"1201\",\"1202\",\"1203\",\"1702\",\"2001\",\"1901\",\"2101\",\"1601\",\"1803\",\"1301\",\"1507\"],\"x\":107891,\"y\":49669,\"z\":17}";
 		parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1109\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1801\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1707\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1103\",\"1511\",\"1505\",\"1517\",\"1105\",\"1108\",\"1110\",\"1112\",\"1113\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\"],\"x\":215813,\"y\":99175,\"z\":18}";
-		System.out.println("reusut:--------------\n"
-				+ selector.searchDataByTileWithGap(parameter));
+		System.out.println("reusut:--------------\n" + selector.searchDataByTileWithGap(parameter));
 	}
 
 }

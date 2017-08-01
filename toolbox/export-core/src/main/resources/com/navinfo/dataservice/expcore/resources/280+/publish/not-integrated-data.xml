@@ -467,7 +467,7 @@
 		</step>
 	</objectName>
 	<!-- CRF -->
-	<objectName name="RD_OBJECT">
+	<!-- <objectName name="RD_OBJECT">
 		<step value="1">
 			<table name="RD_INTER_LINK" pid="PID" OBJECT_TYPE="RD_INTER">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
@@ -475,7 +475,7 @@
 			<table name="RD_INTER_NODE" pid="PID" OBJECT_TYPE="RD_INTER">
 				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
 			</table>
-			<!-- CRF 道路 -->
+			CRF 道路
 			<table name="RD_ROAD_LINK" pid="PID" OBJECT_TYPE="RD_ROAD">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
 			</table>
@@ -519,7 +519,7 @@
 				<remove tableName="RD_OBJECT_NAME" refPid="PID" />
 			</table>
 		</step>
-	</objectName>
+	</objectName> -->
 
 	<!-- 标牌 -->
 	<objectName name="RD_SIGNPOST">

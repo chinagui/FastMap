@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -197,7 +198,7 @@ public class TipsExtract {
 					TipsIndexOracleOperator tipsIndexOracleOperator = new TipsIndexOracleOperator(
 							conn);
 					tipsDaos = tipsIndexOracleOperator.queryWithLimit(
-							solrQuery, extactLimit, wkt);
+							solrQuery, extactLimit, ConnectionUtil.createClob(conn, wkt));
 
 					// List<JSONObject> tips = solrConn.queryTips(solrQuery,
 					// null,extactLimit);
@@ -381,7 +382,7 @@ public class TipsExtract {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator tipsIndexOracleOperator = new TipsIndexOracleOperator(
 					conn);
-			tipsDaos = tipsIndexOracleOperator.query(solrQuery, wkt);
+			tipsDaos = tipsIndexOracleOperator.query(solrQuery, ConnectionUtil.createClob(conn, wkt));
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error("queryTipsByWorkState error", e);

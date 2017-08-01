@@ -67,10 +67,13 @@ public class TipsSelector {
 		JSONArray array = new JSONArray();
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
-		String sql = param.getTipsWebSql(wkt);
-		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		Connection oracleConn = null;
 		try {
-			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(sql, wkt);
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            String sql = param.getTipsWebSql(wkt);
+			List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query(
+					sql, ConnectionUtil.createClob(oracleConn, wkt));
+
 			for (TipsDao tip : tips) {
 				JSONObject snapshot = JSONObject.fromObject(tip);
 				snapshot.put("t", 1);
@@ -115,9 +118,9 @@ public class TipsSelector {
 					return array;
 				}
 
-//                if(workStatus.size() == 1 && workStatus.get(0) == 11) {
-//                    return array;
-//                }
+                if(workStatus.size() == 1 && workStatus.get(0).equals(11)) {
+                    return array;
+                }
 
                 if(workStatus.contains(TipsWorkStatus.TIPS_IN_TASK)) {
                     isInTask = true;
@@ -1234,13 +1237,9 @@ public class TipsSelector {
 
 			for (KeyValue kv : list) {
 				String key = new String(kv.qualifier());
-				if (key.equals(TIP_OLD_KEY_NAME)) {
-					JSONArray arrayJson = JSONArray.fromObject(new String(kv.value()));
-					json.put(key, arrayJson);
-				} else {
-					JSONObject injson = JSONObject.fromObject(new String(kv.value()));
-					json.put(key, injson);
-				}
+				JSONObject injson = JSONObject.fromObject(new String(kv
+						.value()));
+				json.put(key, injson);
 				/*
 				 * if (key.equals("feedback")) { json.put("feedback", injson); }
 				 * else { json.putAll(injson); }
@@ -1281,22 +1280,26 @@ public class TipsSelector {
 		JSONObject jsonData = new JSONObject();
 
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
-
-		OracleWhereClause whereClause = param.getTipStat(parameter);
-		Connection oracelConn = DBConnector.getInstance().getTipsIdxConnection();
+		Connection oracelConn = null;
 		try {
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracelConn);
-			long total = operator
-					.querCount("select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
-							+ whereClause.getSql(), whereClause.getValues().toArray());
-			Map<Object, Object> dataMap = operator.groupQuery("select s_sourcetype,count(1) from tips_index where "
-					+ whereClause.getSql() + " group by s_sourcetype", whereClause.getValues().toArray());
-			JSONArray data = new JSONArray();
-			for (Object key : dataMap.keySet()) {
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put(key, dataMap.get(key));
-				data.add(jsonObject);
-			}
+            oracelConn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(
+					oracelConn);
+            OracleWhereClause whereClause = param.getTipStat(parameter, oracelConn);
+			long total = operator.querCount(
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
+							+ whereClause.getSql(), whereClause.getValues()
+							.toArray());
+			Map<Object, Object> dataMap = operator.groupQuery(
+					"select s_sourcetype,count(1) from tips_index where "
+							+ whereClause.getSql() + " group by s_sourcetype",
+					whereClause.getValues().toArray());
+            JSONArray data = new JSONArray();
+            for(Object key :dataMap.keySet()) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(key, dataMap.get(key));
+                data.add(jsonObject);
+            }
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;
@@ -1305,7 +1308,6 @@ public class TipsSelector {
 		}
 
 	}
-
 	// /**
 	// * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	// *
@@ -1339,9 +1341,8 @@ public class TipsSelector {
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
 			String query = param.getTipsDayTotal(subtaskId, subTaskType, handler, isQuality, statType);
 			return (int) operator.querCount(
-
-					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where " + query,
-					wkt);
+					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ " +
+                            "count(1) from tips_index where " + query, ConnectionUtil.createClob(conn, wkt));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -1368,12 +1369,14 @@ public class TipsSelector {
 
 		TipsRequestParamSQL param = new TipsRequestParamSQL();
 
-
-		Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+		Connection oracleConn = null;
 		List<TipsDao> tips = null;
 		try {
-			tips = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where " + where.getSql(),
-					where.getValues().toArray());
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            OracleWhereClause where = param.getSnapShot(parameter, oracleConn);
+			tips = new TipsIndexOracleOperator(oracleConn).query(
+					"select * from tips_index where " + where.getSql(), where
+							.getValues().toArray());
 
 		} finally {
 			DbUtils.closeQuietly(oracleConn);
@@ -1868,10 +1871,8 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
-
-					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where "
-							+ where + " and rownum=1",
-					wkt);
+					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where " + where
+					+ " and rownum=1", ConnectionUtil.createClob(oracleConn, wkt));
 
 			return (count > 0 ? 1 : 0);
 		} catch (Exception e) {

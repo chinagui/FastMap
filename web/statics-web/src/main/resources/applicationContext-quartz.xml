@@ -96,7 +96,7 @@
     <bean id="poiDayStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="poiDayStat_detail" />
-        <property name="cronExpression" value="0 52 15 * * ?" />
+        <property name="cronExpression" value="0 0/4 * * * ?" />
     </bean>
     
     <bean id="monthPoiStat_Trigger"

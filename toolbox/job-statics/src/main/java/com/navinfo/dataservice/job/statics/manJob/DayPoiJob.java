@@ -37,6 +37,7 @@ import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Point;
 
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 /** 
@@ -102,7 +103,8 @@ public class DayPoiJob extends AbstractStatJob {
 				result.get("task_day_poi").addAll(entry.getValue().get("taskStat"));
 				result.get("grid_day_poi").addAll(entry.getValue().get("notaskStat"));
 			}
-			return result.toString();
+			JSONObject data = JSONObject.fromObject(result.toString());
+			return data.toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -193,8 +195,8 @@ public class DayPoiJob extends AbstractStatJob {
 				stats.put(dbId, temp);
 
 			}catch(Exception e){
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("dbId("+dbId+")POI日库作业数据统计失败");
+				log.error("dbId("+dbId+")POI日库作业数据统计失败");
+//				throw new ThreadExecuteException("dbId("+dbId+")POI日库作业数据统计失败");
 			}finally{
 				if(latch!=null){
 					latch.countDown();
@@ -426,6 +428,7 @@ public class DayPoiJob extends AbstractStatJob {
 				log.info("sql:" + selectSql);
 				return run.query(conn, selectSql,rsHandler);
 			}catch(Exception e){
+				log.error("从大区库查询处理数据异常:" + e.getMessage(), e);
 				DbUtils.closeQuietly(conn);
 				throw e;
 			}finally{

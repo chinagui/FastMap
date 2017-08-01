@@ -7,16 +7,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -43,7 +39,6 @@ import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils
 import com.navinfo.dataservice.engine.editplus.diff.Parser_Tool;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
 
@@ -201,6 +196,7 @@ public class DataConfirmService {
 		JSONObject returnParam = InputStreamUtils.request2File(request, filePath, "info");
 		String xlslocalFile = returnParam.getString("filePath");
 		ExcelReader reader = new ExcelReader(xlslocalFile);
+		List<Integer> infoTypeList = Arrays.asList(1,2,3);
 
 		log.info("情报文件已上传至：" + xlslocalFile);
 		log.info("开始读取情报文件数据");
@@ -211,12 +207,17 @@ public class DataConfirmService {
 			List<String> uniqueKeys = new ArrayList<>();
 			for (Map<String, Object> result : importResult) {
 
-				// 若文件中“情报类型”为空，则整个文件不可以上传；
-				if (result.get("infoType") == null || result.get("infoType").toString().isEmpty()) {
+				// 若文件中“情报类型”为空 的值域必须在｛1，2，3｝范围内［41］，否则整个文件不可以上传；
+				String infoType = result.get("infoType").toString();
+				if (StringUtils.isEmpty(infoType)) {
 					log.error("“情报类型”为空，文件不可以上传");
 					throw new Exception("“情报类型”为空，文件不可以上传");
+				} else {
+					if(!infoTypeList.contains(Integer.valueOf(infoType))){
+						log.error("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
+						throw new Exception("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
+					}
 				}
-
 				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
 				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
 				if (uniqueKeys.contains(uniqueKey)) {
@@ -525,7 +526,10 @@ public class DataConfirmService {
 			return "未查到符合条件的情报信息!";
 		}
 		
-		String fileName = resultObj.getString("filename");
+//		String fileName = resultObj.getString("filename");
+		StringBuilder sb = new StringBuilder();
+		sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_外业反馈数据导出");
+		String fileName = sb.toString();
 		return fileName;
 	}
 

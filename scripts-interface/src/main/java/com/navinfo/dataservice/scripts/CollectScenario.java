@@ -21,7 +21,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -155,8 +154,13 @@ public class CollectScenario{
 			//3-9保存
 			insertEditPreLinkBetweenTrheeAndNineFac(dailyConn);
 			//数据处理完成删除临时表
-			deleteTempTable(dailyConn);
+//			deleteTempTable(dailyConn);
 		}catch(Exception e){
+			try{
+				initLinkTable(dailyConn);
+			}catch(Exception ex){
+				System.out.println(ex);
+			}
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 		}finally{
@@ -176,12 +180,12 @@ public class CollectScenario{
 			String sql = "delete LINK_EDIT_PRE";
 			log.info("初始化数据sql：" + sql);
 			run.execute(dailyConn, sql);
-//			String tableSql = "drop table LINK_PRE_TEST";
-//			log.info("初始化表sql：" + sql);
-//			run.execute(dailyConn, tableSql);
+			String tableSql = "drop table LINK_PRE_TEST";
+			log.info("初始化表sql：" + sql);
+			run.execute(dailyConn, tableSql);
+			dailyConn.commit();
 		}catch(Exception e){
-			log.error("初始化异常："+e.getMessage(),e);
-			throw e;
+			log.error("初始化异常");
 		}
 	}
 	
@@ -251,6 +255,7 @@ public class CollectScenario{
 			
 			log.info("从临时表中删除link和poi都重复的数据sql：" + sql);
 			run.execute(dailyConn, sql);
+			dailyConn.commit();
 		}catch(Exception e){
 			log.error("从临时表中删除link和poi都重复的数据异常："+e.getMessage(),e);
 			throw e;
@@ -313,12 +318,10 @@ public class CollectScenario{
 				QueryRunner run = new QueryRunner();
 
 				StringBuffer sb = new StringBuffer();
-				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length, t.range ");
-				sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t where t.range = 'A' ");
-				sb.append("group by t.LINK_PID) p ");
-				sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-				sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+importantPoiCount+")");
+				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in");
+				sb.append(" (select p.LINK_PID FROM (select t.LINK_PID, count(1) poicount,t.length, t.range");
+				sb.append(" from LINK_PRE_TEST t where t.range = 'A' group by t.LINK_PID,t.length,t.range) p");
+				sb.append(" where (p.poicount * 1.000 / p.LENGTH) * 100 >= "+importantPoiCount+")");
 
 				String sql = sb.toString();
 				
@@ -341,12 +344,10 @@ public class CollectScenario{
 				QueryRunner run = new QueryRunner();
 
 				StringBuffer sb = new StringBuffer();
-				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length ");
-				sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t where t.address != 0 ");
-				sb.append("group by t.LINK_PID) p ");
-				sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-				sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+addressPoiCount+")");
+				sb.append(" update link_edit_pre t set t.scenario = 1 where t.pid in (");
+				sb.append(" select t.LINK_PID  FROM (select t.length, t.LINK_PID, count(1) poicount ");
+				sb.append(" from LINK_PRE_TEST t where t.address != 0 group by t.LINK_PID, t.length) t");
+				sb.append(" where (t.poicount * 1.000 / t.LENGTH) * 100 >= "+addressPoiCount+")");
 
 				String sql = sb.toString();
 				
@@ -369,12 +370,10 @@ public class CollectScenario{
 			QueryRunner run = new QueryRunner();
 			
 			StringBuffer sb = new StringBuffer();
-			sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-			sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length ");
-			sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t ");
-			sb.append("group by t.LINK_PID) p ");
-			sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-			sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+normalPoiCount+")");
+			sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in(");
+			sb.append(" select q.LINK_PID  FROM(select t.LINK_PID, count(1) poicount,t.length");
+			sb.append(" from LINK_PRE_TEST t group by t.LINK_PID,t.length) q");
+			sb.append(" where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+normalPoiCount+")");
 
 			String sql = sb.toString();
 			log.info("保存普通POI数据sql：" + sql);
@@ -446,8 +445,10 @@ public class CollectScenario{
 			
 			String sql = sqlSb.toString();
 			
+			log.info("更新等级A的pids:" + pids);
 			log.info("从元数据库中查询出的重点POI更新到临时表sql:"+sql);
 			run.update(dailyConn, sql, clob);
+			dailyConn.commit();
 		}catch(Exception e){
 			log.error("元数据库中查询出的重点POI更新到临时表异常:"+e.getMessage(),e);
 			throw e;
@@ -475,24 +476,24 @@ public class CollectScenario{
 		}
 	}
 	
-	/**
-	 * 数据处理完成删除临时表
-	 * @param
-	 * @throws Exception 
-	 * 
-	 * */
-	public void deleteTempTable(Connection dailyConn) throws Exception{
-		 try{
-				QueryRunner run = new QueryRunner();
-
-				String sql = "DROP TABLE LINK_PRE_TEST";
-				
-				log.info("删除临时表sql：" + sql);
-				run.execute(dailyConn, sql);
-			}catch(Exception e){
-				log.error("删除临时表异常："+e.getMessage(),e);
-			}
-	}
+//	/**
+//	 * 数据处理完成删除临时表
+//	 * @param
+//	 * @throws Exception 
+//	 * 
+//	 * */
+//	public void deleteTempTable(Connection dailyConn) throws Exception{
+//		 try{
+//				QueryRunner run = new QueryRunner();
+//
+//				String sql = "DROP TABLE LINK_PRE_TEST";
+//				
+//				log.info("删除临时表sql：" + sql);
+////				run.execute(dailyConn, sql);
+//			}catch(Exception e){
+//				log.error("删除临时表异常："+e.getMessage(),e);
+//			}
+//	}
 }
 	class MyTask implements Runnable {
 		   private int dailyDbId;

@@ -57,19 +57,22 @@ public class FM14Sum1108 extends BasicCheckRule {
 
 			Geometry geo = poi.getGeometry();
 			i++;
+			//超过1000要重新组建sql
 			if(i%1000>0){
 				double x = geo.getCoordinates()[0].x;
 				double y = geo.getCoordinates()[0].y;
 				if(!StringUtils.isEmpty(sqlTmp)){sqlTmp=sqlTmp+" UNION ALL ";}
 				sqlTmp=sqlTmp+"SELECT "+poi.getPid()+" PID_MAIN,"+poi.getKindCode()+" KIND_MAIN,P.PID,P.KIND_CODE"
 						+ "  FROM IX_POI P"
-						+ " WHERE "+(x-distince3)+" < P.GEOMETRY.SDO_POINT.X"
-						+ "   AND P.GEOMETRY.SDO_POINT.X < "+(x+distince3)
-						+ "   AND "+(y-distince3)+" < P.GEOMETRY.SDO_POINT.Y"
-						+ "   AND P.GEOMETRY.SDO_POINT.Y < "+(y+distince3)
-						+ "   AND P.KIND_CODE IN ('200103', '200104', '120101')"
-						+ "   AND P.PID != "+poi.getPid()
-						+ "   AND P.U_RECORD != 2";				
+						+ "  WHERE SDO_NN(p.GEOMETRY, "
+			            + "  NAVI_GEOM.CREATEPOINT("+x+","+y+"),"
+			            + " 'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+						+ "  AND P.KIND_CODE IN ('200103', '200104', '120101')"
+						+ "  AND P.PID != "+poi.getPid()
+						+ "  AND P.U_RECORD != 2";	
+				
+				
+
 			}else{
 				selectSqls.add(sqlTmp);
 				sqlTmp="";

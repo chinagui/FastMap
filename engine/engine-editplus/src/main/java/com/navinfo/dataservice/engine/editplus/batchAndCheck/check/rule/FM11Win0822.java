@@ -55,10 +55,9 @@ public class FM11Win0822 extends BasicCheckRule {
 				if(!StringUtils.isEmpty(sqlTmp)){sqlTmp=sqlTmp+" UNION ALL ";}
 				sqlTmp=sqlTmp+"SELECT "+poi.getPid()+" PID_MAIN,"+poi.getKindCode()+" KIND_MAIN,P.PID,P.KIND_CODE"
 						+ "  FROM IX_POI P"
-						+ " WHERE "+(x-distince3)+" < P.GEOMETRY.SDO_POINT.X"
-						+ "   AND P.GEOMETRY.SDO_POINT.X < "+(x+distince3)
-						+ "   AND "+(y-distince3)+" < P.GEOMETRY.SDO_POINT.Y"
-						+ "   AND P.GEOMETRY.SDO_POINT.Y < "+(y+distince3)
+						+ "  WHERE SDO_NN(p.GEOMETRY, "
+			            + "  NAVI_GEOM.CREATEPOINT("+x+","+y+"),"
+			            + " 'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
 						+ "   AND P.PID != "+poi.getPid()
 						+ "   AND P.U_RECORD != 2";
 			}else{

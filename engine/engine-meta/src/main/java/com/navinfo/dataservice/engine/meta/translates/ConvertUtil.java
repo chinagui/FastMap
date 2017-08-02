@@ -19,12 +19,12 @@ public class ConvertUtil {
 
 
     public static String convertNoWord(String sourceText){
-        String regex = "[Ｎｎ]+[ｏＯ]+(/。)+";
+        String regex = "[Nn]+[Oo]+[.]+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(sourceText);
+
         while (matcher.find()) {
-            sourceText = sourceText.replace(sourceText.substring(matcher.start(), matcher.end()), "Ｎｏ．");
-            matcher = pattern.matcher(sourceText);
+            sourceText = sourceText.replace(sourceText.substring(matcher.start(), matcher.end()), "No.");
         }
 
         return sourceText;
@@ -50,12 +50,13 @@ public class ConvertUtil {
         sourceText = sourceText.replaceAll(" \\( ", " (");
         sourceText = sourceText.replaceAll("\\( ", "(");
         sourceText = sourceText.replaceAll(" \\. ", ".");
+        sourceText = sourceText.replaceAll(" \\' ", ".");
         sourceText = sourceText.replaceAll(" & ", "&");
         sourceText = sourceText.replaceAll("& ", "&");
         sourceText = sourceText.replaceAll(" &", "&");
         sourceText = sourceText.replaceAll(" - ", "-");
         sourceText = sourceText.replaceAll("- ", "-");
-        sourceText = sourceText.replaceAll(" + ", "+");
+        sourceText = sourceText.replaceAll(" \\+ ", "+");
         sourceText = sourceText.replaceAll("\\+ ", "+");
         sourceText = sourceText.replaceAll(" / ", "/");
         sourceText = sourceText.replaceAll("/ ", "/");

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.statics.writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.Document;
 
@@ -23,20 +24,20 @@ public class DayPlanWriter extends DefaultWriter{
 			//初始化统计collection
 			initMongoDb(collectionName,timestamp);
 			
-			JSONArray jsonArray = messageJSON.getJSONArray(collectionName);
+			List<Map<String,Double>> list = (List<Map<String, Double>>) messageJSON.get(collectionName);
 			
-			Iterator<Object> it = jsonArray.iterator();
+			Iterator<Map<String, Double>> it = list.iterator();
             while (it.hasNext()) {
-                JSONObject jo = (JSONObject) it.next();
+            	Map<String, Double> map = (Map<String, Double>) it.next();
                //统计信息入库
     			Document resultDoc=new Document();
-    			resultDoc.put("taskId",jo.get("taskId"));
-    			resultDoc.put("linkPlanLen",jo.get("linkPlanLen"));
-    			resultDoc.put("linkAllLen",jo.get("linkAllLen"));
-    			resultDoc.put("poiPlanNum",jo.get("poiPlanNum"));
-    			resultDoc.put("poiAllNum",jo.get("poiAllNum"));
-    			resultDoc.put("link17AllLen",jo.get("link17AllLen"));
-    			resultDoc.put("link27AllLen",jo.get("link27AllLen"));
+    			resultDoc.put("taskId",map.get("taskId"));
+    			resultDoc.put("linkPlanLen",map.get("linkPlanLen"));
+    			resultDoc.put("linkAllLen",map.get("linkAllLen"));
+    			resultDoc.put("poiPlanNum",map.get("poiPlanNum"));
+    			resultDoc.put("poiAllNum",map.get("poiAllNum"));
+    			resultDoc.put("link17AllLen",map.get("link17AllLen"));
+    			resultDoc.put("link27AllLen",map.get("link27AllLen"));
     	
     			MongoDao md = new MongoDao(dbName);
     			md.insertOne(collectionName, resultDoc);

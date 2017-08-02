@@ -98,7 +98,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			Connection conn = null;
 			conn = DBConnector.getInstance().getDealershipConnection();
 			//JSONArray data = de.loadWorkListService("4007", conn, 1674, 1);
-			JSONObject data=de.diffDetailService(33001, conn);
+			JSONObject data=de.diffDetailService(1946, conn);
 		}
 		
 		@Test

@@ -23,7 +23,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -31,9 +30,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceRtException;
-import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Point;
 
@@ -75,11 +72,7 @@ public class DayPoiJob extends AbstractStatJob {
 			if(dbSize == 1){
 				new PoiDayStatThread(null, dbIds.iterator().next(), stats).run();
 			}else{
-				if(dbSize > 10){
-					initThreadPool(10);
-				}else{
-					initThreadPool(dbSize);
-				}
+				initThreadPool(dbSize);
 				final CountDownLatch latch = new CountDownLatch(dbSize);
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
@@ -103,8 +96,9 @@ public class DayPoiJob extends AbstractStatJob {
 				result.get("task_day_poi").addAll(entry.getValue().get("taskStat"));
 				result.get("grid_day_poi").addAll(entry.getValue().get("notaskStat"));
 			}
-			JSONObject data = JSONObject.fromObject(result.toString());
-			return data.toString();
+			
+			log.info("stats:" + JSONObject.fromObject(result).toString());
+			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -161,8 +155,8 @@ public class DayPoiJob extends AbstractStatJob {
 				for(Map.Entry<Integer, Map<String, Object>> entry : subtask.entrySet()){
 					Map<String, Object> cell = new HashMap<String, Object>();
 					cell.put("subtaskId", entry.getKey());
-					cell.put("poiUploadNum", Integer.parseInt(entry.getValue().get("poiUploadNum").toString()));
-					cell.put("poiFinishNum", Integer.parseInt(entry.getValue().get("poiFinishNum").toString()));
+					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
+					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
 					cell.put("firstEditDate", entry.getValue().get("firstEditDate"));
 					subtaskStat.add(cell);
 				}
@@ -171,29 +165,32 @@ public class DayPoiJob extends AbstractStatJob {
 				for(Map.Entry<Integer, Map<String, Object>> entry : task.entrySet()){
 					Map<String, Object> cell = new HashMap<String, Object>();
 					cell.put("taskId", entry.getKey());
-					cell.put("poiUploadNum", Integer.parseInt(entry.getValue().get("poiUploadNum").toString()));
-					cell.put("poiFinishNum", Integer.parseInt(entry.getValue().get("poiFinishNum").toString()));
-					cell.put("poiUnfinishNum", Integer.parseInt(entry.getValue().get("poiUnfinishNum").toString()));
-					cell.put("poiFreshNum", Integer.parseInt(entry.getValue().get("poiFreshNum").toString()));
-					cell.put("poiUnFreshNum", Integer.parseInt(entry.getValue().get("poiUnFreshNum").toString()));
-					cell.put("poiFinishAndPlanNum", Integer.parseInt(entry.getValue().get("poiFinishAndPlanNum").toString()));
+					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
+					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
+					cell.put("poiUnfinishNum", entry.getValue().get("poiUnfinishNum"));
+					cell.put("poiFreshNum", entry.getValue().get("poiFreshNum"));
+					cell.put("poiUnFreshNum", entry.getValue().get("poiUnFreshNum"));
+					cell.put("poiFinishAndPlanNum", entry.getValue().get("poiFinishAndPlanNum"));
 					taskStat.add(cell);
 				}
 				
 				Map<Integer, Object> notask = (Map<Integer, Object>) result.get("notaskStat");
 				for(Map.Entry<Integer, Object> entry : notask.entrySet()){
 					Map<String, Object> cell = new HashMap<String, Object>();
-					cell.put("gridId", Integer.parseInt(entry.getKey().toString()));
-					cell.put("poiNum", Integer.parseInt(entry.getValue().toString()));
+					cell.put("gridId", entry.getKey());
+					cell.put("poiNum", entry.getValue());
 					notaskStat.add(cell);
 				}
 				
 				Map<String,List<Map<String, Object>>> temp = new HashMap<String,List<Map<String, Object>>>();
+				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
+				log.info("dbId:"+dbId+"subtaskStatMap:" + taskStat);
+				log.info("dbId:"+dbId+"subtaskStatMap:" + notaskStat);
+				
 				temp.put("subtaskStat", subtaskStat);
 				temp.put("taskStat", taskStat);
 				temp.put("notaskStat", notaskStat);
 				stats.put(dbId, temp);
-
 			}catch(Exception e){
 				log.error("dbId("+dbId+")POI日库作业数据统计失败");
 //				throw new ThreadExecuteException("dbId("+dbId+")POI日库作业数据统计失败");

@@ -6,11 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -23,8 +21,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -60,9 +56,6 @@ public class DayPlanJob extends AbstractStatJob {
 	@Override
 	public String stat() throws JobException {
 		try {
-			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-			List<Region> regionList = manApi.queryRegionList();
-			
 			Map<Integer, Map<String,List<Map<String, Double>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String,Double>>>>();
 			long t = System.currentTimeMillis();
 			initThreadPool(1);
@@ -80,7 +73,7 @@ public class DayPlanJob extends AbstractStatJob {
 			result.put("task_day_plan", new ArrayList<Map<String,Double>>());
 
 			for(Entry<Integer, Map<String, List<Map<String, Double>>>> entry:stats.entrySet()){
-				result.get("task_day_plan").addAll(entry.getValue().get("dayPlanStat"));
+				result.get("task_day_plan").addAll(entry.getValue().get("task_day_plan"));
 			}
 			return result.toString();
 			
@@ -239,8 +232,8 @@ public class DayPlanJob extends AbstractStatJob {
 					log.debug(JSONArray.fromObject(dayPlanStatList));
 					
 					Map<String,List<Map<String,Double>>> temp = new HashMap<String,List<Map<String,Double>>>();
-					temp.put("dayPlan", dayPlanStatList);
-	//				stats.put(dbId, temp);
+					temp.put("task_day_plan", dayPlanStatList);
+					stats.put(dbId, temp);
 
 			}catch(Exception e){
 				log.error(e.getMessage(),e);

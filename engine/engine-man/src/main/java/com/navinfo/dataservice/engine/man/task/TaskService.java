@@ -662,12 +662,14 @@ public class TaskService {
 			
 			//获取旧任务信息
 			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
-			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
-			if(oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法/日编任务			
+			if((oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1))||
+					(oldTask.getType()==1&&bean.getGroupId()==0)){
 				String adminCode = selectAdminCode(oldTask.getProgramId());
-				
+				int groupType=1;
+				if(oldTask.getType()==1){groupType=2;}
 				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
+					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, groupType);
 					if(userGroup!=null){
 						Integer userGroupID = userGroup.getGroupId();
 						bean.setGroupId(userGroupID);}

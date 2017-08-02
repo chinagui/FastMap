@@ -274,7 +274,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static int getSubtaskId(Connection conn, Subtask bean) throws Exception {
+	public static int getSubtaskId(Connection conn) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
@@ -729,14 +729,14 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id");
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
-//			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
-//				sb.append(" and t.lot = "+dataJson.getInt("lot"));
-//			}
+			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
+				sb.append(" and t.lot = "+dataJson.getInt("lot"));
+			}
 			sb.append(" and (st.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql + ")");
 
 			if (dataJson.containsKey("stage")){
@@ -788,6 +788,7 @@ public class SubtaskOperation {
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 						subtask.put("programType", rs.getInt("PROGRAM_TYPE"));
+						subtask.put("workKind", rs.getInt("work_kind"));
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						

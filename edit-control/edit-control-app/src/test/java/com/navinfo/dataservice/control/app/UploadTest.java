@@ -46,7 +46,7 @@ public class UploadTest {
 //			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi20_1.txt");
 			UploadManager upMan = new UploadManager(4127L,"F:\\poi003.txt");
 			upMan.setSubtaskId(26);
-			UploadResult result = upMan.upload();
+			UploadResult result = upMan.upload(null);
 			System.out.println(JSONObject.fromObject(result).toString());
 		} catch (Exception e) {
 			e.printStackTrace();

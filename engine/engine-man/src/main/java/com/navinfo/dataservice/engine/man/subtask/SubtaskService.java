@@ -237,7 +237,7 @@ public class SubtaskService {
 	 * @param qualityTaskId
 	 * @throws ServiceException 
 	 */
-	private void updateQualityName(Connection conn,int qualityTaskId) throws ServiceException{
+	public void updateQualityName(Connection conn,int qualityTaskId) throws ServiceException{
 		try {
 			String updateSql="UPDATE SUBTASK"
 					+ "   SET NAME ="
@@ -290,7 +290,7 @@ public class SubtaskService {
 				bean.setStatus(2);
 			}
 			// 获取subtaskId，名称赋值的时候需要用到子任务id，所以必须放在前面
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
+			int subtaskId = SubtaskOperation.getSubtaskId(conn);
 			bean.setSubtaskId(subtaskId);
 			//情报项目为空时，需要后台自动创建名称
 			bean=autoInforName(conn,bean);
@@ -1924,17 +1924,39 @@ public class SubtaskService {
 			
 			//获取用户所在组
 			List<Integer> userGroup = UserInfoOperation.getUserGroup(conn, (int)userId);
-			String groupSql="";
-			if(userGroup!=null&&!userGroup.isEmpty()){
-				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
+			//modify by songhe
+			//针对专项月编子任务type = 7 的情况，单独需要按批次进行分类操作，并在每条数据里面返回批次lot的结果
+			//只有type = 7 的情况下返回正常的库里面存的批次，其他类型的子任务批次全部赋值为0
+			StringBuffer sb = new StringBuffer();
+			sb.append(" SELECT T.STAGE, T.TYPE, T.LOT, COUNT(1) TYPE_COUNT  FROM (");
+			sb.append(" SELECT T.STAGE, T.TYPE, TK.LOT FROM SUBTASK T, TASK TK");
+			sb.append(" WHERE (T.EXE_USER_ID = "+userId);
+			if(userGroup != null && !userGroup.isEmpty()){
+				sb.append(" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")"));
 			}
-			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
-					+ "  FROM SUBTASK T"
-					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
-					+ "   AND T.STATUS = 1"
-//					+ "   AND T.STAGE != 0"
-					+ " GROUP BY T.STAGE, T.TYPE"
-					+ " ORDER BY T.STAGE, T.TYPE";
+			sb.append(" )AND T.STATUS = 1 AND T.TYPE = 7 AND T.TASK_ID = TK.TASK_ID");
+			sb.append(" UNION ALL");
+			sb.append(" SELECT T.STAGE, T.TYPE, 0 FROM SUBTASK T");
+			sb.append(" WHERE (T.EXE_USER_ID = "+userId);
+			if(userGroup != null && !userGroup.isEmpty()){
+				sb.append(" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")"));
+			}
+			sb.append(") AND T.STATUS = 1 AND T.TYPE != 7) T");
+			sb.append(" GROUP BY T.STAGE, T.TYPE, T.LOT");
+			sb.append(" ORDER BY T.STAGE, T.TYPE");
+			String sql = sb.toString();
+			
+//			String groupSql="";
+//			if(userGroup!=null&&!userGroup.isEmpty()){
+//				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
+//			}
+//			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
+//					+ "  FROM SUBTASK T"
+//					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
+//					+ "   AND T.STATUS = 1"
+////					+ "   AND T.STAGE != 0"
+//					+ " GROUP BY T.STAGE, T.TYPE"
+//					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
 			log.info("staticWithType swl:" + sql);
 			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
@@ -1950,7 +1972,7 @@ public class SubtaskService {
 						int type=rs.getInt("TYPE");
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
-//						int lot = rs.getInt("LOT");
+						int lot = rs.getInt("LOT");
 						String name="";
 //						if(stage==1){name+="日编 - ";}
 //						else if(stage==0){name+="采集 - ";}
@@ -1966,18 +1988,18 @@ public class SubtaskService {
 						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
 						else if(type==7){name+="POI专项_月编";
-//						if(lot == 0){
-//							name += "(无批次)";
-//						}else if(lot == 1){name += "(一批)";}
-//						 else if(lot == 2){name += "(二批)";}
-//						 else if(lot == 3){name += "(三批)";}
-//						 else{name += "("+lot+"批)";}
+						if(lot == 0){
+							name += "(无批次)";
+						}else if(lot == 1){name += "(一批)";}
+						 else if(lot == 2){name += "(二批)";}
+						 else if(lot == 3){name += "(三批)";}
+						 else{name += "("+lot+"批)";}
 						}
 						else if(type==8){name+="道路_Grid精编";}
 						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
-//						subResult.put("lot", lot);
+						subResult.put("lot", lot);
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);
@@ -3769,12 +3791,14 @@ public class SubtaskService {
 			}
 			//创建子任务
 			int[] sums = kmeans.getCounts();
-
+			Task task=TaskService.getInstance().queryNoGeoByTaskId(conn, taskId);
 			for( Integer index : gridMaps.keySet()){
 				Map<Integer, Integer> gridMap = gridMaps.get(index);
 				Subtask subtask = new Subtask();
 				subtask.setGridIds(gridMap);
 				subtask.setType(3);//一体化grid粗编
+				subtask.setPlanStartDate(task.getPlanStartDate());
+				subtask.setPlanEndDate(task.getPlanEndDate());
 				subtask.setTaskId(taskId);
 				subtask.setStage(1); //日编
 				subtask.setDescp("自动规划创建");

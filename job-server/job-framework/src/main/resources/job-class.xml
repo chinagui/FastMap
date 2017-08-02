@@ -85,9 +85,9 @@
 		class="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob"
 		request="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJobRequest" >
 	</type>
-	<type name="poiMonthStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJobRequest" >
+	<type name="monthPoiStat"
+		class="com.navinfo.dataservice.job.statics.manJob.MonthPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.MonthPoiJobRequest" >
 	</type>
 	<type name="DealershipTableAndDbDiffJob"
 		class="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJob"
@@ -109,5 +109,13 @@
 		<type name="taskMedium2QuickJob" 
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
+	</type>
+	<type name="subtaskStat"
+		class="com.navinfo.dataservice.job.statics.manJob.SubtaskJob"
+		request="com.navinfo.dataservice.job.statics.manJob.SubtaskJobRequest" >
+	</type>
+	<type name="dayPlanStat"
+		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
 	</type>
 	</mapping>

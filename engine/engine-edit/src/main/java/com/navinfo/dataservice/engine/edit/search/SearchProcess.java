@@ -299,6 +299,12 @@ public class SearchProcess {
 			return true;
 		} else if (type == ObjType.RWNODE) {
 			return true;
+		} else if (type == ObjType.RDOBJECT) {
+			return true;
+		} else if (type == ObjType.RDROAD) {
+			return true;
+		} else if (type == ObjType.RDINTER) {
+			return true;
 		} else {
 			return false;
 		}

@@ -526,10 +526,7 @@ public class DataConfirmService {
 			return "未查到符合条件的情报信息!";
 		}
 		
-//		String fileName = resultObj.getString("filename");
-		StringBuilder sb = new StringBuilder();
-		sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_外业反馈数据导出");
-		String fileName = sb.toString();
+		String fileName = resultObj.getString("filename");
 		return fileName;
 	}
 

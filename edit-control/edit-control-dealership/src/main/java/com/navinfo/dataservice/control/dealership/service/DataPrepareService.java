@@ -284,7 +284,8 @@ public class DataPrepareService {
 			//导入到oracle库中
 			//excel的listmap转成list<bean>
 			Set<Integer> resultIdSet=new HashSet<Integer>();
-			Set<Integer> sourceIdSet=new HashSet<Integer>();
+//			Set<Integer> sourceIdSet=new HashSet<Integer>();
+			Set<String> chainSet=new HashSet<String>();
 			List<DiffTableExcel> excelSet=new ArrayList<DiffTableExcel>();
 			List<Integer> excelOldSourceIdList=new ArrayList<Integer>();
 			for(Map<String,Object> source:sourceMaps){
@@ -293,7 +294,8 @@ public class DataPrepareService {
 				excelSet.add(diffSub);
 				excelOldSourceIdList.add(diffSub.getOldSourceId());
 				resultIdSet.add(diffSub.getResultId());
-				sourceIdSet.add(diffSub.getOldSourceId());
+//				sourceIdSet.add(diffSub.getOldSourceId());
+				chainSet.add(diffSub.getChain());
 				//导入时，判断导入文件中“代理店品牌”是否跟作业品牌一致，如果一致，则可以导入，否则不可以导入
 				if(!chainCode.equals(diffSub.getChain())){
 					log.info("导入文件中“代理店品牌”是否跟作业品牌不一致");
@@ -308,7 +310,11 @@ public class DataPrepareService {
 			//加载IX_DEALERSHIP_RESULT中的数据
 			Map<Integer, IxDealershipResult> resultObjSet = IxDealershipResultSelector.getByResultIds(conn, resultIdSet);
 			//Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
-			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
+//			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
+			//===========================================================================================================
+			//bug:8015(预处理平台_代理店_数据准备_表表差分结果导入：RESULT. SOURCE_ID在表表差分结果中“旧一览表ID”不存在，不应该导入)
+			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getSourceIdsByChain(conn, chainSet);
+			//===========================================================================================================
 			//根据导入原则，获取需要修改的数据
 			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet,excelOldSourceIdList);
 			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
@@ -650,9 +656,9 @@ public class DataPrepareService {
 			
 			return run.query(conn, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;
 	}
@@ -1271,9 +1277,9 @@ public class DataPrepareService {
 	/**
 	 * @param chainCode
 	 * @return
-	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	public List<ExpDbDiffResult> searchDbDiff(String chainCode) throws SQLException {
+	public List<ExpDbDiffResult> searchDbDiff(String chainCode) throws Exception {
 		Connection conn = null;
 		try{
 			//获取代理店数据库连接
@@ -1501,9 +1507,9 @@ public class DataPrepareService {
 			return result;
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;
 	}
@@ -1519,7 +1525,7 @@ public class DataPrepareService {
 	 * @throws NoSuchMethodException 
 	 * @throws ClassNotFoundException 
 	 */
-	private void handleMatchedPois(List<ExpDbDiffResult> result, Map<Integer, Set<String>> regionIdPidSetMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, SQLException {
+	private void handleMatchedPois(List<ExpDbDiffResult> result, Map<Integer, Set<String>> regionIdPidSetMap) throws Exception {
 		Map<Integer,Map<String,IxPoiObj>> poi = new HashMap<Integer,Map<String,IxPoiObj>>();
 		List<String> colValues = new ArrayList<String>();
 		Map<Integer, Connection> dbConMap = queryAllRegionConn();
@@ -1874,7 +1880,7 @@ public class DataPrepareService {
 		return result;
 	}
 
-	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
+	public Map<Integer, Connection> queryAllRegionConn() throws Exception {
 		Map MapConn = new HashMap();
 		try {
 			String sql = "select t.daily_db_id,region_id from region t";
@@ -1895,7 +1901,7 @@ public class DataPrepareService {
 				DbUtils.closeQuietly(conn, pstmt, rs);
 			}
 		} catch (Exception e) {
-			throw new SQLException("加载region失败：" + e.getMessage(), e);
+			throw new Exception("加载region失败：" + e.getMessage(), e);
 		}
 	}
 	
@@ -2342,5 +2348,35 @@ public class DataPrepareService {
 		}
 		return ixDealershipResult;
 		
+	}
+	
+	/**
+	 * 代理店：根据chainCode获取chainName
+	 * @param chainCode
+	 * @return
+	 * @throws Exception
+	 */
+	public String getChainNameByChainCode(String chainCode) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getDealershipConnection();
+			String sql = "SELECT CHAIN_NAME FROM IX_DEALERSHIP_CHAIN WHERE CHAIN_CODE = ?"; 
+			QueryRunner run = new QueryRunner();
+			return run.query(conn, sql, new ResultSetHandler<String>(){
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					String chainName = null;
+					if(rs.next()){
+						return rs.getString("CHAIN_NAME");
+					}
+					return chainName;
+				}}, chainCode);
+		} catch (Exception e) {
+			log.error("品牌名称失败，原因为："+e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("品牌名称失败，原因为："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -11,7 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
@@ -19,15 +21,16 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
 public class DeepInfoImporter {
 
 	private Logger logger = LoggerRepos.getLogger(this.getClass());
 
-	private String[] tables = new String[] { "IX_POI_PARKING",
-			"IX_POI_GASSTATION", "IX_POI_BUSINESSTIME", "IX_POI_CARRENTAL",
-			"IX_POI_DETAIL" };
+	private String[] tables = new String[] { "IX_POI_PARKING", "IX_POI_GASSTATION", "IX_POI_BUSINESSTIME",
+			"IX_POI_CARRENTAL", "IX_POI_DETAIL" };
 
 	private void clearDeepInfoTables(Connection conn) throws SQLException {
 
@@ -56,8 +59,7 @@ public class DeepInfoImporter {
 	public void run(String filePath, String outPath) throws Exception {
 		File file = new File(filePath);
 
-		InputStreamReader read = new InputStreamReader(
-				new FileInputStream(file));
+		InputStreamReader read = new InputStreamReader(new FileInputStream(file));
 
 		BufferedReader reader = new BufferedReader(read);
 
@@ -66,8 +68,6 @@ public class DeepInfoImporter {
 		Connection conn = DBConnector.getInstance().getMkConnection();
 
 		conn.setAutoCommit(false);
-
-		// clearDeepInfoTables(conn);
 
 		String querySql = "select 1 from ix_poi where pid=?";
 
@@ -84,6 +84,7 @@ public class DeepInfoImporter {
 		int gasCount = 0;
 
 		int businessTimeCount = 0;
+
 		int carRentalCount = 0;
 		// int hotelCount = 0;
 		int detailCount = 0;
@@ -95,6 +96,10 @@ public class DeepInfoImporter {
 		int notfound = 0;
 
 		int cache = 0;
+
+		Map<String, Map<String, Photo>> importPhoto = new HashMap<String,Map<String,Photo>>();
+
+		int photoes = 0;
 
 		while ((line = reader.readLine()) != null) {
 
@@ -143,7 +148,7 @@ public class DeepInfoImporter {
 				// business time
 				res = BusinessTimeImporter.run(conn, stmt, poi);
 				isImportPhoto += res;
-				
+
 				if (res > 0) {
 					cache++;
 					businessTimeCount++;
@@ -152,7 +157,7 @@ public class DeepInfoImporter {
 				// car rental
 				res = CarRentalImporter.run(conn, stmt, poi);
 				isImportPhoto += res;
-				
+
 				if (res > 0) {
 					cache++;
 					carRentalCount++;
@@ -166,17 +171,18 @@ public class DeepInfoImporter {
 				// detail
 				res = DetailImporter.run(conn, stmt, poi);
 				isImportPhoto += res;
-				
+
 				if (res > 0) {
 					cache++;
 					detailCount++;
 				}
-				
-				if(isImportPhoto>0){
-					res = PhotoImporter.run(conn, stmt, poi);
+
+				if (isImportPhoto > 0) {
+					res = PhotoImporter.run(conn, stmt, poi, importPhoto);
 					if (res > 0) {
 						cache++;
 						photoCount++;
+						photoes++;
 					}
 				}
 
@@ -194,10 +200,26 @@ public class DeepInfoImporter {
 				stmt.executeBatch();
 				cache = 0;
 			}
+
+			if (photoes > 5000) {
+				for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
+					CollectorImport.importPhoto(entry.getValue(), entry.getKey());
+				}
+				importPhoto = new HashMap<>();
+				photoes = 0;
+			}
 		}
 
 		if (cache > 0) {
 			stmt.executeBatch();
+		}
+
+		if (photoes > 0) {
+			for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
+				CollectorImport.importPhoto(entry.getValue(), entry.getKey());
+			}
+			importPhoto = new HashMap<>();
+			photoes = 0;
 		}
 
 		stmt.close();
@@ -235,6 +257,8 @@ public class DeepInfoImporter {
 		logger.info("IX_POI_DETAIL count:" + detailCount);
 
 		// logger.info("IX_POI_RESTAURANT count:" + restaurantCount);
+		
+		logger.info("IX_POI_PHOTO count:" + photoCount);
 
 		logger.info("DONE.");
 

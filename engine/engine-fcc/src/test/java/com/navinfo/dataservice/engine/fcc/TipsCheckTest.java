@@ -56,8 +56,8 @@ public class TipsCheckTest extends InitApplication {
 		param.put("grids", gridsList);
 
 		//String parameter = param.toString();
-		
-		String parameter="{\"subTaskId\":283,\"checkerId\":1672,\"checkerName\":\"范京伟\",\"grids\":[59567601]}";
+		//238
+		String parameter="{\"subTaskId\":238,\"checkerId\":2699,\"checkerName\":\"冯佳\",\"grids\":[60560233]}";
 
 		try {
 
@@ -226,11 +226,12 @@ public class TipsCheckTest extends InitApplication {
 		obj.put("isPrefer", "1"); //是否倾向性
 		obj.put("checker", "质检员001"); //是否倾向性
 		
-		//obj=JSONObject.fromObject("{\"checkTaskId\":188,\"quDesc\":\"说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明\",\"reason\":\"录入遗漏\",\"erContent\":\"功能等级（FC）\",\"quRank\":\"B\",\"isPrefer\":1,\"tipsCode\":\"2001\",\"tipsRowkey\":\"0220019609FB3AFDD047EE9FE53BEF56496AAE\"}");
-	
 		JSONObject pa = new JSONObject();
 		
 		pa.put("data", obj);
+		
+		pa=JSONObject.fromObject("{\"data\":{\"checkTaskId\":284,\"quDesc\":\"vbv bnghj\",\"reason\":\"录入错误\",\"erContent\":\"道路种别\",\"quRank\":\"C\",\"isPrefer\":0,\"checker\":\"冯佳2699\",\"tipsCode\":\"1201\",\"tipsRowkey\":\"021201fdff891e87234be387a2ffb39210f352\"}}");
+		
 
 		String parameter = pa.toString();
 

@@ -118,4 +118,12 @@
 		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
 		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
 	</type>
+	<type name="dayLogCheck"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckJobRequest">
+	</type>
+	<type name="dayLogCheckImport"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckImportJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckImportJobRequest">
+	</type>
 	</mapping>

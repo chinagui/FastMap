@@ -23,6 +23,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -31,6 +33,8 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
+
+import net.sf.json.JSONArray;
 
 /**
  * DayPlanJob
@@ -58,34 +62,17 @@ public class DayPlanJob extends AbstractStatJob {
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			List<Region> regionList = manApi.queryRegionList();
-			Set<Integer> dbIds = new HashSet<Integer>();
-			for (Region region : regionList) {
-				if(region.getDailyDbId() != null){
-					dbIds.add(region.getDailyDbId());
-				}
-			}
 			
 			Map<Integer, Map<String,List<Map<String, Double>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String,Double>>>>();
 			long t = System.currentTimeMillis();
-			int dbSize = dbIds.size();
-			if(dbSize==1){
-				new DayPlanThread(null,dbIds.iterator().next(),stats).run();
-			}else{
-				if(dbSize>10){
-					initThreadPool(10);
-				}else{
-					initThreadPool(dbSize);
-				}
-				final CountDownLatch latch = new CountDownLatch(dbSize);
-				threadPoolExecutor.addDoneSignal(latch);
-				// 执行转数据
-				for(int dbId:dbIds){
-					threadPoolExecutor.execute(new DayPlanThread(latch,dbId,stats));
-				}
-				latch.await();
-				if (threadPoolExecutor.getExceptions().size() > 0) {
-					throw new Exception(threadPoolExecutor.getExceptions().get(0));
-				}
+			initThreadPool(1);
+			final CountDownLatch latch = new CountDownLatch(1);
+			threadPoolExecutor.addDoneSignal(latch);
+			// 执行转数据
+				threadPoolExecutor.execute(new DayPlanThread(latch,stats));
+			latch.await();
+			if (threadPoolExecutor.getExceptions().size() > 0) {
+				throw new Exception(threadPoolExecutor.getExceptions().get(0));
 			}
 			log.debug("所有Day_规划量数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
@@ -130,124 +117,130 @@ public class DayPlanJob extends AbstractStatJob {
 	
 	class DayPlanThread implements Runnable{
 		CountDownLatch latch = null;
-		int dbId=0;
 		Map<Integer, Map<String,List<Map<String, Double>>>> stats;
-		DayPlanThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Double>>>> stat){
+		DayPlanThread(CountDownLatch latch,Map<Integer, Map<String,List<Map<String, Double>>>> stat){
 			this.latch=latch;
-			this.dbId=dbId;
 			this.stats = stat;
 		}
 		
 		@Override
 		public void run() {
-			Connection conn=null;
-			try{
-				conn=DBConnector.getInstance().getConnectionById(dbId);
-				QueryRunner run = new QueryRunner();
+			List<Map<String, Integer>> taskIdMapList = null;
+			try {
+				taskIdMapList = getTaskIdList();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			for (Map<String, Integer> taskIdMap : taskIdMapList) {
 				
-				List<Integer> taskIdList = getTaskIdList();
+				Integer dbId = taskIdMap.get("dbId");
+				Integer taskId = taskIdMap.get("taskId");
 				
-				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
-				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
-				String planSuffix = " AND d.is_plan_selected=1 ";
-				
-				List<Map<String,Double>> dayPlanStatList = new ArrayList<>();
-				for (Integer taskId : taskIdList) {
+				Connection conn=null;
+				try{
+					conn=DBConnector.getInstance().getConnectionById(dbId);
+					QueryRunner run = new QueryRunner();
 					
-					Map<String,Double> map  = new HashMap<>();
 					
-					String sql1 = rdLinkSql+taskId+planSuffix;
-					String sql2 = rdLinkSql+taskId;
-					String sql3 = poiSql+taskId+planSuffix;
-					String sql4 = poiSql+taskId;
-					String sql5 = rdLinkSql+taskId+" AND r.kind >= 1 AND r.kind <= 7";
-					String sql6 = rdLinkSql+taskId+" AND r.kind >= 2 AND r.kind <= 7";
+					String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
+					String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
+					String planSuffix = " AND d.is_plan_selected=1 ";
 					
-					Double linkPlanLen = run.query(conn, sql1,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+					List<Map<String,Double>> dayPlanStatList = new ArrayList<>();
+						
+						Map<String,Double> map  = new HashMap<>();
+						
+						String sql1 = rdLinkSql+taskId+planSuffix;
+						String sql2 = rdLinkSql+taskId;
+						String sql3 = poiSql+taskId+planSuffix;
+						String sql4 = poiSql+taskId;
+						String sql5 = rdLinkSql+taskId+" AND r.kind >= 1 AND r.kind <= 7";
+						String sql6 = rdLinkSql+taskId+" AND r.kind >= 2 AND r.kind <= 7";
+						
+						Double linkPlanLen = run.query(conn, sql1,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
-					
-					Double linkAllLen = run.query(conn, sql2,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+						});
+						
+						Double linkAllLen = run.query(conn, sql2,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
-					
-					
-					Double poiPlanNum = run.query(conn, sql3,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+						});
+						
+						
+						Double poiPlanNum = run.query(conn, sql3,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
-					
-					Double poiAllNum = run.query(conn, sql4,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+						});
+						
+						Double poiAllNum = run.query(conn, sql4,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
-					
-					Double link17AllLen = run.query(conn, sql5,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+						});
+						
+						Double link17AllLen = run.query(conn, sql5,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
-					
-					Double link27AllLen = run.query(conn, sql6,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
+						});
+						
+						Double link27AllLen = run.query(conn, sql6,new ResultSetHandler<Double>() {
+							@Override
+							public Double handle(ResultSet rs)
+									throws SQLException {
+								if(rs.next()){
+									return rs.getDouble(1);
+								}
+								return 0.0;
 							}
-							return 0.0;
-						}
-					});
+						});
+						
+						
+						map.put("taskId", taskId.doubleValue());
+						map.put("linkPlanLen", linkPlanLen);
+						map.put("linkAllLen", linkAllLen);
+						map.put("poiPlanNum", poiPlanNum);
+						map.put("poiAllNum", poiAllNum);
+						map.put("link17AllLen", link17AllLen);
+						map.put("link27AllLen", link27AllLen);
+						
+						dayPlanStatList.add(map);
+						
 					
+					log.debug(JSONArray.fromObject(dayPlanStatList));
 					
-					map.put("taskId", taskId.doubleValue());
-					map.put("linkPlanLen", linkPlanLen);
-					map.put("linkAllLen", linkAllLen);
-					map.put("poiPlanNum", poiPlanNum);
-					map.put("poiAllNum", poiAllNum);
-					map.put("link17AllLen", link17AllLen);
-					map.put("link27AllLen", link27AllLen);
-					
-					dayPlanStatList.add(map);
-					
-				}
-				
-				log.debug(dayPlanStatList);
-				
-				Map<String,List<Map<String,Double>>> temp = new HashMap<String,List<Map<String,Double>>>();
-				temp.put("dayPlan", dayPlanStatList);
-//				stats.put(dbId, temp);
+					Map<String,List<Map<String,Double>>> temp = new HashMap<String,List<Map<String,Double>>>();
+					temp.put("dayPlan", dayPlanStatList);
+	//				stats.put(dbId, temp);
 
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
@@ -258,27 +251,32 @@ public class DayPlanJob extends AbstractStatJob {
 					latch.countDown();
 				}
 			}
+			
+			}
+			
 		}
 		
 	}
 	
-	public List<Integer> getTaskIdList() throws Exception{
+	public List<Map<String,Integer>> getTaskIdList() throws Exception{
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		List<Integer> taskIdList = new ArrayList<>();
+		List<Map<String,Integer>> taskIdList = new ArrayList<>();
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "SELECT task_id FROM task WHERE data_plan_status=1";
+			String sql  = "SELECT task_id,r.DAILY_DB_ID FROM task t,region r WHERE t.data_plan_status=1 and T.REGION_ID = R.REGION_ID";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
-				taskIdList.add(rs.getInt(1));
+				Map<String,Integer> map = new HashMap<>();
+				map.put("taskId", rs.getInt(1));
+				map.put("dbID", rs.getInt(2));
+				taskIdList.add(map);
 			}
-			
 			
 		} catch (Exception e) {
 			e.printStackTrace();

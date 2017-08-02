@@ -6,7 +6,14 @@ package com.navinfo.dataservice.engine.statics.writer;
  *
  */
 public class WriterFactory {
+	//子任务统计job
+	private static final String subtask_job = "subtaskStat";
+	
 	public static DefaultWriter createWriter(String jobType){
-		return new DefaultWriter();		
+		if(subtask_job.equals(jobType)){
+			return new SubtaskWriter();
+		}else{
+			return new DefaultWriter();		
+		}
 	}
 }

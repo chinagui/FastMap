@@ -2041,7 +2041,7 @@ public class ProgramService {
 						t.setWorkKind("1|0|0|0");
 					}else if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
-					}else{
+					}else if(t.getType()==0){
 						t.setWorkKind("1|0|0|0");
 					}
 					UserGroup group =null;

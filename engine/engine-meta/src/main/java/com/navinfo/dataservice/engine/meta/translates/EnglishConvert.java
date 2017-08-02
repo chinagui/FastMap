@@ -132,8 +132,6 @@ public class EnglishConvert {
 
             result = SplitUtil.split(result, param);
 
-            result = ConvertUtil.convertNoWord(result);
-
             result = ConvertUtil.removeRepeatBackSlash(result);
 
             result = this.convertKernel(result);
@@ -143,6 +141,8 @@ public class EnglishConvert {
             result = ConvertUtil.firstCapital(result);
 
             result = ConvertUtil.trimSymbolSpace(result);
+
+            result = ConvertUtil.convertNoWord(result);
         } catch (Exception e) {
             logger.error(String.format("英文翻译过程出错: [sourceText: %s]", sourceText), e);
             return result;

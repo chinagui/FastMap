@@ -79,7 +79,7 @@ public class CheckTest {
         test.init();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
 
-        String sql = "SELECT pid FROM poi_edit_status WHERE status=3";
+        String sql = "SELECT pid FROM poi_edit_status WHERE status=3 and rownum<2";
         PreparedStatement state = conn.prepareStatement(sql);
         ResultSet rs = state.executeQuery();
         Set<Long> pids = new HashSet<Long>();
@@ -93,7 +93,7 @@ public class CheckTest {
 
         CheckCommand checkCommand = new CheckCommand();
         List<String> ruleIdList = new ArrayList<String>();
-        ruleIdList.add("test2");
+        ruleIdList.add("FM-11Win-08-22");
         checkCommand.setRuleIdList(ruleIdList);
         checkCommand.setSaveResult(false);
 

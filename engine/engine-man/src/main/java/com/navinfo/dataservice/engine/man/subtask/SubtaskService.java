@@ -237,7 +237,7 @@ public class SubtaskService {
 	 * @param qualityTaskId
 	 * @throws ServiceException 
 	 */
-	private void updateQualityName(Connection conn,int qualityTaskId) throws ServiceException{
+	public void updateQualityName(Connection conn,int qualityTaskId) throws ServiceException{
 		try {
 			String updateSql="UPDATE SUBTASK"
 					+ "   SET NAME ="
@@ -290,7 +290,7 @@ public class SubtaskService {
 				bean.setStatus(2);
 			}
 			// 获取subtaskId，名称赋值的时候需要用到子任务id，所以必须放在前面
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
+			int subtaskId = SubtaskOperation.getSubtaskId(conn);
 			bean.setSubtaskId(subtaskId);
 			//情报项目为空时，需要后台自动创建名称
 			bean=autoInforName(conn,bean);
@@ -3769,12 +3769,14 @@ public class SubtaskService {
 			}
 			//创建子任务
 			int[] sums = kmeans.getCounts();
-
+			Task task=TaskService.getInstance().queryNoGeoByTaskId(conn, taskId);
 			for( Integer index : gridMaps.keySet()){
 				Map<Integer, Integer> gridMap = gridMaps.get(index);
 				Subtask subtask = new Subtask();
 				subtask.setGridIds(gridMap);
 				subtask.setType(3);//一体化grid粗编
+				subtask.setPlanStartDate(task.getPlanStartDate());
+				subtask.setPlanEndDate(task.getPlanEndDate());
 				subtask.setTaskId(taskId);
 				subtask.setStage(1); //日编
 				subtask.setDescp("自动规划创建");

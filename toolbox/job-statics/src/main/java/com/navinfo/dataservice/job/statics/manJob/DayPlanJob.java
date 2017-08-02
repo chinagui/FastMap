@@ -62,15 +62,6 @@ public class DayPlanJob extends AbstractStatJob {
 		try {
 			List<Map<String, Double>> stats = new ArrayList<Map<String,Double>>();
 			long t = System.currentTimeMillis();
-			initThreadPool(1);
-			final CountDownLatch latch = new CountDownLatch(1);
-			threadPoolExecutor.addDoneSignal(latch);
-			// 执行转数据
-		    threadPoolExecutor.execute(new DayPlanThread(latch,stats));
-			latch.await();
-			if (threadPoolExecutor.getExceptions().size() > 0) {
-				throw new Exception(threadPoolExecutor.getExceptions().get(0));
-			}
 			log.debug("所有Day_规划量数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			Map<String,List<Map<String,Double>>> result = new HashMap<String,List<Map<String,Double>>>();
@@ -84,174 +75,138 @@ public class DayPlanJob extends AbstractStatJob {
 		}
 	}
 	
-	private void initThreadPool(int poolSize)throws Exception{
-		log.debug("开始初始化线程池");
-        threadPoolExecutor = new VMThreadPoolExecutor(poolSize,
-        		poolSize,
-				3,
-				TimeUnit.SECONDS,
-				new LinkedBlockingQueue(),
-				new ThreadPoolExecutor.CallerRunsPolicy());
-	}
-	private void shutDownPoolExecutor(){
-		if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
-			log.debug("关闭线程池");
-			threadPoolExecutor.shutdownNow();
-			try {
-				while (!threadPoolExecutor.isTerminated()) {
-					log.debug("等待线程结束：线程数为" + threadPoolExecutor.getActiveCount());
-					Thread.sleep(2000);
-				}
-			} catch (InterruptedException e) {
-				log.error("关闭线程池失败");
-				throw new ServiceRtException("关闭线程池失败", e);
-			}
-		}
-	}
 	
-	class DayPlanThread implements Runnable{
-		CountDownLatch latch = null;
-		List<Map<String, Double>> stats;
-		DayPlanThread(CountDownLatch latch,List<Map<String, Double>> stat){
-			this.latch=latch;
-			this.stats = stat;
+	public List<Map<String,Double>> getStats() {
+		List<Map<String, Integer>> taskIdMapList = null;
+		List<Map<String,Double>> stats = new ArrayList<>();
+		try {
+			taskIdMapList = getTaskIdList();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
-		@Override
-		public void run() {
-			List<Map<String, Integer>> taskIdMapList = null;
-			try {
-				taskIdMapList = getTaskIdList();
-			} catch (Exception e) {
-				e.printStackTrace();
+		for (Map<String, Integer> taskIdMap : taskIdMapList) {
+			
+			Integer dbId = taskIdMap.get("dbId");
+			Integer taskId = taskIdMap.get("taskId");
+			
+			String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
+			MongoDao md = new MongoDao(dbName);
+			if(md.find("task_day_plan",Filters.eq("taskId", taskId)).iterator().hasNext()){
+				continue;
 			}
-			for (Map<String, Integer> taskIdMap : taskIdMapList) {
+			Connection conn=null;
+			try{
+				conn=DBConnector.getInstance().getConnectionById(dbId);
+				QueryRunner run = new QueryRunner();
 				
-				Integer dbId = taskIdMap.get("dbId");
-				Integer taskId = taskIdMap.get("taskId");
 				
-				String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
-				MongoDao md = new MongoDao(dbName);
-				if(md.find("task_day_plan",Filters.eq("taskId", taskId)).iterator().hasNext()){
-					continue;
-				}
-				Connection conn=null;
-				try{
-					conn=DBConnector.getInstance().getConnectionById(dbId);
-					QueryRunner run = new QueryRunner();
+				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
+				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
+				String planSuffix = " AND d.is_plan_selected=1 ";
+				
 					
-					
-					String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
-					String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
-					String planSuffix = " AND d.is_plan_selected=1 ";
-					
-						
-					Map<String,Double> map  = new HashMap<>();
-					
-					String sql1 = rdLinkSql+taskId+planSuffix;
-					String sql2 = rdLinkSql+taskId;
-					String sql3 = poiSql+taskId+planSuffix;
-					String sql4 = poiSql+taskId;
-					String sql5 = rdLinkSql+taskId+" AND r.kind >= 1 AND r.kind <= 7";
-					String sql6 = rdLinkSql+taskId+" AND r.kind >= 2 AND r.kind <= 7";
-					
-					Double linkPlanLen = run.query(conn, sql1,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
+				Map<String,Double> map  = new HashMap<>();
+				
+				String sql1 = rdLinkSql+taskId+planSuffix;
+				String sql2 = rdLinkSql+taskId;
+				String sql3 = poiSql+taskId+planSuffix;
+				String sql4 = poiSql+taskId;
+				String sql5 = rdLinkSql+taskId+" AND r.kind >= 1 AND r.kind <= 7";
+				String sql6 = rdLinkSql+taskId+" AND r.kind >= 2 AND r.kind <= 7";
+				
+				Double linkPlanLen = run.query(conn, sql1,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
 						}
-					});
-					
-					Double linkAllLen = run.query(conn, sql2,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
-						}
-					});
-					
-					
-					Double poiPlanNum = run.query(conn, sql3,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
-						}
-					});
-					
-					Double poiAllNum = run.query(conn, sql4,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
-						}
-					});
-					
-					Double link17AllLen = run.query(conn, sql5,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
-						}
-					});
-					
-					Double link27AllLen = run.query(conn, sql6,new ResultSetHandler<Double>() {
-						@Override
-						public Double handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getDouble(1);
-							}
-							return 0.0;
-						}
-					});
-					
-					
-					map.put("taskId", taskId.doubleValue());
-					map.put("linkPlanLen", linkPlanLen);
-					map.put("linkAllLen", linkAllLen);
-					map.put("poiPlanNum", poiPlanNum);
-					map.put("poiAllNum", poiAllNum);
-					map.put("link17AllLen", link17AllLen);
-					map.put("link27AllLen", link27AllLen);
-					
-					stats.add(map);
-					
-
-				}catch(Exception e){
-					log.error(e.getMessage(),e);
-					throw new ThreadExecuteException("dbId("+dbId+")Day_规划量数据统计失败");
-				}finally{
-					DbUtils.closeQuietly(conn);
-					if(latch!=null){
-						latch.countDown();
+						return 0.0;
 					}
-				}
-			
-			}
-			
-			log.debug(JSONArray.fromObject(stats));
+				});
+				
+				Double linkAllLen = run.query(conn, sql2,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
+						}
+						return 0.0;
+					}
+				});
+				
+				
+				Double poiPlanNum = run.query(conn, sql3,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
+						}
+						return 0.0;
+					}
+				});
+				
+				Double poiAllNum = run.query(conn, sql4,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
+						}
+						return 0.0;
+					}
+				});
+				
+				Double link17AllLen = run.query(conn, sql5,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
+						}
+						return 0.0;
+					}
+				});
+				
+				Double link27AllLen = run.query(conn, sql6,new ResultSetHandler<Double>() {
+					@Override
+					public Double handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getDouble(1);
+						}
+						return 0.0;
+					}
+				});
+				
+				
+				map.put("taskId", taskId.doubleValue());
+				map.put("linkPlanLen", linkPlanLen);
+				map.put("linkAllLen", linkAllLen);
+				map.put("poiPlanNum", poiPlanNum);
+				map.put("poiAllNum", poiAllNum);
+				map.put("link17AllLen", link17AllLen);
+				map.put("link27AllLen", link27AllLen);
+				
+				stats.add(map);
+				
 
-			
+			}catch(Exception e){
+				log.error(e.getMessage(),e);
+				throw new ThreadExecuteException("dbId("+dbId+")Day_规划量数据统计失败");
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		
 		}
 		
-	}
+		log.debug(JSONArray.fromObject(stats));
+		
+		return stats;
+			
+	 }
 	
 	public List<Map<String,Integer>> getTaskIdList() throws Exception{
 		Connection conn = null;

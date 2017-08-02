@@ -54,6 +54,7 @@ public class TranslateTest {
         //System.out.println(convert.convert("县道210"));
         //System.out.println(convert.convert("陕西县道210"));
         //System.out.println(convert.convert("县210道"));
+        System.out.println(convert.convert("７１１便利店０３３｜９℃店|１＋１＝２童装|便利店ｎＯ．３"));
         System.out.println(convert.convert("三零六医院"));
         System.out.println(convert.convert("的三零六医院"));
         System.out.println(convert.convert("306医院"));

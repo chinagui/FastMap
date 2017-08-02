@@ -147,12 +147,14 @@ public class FMBATD20004 extends BasicBatchRule {
 			}
 			//处理ix_poi_flag
 			if(poi.getHisOpType().equals(OperationType.INSERT)||poi.getHisOpType().equals(OperationType.UPDATE)){
-				for(IxPoiFlagMethod poiFlag:poiFlags){
-					if(poiFlag.getFieldVerified()==0&&flagCode0){
-						delIxPoiFlag(poiObj,"110001110000");
-					}
-					if(poiFlag.getFieldVerified()==1&&!flagCode0){
-						addIxPoiFlag(poiObj,"110001110000");
+				if(poiFlags != null && poiFlags.size() > 0){
+					for(IxPoiFlagMethod poiFlag:poiFlags){
+						if(poiFlag.getFieldVerified()==0&&flagCode0){
+							delIxPoiFlag(poiObj,"110001110000");
+						}
+						if(poiFlag.getFieldVerified()==1&&!flagCode0){
+							addIxPoiFlag(poiObj,"110001110000");
+						}
 					}
 				}
 			}

@@ -376,6 +376,8 @@ comment on column DATA_PLAN.is_plan_selected
   is '是否规划选中状态 0非选中状态，1选中状态';
 comment on column DATA_PLAN.is_important
   is '是否重要poi 0非重要poi，1重要poi';
+comment on column DATA_PLAN.operate_date
+  is '规划时间';
 
 
 create table  IX_POI_FLAG_METHOD(

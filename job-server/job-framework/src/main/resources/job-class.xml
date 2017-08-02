@@ -82,8 +82,8 @@
 		request="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJobRequest" >
 	</type>
 	<type name="poiDayStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJobRequest" >
+		class="com.navinfo.dataservice.job.statics.manJob.DayPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPoiStatJobRequest" >
 	</type>
 	<type name="monthPoiStat"
 		class="com.navinfo.dataservice.job.statics.manJob.MonthPoiJob"
@@ -117,5 +117,13 @@
 	<type name="dayPlanStat"
 		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
 		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
+	</type>
+	<type name="dayLogCheck"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckJobRequest">
+	</type>
+	<type name="dayLogCheckImport"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckImportJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckImportJobRequest">
 	</type>
 	</mapping>

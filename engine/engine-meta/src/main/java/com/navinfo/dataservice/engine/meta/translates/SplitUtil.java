@@ -126,11 +126,13 @@ public class SplitUtil {
                             wordValue = String.valueOf(currentChar);
                         } else if (ConvertUtil.isLetter(currentChar) && ConvertUtil.isNotLetter(afterChar)){
                             wordValue = currentChar + "/";
-                        } else if (ConvertUtil.isChinese(currentChar) && ConvertUtil.isNotChinese(afterChar)){
+                        } else if (ConvertUtil.isNotLetter(currentChar) && ConvertUtil.isLetter(afterChar)) {
                             wordValue = currentChar + "/";
                         } else if (ConvertUtil.isNotChinese(currentChar) && ConvertUtil.isChinese(afterChar)){
                             wordValue = currentChar + "/";
                         } else if (Character.isDigit(currentChar) && !Character.isDigit(afterChar)) {
+                            wordValue = currentChar + "/";
+                        } else if (!Character.isDigit(currentChar) && Character.isDigit(afterChar)) {
                             wordValue = currentChar + "/";
                         } else if (ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";

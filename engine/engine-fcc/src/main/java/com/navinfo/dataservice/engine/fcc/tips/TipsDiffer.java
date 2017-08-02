@@ -94,8 +94,8 @@ public class TipsDiffer {
 			if (htab != null) {
 				htab.close();
 			}
-			// 若外部传入连接，不能关闭。由调用者关闭
-			if (connOuter != null) {
+			// 若外部传入连接，不能关闭。由调用者关闭(不是外部传来的连接，则需要自行关闭)
+			if (connOuter == null) {
 				DbUtils.commitAndCloseQuietly(oraConnection);
 			}
 		}

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.job.statics.manJob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +71,11 @@ public class DayPoiJob extends AbstractStatJob {
 			if(dbSize == 1){
 				new PoiDayStatThread(null, dbIds.iterator().next(), stats).run();
 			}else{
-				initThreadPool(dbSize);
+				if(dbSize > 10){
+					initThreadPool(10);
+				}else{
+					initThreadPool(dbSize);
+				}
 				final CountDownLatch latch = new CountDownLatch(dbSize);
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
@@ -158,6 +161,7 @@ public class DayPoiJob extends AbstractStatJob {
 					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
 					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
 					cell.put("firstEditDate", entry.getValue().get("firstEditDate"));
+					cell.put("collectTime", entry.getValue().get("collectTime"));
 					subtaskStat.add(cell);
 				}
 				
@@ -184,8 +188,8 @@ public class DayPoiJob extends AbstractStatJob {
 				
 				Map<String,List<Map<String, Object>>> temp = new HashMap<String,List<Map<String, Object>>>();
 				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
-				log.info("dbId:"+dbId+"subtaskStatMap:" + taskStat);
-				log.info("dbId:"+dbId+"subtaskStatMap:" + notaskStat);
+				log.info("dbId:"+dbId+"taskStatMap:" + taskStat);
+				log.info("dbId:"+dbId+"notaskStatMap:" + notaskStat);
 				
 				temp.put("subtaskStat", subtaskStat);
 				temp.put("taskStat", taskStat);
@@ -193,7 +197,6 @@ public class DayPoiJob extends AbstractStatJob {
 				stats.put(dbId, temp);
 			}catch(Exception e){
 				log.error("dbId("+dbId+")POI日库作业数据统计失败");
-//				throw new ThreadExecuteException("dbId("+dbId+")POI日库作业数据统计失败");
 			}finally{
 				if(latch!=null){
 					latch.countDown();
@@ -279,13 +282,13 @@ public class DayPoiJob extends AbstractStatJob {
 		 *     每个子任务（log_action.stk_Id）对应的第一条履历的时间
 		 * 
 		 * */
-		public void statisticsSubTaskDataImp(Map<Integer, Map<String, Object>> subtaskStat, int subtaskId, int status, List<Map<Integer, Timestamp>> subTaskDate){
+		public void statisticsSubTaskDataImp(Map<Integer, Map<String, Object>> subtaskStat, int subtaskId, int status, List<Map<Integer, String>> subTaskDate, String collectTime){
 
 	    	Map<String, Object> value = new HashMap<String, Object>();
-	    	int poiUploadNum = 0 ;
+	    	int poiUploadNum = 0;
 	    	int poiFinishNum = 0;
-	    	Timestamp firstEditDate = null;
-	    	for(Map<Integer, Timestamp> map : subTaskDate){
+	    	String firstEditDate = "";
+	    	for(Map<Integer, String> map : subTaskDate){
 	    		if(map.containsKey(subtaskId)){
 	    			firstEditDate = map.get(subtaskId);
 	    			break;
@@ -308,6 +311,7 @@ public class DayPoiJob extends AbstractStatJob {
 	    	value.put("poiUploadNum", poiUploadNum);
 	    	value.put("poiFinishNum", poiFinishNum);
 	    	value.put("firstEditDate", firstEditDate);
+	    	value.put("collectTime", collectTime);
 	    	
 	    	subtaskStat.put(subtaskId, value);
 	    
@@ -319,16 +323,16 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @throws Exception
 		 * 
 		 * */
-		public List<Map<Integer, Timestamp>> queryFirstEditDate(Connection conn) throws Exception{
+		public List<Map<Integer, String>> queryFirstEditDate(Connection conn) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
-				String sql = "SELECT  A.STK_ID,MIN(T.OP_DT) AS FIRSTTIME FROM LOG_OPERATION T, LOG_ACTION A WHERE A.ACT_ID = T.ACT_ID GROUP BY A.STK_ID";
-				ResultSetHandler<List<Map<Integer, Timestamp>>> rsHandler = new ResultSetHandler<List<Map<Integer, Timestamp>>>() {
-					public List<Map<Integer, Timestamp>> handle(ResultSet rs) throws SQLException {
-						List<Map<Integer, Timestamp>> result = new ArrayList<Map<Integer, Timestamp>>();
+				String sql = "SELECT A.STK_ID,TO_CHAR(MIN(T.OP_DT),'YYYYMMDDHH24MISS') AS FIRSTTIME FROM LOG_OPERATION T, LOG_ACTION A WHERE A.ACT_ID = T.ACT_ID GROUP BY A.STK_ID";
+				ResultSetHandler<List<Map<Integer, String>>> rsHandler = new ResultSetHandler<List<Map<Integer, String>>>() {
+					public List<Map<Integer, String>> handle(ResultSet rs) throws SQLException {
+						List<Map<Integer, String>> result = new ArrayList<Map<Integer, String>>();
 						while(rs.next()){
-							Map<Integer, Timestamp> map = new HashMap<Integer, Timestamp>();
-							map.put(rs.getInt("STK_ID"), rs.getTimestamp("FIRSTTIME"));
+							Map<Integer, String> map = new HashMap<Integer, String>();
+							map.put(rs.getInt("STK_ID"), rs.getString("FIRSTTIME"));
 							result.add(map);
 						}
 						return result;
@@ -350,7 +354,7 @@ public class DayPoiJob extends AbstractStatJob {
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
-				final List<Map<Integer, Timestamp>> subTaskDate = queryFirstEditDate(conn);
+				final List<Map<Integer, String>> subTaskDate = queryFirstEditDate(conn);
 				
 				QueryRunner run = new QueryRunner();
 				
@@ -365,6 +369,7 @@ public class DayPoiJob extends AbstractStatJob {
 				sb.append("        S.MEDIUM_TASK_ID,              ");
 				sb.append("        P.MESH_ID,                     ");
 				sb.append("        P.GEOMETRY,                    ");
+				sb.append("        P.COLLECT_TIME,                ");
 				sb.append("        D.PID  PLAN_PID                ");
 				sb.append("   FROM POI_EDIT_STATUS S, IX_POI P    ");
 				sb.append("LEFT JOIN DATA_PLAN D ON D.PID = P.PID ");
@@ -388,17 +393,19 @@ public class DayPoiJob extends AbstractStatJob {
 						    int fresh = rs.getInt("FRESH_VERIFIED");
 						    int planPid = rs.getInt("PLAN_PID");
 						    if(subtaskId != 0){
-						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate);
+						    	String collectTime = rs.getString("COLLECT_TIME");
+						    	collectTime = (collectTime != null)?collectTime : "";
+						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate, collectTime);
 						    }
 						    
-						    if(taskId != 0 || quickTaskId != 0){
-						    	if(taskId != 0 && quickTaskId != 0){
-						    		log.error("PID:"+rs.getInt("PID")+"数据错误，既存在中线任务下又存在快线任务下，不计入统计");
-						    		continue;
-						    	}
+						    if(taskId != 0){
 						    	//调用处理任务统计方法
 						    	statisticsTaskDataImp(taskStat, taskId, quickTaskId, status, fresh, planPid);
 						    	
+						    }
+						    if(quickTaskId != 0){
+						    	//调用处理任务统计方法
+						    	statisticsTaskDataImp(taskStat, taskId, quickTaskId, status, fresh, planPid);
 						    }
 						    if(taskId == 0 && quickTaskId == 0){
 						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

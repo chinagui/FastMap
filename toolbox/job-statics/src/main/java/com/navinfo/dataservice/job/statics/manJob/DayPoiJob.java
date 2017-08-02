@@ -227,7 +227,7 @@ public class DayPoiJob extends AbstractStatJob {
 	    	int poiUnFreshNum = 0;
 	    	int poiFinishAndPlanNum = 0;
 	    	
-	    	if(taskStat.containsKey(taskId)){
+	    	if(taskId != 0 && taskStat.containsKey(taskId)){
 	    		value = taskStat.get(taskId);
 	    		poiUploadNum = value.get("poiUploadNum");
 	    		poiFinishNum = value.get("poiFinishNum");
@@ -245,7 +245,7 @@ public class DayPoiJob extends AbstractStatJob {
 		    		poiFinishAndPlanNum++;
 		    	}
 	    	}
-	    	if(taskStat.containsKey(quickTaskId)){
+	    	if(quickTaskId != 0 && taskStat.containsKey(quickTaskId)){
 	    		value = taskStat.get(quickTaskId);
 	    		poiUploadNum = value.get("poiUploadNum");
 	    		poiFinishNum = value.get("poiFinishNum");
@@ -397,15 +397,14 @@ public class DayPoiJob extends AbstractStatJob {
 						    	collectTime = (collectTime != null)?collectTime : "";
 						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate, collectTime);
 						    }
-						    
 						    if(taskId != 0){
 						    	//调用处理任务统计方法
-						    	statisticsTaskDataImp(taskStat, taskId, quickTaskId, status, fresh, planPid);
+						    	statisticsTaskDataImp(taskStat, taskId, 0, status, fresh, planPid);
 						    	
 						    }
 						    if(quickTaskId != 0){
 						    	//调用处理任务统计方法
-						    	statisticsTaskDataImp(taskStat, taskId, quickTaskId, status, fresh, planPid);
+						    	statisticsTaskDataImp(taskStat, 0, quickTaskId, status, fresh, planPid);
 						    }
 						    if(taskId == 0 && quickTaskId == 0){
 						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

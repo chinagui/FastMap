@@ -180,11 +180,12 @@ public class TipsImportUtils {
 			
 			for (int i = 0; i < glen; i++) {
 				
-				if (!g.isValid()) {
+				Geometry geo=g.getGeometryN(i);
+				if (!geo.isValid()) {
 					throw new Exception("invalid g_location");
 				}
 				
-				geos.add(g.getGeometryN(i));
+				geos.add(geo);
 				
 			}
 		}

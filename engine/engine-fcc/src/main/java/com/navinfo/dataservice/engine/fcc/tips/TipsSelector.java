@@ -400,11 +400,17 @@ public class TipsSelector {
                         if(oArray != null && oArray.size() > 0) {
                             for(int oIndex = 0; oIndex < oArray.size(); oIndex ++) {
                                 JSONObject outObj = oArray.getJSONObject(oIndex);
+                                JSONObject  obj=new JSONObject();
                                 int oInfo = outObj.getInt("oInfo");
-                                oInfoArray.add(oInfo);
+                                int flag = outObj.getInt("flag");
+                                obj.put("oInfo",oInfo);
+                                obj.put("flag", flag);
+                                oInfoArray.add(flag);
                             }
                         }
+                       // --输入：刘哲
                         m.put("d", oInfoArray);
+                        m.put("c", deep.getDouble("agl"));
                     }
 				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));

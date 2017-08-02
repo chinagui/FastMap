@@ -88,6 +88,7 @@ public class DeepInfoImporter {
 		// int hotelCount = 0;
 		int detailCount = 0;
 		// int restaurantCount = 0;
+		int photoCount = 0;
 
 		int total = 0;
 
@@ -121,8 +122,10 @@ public class DeepInfoImporter {
 			rs.close();
 
 			try {
+				int isImportPhoto = 0;
 				// gas
 				int res = GasStationImporter.run(conn, stmt, poi);
+				isImportPhoto += res;
 
 				if (res > 0) {
 					cache++;
@@ -130,6 +133,7 @@ public class DeepInfoImporter {
 				}
 				// parking
 				res = ParkingImporter.run(conn, stmt, poi);
+				isImportPhoto += res;
 
 				if (res > 0) {
 					cache++;
@@ -138,6 +142,8 @@ public class DeepInfoImporter {
 
 				// business time
 				res = BusinessTimeImporter.run(conn, stmt, poi);
+				isImportPhoto += res;
+				
 				if (res > 0) {
 					cache++;
 					businessTimeCount++;
@@ -145,6 +151,8 @@ public class DeepInfoImporter {
 
 				// car rental
 				res = CarRentalImporter.run(conn, stmt, poi);
+				isImportPhoto += res;
+				
 				if (res > 0) {
 					cache++;
 					carRentalCount++;
@@ -157,9 +165,19 @@ public class DeepInfoImporter {
 				 */
 				// detail
 				res = DetailImporter.run(conn, stmt, poi);
+				isImportPhoto += res;
+				
 				if (res > 0) {
 					cache++;
 					detailCount++;
+				}
+				
+				if(isImportPhoto>0){
+					res = PhotoImporter.run(conn, stmt, poi);
+					if (res > 0) {
+						cache++;
+						photoCount++;
+					}
 				}
 
 				// restaurant

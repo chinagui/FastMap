@@ -31,7 +31,7 @@ public class Infor  {
 	private Timestamp insertTime;
 	
 	private Integer feedbackType;
-	private Integer featureKind;
+	private int featureKind;
 	
 	private String adminName;
 	private String adminCode;
@@ -126,14 +126,14 @@ public class Infor  {
 	/**
 	 * @return the featureKind
 	 */
-	public Integer getFeatureKind() {
+	public int getFeatureKind() {
 		return featureKind;
 	}
 
 	/**
 	 * @param featureKind the featureKind to set
 	 */
-	public void setFeatureKind(Integer featureKind) {
+	public void setFeatureKind(int featureKind) {
 		this.featureKind = featureKind;
 	}
 

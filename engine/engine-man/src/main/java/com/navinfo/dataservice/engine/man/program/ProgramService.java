@@ -2061,7 +2061,14 @@ public class ProgramService {
 					if(group!=null){
 						t.setGroupId(group.getGroupId());
 					}
-					
+					if(t.getType()==0){
+						t.setRoadPlanTotal(infor.getRoadLength());
+						if(infor.getFeatureKind()==1){
+							t.setPoiPlanTotal(5);
+						}else{
+							t.setPoiPlanTotal(20);
+						}
+					}
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
 					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);	

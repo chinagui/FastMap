@@ -25,8 +25,9 @@ public class CheckGeometryNoOnMeshBoarder extends baseRule {
 				RdSpeedlimit rdSpeedlimit = (RdSpeedlimit)obj;
 
 				Geometry geometry = rdSpeedlimit.getGeometry();
-				if (rdSpeedlimit.changedFields().containsKey("geometry"))
-					geometry = GeoTranslator.geojson2Jts((JSONObject) rdSpeedlimit.changedFields().get("geometry"));
+				if (rdSpeedlimit.changedFields().containsKey("geometry")) {
+					geometry = GeoTranslator.geojson2Jts((JSONObject) rdSpeedlimit.changedFields().get("geometry"),GeoTranslator.geoUpgrade, 0);
+				}
 				
 				if(MeshUtils.isPointAtMeshBorderWith100000(geometry.getCoordinate().x,geometry.getCoordinate().y)){
 					this.setCheckResult("", "", 0);

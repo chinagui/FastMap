@@ -1,6 +1,10 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.meta.translates.model.Chi2EngKeyword;
+import com.navinfo.dataservice.engine.meta.translates.model.EngKeyword;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -9,11 +13,8 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 /**
@@ -53,19 +54,21 @@ public class TranslateDictData {
 
     private static Integer FETCH_SIZE = 3000;
 
-    private Map<String, String> dictSpecialMap = new HashMap<>();
+    private Map<String, String> dictSpecialMap = new LinkedHashMap<>();
 
-    private Map<String, String> dictSymbolMap = new HashMap<>();
+    private Map<String, String> dictSymbolMap = new LinkedHashMap<>();
 
-    private Map<String, List<String>> dictDictionary = new HashMap<>();
+    private Map<String, List<String>> dictDictionary = new LinkedHashMap<>();
 
-    private Map<String, String> dictFhWidth = new HashMap<>();
+    private Map<String, String> dictFhWidth = new LinkedHashMap<>();
 
-    private Map<String, List<Map<String, String>>> dictWord = new HashMap<>();
+    private Map<String, List<Map<String, String>>> dictWord = new LinkedHashMap<>();
 
-    private Map<String, String> dictWordIndex = new HashMap<>();
+    private Map<String, String> dictWordIndex = new LinkedHashMap<>();
 
-    private Map<String, String> dictChi2Eng = new HashMap<>();
+    private Map<String, Chi2EngKeyword> dictChi2Eng = new LinkedHashMap<>();
+
+    private Map<String, List<EngKeyword>> dictEngKeyword = new LinkedHashMap<>();
 
     public synchronized Map<String, String> getDictSpecialMap() {
         if (dictSpecialMap.isEmpty())
@@ -103,10 +106,16 @@ public class TranslateDictData {
         return dictWordIndex;
     }
 
-    public synchronized Map<String, String> getDictChi2Eng() {
+    public synchronized Map<String, Chi2EngKeyword> getDictChi2Eng() {
         if (dictChi2Eng.isEmpty())
             loadChi2Eng();
         return dictChi2Eng;
+    }
+
+    public synchronized Map<String, List<EngKeyword>> getDictEngKeyword() {
+        if (dictEngKeyword.isEmpty())
+            loadEngKeyword();
+        return dictEngKeyword;
     }
 
     private void loadSpecial() {
@@ -131,7 +140,7 @@ public class TranslateDictData {
         @Override
         public Map<String, String> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new LinkedHashMap<>();
             while (rs.next()) {
                 map.put(rs.getString(1), rs.getString(2));
             }
@@ -161,7 +170,7 @@ public class TranslateDictData {
         @Override
         public Map<String, String> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new LinkedHashMap<>();
             while (rs.next()) {
                 map.put(rs.getString(1), rs.getString(2));
             }
@@ -192,7 +201,7 @@ public class TranslateDictData {
         @Override
         public Map<String, List<String>> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, List<String>> map = new HashMap<>();
+            Map<String, List<String>> map = new LinkedHashMap<>();
             while (rs.next()) {
                 map.put(rs.getString(1), Arrays.asList(rs.getString(2).split(",")));
             }
@@ -222,7 +231,7 @@ public class TranslateDictData {
         @Override
         public Map<String, String> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new LinkedHashMap<>();
             while (rs.next()) {
                 map.put(rs.getString(1), rs.getString(2));
             }
@@ -240,8 +249,8 @@ public class TranslateDictData {
             logger.debug("加载拼音字典表成功，共" + dictWord.size() + "条数据");
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
-            logger.error(e.getMessage(), e);
             logger.warn("加载拼音字典表失败,已忽略...");
+            logger.error(e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }
@@ -251,12 +260,12 @@ public class TranslateDictData {
         @Override
         public Map<String, List<Map<String, String>>> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, List<Map<String, String>>> map = new HashMap<>();
+            Map<String, List<Map<String, String>>> map = new LinkedHashMap<>();
             List<Map<String, String>> innerList = new ArrayList<>();
             Map<String, String> innerMap;
             String oldWord = null;
             while (rs.next()) {
-                innerMap = new HashMap<>();
+                innerMap = new LinkedHashMap<>();
                 String word = rs.getString(1);
                 innerMap.put("py", rs.getString(2));
                 innerMap.put("py2", rs.getString(3));
@@ -284,28 +293,148 @@ public class TranslateDictData {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getMetaConnection();
-            String sql = "SELECT CHIKEYWORDS, ENGKEYWORDS FROM SC_POINT_CHI2ENG_KEYWORD ";
-            Map<String, String> map = runner.query(conn, sql, new ParseChi2EngHandler());
+            String sql = "SELECT ID, CHIKEYWORDS, ENGKEYWORDS, PRIORITY, KIND, SOURCE, MEMO FROM SC_POINT_CHI2ENG_KEYWORD ";
+            Map<String, Chi2EngKeyword> map = runner.query(conn, sql, new ParseChi2EngHandler());
             dictChi2Eng.putAll(map);
             logger.debug("加载关键字字典表成功，共" + dictChi2Eng.size() + "条数据");
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
-            logger.debug("加载拼音字典表失败，已忽略...");
-            logger.debug(e.getMessage(), e);
+            logger.warn("加载拼音字典表失败，已忽略...");
+            logger.error(e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }
     }
 
-    private class ParseChi2EngHandler implements ResultSetHandler<Map<String, String>> {
+    private class ParseChi2EngHandler implements ResultSetHandler<Map<String, Chi2EngKeyword>> {
         @Override
-        public Map<String, String> handle(ResultSet rs) throws SQLException {
+        public Map<String, Chi2EngKeyword> handle(ResultSet rs) throws SQLException {
             rs.setFetchSize(FETCH_SIZE);
-            Map<String, String> map = new HashMap<>();
+            Map<String, Chi2EngKeyword> map = new LinkedHashMap<>();
             while (rs.next()) {
-                map.put(rs.getString(1), rs.getString(2));
+                Chi2EngKeyword chi2EngKeyword = new Chi2EngKeyword();
+
+                long id = rs.getLong("ID");
+                chi2EngKeyword.setId(id);
+
+                String chikeywords = rs.getString("CHIKEYWORDS");
+                chi2EngKeyword.setChikeywords(chikeywords);
+
+                String engkeywords = rs.getString("ENGKEYWORDS");
+                chi2EngKeyword.setEngkeywords(engkeywords);
+
+                int priority = rs.getInt("PRIORITY");
+                chi2EngKeyword.setPriority(priority);
+
+                String kind = rs.getString("KIND");
+                chi2EngKeyword.setKind(kind);
+
+                String source = rs.getString("SOURCE");
+                chi2EngKeyword.setSource(source);
+
+                String memo = rs.getString("MEMO");
+                chi2EngKeyword.setMemo(memo);
+
+                map.put(chikeywords, chi2EngKeyword);
             }
             return map;
+        }
+    }
+
+
+    public void loadEngKeyword() {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getMetaConnection();
+            String sql = "SELECT ID, SPEC_WORDS, COMBINED_WORDS, SELECTED_WORDS, PRIORITY, RESULT, ENG_WORDS, TYPE FROM SC_POINT_SPEC_ENGKEYWORD ORDER BY TYPE, SPEC_WORDS DESC";
+            Map<String, List<EngKeyword>> map = runner.query(conn, sql, new ParseEngKeywordHandler());
+            dictEngKeyword.putAll(map);
+            logger.debug("加载特殊词翻译字典表成功，共" + dictEngKeyword.size() + "条数据");
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            logger.warn("加载特殊词翻译字典表失败，已忽略...");
+            logger.error(e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+    private class ParseEngKeywordHandler implements ResultSetHandler<Map<String, List<EngKeyword>>> {
+        @Override
+        public Map<String, List<EngKeyword>> handle(ResultSet rs) throws SQLException {
+            rs.setFetchSize(FETCH_SIZE);
+            Map<String, List<EngKeyword>> map = new LinkedHashMap<>();
+
+            StringBuilder regex;
+
+            while (rs.next()) {
+                EngKeyword engKeyword = new EngKeyword();
+
+                long id = rs.getLong("ID");
+                engKeyword.setId(id);
+
+                String specWords = rs.getString("SPEC_WORDS");
+                engKeyword.setSpecWords(specWords);
+
+                String combinedWords = rs.getString("COMBINED_WORDS");
+                regex = new StringBuilder();
+                if (StringUtils.isNotEmpty(combinedWords)) {
+                    regex.append("[");
+                    for (String combinedWord : combinedWords.split("/")) {
+                        if (StringUtils.equals("数字", combinedWord)) {
+                            regex.append("0-9").append("０-９");
+                            regex.append("零一二三四五六七八九");
+                        }
+                        if (StringUtils.equals("字母", combinedWord)) {
+                            regex.append("a-z").append("A-Z");
+                        }
+                    }
+                    regex.append(" 　]{1}");
+                }
+                engKeyword.setCombinedWords(regex.toString());
+
+                String selectedWords = rs.getString("SELECTED_WORDS");
+                engKeyword.setSelectedWords(selectedWords);
+
+                String priority = rs.getString("PRIORITY");
+                engKeyword.setPriority(priority);
+
+                String kind = rs.getString("RESULT");
+                engKeyword.setResult(kind);
+
+                String engWords = rs.getString("ENG_WORDS");
+                engKeyword.setEngWords(engWords);
+
+                int type = rs.getInt("TYPE");
+                engKeyword.setType(type);
+
+                if (map.containsKey(specWords)) {
+                    map.get(specWords).add(engKeyword);
+                } else {
+                    List<EngKeyword> list = new ArrayList<>();
+                    list.add(engKeyword);
+                    map.put(specWords, list);
+                }
+            }
+            return map;
+        }
+    }
+
+    public static void main(String[] args) {
+        String regex = "[九-零]{1}";
+        //System.out.println(Pattern.matches(regex, "零"));
+        //System.out.println(Pattern.matches(regex, "一"));
+        //System.out.println(Pattern.matches(regex, "壹"));
+
+        System.out.println(Integer.valueOf('零'));
+        System.out.println(Integer.valueOf('一'));
+        System.out.println(Integer.valueOf('壹'));
+        System.out.println(Integer.valueOf('九'));
+        System.out.println(Integer.valueOf('玖'));
+
+        for (int i = 19968; i <= 20661;i++) {
+            System.out.println((char)i);
         }
     }
 }

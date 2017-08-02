@@ -573,8 +573,10 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	@Override
 	public String convertEng(String word, String admin) {
-        EnglishConvert convert = new EnglishConvert(admin);
-		return convert.convert(word);
+        EnglishConvert convert = new EnglishConvert();
+        convert.setAdminCode(admin);
+
+        return convert.convert(word);
 	}
 	
 	@Override

@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 
-import java.util.List;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.meta.translates.model.Chi2EngKeyword;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -16,12 +19,12 @@ import java.util.regex.Pattern;
 public class SplitUtil {
 
 
-    public static String split(String sourceText, List<Integer> wordIndex){
+    public static String split(String sourceText, Param param){
         sourceText = ConvertUtil.convertHalf2Full(sourceText);
 
         sourceText = ConvertUtil.removeRepeatSpace(sourceText);
 
-        sourceText = splitWords(sourceText, wordIndex);
+        sourceText = splitWords(sourceText, param);
 
         sourceText = joinSingleLetter(sourceText);
 
@@ -29,7 +32,7 @@ public class SplitUtil {
     }
 
     private static String joinSingleLetter(String sourceText) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         String regex = "[Ａ-Ｚａ-ｚ０-９1-9]{1}";
 
@@ -57,58 +60,84 @@ public class SplitUtil {
         return result.toString();
     }
 
-    private static String splitWords(String sourceText, List<Integer> wordIndex) {
-        StringBuffer result = new StringBuffer();
+    private static String splitWords(String sourceText, Param param) {
+        StringBuilder result = new StringBuilder();
+
+        param.wordIndex = new ArrayList<>();
+
+        StringBuilder kindChain = new StringBuilder();
+        if (StringUtils.isNotEmpty(param.kindCode)) {
+            kindChain.append(param.kindCode);
+        }
+        if (StringUtils.isNotEmpty(param.chain)) {
+            kindChain.append(",").append(param.chain);
+        }
 
         for(String subText : sourceText.split("/")){
             int length = subText.length();
 
             int index = 0;
+
+            boolean connNum = true;
+
             char[] charArray = subText.toCharArray();
-            while (index < length){
+            while (index < length) {
                 char currentChar = charArray[index];
                 String wordValue = String.valueOf(currentChar);
 
+
                 boolean flag = true;
-                if(ConvertUtil.isChinese(currentChar)){
+                if(ConvertUtil.isChinese(currentChar) && !TranslateConstant.CHINESE_NUMBER.keySet().contains(String.valueOf(currentChar))){
                     for(int j = length; j > index; j--){
                         String subStr = subText.substring(index, j);
                         if (TranslateConstant.SYMBOL_WORD.containsKey(subStr)) {
                             index = index + subStr.length();
                             wordValue = subStr + "/";
                             flag = false;
+                            connNum = true;
                             continue;
                         }
 
-                        for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictChi2Eng().entrySet()) {
+                        for (Map.Entry<String, Chi2EngKeyword> entry : TranslateDictData.getInstance().getDictChi2Eng().entrySet()) {
+                            if (StringUtils.isNotEmpty(kindChain.toString()) &&
+                                    !org.apache.commons.lang.StringUtils.contains(entry.getValue().getKind(), kindChain.toString())) {
+                                continue;
+                            }
+
                             if (subStr.equals(entry.getKey())) {
-                                wordValue = entry.getValue() + "/";
+                                wordValue = entry.getKey() + "/";
                                 index = index + subStr.length();
                                 flag = false;
+                                connNum = true;
                             }
                         }
                     }
                     if(flag){
-                        wordIndex.add(index++);
+                        param.wordIndex.add(index++);
                         wordValue = wordValue + "/";
+                        connNum = false;
                     }
                 }else {
                     if(++index == length){
                         wordValue = currentChar + "/";
                     }else {
-                        char nextChar = charArray[index];
-                        if(Character.isSpaceChar(currentChar) || Character.isSpaceChar(nextChar)) {
+                        char afterChar = charArray[index];
+                        if(Character.isSpaceChar(currentChar) || Character.isSpaceChar(afterChar)) {
                             wordValue = String.valueOf(currentChar);
-                        } else if(ConvertUtil.isLetter(currentChar) && ConvertUtil.isNotLetter(nextChar)){
+                        } else if (ConvertUtil.isLetter(currentChar) && ConvertUtil.isNotLetter(afterChar)){
                             wordValue = currentChar + "/";
-                        } else if(ConvertUtil.isChinese(currentChar) && ConvertUtil.isNotChinese(nextChar)){
+                        } else if (ConvertUtil.isChinese(currentChar) && ConvertUtil.isNotChinese(afterChar)){
                             wordValue = currentChar + "/";
-                        } else if(ConvertUtil.isNotChinese(currentChar) && ConvertUtil.isChinese(nextChar)){
+                        } else if (ConvertUtil.isNotChinese(currentChar) && ConvertUtil.isChinese(afterChar)){
                             wordValue = currentChar + "/";
-                        } else if(Character.isDigit(currentChar) && !Character.isDigit(nextChar)) {
+                        } else if (Character.isDigit(currentChar) && !Character.isDigit(afterChar)) {
                             wordValue = currentChar + "/";
-                        } else if(ConvertUtil.isChinesePunctuation(currentChar)) {
+                        } else if (ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";
+                        } else if (ConvertUtil.isChineseNum(currentChar)) {
+                            if (!ConvertUtil.isChineseNum(afterChar) || !connNum) {
+                                wordValue = currentChar + "/";
+                            }
                         }
                     }
                 }
@@ -118,6 +147,5 @@ public class SplitUtil {
 
         return result.substring(0, result.length() - 1);
     }
-
 
 }

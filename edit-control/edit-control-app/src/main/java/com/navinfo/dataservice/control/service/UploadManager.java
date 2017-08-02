@@ -17,6 +17,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.model.UploadIxPoi;
 import com.navinfo.dataservice.control.model.UploadIxPoiAttachments;
@@ -72,7 +73,7 @@ public class UploadManager {
 		this.subtaskId=subtaskId;
 	}
 	
-	public UploadResult upload()throws Exception{
+	public UploadResult upload(Map<String, Photo> photoMap)throws Exception{
 		result = new UploadResult();
 		//1.读取文件
 		if(StringUtils.isEmpty(fileName)) throw new Exception("上传文件名为空");
@@ -109,7 +110,7 @@ public class UploadManager {
 				CollectorPoiImportorCommand cmd = new CollectorPoiImportorCommand(dbId,uPois);
 				CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
 				imp.setSubtaskId(subtaskId);
-				imp.operate(cmd);
+				imp.operate(cmd,photoMap,userId);
 				
 				
 				Set<Long> freshVerPois = imp.getFreshVerPois();

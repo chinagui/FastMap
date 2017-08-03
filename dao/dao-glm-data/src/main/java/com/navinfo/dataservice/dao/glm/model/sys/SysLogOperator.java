@@ -1,9 +1,9 @@
-
 package com.navinfo.dataservice.dao.glm.model.sys;
 
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -23,7 +23,15 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 public class SysLogOperator {
 	private static Logger log = LoggerRepos.getLogger(SysLogOperator.class);
 
-	public SysLogOperator() {
+	private SysLogOperator() {
+	}
+
+	private static class SingletonHolder {
+		private static final SysLogOperator INSTANCE = new SysLogOperator();
+	}
+
+	public static final SysLogOperator getInstance() {
+		return SingletonHolder.INSTANCE;
 	}
 
 	public void insertSysLog(SysLogStats stats) throws Exception {
@@ -38,23 +46,23 @@ public class SysLogOperator {
 			pstmt.setInt(2, stats.getLogType());
 
 			java.text.SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy/MM/dd HH:mm:ss");//
+					"yyyy/MM/dd HH:mm:ss");// TODO 日期格式需确认
 
 			if (StringUtils.isNotEmpty(stats.getBeginTime())) {
-				pstmt.setDate(3,
-						new java.sql.Date(sdf.parse(stats.getBeginTime())
+				pstmt.setTimestamp(3,
+						new Timestamp(sdf.parse(stats.getBeginTime())
 
 						.getTime()));
 			} else {
-				pstmt.setDate(3, null);
+				pstmt.setTimestamp(3, null);
 			}
 			if (StringUtils.isNotEmpty(stats.getEndTime())) {
-				pstmt.setDate(4, new java.sql.Date(sdf
-						.parse(stats.getEndTime())
+				pstmt.setTimestamp(4,
+						new Timestamp(sdf.parse(stats.getEndTime())
 
 						.getTime()));
 			} else {
-				pstmt.setDate(4, null);
+				pstmt.setTimestamp(4, null);
 			}
 
 			pstmt.setInt(5, stats.getTotal());
@@ -83,3 +91,4 @@ public class SysLogOperator {
 		}
 
 	}
+}

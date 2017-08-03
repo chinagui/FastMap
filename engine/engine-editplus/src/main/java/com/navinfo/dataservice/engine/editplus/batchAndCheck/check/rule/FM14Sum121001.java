@@ -73,7 +73,6 @@ public class FM14Sum121001 extends BasicCheckRule {
 			clob.setString(1, pids);
 			pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			values.add(clob);
-			values.add(clob);
 		}else{
 			pidString=" PID IN ("+pids+")";
 		}

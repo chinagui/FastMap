@@ -4,7 +4,10 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +56,8 @@ public class PoiRowValidationJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
+		Date startTime = new Date();
+		log.info("start time:"+startTime);
 		log.info("start PoiRowValidationJob");
 		PoiRowValidationJobRequest myRequest = (PoiRowValidationJobRequest) request;
 		Connection conn=null;
@@ -69,6 +74,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			//获取poi对象			
 			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
 					myRequest.getPids(), false, false);
+			log.info("PoiRowValidationJob:本次检查POI数量："+objs.size());
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
 			log.info("PoiRowValidationJob:加载同一关系检查对象");
@@ -118,6 +124,9 @@ public class PoiRowValidationJob extends AbstractJob {
 			this.exeResultMsg=" #"+data.toString()+"#";
 			log.info("查询poi检查结果数量:" +resultCount);
 			log.info("end PoiRowValidationJob");
+			Date endTime = new Date();
+			log.info("end time:"+endTime);
+			log.info("本次检查共计耗时："+(endTime.getTime()-startTime.getTime()));
 		}catch(Exception e){
 			log.error("PoiRowValidationJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

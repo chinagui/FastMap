@@ -1952,7 +1952,7 @@ public class Transaction {
         patter.append("RW_NODE|RW_LINK|RW_FEATURE");
         patter.append("|AD_|ZONE_|LC_|LU_");
         patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
-        patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
+        //patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
         patter.append("|RD_TRAFFICSIGNAL");
         patter.append("|RD_TMCLOCATION_LINK");
         patter.append("|RD_SPEEDBUMP");

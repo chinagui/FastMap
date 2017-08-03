@@ -115,12 +115,48 @@ public class Operation implements IOperation {
 		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(),
 				true);
 
+		if (null == zoneFace) {
+
+			return;
+		}
+
+		double type = 0;
+
+		try {
+			type = ((AdAdmin) new AdAdminSelector(conn).loadById(zoneFace.getRegionId(), false)).getAdminType();
+		} catch (Exception e) {
+			//防止因RegionId==0查不出AdAdmin时报错
+		}
+
+		//8:KDZone 9:AOI
+		if (type != 8 && type != 9) {
+
+			throw new Exception("zoneFace关联要素类型必须是KDZone或AOI");
+		}
+
+		//1:AOIZone 2:KDZone
+		int zoneType = 1;
+
+		if (type == 8) {
+			zoneType = 2;
+		}
+
+		Geometry faceGeometry = ZoneIDBatchUtils.shrink(zoneFace.getGeometry());
+
 		// 通过face查找符合的link
 		List<RdLink> links = filterZoneLinks(zoneFace);
 
+		Set<Integer> handlePid = new HashSet<>();
+
 		for (RdLink link : links) {
 
-			ZoneIDBatchUtils.setZoneID(link, zoneFace, conn, result);
+			if (handlePid.contains(link.getPid())) {
+				continue;
+			}
+
+			ZoneIDBatchUtils.setZoneID(link, faceGeometry, zoneFace.getRegionId(), zoneType, result);
+
+			handlePid.add(link.getPid());
 		}
 	}
 

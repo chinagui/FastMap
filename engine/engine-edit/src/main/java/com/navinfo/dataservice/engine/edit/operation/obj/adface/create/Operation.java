@@ -280,16 +280,13 @@ public class Operation implements IOperation {
      * 添加Link和FaceTopo关系
      */
     public void createFaceTop(Map<AdLink, Integer> map) {
-        List<IRow> adFaceTopos = new ArrayList<IRow>();
         for (AdLink link : map.keySet()) {
             AdFaceTopo faceTopo = new AdFaceTopo();
             faceTopo.setLinkPid(link.getPid());
             faceTopo.setFacePid(face.getPid());
             faceTopo.setSeqNum(map.get(link));
-            adFaceTopos.add(faceTopo);
             result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
         }
-
     }
 
     /*
@@ -341,7 +338,7 @@ public class Operation implements IOperation {
             for (int i = g.getCoordinates().length - 1; i >= 0; i--) {
                 c1[c1.length - i - 1] = g.getCoordinates()[i];
             }
-            this.reverseFaceTopo();
+            this.reverseFaceTopo(links.size() + 1);
 
         } else {
             c1 = g.getCoordinates();
@@ -443,13 +440,11 @@ public class Operation implements IOperation {
     /*
      * 重新维护faceTopo的顺序关系
      */
-    private void reverseFaceTopo() {
-        int newIndex = 0;
-        for (int i = result.getAddObjects().size() - 1; i >= 0; i--) {
-            if (result.getAddObjects().get(i) instanceof AdFaceTopo) {
-                newIndex++;
-                ((AdFaceTopo) result.getAddObjects().get(i)).setSeqNum(newIndex);
-
+    private void reverseFaceTopo(int maxSeqnum) {
+        for (IRow row : result.getAddObjects()) {
+            if (row instanceof AdFaceTopo) {
+                AdFaceTopo faceTopo = (AdFaceTopo) row;
+                faceTopo.setSeqNum(maxSeqnum - faceTopo.getSeqNum());
             }
         }
     }

@@ -110,12 +110,12 @@ public class FMBATM0108 extends BasicBatchRule {
 		if(NotInRdLink.contains(poi.getPid())){return true;}
 		//修改引导坐标
 		if(poi.hisOldValueContains(IxPoi.X_GUIDE)||poi.hisOldValueContains(IxPoi.Y_GUIDE)){
-			String oldXguide=(String) poi.getHisOldValue(IxPoi.X_GUIDE);
+			String oldXguide= String.valueOf(poi.getHisOldValue(IxPoi.X_GUIDE));
 			String newXguide=String.valueOf(poi.getXGuide());
 			if(!oldXguide.equals(newXguide)){
 				return true;
 			}
-			String oldYguide=(String) poi.getHisOldValue(IxPoi.Y_GUIDE);
+			String oldYguide=String.valueOf(poi.getHisOldValue(IxPoi.Y_GUIDE));
 			String newYguide=String.valueOf(poi.getYGuide());
 			if(!oldYguide.equals(newYguide)){
 				return true;

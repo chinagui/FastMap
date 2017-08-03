@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -161,7 +162,7 @@ public class DayPoiJob extends AbstractStatJob {
 					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
 					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
 					cell.put("firstEditDate", entry.getValue().get("firstEditDate"));
-					cell.put("collectTime", entry.getValue().get("collectTime"));
+					cell.put("firstCollectDate", entry.getValue().get("firstCollectDate"));
 					subtaskStat.add(cell);
 				}
 				
@@ -301,6 +302,13 @@ public class DayPoiJob extends AbstractStatJob {
 	    		value = subtaskStat.get(subtaskId);
 	    		poiUploadNum = Integer.parseInt(value.get("poiUploadNum").toString());
 	    		poiFinishNum = Integer.parseInt(value.get("poiFinishNum").toString());
+	    		if(value.containsKey("firstCollectDate") && StringUtils.isNotBlank(value.get("firstCollectDate").toString())){
+	    			if(StringUtils.isBlank(collectTime)){
+	    				collectTime = value.get("firstCollectDate").toString();
+	    			}else{
+	    				collectTime = (value.get("firstCollectDate").toString().compareTo(collectTime) > 0)?collectTime : value.get("firstCollectDate").toString();
+	    			}
+	    		}
 	    	}
 	    	if(status == 1 || status == 2 || status == 3){
 	    		poiUploadNum++;
@@ -311,7 +319,7 @@ public class DayPoiJob extends AbstractStatJob {
 	    	value.put("poiUploadNum", poiUploadNum);
 	    	value.put("poiFinishNum", poiFinishNum);
 	    	value.put("firstEditDate", firstEditDate);
-	    	value.put("collectTime", collectTime);
+	    	value.put("firstCollectDate", collectTime);
 	    	
 	    	subtaskStat.put(subtaskId, value);
 	    
@@ -393,8 +401,7 @@ public class DayPoiJob extends AbstractStatJob {
 						    int fresh = rs.getInt("FRESH_VERIFIED");
 						    int planPid = rs.getInt("PLAN_PID");
 						    if(subtaskId != 0){
-						    	String collectTime = rs.getString("COLLECT_TIME");
-						    	collectTime = (collectTime != null)?collectTime : "";
+						    	String collectTime = (rs.getString("COLLECT_TIME") == null) ? "" : rs.getString("COLLECT_TIME");
 						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate, collectTime);
 						    }
 						    if(taskId != 0){

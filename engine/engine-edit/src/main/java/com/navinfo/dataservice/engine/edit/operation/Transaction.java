@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
@@ -1918,6 +1919,8 @@ public class Transaction {
             case ZONENODE:
             case ZONELINK:
                 objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
+            case RWLINK:
+                objs = new ArrayList<IObj>(new RwLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
         }
         return objs;
     }

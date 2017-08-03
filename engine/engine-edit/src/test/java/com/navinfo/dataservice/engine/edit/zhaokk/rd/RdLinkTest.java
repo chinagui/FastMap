@@ -10,8 +10,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.sys.SysLogConstant;
+import com.navinfo.dataservice.dao.glm.model.sys.SysLogOperator;
+import com.navinfo.dataservice.dao.glm.model.sys.SysLogStats;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -222,5 +226,25 @@ public class RdLinkTest extends InitApplication {
 
 		JSONObject data   = p.searchDataByTileWithGap(types, x, y, z, gap);
 		System.out.println(data);
+	}
+	
+	@Test
+	public void testSysLog() throws Exception{
+		SysLogOperator logOperator = new SysLogOperator();
+		
+		SysLogStats log = new SysLogStats();
+		log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
+		log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC);
+		log.setFailureTotal(2);
+		log.setSuccessTotal(3);
+		log.setTotal(5);
+		log.setBeginTime(DateUtils.getSysDateFormat("yyyy/MM/dd HH:mm:ss"));
+		log.setEndTime(DateUtils.getSysDateFormat("yyyy/MM/dd HH:mm:ss"));
+		log.setErrorMsg("32342423423");
+		logOperator.insertSysLog(log);
+
+	}
+	public static void main(String[] args) {
+		System.out.println(DateUtils.getSysDateFormat("yyyy/MM/dd HH:mm:ss"));
 	}
 }

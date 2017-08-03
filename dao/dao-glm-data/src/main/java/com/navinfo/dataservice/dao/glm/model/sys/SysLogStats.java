@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.sys;
 
 public class SysLogStats {
+	
 
 	private int logType;
 	private String createTime;
@@ -19,7 +20,15 @@ public class SysLogStats {
 	}
 
 	private String errorMsg;
-	private String logMsg;
+	private String logDesc;
+
+	public String getLogDesc() {
+		return logDesc;
+	}
+
+	public void setLogDesc(String logDesc) {
+		this.logDesc = logDesc;
+	}
 
 	public int getLogType() {
 		return logType;
@@ -77,13 +86,6 @@ public class SysLogStats {
 		this.errorMsg = errorMsg;
 	}
 
-	public String getLogMsg() {
-		return logMsg;
-	}
-
-	public void setLogMsg(String logMsg) {
-		this.logMsg = logMsg;
-	}
 
 	public String getUserId() {
 		return userId;

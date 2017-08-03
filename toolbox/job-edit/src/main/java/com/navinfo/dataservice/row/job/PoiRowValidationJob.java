@@ -126,7 +126,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			log.info("end PoiRowValidationJob");
 			Date endTime = new Date();
 			log.info("end time:"+endTime);
-			log.info("本次检查共计耗时："+(endTime.getTime()-startTime.getTime()));
+			log.info("本次检查共计耗时："+(endTime.getTime()-startTime.getTime())/1000+"s");
 		}catch(Exception e){
 			log.error("PoiRowValidationJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

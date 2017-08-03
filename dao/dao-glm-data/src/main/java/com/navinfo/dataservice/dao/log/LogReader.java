@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -902,6 +904,53 @@ public class LogReader {
 	}
 	
 	
+	/**
+	 * 根据SubtaskId查询相应的poi数量
+	 * @param objName
+	 * @param mainTabName
+	 * @param pid
+	 * @return 
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> getPoiNumBySubtaskId(String objName) throws Exception {
+		Map<Integer,Integer> result = new HashMap<Integer,Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT LD.GEO_PID,LA.STK_ID FROM LOG_ACTION LA,LOG_OPERATION LO,LOG_DETAIL LD ");
+		sb.append(" WHERE LA.ACT_ID = LO.ACT_ID AND LO.OP_ID = LD.OP_ID ");
+		sb.append(" AND LD.GEO_NM = '"+objName+"'");
+		
+		log.info("根据SubtaskId查询相应的poi数量的sql语句:"+sb.toString());
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			Map<Integer,Set<Long>> map = new HashMap<Integer,Set<Long>>();
+			while(resultSet.next()){
+				long pid = resultSet.getLong("GEO_PID");
+				int subtaskId = resultSet.getInt("STK_ID");
+				if(!map.containsKey(subtaskId)){
+					map.put(subtaskId, new HashSet<Long>());
+				}
+				map.get(subtaskId).add(pid);
+			}
+			for(Entry<Integer, Set<Long>> entry : map.entrySet()){
+				//SubtaskId=0不统计
+				if(entry.getKey() == 0){continue;}
+				result.put(entry.getKey(), entry.getValue().size());
+			}
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override
 		public Map<Integer, Collection<Long>> handle(ResultSet rs) throws SQLException {
@@ -961,5 +1010,7 @@ public class LogReader {
 		
 //		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
 //		System.out.println(updatePids);
+		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
+		System.out.println(poiNumBySubtaskId);
 	}
 }

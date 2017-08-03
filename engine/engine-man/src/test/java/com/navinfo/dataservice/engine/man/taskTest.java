@@ -239,7 +239,7 @@ public class taskTest extends InitApplication{
 		
 		ManApi manApi= new ManApiImpl();
 		String objName = "subtask";
-		Map<Long, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		Map<Integer, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
 		System.out.println(data.toString());
 		
 	}

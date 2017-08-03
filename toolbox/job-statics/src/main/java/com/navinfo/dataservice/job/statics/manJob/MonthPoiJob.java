@@ -26,6 +26,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -228,9 +230,21 @@ public class MonthPoiJob extends AbstractStatJob {
 					
 					grid_month_poi.add(cell);
 				}
+				//POI日落月数量
+				List<Map<String,Integer>> subtaskId_month_poi = new ArrayList<Map<String,Integer>>();
+				LogReader lr = new LogReader(conn);
+				Map<Integer, Integer> poiNum = lr.getPoiNumBySubtaskId(ObjectName.IX_POI);
+				for(Entry<Integer, Integer> entry : poiNum.entrySet()){
+					Map<String,Integer> cell = new HashMap<String,Integer>();
+					cell.put("subtaskId", entry.getKey());
+					cell.put("day2MonthPoiNum", entry.getValue());
+					
+					subtaskId_month_poi.add(cell);
+				}
 
 				Map<String,List<Map<String,Integer>>> temp = new HashMap<String,List<Map<String,Integer>>>();
 				temp.put("grid_month_poi", grid_month_poi);
+				temp.put("subtaskId_month_poi", subtaskId_month_poi);
 				stats.put(dbId, temp);
 
 			}catch(Exception e){

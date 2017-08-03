@@ -38,7 +38,9 @@ public class GLM60224 extends BasicCheckRule {
             }
 
             String sql = "SELECT T1.KIND FROM LC_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " +
-                    "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, T2.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'";
+                    "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, T2.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'"
+                    + " AND T1.KIND IN (1,2,3,4,5,6,12,13)";
+            log.info(sql);
             PreparedStatement pstmt = null;
             ResultSet resultSet = null;
             try {

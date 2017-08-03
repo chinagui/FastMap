@@ -68,6 +68,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
+
 			String sqlStr="WITH T AS"
 					+ " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE"
 					+ "    FROM IX_POI P1"
@@ -76,7 +77,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " SELECT /*+ NO_MERGE(T)*/"
 					+ " P.PID, T.PID2"
 					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, T.G2, 0.00000005) < 3"
+					+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
 					+ "   AND P.KIND_CODE IN ('230215', '230216')"
 					+ "   AND P.U_RECORD != 2"
 					+ " MINUS"
@@ -86,6 +87,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " AND C.U_RECORD!=2"
 					+ " AND P.U_RECORD!=2"
 					+ " AND C.CHILD_POI_PID =T.PID2";
+			log.info(sqlStr);
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){

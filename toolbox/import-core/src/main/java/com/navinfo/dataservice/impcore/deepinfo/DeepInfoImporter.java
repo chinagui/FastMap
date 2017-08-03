@@ -203,7 +203,7 @@ public class DeepInfoImporter {
 
 			if (photoes > 5000) {
 				for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
-					CollectorImport.importPhoto(entry.getValue(), "E:/" + entry.getKey());
+					CollectorImport.importPhoto(entry.getValue(), entry.getKey());
 				}
 				importPhoto = new HashMap<>();
 				photoes = 0;
@@ -214,7 +214,7 @@ public class DeepInfoImporter {
 			stmt.executeBatch();
 		}
 
-		if (photoes > 5000) {
+		if (photoes > 0) {
 			for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
 				CollectorImport.importPhoto(entry.getValue(), entry.getKey());
 			}

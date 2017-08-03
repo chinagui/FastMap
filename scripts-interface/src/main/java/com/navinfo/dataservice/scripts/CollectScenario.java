@@ -156,11 +156,6 @@ public class CollectScenario{
 			//数据处理完成删除临时表
 //			deleteTempTable(dailyConn);
 		}catch(Exception e){
-			try{
-				initLinkTable(dailyConn);
-			}catch(Exception ex){
-				System.out.println(ex);
-			}
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 		}finally{

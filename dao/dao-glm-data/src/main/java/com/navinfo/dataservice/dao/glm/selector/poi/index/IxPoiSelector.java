@@ -5,12 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -68,7 +68,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		JSONArray array = new JSONArray();
 
-		Map<Long, JSONObject> objs = new HashMap<Long, JSONObject>();
+		Map<Long, JSONObject> objs = new LinkedHashMap<Long, JSONObject>();
 
 		int total = 0;
 		int startRow = (pageNum - 1) * pageSize + 1;
@@ -104,9 +104,9 @@ public class IxPoiSelector extends AbstractSelector {
 				}
 			}
 		}
-
 		buffer.append(" ) c");
-		buffer.append(" WHERE ROWNUM <= :1) ");
+		// 增加按照采集时间升序排列
+		buffer.append(" WHERE ROWNUM <= :1 ORDER BY c.collect_time ) ");
 		buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {
 			buffer.append(" for update nowait");

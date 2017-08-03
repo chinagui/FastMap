@@ -75,7 +75,8 @@
         <property name="cronExpression" value="0 0 6 ? * MON" />
     </bean> -->
 	
-	<!--Cron表达式“10 */1 * * * ?”意为：从10秒开始，每1分钟执行一次。  
+	<!--Cron表达式“10 */1 * * * ?”意为：从10秒开始，每1分钟执行一次。 
+	"0 * * * * ?"  每分钟执行一次，整点分钟执行
 	<bean id="taskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean"> <property name="jobDetail" ref="jobDetail" /> 
 	<property name="startDelay" value="10000" />
 	<property name="repeatInterval" value="60000" />
@@ -87,12 +88,6 @@
         <property name="startDelay" value="10000" />
 		<property name="repeatInterval" value="60000" />
     </bean>-->
-    <!-- 每分钟执行一次，整点分钟执行 -->
-    <bean id="poiDayStatics_Trigger"
-          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="poiDayStatics_detail" />
-        <property name="cronExpression" value="0 * * * * ?" />
-    </bean>
     <bean id="poiDayStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="poiDayStat_detail" />
@@ -108,7 +103,7 @@
      <bean id="dayPlanStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="dayPlanStat_detail" />
-        <property name="cronExpression" value="0 0/3 * * * ?" />
+        <property name="cronExpression" value="0 0 23 * * ?" />
     </bean>
 <!--     <bean id="poiQualityInitCountTable_Trigger" -->
 <!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
@@ -116,12 +111,6 @@
 <!--         <property name="cronExpression" value="0 0 * * * ?" /> -->
 <!--     </bean> -->
     
-    <!--  外业生产时长监控 -->
-    <bean id="poiDayStatics_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="poiDayStatics" />
-        <property name="targetMethod" value="start" />
-        <property name="concurrent" value="false" />
-    </bean>
     <bean id="poiDayStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="poiDayStat" />
         <property name="targetMethod" value="start" />
@@ -146,7 +135,6 @@
 <!--     </bean> -->
    
 	<!--  业务逻辑处理类 -->
-	<bean id="poiDayStatics" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsStarter"/>
 	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
 	
 	<bean id="monthPoiStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.MonthPoiStatStarter"/>

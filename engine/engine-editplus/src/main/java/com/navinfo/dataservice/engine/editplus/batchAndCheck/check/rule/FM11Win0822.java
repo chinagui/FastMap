@@ -37,7 +37,6 @@ public class FM11Win0822 extends BasicCheckRule {
 		List<String> selectSqls=new ArrayList<String>();
 		String sqlTmp="";
 		int i=0;
-		double distince3=0.00003;
 		for (Long key : rows.keySet()) {
 			BasicObj obj = rows.get(key);
 			IxPoiObj poiObj = (IxPoiObj) obj;
@@ -67,7 +66,8 @@ public class FM11Win0822 extends BasicCheckRule {
 		}
 		if(!StringUtils.isEmpty(sqlTmp)){
 			selectSqls.add(sqlTmp);
-		}		
+		}	
+		log.info("selectSqls组装完成");
 		//获取已存在的父子关系
 		if(pidAllSet==null||pidAllSet.size()==0){return;}
 		//key:childPid value:parent
@@ -78,6 +78,7 @@ public class FM11Win0822 extends BasicCheckRule {
 			log.info(exeSql);
 			PreparedStatement pstmt = conn.prepareStatement(exeSql);
 			ResultSet rs = pstmt.executeQuery();
+			log.info("exeSql执行完成");
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID_MAIN");
 				String kind1=rs.getString("KIND_MAIN");
@@ -97,7 +98,8 @@ public class FM11Win0822 extends BasicCheckRule {
 				//这对pid没有父子关系，则报错
 				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
 				errorList.get(pidTmp1).add(pidTmp2);
-			}			
+			}	
+			log.info("errorList组装完成");
 		}
 		//过滤相同pid
 		Set<Long> filterPid = new HashSet<Long>();

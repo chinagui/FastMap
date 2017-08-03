@@ -89,6 +89,7 @@ public class GLM60226 extends BasicCheckRule {
                     + " T2.LINK_PID AND T1.MESH_ID = T2.MESH_ID AND T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE("
                     + "T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || T2.GEOMETRY.SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y"
                     + " || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE'";
+            log.info(sql);
             try {
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setLong(1, poi.getPid());

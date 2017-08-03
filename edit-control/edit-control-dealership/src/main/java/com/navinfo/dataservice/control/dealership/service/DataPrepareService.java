@@ -676,20 +676,22 @@ public class DataPrepareService {
 
 			long userId = tokenObj.getUserId();
 			//获取代理店数据库连接
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 			
 			//保存文件
 			String filePath = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
 //			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
-			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
-			String localZipFile=returnParam.getString("filePath");
+			JSONObject  returnParam = InputStreamUtils.request2File(request, filePath);
+			String localZipFile = returnParam.getString("filePath");
 			log.info("load file");
+			log.info("localZipFile :" + localZipFile);
 
 			//解压
 			String localUnzipDir = localZipFile.substring(0,localZipFile.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			log.info("unzip file");
+			log.info("localUnzipDir : " + localUnzipDir);
 
 			//获取个品牌状态
 			Map<String,Integer> chainStatus = getChainStatus(conn);
@@ -701,6 +703,7 @@ public class DataPrepareService {
 			if (file.exists()) {
 				List<String> pathList = new ArrayList<String>();
 				getDirectory(file,pathList);
+				log.info("pathList : " + pathList.toString());
 
 				//获取IxDealershipSource
 				Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
@@ -717,7 +720,7 @@ public class DataPrepareService {
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
 
 						//Excel文件的校验
-						uploadChainExcelCheck(sourceMaps);
+						uploadChainExcelCheck(sourceMaps, fileStr);
 						
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
@@ -767,7 +770,7 @@ public class DataPrepareService {
 	}
 	
 	//Excel文件的校验（一栏表上传接口：6877）
-	private void uploadChainExcelCheck(List<Map<String, Object>> list) throws Exception {
+	private void uploadChainExcelCheck(List<Map<String, Object>> list, String fileFullName) throws Exception {
 		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String, List<String>> dataMap = metadataApi.scPointAdminareaDataMap();
 		Map<String, Integer> chainStatusMap = null;
@@ -775,6 +778,7 @@ public class DataPrepareService {
 		List<String> kindCodeList = null;
 		Connection metaConn = null;
 		Connection dealershipConn = null;
+		String fileName = fileFullName.substring(fileFullName.lastIndexOf("fullChainExcel/") + 15);
 		try{
 			metaConn = DBConnector.getInstance().getMetaConnection();
 			dealershipConn = DBConnector.getInstance().getDealershipConnection();
@@ -831,25 +835,25 @@ public class DataPrepareService {
 			String name = list.get(i).get("name").toString();
 			String address = list.get(i).get("address").toString();
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
-				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
 			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
-				throw new ServiceException("第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
 			}
 			if(StringUtils.isEmpty(project)){
-				throw new ServiceException("第" + (i+2) + "行中：项目为空");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：项目为空");
 			}
 			if(StringUtils.isEmpty(kindCode) || !kindCodeList.contains(kindCode)){
-				throw new ServiceException("第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：代理店分类为空或不在表SC_POINT_POICODE_NEW中对应的KIND_CODE的值域内");
 			}
 			if(StringUtils.isEmpty(chain) || chainStatusMap.get(chain) != 0){
-				throw new ServiceException("代理店品牌为空或代理店品牌表中状态不是未开启");
+				throw new ServiceException(fileName + "文件中：代理店品牌为空或代理店品牌表中状态不是未开启");
 			}
 			if(StringUtils.isEmpty(name) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(name).equals(name)){
-				throw new ServiceException("第" + (i+2) +"行中：厂商提供名称为空或不是全角");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) +"行中：厂商提供名称为空或不是全角");
 			}
 			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
-				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：厂商提供地址为空或不是全角");
 			}
 		}
 	}
@@ -881,25 +885,42 @@ public class DataPrepareService {
 		}
 	}
 
+//	public static void getDirectory(File file, List<String> list){
+//		File flist[] = file.listFiles();
+//		if (flist == null || flist.length == 0) {
+//		    return;
+//		}
+//		for (File f : flist) {
+//		    if (f.isDirectory()) {
+//		        for(File fileInner:f.listFiles()){
+//		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")||fileInner.getAbsoluteFile().toString().contains(".xls")){
+//		        		list.add(fileInner.getAbsolutePath());
+//		        		break;
+//		        	}
+//		        }
+//		        getDirectory(f,list);
+//		    } else {
+//		    	if(f.getAbsoluteFile().toString().contains(".xlsx")||f.getAbsoluteFile().toString().contains(".xls")){
+//	        		list.add(f.getAbsolutePath());
+//	        	}
+//		    }
+//		}
+//	}
+	
 	public static void getDirectory(File file, List<String> list){
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
-		    return;
+			return;
 		}
 		for (File f : flist) {
-		    if (f.isDirectory()) {
-		        for(File fileInner:f.listFiles()){
-		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")||fileInner.getAbsoluteFile().toString().contains(".xls")){
-		        		list.add(fileInner.getAbsolutePath());
-		        		break;
-		        	}
-		        }
-		        getDirectory(f,list);
-		    } else {
-		    	if(f.getAbsoluteFile().toString().contains(".xlsx")||f.getAbsoluteFile().toString().contains(".xls")){
-	        		list.add(f.getAbsolutePath());
-	        	}
-		    }
+			if (f.isDirectory()) {
+				getDirectory(f,list);
+			} else {
+				String suffix = f.getAbsolutePath().substring(f.getAbsolutePath().lastIndexOf(".") + 1);
+				if("xlsx".equals(suffix) || "xls".equals(suffix)){
+					list.add(f.getAbsolutePath());
+				}
+			}
 		}
 	}
 

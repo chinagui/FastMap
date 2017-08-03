@@ -8,33 +8,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.mongodb.client.model.Filters;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * DayPlanJob
@@ -60,16 +51,15 @@ public class DayPlanJob extends AbstractStatJob {
 	@Override
 	public String stat() throws JobException {
 		try {
-			List<Map<String, Double>> stats = new ArrayList<Map<String,Double>>();
 			long t = System.currentTimeMillis();
 			log.debug("所有Day_规划量数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
-			Map<String,List<Map<String,Double>>> result = new HashMap<String,List<Map<String,Double>>>();
+			Map<String,List<Map<String,String>>> result = new HashMap<String,List<Map<String,String>>>();
 			result.put("task_day_plan", getStats());
 
-			log.debug("task_day_plan---"+result.toString());
+			log.debug("task_day_plan---"+JSONObject.fromObject(result).toString());
 			
-			return result.toString();
+			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -78,9 +68,9 @@ public class DayPlanJob extends AbstractStatJob {
 	}
 	
 	
-	public List<Map<String,Double>> getStats() {
+	public List<Map<String,String>> getStats() {
 		List<Map<String, Integer>> taskIdMapList = null;
-		List<Map<String,Double>> stats = new ArrayList<>();
+		List<Map<String,String>> stats = new ArrayList<>();
 		try {
 			taskIdMapList = getTaskIdList();
 		} catch (Exception e) {
@@ -107,7 +97,7 @@ public class DayPlanJob extends AbstractStatJob {
 				String planSuffix = " AND d.is_plan_selected=1 ";
 				
 					
-				Map<String,Double> map  = new HashMap<>();
+				Map<String,String> map  = new HashMap<>();
 				
 				String sql1 = rdLinkSql+taskId+planSuffix;
 				String sql2 = rdLinkSql+taskId;
@@ -116,75 +106,75 @@ public class DayPlanJob extends AbstractStatJob {
 				String sql5 = rdLinkSql+taskId+" AND r.kind >= 1 AND r.kind <= 7";
 				String sql6 = rdLinkSql+taskId+" AND r.kind >= 2 AND r.kind <= 7";
 				
-				Double linkPlanLen = run.query(conn, sql1,new ResultSetHandler<Double>() {
+				String linkPlanLen = run.query(conn, sql1,new ResultSetHandler<String>() {
 					@Override
-					public Double handle(ResultSet rs)
+					public String handle(ResultSet rs)
 							throws SQLException {
 						if(rs.next()){
-							return rs.getDouble(1);
+							return rs.getString(1);
 						}
-						return 0.0;
+						return null;
 					}
 				});
 				
-				Double linkAllLen = run.query(conn, sql2,new ResultSetHandler<Double>() {
+				String linkAllLen = run.query(conn, sql2,new ResultSetHandler<String>() {
 					@Override
-					public Double handle(ResultSet rs)
+					public String handle(ResultSet rs)
 							throws SQLException {
 						if(rs.next()){
-							return rs.getDouble(1);
+							return rs.getString(1);
 						}
-						return 0.0;
-					}
-				});
-				
-				
-				Double poiPlanNum = run.query(conn, sql3,new ResultSetHandler<Double>() {
-					@Override
-					public Double handle(ResultSet rs)
-							throws SQLException {
-						if(rs.next()){
-							return rs.getDouble(1);
-						}
-						return 0.0;
-					}
-				});
-				
-				Double poiAllNum = run.query(conn, sql4,new ResultSetHandler<Double>() {
-					@Override
-					public Double handle(ResultSet rs)
-							throws SQLException {
-						if(rs.next()){
-							return rs.getDouble(1);
-						}
-						return 0.0;
-					}
-				});
-				
-				Double link17AllLen = run.query(conn, sql5,new ResultSetHandler<Double>() {
-					@Override
-					public Double handle(ResultSet rs)
-							throws SQLException {
-						if(rs.next()){
-							return rs.getDouble(1);
-						}
-						return 0.0;
-					}
-				});
-				
-				Double link27AllLen = run.query(conn, sql6,new ResultSetHandler<Double>() {
-					@Override
-					public Double handle(ResultSet rs)
-							throws SQLException {
-						if(rs.next()){
-							return rs.getDouble(1);
-						}
-						return 0.0;
+						return null;
 					}
 				});
 				
 				
-				map.put("taskId", taskId.doubleValue());
+				String poiPlanNum = run.query(conn, sql3,new ResultSetHandler<String>() {
+					@Override
+					public String handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getString(1);
+						}
+						return null;
+					}
+				});
+				
+				String poiAllNum = run.query(conn, sql4,new ResultSetHandler<String>() {
+					@Override
+					public String handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getString(1);
+						}
+						return null;
+					}
+				});
+				
+				String link17AllLen = run.query(conn, sql5,new ResultSetHandler<String>() {
+					@Override
+					public String handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getString(1);
+						}
+						return null;
+					}
+				});
+				
+				String link27AllLen = run.query(conn, sql6,new ResultSetHandler<String>() {
+					@Override
+					public String handle(ResultSet rs)
+							throws SQLException {
+						if(rs.next()){
+							return rs.getString(1);
+						}
+						return null;
+					}
+				});
+				
+				
+				map.put("taskId", taskId.toString());
 				map.put("linkPlanLen", linkPlanLen);
 				map.put("linkAllLen", linkAllLen);
 				map.put("poiPlanNum", poiPlanNum);

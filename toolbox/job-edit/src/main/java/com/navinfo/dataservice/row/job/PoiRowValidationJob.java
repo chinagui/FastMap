@@ -66,6 +66,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			log.info("PoiRowValidationJob:获取要检查的数据pid");
 			//获取要检查的数据pid
 			getCheckPidList(conn,myRequest);
+			log.info("PoiRowValidationJob:需要检查的数据共计："+myRequest.getPids().size());
 			log.info("PoiRowValidationJob:获取要检查的数据的履历");
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, myRequest.getPids());

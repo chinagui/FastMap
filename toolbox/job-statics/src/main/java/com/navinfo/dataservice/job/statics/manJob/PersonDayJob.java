@@ -185,7 +185,7 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("        s.fresh_verified,              		");
 				sb.append("        s.quick_subtask_id,            		");
 				sb.append("        s.medium_subtask_id,           		");
-				sb.append("        p.collect_time                		");
+				sb.append("     substr(p.collect_time,0,8) collect_time ");
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
 				sb.append("	  trunc(TO_CHAR(sysdate, 'YYYYMMDD'))       ");

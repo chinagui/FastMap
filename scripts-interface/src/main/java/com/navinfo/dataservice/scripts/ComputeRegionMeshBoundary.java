@@ -77,7 +77,7 @@ public class ComputeRegionMeshBoundary {
 
 		// create a database connection
 		sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
-				+ "/regionBoundary.sqlite", config.toProperties());
+				+ fileName, config.toProperties());
 		Statement stmt = sqliteConn.createStatement();
 		stmt.setQueryTimeout(30); // set timeout to 30 sec.
 
@@ -107,6 +107,7 @@ public class ComputeRegionMeshBoundary {
 			log.info("region:"+entry.getKey()+" inserted");
 		}
 		sqliteConn.commit();
+		log.info("rows commit.");
 		prep.close();
 		stmt.close();
 		sqliteConn.close();
@@ -135,7 +136,7 @@ public class ComputeRegionMeshBoundary {
 			final OracleSchema schema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tiInfo.getConnectParam()));
 			conn = schema.getPoolDataSource().getConnection();
-			int[] regionIds = new int[]{13};
+			int[] regionIds = new int[]{1,2,3,4,5,6,7,8,9,10,12,13};
 			Map<Integer,Set<String>> regionMeshes = new HashMap<Integer,Set<String>>();
 			for(int i:regionIds){
 				regionMeshes.put(i, getSingleRegionMeshes(conn,i));
@@ -158,7 +159,8 @@ public class ComputeRegionMeshBoundary {
 				return;
 			}
 			writeSqliteDb(dir,fileName,regionMeshes);
-			
+			System.out.println("Over.");
+			System.exit(0);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			log.info("Over.");

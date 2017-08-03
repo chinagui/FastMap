@@ -424,6 +424,9 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					if(StringUtils.isNotEmpty(tPoi.getString("DESCP")) && !"null".equals(tPoi.getString("DESCP"))){
 						ixPoi.setPoiMemo(tPoi.getString("DESCP"));
 					}
+					// OPEN_24H  2017.8.3 新增数据赋OPEN_24H为2
+					ixPoi.setOpen24h(2);
+					
 					String langCode= "CHI";  // 众包大陆数据
 					// IX_POI_NAME
 					if(StringUtils.isNotEmpty(name)){
@@ -593,6 +596,9 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					if(StringUtils.isNotEmpty(tPoi.getString("MEMO")) && !"null".equals(tPoi.getString("MEMO"))){
 						ixPoi.setPoiMemo(tPoi.getString("MEMO"));
 					}
+					// OPEN_24H  2017.8.3 新增数据赋OPEN_24H为2
+					ixPoi.setOpen24h(2);
+					
 					String langCode= "CHI";  // 众包大陆数据
 					// IX_POI_NAME
 					if(StringUtils.isNotEmpty(name)){

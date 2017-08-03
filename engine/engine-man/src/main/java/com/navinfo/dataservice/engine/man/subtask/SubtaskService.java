@@ -659,7 +659,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD,ST.WORK_KIND ");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -687,6 +687,8 @@ public class SubtaskService {
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
 						subtask.setQualityMethod(rs.getInt("QUALITY_METHOD"));
+						// 增加workKind
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

@@ -56,6 +56,8 @@ public class Operation implements IOperation {
 
         this.updateLinkGeomtry(result);
 
+        updataSameNode(result);
+
         return null;
     }
 
@@ -214,6 +216,26 @@ public class Operation implements IOperation {
         process.innerRun();
     }
 
+    private void updataSameNode(Result result) throws Exception
+    {
+        // 同一点关系
+        JSONObject updateJson = this.command.getJson();
+
+        if (updateJson.containsKey("mainType")) {
+            String mainType = updateJson.getString("mainType");
+
+            if (mainType.equals(ObjType.LUNODE.toString())) {
+                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+                        null, this.conn);
+                sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
+            }
+        } else {
+            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+                    null, this.conn);
+            sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
+        }
+    }
+
     /**
      * 维护关联要素
      *
@@ -241,22 +263,7 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
         hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
 
-        // 同一点关系
-        JSONObject updateJson = this.command.getJson();
 
-        if (updateJson.containsKey("mainType")) {
-            String mainType = updateJson.getString("mainType");
-
-            if (mainType.equals(ObjType.LUNODE.toString())) {
-                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                        null, this.conn);
-                sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
-            }
-        } else {
-            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                    null, this.conn);
-            sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
-        }
 
         // 维护里程桩
         com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);

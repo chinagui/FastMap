@@ -101,7 +101,7 @@ public class BaseBatchUtils {
      * @return
      * @throws JSONException
      */
-    protected static Geometry shrink(Geometry g) throws JSONException {
+    public static Geometry shrink(Geometry g) throws JSONException {
         return GeoTranslator.transform(g, Constant.BASE_SHRINK, Constant.BASE_PRECISION);
     }
 

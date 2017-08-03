@@ -65,8 +65,10 @@ public class DayPlanJob extends AbstractStatJob {
 			log.debug("所有Day_规划量数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			Map<String,List<Map<String,Double>>> result = new HashMap<String,List<Map<String,Double>>>();
-			result.put("task_day_plan", stats);
+			result.put("task_day_plan", getStats());
 
+			log.debug("task_day_plan---"+result.toString());
+			
 			return result.toString();
 			
 		} catch (Exception e) {

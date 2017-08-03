@@ -17,6 +17,10 @@
     
     <context:component-scan base-package="com.navinfo.dataservice.*"/>
 	
+	<mvc:interceptors>  
+    	<bean class="com.navinfo.dataservice.commons.log.RequestLoggerHandler"/>  
+	</mvc:interceptors>
+	
     <bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
 
     <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>

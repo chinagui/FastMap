@@ -400,11 +400,17 @@ public class TipsSelector {
                         if(oArray != null && oArray.size() > 0) {
                             for(int oIndex = 0; oIndex < oArray.size(); oIndex ++) {
                                 JSONObject outObj = oArray.getJSONObject(oIndex);
+                                JSONObject  obj=new JSONObject();
                                 int oInfo = outObj.getInt("oInfo");
-                                oInfoArray.add(oInfo);
+                                int flag = outObj.getInt("flag");
+                                obj.put("oInfo",oInfo);
+                                obj.put("flag", flag);
+                                oInfoArray.add(flag);
                             }
                         }
+                       // --输入：刘哲
                         m.put("d", oInfoArray);
+                        m.put("c", deep.getDouble("agl"));
                     }
 				} else if (type == 1106 || type == 1211) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
@@ -2436,32 +2442,52 @@ public class TipsSelector {
 
 		} else if (tips.getS_sourceType().equals("2101")) {
 
-			String deep = tips.getDeep();
+			Geometry deep = getDeleteLinkGeo(tips, selector, operator);
 
-			if (deep == null || deep.isEmpty()) {
+			if (deep == null) {
 				return geo;
 			}
+			
+			geo = GeoTranslator.jts2Geojson(deep);
+		}
+		return geo;
+	}
+	
+	/**
+	 * 获得形状删除关联link或测线的几何
+	 * @param tips
+	 * @param selector
+	 * @param operator
+	 * @return
+	 * @throws Exception
+	 */
+	private Geometry getDeleteLinkGeo(TipsDao tips, RdLinkSelector selector, TipsIndexOracleOperator operator) throws Exception{
+		String deep = tips.getDeep();
+		Geometry geo = null;
 
-			JSONObject deepObj = JSONObject.fromObject(deep);
-			JSONObject f = deepObj.getJSONObject("f");
+		if (deep == null || deep.isEmpty()) {
+			return geo;
+		}
 
-			if (f.isNullObject()) {
-				return geo;
-			}
+		JSONObject deepObj = JSONObject.fromObject(deep);
+		JSONObject f = deepObj.getJSONObject("f");
 
-			int type = f.getInt("type");
-			String id = f.getString("id");
+		if (f.isNullObject()) {
+			return geo;
+		}
 
-			if (type == 1) {
-				RdLink link = (RdLink) selector.loadById(Integer.valueOf(id), false);
+		int type = f.getInt("type");
+		String id = f.getString("id");
 
-				geo = GeoTranslator.jts2Geojson(link.getGeometry(), 0.00001, 5);
+		if (type == 1) {
+			RdLink link = (RdLink) selector.loadById(Integer.valueOf(id), false);
 
-			} else if (type == 2) {
-				TipsDao gps = operator.getById(id);
+			geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
-				geo = GeoTranslator.jts2Geojson(gps.getWktLocation());
-			}
+		} else if (type == 2) {
+			TipsDao gps = operator.getById(id);
+
+			geo = gps.getWktLocation();
 		}
 		return geo;
 	}
@@ -2496,17 +2522,17 @@ public class TipsSelector {
 
 			List<TipsDao> unhandleGpsList = operator.query(unhandleGps);
 			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
-				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false));
+				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false, operator));
 			}
 
 			List<TipsDao> handleGpsList = operator.query(handleGps);
 			if (handleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
-				result.addAll(GetRelatePois(handleGpsList, dbId, buffer, false, true));
+				result.addAll(GetRelatePois(handleGpsList, dbId, buffer, false, true, operator));
 			}
 
 			List<TipsDao> deleteLinksList = operator.query(deleteLinks);
 			if (deleteLinksList.size() > 0 ) {
-				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true));
+				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true, operator));
 			}
 
 			for (IxPoi poi : result) {
@@ -2531,16 +2557,19 @@ public class TipsSelector {
 	 * @param tipsList
 	 * @param dbId
 	 * @param buffer
-	 * @param isDeleteLink
+	 * @param isDeleteLink ”形状删除“？
+	 * @param isHandle "已处理"？
 	 * @throws Exception
 	 */
 	private List<IxPoi> GetRelatePois(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,
-			boolean isHandle) throws Exception {
+			boolean isHandle, TipsIndexOracleOperator operator) throws Exception {
 		Connection conn = null;
 		List<IxPoi> poiList = new ArrayList<>();
 
 		try {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			RdLinkSelector selector = new RdLinkSelector(conn);
 
 			PreparedStatement pstmt = null;
 
@@ -2550,14 +2579,15 @@ public class TipsSelector {
 
 			for (TipsDao tip : tipsList) {
 
-				Geometry tipGeo = GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
-
+				Geometry tipGeo = isDeleteLink == true ? getDeleteLinkGeo(tip, selector, operator)
+						: GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
+						
 				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
 
 				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
 
 				String sql = String.format(
-						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract') = 'TRUE'",
+						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract') = 'TRUE' AND p.U_RECORD <> 2",
 						wkt);
 
 				pstmt = conn.prepareStatement(sql);
@@ -2572,9 +2602,16 @@ public class TipsSelector {
 
 					if (isDeleteLink) {
 
-						String relateId = getDeepRelateId(tip);
-
-						if (relateId.equals(Integer.toString(ixPoi.getLinkPid())) == false) {
+						String relateInfo = getDeepRelateId(tip);
+						
+						if(relateInfo.isEmpty() || relateInfo.contains("_") == false) continue;
+						
+						int index = relateInfo.indexOf('_');
+						
+						String type = relateInfo.substring(0, index);
+						String relateId = relateInfo.substring(index +1);
+						
+						if (type.equals(1) && relateId.equals(Integer.toString(ixPoi.getLinkPid())) == false) {
 							continue;
 						}
 					}
@@ -2622,7 +2659,9 @@ public class TipsSelector {
 
 			for (TipsDao tip : tips) {
 
-				String id = getDeepRelateId(tip);
+				String relate = getDeepRelateId(tip);
+				
+				String id = relate.contains("_") ? relate.substring(relate.indexOf('_') + 1) : "";
 
 				if (tipsId.equals(id)) {
 					isDeleteTips = true;
@@ -2639,7 +2678,7 @@ public class TipsSelector {
 	}
 
 	private String getDeepRelateId(TipsDao tip) {
-		String relateID = null;
+		String relateID = "";
 
 		String deep = tip.getDeep();
 
@@ -2654,7 +2693,7 @@ public class TipsSelector {
 			return relateID;
 		}
 
-		relateID = f.getString("id");
+		relateID= f.getInt("type") + "_" + f.getString("id");
 		return relateID;
 	}
 

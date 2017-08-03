@@ -50,6 +50,7 @@ public class Operation implements IOperation {
         this.updateNodeGeometry(result);
         this.updateLinkGeomtry(result);
         this.updateFaceGeomtry(result);
+        this.updataSameNode(result);
         return null;
     }
 
@@ -137,20 +138,14 @@ public class Operation implements IOperation {
                 map.put(link.getPid(), links);
                 result.insertObject(link, ObjStatus.DELETE, link.pid());
             }
-            updataRelationObj(link, links, result);
         }
         this.map = map;
     }
 
     /**
-     * 维护关联要素
-     *
-     * @param link
-     * @param links
-     * @param result
-     * @throws Exception
+     * 同一点关系
      */
-    private void updataRelationObj(ZoneLink link, List<ZoneLink> links, Result result) throws Exception {
+    private void updataSameNode( Result result) throws Exception {
         // 同一点关系
         JSONObject updateJson = this.command.getJson();
 

@@ -376,6 +376,8 @@ comment on column DATA_PLAN.is_plan_selected
   is '是否规划选中状态 0非选中状态，1选中状态';
 comment on column DATA_PLAN.is_important
   is '是否重要poi 0非重要poi，1重要poi';
+comment on column DATA_PLAN.operate_date
+  is '规划时间';
 
 
 create table  IX_POI_FLAG_METHOD(
@@ -394,8 +396,7 @@ create table  IX_POI_FLAG_METHOD(
    U_RECORD         NUMBER(2)     DEFAULT 0 NOT NULL,
    U_FIELDS          VARCHAR2(1000)  ,
    U_DATE            VARCHAR2(14)  ,
-   ROW_ID            RAW(16)
-   
+   ROW_ID            RAW(16)  
 );
 
 comment on column IX_POI_FLAG_METHOD.VER_RECORD is '0 无;1 外业;2  内业;3  多源;4  众包;5  代理店 0';

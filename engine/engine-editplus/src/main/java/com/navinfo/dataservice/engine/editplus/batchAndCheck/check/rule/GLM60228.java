@@ -72,8 +72,8 @@ public class GLM60228 extends BasicCheckRule {
         String sql = "SELECT T1.KIND, T1.DISPLAY_CLASS FROM LC_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " +
                 "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || " + "T2.GEOMETRY" + "" +
                 ".SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')' , 8307), " +
-                "'MASK=011011111') = 'TRUE'";
-
+                "'MASK=011011111') = 'TRUE' AND T1.KIND!=16";
+        log.info("GLM60228,checkCoverLcFace:"+sql);
         Connection conn = getCheckRuleCommand().getConn();
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
@@ -83,9 +83,6 @@ public class GLM60228 extends BasicCheckRule {
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 int kind = resultSet.getInt("KIND");
-                if (kind == KIND_GREEN_BELT) {
-                    continue;
-                }
 
                 int displayClass = resultSet.getInt("DISPLAY_CLASS");
                 if (1 == displayClass && (kind == KIND_RIVER_AREA || kind == KIND_SWAMP_POOL) && length < MAX_DISTANCE) {
@@ -106,7 +103,7 @@ public class GLM60228 extends BasicCheckRule {
         String sql = "SELECT 1 FROM LU_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " + "T1.U_RECORD <> 2 AND "
                 + "T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || " + "T2.GEOMETRY.SDO_POINT.X || ' ' || " +
                 "T2.GEOMETRY.SDO_POINT.Y || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')' , 8307), " + "'MASK=011011111') = 'TRUE'";
-
+        log.info("GLM60228,checkCoverLuFace:"+sql);
         Connection conn = getCheckRuleCommand().getConn();
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;

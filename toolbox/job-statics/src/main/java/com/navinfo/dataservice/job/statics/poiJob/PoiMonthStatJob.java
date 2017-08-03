@@ -27,7 +27,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
-import com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob.PoiDayStatThread;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceRtException;

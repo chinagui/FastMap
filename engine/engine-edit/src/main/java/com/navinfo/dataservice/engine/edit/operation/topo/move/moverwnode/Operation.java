@@ -55,6 +55,8 @@ public class Operation implements IOperation {
 
         this.updateLinkGeomtry(result);
 
+        this.updataSameNode(result);
+
         return null;
     }
 
@@ -120,22 +122,14 @@ public class Operation implements IOperation {
 
                 result.insertObject(link, ObjStatus.DELETE, link.pid());
             }
-
-            updataRelationObj(result);
         }
     }
 
     /**
-     * 维护关联要素
-     *
-     * @param link
-     * @param links
-     * @param result
-     * @throws Exception
+     * 同一点关系
      */
-    private void updataRelationObj(Result result) throws Exception {
+    private void updataSameNode(Result result) throws Exception {
 
-        // 同一点关系
         JSONObject updateJson = this.command.getJson();
 
         if (updateJson.containsKey("mainType")) {
@@ -231,7 +225,7 @@ public class Operation implements IOperation {
     /**
      * 处理立交关系
      *
-     * @param link
+     * @param deleteLink
      * @throws Exception
      */
     private void handleRdGsc(RwLink deleteLink, Result result) throws Exception {

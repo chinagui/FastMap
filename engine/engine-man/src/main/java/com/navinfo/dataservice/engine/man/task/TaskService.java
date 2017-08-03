@@ -433,35 +433,42 @@ public class TaskService {
 				}
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
-				conn.commit();
+				//conn.commit();
 			}
 			//POI月编任务发布后，自动创建一个“POI专项”类型的子任务，状态为草稿
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
+					log.info("先创建质检月编子任务");
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					subtask.setTaskId(task.getTaskId());
 					//modify by songhe 
 					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
-					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
-					subtask.setName(name);//任务名称+_作业组
-					if(StringUtils.isBlank(subtask.getName())){
-						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
-					}
 					subtask.setExeGroupId(task.getGroupId());
+					//subtask = SubtaskService.getInstance().autoInforName(conn, subtask);
+					//subtask.setName(name);//任务名称+_作业组					
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
 					subtask.setPlanEndDate(task.getPlanEndDate());
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
+					subtask.setIsQuality(1);
 
-					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(conn,task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
 
-					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
-					
+					int qualitySubTaskId = SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+					//质检和常规月编子任务创建用同一个对象，只是修改了两者有区别的字段。
+					log.info("再创建常规月编子任务");
+					if(StringUtils.isBlank(subtask.getName())&&task.getBlockId()!=0){
+						subtask.setName(task.getName()+"_"+task.getGroupName()+"_质检");//任务名称+_作业组
+					}
+					subtask.setIsQuality(0);
+					subtask.setQualitySubtaskId(qualitySubTaskId);
+					int subTaskId = SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+					SubtaskService.getInstance().updateQualityName(conn, qualitySubTaskId);
 					//modify by songhe
 					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
 					//月编子任务名称赋值
@@ -655,12 +662,14 @@ public class TaskService {
 			
 			//获取旧任务信息
 			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
-			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
-			if(oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法/日编任务			
+			if((oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1))||
+					(oldTask.getType()==1&&bean.getGroupId()==0)){
 				String adminCode = selectAdminCode(oldTask.getProgramId());
-				
+				int groupType=1;
+				if(oldTask.getType()==1){groupType=2;}
 				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
+					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, groupType);
 					if(userGroup!=null){
 						Integer userGroupID = userGroup.getGroupId();
 						bean.setGroupId(userGroupID);}
@@ -1562,6 +1571,7 @@ public class TaskService {
 						task.put("roadPlanTotal", 0);
 						task.put("poiPlanTotal", 0);
 						task.put("orderStatus", 5);
+						task.put("jobs", new JSONArray());
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -2177,6 +2187,29 @@ public class TaskService {
 	 */
 	public Task queryByTaskId(Connection conn,int taskId) throws Exception {
 		try{
+			Task task=queryNoGeoByTaskId(conn,taskId);
+			//获取任务grid和geo
+			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
+			task.setGridIds(gridIds);
+			
+			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
+			String wkt = GridUtils.grids2Wkt(jsonArray);
+			task.setGeometry(Geojson.wkt2Geojson(wkt));
+			
+			return task;	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * 返回task详细信息
+	 * 包含block,program,几何信息
+	 */
+	public Task queryNoGeoByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run=new QueryRunner();
 			String sql="SELECT T.TASK_ID,"
 					+ "       T.NAME,"
@@ -2262,14 +2295,6 @@ public class TaskService {
 
 			};
 			Task task=run.query(conn, sql, rsHandler);
-			//获取任务grid和geo
-			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
-			task.setGridIds(gridIds);
-			
-			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
-			String wkt = GridUtils.grids2Wkt(jsonArray);
-			task.setGeometry(Geojson.wkt2Geojson(wkt));
-			
 			return task;	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

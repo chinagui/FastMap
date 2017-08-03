@@ -181,6 +181,10 @@ public class ExportExcel<T>
         font2.setBoldweight(HSSFFont.BOLDWEIGHT_NORMAL);  
         // 把字体应用到当前的样式   
         style2.setFont(font2);  
+        
+        //bug:8123(预处理平台_代理店_数据准备_表表差分结果导出：数据量较大时，导出报错)
+        HSSFFont font3 = workbook.createFont();  
+        font3.setColor(HSSFColor.BLUE.index);
   
         // 声明一个画图的顶级管理器   
         HSSFPatriarch patriarch = sheet.createDrawingPatriarch();  
@@ -357,8 +361,8 @@ public class ExportExcel<T>
                         {  
                             HSSFRichTextString richString = new HSSFRichTextString(  
                                     textValue);  
-                            HSSFFont font3 = workbook.createFont();  
-                            font3.setColor(HSSFColor.BLUE.index);  
+//                            HSSFFont font3 = workbook.createFont();  
+//                            font3.setColor(HSSFColor.BLUE.index);  
                             richString.applyFont(font3);  
                             cell.setCellValue(richString);  
                         }  
@@ -399,14 +403,14 @@ public class ExportExcel<T>
     }
     
     
-    public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
-		 for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
-			 HSSFRow row = HSSFCellUtil.getRow(i, sheet);
-			 for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
-			   HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
-			   cell.setCellStyle(cs);
-			  }
-			 }
+	public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
+		for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
+			HSSFRow row = HSSFCellUtil.getRow(i, sheet);
+			for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
+				HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
+				cell.setCellStyle(cs);
+			}
 		}
+	}
 }  
 

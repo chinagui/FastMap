@@ -16,10 +16,10 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 * @author: zhangpengpeng 
 * @date: 2017年1月10日
 * @Desc: FMYW20065.java
-*   检查条件：该POI发生变更(新增或修改主子表、删除子表)；
-*	检查原则：
-*	将拆分后的18个字段按“省名、市名、区县名、乡镇街道办、地名小区名、街巷名、标志物名、前缀、门牌号、类型名、子号、后缀、附属设施名、楼栋号、楼门号、楼层、房间号、附加信息”合并后，如果不存在汉字时，
-*	报log：拆分后的地址不存在汉字，请确认是否清空拆分地址。
+*   检查条件：非删除POI对象
+检查原则：
+将拆分后的18个字段按“省名、市名、区县名、乡镇街道办、地名小区名、街巷名、标志物名、前缀、门牌号、类型名、子号、后缀、附属设施名、楼栋号、楼门号、楼层、房间号、
+附加信息”合并后，如果有值且不存在汉字时，报log：拆分后的地址不存在汉字，请确认是否清空拆分地址！如果合并后为空，则报log：拆分地址为空，请确认是否正确！
 */
 public class FMYW20065 extends BasicCheckRule{
 	@Override
@@ -43,7 +43,7 @@ public class FMYW20065 extends BasicCheckRule{
 					// 获取中文地址拆分的18个字段合并
 					String chiAddr = CheckUtil.getMergerAddr(addrTmp);
 					if (StringUtils.isEmpty(chiAddr)){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "拆分地址为空，请确认是否正确！");
 						continue;
 					}
 					boolean errorFlag = true;
@@ -55,7 +55,7 @@ public class FMYW20065 extends BasicCheckRule{
 						}
 					}
 					if (errorFlag){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "拆分后的地址不存在汉字，请确认是否清空拆分地址！");
 						continue;
 					}
 				}

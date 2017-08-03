@@ -41,6 +41,8 @@ public class DataConfirmController extends BaseController {
 		Connection conn = null;
 
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject jsonObj = JSONObject.fromObject(request.getParameter("parameter"));
 
 			String chain = "";
@@ -52,9 +54,13 @@ public class DataConfirmController extends BaseController {
 			List<InformationExportResult> informationList = confirmService.getOutConfirmList(conn, chain);
 			ExportExcel<InformationExportResult> excel = new ExportExcel<InformationExportResult>();
 
-			StringBuilder excelName = new StringBuilder();
-			excelName.append("情报下载");
-			excelName.append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+//			StringBuilder excelName = new StringBuilder();
+//			excelName.append("情报下载");
+//			excelName.append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_情报下载导出");
+			String excelName = sb.toString();
 			response.addHeader("Content-Disposition",
 					"attachment;filename=" + new String(excelName.toString().getBytes("gb2312"), "ISO8859-1") + ".xls");
 

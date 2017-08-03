@@ -57,6 +57,7 @@ public class Operation implements IOperation {
         this.updateNodeGeometry(result);
         this.updateLinkGeomtry(result);
         this.updateFaceGeomtry(result);
+        this.updataSameNode( result);
         return null;
     }
 
@@ -144,19 +145,15 @@ public class Operation implements IOperation {
                 map.put(link.getPid(), links);
                 result.insertObject(link, ObjStatus.DELETE, link.pid());
             }
-            updataRelationObj(link, links, result);
         }
         this.map = map;
     }
 
     /**
-     * @param link
-     * @param links
-     * @param result
-     * @throws Exception
+     * 同一点关系
      */
-    private void updataRelationObj(AdLink link, List<AdLink> links, Result result) throws Exception {
-        // 同一点关系
+    private void updataSameNode(Result result) throws Exception {
+
         JSONObject updateJson = this.command.getJson();
 
         if (updateJson.containsKey("mainType")) {

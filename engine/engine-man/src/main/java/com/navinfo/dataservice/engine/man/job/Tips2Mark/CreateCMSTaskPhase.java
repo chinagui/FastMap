@@ -82,10 +82,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             if (jobRelation.getItemType() == ItemType.PROJECT) {
                 area = "快线一体化作业";
                 workType = "快速更新";
-                workSeason += "FM快速";
-            } else {
-                workSeason += "FM";
-            }
+            } 
             taskPar.put("workType", workType);
             taskPar.put("area", area);
             taskPar.put("userId", cmsInfo.get("userNickName"));

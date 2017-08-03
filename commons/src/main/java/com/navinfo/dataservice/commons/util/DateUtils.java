@@ -14,13 +14,17 @@ public class DateUtils {
 
 	private static final String defaultFormat = "yyyyMMddHHmmss";
 	private static final String defaultFormatWithMilis = "yyyyMMddHHmmssSSS";
-	
+
+	private static final String defaultSysFormat = "yyyy/MM/dd HH:mm:ss";
+
 	public static String DATE_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static String DATE_COMPACTED_FORMAT = "yyyyMMddHHmmss";
 	public static String DATE_YMD = "yyyyMMdd";
-	private static SimpleDateFormat compactedSdf = new SimpleDateFormat(DATE_COMPACTED_FORMAT);
-	private static SimpleDateFormat defaultSdf = new SimpleDateFormat(DATE_DEFAULT_FORMAT);
-	public static String DATE_WITH_SPLIT_YMD="yyyy-MM-dd";
+	private static SimpleDateFormat compactedSdf = new SimpleDateFormat(
+			DATE_COMPACTED_FORMAT);
+	private static SimpleDateFormat defaultSdf = new SimpleDateFormat(
+			DATE_DEFAULT_FORMAT);
+	public static String DATE_WITH_SPLIT_YMD = "yyyy-MM-dd";
 	private static SimpleDateFormat ymdSdf = new SimpleDateFormat(DATE_YMD);
 
 	/**
@@ -43,7 +47,8 @@ public class DateUtils {
 		if (date == null) {
 			return null;
 		}
-		if (StringUtils.isEmpty(formatType) || DATE_DEFAULT_FORMAT.equals(formatType)) {
+		if (StringUtils.isEmpty(formatType)
+				|| DATE_DEFAULT_FORMAT.equals(formatType)) {
 			return defaultSdf.format(date);
 		} else if (DATE_COMPACTED_FORMAT.equals(formatType)) {
 			return compactedSdf.format(date);
@@ -57,16 +62,17 @@ public class DateUtils {
 	// long类型转换为String类型
 	// currentTime要转换的long类型的时间
 	// formatType要转换的string类型的时间格式
-	public static String longToString(long currentTime, String formatType) throws ParseException {
+	public static String longToString(long currentTime, String formatType)
+			throws ParseException {
 		Date date = longToDate(currentTime, formatType); // long类型转成Date类型
 		String strTime = dateToString(date, formatType); // date类型转成String
 		return strTime;
 	}
 
 	/**
-	 * string类型转换为date类型
-	 * strTime要转换的string类型的时间，formatType要转换的格式yyyy-MM-dd HH:mm:ss   yyyy年MM月dd日  HH时mm分ss秒，
-	 * strTime的时间格式必须要与formatType的时间格式相同
+	 * string类型转换为date类型 strTime要转换的string类型的时间，formatType要转换的格式yyyy-MM-dd
+	 * HH:mm:ss yyyy年MM月dd日 HH时mm分ss秒， strTime的时间格式必须要与formatType的时间格式相同
+	 * 
 	 * @param strTime
 	 * @param formatType
 	 * @return
@@ -74,7 +80,9 @@ public class DateUtils {
 	 */
 	public static Date stringToDate(String strTime, String formatType)
 			throws ParseException {
-		if(StringUtils.isEmpty(strTime)){return null;}
+		if (StringUtils.isEmpty(strTime)) {
+			return null;
+		}
 		SimpleDateFormat formatter = new SimpleDateFormat(formatType);
 		Date date = null;
 		date = formatter.parse(strTime);
@@ -84,7 +92,8 @@ public class DateUtils {
 	// long转换为Date类型
 	// currentTime要转换的long类型的时间
 	// formatType要转换的时间格式yyyy-MM-dd HH:mm:ss//yyyy年MM月dd日 HH时mm分ss秒
-	public static Date longToDate(long currentTime, String formatType) throws ParseException {
+	public static Date longToDate(long currentTime, String formatType)
+			throws ParseException {
 		Date dateOld = new Date(currentTime); // 根据long类型的毫秒数生命一个date类型的时间
 		String sDateTime = dateToString(dateOld, formatType); // 把date类型的时间转换为string
 		Date date = stringToDate(sDateTime, formatType); // 把String类型转换为Date类型
@@ -95,7 +104,8 @@ public class DateUtils {
 	// strTime要转换的String类型的时间
 	// formatType时间格式
 	// strTime的时间格式和formatType的时间格式必须相同
-	public static long stringToLong(String strTime, String formatType) throws ParseException {
+	public static long stringToLong(String strTime, String formatType)
+			throws ParseException {
 		Date date = stringToDate(strTime, formatType); // String类型转成date类型
 		if (date == null) {
 			return 0;
@@ -125,7 +135,8 @@ public class DateUtils {
 		return dateToString(new Date(), DateUtils.DATE_YMD).substring(0, 6);
 	}
 
-	public static void main(String[] args) throws ParseException, java.text.ParseException {
+	public static void main(String[] args) throws ParseException,
+			java.text.ParseException {
 		// String s = du.numToDate(1350144260, "yyyy-MM-dd hh:mm:ss");
 		// long time = DateUtils.stringToLong("20160302154457",
 		// "yyyyMMddhhmmss");
@@ -136,7 +147,8 @@ public class DateUtils {
 		// System.out.println(time);
 		// System.out.println(time1);
 		// System.out.println(date);
-		System.out.println(DateUtils.dateToString(new Date(), DateUtils.DATE_YMD));
+		System.out.println(DateUtils.dateToString(new Date(),
+				DateUtils.DATE_YMD));
 		System.out.println(DateUtils.getCurYyyymm());
 	}
 
@@ -304,7 +316,8 @@ public class DateUtils {
 	}
 
 	public static Timestamp getSysTime() {
-		String mDateTime = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Object[] { getSysdate() });
+		String mDateTime = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}",
+				new Object[] { getSysdate() });
 		return Timestamp.valueOf(mDateTime);
 	}
 
@@ -395,7 +408,8 @@ public class DateUtils {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		String theday = sdf.format(date.getTime());
 		String[] thedays = theday.split("-");
-		return thedays[0] + "-" + thedays[1] + (max >= 10 ? "-" + max : "-0" + max);
+		return thedays[0] + "-" + thedays[1]
+				+ (max >= 10 ? "-" + max : "-0" + max);
 	}
 
 	/**
@@ -449,7 +463,8 @@ public class DateUtils {
 	 * @return
 	 */
 	public static Timestamp parseTime(String date) {
-		String mDateTime = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Object[] { parseDateTime2(date) });
+		String mDateTime = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}",
+				new Object[] { parseDateTime2(date) });
 		return Timestamp.valueOf(mDateTime);
 	}
 
@@ -474,9 +489,9 @@ public class DateUtils {
 	// */
 	// public static void main(String[] args) throws Exception
 	// {
-	//// String s = "2012/8/02 08:2";
-	//// SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-	//// System.out.println(format(sdf.parse(s)));
+	// // String s = "2012/8/02 08:2";
+	// // SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+	// // System.out.println(format(sdf.parse(s)));
 	// getSysDateNoMillis();
 	// System.out.println(addSeconds("20141102111111", 3));
 	// }
@@ -528,7 +543,8 @@ public class DateUtils {
 	 */
 	public static long getLeftSecondsOfDay() {
 		long currTime = System.currentTimeMillis();
-		Date midNight = parseDateTime2(formatDate(new Date(), "yyyy-MM-dd 23:59:59"));
+		Date midNight = parseDateTime2(formatDate(new Date(),
+				"yyyy-MM-dd 23:59:59"));
 		return (midNight.getTime() - currTime) / 1000;
 	}
 
@@ -542,6 +558,18 @@ public class DateUtils {
 	 */
 	public static String getSysDateFormat(String format) {
 		return formatDate(getSysdate(), format);
+	}
+
+	/**
+	 * 
+	 * 方法描述: 格式化当前系统时间
+	 * 
+	 * @param format
+	 *            格式化字符串
+	 * @return
+	 */
+	public static String getSysDateFormat() {
+		return formatDate(getSysdate(), defaultSysFormat);
 	}
 
 	public static Date getSysDateNoMillis() {

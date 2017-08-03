@@ -222,9 +222,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 									log.info("大区库（regionId:"+region.getRegionId()+"）日落月刷库完成。");
 								}
 								
-								log.info("开始筛选需要批引导LINK的POI");
-								tempPoiGLinkTab=createPoiTabForBatchGL(allResult,monthDbSchema);
-								log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+//								log.info("开始筛选需要批引导LINK的POI");
+//								tempPoiGLinkTab=createPoiTabForBatchGL(allResult,monthDbSchema);
+//								log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
 								logInfo.put("allQuickMeshes", allLogMeshes);
 							
 							}catch(Exception e){
@@ -253,11 +253,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 									log.info("释放履历锁");
 									LogSelector.unselect(false);
 								}
-								if(isbatch&&!tempPoiGLinkTab.isEmpty()){
-									log.info("开始执行引导LINK批处理");
-									new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
-									log.info("引导LINK批处理执行完成");
-								}
+//								if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+//									log.info("开始执行引导LINK批处理");
+//									new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+//									log.info("引导LINK批处理执行完成");
+//								}
 							}
 						}
 					}
@@ -480,9 +480,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			log.info("finished:"+region.getRegionId());
 			
-			log.info("开始筛选需要批引导LINK的POI");
-			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
-			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+//			log.info("开始筛选需要批引导LINK的POI");
+//			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
+//			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
 			
 		}catch(Exception e){
 			isbatch = false;
@@ -512,11 +512,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				log.info("释放履历锁");
 				logSelector.unselect(false);
 			}
-			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
-				log.info("开始执行引导LINK批处理");
-				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
-				log.info("引导LINK批处理执行完成");
-			}
+//			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+//				log.info("开始执行引导LINK批处理");
+//				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+//				log.info("引导LINK批处理执行完成");
+//			}
 			
 		}
 		

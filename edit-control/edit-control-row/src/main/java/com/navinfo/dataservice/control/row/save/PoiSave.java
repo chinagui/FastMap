@@ -68,10 +68,16 @@ public class PoiSave {
 			Map<String, Integer> newTaskInfo= changeTaskInfo(subtaskId,taskInfo);
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+ 
+			String tmpdata = json.get("data") == null ? "" : json.get("data").toString();
+			int poiLength = 0;
+			if(tmpdata.indexOf("{") == 0){
+				poiLength = json.getJSONObject("data").size();
+			}else if(tmpdata.indexOf("[") == 0){
+				poiLength = json.getJSONArray("data").size();
+			}
 
-			String poiData = json.get("data").toString();
-
-			if (poiData.length() == 0 && operType == OperType.UPDATE
+			if (poiLength == 0 && operType == OperType.UPDATE
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
 				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);

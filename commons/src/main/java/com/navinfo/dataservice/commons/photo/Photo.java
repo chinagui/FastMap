@@ -45,7 +45,7 @@ public class Photo {
 	
 	private String a_admin;
 	
-	private String a_deviceOrient;
+	private int a_deviceOrient;
 	
 	private String a_version;
 
@@ -208,11 +208,11 @@ public class Photo {
 		this.a_admin = a_admin;
 	}
 
-	public String getA_deviceOrient() {
+	public int getA_deviceOrient() {
 		return a_deviceOrient;
 	}
 
-	public void setA_deviceOrient(String a_deviceOrient) {
+	public void setA_deviceOrient(int a_deviceOrient) {
 		this.a_deviceOrient = a_deviceOrient;
 	}
 

@@ -299,6 +299,12 @@ public class SearchProcess {
 			return true;
 		} else if (type == ObjType.RWNODE) {
 			return true;
+		} else if (type == ObjType.RDOBJECT) {
+			return true;
+		} else if (type == ObjType.RDROAD) {
+			return true;
+		} else if (type == ObjType.RDINTER) {
+			return true;
 		} else {
 			return false;
 		}
@@ -888,53 +894,19 @@ public class SearchProcess {
 				if (!condition.containsKey("nodePid")) {
 					int inLinkPid = condition.getInt("inLinkPid");
 					int outLinkPid = condition.getInt("outLinkPid");
-					int nodePid = 0;
 					RdLinkSelector linkSelector = new RdLinkSelector(conn);
+
 					IRow row = linkSelector.loadById(inLinkPid, true, true);
+
 					RdLink link = (RdLink) row;
-					List<Integer> viaList = new ArrayList<Integer>();
-					if (link.getDirect() == 2) {
-						nodePid = link.geteNodePid();
-						viaList = calLinkOperateUtils.calViaLinks(this.conn,
-								inLinkPid, nodePid, outLinkPid);
-					}
-					if (link.getDirect() == 3) {
-						nodePid = link.getsNodePid();
-						viaList = calLinkOperateUtils.calViaLinks(this.conn,
-								inLinkPid, nodePid, outLinkPid);
-					}
-					if (link.getDirect() == 1) {
-						List<Integer> sviaList = calLinkOperateUtils
-								.calViaLinks(this.conn, inLinkPid,
-										link.getsNodePid(), outLinkPid);
-						List<Integer> eviaList = calLinkOperateUtils
-								.calViaLinks(this.conn, inLinkPid,
-										link.geteNodePid(), outLinkPid);
-						if (sviaList.size() == 0 && eviaList.size() == 0) {
-							viaList = sviaList;
-						}
-						if (sviaList.size() == 0 && eviaList.size() > 0) {
-							viaList = eviaList;
-						}
-						if (eviaList.size() == 0 && sviaList.size() > 0) {
-							viaList = sviaList;
-						}
-						if (eviaList.size() > 0 && sviaList.size() > 0) {
-							double eLength = linkSelector
-									.loadByPidsLength(eviaList);
-							double sLength = linkSelector
-									.loadByPidsLength(eviaList);
-							viaList = (eLength >= sLength) ? sviaList
-									: eviaList;
 
-						}
-
-					}
-					// 计算经过线
+					List<Integer> viaList = calLinkOperateUtils.calViaLinks(this.conn, link, outLinkPid);
 
 					for (Integer pid : viaList) {
 						array.add(pid);
 					}
+					return array;
+
 				}
 				break;
 			case RDLANE:

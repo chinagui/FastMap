@@ -71,8 +71,7 @@ public class FMYW20288 extends BasicCheckRule {
 
 			String sqlStr = "SELECT P1.PID PID,P1.GEOMETRY,P1.MESH_ID,P2.PID PID2 " 
 					+ " FROM IX_POI P1,IX_POI P2"
-					+ " WHERE P1.GEOMETRY.SDO_POINT.X =P2.GEOMETRY.SDO_POINT.X"
-					+ " AND P1.GEOMETRY.SDO_POINT.Y =P2.GEOMETRY.SDO_POINT.Y" 
+					+ " WHERE SDO_NN(P1.GEOMETRY,P2.GEOMETRY,'sdo_batch_size=0 DISTANCE=0 UNIT=METER') = 'TRUE'"
 					+ "	AND P1. " + pidString
 					+ " AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" 
 					+ " AND P1.PID <> P2.PID";

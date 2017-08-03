@@ -28,11 +28,13 @@ public class RequestLoggerHandler extends HandlerInterceptorAdapter {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response,
                            Object handler, ModelAndView modelAndView) throws Exception {
+    	
         Long causeTime = System.currentTimeMillis() - startTime.get();
         log.info("[http]postHandle url: {"+request.getRequestURL()+"}, used:"+causeTime+"ms");
         startTime.remove();
-        String op_log = "op_id("+ThreadLogToken.getInstance().get()+"),time_consuming("+causeTime+"ms)";
-        modelAndView.addObject("op_log", op_log);
+        modelAndView.addObject("time_consuming(ms)", causeTime);
+        String errmsg = String.valueOf(modelAndView.getModel().get("errmsg"));
+        modelAndView.getModel().put("errmsg", "[请求编号："+ThreadLogToken.getInstance().get()+"]"+errmsg);
         ThreadLogToken.getInstance().remove();
     }
 }

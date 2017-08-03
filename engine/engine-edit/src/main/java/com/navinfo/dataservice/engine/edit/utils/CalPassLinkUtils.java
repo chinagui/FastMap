@@ -42,14 +42,70 @@ public class CalPassLinkUtils {
         this.conn = conn;
     }
 
+    private void init() {
+        activityNodePoint.clear();
+
+        p2p.clear();
+
+        linkInfos.clear();
+
+        nodePointMap.clear();
+    }
+
     /**
      * 计算经过线
-     * @param inLinkPid
-     * @param nodePid
+     * @param inLink
      * @param outLinkPid
      * @return
      * @throws Exception
      */
+    public List<Integer> calcPassLinks(RdLink inLink, int outLinkPid)
+            throws Exception {
+
+        if (inLink.getDirect() == 2) {
+
+            return calcPassLinks(inLink.getPid(), inLink.geteNodePid(), outLinkPid);
+
+        } else if (inLink.getDirect() == 3) {
+
+            return calcPassLinks(inLink.getPid(), inLink.getsNodePid(), outLinkPid);
+        }
+
+        RdLinkSelector selector = new RdLinkSelector(this.conn);
+
+        List<Integer> pids = Arrays.asList(outLinkPid);
+
+        List<RdLink> sourceLinks = selector.loadByPids(pids, true);
+
+        RdLink endLink = sourceLinks.get(0);
+
+        calcNodePointInfo(inLink, inLink.getsNodePid(), endLink);
+
+        NodePoint sNodePoint = getMinNodePoint(endLink);
+
+        double sLength = sNodePoint == null ? Double.MAX_VALUE : sNodePoint.total;
+
+        calcNodePointInfo(inLink, inLink.geteNodePid(), endLink);
+
+        NodePoint eNodePoint = getMinNodePoint(endLink);
+
+        double eLength = eNodePoint == null ? Double.MAX_VALUE : eNodePoint.total;
+
+        if (eLength == Double.MAX_VALUE && sLength == Double.MAX_VALUE) {
+
+            throw new Exception("未计算出经过线");
+        }
+
+        if (sLength < eLength) {
+
+            return getPassLink(sNodePoint);
+
+        } else {
+
+            return getPassLink(eNodePoint);
+        }
+    }
+
     public List<Integer> calcPassLinks(int inLinkPid, int nodePid, int outLinkPid) throws Exception {
 
         RdLinkSelector selector = new RdLinkSelector(this.conn);
@@ -62,34 +118,52 @@ public class CalPassLinkUtils {
 
         RdLink endLink = sourceLinks.get(0).getPid() == outLinkPid ? sourceLinks.get(0) : sourceLinks.get(1);
 
+        calcNodePointInfo(inLink, nodePid, endLink);
+
+        NodePoint nodePoint = getMinNodePoint(endLink);
+
+        if (nodePoint == null) {
+
+            throw new Exception("未计算出经过线，请手动选择经过线");
+        }
+
+        List<Integer> passLinkPids = getPassLink(nodePoint);
+
+        init();
+
+        return passLinkPids;
+    }
+
+    /**
+     * 计算节点信息
+     * @param inLink
+     * @param nodePid
+     * @param endLink
+     * @return
+     * @throws Exception
+     */
+    private void calcNodePointInfo(RdLink inLink, int nodePid, RdLink endLink) throws Exception {
+
+        init();
+
         if ((endLink.getDirect() == 2 && endLink.getsNodePid() == nodePid)
                 || (endLink.getDirect() == 3 && endLink.geteNodePid() == nodePid)
                 || (endLink.getDirect() == 1 && (endLink.getsNodePid() == nodePid || endLink.geteNodePid() == nodePid))) {
 
-            return new ArrayList<>();
+            return ;
         }
 
-        String wktBuffer = getWktBuffer(sourceLinks);
+        String wktBuffer = getWktBuffer(Arrays.asList(inLink, endLink));
 
         searchLinkBySpatial(wktBuffer, inLink.getPid(), endLink.getPid());
 
-        NodePoint firstNodePoint = new NodePoint(nodePid, inLinkPid);
+        NodePoint firstNodePoint = new NodePoint(nodePid, inLink.getPid());
 
         activityNodePoint.add(firstNodePoint);
 
         nodePointMap.put(firstNodePoint.getNodePid(), firstNodePoint);
 
         calNodePoint();
-
-        List<Integer> passLinkPids = getPassLink(endLink);
-
-        p2p.clear();
-
-        linkInfos.clear();
-
-        nodePointMap.clear();
-
-        return passLinkPids;
     }
 
     /**
@@ -99,7 +173,7 @@ public class CalPassLinkUtils {
      * @return 坐标数组
      * @throws ParseException
      */
-    public String getWktBuffer(List<RdLink> sourceLinks) throws Exception {
+    private String getWktBuffer(List<RdLink> sourceLinks) throws Exception {
 
         List<Coordinate> coordinates = new ArrayList<>();
 
@@ -168,7 +242,7 @@ public class CalPassLinkUtils {
      * @param outLinkPid 退出线
      * @throws Exception
      */
-    public void searchLinkBySpatial(String wkt, int inLinkPid, int outLinkPid) throws Exception {
+    private void searchLinkBySpatial(String wkt, int inLinkPid, int outLinkPid) throws Exception {
 
         String sql = "SELECT A.LINK_PID, A.LENGTH, A.DIRECT, A.S_NODE_PID, A.E_NODE_PID FROM RD_LINK A WHERE SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND A.U_RECORD != 2";
 
@@ -237,7 +311,7 @@ public class CalPassLinkUtils {
     /**
      * 生成节点信息
      */
-    public void calNodePoint() {
+    private void calNodePoint() {
 
         //防止死循环，int值域较小，采用long
         long count = 0;
@@ -284,14 +358,8 @@ public class CalPassLinkUtils {
         }
     }
 
-    /**
-     * 获取经过线
-     * @param endLink 退出线
-     * @return
-     * @throws Exception
-     */
-    public List<Integer> getPassLink(RdLink endLink) throws Exception {
-
+    private NodePoint getMinNodePoint(RdLink endLink) throws Exception
+    {
         NodePoint nodePoint = null;
 
         if ((endLink.getDirect() == 1 || endLink.getDirect() == 2)
@@ -311,10 +379,16 @@ public class CalPassLinkUtils {
             }
         }
 
-        if (nodePoint == null) {
+        return nodePoint;
+    }
 
-            throw new Exception("未计算出经过线，请手动选择经过线");
-        }
+    /**
+     * 获取经过线
+     * @param nodePoint 最优节点
+     * @return
+     * @throws Exception
+     */
+    private List<Integer> getPassLink( NodePoint nodePoint) throws Exception {
 
         List<Integer> passLinkPids = new ArrayList<>();
 

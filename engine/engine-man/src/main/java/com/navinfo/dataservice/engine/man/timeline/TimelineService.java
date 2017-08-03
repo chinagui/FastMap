@@ -1,9 +1,21 @@
 package com.navinfo.dataservice.engine.man.timeline;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 /**
  * 用于记录关闭数据时间点
@@ -12,7 +24,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 
  * */
 public class TimelineService {
-	
+	private static Logger log = LoggerRepos.getLogger(TimelineService.class);
 	/**
 	 * @param 操作对象的ID
 	 * @param 操作对象的name
@@ -29,6 +41,50 @@ public class TimelineService {
 			run.execute(conn, sql);
 		}catch(Exception e){
 			throw e;
+		}
+	}
+	
+	/**
+	 * 查询MAN_TIMELINE
+	 * objName:program,task,subtask,infor
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public static Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			//查询数据
+			String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_TYPE = ? ORDER BY OBJ_ID,OPERATE_DATE";
+			Object[] params = {objName};
+			//处理结果集
+			ResultSetHandler<Map<Long,Map<String, Object>>> rsh = new ResultSetHandler<Map<Long,Map<String, Object>>>() {
+				
+				@Override
+				public Map<Long,Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					Map<Long,Map<String, Object>> data = new HashMap<Long,Map<String, Object>>();
+					//处理数据
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						long objId = rs.getLong("OBJ_ID");
+						map.put("objId", objId);
+						map.put("objType", rs.getString("OBJ_TYPE"));
+						map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						data.put(objId, map);
+					}
+					return data;
+				}
+			};
+			Map<Long,Map<String, Object>> result = queryRunner.query(conn, sql, rsh, params);
+			//返回数据
+			return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询MAN_TIMELINE明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

@@ -272,7 +272,6 @@ public class ImportPlan {
 	 * 
 	 * */
 	public int taskCountInBlock(int blockID, Connection conn) throws Exception{
-		int count = 0;
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.task_id from task t where t.block_id = " + blockID;
@@ -287,12 +286,10 @@ public class ImportPlan {
 					}
 				}
 			};
-			
-			count = run.query(conn, sql, rsHandler);	
+			return run.query(conn, sql, rsHandler);	
 		}catch(Exception e){
 			throw e;
 		}
-		return count;
 	}
 	
 	/**
@@ -355,7 +352,14 @@ public class ImportPlan {
 		excelHeader.put("IS_PLAN", "IS_PLAN");
 		
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
-		return sources;
+		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		for(Map<String, Object> map : sources){
+			int isPlan = Integer.parseInt(map.get("IS_PLAN").toString());
+			if(isPlan == 1){
+				result.add(map);
+			}
+		}
+		return result;
 	}
 	
 	/**

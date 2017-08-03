@@ -767,7 +767,8 @@ public class GeometryUtils {
         int side = 0;
 
         // 如果poi点位在线上则更新side为3，否则计算左右
-        if (point.distance(link) <= 1) {
+        //20170801:经过凯凯与玉秀确认，此处统一改为1.5米
+        if (point.distance(link) <= 1.5) {
             side = 3;
         } else {
             // poi的位置点

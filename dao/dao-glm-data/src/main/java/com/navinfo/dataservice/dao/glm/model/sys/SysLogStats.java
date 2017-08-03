@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.dao.glm.model.sys;
 
 public class SysLogStats {

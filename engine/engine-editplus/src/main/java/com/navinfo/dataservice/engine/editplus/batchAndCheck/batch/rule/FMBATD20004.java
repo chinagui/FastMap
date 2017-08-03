@@ -85,7 +85,7 @@ public class FMBATD20004 extends BasicBatchRule {
 				//存在poi_flag记录
 				for(IxPoiFlagMethod poiFlag:poiFlags){
 					//常规子任务
-					if(subTaskWorkKind==0){
+					if(subTaskWorkKind==1){
 						if(poi.getHisOpType().equals(OperationType.INSERT)){
 							if(poiFlag.getSrcRecord()==0){poiFlag.setSrcRecord(1);}
 							if(poiFlag.getVerRecord()!=1){poiFlag.setVerRecord(1);}
@@ -126,7 +126,7 @@ public class FMBATD20004 extends BasicBatchRule {
 			}else{
 				IxPoiFlagMethod poiFlag=poiObj.createIxPoiFlagMethod();
 				//常规子任务
-				if(subTaskWorkKind==0){
+				if(subTaskWorkKind==1){
 					poiFlag.setSrcRecord(1);
 					poiFlag.setVerRecord(1);
 					poiFlag.setFieldVerified(1);
@@ -147,12 +147,14 @@ public class FMBATD20004 extends BasicBatchRule {
 			}
 			//处理ix_poi_flag
 			if(poi.getHisOpType().equals(OperationType.INSERT)||poi.getHisOpType().equals(OperationType.UPDATE)){
-				for(IxPoiFlagMethod poiFlag:poiFlags){
-					if(poiFlag.getFieldVerified()==0&&flagCode0){
-						delIxPoiFlag(poiObj,"110001110000");
-					}
-					if(poiFlag.getFieldVerified()==1&&!flagCode0){
-						addIxPoiFlag(poiObj,"110001110000");
+				if(poiFlags != null && poiFlags.size() > 0){
+					for(IxPoiFlagMethod poiFlag:poiFlags){
+						if(poiFlag.getFieldVerified()==0&&flagCode0){
+							delIxPoiFlag(poiObj,"110001110000");
+						}
+						if(poiFlag.getFieldVerified()==1&&!flagCode0){
+							addIxPoiFlag(poiObj,"110001110000");
+						}
 					}
 				}
 			}

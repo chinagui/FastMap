@@ -46,7 +46,7 @@ public class AddChainDataEntity {
 	private int cfmIsAdopted ;
 	private String cfmPoiNum ;
 	private String cfmMemo ;
-	private Integer sourceId ;
+	private int sourceId ;
 	private int dealSrcDiff ;
 	private String dealCfmDate ;
 	private String poiKindCode ;
@@ -284,10 +284,10 @@ public class AddChainDataEntity {
 	public void setCfmMemo(String cfmMemo) {
 		this.cfmMemo = cfmMemo;
 	}
-	public Integer getSourceId() {
+	public int getSourceId() {
 		return sourceId;
 	}
-	public void setSourceId(Integer sourceId) {
+	public void setSourceId(int sourceId) {
 		this.sourceId = sourceId;
 	}
 	public int getDealSrcDiff() {

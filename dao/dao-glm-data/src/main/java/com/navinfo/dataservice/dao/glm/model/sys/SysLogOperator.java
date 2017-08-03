@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.dao.glm.model.sys;
 
 import java.sql.Clob;
@@ -82,4 +83,3 @@ public class SysLogOperator {
 		}
 
 	}
-}

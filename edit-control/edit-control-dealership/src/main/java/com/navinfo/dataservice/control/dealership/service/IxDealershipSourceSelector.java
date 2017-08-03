@@ -70,6 +70,20 @@ public class IxDealershipSourceSelector {
 		};
 	}
 	
+	public static Map<Integer, IxDealershipSource> getSourceIdsByChain(Connection conn,Collection<String> chainSet)throws Exception{
+		if(chainSet==null|chainSet.size()==0)return new HashMap<Integer,IxDealershipSource>();
+
+		if(chainSet.size()>1000){
+			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE CHAIN IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(chainSet, ","));
+			return new QueryRunner().query(conn, sql, getSourcesMapHander(),clob);
+		}else{
+			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE CHAIN IN ('"+StringUtils.join(chainSet, "','")+"')";
+			return new QueryRunner().query(conn,sql,getSourcesMapHander());
+		}
+	}
+	
 	/**
 	 * key是IxDealershipResult对象的sourceId
 	 * @return

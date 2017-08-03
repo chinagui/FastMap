@@ -267,6 +267,8 @@ create table RD_LINK
   ADAS_FLAG        NUMBER(1) default 0 not null,
   SIDEWALK_FLAG    NUMBER(1) default 0 not null,
   WALKSTAIR_FLAG   NUMBER(1) default 0 not null,
+  NONMOTOR_FLAG    NUMBER(1) default 3 not null,
+  LEISURE_TYPE     NUMBER(1) default 0 not null,
   DICI_TYPE        NUMBER(1) default 0 not null,
   WALK_FLAG        NUMBER(1) default 0 not null,
   DIF_GROUPID      VARCHAR2(200),
@@ -348,11 +350,15 @@ alter table RD_LINK
 alter table RD_LINK
   add check (WALKSTAIR_FLAG in (0,1,2));
 alter table RD_LINK
+  add check (NONMOTOR_FLAG in (0,1,2,3));
+alter table RD_LINK
+  add check (LEISURE_TYPE in (0,1,2,3));
+alter table RD_LINK
   add check (DICI_TYPE in (0,1,2));
 alter table RD_LINK
   add check (WALK_FLAG in (0,1,2));
 alter table RD_LINK
-  add check (SRC_FLAG in (1,2,3,4,5,6));
+  add check (SRC_FLAG in (1,2,3,4,5,6,7));
 alter table RD_LINK
   add check (DIGITAL_LEVEL in (0,1,2,3,4));
 alter table RD_LINK

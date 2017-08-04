@@ -37,9 +37,10 @@ public class GeneratePoiDownloadUrl {
 			final OracleSchema schema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			conn = schema.getDriverManagerDataSource().getConnection();
-			String urlBody = "http://fastmap.navinfo.com/service/edit/poi/base/download?access_token=000001OZJ5W9816V5724FBEF4E973C6DC88023686AAD2655&parameter=";
+			String urlBody = "http://fastmap.navinfo.com/service/edit/poi/base/download?access_token=000001OZJ5YVHQUIBB6CE1748622B74EC9482FC099E14837&parameter=";
 			
-			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND PROVINCE = '福建省' AND ROWNUM<151";
+//			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND PROVINCE = '福建省' AND ROWNUM<151";
+			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND PROVINCE = '福建省' AND MESH IN ('455462','455463','455464')";
 			Set<String> meshes = new QueryRunner().query(conn, sql, new ResultSetHandler<Set<String>>(){
 
 				@Override

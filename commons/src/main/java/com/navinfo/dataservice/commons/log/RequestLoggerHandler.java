@@ -33,8 +33,10 @@ public class RequestLoggerHandler extends HandlerInterceptorAdapter {
         log.info("[http]postHandle url: {"+request.getRequestURL()+"}, used:"+causeTime+"ms");
         startTime.remove();
         modelAndView.addObject("time_consuming(ms)", causeTime);
-        String errmsg = String.valueOf(modelAndView.getModel().get("errmsg"));
-        modelAndView.getModel().put("errmsg", "[请求编号："+ThreadLogToken.getInstance().get()+"]"+errmsg);
+        if(modelAndView !=null&&modelAndView.getModel()!=null){
+            String errmsg = String.valueOf(modelAndView.getModel().get("errmsg"));
+            modelAndView.getModel().put("errmsg", "[请求编号："+ThreadLogToken.getInstance().get()+"]"+errmsg);
+        }
         ThreadLogToken.getInstance().remove();
     }
 }

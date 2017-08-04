@@ -23,7 +23,6 @@ import net.sf.json.JSONObject;
 public class SubtaskWriter extends DefaultWriter {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	
 	public void write2Other(String timestamp,JSONObject messageJSON) throws Exception {
 		Connection conn=null;
 		try{
@@ -35,7 +34,7 @@ public class SubtaskWriter extends DefaultWriter {
 				Timestamp statDate = DateUtils.stringToTimestamp(timestamp, "yyyyMMddHHmmss");
 				//处理数据
 				JSONArray content = messageJSON.getJSONArray(collectionName);
-				Object[][] valueList=new Object[content.size()][17];
+				Object[][] valueList=new Object[content.size()][16];
 				for(int i=0;i<content.size();i++){
 					JSONObject jso = content.getJSONObject(i);
 					int subtaskId = (int) jso.get("subtaskId");
@@ -89,24 +88,24 @@ public class SubtaskWriter extends DefaultWriter {
 						percentPoi = percent;
 					}
 					//保存数据
-					Object[] value=new Object[17];
-					value[1] = subtaskId;
-					value[2] = percent;
-					value[3] = diffDate;
-					value[4] = progress;
-					value[5] = status;
+					Object[] value=new Object[16];
+					value[0] = subtaskId;
+					value[1] = percent;
+					value[2] = diffDate;
+					value[3] = progress;
+					value[4] = status;
 					
-					value[6] = totalPoi;
-					value[7] = finishedPoi;
-					value[8] = totalRoad;
-					value[9] = finishedRoad;
-					value[10] = percentPoi;
-					value[11] = percentRoad;
-					value[12] = DateUtils.stringToTimestamp(actualStartDate, "yyyyMMddHHmmss");
-					value[13] = DateUtils.stringToTimestamp(actualEndDate, "yyyyMMddHHmmss");
-					value[14] = planDate;
+					value[5] = totalPoi;
+					value[6] = finishedPoi;
+					value[7] = totalRoad;
+					value[8] = finishedRoad;
+					value[9] = percentPoi;
+					value[10] = percentRoad;
+					value[11] = DateUtils.stringToTimestamp(actualStartDate, "yyyyMMddHHmmss");
+					value[12] = DateUtils.stringToTimestamp(actualEndDate, "yyyyMMddHHmmss");
+					value[13] = planDate;
+					value[14] = statDate;
 					value[15] = statDate;
-					value[16] = statDate;
 					
 					valueList[i] = value;
 				}

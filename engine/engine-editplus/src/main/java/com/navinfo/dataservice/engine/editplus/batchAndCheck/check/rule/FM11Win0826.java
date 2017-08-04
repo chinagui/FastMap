@@ -33,7 +33,7 @@ public class FM11Win0826 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
+		log.info("start FM11Win0826");
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			//IxPoi poi=(IxPoi) poiObj.getMainrow();
 			IxPoiName nameObj = poiObj.getOfficeOriginCHName();
@@ -66,11 +66,11 @@ public class FM11Win0826 extends BasicCheckRule {
 					return;
 				}
 			}
-		}
 	}
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
+		log.info("start loadReferDatas");
 		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
 			IxPoiObj poiObj=(IxPoiObj) obj;
@@ -82,6 +82,7 @@ public class FM11Win0826 extends BasicCheckRule {
 		Set<String> referSubrow=new HashSet<String>();
 		referSubrow.add("IX_POI_ADDRESS");
 		referObjs = getCheckRuleCommand().loadReferObjsByLog(pidList, ObjectName.IX_POI, referSubrow, false);
+		log.info("end loadReferDatas");
 	}
 
 }

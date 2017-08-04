@@ -110,7 +110,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			for(Long pidTmp:myRequest.getPids()){
 				pidIntList.add(Integer.valueOf(pidTmp.toString()));
 			}
-			deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+			deepControl.cleanExByCkRule(myRequest.getTargetDbId(), pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 			log.info("end 清理检查结果");
 			
 			Check check=new Check(conn, operationResult);

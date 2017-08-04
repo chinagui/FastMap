@@ -42,6 +42,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
+import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -378,7 +379,7 @@ public class DeepCoreControl {
 			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
 			
 			//调用清理检查结果方法
-			cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+			cleanExByCkRule(dbId, pidList, checkList, "IX_POI");
 			
 			OperationResult operationResult=new OperationResult();
 			
@@ -896,10 +897,19 @@ public class DeepCoreControl {
 	 * @param objType
 	 * @throws Exception
 	 */
-	public void cleanExByCkRule(Connection conn, List<Integer> pids, List<String> ckRules, String objType) throws Exception {
-		List<String> md5List = getMd5List(conn,pids,ckRules,objType);
-		cleanCheckException(md5List,conn);
-		cleanCheckObj(md5List,conn);
+	public void cleanExByCkRule(int dbId, List<Integer> pids, List<String> ckRules, String objType) throws Exception {
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getConnectionById(dbId);
+			List<String> md5List = getMd5List(conn,pids,ckRules,objType);
+			cleanCheckException(md5List,conn);
+			cleanCheckObj(md5List,conn);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	
 	/**

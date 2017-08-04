@@ -122,6 +122,7 @@ public class SubtaskWriter extends DefaultWriter {
 			}
 			log.info("end write2Oracle");
 		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error("子任务数据写入oracle出错:" + e.getMessage(), e);
 			throw new Exception("子任务数据写入oracle出错:" + e.getMessage(), e);
 		}finally{

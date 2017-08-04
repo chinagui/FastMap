@@ -36,6 +36,7 @@ import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Point;
 
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 /**
@@ -60,11 +61,11 @@ public class MonthPoiJob extends AbstractStatJob {
 			List<Region> regionList = manApi.queryRegionList();
 			Set<Integer> dbIds = new HashSet<Integer>();
 			for (Region region : regionList) {
-				if(region.getMonthlyDbId() != null){
+				if(region.getMonthlyDbId() != null && region.getMonthlyDbId() != 0){
 					dbIds.add(region.getMonthlyDbId());
 				}
 			}
-			
+			log.info("统计的大区库:"+dbIds.toString());
 			Map<Integer, Map<String,List<Map<String, Integer>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String,Integer>>>>();
 			long t = System.currentTimeMillis();
 			int dbSize = dbIds.size();
@@ -91,11 +92,13 @@ public class MonthPoiJob extends AbstractStatJob {
 			//处理数据
 			Map<String,List<Map<String,Integer>>> result = new HashMap<String,List<Map<String,Integer>>>();
 			result.put("grid_month_poi", new ArrayList<Map<String,Integer>>());
+			result.put("subtaskId_month_poi", new ArrayList<Map<String,Integer>>());
 
 			for(Entry<Integer, Map<String, List<Map<String, Integer>>>> entry:stats.entrySet()){
 				result.get("grid_month_poi").addAll(entry.getValue().get("grid_month_poi"));
+				result.get("subtaskId_month_poi").addAll(entry.getValue().get("subtaskId_month_poi"));
 			}
-			return result.toString();
+			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

@@ -396,8 +396,7 @@ create table  IX_POI_FLAG_METHOD(
    U_RECORD         NUMBER(2)     DEFAULT 0 NOT NULL,
    U_FIELDS          VARCHAR2(1000)  ,
    U_DATE            VARCHAR2(14)  ,
-   ROW_ID            RAW(16)
-   
+   ROW_ID            RAW(16)  
 );
 
 comment on column IX_POI_FLAG_METHOD.VER_RECORD is '0 无;1 外业;2  内业;3  多源;4  众包;5  代理店 0';

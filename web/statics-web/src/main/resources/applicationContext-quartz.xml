@@ -18,6 +18,7 @@
                 <ref bean="poiDayStat_Trigger" />
                 <ref bean="monthPoiStat_Trigger" />
                 <ref bean="dayPlanStat_Trigger" />
+                <ref bean="personDayStat_Trigger" />
 <!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
             </list>
         </property>
@@ -93,6 +94,11 @@
         <property name="jobDetail" ref="poiDayStat_detail" />
         <property name="cronExpression" value="0 0 * * * ?" />
     </bean>
+    <bean id="personDayStat_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="personDayStat_detail" />
+        <property name="cronExpression" value="0 0 23 * * ?" />
+    </bean>
     
     <bean id="monthPoiStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
@@ -116,6 +122,11 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
+    <bean id="personDayStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="personDayStat" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
     
     <bean id="monthPoiStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="monthPoiStat" />
@@ -136,6 +147,7 @@
    
 	<!--  业务逻辑处理类 -->
 	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
+	<bean id="personDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PersonDayStatStarter"/>
 	
 	<bean id="monthPoiStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.MonthPoiStatStarter"/>
 	<bean id="dayPlanStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayPlanStatStarter"/>

@@ -45,7 +45,6 @@ public class FM14Sum1108 extends BasicCheckRule {
 		List<String> selectSqls=new ArrayList<String>();
 		String sqlTmp="";
 		int i=0;
-		double distince3=0.00003;
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;

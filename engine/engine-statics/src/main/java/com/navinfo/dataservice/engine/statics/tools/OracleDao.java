@@ -251,8 +251,8 @@ public class OracleDao {
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
 					+ " FROM SUBTASK S"
-					+ " WHERE S.TYPE IN (0, 1, 2, 3, 4,5,7)"
-					+ " AND S.STATUS IN (0, 1)"
+					+ " WHERE S.STATUS IN (0, 1)"
+//					+ " AND S.TYPE IN (0, 1, 2, 3, 4,5,6,7,8,9,10)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"

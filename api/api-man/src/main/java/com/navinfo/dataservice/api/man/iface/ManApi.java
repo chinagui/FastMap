@@ -277,10 +277,10 @@ public interface ManApi{
     /**
 	 * 查询MAN_TIMELINE
 	 * objName:program,task,subtask,infor
-	 * @return
+	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
 	
 	/**
 	 * timestamp:yyyymmdd

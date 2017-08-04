@@ -121,7 +121,7 @@ public class SyncTest {
 		List<Integer> dbIds = new ArrayList<Integer>();
 //		dbIds.add(13);
 //		dbIds.add(330);
-		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(2, "20010722150900", "20170723230000",dbIds);
+		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(1, "20010722150900", "20170723230000",dbIds);
 		System.out.println(chargePoiConvertor.toString());
 		
 	}

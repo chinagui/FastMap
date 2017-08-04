@@ -2601,7 +2601,7 @@ public class DataEditService {
 		DeepCoreControl deepControl = new DeepCoreControl();
 		List<Integer> pidIntList=new ArrayList<Integer>();
 		pidIntList.add(objPid);
-		deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+		deepControl.cleanExByCkRule(poiDbId, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 		log.info("end 清理检查结果");
 		
 		Check check=new Check(conn, operationResult);

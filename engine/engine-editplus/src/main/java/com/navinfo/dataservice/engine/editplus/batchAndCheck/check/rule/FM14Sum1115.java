@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,8 @@ public class FM14Sum1115 extends BasicCheckRule {
 		Map<Long, BasicObj> rows=getRowList();
 //		List<Long> pidParent=new ArrayList<Long>();
 		List<Long> pidChildren=new ArrayList<Long>();
+		String[] checkKindArray={"130105","130800","130804","130806","130807"};
+		List checkKindList=Arrays.asList(checkKindArray);
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
@@ -45,9 +48,10 @@ public class FM14Sum1115 extends BasicCheckRule {
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			String kind=poi.getKindCode();
-			if(kind.equals("130105")||kind.equals("130800")||kind.equals("130804")||kind.equals("130806")
-					||kind.equals("130807"))
-				{pidChildren.add(poi.getPid());}
+			if(!checkKindList.contains(kind)){
+				continue;
+			}
+            pidChildren.add(poi.getPid());
 //			if(kind.equals("230215")||kind.equals("230216"))
 //				{pidParent.add(poi.getPid());}
 		}
@@ -63,7 +67,6 @@ public class FM14Sum1115 extends BasicCheckRule {
 				Clob clob=ConnectionUtil.createClob(conn);
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
-				values.add(clob);
 				values.add(clob);
 			}else{
 				pidString=" PID IN ("+pids+")";

@@ -297,7 +297,7 @@ public class IxDealershipResultSelector {
 	 * @throws Exception
 	 */
 	public static Map<Integer, IxDealershipResult> getIxDealershipResultsBySql(Connection conn,String sql) throws Exception{
-		return new QueryRunner().query(conn, sql, getSourceHander());
+		return new QueryRunner().query(conn, sql, getResultHander());
 	}
 	/**
 	 * 得到客户确认-待发布中品牌数据

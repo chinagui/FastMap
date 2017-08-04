@@ -69,7 +69,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 			for(Long pidTmp:myRequest.getPids()){
 				pidIntList.add(Integer.valueOf(pidTmp.toString()));
 			}
-			deepControl.cleanExByCkRule(conn, pidIntList, myRequest.getRules(), ObjectName.IX_POI);
+			deepControl.cleanExByCkRule(myRequest.getTargetDbId(), pidIntList, myRequest.getRules(), ObjectName.IX_POI);
 			/*JSONObject jsonReq=new JSONObject();
 			jsonReq.put("subtaskId", jobInfo.getTaskId());
 			jsonReq.put("pids", myRequest.getPids());

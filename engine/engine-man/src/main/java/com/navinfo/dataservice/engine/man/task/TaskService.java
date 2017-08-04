@@ -463,7 +463,7 @@ public class TaskService {
 					//质检和常规月编子任务创建用同一个对象，只是修改了两者有区别的字段。
 					log.info("再创建常规月编子任务");
 					if(StringUtils.isBlank(subtask.getName())&&task.getBlockId()!=0){
-						subtask.setName(task.getName()+"_"+task.getGroupName()+"_质检");//任务名称+_作业组
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					}
 					subtask.setIsQuality(0);
 					subtask.setQualitySubtaskId(qualitySubTaskId);

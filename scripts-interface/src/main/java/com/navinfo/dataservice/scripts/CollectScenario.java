@@ -157,7 +157,7 @@ public class CollectScenario{
 			//数据处理完成删除临时表
 //			deleteTempTable(dailyConn);
 		}catch(Exception e){
-			log.error(e.getMessage(),e);
+			log.error("dailyDBId:" + dailyDBId + "执行有异常，请重新执行该脚本文件！");
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(dailyConn);

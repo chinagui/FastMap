@@ -22,6 +22,8 @@ public class PersonJob extends AbstractStatJob {
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			List<Map<String, Object>> persionList = manApi.staticsPersionJob(statReq.getTimestamp());
+			System.out.println(persionList);
+			
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

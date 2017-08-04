@@ -80,7 +80,9 @@ public class Batch extends AbstractOperation{
 		//顺序执行批处理规则
 		BatchExcuter excuter=new BatchExcuter();
 		for(BatchRule rule:batchRuleList){
+			log.info("start run batch rule:"+rule.getRuleId());
 			excuter.exeRule(rule, batchRuleCommand);
+			log.info("end run batch rule:"+rule.getRuleId());
 		}
 		log.info("start put changeReferData to operationResult");
 		/*若存在修改参考数据的规则，则遍历batchRuleCommand中的referDatas将修改的数据put入result中；

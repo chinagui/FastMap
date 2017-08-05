@@ -475,4 +475,14 @@ public class ManApiImpl implements ManApi {
 	public List<Map<String, Object>> staticsPersionJob(String timestamp) throws Exception{
 		return StaticsOperation.staticsPersionJob(timestamp);
 	}
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception{
+		return TaskService.getInstance().queryGrids();
+	}
 }

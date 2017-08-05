@@ -243,4 +243,13 @@ public class taskTest extends InitApplication{
 		System.out.println(data.toString());
 		
 	}
+	
+	@Test
+	public void test02() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		Map<Integer, Set<Integer>> data = manApi.queryGrids();
+		System.out.println(data.toString());
+		
+	}
 }

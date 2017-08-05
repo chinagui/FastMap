@@ -81,6 +81,11 @@ public class FM14Sum1108 extends BasicCheckRule {
 		ResultSet rs = null;
 		try{
 			pstmt = conn.prepareStatement(sqlStr);
+			if (values != null && values.size() > 0) {
+				for (int i = 0; i < values.size(); i++) {
+					pstmt.setClob(i + 1, values.get(i));
+				}
+			}
 			rs = pstmt.executeQuery();
 			log.info("sql执行完成");
 			while (rs.next()) {

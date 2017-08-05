@@ -477,9 +477,11 @@ public class SubtaskJob extends AbstractStatJob {
 				}
 			}
 			//实际结束时间
-			actualEndDate = sdf.format(new Date());
-			if(subManTimeline != null && subManTimeline.size() > 0){
-				actualEndDate = (String) subManTimeline.get("operateDate");
+			if(subtask.getStatus() == 0){
+				actualEndDate = sdf.format(new Date());
+				if(subManTimeline != null && subManTimeline.size() > 0){
+					actualEndDate = (String) subManTimeline.get("operateDate");
+				}
 			}
 			//距离计划结束时间天数
 			//计划结束时间

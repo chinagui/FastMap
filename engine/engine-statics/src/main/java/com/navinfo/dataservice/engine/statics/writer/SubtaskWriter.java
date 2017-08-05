@@ -4,9 +4,7 @@ import java.sql.Connection;
 import java.sql.Timestamp;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -21,7 +19,6 @@ import net.sf.json.JSONObject;
  * @Description TODO
  */
 public class SubtaskWriter extends DefaultWriter {
-	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	public void write2Other(String timestamp,JSONObject messageJSON) throws Exception {
 		Connection conn=null;

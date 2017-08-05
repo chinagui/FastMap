@@ -295,5 +295,15 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Map<String,Object>> staticsPersionJob(String timestamp) throws Exception;
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception;
+	
+	
 }
 

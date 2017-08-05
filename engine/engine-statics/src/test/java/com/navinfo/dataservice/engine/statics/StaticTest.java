@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
@@ -91,4 +92,5 @@ public class StaticTest {
 			e.printStackTrace();
 		}
 	}
+	
 }

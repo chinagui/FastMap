@@ -1,12 +1,11 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bson.Document;
 
@@ -27,7 +26,6 @@ import net.sf.json.JSONObject;
 public class PersonJob extends AbstractStatJob {
 	
 	private static final String db_name = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
-	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
 	public PersonJob(JobInfo jobInfo) {
 		super(jobInfo);

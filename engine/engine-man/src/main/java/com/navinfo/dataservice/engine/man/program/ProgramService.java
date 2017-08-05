@@ -365,7 +365,13 @@ public class ProgramService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql="SELECT TASK_ID  FROM TASK WHERE PROGRAM_ID = "+programId+" AND STATUS != 0";
+			//快线项目关闭仅判断日编/采集任务，不判断月编任务
+			String selectSql="SELECT t.task_id"
+					+ "  FROM TASK T, PROGRAM P"
+					+ " WHERE T.STATUS != 0"
+					+ "   AND P.PROGRAM_ID = T.PROGRAM_ID"
+					+ "   AND (P.TYPE = 1 OR (P.TYPE = 4 AND T.TYPE IN (0, 1)))"
+					+ " and PROGRAM_ID = "+programId;
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 					List<Integer> taskList = new ArrayList<Integer>();

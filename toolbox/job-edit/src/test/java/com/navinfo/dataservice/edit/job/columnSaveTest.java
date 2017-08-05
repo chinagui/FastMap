@@ -166,7 +166,7 @@ public class columnSaveTest {
 					}
 					
 					// 清理检查结果
-					deepControl.cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+					deepControl.cleanExByCkRule(dbId, pidList, checkList, "IX_POI");
 					
 					checkCommand.setRuleIdList(checkList);
 					
@@ -197,7 +197,7 @@ public class columnSaveTest {
 				for (String classifyrule:classifyrules.split(",")) {
 					ckRules.add(classifyrule);
 				}
-				deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+				deepControl.cleanExByCkRule(dbId, pidList, ckRules, "IX_POI");
 			}
 			
 			conn.commit();
@@ -247,7 +247,8 @@ public class columnSaveTest {
 	public void executeCheck() throws JobException {
 		Connection conn=null;
 		try{
-			conn=DBConnector.getInstance().getConnectionById(19);
+			int dbId=19;
+			conn=DBConnector.getInstance().getConnectionById(dbId);
 			//获取要检查的数据pid
 			List<Long> pids = getCheckPidList(conn);
 			
@@ -259,7 +260,7 @@ public class columnSaveTest {
 			for(Long pidTmp:pids){
 				pidIntList.add(Integer.valueOf(pidTmp.toString()));
 			}
-			deepControl.cleanExByCkRule(conn, pidIntList, ruleList, ObjectName.IX_POI);
+			deepControl.cleanExByCkRule(dbId, pidIntList, ruleList, ObjectName.IX_POI);
 			/*JSONObject jsonReq=new JSONObject();
 			jsonReq.put("subtaskId", jobInfo.getTaskId());
 			jsonReq.put("pids", myRequest.getPids());

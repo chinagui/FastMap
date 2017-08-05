@@ -178,7 +178,7 @@ public class ColumnSaveJob extends AbstractJob {
 					
 					// 清理检查结果
 					log.info("清理检查结果");
-					deepControl.cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+					deepControl.cleanExByCkRule(dbId, pidList, checkList, "IX_POI");
 					
 					checkCommand.setRuleIdList(checkList);
 					
@@ -216,7 +216,7 @@ public class ColumnSaveJob extends AbstractJob {
 				for (String classifyrule:classifyrules.split(",")) {
 					ckRules.add(classifyrule);
 				}
-				deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+				deepControl.cleanExByCkRule(dbId, pidList, ckRules, "IX_POI");
 			}
 			
 			log.info("月编保存完成");

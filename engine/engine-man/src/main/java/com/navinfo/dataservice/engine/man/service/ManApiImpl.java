@@ -452,10 +452,10 @@ public class ManApiImpl implements ManApi {
 	/**
 	 * 查询MAN_TIMELINE
 	 * objName:program,task,subtask,infor
-	 * @return
+	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
 		return TimelineService.queryManTimelineByObjName(objName);
 	}
 	
@@ -474,5 +474,15 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Map<String, Object>> staticsPersionJob(String timestamp) throws Exception{
 		return StaticsOperation.staticsPersionJob(timestamp);
+	}
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception{
+		return TaskService.getInstance().queryGrids();
 	}
 }

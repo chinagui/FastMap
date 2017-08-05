@@ -9,8 +9,9 @@
 		<!-- <job name="personTipsStat"/> -->
 	</group>
 	<!-- <group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
+	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>
 		<job name="poiDayStat"/>
-	</group> -->
+	</group>
 	
 </mapping>

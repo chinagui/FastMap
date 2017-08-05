@@ -463,7 +463,7 @@ public class TaskService {
 					//质检和常规月编子任务创建用同一个对象，只是修改了两者有区别的字段。
 					log.info("再创建常规月编子任务");
 					if(StringUtils.isBlank(subtask.getName())&&task.getBlockId()!=0){
-						subtask.setName(task.getName()+"_"+task.getGroupName()+"_质检");//任务名称+_作业组
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					}
 					subtask.setIsQuality(0);
 					subtask.setQualitySubtaskId(qualitySubTaskId);
@@ -4852,7 +4852,44 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT * FROM TASK_GRID_MAPPING ";
+			ResultSetHandler<Map<Integer,Set<Integer>>> rs = new ResultSetHandler<Map<Integer,Set<Integer>>>() {
+				
+				@Override
+				public Map<Integer, Set<Integer>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Set<Integer>> result = new HashMap<Integer,Set<Integer>>();
+					while(rs.next()){
+						int taskId = rs.getInt("TASK_ID");
+						int gridId = rs.getInt("GRID_ID");
+						if(!result.containsKey(taskId)){
+							result.put(taskId, new HashSet<Integer>());
+						}
+						result.get(taskId).add(gridId);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			Map<Integer, Set<Integer>> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task的grids失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 		
 }

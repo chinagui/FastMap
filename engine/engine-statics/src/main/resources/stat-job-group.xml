@@ -3,6 +3,11 @@
 	<group name="poiDayStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsGroupStarter">
 		<job name="poiDayStatics"/>
 	</group>
+	<group name="personStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PersonStatStarter">
+		<job name="personDayStat"/>
+		<job name="dayPlanStat"/>
+		<!-- <job name="personTipsStat"/> -->
+	</group>
 	<!-- <group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>
 		<job name="poiDayStat"/>

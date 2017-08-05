@@ -51,7 +51,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			//有父的POI不用报
 			if(parentIds.containsKey(poi.getPid())){continue;}
 			tmpPids.add(poi.getPid());
-			if( n % 1000 > 0){
+			if( n /1000 > 0){
 				pidList.add(tmpPids);
 				n = 0;
 				tmpPids = new ArrayList<>();
@@ -69,11 +69,10 @@ public class FM14Sum1108 extends BasicCheckRule {
 		Map<Long,Set<Long>> poiMap = new HashMap<Long,Set<Long>>();
 		//key:子pid,value:顶级kindcode
 		Map<Long,String> kindMap = new HashMap<Long,String>();
-		
+		Connection conn = this.getCheckRuleCommand().getConn();
 		for (List tmpPid: pidList){
 			String pids = tmpPid.toString().replace("[", "").replace("]", "");
-			Connection conn = this.getCheckRuleCommand().getConn();
-			List<Clob> values = new ArrayList<Clob>();
+			
 			String pidString = " PID IN (" + pids + ")";
 			String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
 					+ " FROM IX_POI P1,IX_POI P2"

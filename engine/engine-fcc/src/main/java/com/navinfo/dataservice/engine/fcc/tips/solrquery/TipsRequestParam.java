@@ -223,7 +223,7 @@ public class TipsRequestParam {
 
         builder.append(" AND ");
         //builder.append("wkt:\"intersects(" + wkt + ")\"");
-        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+        builder.append(" sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE'");
 
         logger.info("getQueryFilterSqlForCheck:" + builder.toString());
         return builder.toString();

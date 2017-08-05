@@ -219,7 +219,7 @@ public class SolrController {
 			}
 
 
-			builder.append(" and sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+			builder.append(" and sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE'");
 
 			builder.append(" order by t_operateDate desc");
 

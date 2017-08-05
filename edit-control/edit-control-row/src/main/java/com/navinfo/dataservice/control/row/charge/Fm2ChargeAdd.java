@@ -47,19 +47,6 @@ public class Fm2ChargeAdd {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	private volatile static Fm2ChargeAdd instance;
-	public static Fm2ChargeAdd getInstance(){
-		if(instance==null){
-			synchronized(Fm2ChargeInit.class){
-				if(instance==null){
-					instance=new Fm2ChargeAdd();
-				}
-			}
-		}
-		return instance;
-	}
-	private Fm2ChargeAdd(){}
-	
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	
 	public JSONObject excute(List<Region> regionList,String lastSyncTime,String syncTime,List<Integer> dbIdList) throws Exception {

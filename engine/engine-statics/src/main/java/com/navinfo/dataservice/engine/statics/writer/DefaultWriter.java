@@ -42,8 +42,9 @@ public class DefaultWriter {
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法
 	 * @param messageJSON
+	 * @throws Exception 
 	 */
-	public void write2Other(String timestamp,JSONObject messageJSON) {}
+	public void write2Other(String timestamp,JSONObject messageJSON) throws Exception {}
 
 	/**
 	 * 统计信息写入mongo库

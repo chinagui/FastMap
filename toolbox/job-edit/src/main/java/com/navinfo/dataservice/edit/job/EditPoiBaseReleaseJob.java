@@ -126,7 +126,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			for(Long pidTmp:poiPids){
 				pidIntList.add(Integer.valueOf(pidTmp.toString()));
 			}
-			deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+			deepControl.cleanExByCkRule(myRequest.getTargetDbId(), pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 			
 			Check check=new Check(conn, operationResult);
 			check.operate(checkCommand);

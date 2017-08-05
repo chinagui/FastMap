@@ -210,7 +210,7 @@ public class TipsRequestParamSQL {
 		if (builder.length() > 0) {
 			builder.append(" and");
 		}
-		builder.append(" sdo_relate(wktLocation,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+		builder.append(" sdo_filter(wktLocation,sdo_geometry(:1,8307)) = 'TRUE'");
 		String sql = "select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ * from tips_index where " + builder.toString();
 		logger.info("getByTileWithGap:" + sql);
 		return sql;
@@ -383,7 +383,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsMobileWhere(String date,
 			int[] notExpSourceType) {
-		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
+		String param = " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"
@@ -447,7 +447,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsWebSql(String wkt) {
 		return "select * from tips_index where "
-				+ " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' "
+				+ " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' "
 				+ " AND "
 				+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
 	}
@@ -465,7 +465,7 @@ public class TipsRequestParamSQL {
 		// solr查询语句
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+		builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
         values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -541,7 +541,7 @@ public class TipsRequestParamSQL {
         // solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
         List<Object> values = new ArrayList<Object>();
         values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -668,7 +668,7 @@ public class TipsRequestParamSQL {
 		// solr查询语句
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+		builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
 		values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -773,7 +773,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsDayTotal(int subtaskId, int subTaskType,int handler, int isQuality, String statType) throws Exception {
         StringBuilder builder = new StringBuilder();
-        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        builder.append(" sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         StringBuilder taskBuilder = null;

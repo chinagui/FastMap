@@ -277,9 +277,33 @@ public interface ManApi{
     /**
 	 * 查询MAN_TIMELINE
 	 * objName:program,task,subtask,infor
-	 * @return
+	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	
+	/**
+	 * timestamp:yyyymmdd
+	 * 获取按照人天任务进行统计的管理列表
+	 * @return Map<String, Object>:	map.put("subtaskIds", subtaskSet);
+									map.put("userId", userId);
+									map.put("taskId", taskId);
+									map.put("taskName", rs.getString("TASK_NAME"));
+									map.put("cityName", rs.getString("CITY_NAME"));
+									map.put("leaderName", rs.getString("LEADER_NAME"));
+									map.put("userName", rs.getString("USER_NAME"));	
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> staticsPersionJob(String timestamp) throws Exception;
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception;
+	
+	
 }
 

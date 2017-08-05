@@ -655,7 +655,7 @@ public class IxPoiSelector {
 		}
 		try{
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT DISTINCT PID FROM IX_POI WHERE KIND_CODE = "+kindCode);
+			sql.append("SELECT DISTINCT PID FROM IX_POI WHERE KIND_CODE = '"+kindCode+"'");
 			if(!isDele){
 				sql.append(" AND U_RECORD <>2");
 			}

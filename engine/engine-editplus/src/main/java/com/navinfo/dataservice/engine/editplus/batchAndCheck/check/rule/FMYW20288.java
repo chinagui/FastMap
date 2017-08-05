@@ -52,7 +52,7 @@ public class FMYW20288 extends BasicCheckRule {
 			}
 			
 			tmpPids.add(poi.getPid());
-			if( n /1000 > 0){
+			if( n /900> 0){
 				pid.add(tmpPids);
 				n = 0;
 				tmpPids = new ArrayList<>();

@@ -51,7 +51,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			//有父的POI不用报
 			if(parentIds.containsKey(poi.getPid())){continue;}
 			tmpPids.add(poi.getPid());
-			if( n /1000 > 0){
+			if( n /900 > 0){
 				pidList.add(tmpPids);
 				n = 0;
 				tmpPids = new ArrayList<>();

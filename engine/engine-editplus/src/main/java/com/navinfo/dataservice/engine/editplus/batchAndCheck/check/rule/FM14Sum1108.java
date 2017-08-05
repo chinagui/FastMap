@@ -70,6 +70,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 		//key:子pid,value:顶级kindcode
 		Map<Long,String> kindMap = new HashMap<Long,String>();
 		
+
 		for (List tmpPid: pidList){
 			String pids = tmpPid.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
@@ -124,12 +125,61 @@ public class FM14Sum1108 extends BasicCheckRule {
 						poiMap.put(pidTmp, new HashSet<Long>());
 						poiMap.get(pidTmp).add(pidTmp1);
 						kindMap.put(pidTmp, kindCode1);
-					} else if (kindMap.get(pidTmp).equals("200104") && kindCode1.equals("200103")) {// 200103\200104\120101
+.info("");
+				// }
+				// 查出的同点poi若是检查对象的子，则跳过
+				BasicObj obj = rows.get(pidTmp);
+				IxPoiObj poiObj = (IxPoiObj) obj;
+				List<IxPoiChildren> children = poiObj.getIxPoiChildrens();
+				boolean isChild = false;
+				for (IxPoiChildren c : children) {
+					if (c.getChildPoiPid() == pidTmp1) {
+						isChild = true;
+						break;
+r					} else if (kindMap.get(pidTmp).equals("200104") && kindCode1.equals("200103")) {// 200103\200104\120101
 						poiMap.put(pidTmp, new HashSet<Long>());
 						poiMap.get(pidTmp).add(pidTmp1);
 						kindMap.put(pidTmp, kindCode1);
 					} else if (kindMap.get(pidTmp).equals(kindCode1)) {
 						poiMap.get(pidTmp).add(pidTmp1);
+
+		String pids = pidList.toString().replace("[", "").replace("]", "");
+		Connection conn = this.getCheckRuleCommand().getConn();
+		List<Clob> values = new ArrayList<Clob>();
+		String pidString = "";
+		if (pidList.size() > 1000) {
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, pids);
+			pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
+			values.add(clob);
+		} else {
+			pidString = " PID IN (" + pids + ")";
+		}
+		String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
+				+ " FROM IX_POI P1,IX_POI P2"
+				+ " WHERE SDO_NN(P2.GEOMETRY,P1.GEOMETRY,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+				+ "	AND P1." + pidString + " AND P2.KIND_CODE IN ('200103', '200104', '120101') "
+				+ "AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" + " AND P1.PID <> P2.PID";
+		log.info("FM-14-Sum-11-08 sql:" + sqlStr);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			pstmt = conn.prepareStatement(sqlStr);
+			if (values != null && values.size() > 0) {
+				for (int i = 0; i < values.size(); i++) {
+					pstmt.setClob(i + 1, values.get(i));
+				}
+			}
+			rs = pstmt.executeQuery();
+			log.info("sql执行完成");
+			while (rs.next()) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				Long pidTmp = rs.getLong("PID_MAIN");
+				Long pidTmp1 = rs.getLong("PID");
+				String kindCode = rs.getString("KIND_MAIN");
+				String kindCode1 = rs.getString("KIND_CODE");
+				// if(pidTmp==520000002||pidTmp1==520000002){
+				// log
 					}
 				}
 			}catch (SQLException e) {

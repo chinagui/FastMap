@@ -774,7 +774,7 @@ public class TipsOperator {
         builder.append("t_tipStatus=2");
         builder.append(") and ");
         
-        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+        builder.append(" sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE'");
 
         Connection hbaseConn = null;
         java.sql.Connection tipsConn=null;

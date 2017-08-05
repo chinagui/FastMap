@@ -45,15 +45,6 @@ public class Fm2ChargeInit {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	private static class SingletonHolder {
-		private static final Fm2ChargeInit INSTANCE = new Fm2ChargeInit();
-	}
-	public static Fm2ChargeInit getInstance() {
-		return SingletonHolder.INSTANCE;
-	}
-	
-	private Fm2ChargeInit(){}
-	
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	
 	public JSONObject excute(List<Region> regionList,List<Integer> dbIdList) throws Exception {

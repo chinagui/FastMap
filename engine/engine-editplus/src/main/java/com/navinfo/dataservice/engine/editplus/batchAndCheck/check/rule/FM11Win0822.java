@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -34,6 +32,9 @@ public class FM11Win0822 extends BasicCheckRule {
 		log.info("CopyOfFM11Win0822");
 		Map<Long, BasicObj> rows = getRowList();
 		Set<Long> pidAllSet = new HashSet<Long>();
+		List<ArrayList<Long>> pid = new ArrayList<ArrayList<Long>>();
+		int n = 0;
+		ArrayList<Long> tmpPids = new ArrayList<>();
 		for (Long key : rows.keySet()) {
 			BasicObj obj = rows.get(key);
 			IxPoiObj poiObj = (IxPoiObj) obj;
@@ -43,6 +44,16 @@ public class FM11Win0822 extends BasicCheckRule {
 				continue;
 			}
 			pidAllSet.add(poi.getPid());
+			tmpPids.add(poi.getPid());
+			if( n % 1000 > 0){
+				pid.add(tmpPids);
+				n = 0;
+				tmpPids = new ArrayList<>();
+			}
+			n++;
+		}
+		if (tmpPids.size() > 0){
+			pid.add(tmpPids);
 		}
 
 		if (pidAllSet == null || pidAllSet.size() == 0) {
@@ -54,18 +65,12 @@ public class FM11Win0822 extends BasicCheckRule {
 		Map<Long, Long> existsRelateMap = IxPoiSelector.getParentChildByPids(this.getCheckRuleCommand().getConn(),
 				pidAllSet);
 		Map<Long, Set<Long>> errorList = new HashMap<Long, Set<Long>>();
-		String pids = pidAllSet.toString().replace("[", "").replace("]", "");
 		Connection conn = this.getCheckRuleCommand().getConn();
-		List<Clob> values = new ArrayList<Clob>();
 		String pidString = "";
-		if (pidAllSet.size() > 1000) {
-			Clob clob = ConnectionUtil.createClob(conn);
-			clob.setString(1, pids);
-			pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
-			values.add(clob);
-		} else {
-			pidString = " PID IN (" + pids + ")";
-		}
+		for (List tmppid: pid){
+				String pids = tmppid.toString().replace("[", "").replace("]", "");
+			    pidString = " PID IN (" + pids + ")";
+
 		String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
 				+ " FROM IX_POI P1,IX_POI P2"
 				+ " WHERE SDO_NN(P2.GEOMETRY,P1.GEOMETRY,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
@@ -76,25 +81,13 @@ public class FM11Win0822 extends BasicCheckRule {
 		ResultSet rs = null;
 		try {
 			pstmt = conn.prepareStatement(sqlStr);
-			if (values != null && values.size() > 0) {
-				for (int i = 0; i < values.size(); i++) {
-					pstmt.setClob(i + 1, values.get(i));
-				}
-			}
 			rs = pstmt.executeQuery();
 			log.info("exeSql执行完成");
-
+			
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID_MAIN");
 				Long pidTmp2 = rs.getLong("PID");
-				String kind1 = rs.getString("KIND_MAIN");
-				String kind2 = rs.getString("KIND_CODE");
-				
-				// 2个poi均不是加油或加气站，230215）、加气站（230216,
-//				if (!(kind1.equals("230215") || kind1.equals("230216") || kind2.equals("230215")
-//						|| kind2.equals("230216"))) {
-//					continue;
-//				}
+	
 				// 这对pid是否已经存在父子关系，已经存在则判断下一对
 				if (existsRelateMap.containsKey(pidTmp1)) {
 					if (existsRelateMap.get(pidTmp1).equals(pidTmp2)) {
@@ -119,7 +112,7 @@ public class FM11Win0822 extends BasicCheckRule {
 			DBUtils.closeStatement(pstmt);
 		}
 		log.info("errorList组装完成");
-
+			}
 		// 过滤相同pid
 		Set<Long> filterPid = new HashSet<Long>();
 		for (Long pid1 : errorList.keySet()) {

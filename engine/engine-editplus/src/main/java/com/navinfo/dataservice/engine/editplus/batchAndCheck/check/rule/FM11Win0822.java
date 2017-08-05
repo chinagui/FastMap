@@ -45,7 +45,7 @@ public class FM11Win0822 extends BasicCheckRule {
 			}
 			pidAllSet.add(poi.getPid());
 			tmpPids.add(poi.getPid());
-			if( n % 1000 > 0){
+			if( n /900 > 0){
 				pid.add(tmpPids);
 				n = 0;
 				tmpPids = new ArrayList<>();

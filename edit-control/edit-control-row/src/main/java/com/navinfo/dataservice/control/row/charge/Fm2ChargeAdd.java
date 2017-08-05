@@ -47,16 +47,11 @@ public class Fm2ChargeAdd {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	private volatile static Fm2ChargeAdd instance;
-	public static Fm2ChargeAdd getInstance(){
-		if(instance==null){
-			synchronized(Fm2ChargeInit.class){
-				if(instance==null){
-					instance=new Fm2ChargeAdd();
-				}
-			}
-		}
-		return instance;
+	private static class SingletonHolder {
+		private static final Fm2ChargeAdd INSTANCE = new Fm2ChargeAdd();
+	}
+	public static Fm2ChargeAdd getInstance() {
+		return SingletonHolder.INSTANCE;
 	}
 	private Fm2ChargeAdd(){}
 	

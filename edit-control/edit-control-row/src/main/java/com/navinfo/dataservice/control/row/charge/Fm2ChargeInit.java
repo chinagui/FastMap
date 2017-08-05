@@ -45,17 +45,13 @@ public class Fm2ChargeInit {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	private volatile static Fm2ChargeInit instance;
-	public static Fm2ChargeInit getInstance(){
-		if(instance==null){
-			synchronized(Fm2ChargeInit.class){
-				if(instance==null){
-					instance=new Fm2ChargeInit();
-				}
-			}
-		}
-		return instance;
+	private static class SingletonHolder {
+		private static final Fm2ChargeInit INSTANCE = new Fm2ChargeInit();
 	}
+	public static Fm2ChargeInit getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
+	
 	private Fm2ChargeInit(){}
 	
 	protected VMThreadPoolExecutor threadPoolExecutor;

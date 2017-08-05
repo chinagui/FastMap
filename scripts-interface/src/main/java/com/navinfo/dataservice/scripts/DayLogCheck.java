@@ -67,10 +67,28 @@ public class DayLogCheck {
 
     public static void main(String[] args) throws Exception {
         initContext();
+
+        System.out.println("args.length:" + args.length);
+        if (args == null || args.length != 2) {
+            System.out.println("ERROR:need args:");
+            return;
+        }
+
+        String str1=args[0];
+        String str2=args[1];
+
+        System.out.println(str1);
+        System.out.println(str2);
+
+        int regionDbId=Integer.parseInt(args[0]);
+
+        int bakDbId=Integer.parseInt(args[1]);
+
         JSONObject request = new JSONObject();
-        request.put("regionDbId", 624);
-        request.put("bakDbId", 625);
+        request.put("regionDbId", regionDbId);
+        request.put("bakDbId", bakDbId);
         request.put("type", 0);
+
         execute(request);
         System.out.println("Over.");
         System.exit(0);

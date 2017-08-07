@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,12 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -25,7 +21,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -56,7 +52,7 @@ public class FMYW20288 extends BasicCheckRule {
 			}
 			
 			tmpPids.add(poi.getPid());
-			if( n % 1000 > 0){
+			if( n /900> 0){
 				pid.add(tmpPids);
 				n = 0;
 				tmpPids = new ArrayList<>();
@@ -72,10 +68,9 @@ public class FMYW20288 extends BasicCheckRule {
 			Map<Long, Set<Long>> errorList1=new HashMap<Long, Set<Long>>();
 			Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
 			Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
+			Connection conn = this.getCheckRuleCommand().getConn();
 			for (List tmppid: pid){
 				String pids = tmppid.toString().replace("[", "").replace("]", "");
-				Connection conn = this.getCheckRuleCommand().getConn();
-				List<Clob> values = new ArrayList<Clob>();
 				String pidString = " PID IN (" + pids + ")";
 	
 				String sqlStr = "SELECT P1.PID PID,P1.GEOMETRY,P1.MESH_ID,P2.PID PID2 " 
@@ -85,8 +80,11 @@ public class FMYW20288 extends BasicCheckRule {
 						+ " AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" 
 						+ " AND P1.PID <> P2.PID";
 				log.info("FM-YW-20-288 sql:"+sqlStr);
-				PreparedStatement pstmt = conn.prepareStatement(sqlStr);
-				ResultSet rs = pstmt.executeQuery();
+				PreparedStatement pstmt = null;
+				ResultSet rs = null;
+			try{
+				 pstmt = conn.prepareStatement(sqlStr);
+				 rs = pstmt.executeQuery();
 	
 				while (rs.next()) {
 					Long pidTmp1 = rs.getLong("PID");
@@ -113,7 +111,14 @@ public class FMYW20288 extends BasicCheckRule {
 						errorList1.get(pidTmp1).add(pidTmp2);
 					}
 				}
+			} catch (SQLException e) {
+				throw e;
+			} finally {
+				DBUtils.closeResultSet(rs);
+				DBUtils.closeStatement(pstmt);
 			}
+			}
+			
 			//过滤相同pid
 			Set<Long> filterPid1 = new HashSet<Long>();
 			for(Long pid1:errorList1.keySet()){

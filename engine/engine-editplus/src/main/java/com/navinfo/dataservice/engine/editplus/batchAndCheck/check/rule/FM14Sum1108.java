@@ -39,7 +39,9 @@ public class FM14Sum1108 extends BasicCheckRule {
 		log.info("CopyOfFM14Sum1108");
 		Map<Long, BasicObj> rows=getRowList();
 		loadReferDatas(rows.values());
-		List<Long> pidList = new ArrayList<Long>();
+		List<ArrayList<Long>> pidList = new ArrayList<ArrayList<Long>>();
+		int n = 0;
+		ArrayList<Long> tmpPids = new ArrayList<>();
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
@@ -48,7 +50,16 @@ public class FM14Sum1108 extends BasicCheckRule {
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			//有父的POI不用报
 			if(parentIds.containsKey(poi.getPid())){continue;}
-			pidList.add(poi.getPid());
+			tmpPids.add(poi.getPid());
+			if( n /900 > 0){
+				pidList.add(tmpPids);
+				n = 0;
+				tmpPids = new ArrayList<>();
+			}
+			n++;
+		}
+		if(tmpPids.size() > 0){
+			pidList.add(tmpPids);
 		}
 		
 		//1.针对每个poi查询同点位的父分类（200103大厦\200104商务中心\120101星级酒店），并筛选出顶级父poi的集合
@@ -58,171 +69,159 @@ public class FM14Sum1108 extends BasicCheckRule {
 		Map<Long,Set<Long>> poiMap = new HashMap<Long,Set<Long>>();
 		//key:子pid,value:顶级kindcode
 		Map<Long,String> kindMap = new HashMap<Long,String>();
-		
-		String pids = pidList.toString().replace("[", "").replace("]", "");
 		Connection conn = this.getCheckRuleCommand().getConn();
-		List<Clob> values = new ArrayList<Clob>();
-		String pidString = "";
-		if (pidList.size() > 1000) {
-			Clob clob = ConnectionUtil.createClob(conn);
-			clob.setString(1, pids);
-			pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
-			values.add(clob);
-		} else {
-			pidString = " PID IN (" + pids + ")";
-		}
-		String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
-				+ " FROM IX_POI P1,IX_POI P2"
-				+ " WHERE SDO_NN(P2.GEOMETRY,P1.GEOMETRY,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
-				+ "	AND P1." + pidString + " AND P2.KIND_CODE IN ('200103', '200104', '120101') "
-				+ "AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" + " AND P1.PID <> P2.PID";
-		log.info("FM-14-Sum-11-08 sql:" + sqlStr);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try{
-			pstmt = conn.prepareStatement(sqlStr);
-			if (values != null && values.size() > 0) {
-				for (int i = 0; i < values.size(); i++) {
-					pstmt.setClob(i + 1, values.get(i));
+		for (List tmpPid: pidList){
+			String pids = tmpPid.toString().replace("[", "").replace("]", "");
+			
+			String pidString = " PID IN (" + pids + ")";
+			String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
+					+ " FROM IX_POI P1,IX_POI P2"
+					+ " WHERE SDO_NN(P2.GEOMETRY,P1.GEOMETRY,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+					+ "	AND P1." + pidString + " AND P2.KIND_CODE IN ('200103', '200104', '120101') "
+					+ "AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" + " AND P1.PID <> P2.PID";
+			log.info("FM-14-Sum-11-08 sql:" + sqlStr);
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try{
+				pstmt = conn.prepareStatement(sqlStr);
+				rs = pstmt.executeQuery();
+				log.info("sql执行完成");
+				while (rs.next()) {
+					Map<String, Object> map = new HashMap<String, Object>();
+					Long pidTmp = rs.getLong("PID_MAIN");
+					Long pidTmp1 = rs.getLong("PID");
+					String kindCode = rs.getString("KIND_MAIN");
+					String kindCode1 = rs.getString("KIND_CODE");
+					// if(pidTmp==520000002||pidTmp1==520000002){
+					// log.info("");
+					// }
+					// 查出的同点poi若是检查对象的子，则跳过
+					BasicObj obj = rows.get(pidTmp);
+					IxPoiObj poiObj = (IxPoiObj) obj;
+					List<IxPoiChildren> children = poiObj.getIxPoiChildrens();
+					boolean isChild = false;
+					for (IxPoiChildren c : children) {
+						if (c.getChildPoiPid() == pidTmp1) {
+							isChild = true;
+							break;
+						}
+					}
+					if (isChild) {
+						continue;
+					}
+	
+					map.put("pidTmp", pidTmp);
+					map.put("kindCode", kindCode);
+					poiList.put(pidTmp, map);
+	
+					if (!poiMap.containsKey(pidTmp)) {
+						poiMap.put(pidTmp, new HashSet<Long>());
+						poiMap.get(pidTmp).add(pidTmp1);
+						kindMap.put(pidTmp, kindCode1);
+					} else if (kindMap.get(pidTmp).equals("120101")
+							&& (kindCode1.equals("200104") || kindCode1.equals("200103"))) {// 200103\200104\120101
+						poiMap.put(pidTmp, new HashSet<Long>());
+						poiMap.get(pidTmp).add(pidTmp1);
+						kindMap.put(pidTmp, kindCode1);
+					} else if (kindMap.get(pidTmp).equals("200104") && kindCode1.equals("200103")) {// 200103\200104\120101
+						poiMap.put(pidTmp, new HashSet<Long>());
+						poiMap.get(pidTmp).add(pidTmp1);
+						kindMap.put(pidTmp, kindCode1);
+					} else if (kindMap.get(pidTmp).equals(kindCode1)) {
+						poiMap.get(pidTmp).add(pidTmp1);
+					}
 				}
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DBUtils.closeResultSet(rs);
+				DBUtils.closeStatement(pstmt);
 			}
-			rs = pstmt.executeQuery();
-			log.info("sql执行完成");
-			while (rs.next()) {
-				Map<String, Object> map = new HashMap<String, Object>();
-				Long pidTmp = rs.getLong("PID_MAIN");
-				Long pidTmp1 = rs.getLong("PID");
-				String kindCode = rs.getString("KIND_MAIN");
-				String kindCode1 = rs.getString("KIND_CODE");
-				// if(pidTmp==520000002||pidTmp1==520000002){
-				// log.info("");
-				// }
-				// 查出的同点poi若是检查对象的子，则跳过
-				BasicObj obj = rows.get(pidTmp);
-				IxPoiObj poiObj = (IxPoiObj) obj;
-				List<IxPoiChildren> children = poiObj.getIxPoiChildrens();
-				boolean isChild = false;
-				for (IxPoiChildren c : children) {
-					if (c.getChildPoiPid() == pidTmp1) {
-						isChild = true;
+		}
+		
+		if(poiList==null||poiList.size()==0)
+		{
+			return;
+		}
+			log.info("FM-14Sum-11-08:批量加载推荐父");
+		// 2.加载筛选出的顶级推荐父
+		Set<Long> referParentPids = new HashSet<Long>();for(
+		Set<Long> ps:poiMap.values())
+		{
+			referParentPids.addAll(ps);
+		}
+		Set<String> referSubrow = new HashSet<String>();referSubrow.add("IX_POI_CHILDREN");
+		Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(referParentPids, ObjectName.IX_POI, referSubrow,
+				false);
+		// 3.批量加载推荐父对应的子
+		log.info("FM-14Sum-11-08:批量加载推荐父对应的子");
+		Set<Long> referChildPids = new HashSet<Long>();for(
+		Long parent:referParentPids)
+		{
+			if (!result.containsKey(parent)) {
+				continue;
+			}
+			List<IxPoiChildren> cs = ((IxPoiObj) result.get(parent)).getIxPoiChildrens();
+			if (cs == null || cs.size() == 0) {
+				continue;
+			}
+			for (IxPoiChildren c : cs) {
+				referChildPids.add(c.getChildPoiPid());
+			}
+		}
+		Map<Long, BasicObj> resultcMap = new HashMap<Long, BasicObj>();if(referChildPids!=null&&referChildPids.size()>0)
+		{
+			resultcMap = getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
+			if (resultcMap != null && resultcMap.size() > 0) {
+				result.putAll(resultcMap);
+			}
+		}
+		// 判断推荐的父poi是否有与当前poi分类相同的子，没有则报log
+		// Map<Long, BasicObj> refers =
+		// getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
+		// 去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+		Set<Long> filterPid = new HashSet<Long>();
+		for(Long pidC:poiList.keySet()){
+			String kindCode = (String) poiList.get(pidC).get("kindCode");
+	
+			Set<Long> errorPids = new HashSet<Long>();
+			for (Long p : poiMap.get(pidC)) {
+				List<IxPoiChildren> cs = ((IxPoiObj) result.get(p)).getIxPoiChildrens();
+				if (cs == null || cs.size() == 0) {
+					errorPids.add(p);
+					continue;
+				}
+				boolean haskind = false;
+				for (IxPoiChildren c : cs) {
+					IxPoi cObj = (IxPoi) result.get(c.getChildPoiPid()).getMainrow();
+					if (cObj.getKindCode().equals(kindCode)) {
+						haskind = true;
 						break;
 					}
 				}
-				if (isChild) {
-					continue;
-				}
-
-				map.put("pidTmp", pidTmp);
-				map.put("kindCode", kindCode);
-				poiList.put(pidTmp, map);
-
-				if (!poiMap.containsKey(pidTmp)) {
-					poiMap.put(pidTmp, new HashSet<Long>());
-					poiMap.get(pidTmp).add(pidTmp1);
-					kindMap.put(pidTmp, kindCode1);
-				} else if (kindMap.get(pidTmp).equals("120101")
-						&& (kindCode1.equals("200104") || kindCode1.equals("200103"))) {// 200103\200104\120101
-					poiMap.put(pidTmp, new HashSet<Long>());
-					poiMap.get(pidTmp).add(pidTmp1);
-					kindMap.put(pidTmp, kindCode1);
-				} else if (kindMap.get(pidTmp).equals("200104") && kindCode1.equals("200103")) {// 200103\200104\120101
-					poiMap.put(pidTmp, new HashSet<Long>());
-					poiMap.get(pidTmp).add(pidTmp1);
-					kindMap.put(pidTmp, kindCode1);
-				} else if (kindMap.get(pidTmp).equals(kindCode1)) {
-					poiMap.get(pidTmp).add(pidTmp1);
+				if (!haskind) {
+					errorPids.add(p);
 				}
 			}
-		}catch (SQLException e) {
-			throw e;
-		} finally {
-			DBUtils.closeResultSet(rs);
-			DBUtils.closeStatement(pstmt);
-		}
-		if(poiList==null||poiList.size()==0)
-	{
-		return;
-	}
-		log.info("FM-14Sum-11-08:批量加载推荐父");
-	// 2.加载筛选出的顶级推荐父
-	Set<Long> referParentPids = new HashSet<Long>();for(
-	Set<Long> ps:poiMap.values())
-	{
-		referParentPids.addAll(ps);
-	}
-	Set<String> referSubrow = new HashSet<String>();referSubrow.add("IX_POI_CHILDREN");
-	Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(referParentPids, ObjectName.IX_POI, referSubrow,
-			false);
-	// 3.批量加载推荐父对应的子
-	log.info("FM-14Sum-11-08:批量加载推荐父对应的子");
-	Set<Long> referChildPids = new HashSet<Long>();for(
-	Long parent:referParentPids)
-	{
-		if (!result.containsKey(parent)) {
-			continue;
-		}
-		List<IxPoiChildren> cs = ((IxPoiObj) result.get(parent)).getIxPoiChildrens();
-		if (cs == null || cs.size() == 0) {
-			continue;
-		}
-		for (IxPoiChildren c : cs) {
-			referChildPids.add(c.getChildPoiPid());
-		}
-	}
-	Map<Long, BasicObj> resultcMap = new HashMap<Long, BasicObj>();if(referChildPids!=null&&referChildPids.size()>0)
-	{
-		resultcMap = getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
-		if (resultcMap != null && resultcMap.size() > 0) {
-			result.putAll(resultcMap);
-		}
-	}
-	// 判断推荐的父poi是否有与当前poi分类相同的子，没有则报log
-	// Map<Long, BasicObj> refers =
-	// getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
-	// 去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
-	Set<Long> filterPid = new HashSet<Long>();for(
-	Long pidC:poiList.keySet())
-	{
-		String kindCode = (String) poiList.get(pidC).get("kindCode");
-
-		Set<Long> errorPids = new HashSet<Long>();
-		for (Long p : poiMap.get(pidC)) {
-			List<IxPoiChildren> cs = ((IxPoiObj) result.get(p)).getIxPoiChildrens();
-			if (cs == null || cs.size() == 0) {
-				errorPids.add(p);
+			if (errorPids == null || errorPids.size() == 0) {
 				continue;
 			}
-			boolean haskind = false;
-			for (IxPoiChildren c : cs) {
-				IxPoi cObj = (IxPoi) result.get(c.getChildPoiPid()).getMainrow();
-				if (cObj.getKindCode().equals(kindCode)) {
-					haskind = true;
-					break;
+			String target = "[IX_POI," + pidC + "]";
+			for (Long tmp : errorPids) {
+				target = target + ";[IX_POI," + tmp + "]";
+			}
+			if (!(filterPid.contains(pidC) && filterPid.containsAll(errorPids))) {
+				if ("200103".equals(kindMap.get(pidC))) {
+					setCheckResult("", target, 0, "与父分类（200103大厦）的设施同点，却没有建立父子关系");
+				} else if ("200104".equals(kindMap.get(pidC))) {
+					setCheckResult("", target, 0, "与父分类（200104商务中心）的设施同点，却没有建立父子关系");
+				} else if ("120101".equals(kindMap.get(pidC))) {
+					setCheckResult("", target, 0, "与父分类（120101星级酒店）的设施同点，却没有建立父子关系");
 				}
 			}
-			if (!haskind) {
-				errorPids.add(p);
-			}
+			filterPid.add(pidC);
+			filterPid.addAll(errorPids);
 		}
-		if (errorPids == null || errorPids.size() == 0) {
-			continue;
-		}
-		String target = "[IX_POI," + pidC + "]";
-		for (Long tmp : errorPids) {
-			target = target + ";[IX_POI," + tmp + "]";
-		}
-		if (!(filterPid.contains(pidC) && filterPid.containsAll(errorPids))) {
-			if ("200103".equals(kindMap.get(pidC))) {
-				setCheckResult("", target, 0, "与父分类（200103大厦）的设施同点，却没有建立父子关系");
-			} else if ("200104".equals(kindMap.get(pidC))) {
-				setCheckResult("", target, 0, "与父分类（200104商务中心）的设施同点，却没有建立父子关系");
-			} else if ("120101".equals(kindMap.get(pidC))) {
-				setCheckResult("", target, 0, "与父分类（120101星级酒店）的设施同点，却没有建立父子关系");
-			}
-		}
-		filterPid.add(pidC);
-		filterPid.addAll(errorPids);
-	}
 	}
 
 	@Override

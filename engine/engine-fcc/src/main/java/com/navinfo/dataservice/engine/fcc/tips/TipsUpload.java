@@ -948,7 +948,7 @@ public class TipsUpload {
 
 		photo.setA_content(1);
 
-		photo.setA_refUuid(id);
+		photo.setA_refUuid("");
 
 		return photo;
 	}
@@ -1067,7 +1067,7 @@ public class TipsUpload {
 				String city = (String) subTaskMap.get("city");
 				int userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
 				String version = (String) subTaskMap.get("version");
-				String startDate = (String) subTaskMap.get("plan_start_date");
+				String startDate = (String) subTaskMap.get("planStartDate");
 
 				String deleteSql = "delete from FIELD_RD_QCRECORD " + "where PROBLEM_NUM = ?";
 
@@ -1103,7 +1103,12 @@ public class TipsUpload {
 						// 按照Tips统计坐标所在图幅统计
 						TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 						TipsDao solrObj = operator.getById(record.getRowkey());
-						String linkPidString = getQualityLinkPid(solrObj, regionDBConn);
+                        String linkPidString = null;
+                        if(solrObj.getS_sourceType().equals("2001")) {//测线的linkid返回其本身
+                            linkPidString = solrObj.getId();
+                        }else{
+                            linkPidString = getQualityLinkPid(solrObj, regionDBConn);
+                        }
                         record.setLink_pid(linkPidString);
 						insertPstmt.setString(1, "");
 						insertPstmt.setString(2, groupName);
@@ -1310,22 +1315,22 @@ public class TipsUpload {
         String query = "select * from tips_index t where " + where;
         List<TipsDao> relateTips = operator.query(query);
         for (TipsDao snapshot : relateTips) {
-            collecorUserId = String.valueOf(snapshot.getHandler());
+//            collecorUserId = String.valueOf(snapshot.getHandler());
 
-//            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-//            JSONObject track = oldTip.getJSONObject("track");
-//            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-//            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-//                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-//                int stage = trackInfoObj.getInt("stage");
-//                if (stage == 1) {
-//                    int handler = trackInfoObj.getInt("handler");
-//                    if (handler == userId) {
-//                        collecorUserId = String.valueOf(userId);
-//                        break;
-//                    }
-//                }
-//            }
+            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, snapshot.getId(), new String[]{"track"});
+            JSONObject track = oldTip.getJSONObject("track");
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+                int stage = trackInfoObj.getInt("stage");
+                if (stage == 1) {
+                    int handler = trackInfoObj.getInt("handler");
+                    if (handler == userId) {
+                        collecorUserId = String.valueOf(userId);
+                        break;
+                    }
+                }
+            }
         }
 		return collecorUserId;
 	}
@@ -1347,8 +1352,9 @@ public class TipsUpload {
 			try {
 				String line = scanner.nextLine();
 				com.alibaba.fastjson.JSONObject lineObj = com.alibaba.fastjson.JSONObject.parseObject(line);
+                lineObj.put("class_bottom", lineObj.getString("class"));
 				problem_num = lineObj.getString("id");
-				FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(line, FieldRoadQCRecord.class);
+				FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(lineObj.toJSONString(), FieldRoadQCRecord.class);
 				problem_num = record.getId();
 				records.add(record);
 			} catch (Exception e) {

@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,9 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import oracle.net.aso.s;
-import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
@@ -25,7 +23,10 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 /**
  * FM-14Sum-12-10-01
  * 指定分类名称重复	DHM	可忽略
@@ -94,15 +95,8 @@ public class FM14Sum121001 extends BasicCheckRule {
 				+ "   AND T1."+pidString
 				+ " ORDER BY T1.PID";
 		log.info("FM-14Sum-12-10-01 sql:"+sqlStr);
-		PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
-		if(values!=null&&values.size()>0){
-			for(int i=0;i<values.size();i++){
-				pstmt.setClob(i+1,values.get(i));
-			}
-		}
 		MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		List<ScPointNameckObj> typeD1List = api.scPointNameckTypeD1();
-		ResultSet rs = pstmt.executeQuery();
 		Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 		Map<String,String> preNameMap=new HashMap<String, String>();
 		Set<String> nameSet=new HashSet<String>();
@@ -110,6 +104,18 @@ public class FM14Sum121001 extends BasicCheckRule {
 		Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
 		Map<Long,String> kindMap=new HashMap<Long, String>();
 		Map<Long,String> nameMap=new HashMap<Long, String>();
+		PreparedStatement pstmt=null;
+		ResultSet rs = null;
+		try{
+		pstmt=conn.prepareStatement(sqlStr);;
+		if(values!=null&&values.size()>0){
+			for(int i=0;i<values.size();i++){
+				pstmt.setClob(i+1,values.get(i));
+			}
+		}
+		
+		rs = pstmt.executeQuery();
+		
 		while (rs.next()) {
 			Long pid1=rs.getLong("PID");
 			String name1=rs.getString("NAME");
@@ -201,6 +207,11 @@ public class FM14Sum121001 extends BasicCheckRule {
 //				errorList.get(pid1).add(pid2);
 //				continue;
 //			}
+		}}catch (SQLException e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
 		}
 		
 		Map<String, String> kindNameByKindCode = api.getKindNameByKindCode();

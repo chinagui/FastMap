@@ -3,15 +3,15 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+
+import net.sf.json.JSONObject;
 /**
  * FM-YW-20-037	
  * 检查条件：
@@ -23,19 +23,24 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author zhangxiaoyi *
  */
 public class FMYW20037 extends BasicCheckRule {
-	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-	@Override
-	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
+	
+	
+	public void run() throws Exception {
+		log.info("CopyOfFMYW20037");
+		Map<Long, BasicObj> rows=getRowList();
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
+		for(Long key:rows.keySet()){
+			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			
+			IxPoi poi =(IxPoi) poiObj.getMainrow();
+			//已删除的数据不检查
+			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			IxPoiName nameObj = poiObj.getOfficeOriginCHName();
 			if(nameObj==null){return;}
 			String nameStr = nameObj.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			
-			Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
 			for(char item:nameStr.toCharArray()){
 				String str=String.valueOf(item);
 				if(ft.containsKey(str)){
@@ -48,12 +53,17 @@ public class FMYW20037 extends BasicCheckRule {
 					}
 				}
 			}
-		}
-	}
-
+		}}
+	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
+	}
+
+	@Override
+	public void runCheck(BasicObj obj) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

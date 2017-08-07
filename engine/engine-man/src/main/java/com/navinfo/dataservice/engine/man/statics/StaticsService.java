@@ -1603,6 +1603,7 @@ public class StaticsService {
 						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
 						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}else if(4==type){
+				//快线项目进行中和已关闭细分时，不判断月编任务状态
 				//情报
 				selectSql = "SELECT 0             PROGRAM_ID,"
 						+ "       C.INFOR_ID,"
@@ -1647,7 +1648,7 @@ public class StaticsService {
 						+ "       C.PLAN_STATUS,"
 						+ "       CASE P.STATUS"
 						+ "         WHEN 0 THEN 4"
-						+ "         ELSE CASE SUM(T.STATUS)"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 2 THEN 0 ELSE T.STATUS END)"
 						+ "            WHEN 0 THEN 3"
 						+ "            ELSE 2 END"
 						+ "         END TASK_STAT,"
@@ -1676,6 +1677,7 @@ public class StaticsService {
 						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
+						//+ "   AND T.TYPE IN (0, 1)"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
 						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}

@@ -52,10 +52,12 @@ public class RowChargeService {
 		
 		if(type==1){
 			//初始化
-			result = Fm2ChargeInit.getInstance().excute(regionList,dbIdList);
+			Fm2ChargeInit fm2ChargeInit = new Fm2ChargeInit();
+			result = fm2ChargeInit.excute(regionList,dbIdList);
 		}else if(type==2){
 			//增量
-			result = Fm2ChargeAdd.getInstance().excute(regionList,lastSyncTime,syncTime,dbIdList);
+			Fm2ChargeAdd fm2ChargeAdd = new Fm2ChargeAdd();
+			result = fm2ChargeAdd.excute(regionList,lastSyncTime,syncTime,dbIdList);
 		}
 		log.info("数据转化结束");
 		return result;

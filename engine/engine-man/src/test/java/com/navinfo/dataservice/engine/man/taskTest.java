@@ -239,7 +239,16 @@ public class taskTest extends InitApplication{
 		
 		ManApi manApi= new ManApiImpl();
 		String objName = "subtask";
-		Map<Long, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		Map<Integer, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		System.out.println(data.toString());
+		
+	}
+	
+	@Test
+	public void test02() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		Map<Integer, Set<Integer>> data = manApi.queryGrids();
 		System.out.println(data.toString());
 		
 	}

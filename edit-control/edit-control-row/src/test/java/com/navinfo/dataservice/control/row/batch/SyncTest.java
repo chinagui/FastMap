@@ -18,6 +18,8 @@ import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.control.row.charge.Fm2ChargeAdd;
+import com.navinfo.dataservice.control.row.charge.Fm2ChargeInit;
 import com.navinfo.dataservice.control.row.charge.RowChargeService;
 import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncApiImpl;;
 
@@ -121,9 +123,17 @@ public class SyncTest {
 		List<Integer> dbIds = new ArrayList<Integer>();
 //		dbIds.add(13);
 //		dbIds.add(330);
-		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(2, "20010722150900", "20170723230000",dbIds);
+		JSONObject chargePoiConvertor = RowChargeService.getInstance().chargePoiConvertor(1, "20010722150900", "20170723230000",dbIds);
 		System.out.println(chargePoiConvertor.toString());
 		
+	}
+	
+	@Test
+	public void test04() throws Exception{
+		for(int i = 0;i<10;i++){
+			Fm2ChargeInit a = new Fm2ChargeInit();
+			System.out.println(a);
+		}
 	}
 
 }

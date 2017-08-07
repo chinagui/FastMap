@@ -579,6 +579,7 @@ public class TipsSelector {
 					JSONObject obj = new JSONObject();
 					obj.put("ln", deep.getInt("ln"));
 					obj.put("kind", deep.getInt("kind"));
+					obj.put("cons", deep.getInt("cons"));
 					m.put("e", obj);
 				}
 
@@ -2587,7 +2588,7 @@ public class TipsSelector {
 				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
 
 				String sql = String.format(
-						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract') = 'TRUE' AND p.U_RECORD <> 2",
+						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE' AND p.U_RECORD <> 2",
 						wkt);
 
 				pstmt = conn.prepareStatement(sql);
@@ -2617,7 +2618,8 @@ public class TipsSelector {
 					}
 
 					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
-					double distance = tip.getWktLocation().distance(guidPoint);
+					Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
+					double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
 
 					if (isHandle == false && distance < 3) {
 						continue;

@@ -240,7 +240,7 @@ public class IxPoiSearch implements ISearch {
 		sb.append("         I.X_GUIDE,");
 		sb.append("         I.Y_GUIDE,");
 		sb.append("         I.GEOMETRY,");
-		sb.append("         I.ROW_ID");
+		sb.append("         I.ROW_ID,");
 		sb.append("         I.LINK_PID");
 		sb.append("    FROM IX_POI I");
 		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");

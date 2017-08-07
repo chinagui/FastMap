@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.overview.FmStatOverviewProgram;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.StringUtil;
@@ -251,8 +252,8 @@ public class OracleDao {
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
 					+ " FROM SUBTASK S"
-					+ " WHERE S.TYPE IN (0, 1, 2, 3, 4,5,7)"
-					+ " AND S.STATUS IN (0, 1)"
+					+ " WHERE S.STATUS IN (0, 1)"
+//					+ " AND S.TYPE IN (0, 1, 2, 3, 4,5,6,7,8,9,10)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
@@ -288,6 +289,7 @@ public class OracleDao {
 		}
 	}
 	
+	
 	/**
 	 * 获取所有不需要被统计的子任务列表
 	 */
@@ -308,7 +310,6 @@ public class OracleDao {
 			ResultSetHandler<List<Document>> rsHandler = new ResultSetHandler<List<Document>>(){
 				public List<Document> handle(ResultSet rs) throws SQLException {
 					List<Document> list = new ArrayList<Document>();
-					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(rs.next()){
 						Document subtask = new Document();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
@@ -317,14 +318,15 @@ public class OracleDao {
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
 						subtask.put("planDate", rs.getInt("PLAN_DATE"));
 						subtask.put("progress", rs.getInt("PROGRESS"));
-						subtask.put("statDate", rs.getString("STAT_DATE"));
-						subtask.put("statTime", rs.getString("STAT_TIME"));
+						subtask.put("statDate", DateUtils.timestamptoString(rs.getTimestamp("STAT_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						subtask.put("statTime", DateUtils.timestamptoString(rs.getTimestamp("STAT_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 						subtask.put("status", rs.getInt("STATUS"));
 						
-						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
-						subtask.put("actualStartDate", df.format(rs.getTimestamp("ACTUAL_START_DATE")));
-						subtask.put("actualEndDate", df.format(rs.getTimestamp("ACTUAL_END_DATE")));
+						
+						subtask.put("planStartDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						subtask.put("planEndDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						subtask.put("actualStartDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						subtask.put("actualEndDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
 						
 						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
 						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));

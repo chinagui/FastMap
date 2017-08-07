@@ -42,7 +42,7 @@ public class ImportPlan {
 	//用于记录查询groupID的次数
 	private static int SELECT_TIMES = 0;
 	//这里没有tocken，没办法从tocken中获取userid，只能先写死一个数据库存在的值直接赋值
-	private static final long userID= 2;
+	private static final long userID= 0;
 
 	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	

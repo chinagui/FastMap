@@ -32,8 +32,8 @@ public class RequestLoggerHandler extends HandlerInterceptorAdapter {
         Long causeTime = System.currentTimeMillis() - startTime.get();
         log.info("[http]postHandle url: {"+request.getRequestURL()+"}, used:"+causeTime+"ms");
         startTime.remove();
-        modelAndView.addObject("time_consuming(ms)", causeTime);
         if(modelAndView !=null&&modelAndView.getModel()!=null){
+            modelAndView.addObject("time_consuming(ms)", causeTime);
             String errmsg = String.valueOf(modelAndView.getModel().get("errmsg"));
             modelAndView.getModel().put("errmsg", "[请求编号："+ThreadLogToken.getInstance().get()+"]"+errmsg);
         }

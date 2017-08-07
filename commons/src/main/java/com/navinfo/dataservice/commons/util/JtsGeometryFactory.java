@@ -25,8 +25,6 @@ import com.vividsolutions.jts.io.WKTWriter;
 */
 public class JtsGeometryFactory {
 	private static final GeometryFactory factory = new GeometryFactory();
-	private static final WKTReader reader = new WKTReader( factory );
-	private static final WKTWriter wrt = new WKTWriter();
 	public static MultiPolygon createMultiPolygon(Polygon[] polygons){
 		return factory.createMultiPolygon(polygons);
 	}
@@ -58,6 +56,7 @@ public class JtsGeometryFactory {
 		return factory.createPoint(coordinate);
 	}
 	public static Geometry read(String wkt) throws ParseException{
+		WKTReader reader = new WKTReader( factory );
 		return reader.read(wkt);
 	}
     public static Polygon createPolygon(Coordinate[] coordinates){
@@ -65,6 +64,8 @@ public class JtsGeometryFactory {
     }
     public static String writeWKT(Geometry geo){
     	if(geo==null)return null;
+    	WKTWriter wrt = new WKTWriter();
     	return wrt.write(geo);
     }
+    
 }

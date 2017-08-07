@@ -2618,7 +2618,8 @@ public class TipsSelector {
 					}
 
 					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
-					double distance = tip.getWktLocation().distance(guidPoint);
+					Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
+					double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
 
 					if (isHandle == false && distance < 3) {
 						continue;

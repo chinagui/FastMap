@@ -85,7 +85,13 @@ public class PidService implements Observer{
 			Collections.shuffle(indexes);
 			//轮询申请，直到申请成功
 			for(Integer i:indexes){
-				long pid = applyPidFromDb(i,tableName,count);
+				long pid = 0;
+				int total=0;
+				while(pid==0&&total<100){
+					pid = applyPidFromDb(i,tableName,count);
+					total++;
+					
+				}
 				if(pid>0){
 					return pid;
 				}

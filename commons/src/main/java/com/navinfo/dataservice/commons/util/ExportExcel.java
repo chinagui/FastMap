@@ -403,14 +403,14 @@ public class ExportExcel<T>
     }
     
     
-    public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
-		 for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
-			 HSSFRow row = HSSFCellUtil.getRow(i, sheet);
-			 for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
-			   HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
-			   cell.setCellStyle(cs);
-			  }
-			 }
+	public static void setRegionStyle(HSSFSheet sheet, CellRangeAddress region, HSSFCellStyle cs) {
+		for (int i = region.getFirstRow(); i <= region.getLastRow(); i++) {
+			HSSFRow row = HSSFCellUtil.getRow(i, sheet);
+			for (int j = region.getFirstColumn(); j <= region.getLastColumn(); j++) {
+				HSSFCell cell = HSSFCellUtil.getCell(row, (short) j);
+				cell.setCellStyle(cs);
+			}
 		}
+	}
 }  
 

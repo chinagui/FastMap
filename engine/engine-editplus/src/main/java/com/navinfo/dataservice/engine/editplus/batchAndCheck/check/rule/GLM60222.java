@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @Title: GLM60222
@@ -29,7 +31,9 @@ public class GLM60222 extends BasicCheckRule {
         if (obj.objName().equals(ObjectName.IX_POI)) {
             IxPoiObj poiObj = (IxPoiObj) obj;
             IxPoi poi = (IxPoi) poiObj.getMainrow();
-
+            
+            if(poi.getOpType().equals(OperationType.PRE_DELETED)){return;}
+            
             String kindCode = poi.getKindCode();
             if (StringUtils.isEmpty(kindCode)) {
                 return;
@@ -41,7 +45,8 @@ public class GLM60222 extends BasicCheckRule {
 
             String sql = "SELECT T1.KIND FROM LC_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " +
                     "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('POINT ('|| T2.X_GUIDE || ' ' " +
-                    "|| T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE'";
+                    "|| T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE' AND T1.KIND IN (1,2,3,4,5,6) AND ROWNUM<2 ";
+        	log.info("GLM60222,sql:"+sql);
             PreparedStatement pstmt = null;
             ResultSet resultSet = null;
             try {
@@ -49,10 +54,7 @@ public class GLM60222 extends BasicCheckRule {
                 pstmt.setLong(1, poi.getPid());
                 resultSet = pstmt.executeQuery();
                 while (resultSet.next()) {
-                    int kind = resultSet.getInt("KIND");
-                    if (Arrays.asList(1, 2, 3, 4, 5, 6).contains(Integer.valueOf(kind))) {
-                        setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
-                    }
+                       setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
                 }
             } catch (SQLException e) {
                 throw e;

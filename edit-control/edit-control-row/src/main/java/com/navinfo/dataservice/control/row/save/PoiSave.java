@@ -68,8 +68,8 @@ public class PoiSave {
 			Map<String, Integer> newTaskInfo= changeTaskInfo(subtaskId,taskInfo);
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-
-			String tmpdata = json.get("data").toString();
+ 
+			String tmpdata = json.get("data") == null ? "" : json.get("data").toString();
 			int poiLength = 0;
 			if(tmpdata.indexOf("{") == 0){
 				poiLength = json.getJSONObject("data").size();

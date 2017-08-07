@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -331,143 +330,91 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
     }
 
     /**
-     * 在线批处理删除ZoneFace内部的ZoneId
-     *
-     * @param link     ZoneFace内部的link
-     * @param zoneFace 修形后的geometry，新增时传入null
-     * @param conn     数据库连接
-     * @param result   结果集
-     * @throws Exception
+     * 在线批处理ZoneFace内部的ZoneId
      */
-    public static void setZoneID(RdLink link, ZoneFace zoneFace, Connection conn, Result result) throws Exception {
+    public static void setZoneID(RdLink link, Geometry faceGeo, int regionId, int type, Result result)
+            throws Exception {
 
-        if (null == zoneFace) {
+        Geometry linkGeometry = shrink(link.getGeometry());
+
+        boolean isBoundaryRight = false;//边界右
+
+        boolean isBoundaryLeft = false;//边界左
+
+        boolean isContainOrCover = isContainOrCover(linkGeometry, faceGeo);//面内
+
+        if (!isContainOrCover && GeoRelationUtils.Boundary(linkGeometry, faceGeo)) {
+
+            isBoundaryRight = GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeo);
+
+            isBoundaryLeft = !isBoundaryRight;
+        }
+
+        // 不在面内、不在边界左、不在边界右
+        if (!isContainOrCover && !isBoundaryRight && !isBoundaryLeft) {
 
             return;
         }
 
-        Geometry linkGeometry = shrink(link.getGeometry());
-
-        Geometry faceGeometry = shrink(zoneFace.getGeometry());
-
-        // 获取关联face的regionId
-        int faceRegionId = zoneFace.getRegionId();
-
         RdLinkZone linkZoneLeft = null;
 
-        RdLinkZone linkZoneRigth = null;
+        RdLinkZone linkZoneRight = null;
 
-        boolean isContainOrCover = isContainOrCover(linkGeometry, faceGeometry);
+        for (IRow row : link.getZones()) {
 
-        boolean isRigth = false;
+            RdLinkZone linkZone = (RdLinkZone) row;
 
-        boolean isLeft = false;
+            if (regionId == linkZone.getRegionId() && type == linkZone.getType() && linkZone.getSide() == 0) {
 
-        if (!isContainOrCover && GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
+                linkZoneLeft = linkZone;
+            }
+            if (regionId == linkZone.getRegionId() && type == linkZone.getType() && linkZone.getSide() == 1) {
 
-            isRigth = GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeometry);
-
-            isLeft = !isRigth;
+                linkZoneRight = linkZone;
+            }
         }
 
         for (IRow row : link.getZones()) {
 
             RdLinkZone linkZone = (RdLinkZone) row;
 
-            // link在zoneFace内部
-            if (isContainOrCover) {
+            //不处理其他面关联的linkzone
+            if (type != linkZone.getType() && regionId != linkZone.getRegionId()) {
 
-                if (linkZone.getSide() == 0 && linkZoneLeft == null) {
-
-                    linkZoneLeft = linkZone;
-
-                } else if (linkZone.getSide() == 1 && linkZoneRigth == null) {
-
-                    linkZoneRigth = linkZone;
-
-                } else {
-
-                    result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-                }
-
-            } else if (isRigth) {
-
-                if (linkZone.getSide() == 0 && faceRegionId == linkZone.getRegionId()) {
-
-                    result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-
-                    continue;
-                }
-
-                if (linkZone.getSide() == 1) {
-
-                    if (linkZoneRigth == null) {
-
-                        linkZoneRigth = linkZone;
-
-                    } else {
-
-                        result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-                    }
-                }
-
-            } else if (isLeft) {
-
-                if (linkZone.getSide() == 1 && faceRegionId == linkZone.getRegionId()) {
-
-                    result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-
-                    continue;
-
-                }
-                if (linkZone.getSide() == 0) {
-
-                    if (linkZoneLeft == null) {
-
-                        linkZoneLeft = linkZone;
-
-                    } else {
-
-                        result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-                    }
-                }
+                continue;
             }
+
+            String rowId = linkZone.getRowId();
+
+            if (linkZoneLeft != null && rowId.equals(linkZoneLeft.getRowId()) && (isBoundaryLeft || isContainOrCover)) {
+
+                continue;
+            }
+
+            if (linkZoneRight != null && rowId.equals(linkZoneRight.getRowId()) && (isBoundaryRight || isContainOrCover)) {
+
+                continue;
+            }
+
+            result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
         }
 
-        double type = 0;
+        if (linkZoneLeft == null && (isBoundaryLeft || isContainOrCover)) {
 
-        try {
-            if (linkZoneLeft == null || linkZoneRigth == null) {
+            linkZoneLeft = createLinkZone(link, regionId, 0);
 
-                type = ((AdAdmin) new AdAdminSelector(conn).loadById(faceRegionId, false)).getAdminType();
-            }
-        } catch (Exception e) {
-        }
-
-        if (linkZoneLeft != null && faceRegionId != linkZoneLeft.getRegionId()) {
-
-            linkZoneLeft.changedFields().put("regionId", faceRegionId);
-
-            result.insertObject(linkZoneLeft, ObjStatus.UPDATE, linkZoneLeft.parentPKValue());
-
-        } else if (linkZoneLeft == null && ((isLeft || isContainOrCover))) {
-
-            linkZoneLeft = createLinkZoneWithType(link, faceRegionId, 0, type);
+            linkZoneLeft.setType(type);
 
             result.insertObject(linkZoneLeft, ObjStatus.INSERT, linkZoneLeft.parentPKValue());
         }
 
-        if (linkZoneRigth != null && faceRegionId != linkZoneRigth.getRegionId()) {
+        if (linkZoneRight == null && (isBoundaryRight || isContainOrCover)) {
 
-            linkZoneRigth.changedFields().put("regionId", faceRegionId);
+            linkZoneRight = createLinkZone(link, regionId, 1);
 
-            result.insertObject(linkZoneRigth, ObjStatus.UPDATE, linkZoneRigth.parentPKValue());
+            linkZoneRight.setType(type);
 
-        } else if (linkZoneRigth == null && (isRigth || isContainOrCover)) {
-
-            linkZoneRigth = createLinkZoneWithType(link, faceRegionId, 1, type);
-
-            result.insertObject(linkZoneRigth, ObjStatus.INSERT, linkZoneRigth.parentPKValue());
+            result.insertObject(linkZoneRight, ObjStatus.INSERT, linkZoneRight.parentPKValue());
         }
     }
 

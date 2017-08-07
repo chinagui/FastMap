@@ -581,6 +581,7 @@ public class IxDealershipResultOperator {
 			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(), 0.00001, 5));
 			poiObj.put("xGuide", poi.getxGuide());
 			poiObj.put("yGuide", poi.getyGuide());
+			poiObj.put("open24h", poi.getOpen24h());
 			
 			if(connPoi != null){
 				LogReader logRead = new LogReader(connPoi);

@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,8 @@ public class FM14Sum1115 extends BasicCheckRule {
 		Map<Long, BasicObj> rows=getRowList();
 //		List<Long> pidParent=new ArrayList<Long>();
 		List<Long> pidChildren=new ArrayList<Long>();
+		String[] checkKindArray={"130105","130800","130804","130806","130807"};
+		List checkKindList=Arrays.asList(checkKindArray);
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
@@ -45,9 +48,10 @@ public class FM14Sum1115 extends BasicCheckRule {
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			String kind=poi.getKindCode();
-			if(kind.equals("130105")||kind.equals("130800")||kind.equals("130804")||kind.equals("130806")
-					||kind.equals("130807"))
-				{pidChildren.add(poi.getPid());}
+			if(!checkKindList.contains(kind)){
+				continue;
+			}
+            pidChildren.add(poi.getPid());
 //			if(kind.equals("230215")||kind.equals("230216"))
 //				{pidParent.add(poi.getPid());}
 		}
@@ -64,10 +68,10 @@ public class FM14Sum1115 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
+
 			String sqlStr="WITH T AS"
 					+ " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE"
 					+ "    FROM IX_POI P1"
@@ -76,7 +80,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " SELECT /*+ NO_MERGE(T)*/"
 					+ " P.PID, T.PID2"
 					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, T.G2, 0.00000005) < 3"
+					+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
 					+ "   AND P.KIND_CODE IN ('230215', '230216')"
 					+ "   AND P.U_RECORD != 2"
 					+ " MINUS"
@@ -86,6 +90,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " AND C.U_RECORD!=2"
 					+ " AND P.U_RECORD!=2"
 					+ " AND C.CHILD_POI_PID =T.PID2";
+			log.info(sqlStr);
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){

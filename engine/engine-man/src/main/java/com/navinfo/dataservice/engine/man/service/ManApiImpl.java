@@ -31,6 +31,7 @@ import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.CpRegionProvinceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
@@ -451,10 +452,37 @@ public class ManApiImpl implements ManApi {
 	/**
 	 * 查询MAN_TIMELINE
 	 * objName:program,task,subtask,infor
-	 * @return
+	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Long,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
 		return TimelineService.queryManTimelineByObjName(objName);
+	}
+	
+	/**
+	 * timestamp:yyyymmdd
+	 * 获取按照人天任务进行统计的管理列表
+	 * @return Map<String, Object>:	map.put("subtaskIds", subtaskSet);
+									map.put("userId", userId);
+									map.put("taskId", taskId);
+									map.put("taskName", rs.getString("TASK_NAME"));
+									map.put("cityName", rs.getString("CITY_NAME"));
+									map.put("leaderName", rs.getString("LEADER_NAME"));
+									map.put("userName", rs.getString("USER_NAME"));	
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, Object>> staticsPersionJob(String timestamp) throws Exception{
+		return StaticsOperation.staticsPersionJob(timestamp);
+	}
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @throws Exception
+	 */
+	public Map<Integer,Set<Integer>> queryGrids() throws Exception{
+		return TaskService.getInstance().queryGrids();
 	}
 }

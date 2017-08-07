@@ -352,7 +352,7 @@ public class Operation implements IOperation {
             for (int i = g.getCoordinates().length - 1; i >= 0; i--) {
                 c1[c1.length - i - 1] = g.getCoordinates()[i];
             }
-            this.reverseFaceTopo();
+            this.reverseFaceTopo(links.size() + 1);
 
         } else {
             c1 = g.getCoordinates();
@@ -451,13 +451,11 @@ public class Operation implements IOperation {
     /*
      * 重新维护faceTopo的顺序关系
      */
-    private void reverseFaceTopo() {
-        int newIndex = 0;
-        for (int i = result.getAddObjects().size() - 1; i >= 0; i--) {
-            if (result.getAddObjects().get(i) instanceof ZoneFaceTopo) {
-                newIndex++;
-                ((ZoneFaceTopo) result.getAddObjects().get(i)).setSeqNum(newIndex);
-
+    private void reverseFaceTopo(int maxSeqnum) {
+        for (IRow row : result.getAddObjects()) {
+            if (row instanceof ZoneFaceTopo) {
+                ZoneFaceTopo faceTopo = (ZoneFaceTopo) row;
+                faceTopo.setSeqNum(maxSeqnum - faceTopo.getSeqNum());
             }
         }
     }

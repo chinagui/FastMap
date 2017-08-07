@@ -372,8 +372,12 @@ public class CollectorPoiImportor extends AbstractOperation {
 			JSONObject guide = jo.getJSONObject("guide");
 			double newXGuide = guide.getDouble("longitude");
 			ixPoi.setXGuide(DoubleUtil.keepSpecDecimal(newXGuide));
+			ixPoi.setOldXGuide(DoubleUtil.keepSpecDecimal(newXGuide));
+			
 			double newYGuide = guide.getDouble("latitude");
 			ixPoi.setYGuide(DoubleUtil.keepSpecDecimal(newYGuide));
+			ixPoi.setOldYGuide(DoubleUtil.keepSpecDecimal(newYGuide));
+			
 			long newLinkPid = guide.getLong("linkPid");
 			ixPoi.setLinkPid(newLinkPid);
 		}

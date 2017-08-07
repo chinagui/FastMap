@@ -4,7 +4,7 @@
 		<job name="poiDayStatics"/>
 	</group>
 	<group name="personStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PersonStatStarter">
-		<job name="personDayStat"/>
+		<job name="personDayJob"/>
 		<job name="dayPlanStat"/>
 		<!-- <job name="personTipsStat"/> -->
 	</group>

@@ -402,7 +402,7 @@ public class ImportPlan {
 		JSONObject json = new JSONObject();
 		try{
 			//一个区县下创建三个任务
-			for(int i = 0; i < 3; i++){
+			for(int i = 0; i < 2; i++){
 				taskJson.put("name", taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
 				taskJson.put("blockId", Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
 				taskJson.put("programId", Integer.parseInt(taskDataMap.get("programID").toString()));
@@ -453,17 +453,18 @@ public class ImportPlan {
 //					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
 //						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
 //					}
-				}else{
-					taskJson.put("type", 3);
-					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
-						taskJson.put("planEndDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())));
-					}
-					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
-						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
-					}
-					//非采集以及月编任务的数据，先赋值为0
-					taskJson.put("groupId", 0);;
 				}
+//				else{
+//					taskJson.put("type", 3);
+//					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
+//						taskJson.put("planEndDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())));
+//					}
+//					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
+//						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
+//					}
+//					//非采集以及月编任务的数据，先赋值为0
+//					taskJson.put("groupId", 0);
+//				}
 				taskJson.put("descp", taskDataMap.get("DESCP").toString());
 				taskJson.put("createUserId", 2);
 //				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){

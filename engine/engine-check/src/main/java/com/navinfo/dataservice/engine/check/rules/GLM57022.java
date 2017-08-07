@@ -8,10 +8,10 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +25,13 @@ import java.util.List;
 public class GLM57022 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludes = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row instanceof CmgBuildface && row.status() == ObjStatus.DELETE) {
+                excludes.add(((CmgBuildface) row).pid());
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (!(row instanceof CmgBuildface) || row.status() == ObjStatus.DELETE) {
                 continue;
@@ -37,7 +44,7 @@ public class GLM57022 extends baseRule {
             }
             geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
             String wkt = GeoTranslator.jts2Wkt(geometry);
-            List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
+            List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, excludes, false);
             for (CmgBuildface cmgface : list) {
                 if (CheckGeometryUtils.isOnlyEdgeShared(geometry, cmgface.getGeometry())) {
                     continue;

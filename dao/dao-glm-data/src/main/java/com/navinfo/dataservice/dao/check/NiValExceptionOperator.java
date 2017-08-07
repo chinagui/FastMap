@@ -392,9 +392,10 @@ public class NiValExceptionOperator {
 	 * @param projectId
 	 * @param type
 	 *            1例外，2确认不修改，3确认已修改
+	 * @param taskName 
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatusForRd(String id, int type)
+	public void updateCheckLogStatusForRd(String id, int type, String taskName)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -448,8 +449,12 @@ public class NiValExceptionOperator {
 
 				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, nvl(mesh_id,0), scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a "
 //						+ "where a.MD5_CODE=:4";
-						+ "where a.val_exception_id=:4";
-
+						+ "where a.val_exception_id=:4 ";
+						if(taskName != null && StringUtils.isNotEmpty(taskName)){
+							sql+= " and a.task_name = '"+taskName+"' ";
+						}
+						
+				logg.info("updateCheckLogStatusForRd sql: "+sql);
 				pstmt = conn.prepareStatement(sql);
 
 				pstmt.setInt(1, pid);
@@ -460,6 +465,7 @@ public class NiValExceptionOperator {
 
 				pstmt.setString(4, id);
 
+				logg.info("pid: "+pid+ " ,type: "+type+" ,ckexception.rowId():"+ckexception.rowId()+ " ,id: "+id);
 				pstmt.executeUpdate();
 
 				pstmt.close();

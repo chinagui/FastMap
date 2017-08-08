@@ -391,9 +391,10 @@ public class TipsRequestParamSQL {
 		}
 
 		// 过滤的类型
+		StringBuilder builder =null;
 		// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
 		if (notExpSourceType != null && notExpSourceType.length != 0) {
-			StringBuilder builder = new StringBuilder(" AND s_sourceType NOT  IN (");
+			builder = new StringBuilder(" AND s_sourceType NOT  IN (");
 			for (int i = 0; i < notExpSourceType.length; i++) {
 				String fieldValue = String.valueOf(notExpSourceType[i]);
 				if (i > 0) {
@@ -405,6 +406,11 @@ public class TipsRequestParamSQL {
 			}
 			builder.append(")");
 		}
+		
+		if(builder!=null){
+			param=param+builder.toString();
+		}
+		
 		return param;
 
 	}

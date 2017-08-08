@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
@@ -26,6 +28,8 @@ import net.sf.json.JSONObject;
  * @Description: GeneratePoiDownloadUrl.java
  */
 public class GeneratePoiDownloadUrl {
+	
+	protected static Logger log = Logger.getLogger(GeneratePoiDownloadUrl.class);
 
 	/**
 	 * @param args
@@ -37,9 +41,10 @@ public class GeneratePoiDownloadUrl {
 			final OracleSchema schema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			conn = schema.getDriverManagerDataSource().getConnection();
-			String urlBody = "http://fastmap.navinfo.com/service/edit/poi/base/download?access_token=000001OZJ5W9816V5724FBEF4E973C6DC88023686AAD2655&parameter=";
+			String urlBody = "http://fastmap.navinfo.com/service/edit/poi/base/download?access_token=000001OZJ5YVHQUIBB6CE1748622B74EC9482FC099E14837&parameter=";
 			
-			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND PROVINCE = '福建省' AND ROWNUM<151";
+//			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND PROVINCE = '福建省' AND ROWNUM<151";
+			String sql = "SELECT MESH FROM CP_MESHLIST@METADB_LINK WHERE SCALE='2.5' AND (FLAG IS NULL OR FLAG = 0) AND (MESH like '5956%' OR MESH LIKE '5955%' OR MESH LIKE '6055%')";
 			Set<String> meshes = new QueryRunner().query(conn, sql, new ResultSetHandler<Set<String>>(){
 
 				@Override
@@ -52,6 +57,7 @@ public class GeneratePoiDownloadUrl {
 				}
 				
 			});
+			log.info(StringUtils.join(meshes,","));
 			int index = 0;
 			JSONArray grids = new JSONArray();
 			for(String mesh:meshes){
@@ -64,7 +70,7 @@ public class GeneratePoiDownloadUrl {
 				if(++index%3==0){
 					JSONObject para = new JSONObject();
 					para.put("grid", grids);
-					System.out.println(urlBody+para.toString());
+					log.info(urlBody+para.toString());
 					grids.clear();
 				}
 				

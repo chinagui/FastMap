@@ -238,7 +238,7 @@ public class HBaseController {
 		photo.setRowkey(rowkey);
 		photo.setA_version(SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.seasonVersion));
-		photo.setA_content(3);
+		photo.setA_content(aContent);
 		putPhoto(rowkey, in,photo);
 		return rowkey;
 	}

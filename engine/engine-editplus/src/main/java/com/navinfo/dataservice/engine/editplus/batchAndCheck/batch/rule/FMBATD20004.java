@@ -131,7 +131,7 @@ public class FMBATD20004 extends BasicBatchRule {
 					poiFlag.setVerRecord(1);
 					poiFlag.setFieldVerified(1);
 					poiFlag.setPoiPid(poi.getPid());
-					if(!flagCode1){
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode1){
 						addIxPoiFlag(poiObj,"110000260000");
 					}
 				}
@@ -140,7 +140,7 @@ public class FMBATD20004 extends BasicBatchRule {
 					poiFlag.setSrcRecord(4);
 					poiFlag.setVerRecord(4);
 					poiFlag.setPoiPid(poi.getPid());
-					if(!flagCode4){
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode4){
 						addIxPoiFlag(poiObj,"110000290000");
 					}
 				}
@@ -149,7 +149,7 @@ public class FMBATD20004 extends BasicBatchRule {
 					poiFlag.setSrcRecord(3);
 					poiFlag.setVerRecord(3);
 					poiFlag.setPoiPid(poi.getPid());
-					if(!flagCode3){
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode3){
 						addIxPoiFlag(poiObj,"110000270000");
 					}
 				}

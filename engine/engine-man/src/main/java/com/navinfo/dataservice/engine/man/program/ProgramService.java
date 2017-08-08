@@ -371,7 +371,7 @@ public class ProgramService {
 					+ " WHERE T.STATUS != 0"
 					+ "   AND P.PROGRAM_ID = T.PROGRAM_ID"
 					+ "   AND (P.TYPE = 1 OR (P.TYPE = 4 AND T.TYPE IN (0, 1)))"
-					+ " and PROGRAM_ID = "+programId;
+					+ " and p.PROGRAM_ID = "+programId;
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 					List<Integer> taskList = new ArrayList<Integer>();

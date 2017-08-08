@@ -311,7 +311,7 @@ public class RdNameResultsTest {
 					NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 					
 					try {
-						selector.updateCheckLogStatusForRd(id, type);
+						selector.updateCheckLogStatusForRd(id, type,"");
 
 						 System.out.println(" end ");
 					} catch (Exception e) {

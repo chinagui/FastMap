@@ -406,7 +406,7 @@ public class TipsSelector {
                                 int flag = outObj.getInt("flag");
                                 obj.put("oInfo",oInfo);
                                 obj.put("flag", flag);
-                                oInfoArray.add(flag);
+                                oInfoArray.add(obj);
                             }
                         }
                        // --输入：刘哲

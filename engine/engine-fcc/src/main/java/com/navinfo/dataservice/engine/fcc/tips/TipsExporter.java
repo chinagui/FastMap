@@ -152,10 +152,15 @@ public class TipsExporter {
 				json.put("s_project", "");
 
 				String sourceType = json.getString("s_sourceType");
-
-				String deep = new String(result.getValue("data".getBytes(),
-						"deep".getBytes()));
-
+				
+				String deep="{}"; //默认空对象
+				//20170808增加判断非空判断，因为存在deep为空的tips。如：8001 草图(1803？？)  liya
+				if(result.getValue("data".getBytes(),
+						"deep".getBytes())!=null){
+					deep= new String(result.getValue("data".getBytes(),
+							"deep".getBytes()));
+				}
+				
 				JSONObject deepjson = JSONObject.fromObject(deep);
 
 				if (deepjson.containsKey("agl")) {

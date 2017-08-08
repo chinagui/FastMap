@@ -26,7 +26,7 @@ import java.util.Map;
  * @Date: 8/8/2017
  * @Version: V1.0
  */
-public class FMYW20267 extends BasicCheckRule {
+public class FMYW20264 extends BasicCheckRule {
     @Override
     public void runCheck(BasicObj obj) throws Exception {
 

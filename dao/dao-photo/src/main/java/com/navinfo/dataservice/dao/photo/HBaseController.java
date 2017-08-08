@@ -192,10 +192,54 @@ public class HBaseController {
 		
 		
 	}
+	public void putPhoto(String rowkey, InputStream in,Photo photo) throws Exception{
+		
+		int count = in.available();
+		
+		byte[] bytes = new byte[(int) count];
+
+		in.read(bytes);
+		
+		byte[] sbytes = FileUtils.makeSmallImage(bytes);
+		
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		try{
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+					.fromObject(photo).toString().getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+			
+			htab.put(put);
+		}finally{
+			if (htab!=null){
+				htab.close();
+			}
+		}
+		
+		
+	}
 
 	public String putPhoto(InputStream in) throws Exception{
 		String rowkey = UuidUtils.genUuid();
 		putPhoto(rowkey, in);
+		return rowkey;
+	}
+	//设置aContent
+	public String putPhoto(InputStream in,int aContent) throws Exception{
+		String rowkey = UuidUtils.genUuid();
+		Photo photo = new Photo();
+		
+		photo.setRowkey(rowkey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		photo.setA_content(3);
+		putPhoto(rowkey, in,photo);
 		return rowkey;
 	}
 	

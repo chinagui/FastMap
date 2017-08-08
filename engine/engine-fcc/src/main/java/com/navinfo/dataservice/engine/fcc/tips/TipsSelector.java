@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
@@ -2481,7 +2482,7 @@ public class TipsSelector {
 		String id = f.getString("id");
 
 		if (type == 1) {
-			RdLink link = (RdLink) selector.loadById(Integer.valueOf(id), false);
+			RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
 
 			geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
@@ -2571,6 +2572,8 @@ public class TipsSelector {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			RdLinkSelector selector = new RdLinkSelector(conn);
+			
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 
 			PreparedStatement pstmt = null;
 
@@ -2582,6 +2585,10 @@ public class TipsSelector {
 
 				Geometry tipGeo = isDeleteLink == true ? getDeleteLinkGeo(tip, selector, operator)
 						: GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
+				
+				if(isDeleteLink){
+					poiList.addAll(handlePoiRelateDeleteLink(tip,poiSelector));
+				}
 						
 				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
 
@@ -2601,24 +2608,10 @@ public class TipsSelector {
 
 					ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
 
-					if (isDeleteLink) {
-
-						String relateInfo = getDeepRelateId(tip);
-						
-						if(relateInfo.isEmpty() || relateInfo.contains("_") == false) continue;
-						
-						int index = relateInfo.indexOf('_');
-						
-						String type = relateInfo.substring(0, index);
-						String relateId = relateInfo.substring(index +1);
-						
-						if (type.equals(1) && relateId.equals(Integer.toString(ixPoi.getLinkPid())) == false) {
-							continue;
-						}
-					}
-
 					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
+					
 					Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
+					
 					double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
 
 					if (isHandle == false && distance < 3) {
@@ -2637,6 +2630,38 @@ public class TipsSelector {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+		return poiList;
+	}
+
+	/**
+	 * 查找引导link为形状删除linkPid的poi
+	 * 
+	 * @param tip
+	 * @param selector
+	 * @return
+	 * @throws Exception
+	 */
+	private List<IxPoi> handlePoiRelateDeleteLink(TipsDao tip, IxPoiSelector selector) throws Exception {
+		List<IxPoi> poiList = new ArrayList<>();
+
+		String relateInfo = getDeepRelateId(tip);
+
+		if (relateInfo.isEmpty() || relateInfo.contains("_") == false)
+			return poiList;
+
+		int index = relateInfo.indexOf('_');
+
+		String type = relateInfo.substring(0, index);
+		String relateId = relateInfo.substring(index + 1);
+
+		if (type.equals("1") == false) {
+			return poiList;
+		}
+
+		List<IxPoi> pois = selector.loadIxPoiByLinkPid(Integer.valueOf(relateId), true);
+
+		poiList.addAll(pois);
+
 		return poiList;
 	}
 

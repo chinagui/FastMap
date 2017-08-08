@@ -1701,6 +1701,8 @@ public class NiValExceptionSelector {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
+							DbUtils.closeQuietly(rs);
+							DbUtils.closeQuietly(pstmt);
 							DbUtils.commitAndCloseQuietly(conn);
 						}
 					} catch (Exception e) {

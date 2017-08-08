@@ -281,8 +281,11 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			//String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.GET);
 			String sql="UPDATE POI_EDIT_STATUS E"
-					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
-					+ " WHERE E.STATUS = 2"
+					+ "   SET (E.STATUS, E.SUBMIT_DATE, E.COMMIT_HIS_STATUS, E.RAW_FIELDS)= "
+					+ "   (SELECT 1,SYSDATE,1,CASE WHEN P.RAW_FIELDS IN ('8', '9', '10') THEN P.RAW_FIELDS ELSE '' END RAW_FIELDS "
+					+ "    FROM POI_EDIT_STATUS P "
+					+ "     WHERE P.PID = E.PID) "	       
+					+ "  WHERE E.STATUS = 2"
 					+ "   AND NOT EXISTS (SELECT 1"
 					+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
 					+ "         WHERE R.TABLE_NAME = 'IX_POI' "

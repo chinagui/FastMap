@@ -3,14 +3,13 @@ package com.navinfo.dataservice.engine.editplus.diff;
 import java.io.IOException;
 import java.net.URLEncoder;
 
-import net.sf.json.JSONObject;
-
 import org.apache.http.client.ClientProtocolException;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+
+import net.sf.json.JSONObject;
 
 /**
  * @author jicaihua BaiduGeocoding API 调用实例
@@ -21,32 +20,32 @@ public class BaiduGeocoding {
 	static String url2 = "&output=json&ak=" + ak;
 
 	public static Geometry geocoder(String str) throws ClientProtocolException, IOException, ParseException {
-//		System.out.println("str:" + str);
-		if ("".equals(str)||str== null) {
+		// System.out.println("str:" + str);
+		if ("".equals(str) || str == null) {
 			return null;
 		}
-			// 对字符串长度超过84字节的截断，对于特殊字符进行编码处理
-			if(str.length()>42){
-				str = str.substring(0,42);
-			}
-			str = URLEncoder.encode(str, "utf-8");
-			String geocoderUrl=url + str + url2;
-			System.out.println("geocoderUrl" + geocoderUrl);
-			String return_value = Parser_Tool.do_get(geocoderUrl);
-			System.out.println("return_value:" + return_value);
-			if(return_value==null||return_value.equals("")){
-				return null;
-			}
-			JSONObject json = JSONObject.fromObject(return_value);
-			if(json.containsKey("result")){
-				JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");
-				String wkt = "POINT(" +resultStr.getString("lng") + " " + resultStr.getString("lat") + ")";
-				Geometry point = new WKTReader().read(wkt);
-				return point;
-			}else{
-				return null;
-			}
-
+		// 对字符串长度超过84字节的截断，对于特殊字符进行编码处理
+		if (str.length() > 42) {
+			str = str.substring(0, 42);
+		}
+		str = URLEncoder.encode(str, "utf-8");
+		String geocoderUrl = url + str + url2;
+		System.out.println("geocoderUrl" + geocoderUrl);
+//		String return_value = Parser_Tool.do_get(geocoderUrl);
+		String return_value = Parser_Tool.do_get2(geocoderUrl);
+		System.out.println("return_value:" + return_value);
+		if (return_value == null || return_value.equals("")) {
+			return null;
+		}
+		JSONObject json = JSONObject.fromObject(return_value);
+		if (json.containsKey("result")) {
+			JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");
+			String wkt = "POINT(" + resultStr.getString("lng") + " " + resultStr.getString("lat") + ")";
+			Geometry point = new WKTReader().read(wkt);
+			return point;
+		} else {
+			return null;
+		}
 
 	}
 
@@ -62,9 +61,10 @@ public class BaiduGeocoding {
 		// System.out.println(toHexString(strDefaltEncode));
 		;
 		System.out.println("景洪工业园区（嘎栋片区）南溪大道5号:" + geocoder("景洪工业园区（嘎栋片区）南溪大道5号"));
-//		JSONObject a = geocoder("景洪工业园区（嘎栋片区）南溪大道5号");
-//		String b = "POINT(" +a.getString("lng") + " " + a.getString("lat") + ")";
-//		Geometry point = new WKTReader().read(b);
+		// JSONObject a = geocoder("景洪工业园区（嘎栋片区）南溪大道5号");
+		// String b = "POINT(" +a.getString("lng") + " " + a.getString("lat") +
+		// ")";
+		// Geometry point = new WKTReader().read(b);
 
 		System.out.println("景洪市贡嘎工业园区南溪大道5号:" + geocoder("景洪市贡嘎工业园区南溪大道5号"));
 		System.out.println("西双版纳大成汽车销售服务有限公司:" + geocoder("西双版纳大成汽车销售服务有限公司"));

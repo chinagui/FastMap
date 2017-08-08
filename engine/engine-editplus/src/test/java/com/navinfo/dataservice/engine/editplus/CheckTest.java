@@ -58,7 +58,7 @@ public class CheckTest {
 
     @Test
     public void check() throws Exception {
-        GLM60224 check = new GLM60224();
+        GLM60227 check = new GLM60227();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);

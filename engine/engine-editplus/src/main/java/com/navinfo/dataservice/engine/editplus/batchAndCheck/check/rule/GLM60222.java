@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -10,7 +9,10 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.sql.*;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 
 /**
@@ -50,6 +52,10 @@ public class GLM60222 extends BasicCheckRule {
             }
         }
 
+        if (CollectionUtils.isEmpty(pids)) {
+            return;
+        }
+
         String pidStr = org.apache.commons.lang.StringUtils.join(pids, ",");
 
         Connection conn = getCheckRuleCommand().getConn();
@@ -63,31 +69,40 @@ public class GLM60222 extends BasicCheckRule {
             pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
             values.add(clob);
         } else {
-            pidString = " PID IN (" + pidStr +")";
+            pidString = " PID IN (" + pidStr + ")";
         }
 
         String sql = "SELECT T2.PID FROM LC_FACE T1, IX_POI T2 WHERE T2." + pidString + " AND T1.MESH_ID = T2.MESH_ID AND " +
-                "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('POINT ('|| T2.X_GUIDE || ' ' " +
-                "|| T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE' AND T1.KIND IN (1,2,3,4,5,6)";
+                "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('POINT ('|| T2.X_GUIDE || ' ' " + "|| " +
+                "T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE' AND T1.KIND IN (1,2,3,4,5,6)";
 
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        if (CollectionUtils.isNotEmpty(values)) {
-            for (int i = 0; i < values.size(); i++) {
-                pstmt.setClob(i + 1, values.get(i));
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            if (CollectionUtils.isNotEmpty(values)) {
+                for (int i = 0; i < values.size(); i++) {
+                    pstmt.setClob(i + 1, values.get(i));
+                }
             }
-        }
 
-        //去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
-        Set<String> filterPid = new HashSet<>();
+            //去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+            Set<String> filterPid = new HashSet<>();
 
-        ResultSet rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Long pid = rs.getLong("PID");
-            String targets="[IX_POI," + pid + "]";
-            if(!filterPid.contains(targets)){
-                setCheckResult("", targets, 0);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Long pid = rs.getLong("PID");
+                String targets = "[IX_POI," + pid + "]";
+                if (!filterPid.contains(targets)) {
+                    setCheckResult("", targets, 0);
+                }
+                filterPid.add(targets);
             }
-            filterPid.add(targets);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DBUtils.closeResultSet(rs);
+            DBUtils.closeStatement(pstmt);
         }
     }
 

@@ -2481,15 +2481,19 @@ public class TipsSelector {
 		int type = f.getInt("type");
 		String id = f.getString("id");
 
-		if (type == 1) {
-			RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
+		try {
+			if (type == 1) {
+				RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
 
-			geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+				geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
-		} else if (type == 2) {
-			TipsDao gps = operator.getById(id);
+			} else if (type == 2) {
+				TipsDao gps = operator.getById(id);
 
-			geo = gps.getWktLocation();
+				geo = GeoTranslator.transform(gps.getWktLocation(), 0.00001, 5);
+			}
+		} catch (Exception e) {
+			throw e;
 		}
 		return geo;
 	}
@@ -2608,6 +2612,12 @@ public class TipsSelector {
 
 					ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
 
+					boolean isExist = isPoiEquals(poiList, ixPoi);
+
+					if (isExist) {
+						continue;
+					}
+
 					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
 					
 					Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
@@ -2633,6 +2643,25 @@ public class TipsSelector {
 		return poiList;
 	}
 
+	/**
+	 * poi去重
+	 * @param poiList
+	 * @param poi
+	 * @return
+	 */
+	private boolean isPoiEquals(List<IxPoi> poiList,IxPoi poi){
+		boolean result = false;
+		
+		for(IxPoi item:poiList){
+			if(poi.getPid() == item.getPid()){
+				result = true;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * 查找引导link为形状删除linkPid的poi
 	 * 

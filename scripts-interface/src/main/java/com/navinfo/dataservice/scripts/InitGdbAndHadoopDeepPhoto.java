@@ -7,9 +7,7 @@ public class InitGdbAndHadoopDeepPhoto {
 
 		try {
 
-			//String path = args[0];
-			
-			String path = "C:/Users/fhx/Desktop/data/110000_poi_deep.txt";
+			String path = args[0];
 
 			JobScriptsInterface.initContext();
 

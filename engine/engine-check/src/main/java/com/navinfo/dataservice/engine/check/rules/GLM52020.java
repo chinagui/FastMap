@@ -7,10 +7,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +24,13 @@ import java.util.List;
 public class GLM52020 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludes = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row instanceof LuFace && row.status() == ObjStatus.DELETE) {
+                excludes.add(((LuFace) row).pid());
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (!(row instanceof LuFace) || row.status() == ObjStatus.DELETE) {
                 continue;
@@ -43,12 +50,8 @@ public class GLM52020 extends baseRule {
                 geometry = GeoTranslator.geojson2Jts((JSONObject) face.changedFields().get("geometry"));
             }
             String wkt = GeoTranslator.jts2Wkt(geometry, GeoTranslator.dPrecisionMap, 5);
-            List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
+            List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, excludes,false);
             for (LuFace luface : list) {
-                //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, luface.getGeometry())) {
-                //    continue;
-                //}
-
                 if (6 == luface.getKind() && face.pid() != luface.pid()) {
                     setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()),0);
                 }

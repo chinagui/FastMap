@@ -1,25 +1,25 @@
 package com.navinfo.dataservice.dao.glm.selector.ad.zone;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.navinfo.navicommons.exception.DAOException;
-import com.navinfo.navicommons.exception.ServiceException;
-import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ZONE:Face查询接口
@@ -233,15 +233,19 @@ public class ZoneFaceSelector extends AbstractSelector {
      * @param isLock 是否加锁
      * @return 相交面数量
      */
-    public List<ZoneFace> listZoneface(String wkt, boolean isLock) throws ServiceException {
+    public List<ZoneFace> listZoneface(String wkt, List<Integer> excludes, boolean isLock) throws ServiceException {
         List<ZoneFace> list = new ArrayList<>();
         String sql = "SELECT T.FACE_PID, T.REGION_ID, T.GEOMETRY FROM ZONE_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
-                + ") = 'TRUE' AND T.U_RECORD <> 2";
+                + ") = 'TRUE' AND T.U_RECORD <> 2 AND T.FACE_PID NOT IN (:2)";
+        if (isLock) {
+            sql += " for update nowait";
+        }
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setString(1, wkt);
+            pstmt.setString(2, StringUtils.getInteStr(excludes));
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 ZoneFace face = new ZoneFace();

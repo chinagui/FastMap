@@ -11,6 +11,7 @@ import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +25,13 @@ import java.util.List;
 public class GLM50027 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludes = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row instanceof AdFace && row.status() == ObjStatus.DELETE) {
+                excludes.add(((AdFace) row).pid());
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (!(row instanceof AdFace) || row.status() == ObjStatus.DELETE) {
                 continue;
@@ -36,7 +44,7 @@ public class GLM50027 extends baseRule {
             }
             geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
             String wkt = GeoTranslator.jts2Wkt(geometry);
-            List<AdFace> list = new AdFaceSelector(getConn()).listAdface(wkt, false);
+            List<AdFace> list = new AdFaceSelector(getConn()).listAdface(wkt, excludes,false);
             for (AdFace adFace : list) {
                 if (face.pid() == adFace.pid()) {
                     continue;

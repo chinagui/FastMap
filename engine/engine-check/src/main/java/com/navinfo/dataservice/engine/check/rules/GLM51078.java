@@ -12,6 +12,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,19 @@ import java.util.List;
 public class GLM51078 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludesCmg = new ArrayList<>();
+        List<Integer> excludesLc = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row.status() == ObjStatus.DELETE) {
+                if (row instanceof CmgBuildface) {
+                    excludesCmg.add(((CmgBuildface) row).pid());
+                }
+                if (row instanceof LcFace) {
+                    excludesLc.add(((LcFace) row).pid());
+                }
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof LcFace && row.status() != ObjStatus.DELETE) {
                 LcFace face = (LcFace) row;
@@ -35,7 +49,7 @@ public class GLM51078 extends baseRule {
                 }
                 String wkt = GeoTranslator.jts2Wkt(geometry);
 
-                List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
+                List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, excludesCmg, false);
                 for (CmgBuildface cmgface : list) {
                     Geometry tmpGep = GeoTranslator.transform(cmgface.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                     if (!geometry.covers(tmpGep) && !geometry.coveredBy(tmpGep)) {
@@ -51,7 +65,7 @@ public class GLM51078 extends baseRule {
                 }
                 String wkt = GeoTranslator.jts2Wkt(geometry);
 
-                List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, false);
+                List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, excludesLc,false);
                 for (LcFace lcFace : list) {
                     Geometry tmpGep = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                     if (!geometry.covers(tmpGep) && !geometry.coveredBy(tmpGep)) {

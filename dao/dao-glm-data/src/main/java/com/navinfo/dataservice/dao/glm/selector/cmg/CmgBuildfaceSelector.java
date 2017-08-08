@@ -1,6 +1,7 @@
 
 package com.navinfo.dataservice.dao.glm.selector.cmg;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTenant;
@@ -171,15 +172,16 @@ public class CmgBuildfaceSelector extends AbstractSelector {
      * @param isLock 是否加锁
      * @return 相交面
      */
-    public List<CmgBuildface> listCmgBuildface(String wkt, boolean isLock) throws ServiceException {
+    public List<CmgBuildface> listCmgBuildface(String wkt, List<Integer> excludes, boolean isLock) throws ServiceException {
         List<CmgBuildface> list = new ArrayList<>();
         String sql = "SELECT T.FACE_PID, T.GEOMETRY FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
-                + "'TRUE' AND T.U_RECORD <> 2";
+                + "'TRUE' AND T.U_RECORD <> 2 AND T.FACE_PID NOT IN(:2)";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setString(1, wkt);
+            pstmt.setString(2, StringUtils.getInteStr(excludes));
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 CmgBuildface face = new CmgBuildface();

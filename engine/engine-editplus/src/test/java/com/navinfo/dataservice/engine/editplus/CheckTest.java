@@ -83,7 +83,7 @@ public class CheckTest {
 
     @Test
     public void check1() throws Exception {
-        FMYW20267 check = new FMYW20267();
+        FMYW20264 check = new FMYW20264();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);

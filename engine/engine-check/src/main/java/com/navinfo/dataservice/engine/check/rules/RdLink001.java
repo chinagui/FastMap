@@ -15,81 +15,82 @@ import java.util.Set;
 
 /**
  * Rdlink word RDLINK001 后台 两条RDLink不能首尾点一致
- * 
+ *
  * @author zhangxiaoyi
  */
 
 public class RdLink001 extends baseRule {
 
-	private static Logger logger = Logger.getLogger(RdLink001.class);
+    private static Logger logger = Logger.getLogger(RdLink001.class);
 
-	public RdLink001() {
-		// TODO Auto-generated constructor stub
-	}
+    public RdLink001() {
+        // TODO Auto-generated constructor stub
+    }
 
-	@Override
-	public void preCheck(CheckCommand checkCommand) throws Exception {
+    @Override
+    public void preCheck(CheckCommand checkCommand) throws Exception {
 
-		Set<Integer> nodePids = new HashSet<>();
+        Set<Integer> nodePids = new HashSet<>();
 
-		Set<String> linkPointFlag = new HashSet<>();
+        Set<String> linkPointFlag = new HashSet<>();
 
-		Set<Integer> handlePids = new HashSet<>();
+        Set<Integer> handlePids = new HashSet<>();
 
-		for (IRow obj : checkCommand.getGlmList()) {
+        for (IRow obj : checkCommand.getGlmList()) {
 
-			if ((obj instanceof RdLink) && (obj.status() != ObjStatus.DELETE)) {
+            if ((obj instanceof RdLink) && (obj.status() != ObjStatus.DELETE)) {
 
-				RdLink rdLink = (RdLink) obj;
+                RdLink rdLink = (RdLink) obj;
 
-				if (!linkPointFlag.add(rdLink.getsNodePid() + "_"
-						+ rdLink.geteNodePid())
-						|| !linkPointFlag.add(rdLink.geteNodePid() + "_"
-								+ rdLink.getsNodePid())) {
+                if (!linkPointFlag.add(rdLink.getsNodePid() + "_"
+                        + rdLink.geteNodePid())
+                        || !linkPointFlag.add(rdLink.geteNodePid() + "_"
+                        + rdLink.getsNodePid())) {
 
-					this.setCheckResult("", "", 0);
+                    this.setCheckResult("", "", 0);
 
-					return;
-				}
+                    return;
+                }
 
-				nodePids.add(rdLink.getsNodePid());
+                nodePids.add(rdLink.getsNodePid());
 
-				nodePids.add(rdLink.geteNodePid());
+                nodePids.add(rdLink.geteNodePid());
 
-				handlePids.add(rdLink.getPid());
-			}
+                handlePids.add(rdLink.getPid());
+            }
+        }
 
-			if (nodePids.size() < 1) {
+        if (nodePids.size() < 1) {
 
-				return;
-			}
+            return;
+        }
 
-			List<RdLink> links = new RdLinkSelector(getConn()).loadByNodePids(
-					new ArrayList<>(nodePids), false);
+        List<RdLink> links = new RdLinkSelector(getConn()).loadByNodePids(
+                new ArrayList<>(nodePids), false);
 
-			for (RdLink link : links) {
+        for (RdLink link : links) {
 
-				if (handlePids.contains(link.getPid())) {
+            if (handlePids.contains(link.getPid())) {
 
-					continue;
-				}
+                continue;
+            }
 
-				if (!linkPointFlag.add(link.getsNodePid() + "_"
-						+ link.geteNodePid())
-						|| !linkPointFlag.add(link.geteNodePid() + "_"
-								+ link.getsNodePid())) {
+            if (!linkPointFlag.add(link.getsNodePid() + "_"
+                    + link.geteNodePid())
+                    || !linkPointFlag.add(link.geteNodePid() + "_"
+                    + link.getsNodePid())) {
 
-					this.setCheckResult("", "", 0);
+                this.setCheckResult("", "", 0);
 
-					return;
-				}
+                return;
+            }
 
-				handlePids.add(link.getPid());
-			}
-		}
-	}
+            handlePids.add(link.getPid());
+        }
 
-	@Override
-	public void postCheck(CheckCommand checkCommand) throws Exception {
-	}
+    }
+
+    @Override
+    public void postCheck(CheckCommand checkCommand) throws Exception {
+    }
 }

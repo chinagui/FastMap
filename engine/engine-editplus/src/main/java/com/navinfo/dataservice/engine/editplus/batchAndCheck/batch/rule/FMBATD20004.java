@@ -131,18 +131,27 @@ public class FMBATD20004 extends BasicBatchRule {
 					poiFlag.setVerRecord(1);
 					poiFlag.setFieldVerified(1);
 					poiFlag.setPoiPid(poi.getPid());
+					if(!flagCode1){
+						addIxPoiFlag(poiObj,"110000260000");
+					}
 				}
 				//众包子任务
 				if(subTaskWorkKind==2){
 					poiFlag.setSrcRecord(4);
 					poiFlag.setVerRecord(4);
 					poiFlag.setPoiPid(poi.getPid());
+					if(!flagCode4){
+						addIxPoiFlag(poiObj,"110000290000");
+					}
 				}
 				//多源子任务
 				if(subTaskWorkKind==4){
 					poiFlag.setSrcRecord(3);
 					poiFlag.setVerRecord(3);
 					poiFlag.setPoiPid(poi.getPid());
+					if(!flagCode3){
+						addIxPoiFlag(poiObj,"110000270000");
+					}
 				}
 			}
 			//处理ix_poi_flag

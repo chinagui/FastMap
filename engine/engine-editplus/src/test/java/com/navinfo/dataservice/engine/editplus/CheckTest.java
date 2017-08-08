@@ -58,32 +58,7 @@ public class CheckTest {
 
     @Test
     public void check() throws Exception {
-        FMYW20237 check = new FMYW20237();
-        Connection conn = DBConnector.getInstance().getConnectionById(13);
-        CheckRuleCommand command = new CheckRuleCommand();
-        command.setConn(conn);
-        check.setCheckRuleCommand(command);
-
-        Set<Long> pids = new HashSet<Long>();
-        pids.add(503000141L);
-        pids.add(408000138L);
-        pids.add(407000136L);
-
-        CheckRule checkRule = new CheckRule();
-        checkRule.setObjNameSet(ObjectName.IX_POI);
-        check.setCheckRule(checkRule);
-
-        Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, false);
-        Map<String, Map<Long, BasicObj>> map = new HashMap<>();
-        map.put(ObjectName.IX_POI, pois);
-        command.setAllDatas(map);
-
-        check.run();
-    }
-
-    @Test
-    public void check1() throws Exception {
-        FMYW20264 check = new FMYW20264();
+        GLM60224 check = new GLM60224();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);

@@ -66,7 +66,7 @@ public class FMYW20237 extends BasicCheckRule {
             if(pids.size()>1000){
                 Clob clob = ConnectionUtil.createClob(conn);
                 clob.setString(1, pidStr);
-                pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
+                pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
                 values.add(clob);
             }else{
                 pidString=" PID IN (" + pidStr + ")";

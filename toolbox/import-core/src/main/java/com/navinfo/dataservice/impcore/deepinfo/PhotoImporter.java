@@ -26,6 +26,8 @@ public class PhotoImporter {
 		
 		if(array.size() == 0) return 0;
 
+		int result = 0;
+		
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject obj = array.getJSONObject(i);
 
@@ -36,7 +38,7 @@ public class PhotoImporter {
 			String url = obj.getString("url");
 
 			if (tag != 7 || type != 1) {
-				return 0;
+				continue;
 			}
 
 			ixPhoto.setPoiPid(poi.getInt("pid"));
@@ -52,9 +54,11 @@ public class PhotoImporter {
 			operator.insertRow2Sql(stmt);
 
 			runPhoto(fccPid, url, photo, photoes);
+			
+			result++;
 		}
 
-		return 1;
+		return result;
 	}
 
 	/**
@@ -82,6 +86,8 @@ public class PhotoImporter {
 		photo.setA_fileName(name);
 
 		photo.setA_uuid(fccPid);
+		
+		photo.setA_content(3);
 
 		if (photoes.containsKey(dir)) {
 

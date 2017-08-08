@@ -131,7 +131,7 @@ public class DeepPhotoImporter {
 				stmt.executeBatch();
 				
 				for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
-					CollectorImport.importPhoto(entry.getValue(), entry.getKey());
+					CollectorImport.importPhotoNew(entry.getValue(), entry.getKey());
 				}
 				
 				importPhoto = new HashMap<>();
@@ -144,7 +144,7 @@ public class DeepPhotoImporter {
 			stmt.executeBatch();
 			
 			for (Map.Entry<String, Map<String, Photo>> entry : importPhoto.entrySet()) {
-				CollectorImport.importPhoto(entry.getValue(), "E:/" + entry.getKey());
+				CollectorImport.importPhotoNew(entry.getValue(), entry.getKey());
 			}
 			
 			importPhoto = new HashMap<>();

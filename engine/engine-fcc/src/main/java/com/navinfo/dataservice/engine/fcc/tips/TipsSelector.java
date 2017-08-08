@@ -2481,15 +2481,19 @@ public class TipsSelector {
 		int type = f.getInt("type");
 		String id = f.getString("id");
 
-		if (type == 1) {
-			RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
+		try {
+			if (type == 1) {
+				RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
 
-			geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+				geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
-		} else if (type == 2) {
-			TipsDao gps = operator.getById(id);
+			} else if (type == 2) {
+				TipsDao gps = operator.getById(id);
 
-			geo = GeoTranslator.transform(gps.getWktLocation(), 0.00001, 5);
+				geo = GeoTranslator.transform(gps.getWktLocation(), 0.00001, 5);
+			}
+		} catch (Exception e) {
+			throw e;
 		}
 		return geo;
 	}

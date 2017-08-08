@@ -545,16 +545,6 @@ public class SubtaskJob extends AbstractStatJob {
 				else if(subtask.getType()==2){
 					percent = (int) (poiPercent*0.5 + roadPercent*0.5);
 				}
-				//其他
-				else{
-					if(subtask.getStatus() == 0){
-						//关闭
-						percent = 100;
-					}else if(subtask.getStatus() == 1){
-						//开启
-						percent = 0;
-					}
-				}
 			}
 			//快线
 			else if(programType == 4){
@@ -567,7 +557,7 @@ public class SubtaskJob extends AbstractStatJob {
 						percent = 100;
 					}else if(subtask.getStatus() == 1){
 						//开启
-						poiPercent = 100;
+						poiPercent = 0;
 						roadPercent = 0;
 						percent = 0;
 					}
@@ -580,8 +570,8 @@ public class SubtaskJob extends AbstractStatJob {
 						percent = tipsFinishNum*100/tipsAllNum;
 					}
 				}
-				//一体化_区域粗编_日编,其他
-				else{
+				//一体化_区域粗编_日编
+				else if(subtask.getType()==4){
 					if(subtask.getStatus() == 0){
 						//关闭
 						percent = 100;

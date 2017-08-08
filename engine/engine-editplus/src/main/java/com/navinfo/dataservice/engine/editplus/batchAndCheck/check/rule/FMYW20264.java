@@ -74,7 +74,7 @@ public class FMYW20264 extends BasicCheckRule {
                         }
                     }
 
-                    setCheckResult("", String.format("[IX_POI,%d]", entryRow.getKey()), 0);
+                    setCheckResult("", String.format("[IX_POI,%d]", entryRow.getKey()), 0, String.format("%s是非法字符!", str));
                     continue label1;
                 }
             }

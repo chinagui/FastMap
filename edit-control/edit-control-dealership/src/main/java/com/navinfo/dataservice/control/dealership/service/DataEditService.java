@@ -875,10 +875,10 @@ public class DataEditService {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result = new HashMap();
 					if (rs.next()) {
-						result.put("poi_kind_code", rs.getString("kind_code"));
-						result.put("poi_chain", rs.getString("chain"));
-						result.put("pid", rs.getInt("pid"));
-						result.put("row_id", rs.getObject("row_id"));
+						result.put("poi_kind_code", (rs.getString("kind_code") == null) ? "" : rs.getString("kind_code"));
+						result.put("poi_chain", (rs.getString("chain") == null) ? "" : rs.getString("chain"));
+						result.put("pid", (rs.getString("pid") == null) ? "" : rs.getString("pid"));
+						result.put("row_id", (rs.getString("row_id") == null) ? "" : rs.getString("row_id"));
 					}
 					return result;
 				}
@@ -908,10 +908,10 @@ public class DataEditService {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result = new HashMap();
 					if (rs.next()) {
-						result.put("poi_kind_code", rs.getString("poikind"));
-						result.put("poi_chain", rs.getString("poikind_chain"));
-						result.put("r_kind_chain", rs.getString("r_kind_chain"));
-						result.put("r_kind", rs.getString("r_kind"));
+						result.put("poi_kind_code", (rs.getString("poikind") == null) ? "" : rs.getString("poikind"));
+						result.put("poi_chain", (rs.getString("poikind_chain") == null) ? "" : rs.getString("poikind_chain"));
+						result.put("r_kind_chain", (rs.getString("r_kind_chain") == null) ? "" : rs.getString("r_kind_chain"));
+						result.put("r_kind", (rs.getString("r_kind") == null) ? "" : rs.getString("r_kind"));
 					}
 					return result;
 				}

@@ -585,7 +585,8 @@ public class TipsSelector {
 				}
 
 				// 返回差分结果：20160213修改
-				JSONObject tipdiff = null;
+				//20170808 修改。web渲染不再需要差分字段
+			/*	JSONObject tipdiff = null;
 
 				if (json.containsKey("tipdiff")) {
 
@@ -602,7 +603,7 @@ public class TipsSelector {
 							m.put("i", convertGeoDiff);
 						}
 					}
-				}
+				}*/
 
 				// 20170220新增：是否有附件、是否有时间段、是否有线编号 （需要判空）--输入：陈清友 王屯
 

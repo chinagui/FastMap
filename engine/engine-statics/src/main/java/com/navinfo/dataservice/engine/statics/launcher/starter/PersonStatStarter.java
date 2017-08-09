@@ -9,12 +9,12 @@ import com.navinfo.dataservice.engine.statics.launcher.StatJobStarter;
  * @Description: PersonDayStatStarter.java
  * 
  */
-public class PersonDayStatStarter extends StatJobStarter {
+public class PersonStatStarter extends StatJobStarter {
 
 	@Override
 	public String jobType() {
 		// TODO Auto-generated method stub
-		return "personDayJob";
+		return "personJob";
 	}
 
 }

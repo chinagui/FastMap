@@ -94,6 +94,7 @@ public class CollectScenario{
 			}
 			executor.shutdown();
 		}catch(Exception e){
+			log.error("注意：初始化脚本执行过程中有异常啦！记得重新执行该脚本！！！！！千万重新执行该脚本！！！！！！");
 			log.error(e.getMessage(),e);
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -156,7 +157,7 @@ public class CollectScenario{
 			//数据处理完成删除临时表
 //			deleteTempTable(dailyConn);
 		}catch(Exception e){
-			log.error(e.getMessage(),e);
+			log.error("dailyDBId:" + dailyDBId + "执行有异常，请重新执行该脚本文件！");
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(dailyConn);

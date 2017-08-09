@@ -4,6 +4,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
@@ -22,6 +25,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -151,6 +155,15 @@ public class TipsSelectorTest extends InitApplication {
 			parameter="{\"subtaskId\":395,\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"],\"workStatus\":[0],\"x\":108073,\"y\":49646,\"z\":17}";
 			// web grid粗编。晶任务号换为575  有2个1601+1个8001   返回 有2个1601则ok
 			parameter="{\"subtaskId\":123,\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"],\"workStatus\":[0,11],\"x\":108073,\"y\":49646,\"z\":17}";
+
+			
+			parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1510\",\"1508\",\"1803\",\"2101\",\"1202\",\"1006\",\"1301\",\"2001\",\"1514\",\"1501\",\"1302\",\"1507\",\"1002\",\"1207\",\"1604\",\"1101\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1806\",\"1107\",\"1102\",\"1511\",\"1211\",\"1116\",\"1214\"],\"x\":215622,\"y\":99084,\"z\":18}";
+			
+			
+			parameter="{\"pType\":\"fc\",\"gap\":10,\"types\":[\"1105\"],\"workStatus\":[0,2,1],\"x\":111610,\"y\":46704,\"z\":17}";
+			//{"mdFlag":"d","gap":10,"pType":"sl","types":["1510","1508","1803","2101","1202","1006","1301","2001","1514","1501","1302","1507","1002","1207","1604","1101","1203","1901","1206","1205","1201","1601","1806","1107","1102","1511","1211","1116","1214"],"x":215622,"y":99084,"z":18}
+			System.out.println(parameter);
+
 			parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\"" +
 					",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\"" +
 					",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\"" +
@@ -502,42 +515,44 @@ public class TipsSelectorTest extends InitApplication {
 
 	@Test
 	public void testImport() {
-		String parameter = "{\"jobId\":1217,\"subtaskId\":739}";
+		String parameter = "{\"jobId\":74,\"subtaskId\":52}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int jobId = jsonReq.getInt("jobId");
 
-			int subtaskid = 0;
+			int subtaskId = 0;
 
 			//外业，有可能没有任务号
 			if(jsonReq.containsKey("subtaskId")){
 
-				subtaskid=jsonReq.getInt("subtaskId");
+				subtaskId=jsonReq.getInt("subtaskId");
 			}
+			
+			int userId=2922;
 
 			//UploadService upload = UploadService.getInstance();
 
 			// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 			//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1217"; // 本地测试用
+			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\robot\\3Dtips"; // 本地测试用
 
 			//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 
 			// String
-			// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
+			filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\74";
 
 			Map<String, Photo> photoMap = new HashMap<String, Photo>();
 
 			Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
-			TipsUpload tipsUploader = new TipsUpload(subtaskid);
+			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 
-			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
+			//tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
 
-			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
 			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
@@ -557,11 +572,45 @@ public class TipsSelectorTest extends InitApplication {
 
 			result.put("JVImageResult", patternImageResultImpResult);
 
+			 //记录上传日志。不抛出异常
+			insertStatisticsInfoNoException(jobId, subtaskId, userId,
+					tipsUploader);
 
 			System.out.println("开始上传tips完成，jobId:" + jobId + "\tresult:"
 					+ result);
 
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * @Description:记录上传日志
+	 * @param jobId
+	 * @param subtaskId
+	 * @param userId
+	 * @param tipsUploader
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-9 上午11:09:43
+	 */
+	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
+			long userId, TipsUpload tipsUploader)  {
+		try{
+			SysLogStats log = new SysLogStats();
+			log.setLogType(SysLogConstant.TIPS_UPLOAD_TYPE);
+			log.setLogDesc(SysLogConstant.TIPS_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setFailureTotal(tipsUploader.getFailed());
+			log.setSuccessTotal(tipsUploader.getTotal()-tipsUploader.getFailed());  
+			log.setTotal(tipsUploader.getTotal());
+			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setEndTime(DateUtils.getSysDateFormat());
+			log.setErrorMsg(tipsUploader.getReasons().toString());
+			log.setUserId(String.valueOf(userId));
+			SysLogOperator.getInstance().insertSysLog(log);
+		
+		}catch (Exception e) {
+			System.out.println("记录日志出错："+e.getMessage());
 			e.printStackTrace();
 		}
 	}

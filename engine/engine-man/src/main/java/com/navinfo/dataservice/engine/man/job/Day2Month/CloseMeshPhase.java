@@ -70,13 +70,16 @@ public class CloseMeshPhase extends JobPhase {
                 	dataJson.put("quickAction", lot);
                 	
                 	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
-//                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG=0,QUICK"+lot+"_FLAG=1 WHERE MESH IN "
-//                            + tipsMeshset.toString().replace("[", "(").replace("]", ")");
-//                    log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
+                	log.info("快线批次赋值+图幅关闭");
+                	//快线项目日落月关图幅时，只有批次不一致的才关闭图幅
                     meta = DBConnector.getInstance().getMetaConnection();
                     ConfigService.getInstance().mangeMesh(meta, dataJson);
-//                    QueryRunner run = new QueryRunner();
-//                    run.update(meta, updateSql);
+                    log.info("快线批次赋值");//快线批次字段是所有图幅均赋值
+                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET QUICK"+lot+"_FLAG=1 WHERE MESH IN "
+                            + tipsMeshset.toString().replace("[", "(").replace("]", ")");
+                    log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
+                    QueryRunner run = new QueryRunner();
+                    run.update(meta, updateSql);
                 }
             }
             //更新状态为成功

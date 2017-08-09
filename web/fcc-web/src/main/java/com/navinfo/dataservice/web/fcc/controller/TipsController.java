@@ -2,11 +2,15 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.*;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
@@ -241,7 +245,10 @@ public class TipsController extends BaseController {
             if(json.containsKey("subtaskId")){
                 subtaskId=json.getInt("subtaskId");
             }
-
+            
+            AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+            
             UploadService upload = UploadService.getInstance();
 
             String filePath = upload.unzipByJobId(jobId);
@@ -253,7 +260,7 @@ public class TipsController extends BaseController {
             Map<String, Photo> photoMap=new HashMap<String, Photo>();
 
             Map<String, Audio> audioMap=new HashMap<String, Audio>();
-
+            
             tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap);
 
             //CollectorImport.importPhoto(map, filePath + "/photo");
@@ -282,6 +289,10 @@ public class TipsController extends BaseController {
             tipsUploader.runQuality(filePath + "/"+ "rd_qcRecord.txt");
             result.put("qcTotal", tipsUploader.getQcTotal());
             result.put("qcReasons", tipsUploader.getQcReasons());
+            
+            //记录上传日志。不抛出异常
+			insertStatisticsInfoNoException(jobId, subtaskId, userId,
+					tipsUploader);
 
             return new ModelAndView("jsonView", success(result));
 
@@ -293,6 +304,36 @@ public class TipsController extends BaseController {
         }
 
     }
+
+	/**
+	 * @Description:记录上传日志
+	 * @param jobId
+	 * @param subtaskId
+	 * @param userId
+	 * @param tipsUploader
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-9 上午11:09:43
+	 */
+	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
+			long userId, TipsUpload tipsUploader)  {
+		try{
+			SysLogStats log = new SysLogStats();
+			log.setLogType(SysLogConstant.TIPS_UPLOAD_TYPE);
+			log.setLogDesc(SysLogConstant.TIPS_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setFailureTotal(tipsUploader.getFailed());
+			log.setSuccessTotal(tipsUploader.getTotal()-tipsUploader.getFailed());  
+			log.setTotal(tipsUploader.getTotal());
+			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setEndTime(DateUtils.getSysDateFormat());
+			log.setErrorMsg(tipsUploader.getReasons().toString());
+			log.setUserId(String.valueOf(userId));
+			SysLogOperator.getInstance().insertSysLog(log);
+		
+		}catch (Exception e) {
+			logger.error("记录日志出错："+e.getMessage(), e);
+		}
+	}
 
     @RequestMapping(value = "/tip/export")
     public ModelAndView exportTips(HttpServletRequest request )

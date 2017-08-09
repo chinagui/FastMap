@@ -1,0 +1,3031 @@
+{
+	"tables": [{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AD_LINK"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AD_LINK_100W"
+	},
+	{
+		"columnCount": 47,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AU_IX_POI_RP00"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_WHITEBOARD"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "DAY_RD_LINK_INFO"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LC_NODE"
+	},
+	{
+		"columnCount": 27,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "NI_VAL_EXCEPTION"
+	},
+	{
+		"columnCount": 56,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_TEMP_20170725"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 9,
+		"name": "RD_NATGUD_JUN_DETAIL"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "RD_SIGNBOARD"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AD_LINK_MESH"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_CONTACT"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_SAMEPOI"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "AU_LOG_STATISTICS"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_MARK_VIDEO"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_ETA_LINE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_LINE_NAME"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_PLATFORM_ACCESS"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_PLATFORM_NAME"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_POI_NAME"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AU_PT_TRANSFER"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "CK_RULE"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDFACE_TENANT"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDING"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDLINK_MESH"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "DEM_ELEVATION"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DEM_GRID"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "HW_ESTAB_MAIN"
+	},
+	{
+		"columnCount": 52,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POINTADDRESS_NAME"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_BUILDING"
+	},
+	{
+		"columnCount": 27,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_PARKING"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FEATURE"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FEATURE_TOP"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_KIND_TOP"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_MESH"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_NODE_MESH_TOP"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "LOG_DETAIL"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LU_FACE_TOPO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LU_LINK_MESH"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "PT_TRANSFER"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_GATE"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_INTER"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LANE_VIA"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_OBJECT_NAME"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SAMENODE"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "RD_TOLLGATE_FEE"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_TOLLGATE_PASSAGE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_VARIABLE_SPEED_VIA"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_VIRCONNECT"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_MATCH_KEY"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_OBJECT"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_TABLE_DATA"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_FEATURE"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SHD_MATCH_RETURN_ONLY"
+	},
+	{
+		"columnCount": 43,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "TB_INTELLIGENCE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "TMC_LINE"
+	},
+	{
+		"columnCount": 36,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AU_PT_POI"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_VIDEO"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "CM_BUILDNODE"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_POSTCODE"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_ROADNAME"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "LC_FACE_20W"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "LC_LINK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LC_NODE_TOP"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "LU_FACE"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "PT_STRAND"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "QC_QUESTION"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "RD_ELECTRONICEYE"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "RD_HGWG_LIMIT"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_NODE"
+	},
+	{
+		"columnCount": 39,
+		"rowCount": 0,
+		"indexCount": 10,
+		"name": "RI_FEATURE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "ROBOT_CACHE_MUTI_LINK_INFO"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "SHD_MATCH_REF_LINK"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "ADAS_NODE_INFO"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_BUILDING"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_NAME_FLAG"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_COMPANY"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_POI_CHILDREN"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_POI_PARENT"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "BI_ROLE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDNODE_MESH"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "EF_IMAGE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "HWY_JCT_LINK"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "HW_ESTAB_JCT"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_HAMLET_NAME"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_NATGUD_NAME"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POINTADDRESS_NAME_TONE"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_CHARGINGSTATION"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "IX_POI_DETAIL"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_NAME"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FEATURE_20W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_MESH_20W"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "LINK_EDIT_PRE"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LOG_ACTION"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LU_FEATURE"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "NI_VAL_EXCEPTION_GRID"
+	},
+	{
+		"columnCount": 22,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_COLUMN_OP_CONF"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_COLUMN_STATUS"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_WORKLOAD_ACCOUNT"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_ETA_ACCESS"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_STRAND_SCHEDULE"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_BRANCH_NAME"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_CROSS_NAME"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_GATE_CONDITION"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "RD_LANE_TOPO_DETAIL"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_LINK_LIMIT"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_LIMIT_TRUCK"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_WALKSTAIR"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_MAINSIDE"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SIGNBOARD_NAME_TONE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_SIGNPOST_PHOTO"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "RD_TOLLGATE_MAPPING"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_TRAFFICSIGNAL"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "ROBOT_CACHE_ERROR"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_MATCH_FIELD"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_MATCH_REF"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SEVEN_FULU_CHAIN"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SHD_MATCH_RETURN"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 8,
+		"name": "ADAS_LINK"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "ADAS_RDLINK_GEOMETRY_DTM"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_DRAFT"
+	},
+	{
+		"columnCount": 38,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AU_IX_ANNOTATION"
+	},
+	{
+		"columnCount": 64,
+		"rowCount": 0,
+		"indexCount": 8,
+		"name": "AU_IX_POI"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_IX_POI_NOKIA"
+	},
+	{
+		"columnCount": 36,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AU_MARK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_SPECIALCASE"
+	},
+	{
+		"columnCount": 34,
+		"rowCount": 0,
+		"indexCount": 8,
+		"name": "IX_POINTADDRESS"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LC_NODE_20W"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "LU_LINK"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "RD_SIGNPOST"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "ROBOT_CACHE_MUTI_LINE_GEO"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 9,
+		"name": "RW_LINK_20W"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RW_NODE_20W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "ADAS_SLOPE"
+	},
+	{
+		"columnCount": 53,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POINTADDRESS_NAME"
+	},
+	{
+		"columnCount": 52,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_ADDRESS"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_RECEIVE"
+	},
+	{
+		"columnCount": 23,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "AU_TASK_INFO"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_WHITEBOARD_PARAMETER"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "CMG_BUILDING_POI"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CM_BUILDNODE_MESH"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "COLUMN_QC_PROBLEM"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "CP_REGION_PROVINCE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DTM_INFO"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "EF_LINEMAP"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "HWY_JCT"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "HWY_JUNCTION"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "HWY_SAPA"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "IDB_COUNTRY_INFO"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "IDB_DIFF_INFO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_ANNOTATION_FLAG_100W"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_ANNOTATION_NAME_100W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POINTADDRESS_FLAG"
+	},
+	{
+		"columnCount": 51,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_ADDRESS"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_CHARGINGPLOT"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_CHILDREN"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_FLAG"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_NAME_TONE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_PARENT"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_PHOTO"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_VIDEO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_SAMEPOI_PART"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LU_LINK_KIND"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "M_MESH_TYPE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "PT_PLATFORM_ACCESS"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_POI_CHILDREN"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_BRANCH_SCHEMATIC"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CHAIN"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CROSS"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_INTER_LINK"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LANE_CONDITION"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_LANE_TOPOLOGY"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_LANE_TOPO_VIA"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_MULTIDIGITIZED_LINK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_NATGUD_JUN"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_NODE_FORM"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SAMENODE_PART"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_SIGNASREAL"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_SLOPE"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_TOLLGATE"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_TOLLGATE_NAME"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "RD_VARIABLE_SPEED"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_VIRCONNECT_NAME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "RUN_LOG"
+	},
+	{
+		"columnCount": 67,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "TB_ABSTRACT_INFO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TMC_AREA_TRANSLATENAME"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TMC_POINT_TRANSLATENAME"
+	},
+	{
+		"columnCount": 36,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TOAD_PLAN_TABLE"
+	},
+	{
+		"columnCount": 1,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "TWO_FULU_LINK_NODE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "ZONE_NODE_MESH"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AU_ADAS_GPSTRACK"
+	},
+	{
+		"columnCount": 30,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "AU_PT_STRAND"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "BI_TASK"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "CMG_BUILDFACE"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_IC"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "LC_FACE_100W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "MONTH_UNMATCH_LINK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_GSC"
+	},
+	{
+		"columnCount": 45,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "REFINED_POINTADDRESS"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "ADAS_NODE_MESH"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AD_ADMIN_DETAIL"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_GPSTRACK_GROUP"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_GPSTRACK_GROUP_VIDEO"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_CHILDREN"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_PHOTO"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_RESTAURANT"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_MARK_PHOTO"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDING_3DICON"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "DAY_TRACK_POINT"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "DIFF_INFO"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "EF_3DMAP"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FINAL_MATCH_RESULT"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "HW_POSITION"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_ATTRACTION"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "IX_POI_FLAG_METHOD"
+	},
+	{
+		"columnCount": 25,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_HOTEL"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_TOURROUTE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FACE_TOPO"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_TOPO_100W"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LOG_DETAIL_20170510"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "M_PARAMETER"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_ETA_LINE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_POI_NAME"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_CHAIN_NAME"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_DIRECTROUTE_VIA"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_ELECEYE_PART"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_NAME"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_RTIC"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_MULTIDIGITIZED"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_OBJECT_NODE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_RESTRICTION_VIA"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_ROAD"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SAMELINK_PART"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_SIGNBOARD_NAME"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_TMCLOCATION_LINK"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_WARNINGINFO"
+	},
+	{
+		"columnCount": 44,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "REFINED_POI"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_MATCH_TABLE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_LINK_NAME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_LINK_NAME_20W"
+	},
+	{
+		"columnCount": 21,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "VIEW_AD_ADMIN"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AD_NODE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AD_NODE_100W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_COMMUNICATION"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 8,
+		"name": "IX_ANNOTATION"
+	},
+	{
+		"columnCount": 21,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_TOLLGATE"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "LC_LINK_TOP"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LU_NODE"
+	},
+	{
+		"columnCount": 56,
+		"rowCount": 0,
+		"indexCount": 27,
+		"name": "RD_LINK"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_OBJECT"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "SHD_MATCH_BASE_LINK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "SHD_MATCH_RATIO"
+	},
+	{
+		"columnCount": 23,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "TIPS_INDEX"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "ZONE_FACE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "ADAS_RDNODE_INFO_DTM"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "ADAS_RDNODE_SLOPE_DTM"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AD_ADMIN_NAME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AD_LINK_MESH_100W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "AU_DATA_STATISTICS"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_FLAG"
+	},
+	{
+		"columnCount": 35,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_HOTEL"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_PARENT"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_SAMEPOI_PART"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_MARK_AUDIO"
+	},
+	{
+		"columnCount": 32,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_ETA_STOP"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_STRAND_NAME"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_STRAND_PLATFORM"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CK_RESULT_OBJECT"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CMG_BUILDFACE_TOPO"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "HW_ESTAB_CONTAIN"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "HW_ESTAB_ROUTE_POS"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "HW_ESTAB_SA"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "HW_ROUTE"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_HAMLET_NAME_TONE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "IX_POI_BACK"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_CARRENTAL"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_CONTACT"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FEATURE_100W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_MESH_TOP"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_NODE_MESH"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MONTH_CHAIN_LINK"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "POI_EDIT_MULTISRC"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_COMPANY"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_LINE_NAME"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_PLATFORM_NAME"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_RUNTIME"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_BRANCH_REALIMAGE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_BRANCH_VIA"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CHAIN_LINK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CROSSWALK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_CROSSWALK_NODE"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_PARAM_ADAS"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_SIDEWALK"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_NODE_MESH"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_OBJECT_LINK"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_RESTRICTION"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SIGNPOST_LINK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_TMCLOCATION"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_VOICEGUIDE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_VOICEGUIDE_VIA"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_FILTER"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_MUTI_LINE_NODE"
+	},
+	{
+		"columnCount": 1,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_VERSION"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_FEATURE_20W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SEVEN_FULU_CHAIN_LINK"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SVR_MULTISRC_DAY_IMP"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "TMC_AREA"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "WL_CHECKCOUNT"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "WL_CHECKLOG"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "ZONE_LINK_KIND"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "ZONE_LINK_MESH"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "ADAS_LINK_GEOMETRY"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AD_ADMIN"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AD_FACE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AU_ADAS_GPSRECORD"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AU_GPSRECORD"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "AU_GPSTRACK"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "CMG_BUILDLINK"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "CM_BUILDFACE"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_CROSSPOINT"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "IX_NATGUD"
+	},
+	{
+		"columnCount": 55,
+		"rowCount": 0,
+		"indexCount": 11,
+		"name": "IX_POI"
+	},
+	{
+		"columnCount": 32,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "PT_POI"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK$DAY_20170603"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK$MONTH_20170603"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_LINK_WARNING"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "RD_MILEAGEPILE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RW_NODE"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AD_ADMIN_NAME_TONE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AD_FACE_TOPO"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_ANNOTATION_NAME"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POINTADDRESS_CHILDREN"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_CHARGINGPLOT"
+	},
+	{
+		"columnCount": 27,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_GASSTATION"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_IX_POI_NAME_RP00"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_TOPOIMAGE"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "BI_PERSON_ROLE"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "BI_ROLE_POWER"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "CMG_BUILDING_3DMODEL"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "DATA_PLAN"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "HW_ESTAB"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "HW_ESTAB_NAME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POINTADDRESS_PARENT"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_ADVERTISEMENT"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_BUSINESSTIME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_CHARGINGPLOT_PH"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_ENTRYIMAGE"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_INTRODUCTION"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_SAMEPOI"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_KIND_20W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_NODE_MESH_100W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LOG_DAY_RELEASE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "LOG_DETAIL_GRID"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LU_NODE_MESH"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MATCH_RESULT"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_COLUMN_WORKITEM_CONF"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_LINE"
+	},
+	{
+		"columnCount": 21,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "PT_PLATFORM"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_POI_FLAG"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_POI_PARENT"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_BRANCH"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_GSC_LINK"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_LANE"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_LANE_CONNEXITY"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_ADDRESS"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_LINK_FORM"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_OBJECT_ROAD"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_VOICEGUIDE_DETAIL"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "REFINED_LOG_DEPENDENT"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_WORK"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_NODE_MESH"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TMC_LINE_TRANSLATENAME"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TMC_VERSION"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "ADAS_ITPLINK_GEOMETRY"
+	},
+	{
+		"columnCount": 45,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "AU_IX_POINTADDRESS"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "AU_SERIESPHOTO"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "CM_BUILDLINK"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "DAY_UNMATCH_LINK"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "IX_HAMLET"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "IX_POI_ICON"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "LC_LINK_100W"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "MONTH_RD_LINK_INFO"
+	},
+	{
+		"columnCount": 27,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "NI_VAL_EXCEPTION_HISTORY"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK$DAY"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "ZONE_LINK"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "ZONE_NODE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AD_ADMIN_PART"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AD_NODE_MESH"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AD_NODE_MESH_100W"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_GPSTRACK_PHOTO"
+	},
+	{
+		"columnCount": 28,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_IX_POI_CHARGINGSTATION"
+	},
+	{
+		"columnCount": 35,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POI_PARKING"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_PT_ETA_ACCESS"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_SPECIALCASE_IMAGE"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "CK_EXCEPTION_GRID"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CM_BUILDFACE_TOPO"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CM_BUILDING"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "CM_BUILDLINK_MESH"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "HWY_JUNCTION_NAME"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "IDB_REGION_INFO"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_ANNOTATION_NAME"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_EVENT"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "IX_POI_NAME"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_RESTAURANT"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_NAME_20W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_FACE_TOPO_20W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_KIND"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_KIND_100W"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_LINK_MESH_100W"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "M_UPDATE_PARAMETER"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "NI_LINK_NODE_NEW"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "NI_VAL_EXCEPTION_HISTORY_GRID"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "POI_EDIT_STATUS"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_ETA_COMPANY"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_ETA_SYSTEM"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_STRAND_PLATFORM"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CROSS_NODE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_INTER_NODE"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_INT_RTIC"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_SPEED_TRUCK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_ZONE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_NATGUD_JUN_VIA"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_OBJECT_INTER"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_ROAD_LINK"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SERIESBRANCH"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_TOLLGATE_COST"
+	},
+	{
+		"columnCount": 41,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RI_OPERATION"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_DATA"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RW_NODE_MESH_20W"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "ZONE_FACE_TOPO"
+	},
+	{
+		"columnCount": 56,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "VIEW_IX_POI"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "ADAS_NODE"
+	},
+	{
+		"columnCount": 33,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "AU_ADAS_MARK"
+	},
+	{
+		"columnCount": 25,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_PHOTO"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "CMG_BUILDNODE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "DAY_UNMATCH_LINK$20170505"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "IX_ANNOTATION_100W"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "LC_FACE"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LC_FACE_TOP"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "LC_LINK_20W"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "LC_NODE_100W"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "RD_BRANCH_DETAIL"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK$MONTH"
+	},
+	{
+		"columnCount": 26,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "RD_SPEEDLIMIT"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 7,
+		"name": "RD_SPEEDLIMIT_TRUCK"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 9,
+		"name": "RW_LINK"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "SHD_MATCH_REF_TABLE"
+	},
+	{
+		"columnCount": 24,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "TMC_POINT"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "ACH_GDB_INFO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "AD_ADMIN_GROUP"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_AUDIO"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POINTADDRESS_FLAG"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "AU_IX_POINTADDRESS_PARENT"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_IX_POI_NAME"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_LINE"
+	},
+	{
+		"columnCount": 24,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_PT_PLATFORM"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "AU_PT_SYSTEM"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "BI_PERSON"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "BI_POWER"
+	},
+	{
+		"columnCount": 34,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "CK_EXCEPTION"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "CMG_BUILDING_NAME"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_ANNOTATION_FLAG"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_HAMLET_FLAG"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POINTADDRESS_CHILDREN"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_AUDIO"
+	},
+	{
+		"columnCount": 16,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_POI_GASSTATION"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "IX_POI_NAME_FLAG"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_NAME_100W"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_NAME_TOP"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LC_FACE_TOPO_TOP"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LC_NODE_MESH_20W"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "LINK_PRE_TEST"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "LOG_OPERATION"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "LU_FACE_NAME"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MONTH_TRACK_POINT"
+	},
+	{
+		"columnCount": 31,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_ETA_STOP"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "PT_POI_NAME_TONE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "PT_STRAND_NAME"
+	},
+	{
+		"columnCount": 18,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "PT_SYSTEM"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_BRANCH_NAME_TONE"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_CROSSWALK_INFO"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_CROSS_LINK"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_DIRECTROUTE"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_ELECEYE_PAIR"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_LINK_SPEEDLIMIT"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_MAINSIDE_LINK"
+	},
+	{
+		"columnCount": 29,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_NAME"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_NODE_NAME"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_RESTRICTION_CONDITION"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "RD_RESTRICTION_DETAIL"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SAMELINK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 5,
+		"name": "RD_SE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_SLOPE_VIA"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "RD_SPEEDBUMP"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "RD_VIRCONNECT_TRANSIT"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_SQL_FIELD"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROBOT_CACHE_TEMP"
+	},
+	{
+		"columnCount": 1,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SHD_MATCH__MESH"
+	}],
+	"functions": [{
+		"name": "BIT_TO_NUMBER"
+	},
+	{
+		"name": "CLOB_TO_TABLE"
+	},
+	{
+		"name": "VARCHAR_TO_TABLE"
+	}],
+	"sequences": [{
+		"name": "LOG_OP_SEQ"
+	},
+	{
+		"name": "RUN_LOG_ID_SEQ"
+	}],
+	"packages": [{
+		"name": "CACHE_CREATE_DATA"
+	},
+	{
+		"name": "EQUALS"
+	},
+	{
+		"name": "LOGGER"
+	},
+	{
+		"name": "PACKAGE_CHECK"
+	},
+	{
+		"name": "PACKAGE_UTILS"
+	},
+	{
+		"name": "PK_TABLE_STATS"
+	},
+	{
+		"name": "SPATIAL_UTILS"
+	}],
+	"procedures": [],
+	"types": [
+	{
+		"name": "VARCHAR_TAB"
+	}]
+}

@@ -16,6 +16,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PhotoImporter {
+	private static final String folder = "/data/resource/photo_deep/";
+
 	public static int run(Connection conn, Statement stmt, JSONObject poi, Map<String, Map<String, Photo>> photoes)
 			throws Exception {
 
@@ -24,27 +26,37 @@ public class PhotoImporter {
 		IxPoiPhoto ixPhoto = new IxPoiPhoto();
 
 		Photo photo = new Photo();
-		
-		if(array.size() == 0) return 0;
+
+		if (array.size() == 0)
+			return 0;
 
 		int result = 0;
-		
+
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject obj = array.getJSONObject(i);
 
 			int tag = obj.getInt("tag");
-			
+
 			int type = obj.getInt("type");
-			
-			String url = obj.getString("url");
-			
-			File file = new File(url);
-			
-			if(file.exists() == false){
+
+			if (tag != 7 || type != 1) {
 				continue;
 			}
 
-			if (tag != 7 || type != 1) {
+			String url = obj.getString("url");
+
+			if (url == null || url.isEmpty()) {
+				continue;
+			}
+
+			// 指定照片路径下仍存在文件夹
+			if (!url.contains(folder)) {
+				url = folder + url;
+			}
+
+			File file = new File(url);
+
+			if (file.exists() == false) {
 				continue;
 			}
 
@@ -61,7 +73,7 @@ public class PhotoImporter {
 			operator.insertRow2Sql(stmt);
 
 			runPhoto(fccPid, url, photo, photoes);
-			
+
 			result++;
 		}
 
@@ -93,7 +105,7 @@ public class PhotoImporter {
 		photo.setA_fileName(name);
 
 		photo.setA_uuid(fccPid);
-		
+
 		photo.setA_content(3);
 
 		if (photoes.containsKey(dir)) {
@@ -103,7 +115,7 @@ public class PhotoImporter {
 				photoes.get(dir).values().add(photo);
 
 			} else {
-				
+
 				photoes.get(dir).put(name, photo);
 			}
 		} else {

@@ -4,7 +4,9 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -906,11 +908,18 @@ public class TipsUpload {
 
 		Photo photo = new Photo();
 
-		JSONObject extContent = attachment.getJSONObject("extContent");
+        //20170809 判断是否存在extContent
+        if(attachment.containsKey("extContent")) {
+            JSONObject extContent = attachment.getJSONObject("extContent");
+            double lng = extContent.getDouble("longitude");
+            double lat = extContent.getDouble("latitude");
+            photo.setA_longitude(lng);
+            photo.setA_latitude(lat);
+            photo.setA_direction(extContent.getDouble("direction"));
+            photo.setA_shootDate(extContent.getString("shootDate"));
+            photo.setA_deviceNum(extContent.getString("deviceNum"));
+        }
 
-		double lng = extContent.getDouble("longitude");
-
-		double lat = extContent.getDouble("latitude");
 
 		// String uuid = fileName.replace(".jpg", "");
 		//
@@ -933,17 +942,8 @@ public class TipsUpload {
 
 		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
-		photo.setA_longitude(lng);
-
-		photo.setA_latitude(lat);
-
-		// photo.setA_sourceId(tip.getString("s_sourceId"));
-
-		photo.setA_direction(extContent.getDouble("direction"));
-
-		photo.setA_shootDate(extContent.getString("shootDate"));
-
-		photo.setA_deviceNum(extContent.getString("deviceNum"));
+        //Tips上传a_sourceId = 2
+		photo.setA_sourceId(2);
 
 		photo.setA_fileName(attachment.getString("content"));
 
@@ -951,6 +951,7 @@ public class TipsUpload {
 
 		photo.setA_refUuid("");
 
+        photo.setA_version(SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));//当前版本
 		return photo;
 	}
 

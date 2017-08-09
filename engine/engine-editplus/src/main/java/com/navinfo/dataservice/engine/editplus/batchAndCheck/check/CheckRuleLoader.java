@@ -8,11 +8,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
+import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 
 public class CheckRuleLoader {
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 //	private Map<String, CheckRule> checkRuleMap = new HashMap<String, CheckRule>();
 //
@@ -82,24 +86,29 @@ public class CheckRuleLoader {
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			String sql = "SELECT RULE_ID, ACCESSOR, ACCESSOR_TYPE, OBJ_NAME_SET, REFER_SUBTABLE_MAP,LOG,RULE_LEVEL"
 					+ "  FROM CHECK_PLUS"
-					+ "  where RULE_ID in ("+list.toString().replaceAll(",", "','").replace("[", "'").replace("]", "'")+") AND STATUS='E'";
+					+ "  where RULE_ID in ("+list.toString().replaceAll(" ", "").replaceAll(",", "','").replace("[", "'").replace("]", "'")+") AND STATUS='E'";
+			System.out.println(sql);
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
-				String accessor=resultSet.getString("ACCESSOR");
-				String accessorType=resultSet.getString("ACCESSOR_TYPE");
-				String objNameSet=resultSet.getString("OBJ_NAME_SET");
-				String referSubtableMap=resultSet.getString("REFER_SUBTABLE_MAP");
-				int level=resultSet.getInt("RULE_LEVEL");
-				CheckRule checkRule=new CheckRule();
-				checkRule.setRuleId(resultSet.getString("RULE_ID"));
-				checkRule.setAccessorType(accessorType);
-				checkRule.setAccessor(accessor);
-				checkRule.setObjNameSet(objNameSet);
-				checkRule.setReferSubtableMap(referSubtableMap);
-				checkRule.setLog(resultSet.getString("LOG"));
-				checkRule.setRuleLevel(level);
-				ruleList.add(checkRule);
+				try{
+					String accessor=resultSet.getString("ACCESSOR");
+					String accessorType=resultSet.getString("ACCESSOR_TYPE");
+					String objNameSet=resultSet.getString("OBJ_NAME_SET");
+					String referSubtableMap=resultSet.getString("REFER_SUBTABLE_MAP");
+					int level=resultSet.getInt("RULE_LEVEL");
+					CheckRule checkRule=new CheckRule();
+					checkRule.setRuleId(resultSet.getString("RULE_ID"));
+					checkRule.setAccessorType(accessorType);
+					checkRule.setAccessor(accessor);
+					checkRule.setObjNameSet(objNameSet);
+					checkRule.setReferSubtableMap(referSubtableMap);
+					checkRule.setLog(resultSet.getString("LOG"));
+					checkRule.setRuleLevel(level);
+					ruleList.add(checkRule);
+				}catch (Exception e) {
+					log.error("规则加载失败", e);;
+				}
 			} 
 		} catch (Exception e) {
 			throw new Exception(e);

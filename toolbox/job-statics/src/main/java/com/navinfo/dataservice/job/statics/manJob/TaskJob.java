@@ -1163,7 +1163,7 @@ public class TaskJob extends AbstractStatJob {
 					if(poiUploadNum != 0 && poiPlanTotal == 0){
 						poiCollectPercent = 100;
 					}else if(poiPlanTotal != 0){
-						poiDayPercent = poiUploadNum*100/poiPlanTotal;
+						poiCollectPercent = poiUploadNum*100/poiPlanTotal;
 					}
 					//poi粗编完成度
 					if(poiFinishNum != 0 && poiUploadNum == 0){
@@ -1172,7 +1172,7 @@ public class TaskJob extends AbstractStatJob {
 						poiDayPercent = poiFinishNum*100/poiUploadNum;
 					}
 					//完成度
-					percent = (int) (poiDayPercent*0.17 + poiDayPercent*0.17 + roadPercent*0.66);
+					percent = (int) (poiDayPercent*0.17 + poiCollectPercent*0.17 + roadPercent*0.66);
 				}
 			}
 			//快线
@@ -1308,8 +1308,8 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理开始时间
 	 */
 	private String startTime(List<String> startTimeList){
-		String time2 = null;
-		String startTime = null;
+		String time2 = "";
+		String startTime = "";
 		try {
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 			Calendar c1=Calendar.getInstance();     

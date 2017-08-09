@@ -243,9 +243,10 @@ public class ScPointAdminarea {
 									adminIdDataMap.put(adminId, map);
 								} 
 							} catch (Exception e) {
+								DbUtils.rollbackAndCloseQuietly(conn);
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.commitAndCloseQuietly(conn);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_ADMINAREA失败："+ e.getMessage(), e);

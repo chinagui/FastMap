@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.sys;
+package com.navinfo.dataservice.bizcommons.sys;
 
 import java.sql.Clob;
 import java.sql.Connection;

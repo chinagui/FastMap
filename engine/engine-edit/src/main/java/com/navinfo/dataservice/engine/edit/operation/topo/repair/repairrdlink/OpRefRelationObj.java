@@ -1,19 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -21,30 +9,32 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.*;
 
 public class OpRefRelationObj {
 
 	private Connection conn;
 
 	// 被移动的端点nodepid
-	List<Integer> departNodePids = new ArrayList<Integer>();
-
-	//RdLink updateLink = null;
+	private List<Integer> moveNodePids = new ArrayList<>();
 	
 	public OpRefRelationObj(Connection conn) {
 
 		this.conn = conn;
 	}
 
-	private void getDepartNodePids(Command command) {
+	private void getMoveNodePids(Command command) {
 		
-		departNodePids = new ArrayList<Integer>();
+		moveNodePids = new ArrayList<>();
 		
 		if( command.getCatchInfos()==null)
 		{
@@ -57,9 +47,9 @@ public class OpRefRelationObj {
 			// 分离移动的node
 			int nodePid = obj.getInt("nodePid");
 
-			if (!departNodePids.contains(nodePid)) {
+			if (!moveNodePids.contains(nodePid)) {
 
-				departNodePids.add(nodePid);
+				moveNodePids.add(nodePid);
 			}
 		}
 	}
@@ -67,7 +57,7 @@ public class OpRefRelationObj {
 	public String handleRelationObj(Command command, List<RdLink> newLinks,
 			Result result) throws Exception {
 
-		getDepartNodePids(command);
+		getMoveNodePids(command);
 		
 		// 路口
 		handleRdCross(result, newLinks, command.getUpdateLink());
@@ -113,14 +103,8 @@ public class OpRefRelationObj {
 	
 	/**
 	 * 处理路口
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
 	 */
-	public String handleRdCross(Result result, List<RdLink> newLinks,
+	private String handleRdCross(Result result, List<RdLink> newLinks,
 			RdLink updateLink) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation(
@@ -136,12 +120,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 处理交限
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdRestriction(Result result, List<RdLink> newLinks,RdLink updateLink)
 			throws Exception {
@@ -150,8 +129,8 @@ public class OpRefRelationObj {
 				this.conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+		if (moveNodePids.size() > 0) {
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -163,12 +142,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 处理车信
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdLaneconnexity(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -176,9 +150,9 @@ public class OpRefRelationObj {
 				this.conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -190,12 +164,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 语音引导
-	 * 
-	 * @param result
-	 * @param oldLink
-	 * @param newLinks
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdVoiceguide(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -203,9 +172,9 @@ public class OpRefRelationObj {
 				conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -217,12 +186,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 顺行
-	 * 
-	 * @param result
-	 * @param oldLink
-	 * @param newLinks
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdDirectroute(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -230,9 +194,9 @@ public class OpRefRelationObj {
 				conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -244,12 +208,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 分歧
-	 * 
-	 * @param result
-	 * @param oldLink
-	 * @param newLinks
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdBranch(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -257,9 +216,9 @@ public class OpRefRelationObj {
 				conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -271,13 +230,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 分岔路提示
-	 * 
-	 * @param command
-	 * @param result
-	 * @param oldLink
-	 * @param newLinks
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdSe(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -285,9 +238,9 @@ public class OpRefRelationObj {
 				this.conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -300,11 +253,7 @@ public class OpRefRelationObj {
 	/**
 	 * 处理大门
 	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdGate(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -312,9 +261,9 @@ public class OpRefRelationObj {
 				this.conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -326,12 +275,7 @@ public class OpRefRelationObj {
 
 	/**
 	 * 处理收费站
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdTollgate(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -339,9 +283,9 @@ public class OpRefRelationObj {
 				this.conn);
 
 		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		if (moveNodePids.size() > 0) {
 
-			operation.departNode(updateLink, departNodePids, newLinks, result);
+			operation.departNode(updateLink, moveNodePids, newLinks, result);
 		}
 		// 仅移link动形状点且新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
@@ -353,12 +297,6 @@ public class OpRefRelationObj {
 
 	/**
 	 * 立交
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
 	 */
 	public String handleRdGsc(Command command, Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
@@ -370,7 +308,7 @@ public class OpRefRelationObj {
 			operation.breakRdLink(result, updateLink, newLinks);
 		} else {
 
-			Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
+			Map<Integer, Geometry> newLinkMap = new HashMap<>();
 
 			for (RdLink link : newLinks) {
 				newLinkMap.put(link.getPid(), link.getGeometry());
@@ -385,24 +323,19 @@ public class OpRefRelationObj {
 
 	/**
 	 * CRF道路
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdRoad(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
-		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		// 调用分离节点维护
+		if (isDepart()) {
 
 			com.navinfo.dataservice.engine.edit.operation.obj.rdroad.depart.Opeartion operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.depart.Opeartion(
 					this.conn);
 
 			operation.depart(0, updateLink, newLinks, result);
 		}
-		// 仅移link动形状点且新link个数大于1，调用打断维护
+		// 新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
 			com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation rdRoadOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation(
 					this.conn);
@@ -415,16 +348,12 @@ public class OpRefRelationObj {
 	/**
 	 * CRF对象
 	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public String handleRdObject(Result result, List<RdLink> newLinks,RdLink updateLink) throws Exception {
 
-		// 移动link的端点 调用分离节点维护
-		if (departNodePids.size() > 0) {
+		// 调用分离节点维护
+		if (isDepart()) {
 
 			// 分离节点后，如果link作为CRFO的组成link，需要删除RDOBJECTLINK关系
 			com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation(
@@ -436,7 +365,7 @@ public class OpRefRelationObj {
 
 			rdinterOperation.deleteByType(linkPidList, ObjType.RDLINK, result);
 		}
-		// 仅移link动形状点且新link个数大于1，调用打断维护
+		//新link个数大于1，调用打断维护
 		else if (newLinks.size() > 1) {
 			com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
 					this.conn);
@@ -448,21 +377,15 @@ public class OpRefRelationObj {
 
 	/**
 	 * 同一关系
-	 * 
-	 * @param command
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
 	 */
 	public String handleRdSame(Command command, Result result, List<RdLink> newLinks,RdLink updateLink)
 			throws Exception {
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(this.conn);
 
-		Map<Integer, RdSameNode> sameNodeMap = new HashMap<Integer, RdSameNode>();
+		Map<Integer, RdSameNode> sameNodeMap = new HashMap<>();
 
-		for (int nodePid : departNodePids) {
+		for (int nodePid : moveNodePids) {
 
 			List<RdSameNode> sameNodes = sameNodeSelector
 					.loadSameNodeByNodePids(String.valueOf(nodePid), "RD_NODE",
@@ -483,7 +406,7 @@ public class OpRefRelationObj {
 		}
 
 		// 端点坐标不变
-		if (departNodePids.size() == 0) {
+		if (moveNodePids.size() == 0) {
 
 			if (newLinks.size() == 1) {
 
@@ -521,7 +444,7 @@ public class OpRefRelationObj {
 					originalPart.getGroupId(), true);
 		}
 
-		Map<Integer, Geometry> nodeGeoMap = new HashMap<Integer, Geometry>();
+		Map<Integer, Geometry> nodeGeoMap = new HashMap<>();
 
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			
@@ -589,21 +512,16 @@ public class OpRefRelationObj {
 
 	/**
 	 * 打断同一线
-	 * 
-	 * @param breakLink
-	 * @param command
-	 * @param result
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	private String breakSameLink(RdLink breakLink, List<RdLink> newLinks,
 			Result result) throws Exception {
 
-		Map<IRow, Geometry> breakNodeMap = new HashMap<IRow, Geometry>();
+		Map<IRow, Geometry> breakNodeMap = new HashMap<>();
 
-		LinkedHashMap<IRow, Geometry> linkMap = new LinkedHashMap<IRow, Geometry>();
+		LinkedHashMap<IRow, Geometry> linkMap = new LinkedHashMap<>();
 
-		Set<Integer> pidFlags = new HashSet<Integer>();
+		Set<Integer> pidFlags = new HashSet<>();
 
 		pidFlags.add(breakLink.geteNodePid());
 
@@ -676,5 +594,25 @@ public class OpRefRelationObj {
 		}
 
 		return false;
+	}
+
+	private boolean isDepart() throws Exception {
+
+		boolean isDepart = false;
+
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+
+		for (int nodePid : moveNodePids) {
+
+			List<Integer> linkPids = linkSelector.loadLinkPidByNodePid(nodePid, true);
+
+			if (linkPids.size() > 1) {
+
+				isDepart = true;
+
+				break;
+			}
+		}
+		return isDepart;
 	}
 }

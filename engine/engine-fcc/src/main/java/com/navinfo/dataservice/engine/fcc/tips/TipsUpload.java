@@ -253,7 +253,8 @@ public class TipsUpload {
 		}
 
         // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+       // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 

@@ -181,7 +181,7 @@ public class PhotoController extends BaseController {
 				HBaseController hbaseController = new HBaseController();
 				InputStream newIn = new ByteInputStream(photo, photo.length);
 				//调用hadoop方法传输文件流，获取photo_id
-				String photoId = hbaseController.putPhoto(newIn);
+				String photoId = hbaseController.putPhoto(newIn,3);
 				
 				result.put("PID", photoId);
 			}else{

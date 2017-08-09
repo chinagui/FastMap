@@ -8,11 +8,13 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule.*;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
 import org.junit.Before;
@@ -55,21 +57,27 @@ public class CheckTest extends ClassPathXmlAppContextInit{
 
     @Test
     public void check() throws Exception {
-        GLM60994 check = new GLM60994();
+        GLM60227 check = new GLM60227();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);
         check.setCheckRuleCommand(command);
 
         Set<Long> pids = new HashSet<Long>();
-        pids.add(504000121L);
+        pids.add(503000141L);
+        pids.add(408000138L);
+        pids.add(407000136L);
+
+        CheckRule checkRule = new CheckRule();
+        checkRule.setObjNameSet(ObjectName.IX_POI);
+        check.setCheckRule(checkRule);
+
         Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, false);
+        Map<String, Map<Long, BasicObj>> map = new HashMap<>();
+        map.put(ObjectName.IX_POI, pois);
+        command.setAllDatas(map);
 
-        for (Map.Entry<Long, BasicObj> entry : pois.entrySet()) {
-            BasicObj obj = entry.getValue();
-            check.runCheck(obj);
-        }
-
+        check.run();
     }
 
     public static void main(String[] args) throws Exception {

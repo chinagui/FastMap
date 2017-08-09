@@ -19,7 +19,7 @@ public class PersonDayJobRequest extends AbstractStatJobRequest {
 
 	@Override
 	public String getJobType() {
-		return "personJob";
+		return "personDayJob";
 	}
 
 	@Override

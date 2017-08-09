@@ -16,6 +16,7 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +36,13 @@ public class GLM50029 extends baseRule {
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludes = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row instanceof ZoneFace && row.status() == ObjStatus.DELETE) {
+                excludes.add(((ZoneFace) row).pid());
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
            if (row instanceof ZoneFace && row.status() != ObjStatus.DELETE) {
 
@@ -58,7 +66,7 @@ public class GLM50029 extends baseRule {
                    continue;
                }
 
-               this.checkAdminType(adminType, face, adAdminSelector);
+               this.checkAdminType(adminType, face, adAdminSelector, excludes);
            } else if (row instanceof AdAdmin && row.status() == ObjStatus.UPDATE) {
                AdAdmin adAdmin = (AdAdmin) row;
 
@@ -76,7 +84,7 @@ public class GLM50029 extends baseRule {
 
                AdAdminSelector adminSelector = new AdAdminSelector(getConn());
                for (ZoneFace face : list) {
-                   checkAdminType(adminType, face, adminSelector);
+                   checkAdminType(adminType, face, adminSelector, excludes);
                }
            }
         }
@@ -90,7 +98,7 @@ public class GLM50029 extends baseRule {
      * @throws ServiceException
      * @throws JSONException
      */
-    private void checkAdminType(double adminType, ZoneFace face, AdAdminSelector adminSelector) throws ServiceException, JSONException {
+    private void checkAdminType(double adminType, ZoneFace face, AdAdminSelector adminSelector, List<Integer> excludes) throws ServiceException, JSONException {
         if (8 != adminType && 9 != adminType) {
             return;
         }
@@ -103,7 +111,7 @@ public class GLM50029 extends baseRule {
         String wkt = GeoTranslator.jts2Wkt(geometry);
 
         ZoneFaceSelector zoneFaceSelector = new ZoneFaceSelector(getConn());
-        List<ZoneFace> list = zoneFaceSelector.listZoneface(wkt, false);
+        List<ZoneFace> list = zoneFaceSelector.listZoneface(wkt, excludes, false);
         for (ZoneFace zoneFace : list) {
             if (face.pid() == zoneFace.pid()) {
                 continue;
@@ -112,12 +120,11 @@ public class GLM50029 extends baseRule {
                 continue;
             }
 
-            AdAdmin adAdmin = null;
+            AdAdmin adAdmin;
             try {
                 adAdmin = (AdAdmin) adminSelector.loadById(zoneFace.getRegionId(), false);
             } catch (Exception e) {
-                logger.error(String.format("ZoneFace:%d, RegionId: %d, 查找对应行政区划代表点出错",
-                        zoneFace.pid(), zoneFace.getRegionId()));
+                logger.error(String.format("ZoneFace:%d, RegionId: %d, 查找对应行政区划代表点出错", zoneFace.pid(), zoneFace.getRegionId()));
                 continue;
             }
 

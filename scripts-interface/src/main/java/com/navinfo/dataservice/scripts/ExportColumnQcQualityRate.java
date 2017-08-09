@@ -44,7 +44,7 @@ public class ExportColumnQcQualityRate {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			String excelName = "质检品质率表_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String excelName = "column_quality_rate_list_"+startDate+"_"+endDate;
 			
 			List<ColumnQcQualityRate> columnQcQualityRateList = searchColumnQcQualityRateListByDate(startDate,endDate,conn);
 			for (ColumnQcQualityRate columnQcQualityRate : columnQcQualityRateList) {
@@ -64,7 +64,7 @@ public class ExportColumnQcQualityRate {
 
 			try {
 				String path = SystemConfigFactory.getSystemConfig().getValue(
-						PropConstant.downloadFilePathPoi)+"/poiQuality/ColumnQcQualityRate";
+						PropConstant.downloadFilePathPoi)+"/poiQuality/columnQcQualityRate";
 //				String path = "D:/";
 				OutputStream out = new FileOutputStream(path+"/" + excelName + ".xls");
 				ex.exportExcel("质检品质率表",headers, columnQcQualityRateList, out, "yyyy-MM-dd HH:mm:ss");

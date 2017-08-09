@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,14 +63,11 @@ public class Check extends AbstractOperation{
 		//按照规则号list加载规则列表，以及汇总需要参考的子表map
 		log.info("load check rule");
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();
-		List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
-		for(String ruleId:checkCommand.getRuleIdList()){
-			CheckRule rule = loadCheckRule(ruleId);
-			if(rule==null){
-				log.error("检查规则加载失败,rule Id:"+ruleId);
-				continue;
-			}
-			checkRuleList.add(rule);
+		CheckRuleLoader loader=new CheckRuleLoader();
+		List<CheckRule> checkRuleList=loader.loadByRuleIds(checkCommand.getRuleIdList());
+		Set<String> loadRules=new HashSet<>();
+		for(CheckRule rule:checkRuleList){
+			loadRules.add(rule.getRuleId());
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
 			if(tmpMap==null){continue;}
 			for(String manObjName:tmpMap.keySet()){
@@ -79,6 +77,12 @@ public class Check extends AbstractOperation{
 				}
 				selConfig.put(manObjName, tmpSubtableSet);
 			}
+		}
+		Set<String> allRules=new HashSet<>();
+		allRules.addAll(checkCommand.getRuleIdList());
+		allRules.removeAll(loadRules);
+		if(allRules!=null&&allRules.size()>0){
+			log.error("检查规则加载失败,rule Id:"+allRules);
 		}
 		log.info("start load incre check data");
 		//增量加载需要参考的子表数据
@@ -113,16 +117,16 @@ public class Check extends AbstractOperation{
 		setReturnExceptions(resultList);
 	}
 
-	private CheckRule loadCheckRule(String ruleId) throws Exception {
-		try{
-			return CheckRuleLoader.getInstance().loadByRuleId(ruleId);
-		}catch(Exception e){
-			log.warn("加载检查规则失败,ruleId:"+ruleId+",errorMsg:"+e.getMessage(),e);
-			return null;
-		}
-		
-		
-	}
+//	private CheckRule loadCheckRule(String ruleId) throws Exception {
+//		try{
+//			return CheckRuleLoader.getInstance().loadByRuleId(ruleId);
+//		}catch(Exception e){
+//			log.warn("加载检查规则失败,ruleId:"+ruleId+",errorMsg:"+e.getMessage(),e);
+//			return null;
+//		}
+//		
+//		
+//	}
 
 	public List<NiValException> getReturnExceptions() {
 		return returnExceptions;

@@ -1,0 +1,33 @@
+{
+	"tables": [
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "TIPS_NODES"
+	},
+	{
+		"columnCount": 19,
+		"rowCount": 0,
+		"indexCount": 15,
+		"name": "TIPS_INDEX"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "TIPS_LINKS"
+	}],
+	"functions": [{
+		"name": "CLOB_TO_TABLE"
+	},
+	{
+		"name": "VARCHAR_TO_TABLE"
+	}],
+	"sequences": [],
+	"packages": [],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

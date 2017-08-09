@@ -35,6 +35,7 @@ public class TrackLineController extends BaseController {
 			JSONObject json = JSONObject.parseObject(parameter);
 
 			int jobId = json.getInteger("jobId");
+			logger.info("开始上传Track, jobId:" + jobId + " parameter:"+parameter);
 
 			UploadService upload = UploadService.getInstance();
 

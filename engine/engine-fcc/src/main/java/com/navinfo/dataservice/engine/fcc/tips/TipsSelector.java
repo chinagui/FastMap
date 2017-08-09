@@ -406,7 +406,7 @@ public class TipsSelector {
                                 int flag = outObj.getInt("flag");
                                 obj.put("oInfo",oInfo);
                                 obj.put("flag", flag);
-                                oInfoArray.add(flag);
+                                oInfoArray.add(obj);
                             }
                         }
                        // --输入：刘哲
@@ -585,7 +585,8 @@ public class TipsSelector {
 				}
 
 				// 返回差分结果：20160213修改
-				JSONObject tipdiff = null;
+				//20170808 修改。web渲染不再需要差分字段
+			/*	JSONObject tipdiff = null;
 
 				if (json.containsKey("tipdiff")) {
 
@@ -602,7 +603,7 @@ public class TipsSelector {
 							m.put("i", convertGeoDiff);
 						}
 					}
-				}
+				}*/
 
 				// 20170220新增：是否有附件、是否有时间段、是否有线编号 （需要判空）--输入：陈清友 王屯
 
@@ -2481,15 +2482,19 @@ public class TipsSelector {
 		int type = f.getInt("type");
 		String id = f.getString("id");
 
-		if (type == 1) {
-			RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
+		try {
+			if (type == 1) {
+				RdLink link = (RdLink) selector.loadAllById(Integer.valueOf(id), true);
 
-			geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+				geo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
-		} else if (type == 2) {
-			TipsDao gps = operator.getById(id);
+			} else if (type == 2) {
+				TipsDao gps = operator.getById(id);
 
-			geo = GeoTranslator.transform(gps.getWktLocation(), 0.00001, 5);
+				geo = GeoTranslator.transform(gps.getWktLocation(), 0.00001, 5);
+			}
+		} catch (Exception e) {
+			throw e;
 		}
 		return geo;
 	}

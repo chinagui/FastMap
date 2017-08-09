@@ -9,10 +9,10 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +26,19 @@ import java.util.List;
 public class GLM52018 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludesLu = new ArrayList<>();
+        List<Integer> excludesLc = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row.status() == ObjStatus.DELETE) {
+                if (row instanceof LuFace) {
+                    excludesLu.add(((LuFace) row).pid());
+                }
+                if (row instanceof LcFace) {
+                    excludesLc.add(((LcFace) row).pid());
+                }
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof LcFace && row.status() != ObjStatus.DELETE) {
                 LcFace face = (LcFace) row;
@@ -44,12 +57,9 @@ public class GLM52018 extends baseRule {
                 geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
                 String wkt = GeoTranslator.jts2Wkt(geometry);
 
-                List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
+                List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, excludesLu,false);
                 for (LuFace luFace : list) {
                     Geometry tmpGeo = GeoTranslator.transform(luFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
-                    //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
-                    //    continue;
-                    //}
 
                     int luKind = luFace.getKind();
                     if (6 == luKind) {
@@ -73,13 +83,10 @@ public class GLM52018 extends baseRule {
                 }
                 geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
                 String wkt = GeoTranslator.jts2Wkt(geometry);
-                List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, false);
+                List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, excludesLc,false);
 
                 if (kind == 6) {
                     for (LcFace lcFace : list) {
-                        //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, lcFace.getGeometry())) {
-                        //    continue;
-                        //}
 
                         if (17 != lcFace.getKind()) {
                             setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
@@ -88,9 +95,6 @@ public class GLM52018 extends baseRule {
                 } else if (kind == 11) {
                     for (LcFace lcFace : list) {
                         Geometry tmpGeo = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
-                        //if (CheckGeometryUtils.isOnlyEdgeShared(geometry, tmpGeo)) {
-                        //    continue;
-                        //}
 
                         if (17 != lcFace.getKind() && !geometry.covers(tmpGeo)) {
                             setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);

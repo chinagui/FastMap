@@ -674,11 +674,8 @@ public class IxPoiSelector {
 			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
 			return pids;
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

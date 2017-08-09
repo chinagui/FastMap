@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +25,7 @@ import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
@@ -66,6 +66,8 @@ public class DeepPhotoImporter {
 		int total = 0;
 
 		int notfound = 0;
+		
+		int notfoundtag = 0;
 
 		int cache = 0;
 
@@ -89,7 +91,10 @@ public class DeepPhotoImporter {
 
 			if (!rs.next()) {
 				notfound++;
-				pids.add(pid);
+				if (isTag(poi) > 0) {
+					notfoundtag++;
+					pids.add(pid);
+				}
 				rs.close();
 				continue;
 			}
@@ -169,11 +174,37 @@ public class DeepPhotoImporter {
 		pw.close();
 
 		logger.info("total:" + total + ",not found:" + notfound);
+		
+		logger.info("not found tag:" + notfoundtag);
 
 		logger.info("IX_POI_PHOTO count:" + photoCount);
 
 		logger.info("DONE.");
 
 		reader.close();
+	}
+	
+	
+	private int isTag(JSONObject poi){
+		JSONArray array = poi.getJSONArray("attachments");
+
+		if (array.size() == 0)
+			return 0;
+
+		int result = 0;
+
+		for (int i = 0; i < array.size(); i++) {
+			JSONObject obj = array.getJSONObject(i);
+
+			int tag = obj.getInt("tag");
+
+			int type = obj.getInt("type");
+
+			if (tag != 7 || type != 1) {
+				continue;
+			}
+			result ++;
+		}
+		return result;
 	}
 }

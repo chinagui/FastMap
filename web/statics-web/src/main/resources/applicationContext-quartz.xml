@@ -98,7 +98,7 @@
     <bean id="personDayStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="personDayStat_detail" />
-        <property name="cronExpression" value="0 * * * * ?" />
+        <property name="cronExpression" value="0 0 23 * * ?" />
     </bean>
     
     <bean id="monthPoiStat_Trigger"
@@ -110,7 +110,7 @@
      <bean id="dayPlanStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="dayPlanStat_detail" />
-        <property name="cronExpression" value="0 * * * * ?" />
+        <property name="cronExpression" value="0 0 23 * * ?" />
     </bean>
     
     <bean id="tipsStat_Trigger"

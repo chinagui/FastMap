@@ -107,7 +107,7 @@ public class TipsJob extends AbstractStatJob {
 	}
 	
 	
-	public List<Map<String, Object>> getGridTips(Connection conn) {
+	public List<Map<String, Object>> getGridTips(Connection conn) throws Exception {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Map<String, Object>> gridTipsTaskList = new ArrayList<>();
@@ -117,6 +117,7 @@ public class TipsJob extends AbstractStatJob {
 		List<Integer> gridTaskList = new ArrayList<>();
 		List<Integer> gridNoTaskList = new ArrayList<>();
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
 		try{
 			
 			int gridId = 0;
@@ -165,7 +166,10 @@ public class TipsJob extends AbstractStatJob {
 					taskCreateByEditNum++;
 				}
 				
-				Integer editMeth = metaApi.queryEditMethTipsCode(sourceType);
+				Integer editMeth = null;
+				if(codeEditMethMap.containsKey(sourceType)){
+					editMeth = codeEditMethMap.get(sourceType);
+				}
 				if(editMeth!=null){
 					if(stage==1||stage==2||stage==6||stage==7){
 						if(editMeth!=1){

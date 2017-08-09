@@ -1019,20 +1019,21 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScQueryReliabilityPid.getInstance().ScQueryReliabilityPid(minNumber, maxNumber);
 	}
 	@Override
-	public Integer queryEditMethTipsCode(String code) throws SQLException {
+	public Map<String,Integer> queryEditMethTipsCode() throws SQLException {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getMetaConnection();	
 			
-			String sql = " select D_EDIT_METH from sc_tips_code t WHERE code = '"+code+"' ";
+			String sql = " select code,D_EDIT_METH from sc_tips_code t ";
 			
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer> (){
-				public Integer handle(ResultSet rs) throws SQLException {
-					if(rs.next()){
-						return rs.getInt(1);
+			ResultSetHandler<Map<String,Integer>> rsHandler = new ResultSetHandler<Map<String,Integer>> (){
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put(rs.getString(1), rs.getInt(2));
 					}
-					return null;
+					return map;
 				}	
 	    	};				
 

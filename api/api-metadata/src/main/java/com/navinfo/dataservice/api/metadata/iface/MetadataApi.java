@@ -453,6 +453,6 @@ public interface MetadataApi {
 	  * */
 	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 	
-	public Integer queryEditMethTipsCode(String code) throws SQLException;
+	public Map<String,Integer> queryEditMethTipsCode() throws SQLException;
 
 }

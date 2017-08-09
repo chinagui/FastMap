@@ -295,5 +295,30 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Map<String,Object>> staticsPersionJob(String timestamp) throws Exception;
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Set<Integer>  grids
+	 * @throws Exception
+	 */
+	public Map<Integer, Integer> queryGridIdsByTaskId(int taskId) throws Exception;
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception;
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception;
+	
 }
 

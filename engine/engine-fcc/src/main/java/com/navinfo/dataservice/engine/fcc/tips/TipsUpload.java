@@ -4,7 +4,9 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -253,7 +255,8 @@ public class TipsUpload {
 		}
 
         // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+       // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -905,11 +908,18 @@ public class TipsUpload {
 
 		Photo photo = new Photo();
 
-		JSONObject extContent = attachment.getJSONObject("extContent");
+        //20170809 判断是否存在extContent
+        if(attachment.containsKey("extContent")) {
+            JSONObject extContent = attachment.getJSONObject("extContent");
+            double lng = extContent.getDouble("longitude");
+            double lat = extContent.getDouble("latitude");
+            photo.setA_longitude(lng);
+            photo.setA_latitude(lat);
+            photo.setA_direction(extContent.getDouble("direction"));
+            photo.setA_shootDate(extContent.getString("shootDate"));
+            photo.setA_deviceNum(extContent.getString("deviceNum"));
+        }
 
-		double lng = extContent.getDouble("longitude");
-
-		double lat = extContent.getDouble("latitude");
 
 		// String uuid = fileName.replace(".jpg", "");
 		//
@@ -932,24 +942,16 @@ public class TipsUpload {
 
 		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
-		photo.setA_longitude(lng);
-
-		photo.setA_latitude(lat);
-
-		// photo.setA_sourceId(tip.getString("s_sourceId"));
-
-		photo.setA_direction(extContent.getDouble("direction"));
-
-		photo.setA_shootDate(extContent.getString("shootDate"));
-
-		photo.setA_deviceNum(extContent.getString("deviceNum"));
+        //Tips上传a_sourceId = 2
+		photo.setA_sourceId(2);
 
 		photo.setA_fileName(attachment.getString("content"));
 
 		photo.setA_content(1);
 
-		photo.setA_refUuid(id);
+		photo.setA_refUuid("");
 
+        photo.setA_version(SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));//当前版本
 		return photo;
 	}
 
@@ -1067,7 +1069,7 @@ public class TipsUpload {
 				String city = (String) subTaskMap.get("city");
 				int userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
 				String version = (String) subTaskMap.get("version");
-				String startDate = (String) subTaskMap.get("plan_start_date");
+				String startDate = (String) subTaskMap.get("planStartDate");
 
 				String deleteSql = "delete from FIELD_RD_QCRECORD " + "where PROBLEM_NUM = ?";
 
@@ -1103,7 +1105,12 @@ public class TipsUpload {
 						// 按照Tips统计坐标所在图幅统计
 						TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 						TipsDao solrObj = operator.getById(record.getRowkey());
-						String linkPidString = getQualityLinkPid(solrObj, regionDBConn);
+                        String linkPidString = null;
+                        if(solrObj.getS_sourceType().equals("2001")) {//测线的linkid返回其本身
+                            linkPidString = solrObj.getId();
+                        }else{
+                            linkPidString = getQualityLinkPid(solrObj, regionDBConn);
+                        }
                         record.setLink_pid(linkPidString);
 						insertPstmt.setString(1, "");
 						insertPstmt.setString(2, groupName);
@@ -1310,22 +1317,22 @@ public class TipsUpload {
         String query = "select * from tips_index t where " + where;
         List<TipsDao> relateTips = operator.query(query);
         for (TipsDao snapshot : relateTips) {
-            collecorUserId = String.valueOf(snapshot.getHandler());
+//            collecorUserId = String.valueOf(snapshot.getHandler());
 
-//            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-//            JSONObject track = oldTip.getJSONObject("track");
-//            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-//            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-//                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-//                int stage = trackInfoObj.getInt("stage");
-//                if (stage == 1) {
-//                    int handler = trackInfoObj.getInt("handler");
-//                    if (handler == userId) {
-//                        collecorUserId = String.valueOf(userId);
-//                        break;
-//                    }
-//                }
-//            }
+            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, snapshot.getId(), new String[]{"track"});
+            JSONObject track = oldTip.getJSONObject("track");
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+                int stage = trackInfoObj.getInt("stage");
+                if (stage == 1) {
+                    int handler = trackInfoObj.getInt("handler");
+                    if (handler == userId) {
+                        collecorUserId = String.valueOf(userId);
+                        break;
+                    }
+                }
+            }
         }
 		return collecorUserId;
 	}
@@ -1347,8 +1354,9 @@ public class TipsUpload {
 			try {
 				String line = scanner.nextLine();
 				com.alibaba.fastjson.JSONObject lineObj = com.alibaba.fastjson.JSONObject.parseObject(line);
+                lineObj.put("class_bottom", lineObj.getString("class"));
 				problem_num = lineObj.getString("id");
-				FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(line, FieldRoadQCRecord.class);
+				FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(lineObj.toJSONString(), FieldRoadQCRecord.class);
 				problem_num = record.getId();
 				records.add(record);
 			} catch (Exception e) {

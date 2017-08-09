@@ -22,7 +22,9 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
@@ -129,6 +131,66 @@ public class CollectorImport {
 		photoTab.close();
 	}
 	
+	public static void importPhotoNew(Map<String, Photo> map, String dir) throws Exception {
+
+		if (map.size() == 0) {
+			return;
+		}
+
+		File file = new File(dir);
+
+		if (!file.exists()) {
+			return;
+		}
+
+		if (!file.isDirectory()) {
+			RotateImageUtils.rotateImage(dir);
+		}
+
+		//传入map，按需读取二进制流，减小内存消耗
+		Map<String, byte[]> mapPhoto = FileUtils.readPhotosNew(map,dir);
+
+		Map<String, Integer> exitstPhoto = getAllExitsPhoto(map); // 找到所有的在数据库中已存在的照片,已存在则不再导入
+
+		Table photoTab = HBaseConnector.getInstance().getConnection()
+				.getTable(TableName.valueOf(HBaseConstant.photoTab));
+
+		List<Put> puts = new ArrayList<Put>();
+
+		Set<Entry<String, Photo>> set = map.entrySet();
+
+		Iterator<Entry<String, Photo>> it = set.iterator();
+
+		int num = 0;
+
+		while (it.hasNext()) {
+			Entry<String, Photo> entry = it.next();
+			// 缩略图不存储，参3为null
+			Put put = enclosedPut(entry, mapPhoto, null, exitstPhoto);
+
+			if (put == null) {
+				continue;
+			}
+
+			puts.add(put);
+
+			num++;
+
+			if (num >= 1000) {
+				photoTab.put(puts);
+
+				puts.clear();
+
+				num = 0;
+			}
+		}
+
+		photoTab.put(puts);
+
+		photoTab.close();
+	}
+
+	
 	/**
 	 * @Description:TOOD
 	 * @param map
@@ -206,7 +268,15 @@ public class CollectorImport {
 	    	}
     	}
     	String rowKey = fileName.replace(".jpg", "");
-		controller.putPhoto(rowKey, newIn);
+		
+    	Photo photo = new Photo();
+		photo.setRowkey(rowKey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		photo.setA_content(2);
+		
+		controller.putPhoto(rowKey, newIn, photo);
+		
 		newIn.close();
 	}
 }

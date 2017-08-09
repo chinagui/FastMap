@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
@@ -61,6 +62,50 @@ public class FileUtils {
 				}
 			}
 		}
+
+		return map;
+	}
+	
+	public static Map<String, byte[]> readPhotosNew(Map<String, Photo> photo, String dir) throws Exception {
+		Map<String, byte[]> map = new HashMap<String, byte[]>();
+
+		File file = new File(dir);
+
+		if (!file.exists()) {
+			return map;
+		}
+
+		File[] files = file.listFiles();
+
+		for (File f : files) {
+
+			if (f.isDirectory()) {
+				Map<String, byte[]> submap = readPhotos(f.getAbsolutePath());
+
+				map.putAll(submap);
+			} else {
+				// 判断文件是否在photo中
+				if (photo.keySet().contains(f.getName()) == false) {
+					continue;
+				}
+
+				FileInputStream in = null;
+				try {
+					in = new FileInputStream(f);
+
+					byte[] bytes = new byte[(int) f.length()];
+
+					in.read(bytes);
+
+					map.put(f.getName(), bytes);
+				} finally {
+					if (in != null) {
+						in.close();
+					}
+					;
+				}
+			}//else
+		}//for
 
 		return map;
 	}

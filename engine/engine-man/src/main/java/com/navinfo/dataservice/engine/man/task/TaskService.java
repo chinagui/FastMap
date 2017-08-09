@@ -4852,7 +4852,85 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
-
-		
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT S.* FROM TASK T,SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND T.TASK_ID ="+taskId;
+			ResultSetHandler<List<Map<String,Object>>> rs = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> map = new HashMap<String,Object>();
+						int workKind = rs.getInt("WORK_KIND");
+						int subtaskId = rs.getInt("SUBTASK_ID");
+						int type = rs.getInt("TYPE");
+						int status = rs.getInt("STATUS");
+						map.put("subtaskId", subtaskId);
+						map.put("workKind", workKind);
+						map.put("type", type);
+						map.put("status", status);
+						result.add(map);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task的subtaskIds失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT T.TASK_ID,P.TYPE FROM TASK T,PROGRAM P WHERE T.PROGRAM_ID = P.PROGRAM_ID ";
+			ResultSetHandler<Map<Integer,Integer>> rs = new ResultSetHandler<Map<Integer,Integer>>() {
+				
+				@Override
+				public Map<Integer,Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Integer> result = new HashMap<Integer,Integer>();
+					while(rs.next()){
+						int taskId = rs.getInt("TASK_ID");
+						int programType = rs.getInt("TYPE");
+						result.put(taskId, programType);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			Map<Integer, Integer> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

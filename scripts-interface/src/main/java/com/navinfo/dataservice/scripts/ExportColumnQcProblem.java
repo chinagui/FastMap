@@ -44,7 +44,7 @@ public class ExportColumnQcProblem {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			String excelName = "质检问题记录表_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String excelName = "column_quality_problem_list_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			
 			List<ColumnQcProblem> columnQcProblemList = searchColumnQcProblemListByDate(startDate,endDate,conn);
 			for (ColumnQcProblem columnQcProblem : columnQcProblemList) {

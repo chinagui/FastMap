@@ -63,7 +63,7 @@ public class PoiServiceNew {
 		log.info("photoMap.size(): "+photoMap.size());
 		CollectorImport.importPhoto(photoMap,filePath);
 		long t3 = System.currentTimeMillis();
-		log.info("photo import total time:"+(t3)+"ms.");
+		log.info("photo import total time:"+(t3-t2)+"ms.");
 		return result;
 		
 	}

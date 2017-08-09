@@ -41,7 +41,7 @@ public class GLM03065 extends baseRule {
 				RdNodeForm rdNodeForm = (RdNodeForm) row;
 				this.checkRdNodeForm(rdNodeForm);
 			}
-			//分离节点,平滑修形
+			//分离节点,平滑修形,批量打断
 			else if (row instanceof RdLink){
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
@@ -126,7 +126,14 @@ public class GLM03065 extends baseRule {
 					nodePids.add(eNodePid);
 				}
 			}
+		}else{
+			Integer sNodePid = rdLink.getsNodePid();
+			Integer eNodePid = rdLink.geteNodePid();
+			
+			nodePids.add(sNodePid);
+			nodePids.add(eNodePid);
 		}
+		
 		for (Integer nodePid : nodePids) {
 			boolean check = this.check(nodePid);
 

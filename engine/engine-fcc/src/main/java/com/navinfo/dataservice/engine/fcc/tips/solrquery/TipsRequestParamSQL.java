@@ -100,11 +100,12 @@ public class TipsRequestParamSQL {
 
 		StringBuilder builder = new StringBuilder();
 
-		boolean remove8001=false;
-		if(stages.size()>0 && StringUtils.isEmpty(pType)){
+		//boolean remove8001=false;
+		//--20170808取消  grid粗表和 区域粗编对 8001的特殊限制，有web来控制。输入：王屯，隋玉秀
+/*		if(stages.size()>0 && StringUtils.isEmpty(pType)){
 			// WEB
 			// 类型过滤
-			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）--20170808取消
 			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
 			if (subTaskType == 3) {
 //				builder.append(" AND s_sourceType!='8001'");// 接边Tips
@@ -114,7 +115,7 @@ public class TipsRequestParamSQL {
 				types = new JSONArray();
 				types.add("8001");
 			}
-		}
+		}*/
 
 		if (types.size() > 0) {
 			Set<String> typeSet = new HashSet<>();
@@ -124,21 +125,21 @@ public class TipsRequestParamSQL {
 			for(String type : this.getFilter315()){
 				typeSet.remove(type);
 			}
-			if(remove8001){//过滤8001
+		/*	if(remove8001){//过滤8001
 				typeSet.remove("8001");
-			}
+			}*/
 			if(typeSet.size()>0) {
 				this.getStringArrayQuery(builder, typeSet, "s_sourceType");
 			}
 		}else{
 			// 过滤315 web不显示的tips 20170118
-			if(remove8001){
+			//if(remove8001){
 				//除了要过滤的tips，还要过滤8001
-				this.getFilter315With8001(builder);
-			}else {
+			//	this.getFilter315With8001(builder);
+			//}else {
 				//不过滤8001
 				this.getFilter315(builder);
-			}
+			//}
 		}
 
 		if (stages.size() > 0) {
@@ -210,7 +211,7 @@ public class TipsRequestParamSQL {
 		if (builder.length() > 0) {
 			builder.append(" and");
 		}
-		builder.append(" sdo_relate(wktLocation,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+		builder.append(" sdo_filter(wktLocation,sdo_geometry(:1,8307)) = 'TRUE'");
 		String sql = "select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ * from tips_index where " + builder.toString();
 		logger.info("getByTileWithGap:" + sql);
 		return sql;
@@ -383,7 +384,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsMobileWhere(String date,
 			int[] notExpSourceType) {
-		String param = " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ";
+		String param = " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"
@@ -391,9 +392,10 @@ public class TipsRequestParamSQL {
 		}
 
 		// 过滤的类型
+		StringBuilder builder =null;
 		// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
 		if (notExpSourceType != null && notExpSourceType.length != 0) {
-			StringBuilder builder = new StringBuilder(" AND s_sourceType NOT  IN (");
+			builder = new StringBuilder(" AND s_sourceType NOT  IN (");
 			for (int i = 0; i < notExpSourceType.length; i++) {
 				String fieldValue = String.valueOf(notExpSourceType[i]);
 				if (i > 0) {
@@ -405,6 +407,11 @@ public class TipsRequestParamSQL {
 			}
 			builder.append(")");
 		}
+		
+		if(builder!=null){
+			param=param+builder.toString();
+		}
+		
 		return param;
 
 	}
@@ -447,7 +454,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsWebSql(String wkt) {
 		return "select * from tips_index where "
-				+ " sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' "
+				+ " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' "
 				+ " AND "
 				+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL;
 	}
@@ -465,7 +472,7 @@ public class TipsRequestParamSQL {
 		// solr查询语句
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+		builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
         values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -541,7 +548,7 @@ public class TipsRequestParamSQL {
         // solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
         List<Object> values = new ArrayList<Object>();
         values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -573,8 +580,9 @@ public class TipsRequestParamSQL {
             List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
-            builder.append(" AND ");
-            builder.append(" s_sourceType='8001'");
+            //20170808修改，服务不再限制类型，由web控制。输入：玉秀、王屯
+   /*         builder.append(" AND ");
+            builder.append(" s_sourceType='8001'");*/
             builder.append(" AND ");
             builder.append(projectBuilder);
         }
@@ -668,7 +676,7 @@ public class TipsRequestParamSQL {
 		// solr查询语句
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+		builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 		List<Object> values = new ArrayList<Object>();
 		values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
@@ -773,7 +781,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsDayTotal(int subtaskId, int subTaskType,int handler, int isQuality, String statType) throws Exception {
         StringBuilder builder = new StringBuilder();
-        builder.append(" sdo_relate(wkt,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE' ");
+        builder.append(" sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         StringBuilder taskBuilder = null;

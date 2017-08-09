@@ -509,12 +509,27 @@ public class CheckController extends BaseController {
 			String id = jsonReq.getString("id");
 
 			int type = jsonReq.getInt("type");
-
+			
+			String taskName = null;
+			if (jsonReq.containsKey("taskName") || jsonReq.getString("taskName") == null
+					|| StringUtils.isEmpty(jsonReq.getString("taskName"))) {
+				taskName = jsonReq.getString("taskName");
+			}else{
+				JobApi jobApiService = (JobApi) ApplicationContextUtil
+						.getBean("jobApi");
+				
+				JobInfo jobInfo = jobApiService.getLatestJobByDescp("rdName");
+					if (jobInfo != null) {
+						taskName = jobInfo.getGuid();
+					}
+			}
+			logger.info("taskName: "+taskName);
+			
 			conn = DBConnector.getInstance().getMetaConnection();// 获取元数据库连接
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatusForRd(id, type);
+			selector.updateCheckLogStatusForRd(id, type ,taskName);
 
 			return new ModelAndView("jsonView", success());
 

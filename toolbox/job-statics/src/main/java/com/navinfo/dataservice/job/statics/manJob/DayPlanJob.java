@@ -77,13 +77,12 @@ public class DayPlanJob extends AbstractStatJob {
 			e.printStackTrace();
 		}
 		for (Map<String, Integer> taskIdMap : taskIdMapList) {
-			
 			Integer dbId = taskIdMap.get("dbId");
 			Integer taskId = taskIdMap.get("taskId");
 			
 			String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 			MongoDao md = new MongoDao(dbName);
-			if(md.find("task_day_plan",Filters.eq("taskId", taskId)).iterator().hasNext()){
+			if(md.find("task_day_plan",Filters.eq("taskId", taskId+"")).iterator().hasNext()){
 				continue;
 			}
 			Connection conn=null;

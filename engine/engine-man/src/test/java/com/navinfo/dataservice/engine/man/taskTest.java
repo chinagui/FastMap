@@ -247,9 +247,19 @@ public class taskTest extends InitApplication{
 	@Test
 	public void test02() throws Exception{
 		
+		int taskId = 2;
 		ManApi manApi= new ManApiImpl();
-		Map<Integer, Set<Integer>> data = manApi.queryGrids();
-		System.out.println(data.toString());
+		List<Map<String, Object>> set = manApi.querySubtaskByTaskId(taskId);
+		System.out.println(set.toString());
+		
+	}
+	
+	@Test
+	public void test03() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		Map<Integer, Integer> set = manApi.queryProgramTypes();
+		System.out.println(set.toString());
 		
 	}
 }

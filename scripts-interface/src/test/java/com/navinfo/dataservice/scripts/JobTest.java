@@ -60,7 +60,7 @@ public class JobTest {
 			JSONObject jobPra = new JSONObject();
 			jobPra.put("timestamp", new Date());
 
-			long jobId = JobService.getInstance().create("MultiSrc2FmDaySyncJob", jobPra, 0,0, "创建FM日库多源增量包");
+			long jobId = JobService.getInstance().create("taskStat", jobPra, 0,0, "创建FM日库多源增量包");
 //	    	int jobId = 3998;
 
 			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");

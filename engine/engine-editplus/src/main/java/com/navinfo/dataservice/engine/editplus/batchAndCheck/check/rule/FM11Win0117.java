@@ -39,9 +39,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
-//			if(poi.getPid()==1988018){
-//				log.info("");
-//			}
+			
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)||!poi.getHisOpType().equals(OperationType.INSERT)){
 				continue;}
@@ -62,12 +60,11 @@ public class FM11Win0117 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
-			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2, P1.PID PID1"
+
+					String sqlStr="SELECT P2.PID PID2, P2.GEOMETRY, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_NAME    N1,"
@@ -87,16 +84,11 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND P1.U_RECORD!=2"
 					+ "     AND N1.U_RECORD!=2"
 					+ "     AND N2.U_RECORD!=2"
+					+"		AND SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 100"
 					+ "     AND P1."+pidString
-					+ "     AND P1.PID != P2.PID"
-					+ "     )"
-					+ " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
-					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
-					+ "   AND P.PID = T.PID1"
-					+ "   AND P.U_RECORD!=2"
-					+ "   AND P."+pidString;
+					+ "     AND P1.PID != P2.PID";
+
+			log.info("FM11Win0117:"+sqlStr);
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -107,7 +99,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			//过滤相同pid
 			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
-				Long pidTmp1=rs.getLong("PID");
+				Long pidTmp1=rs.getLong("PID1");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
@@ -135,7 +127,7 @@ public class FM11Win0117 extends BasicCheckRule {
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2, P1.PID PID1"
+					+ " SELECT P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_PARKING PK1,"
@@ -164,15 +156,9 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N1.U_RECORD!=2"
 					+ "     AND N2.U_RECORD!=2"
 					+ "     AND P1."+pidString
-					+ "     AND P1.PID != P2.PID"
-					+ "     )"
-					+ " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
-					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
-					+ "   AND P.PID = T.PID1"
-					+ "   AND P.U_RECORD!=2"
-					+ "   AND P."+pidString;
+					+"      AND SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 100 "
+					+ "     AND P1.PID != P2.PID";
+			log.info("FM11Win0117:"+sqlStr);
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -183,7 +169,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			//过滤相同pid
 			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
-				Long pidTmp1=rs.getLong("PID");
+				Long pidTmp1=rs.getLong("PID1");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);

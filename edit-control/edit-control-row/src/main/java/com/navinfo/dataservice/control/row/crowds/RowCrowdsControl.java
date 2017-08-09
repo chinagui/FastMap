@@ -364,10 +364,7 @@ public class RowCrowdsControl {
 	 * @return
 	 */
 	private static String getGrid(double x,double y){
-		String grid = "";
-		CompGridUtil gridUtil = new CompGridUtil();
-		grid = gridUtil.point2Grids(x, y)[0];
-		return grid;
+		return  CompGridUtil.point2Grids(x, y)[0];
 	}
 	
 	

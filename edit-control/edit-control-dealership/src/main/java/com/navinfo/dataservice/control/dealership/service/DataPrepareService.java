@@ -132,9 +132,9 @@ public class DataPrepareService {
 			
 			return run.query(con, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndCloseQuietly(con);
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndCloseQuietly(con);
 		}
 		return null;
 	}
@@ -238,10 +238,10 @@ public class DataPrepareService {
 			log.info("loadDiffList-->sql:"+sql);
 			return run.query(con, sql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndCloseQuietly(con);
 			throw e;
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 
@@ -1549,221 +1549,234 @@ public class DataPrepareService {
 	private void handleMatchedPois(List<ExpDbDiffResult> result, Map<Integer, Set<String>> regionIdPidSetMap) throws Exception {
 		Map<Integer,Map<String,IxPoiObj>> poi = new HashMap<Integer,Map<String,IxPoiObj>>();
 		List<String> colValues = new ArrayList<String>();
-		Map<Integer, Connection> dbConMap = queryAllRegionConn();
+		Map<Integer, Connection> dbConMap = new HashMap<Integer, Connection>();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
 		tabNames.add("IX_POI_CONTACT");
 
-		for(Map.Entry<Integer, Set<String>> entry:regionIdPidSetMap.entrySet()){
-			if(!dbConMap.containsKey(entry.getKey())) {
-				continue;
-			}
-			Connection regionConn = (Connection) dbConMap.get(entry.getKey());
-			colValues.addAll(entry.getValue());
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(regionConn, "IX_POI",tabNames, false, "POI_NUM", colValues, false, false);
-			Map<String,IxPoiObj> pois = new HashMap<String,IxPoiObj>();
-			for(Map.Entry<Long,BasicObj> entryInner:objs.entrySet()){
-				IxPoiObj ixPoiObj = (IxPoiObj)entryInner.getValue();
-				IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
-				pois.put(ixPoi.getPoiNum(), ixPoiObj);
+		try {
+			dbConMap = queryAllRegionConn();
+			for(Map.Entry<Integer, Set<String>> entry:regionIdPidSetMap.entrySet()){
+				if(!dbConMap.containsKey(entry.getKey())) {
+					continue;
+				}
+				Connection regionConn = (Connection) dbConMap.get(entry.getKey());
+				colValues.addAll(entry.getValue());
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(regionConn, "IX_POI",tabNames, false, "POI_NUM", colValues, false, false);
+				Map<String,IxPoiObj> pois = new HashMap<String,IxPoiObj>();
+				for(Map.Entry<Long,BasicObj> entryInner:objs.entrySet()){
+					IxPoiObj ixPoiObj = (IxPoiObj)entryInner.getValue();
+					IxPoi ixPoi = (IxPoi)ixPoiObj.getMainrow();
+					pois.put(ixPoi.getPoiNum(), ixPoiObj);
+				}
+				
+				poi.put(entry.getKey(), pois);
 			}
 			
-			poi.put(entry.getKey(), pois);
+			for(ExpDbDiffResult expDbDiffResult:result){
+				List<String> telList = new ArrayList<String>();
+				if(expDbDiffResult.getTelOther()!=null){
+					telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelOther(), "|")));
+				}
+				if(expDbDiffResult.getTelSale()!=null){
+					telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelSale(), "|")));
+				}
+				if(expDbDiffResult.getTelService()!=null){
+					telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelService(), "|")));
+				}
+				Collections.sort(telList);
+				
+				if(expDbDiffResult.getPoi1Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi1Num());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setPoi1Name(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setPoi1AliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setPoi1Address(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setPoi1Tel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setPoi1Diff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setPoi1PostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setPoi1KindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setPoi1Chain(poiInfo.get("poiChain"));
+					}
+				}
+				if(expDbDiffResult.getPoi2Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi2Num())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi2Num());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setPoi2Name(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setPoi2AliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setPoi2Address(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setPoi2Tel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setPoi2Diff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setPoi2PostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setPoi2KindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setPoi2Chain(poiInfo.get("poiChain"));
+					}
+
+				}
+				if(expDbDiffResult.getPoi3Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi3Num())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi3Num());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setPoi3Name(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setPoi3AliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setPoi3Address(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setPoi3Tel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setPoi3Diff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setPoi3PostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setPoi3KindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setPoi3Chain(poiInfo.get("poiChain"));
+					}
+				}
+				if(expDbDiffResult.getPoi4Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi4Num())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi4Num());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setPoi4Name(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setPoi4AliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setPoi4Address(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setPoi4Tel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setPoi4Diff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setPoi4PostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setPoi4KindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setPoi4Chain(poiInfo.get("poiChain"));
+					}
+				}
+				if(expDbDiffResult.getPoi5Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi5Num())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi5Num());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setPoi5Name(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setPoi5AliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setPoi5Address(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setPoi5Tel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setPoi5Diff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setPoi5PostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setPoi5KindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setPoi5Chain(poiInfo.get("poiChain"));
+					}
+				}
+				//=================================================================================================================================
+				//代理店 - 表库差分结果导出原则变更(6882)
+				if(expDbDiffResult.getCfmPoiNum()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getCfmPoiNum())){
+					IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getCfmPoiNum());
+					Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
+					
+					if(poiInfo.containsKey("poiName")){
+						expDbDiffResult.setCfmPoiNumName(poiInfo.get("poiName"));
+					}
+					if(poiInfo.containsKey("poiAliasName")){
+						expDbDiffResult.setCfmPoiNumAliasName(poiInfo.get("poiAliasName"));
+					}
+					if(poiInfo.containsKey("poiAddress")){
+						expDbDiffResult.setCfmPoiNumAddress(poiInfo.get("poiAddress"));
+					}
+					if(poiInfo.containsKey("poiTel")){
+						expDbDiffResult.setCfmPoiNumTel(poiInfo.get("poiTel"));
+					}
+					if(poiInfo.containsKey("poiDiff")){
+						expDbDiffResult.setCfmPoiNumDiff(poiInfo.get("poiDiff"));
+					}
+					if(poiInfo.containsKey("poiPostCode")){
+						expDbDiffResult.setCfmPoiNumPostCode(poiInfo.get("poiPostCode"));
+					}
+					if(poiInfo.containsKey("poiKindCode")){
+						expDbDiffResult.setCfmPoiNumKindCode(poiInfo.get("poiKindCode"));
+					}
+					if(poiInfo.containsKey("poiChain")){
+						expDbDiffResult.setCfmPoiNumChain(poiInfo.get("poiChain"));
+					}
+				}
+				//=================================================================================================================================
+			}
+		} catch (Exception e) {
+			for (Connection value : dbConMap.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
+			throw new Exception(e);
+		} finally {
+			for (Connection value : dbConMap.values()) {
+				DbUtils.commitAndCloseQuietly(value);
+			}
 		}
 		
-		for(ExpDbDiffResult expDbDiffResult:result){
-			List<String> telList = new ArrayList<String>();
-			if(expDbDiffResult.getTelOther()!=null){
-				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelOther(), "|")));
-			}
-			if(expDbDiffResult.getTelSale()!=null){
-				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelSale(), "|")));
-			}
-			if(expDbDiffResult.getTelService()!=null){
-				telList.addAll(Arrays.asList(StringUtils.split(expDbDiffResult.getTelService(), "|")));
-			}
-			Collections.sort(telList);
-			
-			if(expDbDiffResult.getPoi1Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi1Num())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi1Num());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setPoi1Name(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setPoi1AliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setPoi1Address(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setPoi1Tel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setPoi1Diff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setPoi1PostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setPoi1KindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setPoi1Chain(poiInfo.get("poiChain"));
-				}
-			}
-			if(expDbDiffResult.getPoi2Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi2Num())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi2Num());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setPoi2Name(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setPoi2AliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setPoi2Address(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setPoi2Tel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setPoi2Diff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setPoi2PostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setPoi2KindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setPoi2Chain(poiInfo.get("poiChain"));
-				}
-
-			}
-			if(expDbDiffResult.getPoi3Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi3Num())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi3Num());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setPoi3Name(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setPoi3AliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setPoi3Address(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setPoi3Tel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setPoi3Diff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setPoi3PostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setPoi3KindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setPoi3Chain(poiInfo.get("poiChain"));
-				}
-			}
-			if(expDbDiffResult.getPoi4Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi4Num())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi4Num());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setPoi4Name(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setPoi4AliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setPoi4Address(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setPoi4Tel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setPoi4Diff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setPoi4PostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setPoi4KindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setPoi4Chain(poiInfo.get("poiChain"));
-				}
-			}
-			if(expDbDiffResult.getPoi5Num()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getPoi5Num())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getPoi5Num());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setPoi5Name(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setPoi5AliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setPoi5Address(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setPoi5Tel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setPoi5Diff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setPoi5PostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setPoi5KindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setPoi5Chain(poiInfo.get("poiChain"));
-				}
-			}
-			//=================================================================================================================================
-			//代理店 - 表库差分结果导出原则变更(6882)
-			if(expDbDiffResult.getCfmPoiNum()!=null&&poi.get(expDbDiffResult.getRegionId()).keySet().contains(expDbDiffResult.getCfmPoiNum())){
-				IxPoiObj ixPoiObj = poi.get(expDbDiffResult.getRegionId()).get(expDbDiffResult.getCfmPoiNum());
-				Map<String,String> poiInfo = getPoiInfo(expDbDiffResult,ixPoiObj,telList);
-				
-				if(poiInfo.containsKey("poiName")){
-					expDbDiffResult.setCfmPoiNumName(poiInfo.get("poiName"));
-				}
-				if(poiInfo.containsKey("poiAliasName")){
-					expDbDiffResult.setCfmPoiNumAliasName(poiInfo.get("poiAliasName"));
-				}
-				if(poiInfo.containsKey("poiAddress")){
-					expDbDiffResult.setCfmPoiNumAddress(poiInfo.get("poiAddress"));
-				}
-				if(poiInfo.containsKey("poiTel")){
-					expDbDiffResult.setCfmPoiNumTel(poiInfo.get("poiTel"));
-				}
-				if(poiInfo.containsKey("poiDiff")){
-					expDbDiffResult.setCfmPoiNumDiff(poiInfo.get("poiDiff"));
-				}
-				if(poiInfo.containsKey("poiPostCode")){
-					expDbDiffResult.setCfmPoiNumPostCode(poiInfo.get("poiPostCode"));
-				}
-				if(poiInfo.containsKey("poiKindCode")){
-					expDbDiffResult.setCfmPoiNumKindCode(poiInfo.get("poiKindCode"));
-				}
-				if(poiInfo.containsKey("poiChain")){
-					expDbDiffResult.setCfmPoiNumChain(poiInfo.get("poiChain"));
-				}
-			}
-			//=================================================================================================================================
-		}
 	}
 
 	/**

@@ -38,26 +38,33 @@ public class RdLink001 extends baseRule {
 
         for (IRow obj : checkCommand.getGlmList()) {
 
-            if ((obj instanceof RdLink) && (obj.status() != ObjStatus.DELETE)) {
-
-                RdLink rdLink = (RdLink) obj;
-
-                if (!linkPointFlag.add(rdLink.getsNodePid() + "_"
-                        + rdLink.geteNodePid())
-                        || !linkPointFlag.add(rdLink.geteNodePid() + "_"
-                        + rdLink.getsNodePid())) {
-
-                    this.setCheckResult("", "", 0);
-
-                    return;
-                }
-
-                nodePids.add(rdLink.getsNodePid());
-
-                nodePids.add(rdLink.geteNodePid());
-
-                handlePids.add(rdLink.getPid());
+            if (!(obj instanceof RdLink))
+            {
+                continue;
             }
+
+            RdLink rdLink = (RdLink) obj;
+
+            if (rdLink.status() == ObjStatus.DELETE)
+            {
+                handlePids.add(rdLink.getPid());
+
+                continue;
+            }
+
+            if (!linkPointFlag.add(rdLink.getsNodePid() + "_" + rdLink.geteNodePid())
+                    || !linkPointFlag.add(rdLink.geteNodePid() + "_" + rdLink.getsNodePid())) {
+
+                this.setCheckResult("", "", 0);
+
+                return;
+            }
+
+            nodePids.add(rdLink.getsNodePid());
+
+            nodePids.add(rdLink.geteNodePid());
+
+            handlePids.add(rdLink.getPid());
         }
 
         if (nodePids.size() < 1) {
@@ -75,10 +82,8 @@ public class RdLink001 extends baseRule {
                 continue;
             }
 
-            if (!linkPointFlag.add(link.getsNodePid() + "_"
-                    + link.geteNodePid())
-                    || !linkPointFlag.add(link.geteNodePid() + "_"
-                    + link.getsNodePid())) {
+            if (!linkPointFlag.add(link.getsNodePid() + "_" + link.geteNodePid())
+                    || !linkPointFlag.add(link.geteNodePid() + "_" + link.getsNodePid())) {
 
                 this.setCheckResult("", "", 0);
 

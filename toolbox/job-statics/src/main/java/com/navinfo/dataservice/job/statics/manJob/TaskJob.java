@@ -66,7 +66,7 @@ public class TaskJob extends AbstractStatJob {
 	public String stat() throws JobException {
 		try {
 			//获取统计时间
-			SubtaskJobRequest statReq = (SubtaskJobRequest)request;
+			TaskJobRequest statReq = (TaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
 			String timestamp = statReq.getTimestamp();
 			//任务统计数据

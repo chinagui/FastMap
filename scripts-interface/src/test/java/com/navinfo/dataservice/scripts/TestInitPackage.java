@@ -349,7 +349,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	public void testExportQualityPoiReport() throws Exception{
 		JobScriptsInterface.initContext();
 		
-		ExportQualityPoiReport.execute("550","D://");
+//		ExportQualityPoiReport.execute("550","D://");
 
 		System.out.println("Over.");
 		System.exit(0);

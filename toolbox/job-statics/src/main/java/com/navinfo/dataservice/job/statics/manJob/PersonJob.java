@@ -37,7 +37,8 @@ public class PersonJob extends AbstractStatJob {
 		PersonJobRequest statReq = (PersonJobRequest)request;
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-			String timestamp = statReq.getTimestamp();
+			String timestamp = statReq.getTimestamp().substring(0, 8);
+			log.info("timestamp:" + timestamp);
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(timestamp);
 			Map<String, Object> task2subTask = new HashMap<>();
 			for(Map<String, Object> map : personList){
@@ -222,7 +223,7 @@ public class PersonJob extends AbstractStatJob {
 	public Map<Integer, Object> queryPersonDay(String timestamp, MongoDao md){
 		String personTableName = "person_day";
 		BasicDBObject query = new BasicDBObject();
-		query.put("timestamp", timestamp + "190000");		
+		query.put("timestamp", timestamp + "230000");		
 		MongoCursor<Document> person = md.find(personTableName, query).iterator();
 		
 		Map<Integer, Object> subtaskData = new HashMap<>();

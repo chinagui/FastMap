@@ -22,7 +22,9 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
@@ -266,7 +268,15 @@ public class CollectorImport {
 	    	}
     	}
     	String rowKey = fileName.replace(".jpg", "");
-		controller.putPhoto(rowKey, newIn);
+		
+    	Photo photo = new Photo();
+		photo.setRowkey(rowKey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		photo.setA_content(2);
+		
+		controller.putPhoto(rowKey, newIn, photo);
+		
 		newIn.close();
 	}
 }

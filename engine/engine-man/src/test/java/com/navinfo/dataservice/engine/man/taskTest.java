@@ -235,6 +235,13 @@ public class taskTest extends InitApplication{
 	}
 	
 	@Test
+	public void testBatchMidTaskByTaskId() throws Exception
+	{
+		int data = TaskService.getInstance().batchMidTaskByTaskId(135);
+		System.out.println(data);
+	}	
+
+	@Test
 	public void test01() throws Exception{
 		
 		ManApi manApi= new ManApiImpl();

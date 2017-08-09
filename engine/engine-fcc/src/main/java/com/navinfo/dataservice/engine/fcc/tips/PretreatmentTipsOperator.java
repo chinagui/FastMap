@@ -1165,7 +1165,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
         }
         //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
-		TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+		//TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
         return rowkey;
 	}
 
@@ -1640,7 +1641,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             DbUtils.commitAndCloseQuietly(tipsConn);
         }
         //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
-        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+       // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -1889,7 +1891,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             DbUtils.commitAndCloseQuietly(tipsConn);
 		}
         //Tips差分放在oracle索引提交之后执行，才可以查询到oracle索引的数据
-        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+        //20170808  确认，web渲染不再使用差分结果。因此取消差分 
+        //TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
     }
 
 

@@ -1,0 +1,231 @@
+{
+	"tables": [{
+		"columnCount": 9,
+		"rowCount": 56,
+		"indexCount": 1,
+		"name": "BATCH_PLUS"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 578,
+		"indexCount": 3,
+		"name": "CK_RULE"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 27,
+		"indexCount": 0,
+		"name": "BATCH_OPERATION_PLUS"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 2,
+		"indexCount": 0,
+		"name": "BATCH_SUITE_COP"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 3296,
+		"indexCount": 1,
+		"name": "CK_RULE_COP"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 1345,
+		"indexCount": 0,
+		"name": "CK_SUITE_RULE_MAPPING"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "MULTISRC_FM_SYNC"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "SYNC"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "SYS_MESSAGE"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "SYS_MESSAGE_READ_LOG"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 15,
+		"indexCount": 1,
+		"name": "BATCH_RULE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 55,
+		"indexCount": 0,
+		"name": "CK_OBJECT_NODE"
+	},
+	{
+		"columnCount": 14,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "JOB_INFO"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "JOB_STEP"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "DB_REUSE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DROPBOX_UPLOAD"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 344,
+		"indexCount": 0,
+		"name": "GLM_GRID_MAP"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "APP_DATA_VERSION"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 4,
+		"indexCount": 1,
+		"name": "BATCH_RULE_COP"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DB_HUB"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "FM_LOG_STATS"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "APP_VERSION"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 9,
+		"indexCount": 0,
+		"name": "CK_SUITE_COP"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "FM_MULTISRC_SYNC"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 829,
+		"indexCount": 1,
+		"name": "GLM_TABLES"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 203,
+		"indexCount": 0,
+		"name": "CHECK_OPERATION_PLUS"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 403,
+		"indexCount": 0,
+		"name": "CHECK_PLUS"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 71,
+		"indexCount": 1,
+		"name": "SYS_CONFIG"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 172,
+		"indexCount": 0,
+		"name": "CK_SUITE"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DB_SERVER"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DROPBOX_UPLOAD_CHUNK"
+	}],
+	"functions": [{
+		"name": "VARCHAR_TO_TABLE"
+	},
+	{
+		"name": "NEIGHBOR_GRID_SAMEMESH"
+	},
+	{
+		"name": "CLOB_TO_TABLE"
+	}],
+	"sequences": [{
+		"name": "SYS_MSG_SEQ"
+	},
+	{
+		"name": "SYS_CONFIG_SEQ"
+	},
+	{
+		"name": "SEQ_UPLOAD"
+	},
+	{
+		"name": "MULTISRC_FM_SYNC_SEQ"
+	},
+	{
+		"name": "JOB_ID_SEQ"
+	},
+	{
+		"name": "GLM_TABLE_SEQ"
+	},
+	{
+		"name": "FM_MULTISRC_SYNC_SEQ"
+	},
+	{
+		"name": "DB_SERVER_SEQ"
+	},
+	{
+		"name": "DB_SEQ"
+	}],
+	"packages": [{
+		"name": "SPATIAL_UTILS"
+	}],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

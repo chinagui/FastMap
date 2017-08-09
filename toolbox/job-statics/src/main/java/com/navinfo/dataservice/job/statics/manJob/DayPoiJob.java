@@ -418,14 +418,18 @@ public class DayPoiJob extends AbstractStatJob {
 						    	Point geo;
 								try {
 									geo = (Point)GeoTranslator.struct2Jts(struct);
-									int gridId = Integer.parseInt(CompGridUtil.point2Grid(geo.getX(), geo.getY(), rs.getString("MESH_ID")));
+									double x = geo.getX();
+									double y = geo.getY();
+									String[] grids = CompGridUtil.point2Grids(x,y);
+//									int gridId = Integer.parseInt(CompGridUtil.point2Grid(geo.getX(), geo.getY(), rs.getString("MESH_ID")));
+									int gridId = Integer.parseInt(grids[0]);
 									int totalNum = 0;
 									if(notaskStat.containsKey(gridId)){
 										totalNum = notaskStat.get(gridId);									
 									}
 									notaskStat.put(gridId, totalNum+1);
 								} catch (Exception e) {
-									log.error("处理任务，子任务，无任务数据异常:" + e.getMessage(), e);
+									log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:" + e.getMessage(), e);
 								}
 						    }
 						}

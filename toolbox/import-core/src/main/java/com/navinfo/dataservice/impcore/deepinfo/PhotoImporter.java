@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.impcore.deepinfo;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
@@ -16,6 +16,12 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PhotoImporter {
+	private static final String folder = "/data/resource/photo_deep/";
+	
+	private static final String newfolder = "/data/resources/photo_deep/";
+	
+	private static String output = newfolder + "relation.txt";
+
 	public static int run(Connection conn, Statement stmt, JSONObject poi, Map<String, Map<String, Photo>> photoes)
 			throws Exception {
 
@@ -24,27 +30,42 @@ public class PhotoImporter {
 		IxPoiPhoto ixPhoto = new IxPoiPhoto();
 
 		Photo photo = new Photo();
-		
-		if(array.size() == 0) return 0;
+
+		if (array.size() == 0)
+			return 0;
 
 		int result = 0;
 		
+		/**测试**/
+		PrintWriter pw = new PrintWriter(output);
+
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject obj = array.getJSONObject(i);
 
 			int tag = obj.getInt("tag");
-			
+
 			int type = obj.getInt("type");
-			
-			String url = obj.getString("url");
-			
-			File file = new File(url);
-			
-			if(file.exists() == false){
+
+			if (tag != 7 || type != 1) {
 				continue;
 			}
 
-			if (tag != 7 || type != 1) {
+			String url = obj.getString("url");
+
+			if (url == null || url.isEmpty()) {
+				continue;
+			}
+
+			// 指定照片路径下仍存在文件夹
+			if (url.contains(folder)) {
+				url = url.replace("resource", "resources");
+			} else if (!url.contains(newfolder) && !url.contains(folder)) {
+				url = newfolder + url;
+			}
+
+			File file = new File(url);
+
+			if (file.exists() == false) {
 				continue;
 			}
 
@@ -61,9 +82,16 @@ public class PhotoImporter {
 			operator.insertRow2Sql(stmt);
 
 			runPhoto(fccPid, url, photo, photoes);
-			
+
 			result++;
+			
+			pw.println("编号：" + fccPid + ";路径" + url);
 		}
+
+		pw.flush();
+
+		pw.close();
+
 
 		return result;
 	}
@@ -93,7 +121,7 @@ public class PhotoImporter {
 		photo.setA_fileName(name);
 
 		photo.setA_uuid(fccPid);
-		
+
 		photo.setA_content(3);
 
 		if (photoes.containsKey(dir)) {
@@ -103,7 +131,7 @@ public class PhotoImporter {
 				photoes.get(dir).values().add(photo);
 
 			} else {
-				
+
 				photoes.get(dir).put(name, photo);
 			}
 		} else {

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
@@ -27,7 +28,7 @@ import java.util.*;
 //import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 
 
-public class CheckTest {
+public class CheckTest extends ClassPathXmlAppContextInit{
 
     public CheckTest() {
         // TODO Auto-generated constructor stub
@@ -35,9 +36,7 @@ public class CheckTest {
 
     @Before
     public void init() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"dubbo-test.xml"});
-        context.start();
-        new ApplicationContextUtil().setApplicationContext(context);
+    	initContext(new String[]{"dubbo-editplus.xml"});
     }
 
     //	@Test
@@ -87,7 +86,7 @@ public class CheckTest {
         test.init();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
 
-        String sql = "SELECT pid FROM poi_edit_status WHERE status=3 and rownum<2";
+        String sql = "SELECT pid FROM poi_edit_status WHERE medium_subtask_id=61";
         PreparedStatement state = conn.prepareStatement(sql);
         ResultSet rs = state.executeQuery();
         Set<Long> pids = new HashSet<Long>();
@@ -101,7 +100,7 @@ public class CheckTest {
 
         CheckCommand checkCommand = new CheckCommand();
         List<String> ruleIdList = new ArrayList<String>();
-        ruleIdList.add("FM-11Win-08-22");
+        ruleIdList.add("FM-11Win-01-17");
         checkCommand.setRuleIdList(ruleIdList);
         checkCommand.setSaveResult(false);
 

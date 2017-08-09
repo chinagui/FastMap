@@ -14,7 +14,7 @@ public class PersonDayStatStarter extends StatJobStarter {
 	@Override
 	public String jobType() {
 		// TODO Auto-generated method stub
-		return "personJob";
+		return "personDayJob";
 	}
 
 }

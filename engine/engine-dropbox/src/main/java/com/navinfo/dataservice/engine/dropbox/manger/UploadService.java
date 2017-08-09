@@ -226,7 +226,7 @@ public class UploadService {
 			HBaseController hbaseController = new HBaseController();
 				
 			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
-			String photoId = hbaseController.putPhoto(fileStream);
+			String photoId = hbaseController.putPhoto(fileStream,2);
 			
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			

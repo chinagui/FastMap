@@ -100,11 +100,12 @@ public class TipsRequestParamSQL {
 
 		StringBuilder builder = new StringBuilder();
 
-		boolean remove8001=false;
-		if(stages.size()>0 && StringUtils.isEmpty(pType)){
+		//boolean remove8001=false;
+		//--20170808取消  grid粗表和 区域粗编对 8001的特殊限制，有web来控制。输入：王屯，隋玉秀
+/*		if(stages.size()>0 && StringUtils.isEmpty(pType)){
 			// WEB
 			// 类型过滤
-			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）
+			// 日编Grid粗编子任务作业时不展示FC预处理tips（8001）--20170808取消
 			// 3 grid粗编,查8001之外的所有。 8002+其他（不包含8001）
 			if (subTaskType == 3) {
 //				builder.append(" AND s_sourceType!='8001'");// 接边Tips
@@ -114,7 +115,7 @@ public class TipsRequestParamSQL {
 				types = new JSONArray();
 				types.add("8001");
 			}
-		}
+		}*/
 
 		if (types.size() > 0) {
 			Set<String> typeSet = new HashSet<>();
@@ -124,21 +125,21 @@ public class TipsRequestParamSQL {
 			for(String type : this.getFilter315()){
 				typeSet.remove(type);
 			}
-			if(remove8001){//过滤8001
+		/*	if(remove8001){//过滤8001
 				typeSet.remove("8001");
-			}
+			}*/
 			if(typeSet.size()>0) {
 				this.getStringArrayQuery(builder, typeSet, "s_sourceType");
 			}
 		}else{
 			// 过滤315 web不显示的tips 20170118
-			if(remove8001){
+			//if(remove8001){
 				//除了要过滤的tips，还要过滤8001
-				this.getFilter315With8001(builder);
-			}else {
+			//	this.getFilter315With8001(builder);
+			//}else {
 				//不过滤8001
 				this.getFilter315(builder);
-			}
+			//}
 		}
 
 		if (stages.size() > 0) {
@@ -579,8 +580,9 @@ public class TipsRequestParamSQL {
             List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
-            builder.append(" AND ");
-            builder.append(" s_sourceType='8001'");
+            //20170808修改，服务不再限制类型，由web控制。输入：玉秀、王屯
+   /*         builder.append(" AND ");
+            builder.append(" s_sourceType='8001'");*/
             builder.append(" AND ");
             builder.append(projectBuilder);
         }

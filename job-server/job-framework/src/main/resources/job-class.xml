@@ -130,4 +130,8 @@
 		  class="com.navinfo.dataservice.check.job.DayLogCheckImportJob"
 		  request="com.navinfo.dataservice.check.job.DayLogCheckImportJobRequest">
 	</type>
+	<type name="taskStat"
+		  class="com.navinfo.dataservice.job.statics.manJob.TaskJob"
+		  request="com.navinfo.dataservice.job.statics.manJob.TaskJobRequest" >
+	</type>
 	</mapping>

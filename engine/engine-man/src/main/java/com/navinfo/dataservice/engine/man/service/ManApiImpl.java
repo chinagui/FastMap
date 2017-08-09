@@ -479,10 +479,30 @@ public class ManApiImpl implements ManApi {
 	/**
 	 * 查询task的grids
 	 * @author Han Shaoming
-	 * @return	Map<Integer,Set<Integer>> key:taskId,value:grids
+	 * @return	Set<Integer>  grids
+	 * @throws ExceptionSELECT TASK_ID FROM TASK
+	 */
+	public Map<Integer, Integer> queryGridIdsByTaskId(int taskId) throws Exception{
+		return TaskService.getInstance().getGridMapByTaskId(taskId);
+	}
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
 	 * @throws Exception
 	 */
-	public Map<Integer,Set<Integer>> queryGrids() throws Exception{
-		return TaskService.getInstance().queryGrids();
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception{
+		return TaskService.getInstance().querySubtaskByTaskId(taskId);
+	}
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception{
+		return TaskService.getInstance().queryProgramTypes();
 	}
 }

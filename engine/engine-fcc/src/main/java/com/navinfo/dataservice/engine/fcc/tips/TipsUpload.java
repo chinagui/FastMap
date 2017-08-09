@@ -96,8 +96,17 @@ public class TipsUpload {
 	private Subtask subtask = null;
 	private int qcTotal = 0;
 	private JSONArray qcReasons = new JSONArray();
+    private String qcErrMsg = "";
 
-	public int getQcTotal() {
+    public String getQcErrMsg() {
+        return qcErrMsg;
+    }
+
+    public void setQcErrMsg(String qcErrMsg) {
+        this.qcErrMsg = qcErrMsg;
+    }
+
+    public int getQcTotal() {
 		return qcTotal;
 	}
 
@@ -1057,20 +1066,33 @@ public class TipsUpload {
         java.sql.Connection regionDBConn = null;
 		try {
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
+                List<FieldRoadQCRecord> records = loadQualityContent(fileName);
+
                 oracleConn = DBConnector.getInstance().getTipsIdxConnection();
                 int dbId = subtask.getDbId();
                 regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
 
 				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
 				ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-				Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
-				String groupName = (String) subTaskMap.get("groupName");
-				String province = (String) subTaskMap.get("province");
-				String city = (String) subTaskMap.get("city");
-				int userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
-				String version = (String) subTaskMap.get("version");
-				String startDate = (String) subTaskMap.get("planStartDate");
-
+                Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
+                String groupName = "";
+                String province = "";
+                String city = "";
+                int userId = 0;
+                String version = "";
+                String startDate = "";
+                try {
+                    groupName = (String) subTaskMap.get("groupName");
+                    province = (String) subTaskMap.get("province");
+                    city = (String) subTaskMap.get("city");
+                    userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
+                    version = (String) subTaskMap.get("version");
+                    startDate = (String) subTaskMap.get("planStartDate");
+                }catch (Exception e) {
+                    qcErrMsg = "质检子任务" + subTaskId + "信息不完整";
+                    e.printStackTrace();
+                    return;
+                }
 				String deleteSql = "delete from FIELD_RD_QCRECORD " + "where PROBLEM_NUM = ?";
 
 				String insertSql = "INSERT INTO FIELD_RD_QCRECORD(UUID, AREA, FIELD_GROUP, LINK_PID, PROVINCE, "
@@ -1088,7 +1110,6 @@ public class TipsUpload {
 				deletePstmt = checkConn.prepareStatement(deleteSql);
 				insertPstmt = checkConn.prepareStatement(insertSql);
 
-				List<FieldRoadQCRecord> records = loadQualityContent(fileName);
 				hbaseConn = HBaseConnector.getInstance().getConnection();
 
 				htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));

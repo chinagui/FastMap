@@ -19,6 +19,7 @@
                 <ref bean="monthPoiStat_Trigger" />
                 <ref bean="dayPlanStat_Trigger" />
                 <ref bean="personDayStat_Trigger" />
+                <ref bean="tipsStat_Trigger" />
 <!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
             </list>
         </property>
@@ -111,6 +112,12 @@
         <property name="jobDetail" ref="dayPlanStat_detail" />
         <property name="cronExpression" value="0 * * * * ?" />
     </bean>
+    
+    <bean id="tipsStat_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="tipsStat_detail" />
+        <property name="cronExpression" value="0 0/1 * * * ?" />
+    </bean>
 <!--     <bean id="poiQualityInitCountTable_Trigger" -->
 <!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
 <!--         <property name="jobDetail" ref="poiQualityInitCountTable_detail" /> -->
@@ -139,6 +146,12 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
+    
+     <bean id="tipsStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="tipsStat" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
 <!--     <bean id="poiQualityInitCountTable_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> -->
 <!--         <property name="targetObject" ref="poiQualityInitCountTable" /> -->
 <!--         <property name="targetMethod" value="start" /> -->
@@ -151,6 +164,7 @@
 	
 	<bean id="monthPoiStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.MonthPoiStatStarter"/>
 	<bean id="dayPlanStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayPlanStatStarter"/>
+	<bean id="tipsStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.TipsStatStarter"/>
 <!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
 	
 </beans>

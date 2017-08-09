@@ -161,14 +161,16 @@ public class PersonJob extends AbstractStatJob {
 		Map<String, Object> data = convertDataBySubtask(personTips, task2subTask);
 		for(Entry<String, Object> entry : data.entrySet()){
 			String key = entry.getKey();
-			Map<String, Integer> subMap = (Map<String, Integer>) entry.getValue();
-			Map<String, Integer> map = (Map<String, Integer>) dayPlanData.get(key);
+			Map<String, Object> subMap = (Map<String, Object>) entry.getValue();
+			Map<String, Object> map = (Map<String, Object>) dayPlanData.get(key);
 			if(map == null){
 				continue;
 			}
 			map.put("poiUploadNum", subMap.get("poiUploadNum"));
 			map.put("poiFreshNum", subMap.get("poiFreshNum"));
 			map.put("poiFinishNum", subMap.get("poiFinishNum"));
+			map.put("tipsAddLen", subMap.get("tipsAddLen"));
+			map.put("tipsAllLen", subMap.get("tipsAllLen"));
 			dayPlanData.put(key, map);
 		}
 		
@@ -196,7 +198,7 @@ public class PersonJob extends AbstractStatJob {
 			double tipsAllLen = 0;
 			int subtaskId = 0;
 			for(int j = 0; j < tipsContent.size(); j++){
-				Map<String, Object> map = new HashMap<>();
+ 				Map<String, Object> map = new HashMap<>();
 				Map<String, Object> tipsData = (Map<String, Object>) tipsContent.get(j);
 				subtaskId = Integer.parseInt(tipsData.get("subtaskId").toString());
 				tipsAddLen = Double.valueOf(tipsData.get("tipsAddLen").toString());
@@ -274,6 +276,8 @@ public class PersonJob extends AbstractStatJob {
 			int poiUploadNum = 0;
 			int poiFreshNum = 0;
 			int poiFinishNum = 0;
+			double tipsAddLen = 0;
+			double tipsAllLen = 0;
 			for(Entry<Integer, Object> subEntry : personTips.entrySet()){
 				long subtaskId = Long.valueOf(subEntry.getKey());
 				if(subtaskIds.contains(subtaskId)){
@@ -281,6 +285,8 @@ public class PersonJob extends AbstractStatJob {
 					poiUploadNum += (int) subMap.get("poiUploadNum");
 					poiFreshNum += (int) subMap.get("poiFreshNum");
 					poiFinishNum += (int) subMap.get("poiFinishNum");
+					tipsAddLen +=  Double.valueOf(subMap.get("tipsAddLen").toString());
+					tipsAllLen +=  Double.valueOf(subMap.get("tipsAllLen").toString());
 				}
 			}
 
@@ -288,6 +294,8 @@ public class PersonJob extends AbstractStatJob {
 			map.put("poiUploadNum", poiUploadNum);
 			map.put("poiFreshNum", poiFreshNum);
 			map.put("poiFinishNum", poiFinishNum);
+			map.put("tipsAddLen", tipsAddLen);
+			map.put("tipsAllLen", tipsAllLen);
 			result.put(key, map);
 		}
 		return result;

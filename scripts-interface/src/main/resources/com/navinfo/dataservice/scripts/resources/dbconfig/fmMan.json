@@ -1,0 +1,450 @@
+{
+	"tables": [{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "SG_MESH_CITY"
+	},
+	{
+		"columnCount": 40,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "SG_RAW_BLOCK"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "DAY2MONTH_CONFIG"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "GRID_LOCK_DAY"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "INFOR_GRID_MAPPING"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "BLOCK"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "APPLICATION_TIMELINE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "GRID_LOCK_MONTH"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "JOB_PROGRESS"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "POI_COLUMN_QC_MAPPING"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "PROGRAM_PROGRESS"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "USER_DEVICE"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "CP_REGION_PROVINCE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_OVERVIEW_GROUP"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "GRID_LOCK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "PRODUCE"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROLE_MODULE_MAPPING"
+	},
+	{
+		"columnCount": 27,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TASK"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "SUBTASK_REFER"
+	},
+	{
+		"columnCount": 25,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_OVERVIEW"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MAN_TIMELINE"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 40,
+		"indexCount": 1,
+		"name": "POI_COLUMN_QC_CONF"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "PROGRAM"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ROLE_USER_MAPPING"
+	},
+	{
+		"columnCount": 10,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TASK_PROGRESS"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "USER_GROUP"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "SUBTASK"
+	},
+	{
+		"columnCount": 17,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "BLOCK_PLAN"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_DAY2MONTH_SYNC"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_DAY2MONTH"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_TASK_OVERVIEW"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 2000544,
+		"indexCount": 1,
+		"name": "GRID"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MAN_CONFIG"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "PROGRAM_GRID_MAPPING"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "RELEASE_TASK"
+	},
+	{
+		"columnCount": 7,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "CUSTOMISED_LAYER"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "SUBTASK_QUALITY"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "APP_VERSION"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_OVERVIEW_TASK"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "MODULE"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "REGION"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 5,
+		"indexCount": 1,
+		"name": "ROLE"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "SUBTASK_GRID_MAPPING"
+	},
+	{
+		"columnCount": 24,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "INFOR"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "USER_INFO"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "CITY"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "SG_GRID_BLOCK"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "ADMIN_GROUP_MAPPING"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "APPLICATION"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "APPLICATION_DETAIL"
+	},
+	{
+		"columnCount": 39,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "FM_STAT_OVERVIEW_PROGRAM"
+	},
+	{
+		"columnCount": 20,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "FM_STAT_OVERVIEW_SUBTASK"
+	},
+	{
+		"columnCount": 2,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "GROUP_USER_MAPPING"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "JOB"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "JOB_RELATION"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "TASK_CMS_PROGRESS"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "TASK_GRID_MAPPING"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "USER_UPLOAD"
+	}],
+	"functions": [{
+		"name": "CLOB_TO_TABLE"
+	},
+	{
+		"name": "VARCHAR_TO_TABLE"
+	}],
+	"sequences": [{
+		"name": "APPLICATION_SEQ"
+	},
+	{
+		"name": "AUTOID"
+	},
+	{
+		"name": "BLOCK_MAN_SEQ"
+	},
+	{
+		"name": "BLOCK_SEQ"
+	},
+	{
+		"name": "CITY_SEQ"
+	},
+	{
+		"name": "CUSTOMISED_LAYER_SEQ"
+	},
+	{
+		"name": "DAY2MONTH_CONFIG_SEQ"
+	},
+	{
+		"name": "FM_DAY2MONTH_SYNC_SEQ"
+	},
+	{
+		"name": "GRID_LOCK_SEQ"
+	},
+	{
+		"name": "GRID_SEQ"
+	},
+	{
+		"name": "INFOR_SEQ"
+	},
+	{
+		"name": "JOB_PROGRESS_SEQ"
+	},
+	{
+		"name": "JOB_SEQ"
+	},
+	{
+		"name": "MESSAGE_SEQ"
+	},
+	{
+		"name": "MODULE_SEQ"
+	},
+	{
+		"name": "PHASE_SEQ"
+	},
+	{
+		"name": "PRODUCE_SEQ"
+	},
+	{
+		"name": "PROGRAM_PROGRESS_SEQ"
+	},
+	{
+		"name": "PROGRAM_SEQ"
+	},
+	{
+		"name": "RELEASE_SEQ"
+	},
+	{
+		"name": "ROLE_SEQ"
+	},
+	{
+		"name": "SUBTASK_QUALITY_SEQ"
+	},
+	{
+		"name": "SUBTASK_REFER_SEQ"
+	},
+	{
+		"name": "SUBTASK_SEQ"
+	},
+	{
+		"name": "TASK_PROGRESS_SEQ"
+	},
+	{
+		"name": "TASK_SEQ"
+	},
+	{
+		"name": "USER_DEVICE_SEQ"
+	},
+	{
+		"name": "USER_GROUP_SEQ"
+	},
+	{
+		"name": "USER_INFO_SEQ"
+	}],
+	"packages": [{
+		"name": "SPATIAL_UTILS"
+	}],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

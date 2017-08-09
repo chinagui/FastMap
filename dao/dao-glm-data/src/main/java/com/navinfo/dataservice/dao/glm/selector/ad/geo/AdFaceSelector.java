@@ -1,25 +1,25 @@
 package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.navinfo.navicommons.exception.DAOException;
-import com.navinfo.navicommons.exception.ServiceException;
-import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdFaceSelector extends AbstractSelector {
 
@@ -273,15 +273,16 @@ public class AdFaceSelector extends AbstractSelector {
      * @param isLock 是否加锁
      * @return 相交面
      */
-    public List<AdFace> listAdface(String wkt, boolean isLock) throws ServiceException {
+    public List<AdFace> listAdface(String wkt, List<Integer> excludes, boolean isLock) throws ServiceException {
         List<AdFace> list = new ArrayList<>();
         String sql = "SELECT T.FACE_PID, T.GEOMETRY FROM AD_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
-                + ") = 'TRUE' AND T.U_RECORD <> 2";
+                + ") = 'TRUE' AND T.U_RECORD <> 2 AND T.FACE_PID NOT IN (:2)";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setString(1, wkt);
+            pstmt.setString(2, StringUtils.getInteStr(excludes));
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 AdFace face = new AdFace();

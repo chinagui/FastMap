@@ -321,13 +321,14 @@ public class TipsImportUtils {
     }
 
     public static String queryNodeRelateLink(Connection conn, String id) throws Exception{
-        String sqlLink = "select rl.LINK_PID from rd_link rl where (rl.S_NODE_PID = " + id + " OR "
-                + "       rl.E_NODE_PID = " + id + ") AND ROWNUM = 1 ";
+        String sqlLink = "select rl.LINK_PID from rd_link rl where (rl.S_NODE_PID = :1 OR "
+                + "       rl.E_NODE_PID = :2) AND ROWNUM = 1 ";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sqlLink);
             pstmt.setString(1, id);
+			pstmt.setString(2, id);
             resultSet = pstmt.executeQuery();
             if (resultSet.next()){//有记录
                 String linkPid = resultSet.getString("LINK_PID");

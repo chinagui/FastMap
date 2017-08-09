@@ -936,8 +936,6 @@ public class LogReader {
 				map.get(subtaskId).add(pid);
 			}
 			for(Entry<Integer, Set<Long>> entry : map.entrySet()){
-				//SubtaskId=0不统计
-				if(entry.getKey() == 0){continue;}
 				result.put(entry.getKey(), entry.getValue().size());
 			}
 			return result;

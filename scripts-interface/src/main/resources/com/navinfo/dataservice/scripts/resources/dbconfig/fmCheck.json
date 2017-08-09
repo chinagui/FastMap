@@ -1,0 +1,73 @@
+{
+	"tables": [{
+		"columnCount": 40,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_PROBLEM_SUMMARY"
+	},
+	{
+		"columnCount": 15,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "TIPS_CHECK_RESULT"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 83,
+		"indexCount": 1,
+		"name": "CHECK_PERCENT"
+	},
+	{
+		"columnCount": 44,
+		"rowCount": 0,
+		"indexCount": 2,
+		"name": "FIELD_RD_QCRECORD"
+	},
+	{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "CHECK_RESULT"
+	},
+	{
+		"columnCount": 13,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "CHECK_WRONG"
+	},
+	{
+		"columnCount": 87,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "POI_COUNT_TABLE"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 56,
+		"indexCount": 1,
+		"name": "TIPS_CHECK_RULE"
+	},
+	{
+		"columnCount": 12,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "CHECK_TASK"
+	}],
+	"functions": [{
+		"name": "CLOB_TO_TABLE"
+	},
+		{
+			"name": "VARCHAR_TO_TABLE"
+		}],
+	"sequences": [{
+		"name": "SEQ_FIELD_RD_QCRECORD"
+	},
+		{
+			"name": "SEQ_TIPS_CHECK_RESULT"
+		}],
+	"packages": [],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

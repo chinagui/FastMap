@@ -777,7 +777,6 @@ public class TipsOperator {
         builder.append(" sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE'");
 
         Connection hbaseConn = null;
-        java.sql.Connection tipsConn=null;
         Table htab = null;
         java.sql.Connection oracleConn = null;
         try {
@@ -788,7 +787,7 @@ public class TipsOperator {
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
             //SolrDocumentList sdList = solr.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
             TipsIndexOracleOperator oracleOperator = new TipsIndexOracleOperator(oracleConn);
-            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), ConnectionUtil.createClob(tipsConn, wkt));
+            List<TipsDao> tipsDaos = oracleOperator.query(builder.toString(), ConnectionUtil.createClob(oracleConn, wkt));
 
             if (CollectionUtils.isEmpty(tipsDaos)) {
                 return 0;

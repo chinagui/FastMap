@@ -1,0 +1,55 @@
+{
+	"tables": [{
+		"columnCount": 40,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "POI_PROBLEM_SUMMARY"
+	},
+	{
+		"columnCount": 36,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_DEALERSHIP_SOURCE"
+	},
+	{
+		"columnCount": 8,
+		"rowCount": 0,
+		"indexCount": 1,
+		"name": "IX_DEALERSHIP_HISTORY"
+	},
+	{
+		"columnCount": 53,
+		"rowCount": 0,
+		"indexCount": 3,
+		"name": "IX_DEALERSHIP_RESULT"
+	},
+	{
+		"columnCount": 87,
+		"rowCount": 0,
+		"indexCount": 6,
+		"name": "POI_COUNT_TABLE"
+	},
+	{
+		"columnCount": 6,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "IX_DEALERSHIP_CHAIN"
+	}],
+	"functions": [{
+		"name": "CLOB_TO_TABLE"
+	}],
+	"sequences": [{
+		"name": "SOURCE_SEQ"
+	},
+	{
+		"name": "RESULT_SEQ"
+	},
+	{
+		"name": "HISTORY_SEQ"
+	}],
+	"packages": [],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

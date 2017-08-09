@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.impcore.deepinfo;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -36,6 +37,12 @@ public class PhotoImporter {
 			int type = obj.getInt("type");
 			
 			String url = obj.getString("url");
+			
+			File file = new File(url);
+			
+			if(file.exists() == false){
+				continue;
+			}
 
 			if (tag != 7 || type != 1) {
 				continue;

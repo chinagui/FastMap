@@ -192,21 +192,21 @@ public class PersonJob extends AbstractStatJob {
 		while(personTips.hasNext()){
 			JSONObject tipsJson = JSONObject.fromObject(personTips.next());
 			JSONArray tipsContent = tipsJson.getJSONArray("content");
-			int tipsAddLen = 0;
-			int tipsAllLen = 0;
+			double tipsAddLen = 0;
+			double tipsAllLen = 0;
 			int subtaskId = 0;
 			for(int j = 0; j < tipsContent.size(); j++){
-				Map<String, Integer> map = new HashMap<>();
-				Map<String, Integer> tipsData = (Map<String, Integer>) tipsContent.get(j);
-				subtaskId = tipsData.get("subtaskId");
-				tipsAddLen = tipsData.get("tipsAddLen");
-				tipsAllLen = tipsData.get("tipsAddLen");
+				Map<String, Object> map = new HashMap<>();
+				Map<String, Object> tipsData = (Map<String, Object>) tipsContent.get(j);
+				subtaskId = Integer.parseInt(tipsData.get("subtaskId").toString());
+				tipsAddLen = Double.valueOf(tipsData.get("tipsAddLen").toString());
+				tipsAllLen = Double.valueOf(tipsData.get("tipsAllLen").toString());
 				if(result.containsKey(subtaskId)){
-					tipsAddLen += tipsData.get("tipsAddLen");
-					tipsAllLen += tipsData.get("tipsAddLen");
+					tipsAddLen += Double.valueOf(tipsData.get("tipsAddLen").toString());
+					tipsAllLen += Double.valueOf(tipsData.get("tipsAllLen").toString());
 				}
-				map.put("tipsAddLen", tipsAddLen);
-				map.put("tipsAllLen", tipsAllLen);
+				map.put("tipsAddLen", String.valueOf(tipsAddLen));
+				map.put("tipsAllLen", String.valueOf(tipsAllLen));
 			    result.put(subtaskId, map);
 			}
 		}

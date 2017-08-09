@@ -19,8 +19,6 @@ public class PhotoImporter {
 	private static final String folder = "/data/resource/photo_deep/";
 	
 	private static final String newfolder = "/data/resources/photo_deep/";
-	
-	private static String output = newfolder + "relation.txt";
 
 	public static int run(Connection conn, Statement stmt, JSONObject poi, Map<String, Map<String, Photo>> photoes)
 			throws Exception {
@@ -35,9 +33,6 @@ public class PhotoImporter {
 			return 0;
 
 		int result = 0;
-		
-		/**测试**/
-		PrintWriter pw = new PrintWriter(output);
 
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject obj = array.getJSONObject(i);
@@ -84,14 +79,7 @@ public class PhotoImporter {
 			runPhoto(fccPid, url, photo, photoes);
 
 			result++;
-			
-			pw.println("编号：" + fccPid + ";路径" + url);
 		}
-
-		pw.flush();
-
-		pw.close();
-
 
 		return result;
 	}

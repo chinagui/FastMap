@@ -221,7 +221,7 @@ public class ConfigService {
 				//sql=sql+" and s.mesh in ('"+dataJson.getString("meshList").replaceAll(",", "'")+"')";				
 				sql=sql+" and s.mesh in (select column_value from table(clob_to_table(?)))";
 				clob=ConnectionUtil.createClob(metaConn);
-				clob.setString(1, dataJson.getString("meshList"));
+				clob.setString(1, dataJson.getString("meshList").replaceAll(" ", ""));
 			}	
 			log.info(sql);
 			QueryRunner runner=new QueryRunner();

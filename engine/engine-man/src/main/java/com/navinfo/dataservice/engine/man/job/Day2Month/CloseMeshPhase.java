@@ -65,15 +65,19 @@ public class CloseMeshPhase extends JobPhase {
                 tipsMeshset.addAll(meshs);
                 
                 if(tipsMeshset.size()>0) {
-                	JSONObject dataJson=new JSONObject();
-                	dataJson.put("openFlag", 0);
-                	dataJson.put("quickAction", lot);
-                	
-                	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
-                	log.info("快线批次赋值+图幅关闭");
-                	//快线项目日落月关图幅时，只有批次不一致的才关闭图幅
-                    meta = DBConnector.getInstance().getMetaConnection();
-                    ConfigService.getInstance().mangeMesh(meta, dataJson);
+                	//快线传进来的参数为第3批次，不关闸；其他的，则与原始批次不一致的都要关闸
+                	meta = DBConnector.getInstance().getMetaConnection();
+                	if(lot!=3){
+	                	JSONObject dataJson=new JSONObject();
+	                	dataJson.put("openFlag", 0);
+	                	dataJson.put("quickAction", lot);
+	                	
+	                	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
+	                	log.info("快线批次赋值+图幅关闭");
+	                	//快线项目日落月关图幅时，只有批次不一致的才关闭图幅
+	                    
+	                    ConfigService.getInstance().mangeMesh(meta, dataJson);
+                	}
                     log.info("快线批次赋值");//快线批次字段是所有图幅均赋值
                     String updateSql = "UPDATE SC_PARTITION_MESHLIST SET QUICK"+lot+"_FLAG=1 WHERE MESH IN "
                             + tipsMeshset.toString().replace("[", "(").replace("]", ")");

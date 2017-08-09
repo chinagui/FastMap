@@ -8,10 +8,17 @@
 		<job name="dayPlanStat"/>
 		<!-- <job name="personTipsStat"/> -->
 	</group>
-	<!-- <group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>
 		<job name="poiDayStat"/>
-	</group> -->
+		<!-- <job name="tipsStat"/> -->
+	</group>
+	<group name="taskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
+		<job name="monthPoiStat"/>
+		<job name="poiDayStat"/>
+		<!-- <job name="tipsStat"/> -->
+		<job name="dayPlanStat"/>
+		<job name="subtaskStat"/>
+	</group>
 	
 </mapping>

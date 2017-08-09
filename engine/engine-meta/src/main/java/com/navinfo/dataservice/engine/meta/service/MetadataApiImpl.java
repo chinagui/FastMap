@@ -1018,5 +1018,33 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<Integer> queryReliabilityPid(int minNumber, int maxNumber) throws SQLException {
 		return ScQueryReliabilityPid.getInstance().ScQueryReliabilityPid(minNumber, maxNumber);
 	}
+	@Override
+	public Integer queryEditMethTipsCode(String code) throws SQLException {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			String sql = " select D_EDIT_METH from sc_tips_code t WHERE code = '"+code+"' ";
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer> (){
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getInt(1);
+					}
+					return null;
+				}	
+	    	};				
+
+	    	return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 
 }

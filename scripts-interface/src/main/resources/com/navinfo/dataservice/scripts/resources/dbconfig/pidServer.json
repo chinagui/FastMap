@@ -1,0 +1,28 @@
+{
+	"tables": [{
+		"columnCount": 5,
+		"rowCount": 0,
+		"indexCount": 0,
+		"name": "GLOBAL_ID_LOG"
+	},
+	{
+		"columnCount": 3,
+		"rowCount": 969,
+		"indexCount": 2,
+		"name": "GLOBAL_ID_USAGE"
+	}],
+	"functions": [{
+		"name": "VARCHAR_TO_TABLE"
+	},
+	{
+		"name": "CLOB_TO_TABLE"
+	}],
+	"sequences": [],
+	"packages": [{
+		"name": "GLOBAL_ID_MAN"
+	}],
+	"procedures": [],
+	"types": [{
+		"name": "VARCHAR_TAB"
+	}]
+}

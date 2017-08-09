@@ -260,7 +260,6 @@ public class Fm2ChargeInit {
 				log.error(e.getMessage(),e);
 				log.error("dbId("+dbId+")转桩家失败");
 				poiLog.add("dbId("+dbId+")转桩家失败,原因:"+e.getMessage());
-				DbUtils.rollbackAndCloseQuietly(conn);
 //				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败");
 			}finally{
 				//处理数据
@@ -269,7 +268,7 @@ public class Fm2ChargeInit {
 				jso.put("log", poiLog);
 				chargePOIs.put(dbId, jso);
 				
-				DbUtils.commitAndCloseQuietly(conn);
+				DbUtils.closeQuietly(conn);
 				if(latch!=null){
 					latch.countDown();
 				}

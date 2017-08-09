@@ -251,11 +251,10 @@ public class MonthPoiJob extends AbstractStatJob {
 				stats.put(dbId, temp);
 
 			}catch(Exception e){
-				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error(e.getMessage(),e);
 				throw new ThreadExecuteException("dbId("+dbId+")POI月库作业数据统计失败");
 			}finally{
-				DbUtils.commitAndCloseQuietly(conn);
+				DbUtils.closeQuietly(conn);
 				if(latch!=null){
 					latch.countDown();
 				}

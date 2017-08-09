@@ -313,8 +313,6 @@ public class Fm2ChargeAdd {
 				log.error(e.getMessage(),e);
 				log.error("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 				poiLog.add("dbId("+dbId+")转桩家失败,原因:"+e.getMessage());
-				DbUtils.rollbackAndCloseQuietly(conn);
-				DbUtils.rollbackAndCloseQuietly(connM);
 //				throw new ThreadExecuteException("dbId("+dbId+")转桩家失败,同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 			}finally{
 				//处理数据
@@ -323,8 +321,8 @@ public class Fm2ChargeAdd {
 				jso.put("log", poiLog);
 				chargePOIs.put(dbId, jso);
 				
-				DbUtils.commitAndCloseQuietly(conn);
-				DbUtils.commitAndCloseQuietly(connM);
+				DbUtils.closeQuietly(conn);
+				DbUtils.closeQuietly(connM);
 				if(latch!=null){
 					latch.countDown();
 				}

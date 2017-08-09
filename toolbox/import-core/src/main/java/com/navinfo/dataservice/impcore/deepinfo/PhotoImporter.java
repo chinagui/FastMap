@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.impcore.deepinfo;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
@@ -17,6 +17,10 @@ import net.sf.json.JSONObject;
 
 public class PhotoImporter {
 	private static final String folder = "/data/resource/photo_deep/";
+	
+	private static final String newfolder = "/data/resources/photo_deep/";
+	
+	private static String output = newfolder + "relation.txt";
 
 	public static int run(Connection conn, Statement stmt, JSONObject poi, Map<String, Map<String, Photo>> photoes)
 			throws Exception {
@@ -31,6 +35,9 @@ public class PhotoImporter {
 			return 0;
 
 		int result = 0;
+		
+		/**测试**/
+		PrintWriter pw = new PrintWriter(output);
 
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject obj = array.getJSONObject(i);
@@ -50,8 +57,10 @@ public class PhotoImporter {
 			}
 
 			// 指定照片路径下仍存在文件夹
-			if (!url.contains(folder)) {
-				url = folder + url;
+			if (url.contains(folder)) {
+				url = url.replace("resource", "resources");
+			} else if (!url.contains(newfolder) && !url.contains(folder)) {
+				url = newfolder + url;
 			}
 
 			File file = new File(url);
@@ -75,7 +84,14 @@ public class PhotoImporter {
 			runPhoto(fccPid, url, photo, photoes);
 
 			result++;
+			
+			pw.println("编号：" + fccPid + ";路径" + url);
 		}
+
+		pw.flush();
+
+		pw.close();
+
 
 		return result;
 	}

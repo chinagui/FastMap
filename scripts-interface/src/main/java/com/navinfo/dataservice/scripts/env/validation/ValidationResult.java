@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts.env.validation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** 
@@ -9,7 +10,7 @@ import java.util.List;
  * @Description: ValidationResult.java
  */
 public class ValidationResult {
-	protected List<String> errs;
+	protected List<String> errs=new ArrayList<>();
 	public List<String> getErrs() {
 		return errs;
 	}
@@ -22,5 +23,5 @@ public class ValidationResult {
 	public void setWarnings(List<String> warnings) {
 		this.warnings = warnings;
 	}
-	protected List<String> warnings;
+	protected List<String> warnings=new ArrayList<>();
 }

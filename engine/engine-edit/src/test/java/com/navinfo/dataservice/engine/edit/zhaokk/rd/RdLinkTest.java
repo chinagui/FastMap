@@ -10,12 +10,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.sys.SysLogConstant;
-import com.navinfo.dataservice.dao.glm.model.sys.SysLogOperator;
-import com.navinfo.dataservice.dao.glm.model.sys.SysLogStats;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -231,13 +231,14 @@ public class RdLinkTest extends InitApplication {
 	public void testSysLog() throws Exception {
 		SysLogStats log = new SysLogStats();
 		log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
-		log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC);
+		log.setLogDesc("jobId :"+SysLogConstant.POI_UPLOAD_DESC);
 		log.setFailureTotal(2);
 		log.setSuccessTotal(3);
 		log.setTotal(5);
 		log.setBeginTime(DateUtils.getSysDateFormat());
 		log.setEndTime(DateUtils.getSysDateFormat());
 		log.setErrorMsg("32342423423");
+		//log.setUserId(userId);
 		SysLogOperator.getInstance().insertSysLog(log);
 
 	}

@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +53,9 @@ public class FMYW20264 extends BasicCheckRule {
 
             IxPoiObj poiObj = (IxPoiObj) basicObj;
             List<IxPoiGasstation> gasstations = poiObj.getIxPoiGasstations();
+            if (CollectionUtils.isEmpty(gasstations)) {
+                continue;
+            }
 
             for (IxPoiGasstation gasstation : gasstations) {
                 if (StringUtils.isEmpty(gasstation.getOpenHour())) {

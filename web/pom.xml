@@ -24,7 +24,6 @@
 		<module>edit-row-web</module>
 		<module>sys-web</module>
 		<module>edit-dealership-web</module>
-		<module>monitor-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

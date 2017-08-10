@@ -18,6 +18,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.ChainLoader;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /** 
  * @ClassName: GLM53049
@@ -94,19 +95,28 @@ public class GLM53049 extends baseRule{
 			String sql = sb.toString();
 			log.info("RdLinkRtic后检查GLM53049,判断link是否挂接在环岛或者特殊交通上:" + sql);
 
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);		
-			ResultSet resultSet = pstmt.executeQuery();
+			PreparedStatement pstmt = null;		
+			ResultSet resultSet = null;
 			HashSetRdLinkAndPid hashSetRdLinkAndPid = new HashSetRdLinkAndPid();
+			try{
+				pstmt = this.getConn().prepareStatement(sql);		
+				resultSet = pstmt.executeQuery();
+				
+	
+				while (resultSet.next()){
+					RdLink rdLink = new RdLink();
+					rdLink.setPid(resultSet.getInt("LINK_PID"));
+					rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
+					rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
+					hashSetRdLinkAndPid.add(rdLink);
+				} 
+			} finally {
 
-			while (resultSet.next()){
-				RdLink rdLink = new RdLink();
-				rdLink.setPid(resultSet.getInt("LINK_PID"));
-				rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
-				rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
-				hashSetRdLinkAndPid.add(rdLink);
-			} 
-			resultSet.close();
-			pstmt.close();
+	            DBUtils.closeResultSet(resultSet);
+	
+	            DBUtils.closeStatement(pstmt);
+			}
+			
 			//如果link没有挂接在环岛或者特殊交通上
 			if(hashSetRdLinkAndPid.size()==0){
 				return;
@@ -127,6 +137,7 @@ public class GLM53049 extends baseRule{
 				}
 				check(huanSpecTrafficChain.getRdLinkPidSet(),rdLinkRtic.getLinkPid());
 			}
+		
 		}
 		
 	}

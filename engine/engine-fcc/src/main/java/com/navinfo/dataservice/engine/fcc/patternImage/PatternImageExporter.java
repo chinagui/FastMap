@@ -33,12 +33,13 @@ public class PatternImageExporter {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
+		PreparedStatement prep =null;
 
 		try {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 
-			PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+			prep = sqliteConn.prepareStatement(insertSql);
 
 			pstmt = conn.createStatement();
 
@@ -106,6 +107,14 @@ public class PatternImageExporter {
 			throw new Exception(e);
 
 		} finally {
+			if(prep!=null){
+				try {
+					prep.close();
+				} catch (Exception e) {
+
+				}
+
+			}
 			if (resultSet != null) {
 				try {
 					resultSet.close();
@@ -146,13 +155,17 @@ public class PatternImageExporter {
 		// create a database connection
 		sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
 				+ "/image.sqlite", config.toProperties());
-		Statement stmt = sqliteConn.createStatement();
-		stmt.setQueryTimeout(30); // set timeout to 30 sec.
-
-		sqliteConn.setAutoCommit(false);
-
-		stmt.execute("create table meta_JVImage(name text, format text, content Blob, bType text, mType text, userId integer, operateDate text, uploadDate text, downloadDate text, status integer)");
-
+		Statement stmt = null;
+		try{
+			stmt=sqliteConn.createStatement();
+			stmt.setQueryTimeout(30); // set timeout to 30 sec.
+	
+			sqliteConn.setAutoCommit(false);
+	
+			stmt.execute("create table meta_JVImage(name text, format text, content Blob, bType text, mType text, userId integer, operateDate text, uploadDate text, downloadDate text, status integer)");
+		}finally{
+			if(stmt!=null)stmt.close();
+		}
 		return sqliteConn;
 	}
 
@@ -169,9 +182,9 @@ public class PatternImageExporter {
                 + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
-
+        PreparedStatement prep =null;
         try{
-            PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+            prep = sqliteConn.prepareStatement(insertSql);
             conn = DBConnector.getInstance().getMetaConnection();
             if(modelPtn.size() > 0) {//1401,1406 对应元数据库表名 SC_MODEL_MATCH_G
                 this.insertPtn(sqliteConn, conn, prep, modelPtn, PatternImageExporter.PTN_TABLE_NAME_MODEL);
@@ -185,7 +198,13 @@ public class PatternImageExporter {
             throw new Exception(e);
 
         } finally {
+        	if(prep!=null){
+        		try {
+        			prep.close();
+                } catch (Exception e) {
 
+                }
+        	}
             if (conn != null) {
                 try {
                     conn.close();
@@ -195,7 +214,11 @@ public class PatternImageExporter {
             }
 
             if(sqliteConn != null) {
-                sqliteConn.close();
+                try {
+                	sqliteConn.close();
+                } catch (Exception e) {
+
+                }
             }
         }
 	}
@@ -300,15 +323,18 @@ public class PatternImageExporter {
 
 		mkdirFile.mkdirs();
 
-		Connection sqliteConn = createSqlite(dir);
+		Connection sqliteConn = null;
+		try{
+			sqliteConn=createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
-				+ date + "','yyyymmddhh24miss')";
+			String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
+					+ date + "','yyyymmddhh24miss')";
+	
+			exportImage2Sqlite(sqliteConn, sql);
+		}finally{
 
-		exportImage2Sqlite(sqliteConn, sql);
-
-		sqliteConn.close();
-
+			if(sqliteConn!=null) sqliteConn.close();
+		}
 		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
 
 		FileUtil.deleteDirectory(new File(dir));
@@ -331,13 +357,16 @@ public class PatternImageExporter {
 		mkdirFile.mkdirs();
 
 		Connection sqliteConn = createSqlite(dir);
+		try{
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+			String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+	
+			exportImage2Sqlite(sqliteConn, sql);
+		}finally{
+			if(sqliteConn!=null)sqliteConn.close();
 
-		exportImage2Sqlite(sqliteConn, sql);
-
-		sqliteConn.close();
-
+		}
+		
 		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
 
 		FileUtil.deleteDirectory(new File(dir));

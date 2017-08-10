@@ -68,8 +68,9 @@ public class SqlHelper {
 	 * 执行Insert语句，返回Insert成功之后标识列的值
 	 * @param sql 执行的SQL
 	 * @return 返回执行后的标识
+	 * @throws SQLException 
 	 */
-	public static int executeIdentity(String sql) {
+	public static int executeIdentity(String sql)  {
 		int identity = -1;
 		Connection con = null;
 		Statement ps = null;
@@ -86,6 +87,11 @@ public class SqlHelper {
 			e.printStackTrace();
 		} finally {
 			close(con, ps, null);
+			try{
+				if(rs!=null)rs.close();
+			}catch(Exception e){//do nothing
+				
+			}
 		}
 		return identity;
 	}

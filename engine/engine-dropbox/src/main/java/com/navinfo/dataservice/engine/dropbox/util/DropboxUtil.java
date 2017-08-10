@@ -247,13 +247,15 @@ public class DropboxUtil {
 	public static JSONObject getAppVersion(int type,String platform) throws Exception{
 		JSONObject json = new JSONObject();
 		Connection conn = null;
+		PreparedStatement stmt=null;
+		ResultSet rs =null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getConnectionById(11);
 			String sql = "select down_url,app_version,app_size from app_version where  app_platform='"+platform+"' and app_type=" + type +"order by RELEASE_DATE desc";
 
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement(sql);
+			rs = stmt.executeQuery();
 			while (rs.next()) {
                 json.put("filesize", rs.getInt("app_size"));
 				
@@ -267,7 +269,7 @@ public class DropboxUtil {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn, stmt, rs);
 		}
 		return json;
 	}

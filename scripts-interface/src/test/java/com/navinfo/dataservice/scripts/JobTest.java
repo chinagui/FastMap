@@ -2,6 +2,7 @@ package com.navinfo.dataservice.scripts;
 
 import java.util.Date;
 
+import com.navinfo.dataservice.job.statics.manJob.PersonTipsJob;
 import org.junit.Test;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -147,19 +148,12 @@ public class JobTest {
             JSONObject jobPra = new JSONObject();
             jobPra.put("timestamp", new Date());
 
-            long jobId = JobService.getInstance().create("personTipsJob", jobPra, 0,0, "personTips统计");
-//	    	int jobId = 3998;
-
+            long jobId = 16582;
             JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-            JobInfo jobInfo=apiService.getJobById(jobId);
-//			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
-            AbstractJob job = new MultiSrc2FmDaySyncJob(jobInfo);
+            JobInfo jobInfo = apiService.getJobById(jobId);
+            AbstractJob job = new PersonTipsJob(jobInfo);
             job.execute();
             job.getJobInfo().getResponse();
-			/*AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
-			job.run();
-//			job.execute();
-			job.getJobInfo().getResponse();*/
 
             System.out.println("Over.");
             System.exit(0);

@@ -23,7 +23,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 
-import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 /**
@@ -767,7 +766,7 @@ public class EditIxDealershipResult {
 		}catch(Exception e){
 			log.error("根据省份名称查询regionId异常："+e);
 		}finally{
-			DbUtils.close(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;
 	}

@@ -1067,7 +1067,7 @@ public class DataPrepareService {
 			log.error(e);
 			throw e;
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	
@@ -1166,10 +1166,10 @@ public class DataPrepareService {
 			run.execute(con, updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
-			DbUtils.rollback(con);
+			DbUtils.rollbackAndCloseQuietly(con);
 			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndCloseQuietly(con);
 		}
 	}
 	
@@ -1183,23 +1183,22 @@ public class DataPrepareService {
 	public List<ExpClientConfirmResult> expClientConfirmResultList(String chainCode) throws Exception{
 		
 		Connection conn = null;
-	
-		//获取代理店数据库连接
-		conn=DBConnector.getInstance().getDealershipConnection();
+		Map<Integer, Connection> mapConn = new HashMap<Integer, Connection>();
 		try{
+			//获取代理店数据库连接
+			conn = DBConnector.getInstance().getDealershipConnection();
+			mapConn = queryAllRegionConn();
 			List<ExpClientConfirmResult> ClientConfirmResultList = null;
 			if(StringUtils.isNotBlank(chainCode)){
 				ClientConfirmResultList = IxDealershipResultSelector.getClientConfirmResultList(chainCode,conn);
 			}
 			if(ClientConfirmResultList!=null&&!ClientConfirmResultList.isEmpty()){
 				for (ExpClientConfirmResult result : ClientConfirmResultList) {
-					Connection regionConn = null;
-					Connection mancon = null;
 					try {
 						int regionId = getRegionId(result.getResultId(), conn);
-						mancon = DBConnector.getInstance().getManConnection();
-						int dbId = getDailyDbId(regionId, mancon);
-						regionConn = DBConnector.getInstance().getConnectionById(dbId);
+						Connection regionConn = mapConn.get(regionId);
+//						int dbId = getDailyDbId(regionId, mancon);
+//						regionConn = DBConnector.getInstance().getConnectionById(dbId);
 						int pid = IxDealershipResultSelector.setRegionFiledByPoiNum(result,regionConn);//根据poiNum赋值日库中对应POI相关的字段
 						if(pid!=0){
 							IxDealershipResultSelector.setPoiStandrandNameByPid(result,regionConn);
@@ -1212,21 +1211,23 @@ public class DataPrepareService {
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;
-					} finally{
-						DbUtils.commitAndCloseQuietly(mancon);
-						DbUtils.commitAndCloseQuietly(regionConn);
 					}
 				}
 				
 			}
-			
-			
 			return ClientConfirmResultList;
 		} catch (Exception e) {
 			e.printStackTrace();
+			DbUtils.rollbackAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw e;
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.commitAndCloseQuietly(value);
+			}
 		}
 			
 	}
@@ -1304,7 +1305,7 @@ public class DataPrepareService {
 		Connection conn = null;
 		try{
 			//获取代理店数据库连接
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 			
 			final Map<Integer,Set<String>> regionIdPidSetMap = new HashMap<Integer,Set<String>>();
 			QueryRunner run = new QueryRunner();
@@ -1561,7 +1562,7 @@ public class DataPrepareService {
 				if(!dbConMap.containsKey(entry.getKey())) {
 					continue;
 				}
-				Connection regionConn = (Connection) dbConMap.get(entry.getKey());
+				Connection regionConn = dbConMap.get(entry.getKey());
 				colValues.addAll(entry.getValue());
 				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(regionConn, "IX_POI",tabNames, false, "POI_NUM", colValues, false, false);
 				Map<String,IxPoiObj> pois = new HashMap<String,IxPoiObj>();
@@ -2025,7 +2026,7 @@ public class DataPrepareService {
 				}
 			};
 			return run.query(conn, sql, rs);
-		}catch(Exception e){
+		} catch(Exception e) {
 			log.error(e);
 			throw e;
 		}
@@ -2066,7 +2067,7 @@ public class DataPrepareService {
 	public Map<String, Object> chainUpdate(long userId) throws ServiceException {
 		Connection conn = null;
 		try{
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHMMss");
 		    String date = df.format(new Date());
 			//获取一览表品牌
@@ -2221,7 +2222,7 @@ public class DataPrepareService {
 	public Map<String,List> getChainCodeByLiveUpdate() throws Exception {
 		Connection conn = null;
 		try{
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 			//获取source数据
 			Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChainWorkType(conn);
 			//获取省份大区信息

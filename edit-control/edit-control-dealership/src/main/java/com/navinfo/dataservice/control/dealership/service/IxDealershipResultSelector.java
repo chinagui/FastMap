@@ -596,8 +596,16 @@ public class IxDealershipResultSelector {
 	 * @throws Exception 
 	 */
 	public static Geometry getGeometryByResultId(Integer resultId) throws Exception{
-		Connection dealerConn = DBConnector.getInstance().getDealershipConnection();
-		IxDealershipResult result = getIxDealershipResultById(resultId, dealerConn);
+		Connection dealerConn = null;
+		IxDealershipResult result = null;
+		try {
+			dealerConn = DBConnector.getInstance().getDealershipConnection();
+			result = getIxDealershipResultById(resultId, dealerConn);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(dealerConn);
+		} finally {
+			DbUtils.commitAndCloseQuietly(dealerConn);
+		}
 		return result.getGeometry();
 	}
 	

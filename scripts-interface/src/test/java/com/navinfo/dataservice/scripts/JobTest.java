@@ -137,4 +137,35 @@ public class JobTest {
 		}
 //	}
 
+    @Test
+    public  void JobTestPersonTips() throws Exception {
+        //初始化context
+        JobScriptsInterface.initContext();
+
+        try{
+            //执行job
+            JSONObject jobPra = new JSONObject();
+            jobPra.put("timestamp", new Date());
+
+            long jobId = JobService.getInstance().create("personTipsJob", jobPra, 0,0, "personTips统计");
+//	    	int jobId = 3998;
+
+            JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+            JobInfo jobInfo=apiService.getJobById(jobId);
+//			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
+            AbstractJob job = new MultiSrc2FmDaySyncJob(jobInfo);
+            job.execute();
+            job.getJobInfo().getResponse();
+			/*AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
+			job.run();
+//			job.execute();
+			job.getJobInfo().getResponse();*/
+
+            System.out.println("Over.");
+            System.exit(0);
+        }catch(Exception e){
+            System.out.println("Oops, something wrong...");
+            e.printStackTrace();
+        }
+    }
 }

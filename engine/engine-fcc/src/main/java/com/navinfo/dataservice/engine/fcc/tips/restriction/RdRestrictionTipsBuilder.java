@@ -14,6 +14,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -47,76 +48,85 @@ public class RdRestrictionTipsBuilder {
 	public static void importTips(java.sql.Connection fmgdbConn, Table htab) throws Exception {
 
 		SolrBulkUpdater solrConn = new SolrBulkUpdater(TipsImportUtils.QueueSize,TipsImportUtils.ThreadCount);
-
-		Statement stmt = fmgdbConn.createStatement();
-
-		ResultSet resultSet = stmt.executeQuery(sql);
-
-		resultSet.setFetchSize(5000);
-
-		List<Put> puts = new ArrayList<Put>();
-
-		int num = 0;
-
-		String uniqId = null;
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-		String date = sdf.format(new Date());
-
-		while (resultSet.next()) {
-			num++;
-
-			uniqId = resultSet.getString("pid");
-
-			String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
-
-			String source = TipsImportUtils.generateSource(type);
-
-			String track = TipsImportUtils.generateTrack(date);
-
-			String feedback = TipsImportUtils.generateFeedback();
-			
-			JSONObject geometry = generateGeometry(resultSet);
-
-			String deep = generateDeep(resultSet);
-
-			Put put = new Put(rowkey.getBytes());
-
-			put.addColumn("data".getBytes(), "source".getBytes(),
-					source.getBytes());
-
-			put.addColumn("data".getBytes(), "track".getBytes(),
-					track.getBytes());
-
-			put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
-					.toString().getBytes());
-
-			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
-			
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
-
-			puts.add(put);
-
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
-					rowkey, 0, date, type, deep.toString(),
-					geometry.getJSONObject("g_location"),
-					geometry.getJSONObject("g_guide"), "[]");
-
-			solrConn.addTips(solrIndexJson);
-
-			if (num % 5000 == 0) {
-				htab.put(puts);
-
-				puts.clear();
-
-			}
-		}
-
-		htab.put(puts);
-
-		solrConn.commit();
+		Statement stmt = null;
 		
-		solrConn.close();
+		ResultSet resultSet = null;
+		try{
+			stmt = fmgdbConn.createStatement();
+	
+			resultSet = stmt.executeQuery(sql);
+	
+			resultSet.setFetchSize(5000);
+	
+			List<Put> puts = new ArrayList<Put>();
+	
+			int num = 0;
+	
+			String uniqId = null;
+	
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+			String date = sdf.format(new Date());
+	
+			while (resultSet.next()) {
+				num++;
+	
+				uniqId = resultSet.getString("pid");
+	
+				String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
+	
+				String source = TipsImportUtils.generateSource(type);
+	
+				String track = TipsImportUtils.generateTrack(date);
+	
+				String feedback = TipsImportUtils.generateFeedback();
+				
+				JSONObject geometry = generateGeometry(resultSet);
+	
+				String deep = generateDeep(resultSet);
+	
+				Put put = new Put(rowkey.getBytes());
+	
+				put.addColumn("data".getBytes(), "source".getBytes(),
+						source.getBytes());
+	
+				put.addColumn("data".getBytes(), "track".getBytes(),
+						track.getBytes());
+	
+				put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
+						.toString().getBytes());
+	
+				put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
+				
+				put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
+	
+				puts.add(put);
+	
+				JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+						rowkey, 0, date, type, deep.toString(),
+						geometry.getJSONObject("g_location"),
+						geometry.getJSONObject("g_guide"), "[]");
+	
+				solrConn.addTips(solrIndexJson);
+	
+				if (num % 5000 == 0) {
+					htab.put(puts);
+	
+					puts.clear();
+	
+				}
+			}
+	
+			htab.put(puts);
+	
+			solrConn.commit();
+			
+			solrConn.close();
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(stmt);
+		}
 
 	}
 

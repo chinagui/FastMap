@@ -28,32 +28,32 @@ public class TranslateTest {
     @Test
     public void translateTest() {
         EnglishConvert convert = new EnglishConvert();
-        //System.out.println(convert.convert("ＪＯ（Ｅ郞 ＪＯＥ＇Ｓ　ＳＡＬＯＮ"));
-        //System.out.println(convert.convert("ＪＯＥ）郞 ＪＯＥ,Ｓ　ＳＡＬＯＮ"));
-        //System.out.println(convert.convert("ＪＯＥ×郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));
-        //System.out.println(convert.convert("ＪＯＥ*郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));
-        //System.out.println(convert.convert("７１１便利店０３３｜９℃店"));
-        //System.out.println(convert.convert("null"));
-        //System.out.println(convert.convert("%"));
-        //System.out.println(convert.convert("$"));
-        //System.out.println(convert.convert(" "));
-        //System.out.println(convert.convert(null));
-        //System.out.println(convert.convert("陕西2国道10"));
-        //System.out.println(convert.convert("国道210"));
-        //System.out.println(convert.convert("陕西国道210"));
-        //System.out.println(convert.convert("国210道"));
-        //System.out.println(convert.convert("210省道"));
-        //System.out.println(convert.convert("陕西210省道"));
-        //System.out.println(convert.convert("陕西2省道10"));
-        //System.out.println(convert.convert("省道210"));
-        //System.out.println(convert.convert("陕西省道210"));
-        //System.out.println(convert.convert("省210道"));
-        //System.out.println(convert.convert("210县道"));
-        //System.out.println(convert.convert("陕西210县道"));
-        //System.out.println(convert.convert("陕西2县道10"));
-        //System.out.println(convert.convert("县道210"));
-        //System.out.println(convert.convert("陕西县道210"));
-        //System.out.println(convert.convert("县210道"));
+        System.out.println(convert.convert("ＪＯ（Ｅ郞 ＪＯＥ＇Ｓ　ＳＡＬＯＮ"));
+        System.out.println(convert.convert("ＪＯＥ）郞 ＪＯＥ,Ｓ　ＳＡＬＯＮ"));
+        System.out.println(convert.convert("ＪＯＥ×郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));
+        System.out.println(convert.convert("ＪＯＥ*郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));
+        System.out.println(convert.convert("７１１便利店０３３｜９℃店"));
+        System.out.println(convert.convert("null"));
+        System.out.println(convert.convert("%"));
+        System.out.println(convert.convert("$"));
+        System.out.println(convert.convert(" "));
+        System.out.println(convert.convert(null));
+        System.out.println(convert.convert("陕西2国道10"));
+        System.out.println(convert.convert("国道210"));
+        System.out.println(convert.convert("陕西国道210"));
+        System.out.println(convert.convert("国210道"));
+        System.out.println(convert.convert("210省道"));
+        System.out.println(convert.convert("陕西210省道"));
+        System.out.println(convert.convert("陕西2省道10"));
+        System.out.println(convert.convert("省道210"));
+        System.out.println(convert.convert("陕西省道210"));
+        System.out.println(convert.convert("省210道"));
+        System.out.println(convert.convert("210县道"));
+        System.out.println(convert.convert("陕西210县道"));
+        System.out.println(convert.convert("陕西2县道10"));
+        System.out.println(convert.convert("县道210"));
+        System.out.println(convert.convert("陕西县道210"));
+        System.out.println(convert.convert("县210道"));
         System.out.println(convert.convert("７１１便利店０３３｜９℃店|１＋１＝２童装|便利店ｎＯ．３"));
         System.out.println(convert.convert("三零六医院"));
         System.out.println(convert.convert("的三零六医院"));
@@ -98,6 +98,14 @@ public class TranslateTest {
         System.out.println(convert.convert("在西锦业二路与丈北路十店东3栋"));
         convert.setPriority("2");
         System.out.println(convert.convert("在西锦业二路与丈北路十店东3栋"));
+
+        System.out.println(convert.convert("北京四维图新股份有限公司"));
+        System.out.println(convert.convert("西红立交桥"));
+        System.out.println(convert.convert("贾晓静"));
+        System.out.println(convert.convert("望京一医院"));
+        System.out.println(convert.convert("北京 · 医院"));
+        System.out.println(convert.convert("5号路"));
+        System.out.println(convert.convert("永丰路3号收费站"));
 
         TranslateDictData.getInstance().getDictEngKeyword();
     }

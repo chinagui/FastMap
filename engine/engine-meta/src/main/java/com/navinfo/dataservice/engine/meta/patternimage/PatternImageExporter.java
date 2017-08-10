@@ -217,7 +217,7 @@ public class PatternImageExporter {
 
 		String sql = "select * from sc_model_match_g where b_type in ('2D','3D','CRPG')";
 		if(StringUtils.isNotEmpty(date)){
-			sql+=" and update_time > to_date('"
+			sql+=" and imp_date > to_date('"
 							+ date + "','yyyymmddhh24miss')";
 		}
 		

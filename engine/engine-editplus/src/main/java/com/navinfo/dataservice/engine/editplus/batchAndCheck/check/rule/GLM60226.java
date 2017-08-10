@@ -38,13 +38,6 @@ import java.util.List;
 public class GLM60226 extends BasicCheckRule {
 
     /**
-     * 无需检查的POI种别
-     */
-    private final static List<String> NO_CHECK_KINDCODET = new ArrayList(){{
-        add("230126"); add("230127"); add("230128"); add("230105");
-    }};
-
-    /**
      * 允许作为父关系的POI种别
      */
     private final static List<String> ALLOW_PARENT_KINDCODE = new ArrayList(){{
@@ -77,15 +70,12 @@ public class GLM60226 extends BasicCheckRule {
                 return;
             }
 
-            if (NO_CHECK_KINDCODET.contains(kindCode)) {
-                return;
-            }
-
             Connection conn = getCheckRuleCommand().getConn();
             PreparedStatement pstmt = null;
             ResultSet resultSet = null;
 
-            String sql = "SELECT T1.LINK_PID, T1.KIND, T1.IS_VIADUCT, T1.DEVELOP_STATE FROM RD_LINK T1, IX_POI T2 WHERE T2.PID = :1 AND T1.LINK_PID <>"
+            String sql = "SELECT T1.LINK_PID, T1.KIND, T1.IS_VIADUCT, T1.DEVELOP_STATE FROM RD_LINK T1, IX_POI T2 WHERE T2.PID = :1 "
+            		+ "AND T2.KIND_CODE NOT IN ('230126','230127','230128','230105') AND T1.LINK_PID <>"
                     + " T2.LINK_PID AND T1.MESH_ID = T2.MESH_ID AND T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE("
                     + "T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || T2.GEOMETRY.SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y"
                     + " || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE'";

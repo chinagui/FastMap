@@ -504,8 +504,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
     }
     /**
@@ -528,8 +528,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
     }
     
@@ -555,8 +555,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
     	} finally {
-    		DbUtils.close(rs);
-    		DbUtils.close(pstmt);
+    		DbUtils.closeQuietly(rs);
+    		DbUtils.closeQuietly(pstmt);
     	}
     }
     
@@ -583,8 +583,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
     	} finally {
-    		DbUtils.close(rs);
-    		DbUtils.close(pstmt);
+    		DbUtils.closeQuietly(rs);
+    		DbUtils.closeQuietly(pstmt);
     	}
     }
     

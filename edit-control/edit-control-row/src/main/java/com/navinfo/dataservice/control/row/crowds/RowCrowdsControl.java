@@ -80,9 +80,9 @@ public class RowCrowdsControl {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}finally{
-			DbUtils.closeQuietly(dailyConn);
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(dailyConn);
 		}
 		return result;
 	}
@@ -364,10 +364,7 @@ public class RowCrowdsControl {
 	 * @return
 	 */
 	private static String getGrid(double x,double y){
-		String grid = "";
-		CompGridUtil gridUtil = new CompGridUtil();
-		grid = gridUtil.point2Grids(x, y)[0];
-		return grid;
+		return  CompGridUtil.point2Grids(x, y)[0];
 	}
 	
 	

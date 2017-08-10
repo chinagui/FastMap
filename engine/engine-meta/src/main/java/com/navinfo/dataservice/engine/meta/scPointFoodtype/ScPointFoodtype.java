@@ -159,9 +159,9 @@ public class ScPointFoodtype {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn);
+								DbUtils.closeQuietly(rs);
+								DbUtils.closeQuietly(pstmt);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_FOODTYPE失败："+ e.getMessage(), e);

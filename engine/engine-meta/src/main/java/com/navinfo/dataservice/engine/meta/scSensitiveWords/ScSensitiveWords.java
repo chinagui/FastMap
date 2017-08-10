@@ -94,7 +94,7 @@ public class ScSensitiveWords {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载sensitiveWordMap失败："+ e.getMessage(), e);

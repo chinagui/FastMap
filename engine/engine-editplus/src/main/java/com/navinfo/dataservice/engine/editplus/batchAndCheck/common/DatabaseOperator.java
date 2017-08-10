@@ -17,12 +17,18 @@ public class DatabaseOperator {
 	}
 	
 	public List<Object> exeSelect(Connection conn,String sql) throws Exception{
-		PreparedStatement pstmt = conn.prepareStatement(sql);		
-		ResultSet resultSet = pstmt.executeQuery();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=settleResultSet(resultSet);
-		releaseSource(pstmt,resultSet);
-		return resultList;
+		PreparedStatement pstmt = null;		
+		ResultSet resultSet = null;
+		try{
+			pstmt = conn.prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			List<Object> resultList=new ArrayList<Object>();
+			resultList=settleResultSet(resultSet);
+			return resultList;
+		}finally{
+			releaseSource(pstmt,resultSet);
+		}
+		
 		}
 	
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
@@ -34,8 +40,17 @@ public class DatabaseOperator {
 	}
 	
 	private void releaseSource(Statement stmt,ResultSet resultSet) throws SQLException{
-		resultSet.close();
-		stmt.close();
+		try{
+			resultSet.close();
+		}catch(Exception e){
+			//do nothing
+		}
+		try{
+			stmt.close();
+		}catch(Exception e){
+				//do nothing
+		}
+		
 	}
 	
 	public static void main(String[] args) throws Exception{

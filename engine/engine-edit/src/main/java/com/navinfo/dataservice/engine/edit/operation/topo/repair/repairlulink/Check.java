@@ -39,55 +39,65 @@ public class Check {
 
 		String sql = "select node_pid from rd_cross_node where node_pid = :1 and rownum =1";
 
-		PreparedStatement pstmt = conn.prepareStatement(sql);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet =null;
+		try{
+			pstmt=conn.prepareStatement(sql);
 
-		pstmt.setInt(1, nodePid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
+			pstmt.setInt(1, nodePid);
+	
+			resultSet = pstmt.executeQuery();
+	
+	
+			if (resultSet.next()) {
+				throwException("对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点");
+			}
+		}finally{
+			try{
+				if(resultSet!=null) resultSet.close();
+			}catch(Exception e){
+				//do nothing
+			}
+			try{
+				if(pstmt!=null) pstmt.close();
+			}catch(Exception e){
+				//do nothing
+			}
 		}
 
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-
-			throwException("对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点");
-		}
 	}
 
 	// 该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续
 	public void checkIsVia(Connection conn, int linkPid) throws Exception {
 		String sql = "select link_pid from rd_lane_via where link_pid =:1 and rownum=1 union all select link_pid from rd_restriction_via where link_pid =:2 and rownum=1 union all select link_pid from rd_branch_via where link_pid =:3 and rownum=1 ";
 
-		PreparedStatement pstmt = conn.prepareStatement(sql);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			pstmt = conn.prepareStatement(sql);
 
-		pstmt.setInt(1, linkPid);
-
-		pstmt.setInt(2, linkPid);
-
-		pstmt.setInt(3, linkPid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-
-			throwException("该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续");
+			pstmt.setInt(1, linkPid);
+	
+			pstmt.setInt(2, linkPid);
+	
+			pstmt.setInt(3, linkPid);
+	
+			resultSet = pstmt.executeQuery();
+	
+			if (resultSet.next()) {
+				throwException("该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续");
+			}
+		}finally{
+			try{
+				if(resultSet!=null) resultSet.close();
+			}catch(Exception e){
+				//do nothing
+			}
+			try{
+				if(pstmt!=null) pstmt.close();
+			}catch(Exception e){
+				//do nothing
+			}
 		}
 	}
 

@@ -224,7 +224,7 @@ public class ChainSelector {
 		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(conn);
 		}
 		
 	}

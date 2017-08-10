@@ -10,6 +10,7 @@ public class OracleDbValidation implements FosEnvValidation{
 
 	@Override
 	public ValidationResult validation() throws Exception {
+		
 		return null;
 	}
 	

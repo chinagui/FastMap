@@ -33,7 +33,6 @@ public class FM11Win0826 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		log.info("start FM11Win0826");
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			//IxPoi poi=(IxPoi) poiObj.getMainrow();
 			IxPoiName nameObj = poiObj.getOfficeOriginCHName();

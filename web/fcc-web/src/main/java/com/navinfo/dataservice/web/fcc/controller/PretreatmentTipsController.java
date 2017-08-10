@@ -123,14 +123,12 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
 
-			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
-			
 			PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 			
 			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
             if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
-                op.deleteByRowkey(rowkey, delType);
+            	op2.deleteByRowkey(rowkey, delType);
             }
 
 			return new ModelAndView("jsonView", success());

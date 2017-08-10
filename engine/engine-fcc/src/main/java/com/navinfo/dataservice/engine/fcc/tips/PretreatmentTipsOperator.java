@@ -1894,9 +1894,99 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         //20170808  确认，web渲染不再使用差分结果。因此取消差分 
         //TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
     }
+    
+    
+    /**
+	 * @Description:删除tips--情报预处理的删除，重写父类（情报预处理测线删除需要删除测线上的tips）
+	 * @param rowkey
+	 * @author: y
+	 * @param delType :0 逻辑删除，1：物理删除
+	 * @throws Exception
+	 * @time:2016-11-16 下午5:21:09
+	 */
+	public void deleteByRowkey(String rowkey, int delType) throws Exception {
+		try {
+			
+			//物理删除
+			if(delType == TIP_PHYSICAL_DELETE){
+				
+				deletRelateTipsWhenIsMeasureLine(rowkey); //如果是测线，则删除测线上关联的tips
+				
+				super.physicalDel(rowkey); //删除自己
+			}
+			//逻辑删除
+			else{
+				super.logicDel(rowkey);
+			}
+
+		} catch (SolrServerException e) {
+
+			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
+
+			throw new Exception(
+					"删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
+		}
+
+	}
+
 
 
     /**
+	 * @Description:测线删除，需要删除测线上挂接的所有tips
+	 * @param rowkey
+	 * @author: y
+     * @throws Exception 
+	 * @time:2017-8-10 下午3:16:35
+	 */
+	private void deletRelateTipsWhenIsMeasureLine(String rowkey) throws Exception {
+		java.sql.Connection tipsIndexConn=null;
+		Connection hbaseConn = null;
+        Table htab = null;
+		try{
+			//1.判断类型是2001
+			tipsIndexConn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator  operate=new TipsIndexOracleOperator(tipsIndexConn);
+			TipsDao  dao= operate.getById(rowkey);
+			//如果不是测线，则不处理
+			if(!"2001".equals(dao.getS_sourceType())){
+				return;
+			}
+			
+			// 2.查询关联Tips
+			//20170615 查询和原测线关联的所有Tips		
+	        String query = "select * from tips_index i where exists(select 1 from tips_links l where i.id=l.id"
+	        		+ " and l.Link_Id=? )";
+	        TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsIndexConn);
+	        List<TipsDao> tipsDaos = operator.query(query, rowkey);
+	        
+	        //3.删除关联tips-删索引
+	        operator.delete(tipsDaos);
+	        
+	        //4.删habse
+	        if(tipsDaos!=null&&tipsDaos.size()!=0){
+        	  hbaseConn = HBaseConnector.getInstance().getConnection();
+              htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+              List list = new ArrayList();
+              for (TipsDao tipsDao : tipsDaos) {
+            	  Delete d1 = new Delete(tipsDao.getId().getBytes());
+            	  list.add(d1);
+  			  }
+              htab.delete(list);
+	        }
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(tipsIndexConn);
+			logger.error("删除测线关联tips出错："+e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(tipsIndexConn);
+			if(htab != null) {
+                htab.close();
+            }
+		}
+		
+	}
+
+	/**
 	 * @Description:测线打断:返回打断后的两条tips sorl信息
 	 * @param rowkey
 	 * @param pointGeo

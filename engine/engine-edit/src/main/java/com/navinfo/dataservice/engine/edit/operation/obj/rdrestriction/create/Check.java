@@ -17,51 +17,68 @@ public class Check {
 		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("
 				+ StringUtils.join(linkPids, ",") + ") and rownum=1";
 
-		Statement pstmt = conn.createStatement();
+		Statement pstmt = null;
 
-		ResultSet resultSet = pstmt.executeQuery(sql);
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
+		ResultSet resultSet = null;
+		try{
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(sql);
+			
+			if (resultSet.next()) {
+				throwException("“轮渡”和“人渡”的link不能作为交限（包括路口和线线结构里的所有交限）的进入线、退出线和经过线");
+			}
+		}finally{
+			releaseStatementAndResultSet(pstmt, resultSet);
 		}
+		
 
-		resultSet.close();
+		
 
-		pstmt.close();
+	}
 
-		if (flag) {
-
-			throwException("“轮渡”和“人渡”的link不能作为交限（包括路口和线线结构里的所有交限）的进入线、退出线和经过线");
+	private void releaseStatementAndResultSet(Statement pstmt, ResultSet resultSet) {
+		try{
+			if(resultSet!=null) resultSet.close();
+		}catch(Exception e){
+			//do nothing
 		}
-
+		try{
+			if(pstmt!=null) pstmt.close();
+		}catch(Exception e){
+			//do nothing
+		}
 	}
 
 	public void checkGLM26017(Connection conn, int nodePid) throws Exception {
 
 		String sql = "select node_pid from rd_cross_node where node_pid=:1 and u_record != 2";
 
-		PreparedStatement pstmt = conn.prepareStatement(sql);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, nodePid);
 
-		pstmt.setInt(1, nodePid);
+			resultSet = pstmt.executeQuery();
 
-		ResultSet resultSet = pstmt.executeQuery();
+			boolean flag = false;
 
-		boolean flag = false;
+			if (resultSet.next()) {
+				flag = true;
+			}
+			if (!flag) {
 
-		if (resultSet.next()) {
-			flag = true;
+				throwException("如果交限进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
+			}
+		}finally{
+			releaseStatementAndResultSet(pstmt, resultSet);
 		}
 
-		resultSet.close();
+		
 
-		pstmt.close();
+		
 
-		if (!flag) {
-
-			throwException("如果交限进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
-		}
+		
 
 	}
 
@@ -69,27 +86,28 @@ public class Check {
 
 		String sql = "select link_pid from rd_cross_link where link_pid in (:1,:2) and u_record != 2";
 
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		pstmt.setInt(1, inLinkPid);
-
-		pstmt.setInt(2, outLinkPid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-
-			throwException("路口交限的进入线，退出线不能是交叉口内link");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, inLinkPid);
+	
+			pstmt.setInt(2, outLinkPid);
+	
+			resultSet = pstmt.executeQuery();
+	
+			boolean flag = false;
+	
+			if (resultSet.next()) {
+				flag = true;
+			}
+	
+			if (flag) {
+	
+				throwException("路口交限的进入线，退出线不能是交叉口内link");
+			}
+		}finally{
+			this.releaseStatementAndResultSet(pstmt, resultSet);	
 		}
 
 	}
@@ -105,29 +123,30 @@ public class Check {
 
 			str += pid;
 		}
-
+		PreparedStatement pstmt =null;
+		ResultSet resultSet =null;
 		String sql = "select form_of_way from rd_link_form where link_pid in (" + str + ") and form_of_way in (20,22)";
-
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		int formOfWay = 0;
-
-		if (resultSet.next()) {
-
-			formOfWay = resultSet.getInt("form_of_way");
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (formOfWay == 20) {
-
-			throwException("步行街不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线");
-		} else if (formOfWay == 22) {
-			throwException("公交车专用道不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线");
+		try{
+			pstmt = conn.prepareStatement(sql);
+	
+			resultSet = pstmt.executeQuery();
+	
+			int formOfWay = 0;
+	
+			if (resultSet.next()) {
+	
+				formOfWay = resultSet.getInt("form_of_way");
+			}
+	
+	
+			if (formOfWay == 20) {
+	
+				throwException("步行街不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线");
+			} else if (formOfWay == 22) {
+				throwException("公交车专用道不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线");
+			}
+		}finally{
+			this.releaseStatementAndResultSet(pstmt, resultSet);	
 		}
 
 	}

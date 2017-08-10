@@ -57,9 +57,8 @@ public class PersonTipsJob extends AbstractStatJob {
             result.put("person_tips", resultMapList);
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {
-            e.printStackTrace();
+            throw new JobException("PersonTipsJob执行报错", e);
         }
-        return null;
     }
 
     /**
@@ -120,7 +119,7 @@ public class PersonTipsJob extends AbstractStatJob {
                                 JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
                                 if(hbaseTip.containsKey("track")) {
                                     JSONObject track = hbaseTip.getJSONObject("track");
-                                    if(hbaseTip.containsKey("t_trackInfo")) {
+                                    if(track.containsKey("t_trackInfo")) {
                                         JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
                                         if(trackInfoArr != null && trackInfoArr.size() > 0) {//查看track履历，外业当天是否提交
                                             for (int i = trackInfoArr.size() - 1; i > -1; i--) {
@@ -141,6 +140,9 @@ public class PersonTipsJob extends AbstractStatJob {
                         e.printStackTrace();
                         throw new SQLException("PersonTipsJob报错: ", e);
                     }finally {
+                        if(rs != null) {
+                            rs.close();
+                        }
                         if(htab != null) {
                             try {
                                 htab.close();

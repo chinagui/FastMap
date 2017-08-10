@@ -122,19 +122,21 @@ public class EnglishConvert {
     public String convert(String sourceText) {
         this.init();
 
-        if (StringUtils.isEmpty(sourceText)) {
+        if (org.apache.commons.lang.StringUtils.isBlank(sourceText)) {
             return sourceText;
         }
 
         String result = sourceText;
         try {
-            result = this.replaceKeyWord(sourceText);
+            result = this.convertWordSymbol(sourceText);
 
             result = SplitUtil.split(result, param);
 
             result = ConvertUtil.removeRepeatBackSlash(result);
 
             result = this.convertKernel(result);
+
+            result = this.replaceKeyWord(result);
 
             result = ConvertUtil.removeRepeatSpace(result);
 
@@ -172,7 +174,6 @@ public class EnglishConvert {
         // 转特殊翻译原则
         sourceText = this.convertEngKeyword(sourceText);
 
-        sourceText = this.convertWordSymbol(sourceText);
         //sourceText = ConvertUtil.removeSymbolWord(sourceText);
 
         sourceText = ConvertUtil.convertFull2Half(sourceText);
@@ -196,10 +197,14 @@ public class EnglishConvert {
     private String convertWordSymbol(String sourceText) {
         StringBuilder result = new StringBuilder();
         for (Character character : sourceText.toCharArray()) {
+            if (character == ' ') {
+                continue;
+            }
             String tmpStr = String.valueOf(character);
+
             for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
                 if (org.apache.commons.lang.StringUtils.equals(entry.getKey(), tmpStr)) {
-                    tmpStr = StringUtils.isEmpty(entry.getValue()) ? "" : entry.getValue();
+                    tmpStr = StringUtils.isEmpty(entry.getValue()) ? "" : entry.getValue().trim();
                     break;
                 }
             }
@@ -373,10 +378,9 @@ public class EnglishConvert {
                         String subResult = result.substring(0, specwordIndex);
                         int startIndex = getStartIndex(subResult);
 
+                        int selectwordLength = 0;
                         label1:
                         for (String selectword : keyword.getSelectedWords().split("/")) {
-                            int selectwordLength = 0;
-
                             if (ConvertUtil.contains(subResult, selectword)) {
                                 selectwordIndex = subResult.lastIndexOf(selectword);
                                 selectwordLength = selectword.length();
@@ -386,29 +390,30 @@ public class EnglishConvert {
                                         continue label1;
                                     }
                                 }
-                            } else {
-                                for (Character character : org.apache.commons.lang.StringUtils.reverse(subResult).toCharArray()) {
-                                    if (startIndex == selectwordIndex - 1) {
-                                        break;
-                                    }
-
-                                    if (Pattern.compile(regex).matcher(String.valueOf(character)).matches()) {
-                                        selectwordIndex--;
-                                    } else {
-                                        break;
-                                    }
-                                }
-                            }
-                            if (selectwordIndex < specwordIndex) {
-                                beforeResult = result.substring(0, selectwordIndex);
-                                afterResult = result.substring(specwordIndex + key.length());
-
-                                String transResult = result.substring(selectwordIndex + selectwordLength, specwordIndex).trim();
-                                engwords = keyword.getEngWords().replaceAll("XX", transResult);
-
-                                transLength = key.length() + transResult.length() + selectwordLength;
                             }
                         }
+
+                        if (selectwordLength == 0) {
+                            for (Character character : org.apache.commons.lang.StringUtils.reverse(subResult).toCharArray()) {
+                                if (startIndex == selectwordIndex) {
+                                    break;
+                                }
+
+                                if (Pattern.compile(regex).matcher(String.valueOf(character)).matches() || character == ' ') {
+                                    selectwordIndex--;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        beforeResult = result.substring(0, selectwordIndex);
+                        afterResult = result.substring(specwordIndex + key.length());
+
+                        String transResult = result.substring(selectwordIndex + selectwordLength, specwordIndex).trim();
+                        engwords = keyword.getEngWords().replaceAll("XX", transResult);
+
+                        transLength = key.length() + transResult.length() + selectwordLength;
+
                     } else if (type == TranslateConstant.SELECTED_COMBINED_SPEC) {
                         String subResult = result.substring(specwordIndex + key.length());
 
@@ -507,7 +512,7 @@ public class EnglishConvert {
         int startIndex = 0;
         for (String trans : param.translateWords) {
             int tmpIndex = org.apache.commons.lang.StringUtils.indexOf(subResult, trans);
-            if (tmpIndex > startIndex) {
+            if (tmpIndex != -1) {
                 startIndex = tmpIndex + trans.length();
             }
         }
@@ -611,20 +616,34 @@ public class EnglishConvert {
      */
     private String convertChineseNum(String sourceText) {
         StringBuilder sb = new StringBuilder();
-        label1:
-        for (String str : sourceText.split(" ")) {
-            if (str.length() == 1) {
-                sb.append(str).append(" ");
-                continue label1;
-            }
 
-            for (Character character : str.toCharArray()) {
-                if (ConvertUtil.isNotLetter(character) && !ConvertUtil.isChineseNum(character)) {
-                    sb.append(str).append(" ");
+        String[] array = sourceText.split(" ");
+        label1:
+        for (int index = 0; index < array.length; index++) {
+            String after = "";
+            String current = "";
+            String before = "";
+
+            if (index > 0) {
+                after = array[index - 1];
+            }
+            current = array[index];
+            if (index < array.length - 1) {
+                before = array[index + 1];
+            }
+            for (String str : Arrays.asList(after, before)) {
+                if (ConvertUtil.hasChineseWord(str)) {
+                    sb.append(current).append(" ");
                     continue label1;
                 }
             }
-            sb.append(convertHz2Num(str)).append(" ");
+            for (Character character : current.toCharArray()) {
+                if (!character.isDigit(character) && !ConvertUtil.isChineseNum(character)) {
+                    sb.append(current).append(" ");
+                    continue label1;
+                }
+            }
+            sb.append(convertHz2Num(current)).append(" ");
         }
         return sb.toString();
     }

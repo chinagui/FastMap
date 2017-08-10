@@ -11,7 +11,7 @@
 	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>
 		<job name="poiDayStat"/>
-		<!-- <job name="tipsStat"/> -->
+		<job name="tipsStat"/>
 	</group>
 	<group name="taskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
 		<job name="subtaskStat"/>

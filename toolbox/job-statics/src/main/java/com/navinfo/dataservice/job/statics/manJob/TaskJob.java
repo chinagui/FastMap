@@ -423,12 +423,12 @@ public class TaskJob extends AbstractStatJob {
 						int gridId = (int) jso.get("gridId");
 						int taskEditAllNum = (int) jso.get("taskEditAllNum");
 						int taskEditFinishNum = (int) jso.get("taskEditFinishNum");
-						int taskNoeditAllNum = (int) jso.get("taskNoeditAllNum");
+						int taskNoEditAllNum = (int) jso.get("taskNoEditAllNum");
 						int taskCreateByEditNum = (int) jso.get("taskCreateByEditNum");
 						int noTaskTotal = (int) jso.get("noTaskTotal");
 						task.put("dayEditTipsAllNum", taskEditAllNum);
 						task.put("dayEditTipsFinishNum", taskEditFinishNum);
-						task.put("dayEditTipsUnfinishNum", taskNoeditAllNum);
+						task.put("dayEditTipsUnfinishNum", taskNoEditAllNum);
 						task.put("tipsCreateByEditNum", taskCreateByEditNum);
 						task.put("notaskdata_tips_num", noTaskTotal);
 						tipsStat.put(gridId, task);

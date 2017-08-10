@@ -22,18 +22,18 @@ import net.sf.json.JSONObject;
 @Controller
 public class RowChargeService {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	private volatile static RowChargeService instance;
-	public static RowChargeService getInstance(){
-		if(instance==null){
-			synchronized(RowChargeService.class){
-				if(instance==null){
-					instance=new RowChargeService();
-				}
-			}
-		}
-		return instance;
-	}
-	private RowChargeService(){}
+//	private volatile static RowChargeService instance;
+//	public static RowChargeService getInstance(){
+//		if(instance==null){
+//			synchronized(RowChargeService.class){
+//				if(instance==null){
+//					instance=new RowChargeService();
+//				}
+//			}
+//		}
+//		return instance;
+//	}
+//	private RowChargeService(){}
 	
 	/**
 	 * 处理充电站数据

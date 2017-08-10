@@ -269,11 +269,11 @@ public class HbasePoiInfoTemp {
 
 			int PoiFlagCount = run.queryForInt(conn, existPoiFlag);
 			if (PoiFlagCount == 1) {
-				log.info(String.format("大区库<%d>已存在IX_POI_FLAG_METHOD子表"));
+				log.info("母库已存在IX_POI_FLAG_METHOD子表");
 			} else {
 				String createPoiFlag = createTable;
 				run.execute(conn, createPoiFlag);
-				log.info(String.format("大区库<%d>创建IX_POI_FLAG_METHOD:成功"));
+				log.info("母库创建IX_POI_FLAG_METHOD:成功");
 			}
 
 			log.info("insert datas into IX_POI_FLAG_METHOD...");

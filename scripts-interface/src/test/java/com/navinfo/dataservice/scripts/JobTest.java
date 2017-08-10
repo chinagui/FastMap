@@ -82,6 +82,30 @@ public class JobTest {
 		}
 		}
 	
+	@Test
+	public  void JobTest3() throws Exception {
+		//初始化context
+		JobScriptsInterface.initContext();
+
+	    try{
+			//执行job
+			int jobId = 1717;
+
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo jobInfo=apiService.getJobById(jobId);
+			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
+			job.run();
+//			job.execute();
+			job.getJobInfo().getResponse();
+			
+			System.out.println("Over.");
+			System.exit(0);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+		}
+	
 //	@Test
 	public  void JobTest2() throws Exception {
 		//初始化context

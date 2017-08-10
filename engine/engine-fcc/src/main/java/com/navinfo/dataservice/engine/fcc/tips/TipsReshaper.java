@@ -167,7 +167,6 @@ public class TipsReshaper {
 		}
 
 		solr.commit();
-
 		solr.close();
 
 		return count;

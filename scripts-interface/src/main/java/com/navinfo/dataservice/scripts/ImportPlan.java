@@ -39,6 +39,7 @@ public class ImportPlan {
 	private static final String DEFAULT_DATE_END = "1970-01-01 00:00:00";
 	//这里添加一个默认的日期格式，用于转换
 	private static final String DEFAULT_FORMATE = "yyyy-MM-dd HH:mm:ss";
+	private static final String DEFAULT_TIME = " 12:00:00";
 	//用于记录查询groupID的次数
 	private static int SELECT_TIMES = 0;
 	//这里没有tocken，没办法从tocken中获取userid，只能先写死一个数据库存在的值直接赋值
@@ -49,10 +50,11 @@ public class ImportPlan {
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
 		JSONArray programUpdateIDs = new JSONArray();
+		JSONArray taskIds = new JSONArray();
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-//			String filepath = "E:/1.xls";
+//			String filepath = "E:/2.xls";
 			ImportPlan blockPlan = new ImportPlan();	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
@@ -86,7 +88,7 @@ public class ImportPlan {
 				e.printStackTrace();
 				DbUtils.rollbackAndCloseQuietly(conn);
 			}finally {
-				DbUtils.commitAndClose(conn);
+				DbUtils.commitAndCloseQuietly(conn);
 			}
 			//创建任务
 			try{
@@ -96,40 +98,56 @@ public class ImportPlan {
 					blockPlan.creatBlockPlan(map, conn);
 					
 					int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
-//					//查询reginID
-//					int regionId = getRegionIdByBlockID(conn , blockID);
 					//查询一个block对应city下的有效的program
 					int programID = getprogramIdByBlockID(conn , blockID);
 					map.put("programID", programID);
 					//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
-					int taskCountInBlock = blockPlan.taskCountInBlock(blockID, conn);
-					if(taskCountInBlock == 0){
+					JSONArray tasks = blockPlan.taskCountInBlock(blockID, conn);
+					if(tasks.size() == 0){
 						//这里每次一个新的blockPlan都需要重置groupID的查询次数
 						SELECT_TIMES = 0;
 						Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
-//						taskDataMap.put("regionId", regionId);
 						//创建三个不同类型的任务
 						blockPlan.creatTaskByBlockPlan(taskDataMap);
+						taskIds.addAll(blockPlan.taskCountInBlock(blockID, conn));
 					}
 				}
 			}catch(Exception e){
 				e.printStackTrace();
 				DbUtils.rollbackAndCloseQuietly(conn);
 			}finally {
-				DbUtils.commitAndClose(conn);
+				DbUtils.commitAndCloseQuietly(conn);
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
+		//发布任务
+		ImportPlan.pushTask(taskIds);
 		System.out.println("执行完成");
 	}
 	
+	
 	/**
-	 * 更新task状态为草稿
-	 * 更新block状态为已规划
+	 * 发布任务
+	 * @param JSONArray
+	 * 
+	 * */
+	public static void pushTask(JSONArray tasks){
+		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
+		try {
+			if(tasks.size() > 0){
+				TaskService.getInstance().taskPushMsg(userID, tasks);
+			}
+		} catch (Exception e) {
+			System.out.println("任务发布失败");
+		}
+	}
+	
+	/**
 	 * 发布项目
+	 * @param JSONArray
 	 * 
 	 * */
 	public static void pushProgram(JSONArray programUpdateIDs){
@@ -139,13 +157,12 @@ public class ImportPlan {
 				ProgramService.getInstance().pushMsg(userID, programUpdateIDs);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("项目发布失败");
 		}
 	}
 	
 	/**
 	 * 创建blockplan
-	 * @author 宋鹤
 	 * @param  con
 	 * @param  blockplanMap
 	 * @throws Exception 
@@ -271,19 +288,19 @@ public class ImportPlan {
 	 * @throws Exception 
 	 * 
 	 * */
-	public int taskCountInBlock(int blockID, Connection conn) throws Exception{
+	public JSONArray taskCountInBlock(int blockID, Connection conn) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.task_id from task t where t.block_id = " + blockID;
 
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
 					//1有数据，不创建任务；0无数据，创建任务
-					if(rs.next()){
-						return 1;
-					}else{
-						return 0;
+					JSONArray tasks = new JSONArray();
+					while(rs.next()){
+						tasks.add(rs.getInt("task_id"));
 					}
+					return tasks;
 				}
 			};
 			return run.query(conn, sql, rsHandler);	
@@ -304,7 +321,7 @@ public class ImportPlan {
 		int count = 0;
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "select t.program_id from PROGRAM t where t.city_id = " + cityID;
+			String sql = "select t.program_id from PROGRAM t where t.city_id = " + cityID + "and t.latest = 1";
 
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
 				public Integer handle(ResultSet rs) throws SQLException {
@@ -354,6 +371,26 @@ public class ImportPlan {
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		for(Map<String, Object> map : sources){
+
+			if(map.get("COLLECT_PLAN_START_DATE") != null && map.get("COLLECT_PLAN_START_DATE").toString().length() == 10){
+				map.put("COLLECT_PLAN_START_DATE", (map.get("COLLECT_PLAN_START_DATE") == null) ? "" : map.get("COLLECT_PLAN_START_DATE").toString() + DEFAULT_TIME);
+			}
+			if(map.get("COLLECT_PLAN_END_DATE") != null && map.get("COLLECT_PLAN_END_DATE").toString().length() == 10){
+				map.put("COLLECT_PLAN_END_DATE", (map.get("COLLECT_PLAN_END_DATE") == null) ? "" : map.get("COLLECT_PLAN_END_DATE").toString() + DEFAULT_TIME);
+			}
+			if(map.get("MONTH_EDIT_PLAN_START_DATE") != null && map.get("MONTH_EDIT_PLAN_START_DATE").toString().length() == 10){
+				map.put("MONTH_EDIT_PLAN_START_DATE", (map.get("MONTH_EDIT_PLAN_START_DATE") == null) ? "" : map.get("MONTH_EDIT_PLAN_START_DATE").toString() + DEFAULT_TIME);
+			}
+			if(map.get("MONTH_EDIT_PLAN_END_DATE") != null && map.get("MONTH_EDIT_PLAN_END_DATE").toString().length() == 10){
+				map.put("MONTH_EDIT_PLAN_END_DATE", (map.get("MONTH_EDIT_PLAN_END_DATE") == null) ? "" : map.get("MONTH_EDIT_PLAN_END_DATE").toString() + DEFAULT_TIME);
+			}
+			if(map.get("PRODUCE_PLAN_END_DATE") != null && map.get("PRODUCE_PLAN_END_DATE").toString().length() == 10){
+				map.put("PRODUCE_PLAN_END_DATE", (map.get("PRODUCE_PLAN_END_DATE") == null) ? "" : map.get("PRODUCE_PLAN_END_DATE").toString() + DEFAULT_TIME);
+			}
+			if(map.get("PRODUCE_PLAN_START_DATE") != null && map.get("PRODUCE_PLAN_START_DATE").toString().length() == 10){
+				map.put("PRODUCE_PLAN_START_DATE", (map.get("PRODUCE_PLAN_START_DATE") == null) ? "" : map.get("PRODUCE_PLAN_START_DATE").toString() + DEFAULT_TIME);
+			}
+			
 			int isPlan = Integer.parseInt(map.get("IS_PLAN").toString());
 			if(isPlan == 1){
 				result.add(map);
@@ -364,7 +401,7 @@ public class ImportPlan {
 	
 	/**
 	 * 
-	 * 对应cityID查询RegionId
+	 * 对应block查询program
 	 * @param blokID
 	 * @param conn
 	 * @throws Exception 
@@ -401,7 +438,7 @@ public class ImportPlan {
 		JSONArray list = new JSONArray();
 		JSONObject json = new JSONObject();
 		try{
-			//一个区县下创建三个任务
+			//一个区县下创建两个任务
 			for(int i = 0; i < 2; i++){
 				taskJson.put("name", taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
 				taskJson.put("blockId", Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
@@ -520,6 +557,7 @@ public class ImportPlan {
 			program.setName(programMap.get("NAME").toString() + "_" + df.format(new Date()));
 			program.setType(1);
 			program.setDescp("");
+			program.setLatest(1);
 			if(StringUtils.isNotBlank(programMap.get("PLAN_START_DATE").toString())){
 				program.setPlanStartDate(DateUtils.stringToTimestamp(programMap.get("PLAN_START_DATE").toString(), DEFAULT_FORMATE));
 			}

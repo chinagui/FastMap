@@ -284,15 +284,16 @@ public class TipsController extends BaseController {
             logger.info("开始上传tips完成，jobId:"+jobId+"\tresult:"+result);
 
 
+            //记录上传日志。不抛出异常
+            insertStatisticsInfoNoException(jobId, subtaskId, userId,
+                    tipsUploader);
+
             //20170712 Tips上传增加外业质检问题记录上传
             logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
             tipsUploader.runQuality(filePath + "/"+ "rd_qcRecord.txt");
             result.put("qcTotal", tipsUploader.getQcTotal());
             result.put("qcReasons", tipsUploader.getQcReasons());
-            
-            //记录上传日志。不抛出异常
-			insertStatisticsInfoNoException(jobId, subtaskId, userId,
-					tipsUploader);
+            result.put("qcErrMsg", tipsUploader.getQcErrMsg());
 
             return new ModelAndView("jsonView", success(result));
 

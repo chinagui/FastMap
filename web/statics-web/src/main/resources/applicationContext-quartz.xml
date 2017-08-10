@@ -117,7 +117,7 @@
     <bean id="tipsStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="tipsStat_detail" />
-        <property name="cronExpression" value="0 0/1 * * * ?" />
+        <property name="cronExpression" value="0 0 * * * ?" />
     </bean>
 
     <bean id="personTipsStat_Trigger"

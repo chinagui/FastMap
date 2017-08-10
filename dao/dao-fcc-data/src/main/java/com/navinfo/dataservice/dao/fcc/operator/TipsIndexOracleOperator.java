@@ -230,8 +230,103 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 			return null;
 		}
 		TipsDao snapshot = snapshots.get(0);
+		
+		//add by liya 查询的时候 需要 同时查询胡来关联点和线。否则 在保存的时候会丢失
+		String  reslateLink=getLinkIds(id);
+		
+		snapshot.setRelate_links(reslateLink);
+		
+		String relateNode= getNodeIds(id);
+		
+		snapshot.setRelate_nodes(relateNode);
+		
 		return snapshot;
 	}
+
+	/**
+	 * @Description:获取tips的关联线
+	 * @param id
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-8-2 上午10:54:14
+	 */
+	private String  getLinkIds(String id) throws Exception {
+		
+		String sql="SELECT l.link_id FROM TIPS_LINKS l WHERE l.ID=?";
+		
+		String result="";
+		try {
+			ResultSetHandler<String > resultSetHandler = new ResultSetHandler<String>() {
+				@Override
+				public String  handle(ResultSet rs)
+						throws SQLException {
+					String result="";
+					int index=0;
+					while (rs.next()) {
+						if(index==0){
+							result=rs.getString("link_id");
+						}else{
+							result=result+"|"+rs.getString("link_id");
+						}
+						index++;
+						
+					}
+					return result;
+				}
+			};
+			log.debug("tips query:"+sql);
+			result = run.query(conn, sql, resultSetHandler,
+					id);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("查询tips 关联线失败，原因为:" + e.getMessage(), e);
+		}
+		return result;
+		
+	}
+	
+	
+	/**
+	 * @Description:获取tips的关联点
+	 * @param id
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-8-2 上午10:54:14
+	 */
+	private String  getNodeIds(String id) throws Exception {
+		
+		String sql="SELECT node_id  FROM TIPS_NODES l WHERE l.ID=?";
+		
+		String result="";
+		try {
+			ResultSetHandler<String > resultSetHandler = new ResultSetHandler<String>() {
+				@Override
+				public String  handle(ResultSet rs)
+						throws SQLException {
+					String result="";
+					int index=0;
+					while (rs.next()) {
+						if(index==0){
+							result=rs.getString("node_id");
+						}else{
+							result=result+"|"+rs.getString("node_id");
+						}
+						index ++;
+					}
+					return result;
+				}
+			};
+			log.debug("tips query:"+sql);
+			result = run.query(conn, sql, resultSetHandler,
+					id);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("查询tips 关联点失败，原因为:" + e.getMessage(), e);
+		}
+		return result;
+		
+	}
+
 
 	/**
 	 * 根据查询条件查询符合条件的所有Tips
@@ -275,7 +370,7 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 	}
 
-	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
+  	public Page queryPage(String sql, final int pageNum, final int pageSize ,Object... params) throws Exception{
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
 

@@ -10,7 +10,12 @@ import java.util.List;
  * @Description: ValidationResult.java
  */
 public class ValidationResult {
-	protected List<String> errs=new ArrayList<>();
+	protected List<String> errs = new ArrayList<String>();
+	protected List<String> warnings = new ArrayList<String>();
+	
+	public void addErrs(String errmsg){
+		errs.add(errmsg);
+	}
 	public List<String> getErrs() {
 		return errs;
 	}
@@ -23,5 +28,4 @@ public class ValidationResult {
 	public void setWarnings(List<String> warnings) {
 		this.warnings = warnings;
 	}
-	protected List<String> warnings=new ArrayList<>();
 }

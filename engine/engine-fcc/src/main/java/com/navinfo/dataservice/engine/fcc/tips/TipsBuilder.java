@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.io.IOException;
 import java.sql.Statement;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -68,11 +69,15 @@ public class TipsBuilder {
 				"  from rd_branch         union all         select in_link_pid, node_pid, 1         " +
 				"  from rd_lane_connexity)";
 
-		Statement stmt = conn.createStatement();
-		
-		stmt.execute(sql);
-		
-		stmt.close();
+		Statement stmt =null;
+		try{
+			stmt=conn.createStatement();
+			stmt.execute(sql);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(stmt);
+		}
 	}
 
 	/**
@@ -84,11 +89,15 @@ public class TipsBuilder {
 
 		String sql = "drop table tmp_tips_order purge";
 		
-		Statement stmt = conn.createStatement();
-		
-		stmt.execute(sql);
-		
-		stmt.close();
+		Statement stmt = null;
+		try{
+			stmt = conn.createStatement();		
+			stmt.execute(sql);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(stmt);
+		}
 	}
 
 	/**
@@ -109,31 +118,36 @@ public class TipsBuilder {
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 		
 		createTabIfNotExists(hbaseConn, HBaseConstant.tipTab);
-
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-		
-//		prepareAuxData(pmOA.getConn());
-
-		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-		
-		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-		
-		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-		
-		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-		
-		Mark3DTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-		
-		ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-//		destroyAuxData(pmOA.getConn());
-
+		Table htab = null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+			
+	//		prepareAuxData(pmOA.getConn());
+	
+			BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+			
+			RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+			
+			RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+	
+			DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+	
+			HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+	
+			RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+			
+			RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+			
+			Mark3DTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+			
+			ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
+		}
 		return false;
 	}
 	public static void main(String[] args) throws Exception {

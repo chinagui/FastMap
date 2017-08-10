@@ -2,6 +2,7 @@ package com.navinfo.dataservice.scripts;
 
 import java.util.Date;
 
+import com.navinfo.dataservice.job.statics.manJob.PersonTipsJob;
 import org.junit.Test;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -137,4 +138,28 @@ public class JobTest {
 		}
 //	}
 
+    @Test
+    public  void JobTestPersonTips() throws Exception {
+        //初始化context
+        JobScriptsInterface.initContext();
+
+        try{
+            //执行job
+            JSONObject jobPra = new JSONObject();
+            jobPra.put("timestamp", new Date());
+
+            long jobId = 16582;
+            JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+            JobInfo jobInfo = apiService.getJobById(jobId);
+            AbstractJob job = new PersonTipsJob(jobInfo);
+            job.execute();
+            job.getJobInfo().getResponse();
+
+            System.out.println("Over.");
+            System.exit(0);
+        }catch(Exception e){
+            System.out.println("Oops, something wrong...");
+            e.printStackTrace();
+        }
+    }
 }

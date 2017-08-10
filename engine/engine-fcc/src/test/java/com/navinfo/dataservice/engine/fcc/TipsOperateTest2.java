@@ -1,24 +1,31 @@
 package com.navinfo.dataservice.engine.fcc;
 
 import java.io.File;
+import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.nirobot.common.utils.GeoTranslator;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
  * @ClassName: TipsExportTest.java
@@ -436,7 +443,7 @@ public class TipsOperateTest2 extends InitApplication{
 	@Test
 	public void testSaveOrUpdate() throws Exception {
 		
-		String parameter= "{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1507\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":1,\"s_mTaskId\":0,\"s_qSubTaskId\":9,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.22204,40.06444],[116.22499,40.06477],[116.22886,40.06466],[116.23079,40.06553]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.22226,40.06447]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPPEDESTRIANSTREET\",\"code\":\"1507\",\"deep\":{\"name\":\"\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.22226,40.06447]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.23064,40.06547]},\"f_array\":[{\"id\":\"02200149fc973b09f947e597e99bf60372832b\",\"type\":2,\"flag\":\"1|2\"}],\"time\":\"\"},\"_originalJson\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1507\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":1,\"s_mTaskId\":0,\"s_qSubTaskId\":9,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{},\"g_guide\":{}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_tipStatus\":1,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPPEDESTRIANSTREET\",\"code\":\"1507\",\"deep\":{\"name\":\"\",\"gSLoc\":{},\"gELoc\":{},\"f_array\":[],\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":5289,\"command\":0,\"dbId\":18}";
+		String parameter= "{\"jsonInfo\":{\"pid\":\"111510758905\",\"rowkey\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":11,\"s_sourceId\":\"\",\"s_sourceType\":\"1510\",\"s_sourceProvider\":0,\"s_reliability\":100,\"s_qTaskId\":31,\"s_mTaskId\":0,\"s_qSubTaskId\":402,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.54388,40.05653],[116.54388,40.05653]],[[116.54387,40.05653],[116.54373,40.05647],[116.54363,40.05643]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.54387,40.05653]}},\"track\":{\"t_lifecycle\":2,\"t_command\":0,\"t_date\":\"20170802155720\",\"t_tipStatus\":2,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170802121822\",\"handler\":0,\"stage\":0},{\"date\":\"20170802155720\",\"handler\":5289,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"content\":\"ddd\",\"userRole\":\"\",\"type\":3,\"date\":\"2017082154715\",\"user\":5289,\"auditRemark\":\"\"}]},\"content\":\"ddd\",\"options\":{},\"geoLiveType\":\"TIPBRIDGE\",\"code\":\"1510\",\"deep\":{\"name\":\"dfd\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.54387,40.05653]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.54363,40.05643]},\"f_array\":[{\"id\":\"758905\",\"type\":1,\"flag\":\"1\"},{\"id\":\"757338\",\"type\":1,\"flag\":\"2\"}]},\"_originalJson\":{\"pid\":\"111510758905\",\"rowkey\":\"111510758905\",\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":11,\"s_sourceId\":\"\",\"s_sourceType\":\"1510\",\"s_sourceProvider\":0,\"s_reliability\":100,\"s_qTaskId\":31,\"s_mTaskId\":0,\"s_qSubTaskId\":402,\"s_mSubTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.54387,40.05653],[116.544,40.05659],[116.54531,40.05723]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.54387,40.05653]}},\"track\":{\"t_lifecycle\":2,\"t_command\":0,\"t_date\":\"20170802155720\",\"t_tipStatus\":2,\"t_dEditStatus\":0,\"t_dEditMeth\":0,\"t_mEditStatus\":0,\"t_mEditMeth\":0,\"t_trackInfo\":[{\"date\":\"20170802121822\",\"handler\":0,\"stage\":0},{\"date\":\"20170802155720\",\"handler\":5289,\"stage\":6}]},\"feedback\":{\"f_array\":[{\"content\":\"ddd\",\"userRole\":\"\",\"type\":3,\"date\":\"2017082154715\",\"user\":5289,\"auditRemark\":\"\"}]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPBRIDGE\",\"code\":\"1510\",\"deep\":{\"name\":\"dfd\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.54387,40.05653]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.54531,40.05723]},\"f_array\":[{\"id\":\"758905\",\"flag\":\"1|2\",\"type\":1}]}},\"_initHooksCalled\":true},\"user\":5289,\"command\":0,\"dbId\":99}";
 		try {
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -490,6 +497,53 @@ public class TipsOperateTest2 extends InitApplication{
 		}
 		return notExistsKey;
 	}
+	
+	@Test
+	public void testGetById(){
+		String id="02180628db3e8f3431469dbc59b483496b43ca";
+		id="02180628db3e8f3431469dbc59b483496b43ca";//能显示的
+		Connection conn=null;
+		try{
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator  p=new TipsIndexOracleOperator(conn);
+			TipsDao  dao= p.getById(id);
+			System.out.println(	dao.getWktLocation());
+			//LINESTRING~~~
+			Geometry  geo= dao.getWktLocation();
+			for (int i = 0; i <geo.getNumGeometries(); i++) {
+				Geometry geoN=geo.getGeometryN(i);
+				//if(geoN.)
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+		
+		
+		@Test
+		public void testTipsIndexupdate(){
+			String id="02180628db3e8f3431469dbc59b483496b43ca";
+			id="02180628db3e8f3431469dbc59b483496b43ca";//能显示的
+			Connection conn=null;
+			try{
+				conn = DBConnector.getInstance().getTipsIdxConnection();
+				TipsIndexOracleOperator  p=new TipsIndexOracleOperator(conn);
+				TipsDao  dao= p.getById(id);
+				String wktLocation="";
+				System.out.println(dao.getWktLocation());
+			}catch (Exception e) {
+				// TODO: handle exception
+			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+			
+		}
+		
+	
+	
 	
 	
 	

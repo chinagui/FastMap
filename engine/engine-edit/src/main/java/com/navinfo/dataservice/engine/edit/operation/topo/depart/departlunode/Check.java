@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.depart.departlunode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,25 +34,38 @@ public class Check {
 
 		String sql = "select node_pid from rd_cross_node where node_pid = :1 and rownum =1";
 
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		pstmt.setInt(1, nodePid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, nodePid);
+	
+			resultSet = pstmt.executeQuery();
+	
+			boolean flag = false;
+	
+			if (resultSet.next()) {
+				flag = true;
+			}
+	
+			if (flag) {
+				
+				throwException("对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点");
+			}
+		}finally{
+			this.releaseStatementAndResultSet(pstmt, resultSet);
 		}
-		
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-			
-			throwException("对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点");
+	}
+	private void releaseStatementAndResultSet(Statement pstmt, ResultSet resultSet) {
+		try{
+			if(resultSet!=null) resultSet.close();
+		}catch(Exception e){
+			//do nothing
+		}
+		try{
+			if(pstmt!=null) pstmt.close();
+		}catch(Exception e){
+			//do nothing
 		}
 	}
 	
@@ -61,32 +75,33 @@ public class Check {
 		String sql = "select link_pid from rd_lane_via where link_pid =:1 and rownum=1 union all select link_pid from rd_restriction_via where link_pid =:2 and rownum=1 union all select link_pid from RD_VOICEGUIDE_VIA where link_pid =:3 and rownum=1 union all select link_pid from rd_branch_via where link_pid =:4 and rownum=1 union all select link_pid from rd_directroute_via where link_pid =:5 and rownum=1";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		pstmt.setInt(1, linkPid);
-		
-		pstmt.setInt(2, linkPid);
-		
-		pstmt.setInt(3, linkPid);
-		
-		pstmt.setInt(4, linkPid);
-		
-		pstmt.setInt(5, linkPid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-		
-		if (flag) {
-
-			throwException("该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续");
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, linkPid);
+			
+			pstmt.setInt(2, linkPid);
+			
+			pstmt.setInt(3, linkPid);
+			
+			pstmt.setInt(4, linkPid);
+			
+			pstmt.setInt(5, linkPid);
+	
+			resultSet = pstmt.executeQuery();
+	
+			boolean flag = false;
+	
+			if (resultSet.next()) {
+				flag = true;
+			}
+			
+			if (flag) {
+	
+				throwException("该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续");
+			}
+		}finally{
+			this.releaseStatementAndResultSet(pstmt, resultSet);
 		}
 	}
 	

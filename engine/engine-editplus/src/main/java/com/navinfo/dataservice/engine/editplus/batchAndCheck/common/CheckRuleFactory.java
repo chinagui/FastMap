@@ -52,6 +52,7 @@ public class CheckRuleFactory {
 							throw new Exception(e);
 						} finally {
 							DbUtils.commitAndCloseQuietly(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("获取检查规则"+operationName+"失败："

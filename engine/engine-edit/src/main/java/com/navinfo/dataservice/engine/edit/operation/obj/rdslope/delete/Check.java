@@ -256,8 +256,15 @@ public class Check {
 	}
 	
 	private void releaseSource(Statement stmt,ResultSet resultSet) throws SQLException{
-		resultSet.close();
-		
-		stmt.close();
+		try{
+			if(resultSet!=null) resultSet.close();
+		}catch(Exception e){
+			//do nothing
+		}
+		try{
+			if(stmt!=null) stmt.close();
+		}catch(Exception e){
+			//do nothing
+		}
 	}
 }

@@ -928,8 +928,8 @@ public class SubtaskService {
 				if(hasQuality==1){
 					Subtask subtaskQuality = queryBySubtaskIdS(conn,(int)result.get("qualitySubtaskId"));
 					result.put("qualityExeUserId",subtaskQuality.getExeUserId());
-					result.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
-					result.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
+					result.put("qualityPlanStartDate",DateUtils.format(subtaskQuality.getPlanStartDate(), DateUtils.DATE_YMD));
+					result.put("qualityPlanEndDate",DateUtils.format(subtaskQuality.getPlanEndDate(), DateUtils.DATE_YMD));
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
 					
 					int qualityMethod=subtaskQuality.getQualityMethod();

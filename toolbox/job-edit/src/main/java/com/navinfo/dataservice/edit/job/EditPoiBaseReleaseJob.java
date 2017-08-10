@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.edit.job;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,8 +20,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
-import com.navinfo.dataservice.control.row.quality.PoiQuality;
-import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -40,9 +39,7 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.geo.computation.GridUtils;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -99,22 +96,14 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			Map<String,Object> parameter=new HashMap<String,Object>();
 			parameter.put("subTaskWorkKind", subtask.getWorkKind());
 			
-			//构造检查参数，执行批处理检查
+			//构造检查参数
+			log.info("构造检查参数");
 			OperationResult operationResult=new OperationResult();
 			OperationResult changeReferData=new OperationResult();
 			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
 			objsMap.put(ObjectName.IX_POI, objs);
 			objsMap.put(ObjectName.IX_SAMEPOI, sameobjs);
 			operationResult.putAll(objsMap);
-			
-			log.info("执行批处理");
-			BatchCommand batchCommand=new BatchCommand();		
-			batchCommand.setOperationName("BATCH_POI_RELEASE");
-			batchCommand.setParameter(parameter);
-			Batch batch=new Batch(conn,operationResult);
-			batch.operate(batchCommand);
-			changeReferData= batch.getChangeReferData();
-			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
 			
 			CheckCommand checkCommand=new CheckCommand();
 			checkCommand.setOperationName(getOperationName());
@@ -128,36 +117,25 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			}
 			deepControl.cleanExByCkRule(myRequest.getTargetDbId(), pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 			
+			log.info("执行检查");
 			Check check=new Check(conn, operationResult);
 			check.operate(checkCommand);
-			log.info("end EditPoiBaseReleaseJob");
 			
-			/*JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids",releaseJobRequest.getGridIds());
-			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
-					releaseJobRequest.getSubJobRequest("validation"), this);
-			valJob.run();
-			if (valJob.getJobInfo().getStatus() != 3) {
-				String msg = (valJob.getException()==null)?"未知错误。":"错误："+valJob.getException().getMessage();
-				throw new Exception("执行检查job内部发生"+msg);
-			}
-			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
-			jobInfo.addResponse("val&BatchDbId", valDbId);*/
-			//对grids执行批处理
-//			log.info("start gdb batch");
-//			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
-//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
-//			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
-//					releaseJobRequest.getSubJobRequest("batch"), this);
-//			batchJob.run();
-//			if (batchJob.getJobInfo().getStatus() != 3) {
-//				String msg = (batchJob.getException()==null)?"未知错误。":"错误："+batchJob.getException().getMessage();
-//				throw new Exception("执行批处理job内部发生"+msg);
-//			}
-//			log.info("end gdb batch");
+			log.info("构造批处理参数");
+			OperationResult batchData=new OperationResult();
+			batchData=queryNoErrorData(operationResult,conn);
+			
+			log.info("执行批处理");
+			BatchCommand batchCommand=new BatchCommand();		
+			batchCommand.setOperationName("BATCH_POI_RELEASE");
+			batchCommand.setParameter(parameter);
+			Batch batch=new Batch(conn,batchData);
+			batch.operate(batchCommand);
+			changeReferData= batch.getChangeReferData();
+			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
 			
 			//修改父子关系关联批到的数据任务号及状态
+			log.info("修改父子关系关联批到的数据任务号及状态");
 			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
@@ -176,6 +154,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			data.put("type", "提交");
 			data.put("resNum", count);
 			this.exeResultMsg=" #"+data.toString()+"#";
+			log.info("end EditPoiBaseReleaseJob");
 			super.response("POI行编提交成功！",response);
 			
 		}catch(Exception e){
@@ -377,6 +356,66 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		}
 		
 		return newTaskInfo;
+	}
+	
+	/**
+	 * 查询没有检查错误的POI
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public OperationResult queryNoErrorData(OperationResult opResult,Connection conn) throws Exception{
+		
+		 Map<Long, BasicObj> objs=opResult.getObjsMapByType(ObjectName.IX_POI);
+			Map<Long, BasicObj> sameObjs=opResult.getObjsMapByType(ObjectName.IX_SAMEPOI);
+			 Map<Long, BasicObj> batchObjs=new HashMap();
+			Map<Long, BasicObj> batchSameObjs=new HashMap();
+			OperationResult operationResult=new OperationResult();
+			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
+		
+		String sql="SELECT E.PID FROM POI_EDIT_STATUS E"      
+				+ "  WHERE E.STATUS = 2"
+				+ "   AND EXISTS (SELECT 1"
+				+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
+				+ "         WHERE R.TABLE_NAME = 'IX_POI' "
+				+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
+				+ "			  AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
+				+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
+		PreparedStatement pstmt = null;
+		ResultSet rs=null;
+
+		try {
+			
+			pstmt=conn.prepareStatement(sql);
+			rs=pstmt.executeQuery();
+			while(rs.next()){
+				Long pid=rs.getLong("PID");
+				if(objs.containsKey(pid))
+				{
+					objs.remove(pid);
+				}
+				if(sameObjs.containsKey(pid))
+				{
+					sameObjs.remove(pid);
+				}	
+			}
+			objsMap.put(ObjectName.IX_POI, objs);
+			objsMap.put(ObjectName.IX_SAMEPOI, sameObjs);
+			operationResult.putAll(objsMap);
+			return operationResult;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(rs);
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+
+		}
 	}
 
 }

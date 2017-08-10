@@ -104,16 +104,21 @@ public class AudioController {
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf(tableName));
+		Table htab = null;
+		try{
+			htab=hbaseConn.getTable(TableName.valueOf(tableName));
 		
-		Put put = new Put(rowkey.getBytes());
-		
-		put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
-				.fromObject(audio).toString().getBytes());
-		
-		put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
-		
-		htab.put(put);
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+					.fromObject(audio).toString().getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			htab.put(put);
+		}finally{
+			if(htab!=null)htab.close();
+		}
 		
 	}
 

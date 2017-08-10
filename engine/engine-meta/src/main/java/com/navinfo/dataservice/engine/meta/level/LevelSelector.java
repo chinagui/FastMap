@@ -218,9 +218,9 @@ public class LevelSelector {
     	} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(regionConn);
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(regionConn);
 		}
     	
     }
@@ -338,9 +338,9 @@ public class LevelSelector {
     		log.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(regionConn);
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(regionConn);
 		}
     	
     }

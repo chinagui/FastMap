@@ -936,9 +936,7 @@ public class ScVectorMatchService {
 		}catch (Exception e) {
 			throw e;
 		}finally{
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 		return 0;
 		

@@ -59,7 +59,7 @@ public class CiParaKindKeyword {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载CI_PARA_KIND_KEYWORD失败："+ e.getMessage(), e);

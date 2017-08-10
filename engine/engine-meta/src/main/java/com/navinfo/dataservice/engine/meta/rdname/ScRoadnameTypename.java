@@ -77,9 +77,7 @@ public class ScRoadnameTypename {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 	}
 

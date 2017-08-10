@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.engine.meta.truck;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -76,8 +77,8 @@ public class TruckSelector {
         } catch (Exception e) {
             throw e;
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
         }
     }
     
@@ -110,8 +111,8 @@ public class TruckSelector {
         } catch (Exception e) {
             throw e;
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
     }
 }

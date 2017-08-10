@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -64,6 +65,8 @@ public class TipsUpload {
 
 	static int IMPORT_TIP_STATUS = 2;
 
+    static int TIMELINE_FIRST_DATE_TYPE = 1;
+
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
@@ -97,6 +100,8 @@ public class TipsUpload {
 	private int qcTotal = 0;
 	private JSONArray qcReasons = new JSONArray();
     private String qcErrMsg = "";
+    private String firstCollectTime = null;
+    private boolean isInsertFirstTime = false;
 
     public String getQcErrMsg() {
         return qcErrMsg;
@@ -164,6 +169,12 @@ public class TipsUpload {
 					// 20170519 赋中线清空快线
 					s_qTaskId = 0;
 					s_qSubTaskId = 0;
+
+                    //只查中线子任务的第一采集时间
+                    Map<Integer,Map<String, Object>> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                    if(timelineMap == null || timelineMap.size() == 0) {
+                        isInsertFirstTime = true;
+                    }
 				}
 
 				if (TaskType.Q_TASK_TYPE == taskType) {// 快线
@@ -256,6 +267,11 @@ public class TipsUpload {
 			// 道路名入元数据库
 			importRoadNameToMeta();
 
+            //中线子任务第一采集时间
+            if(StringUtils.isNotEmpty(firstCollectTime)) {
+                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                manApi.saveTimeline(s_mTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
+            }
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -673,6 +689,18 @@ public class TipsUpload {
 				TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
 				solrIndexList.add(tipsIndexModel);
 
+                //中线子任务第一采集时间
+                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                    if(StringUtils.isNotEmpty(firstCollectTime)) {
+                        long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
+                        long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");
+                        if(thisTime < lastTime) {//如果当前Tips时间小于之前记录的采集时间
+                            firstCollectTime = json.getString("t_operateDate");
+                        }
+                    }else{
+                        firstCollectTime = json.getString("t_operateDate");
+                    }
+                }
 			} catch (Exception e) {
 				failed += 1;
 
@@ -844,6 +872,19 @@ public class TipsUpload {
 
 				// 修改的需要差分
 				allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
+
+                //中线子任务第一采集时间
+                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                    if(StringUtils.isNotEmpty(firstCollectTime)) {
+                        long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
+                        long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");
+                        if(thisTime < lastTime) {//如果当前Tips时间小于之前记录的采集时间
+                            firstCollectTime = json.getString("t_operateDate");
+                        }
+                    }else{
+                        firstCollectTime = json.getString("t_operateDate");
+                    }
+                }
 
 			} catch (Exception e) {
 				failed += 1;

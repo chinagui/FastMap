@@ -55,7 +55,7 @@ public class TipsInfoCheckOperator {
 
     public JSONObject listInfoCheckResult(int subTaskId, int curPage, int pageSize) {
         String sql = "select id,rowkey,rule_id,err_Msg,err_Level,severity,status,ck_Confirm,geometry" +
-                "          FROM tips_check_result WHERE task_id = ? order by rowkey,id";
+                "          FROM tips_check_result WHERE task_id = ? and status = 0 order by rowkey,id";
         String countSql = PageQueryUtils.decorateOracleCountSql(sql);
         sql = PageQueryUtils.decorateOraclePageSql(sql);
         Connection checkConn = null;

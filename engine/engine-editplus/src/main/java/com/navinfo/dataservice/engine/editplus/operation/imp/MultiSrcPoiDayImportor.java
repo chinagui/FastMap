@@ -569,6 +569,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				ixPoi.setIndoor(indoorType);
 				//24小时开放--全天营业 OPEN_24H
 				int open24H =jo.getInt("open24H");
+				if(open24H == 0){
+					open24H =2;
+				}
 				ixPoi.setOpen24h(open24H);
 				//品牌chain--连锁品牌 CHAIN
 				if(!JSONUtils.isNull(jo.get("chain"))){
@@ -758,6 +761,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				//改24小时
 				if(StringUtils.contains(log,"改24小时")){
 					int open24H =jo.getInt("open24H");
+					if(open24H == 0){
+						open24H =2;
+					}
 					ixPoi.setOpen24h(open24H);
 				}
 				//改星级

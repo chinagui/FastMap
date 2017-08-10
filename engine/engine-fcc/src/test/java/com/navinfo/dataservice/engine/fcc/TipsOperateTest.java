@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -207,42 +212,39 @@ public class TipsOperateTest extends InitApplication {
 		TipsOperator operate = new TipsOperator();
 
 		try {
-			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
-			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
-			 "1", "d", 1 ,1);
+//			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
+//			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
+//			 "1", "d", 1 ,1);
+            String parameter = "{taskId:1717}";
 
-//			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-//
-//			Table htab = hbaseConn.getTable(TableName
-//					.valueOf(HBaseConstant.tipTab));
-//
-//			Get get = new Get(rowkey.getBytes());
-//
-//			get.addColumn("data".getBytes(), "track".getBytes());
-//
-//			Result result = htab.get(get);
-//
-//			Put put = new Put(rowkey.getBytes());
-//
-//			JSONObject track = JSONObject.fromObject(new String(result
-//					.getValue("data".getBytes(), "track".getBytes())));
-//
-//			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
-//
-//			track.put("t_mStatus", 0);
-//
-//			track.put("t_dStatus", 0);
-//
-//			String date = StringUtils.getCurrentTime();
-//
-//			track.put("t_trackInfo", trackInfo);
-//
-//			track.put("t_date", date);
-//
-//			put.addColumn("data".getBytes(), "track".getBytes(), track
-//					.toString().getBytes());
-//
-//			htab.put(put);
+            java.sql.Connection oracleConn = null;
+            try {
+                oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
+                JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+                if(!jsonReq.containsKey("taskId")) {
+                    throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+                }
+
+                int midTaskId = jsonReq.getInt("taskId");
+                if(midTaskId == 0) {
+                    throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+                }
+
+                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                JSONArray gridList = manApi.getGridIdsByTaskId(midTaskId);
+                String wkt = GridUtils.grids2Wkt(gridList);
+                TipsOperator tipsOperator = new TipsOperator();
+                long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("total", totalNum);
+
+            } catch (Exception e) {
+                DBUtils.rollBack(oracleConn);
+            } finally {
+                DBUtils.closeConnection(oracleConn);
+            }
 
 		} catch (Exception e) {
 			e.printStackTrace();

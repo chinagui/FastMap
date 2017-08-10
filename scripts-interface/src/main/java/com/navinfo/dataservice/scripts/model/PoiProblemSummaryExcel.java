@@ -1,19 +1,20 @@
 package com.navinfo.dataservice.scripts.model;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-
+import com.navinfo.nirobot.common.utils.DateUtils;
 import net.sf.json.JSONObject;
 
-public class PoiProblemSummary implements IObj {
+public class PoiProblemSummaryExcel implements IObj {
 
+	private int num;
 	private String group;// 队别,子任务所属基地名
 	private String province;// 省,子任务所属省
 	private String city;// 市,子任务所属市
@@ -55,10 +56,10 @@ public class PoiProblemSummary implements IObj {
 	private String totalWeight;// 总权重,不维护
 	private String wordYear;// 工作年限,不维护
 
-	public PoiProblemSummary() {
+	public PoiProblemSummaryExcel() {
 	}
 
-	public PoiProblemSummary(String group, String province, String city, String subtaskId, String routeNum,
+	public PoiProblemSummaryExcel(int num ,String group, String province, String city, String subtaskId, String routeNum,
 			String level, String problemNum, String photoNum, String meshId, String groupName, String poiNum,
 			String kindCode, String classTop, String classMedium, String classBottom, String problemType,
 			String problemPhenomenon, String problemDescription, String initialCause, String rootCause,
@@ -67,6 +68,7 @@ public class PoiProblemSummary implements IObj {
 			String confirmUser, String version, String problemLevel, String photoExist, String memo, String memoUser,
 			String classWeight, String problemWeight, String totalWeight, String wordYear) {
 		super();
+		this.num = num;
 		this.group = group;
 		this.province = province;
 		this.city = city;
@@ -107,6 +109,16 @@ public class PoiProblemSummary implements IObj {
 		this.problemWeight = problemWeight;
 		this.totalWeight = totalWeight;
 		this.wordYear = wordYear;
+	}
+
+    //Date date = sdf.parse(dateString); 
+	
+	public int getNum() {
+		return num;
+	}
+
+	public void setNum(int num) {
+		this.num = num;
 	}
 
 	public String getGroup() {
@@ -426,6 +438,9 @@ public class PoiProblemSummary implements IObj {
 	}
 
 	public void setWordYear(String wordYear) {
+		if( wordYear== null || wordYear.isEmpty()){
+			wordYear= "空";
+		}
 		this.wordYear = wordYear;
 	}
 
@@ -438,7 +453,7 @@ public class PoiProblemSummary implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -456,7 +471,7 @@ public class PoiProblemSummary implements IObj {
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -468,7 +483,7 @@ public class PoiProblemSummary implements IObj {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -516,7 +531,7 @@ public class PoiProblemSummary implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -560,5 +575,6 @@ public class PoiProblemSummary implements IObj {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 
 }

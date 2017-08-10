@@ -80,9 +80,9 @@ public class RowCrowdsControl {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}finally{
-			DbUtils.closeQuietly(dailyConn);
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(dailyConn);
 		}
 		return result;
 	}

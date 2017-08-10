@@ -962,7 +962,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		photo.setA_title("");
 		photo.setA_subtitle("");
 		photo.setA_sourceId(1);
-		photo.setA_content(0);
+		photo.setA_content(2);
 		photo.setA_address("");
 		photo.setA_fileName(attachment.getString("content"));
 		photo.setA_collectUser(userId.intValue());

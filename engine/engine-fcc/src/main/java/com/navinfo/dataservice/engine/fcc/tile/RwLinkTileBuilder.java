@@ -17,6 +17,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -66,7 +67,9 @@ public class RwLinkTileBuilder {
 			
 			String sql = "select a.link_pid, a.color, b.name, sdo_util.to_wktgeometry(a.geometry) geometry   from rw_link a,        (select          b.link_pid, c.name           from rw_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and c.lang_code = 'CHI'            and b.u_record != 2) b  where a.u_record != 2    and a.link_pid = b.link_pid(+) and mod(a.link_pid,5)="
 						+ mod;
-
+			Connection conn = null;
+			Statement stmt = null;
+			ResultSet rs = null;
 			try {
 
 				Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -90,14 +93,14 @@ public class RwLinkTileBuilder {
 
 				int port = Integer.parseInt(context.getConfiguration().get(
 						"port"));
-
-				Connection conn = DriverManager.getConnection(
+				
+				conn = DriverManager.getConnection(
 						"jdbc:oracle:thin:@" + ip + ":" + port + ":"
 								+ serviceName, username, password);
 
-				Statement stmt = conn.createStatement();
+				stmt = conn.createStatement();
 
-				ResultSet rs = stmt.executeQuery(sql);
+				rs = stmt.executeQuery(sql);
 
 				rs.setFetchSize(1000);
 
@@ -138,6 +141,10 @@ public class RwLinkTileBuilder {
 				e.printStackTrace();
 
 				throw new IOException(e);
+			}finally {
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(stmt);
+				DbUtils.closeQuietly(conn);
 			}
 
 		}
@@ -667,10 +674,10 @@ public class RwLinkTileBuilder {
 		public void run() {
 
 			boolean isExists = false;
-
+			Statement stmt =null;
 			try {
 
-				Statement stmt = conn.createStatement();
+				stmt = conn.createStatement();
 
 				while (job.getConfiguration().getBoolean("isover", false) == false) {
 
@@ -722,6 +729,8 @@ public class RwLinkTileBuilder {
 
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				DbUtils.closeQuietly(stmt);
 			}
 		}
 	}
@@ -919,22 +928,29 @@ public class RwLinkTileBuilder {
 		String ip = job.getConfiguration().get("ip");
 
 		int port = Integer.parseInt(job.getConfiguration().get("port"));
-
-		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
-				+ ":" + port + ":" + serviceName, username, password);
-
-		Statement stmt = conn.createStatement();
-
-		String sql = "select count(*) from rd_link";
-
-		ResultSet rs = stmt.executeQuery(sql);
-
-		rs.next();
-
-		linkNum = rs.getInt(1);
-
-		conn.close();
-
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try{
+			conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
+					+ ":" + port + ":" + serviceName, username, password);
+	
+			stmt = conn.createStatement();
+	
+			String sql = "select count(*) from rd_link";
+	
+			rs = stmt.executeQuery(sql);
+	
+			rs.next();
+	
+			linkNum = rs.getInt(1);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
+		}
 		return linkNum;
 	}
 

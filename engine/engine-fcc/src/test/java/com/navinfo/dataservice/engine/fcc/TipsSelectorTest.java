@@ -515,7 +515,7 @@ public class TipsSelectorTest extends InitApplication {
 
 	@Test
 	public void testImport() {
-		String parameter = "{\"jobId\":74,\"subtaskId\":52}";
+		String parameter = "{\"jobId\":74,\"subtaskId\":721}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -550,9 +550,9 @@ public class TipsSelectorTest extends InitApplication {
 
 			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 
-			//tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
+			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
 
-			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+//			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
 			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 

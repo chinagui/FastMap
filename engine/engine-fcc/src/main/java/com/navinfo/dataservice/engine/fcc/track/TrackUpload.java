@@ -57,13 +57,18 @@ public abstract class TrackUpload {
 	public void run(String fileName, String tableName) throws Exception {
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
         this.createTabIfNotExists(hbaseConn, tableName);
-		Table htab = hbaseConn.getTable(TableName
-				.valueOf(tableName));
-		try{
+        Table htab = null;
+        try{
+			htab = hbaseConn.getTable(TableName
+					.valueOf(tableName));
 			loadFileContent(fileName, htab);
-		}finally{
-			if(htab!=null) htab.close();
-		}
+        }catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
+		}		
 	}
 
 	/**

@@ -270,7 +270,7 @@ public class TipsUpload {
             //中线子任务第一采集时间
             if(StringUtils.isNotEmpty(firstCollectTime)) {
                 ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-                manApi.saveTimeline(s_mTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
+                manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
             }
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

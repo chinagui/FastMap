@@ -1145,7 +1145,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	private static void scTipsCode(Connection conn, Connection sqliteConn) throws Exception{
 		System.out.println("Start to export SC_TIPS_CODE...");
 		String insertSql = "insert into SC_TIPS_CODE(TOPNAME ,TOPCODE ,NAME ,CODE,SECOND_JOB_REQ,COLLECTION ) values(?,?,?,?,?,?)";
-		String selectSql = "select TOPNAME ,TOPCODE ,NAME ,CODE,SECOND_JOB_REQ,COLLECTION   from SC_TIPS_CODE ";
+		String selectSql = "select TOPNAME ,TOPCODE ,NAME ,CODE,SECOND_JOB_REQ,COLLECTION   from SC_TIPS_CODE  where code not like '80%' ";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;

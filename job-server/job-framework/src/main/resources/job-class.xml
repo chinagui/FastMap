@@ -142,4 +142,8 @@
 		  class="com.navinfo.dataservice.job.statics.manJob.TipsJob"
 		  request="com.navinfo.dataservice.job.statics.manJob.TipsJobRequest" >
 	</type>
+    <type name="personTipsJob"
+          class="com.navinfo.dataservice.job.statics.manJob.PersonTipsJob"
+          request="com.navinfo.dataservice.job.statics.manJob.PersonTipsJobRequest" >
+    </type>
 	</mapping>

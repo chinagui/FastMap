@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.iface;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -319,6 +320,24 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Map<Integer,Integer> queryProgramTypes() throws Exception;
-	
+
+    /**
+     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+     * OBJ_TYPE:program,task,subtask,infor
+     * @return	Map<Long,Map<String, Object>> key:objId
+     * @throws ServiceException
+     */
+    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+                                                                     String objType, int operateType) throws Exception;
+
+    /**
+     * 保存timeline
+     * @param objectID
+     * @param name
+     * @param type
+     * @param operateDate
+     * @throws Exception
+     */
+    public void saveTimeline(int objectID, String name, int type, String operateDate) throws Exception;
 }
 

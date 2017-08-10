@@ -77,7 +77,8 @@ public class RowChargeController extends BaseController{
 				lastSyncTime = paraJson.getString("lastSyncTime");
 				syncTime = paraJson.getString("syncTime");
 			}
-			JSONObject data = RowChargeService.getInstance().chargePoiConvertor(type,lastSyncTime,syncTime,dbIdList);
+			RowChargeService service = new RowChargeService();
+			JSONObject data = service.chargePoiConvertor(type,lastSyncTime,syncTime,dbIdList);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

@@ -201,7 +201,7 @@ public class PatternImageSelector {
 	 * @throws Exception
 	 */
 	public boolean checkUpdate(String date) throws Exception {
-		String sql = "select null from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date(:1,'yyyymmddhh24miss')";
+		String sql = "select null from sc_model_match_g where b_type in ('2D','3D') and imp_date > to_date(:1,'yyyymmddhh24miss')";
 
 		PreparedStatement pstmt = null;
 

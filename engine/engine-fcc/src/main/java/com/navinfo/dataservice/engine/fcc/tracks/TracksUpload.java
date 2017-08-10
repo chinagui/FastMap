@@ -43,13 +43,19 @@ public class TracksUpload {
 		operateTime = StringUtils.getCurrentTime();
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-		Table htab = hbaseConn.getTable(TableName.valueOf("tracks"));
-
-		Map<String, Photo> photoInfo = loadFileContent(fileName, htab);
-
-		htab.close();
-
+		Table htab = null;
+		Map<String, Photo> photoInfo = null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf("tracks"));
+	
+			photoInfo = loadFileContent(fileName, htab);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
+		}
 		return photoInfo;
 	}
 

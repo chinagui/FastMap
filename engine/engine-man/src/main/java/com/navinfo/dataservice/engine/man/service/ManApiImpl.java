@@ -505,4 +505,27 @@ public class ManApiImpl implements ManApi {
 	public Map<Integer,Integer> queryProgramTypes() throws Exception{
 		return TaskService.getInstance().queryProgramTypes();
 	}
+
+    /**
+     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+     * OBJ_TYPE:program,task,subtask,infor
+     * @return	Map<Long,Map<String, Object>> key:objId
+     * @throws ServiceException
+     */
+    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+                                                                     String objType, int operateType) throws Exception{
+        return TimelineService.queryTimelineByCondition(objId, objType, operateType);
+    }
+
+    /**
+     * 保存timeline
+     * @param objID
+     * @param objName
+     * @param objType
+     * @param operateDate
+     * @throws Exception
+     */
+    public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
+        TimelineService.saveTimeline(objID, objName, objType, operateDate);
+    }
 }

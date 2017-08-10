@@ -57,9 +57,8 @@ public class PersonTipsJob extends AbstractStatJob {
             result.put("person_tips", resultMapList);
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {
-            e.printStackTrace();
+            throw new JobException("PersonTipsJob执行报错", e);
         }
-        return null;
     }
 
     /**

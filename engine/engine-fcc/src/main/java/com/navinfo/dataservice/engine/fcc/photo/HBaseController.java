@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -163,20 +164,27 @@ public class HBaseController {
 		byte[] sbytes = FileUtils.makeSmallImage(bytes);
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
-		
-		Put put = new Put(rowkey.getBytes());
-		
-		put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
-				.fromObject(photo).toString().getBytes());
-		
-		put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
-		
-		put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
-		
-		htab.put(put);
-		
+		Table htab = null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+					.fromObject(photo).toString().getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+			
+			htab.put(put);
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
+		}
 	}
 
 	public String putPhoto(InputStream in) throws Exception{

@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.conf.Configuration;
+
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class TileBuilder {
 
@@ -31,60 +34,63 @@ public class TileBuilder {
 		String port = props.getProperty("sys.port");
 
 		Class.forName("oracle.jdbc.driver.OracleDriver");
-
-		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
-				+ ":" + port + ":" + serviceName, username, password);
-
-		Statement stmt = conn.createStatement();
-
-		String sql = "select a.*,b.server_ip,b.server_port,b.service_name from db_hub a, db_server b where a.server_id=b.server_id and a.biz_type='regionRoad'";
-
-		ResultSet rs = stmt.executeQuery(sql);
-
-		while (rs.next()) {
-
-			String dbId = rs.getString("db_id");
-			
-			if(dbId==null || dbId.isEmpty()){
-				continue;
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try{
+			conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
+					+ ":" + port + ":" + serviceName, username, password);
+	
+			stmt = conn.createStatement();
+	
+			String sql = "select a.*,b.server_ip,b.server_port,b.service_name from db_hub a, db_server b where a.server_id=b.server_id and a.biz_type='regionRoad'";
+	
+			rs = stmt.executeQuery(sql);
+	
+			while (rs.next()) {
+	
+				String dbId = rs.getString("db_id");
+				
+				if(dbId==null || dbId.isEmpty()){
+					continue;
+				}
+	
+				Configuration conf = new Configuration();
+	
+				conf.set("username", rs.getString("db_user_name"));
+	
+				conf.set("password", rs.getString("db_user_passwd"));
+	
+				conf.set("serviceName", rs.getString("service_name"));
+	
+				conf.set("ip", rs.getString("server_ip"));
+	
+				conf.set("port", rs.getString("server_port"));
+	
+				conf.set("dbId", dbId);
+				
+				conf.set("fs.defaultFS", props.getProperty("fs.defaultFS"));
+	
+				conf.setBoolean("dfs.permissions", false);
+	
+				conf.set("hbase.zookeeper.quorum",
+						props.getProperty("hbase.zookeeper.quorum"));
+				
+	
+				conf.set("minDegree", props.getProperty("min.degree"));
+	
+				conf.set("maxDegree", props.getProperty("max.degree"));
+	
+				map.put(dbId, conf);
+	
 			}
-
-			Configuration conf = new Configuration();
-
-			conf.set("username", rs.getString("db_user_name"));
-
-			conf.set("password", rs.getString("db_user_passwd"));
-
-			conf.set("serviceName", rs.getString("service_name"));
-
-			conf.set("ip", rs.getString("server_ip"));
-
-			conf.set("port", rs.getString("server_port"));
-
-			conf.set("dbId", dbId);
-			
-			conf.set("fs.defaultFS", props.getProperty("fs.defaultFS"));
-
-			conf.setBoolean("dfs.permissions", false);
-
-			conf.set("hbase.zookeeper.quorum",
-					props.getProperty("hbase.zookeeper.quorum"));
-			
-
-			conf.set("minDegree", props.getProperty("min.degree"));
-
-			conf.set("maxDegree", props.getProperty("max.degree"));
-
-			map.put(dbId, conf);
-
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
-
-		rs.close();
-
-		stmt.close();
-
-		conn.close();
-
 		return map;
 	}
 
@@ -101,43 +107,45 @@ public class TileBuilder {
 		String port = props.getProperty("man.port");
 
 		Class.forName("oracle.jdbc.driver.OracleDriver");
-
-		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
-				+ ":" + port + ":" + serviceName, username, password);
-
-		Statement stmt = conn.createStatement();
-
-		String sql = "select * from region";
-
-		ResultSet rs = stmt.executeQuery(sql);
-
+		Connection conn =null;
+		Statement stmt = null;
+		ResultSet rs = null;
 		List<Configuration> list = new ArrayList<Configuration>();
-
-		while (rs.next()) {
-
-			String dailyDbId = rs.getString("daily_db_id");
-
-			String monthlyDbId = rs.getString("monthly_db_id");
-
-			Configuration dailyConf = map.get(dailyDbId);
-			
-			if(dailyConf != null){
-				list.add(dailyConf);
-			}
-			
-			Configuration monthlyConf = map.get(monthlyDbId);
-			
-			if(monthlyConf != null){
-				list.add(monthlyConf);
-			}
-		}
+		try{
+			conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
+					+ ":" + port + ":" + serviceName, username, password);
 		
-		rs.close();
-
-		stmt.close();
-
-		conn.close();
-
+			stmt = conn.createStatement();
+		
+			String sql = "select * from region";
+		
+			rs = stmt.executeQuery(sql);			
+		
+			while (rs.next()) {
+		
+				String dailyDbId = rs.getString("daily_db_id");
+		
+				String monthlyDbId = rs.getString("monthly_db_id");
+		
+				Configuration dailyConf = map.get(dailyDbId);
+				
+				if(dailyConf != null){
+					list.add(dailyConf);
+				}
+				
+				Configuration monthlyConf = map.get(monthlyDbId);
+				
+				if(monthlyConf != null){
+					list.add(monthlyConf);
+				}
+			}
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
+		}
 		return list;
 	}
 

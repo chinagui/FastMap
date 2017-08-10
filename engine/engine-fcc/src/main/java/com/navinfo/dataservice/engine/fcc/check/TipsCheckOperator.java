@@ -139,6 +139,10 @@ public class TipsCheckOperator {
 	        	logger.error("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
 				
 				throw new Exception("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+			}finally {
+				if(htab!=null){
+					htab.close();
+				}
 			}
 	        
 	}
@@ -310,6 +314,7 @@ public class TipsCheckOperator {
         	throw new Exception("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			if(htab!=null){htab.close();}
 		}
 		
 	}

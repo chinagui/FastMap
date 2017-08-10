@@ -89,7 +89,9 @@ public class SqlHelper {
 			close(con, ps, null);
 			try{
 				if(rs!=null)rs.close();
-			}catch(Exception e){//do nothing}
+			}catch(Exception e){//do nothing
+				
+			}
 		}
 		return identity;
 	}

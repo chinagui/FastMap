@@ -124,26 +124,26 @@ public class ImportPlan {
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
 		//发布任务
-		ImportPlan.pushTask(taskIds);
+//		ImportPlan.pushTask(taskIds);
 		System.out.println("执行完成");
 	}
 	
 	
-	/**
-	 * 发布任务
-	 * @param JSONArray
-	 * 
-	 * */
-	public static void pushTask(JSONArray tasks){
-		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
-		try {
-			if(tasks.size() > 0){
-				TaskService.getInstance().taskPushMsg(userID, tasks);
-			}
-		} catch (Exception e) {
-			System.out.println("任务发布失败");
-		}
-	}
+//	/**
+//	 * 发布任务
+//	 * @param JSONArray
+//	 * 
+//	 * */
+//	public static void pushTask(JSONArray tasks){
+//		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
+//		try {
+//			if(tasks.size() > 0){
+//				TaskService.getInstance().taskPushMsg(userID, tasks);
+//			}
+//		} catch (Exception e) {
+//			System.out.println("任务发布失败");
+//		}
+//	}
 	
 	/**
 	 * 发布项目

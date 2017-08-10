@@ -124,26 +124,27 @@ public class ImportPlan {
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
 		//发布任务
-		ImportPlan.pushTask(taskIds);
+//		ImportPlan.pushTask(taskIds);
 		System.out.println("执行完成");
 	}
 	
 	
-	/**
-	 * 发布任务
-	 * @param JSONArray
-	 * 
-	 * */
-	public static void pushTask(JSONArray tasks){
-		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
-		try {
-			if(tasks.size() > 0){
-				TaskService.getInstance().taskPushMsg(userID, tasks);
-			}
-		} catch (Exception e) {
-			System.out.println("任务发布失败");
-		}
-	}
+//	/**
+//	 * 发布任务
+//	 * @param JSONArray
+//	 * 
+//	 * */
+//	public static void pushTask(JSONArray tasks){
+//		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
+//		try {
+//			if(tasks.size() > 0){
+//				TaskService.getInstance().taskPushMsg(userID, tasks);
+//			}
+//		} catch (Exception e) {
+//			System.out.println("任务发布失败");
+//		}
+//	}
+	
 	
 	/**
 	 * 发布项目
@@ -434,17 +435,16 @@ public class ImportPlan {
 	 * @param conn
 	 * */
 	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap) throws Exception{
-		JSONObject taskJson = new JSONObject();
 		JSONArray list = new JSONArray();
 		JSONObject json = new JSONObject();
 		try{
 			//一个区县下创建两个任务
 			for(int i = 0; i < 2; i++){
+				JSONObject taskJson = new JSONObject();
 				taskJson.put("name", taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
 				taskJson.put("blockId", Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
 				taskJson.put("programId", Integer.parseInt(taskDataMap.get("programID").toString()));
 				taskJson.put("lot", 0);
-				
 				//三种type类型分别创建
 				if(i == 0){
 					taskJson.put("type", 0);
@@ -538,7 +538,7 @@ public class ImportPlan {
 				list.add(taskJson);
 				}
 			json.put("tasks", list);
-			TaskService.getInstance().create(2, json);
+			TaskService.getInstance().create(userID, json);
 			}catch(Exception e){
 				throw new Exception(e);
 			}

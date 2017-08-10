@@ -4,7 +4,9 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -94,8 +96,17 @@ public class TipsUpload {
 	private Subtask subtask = null;
 	private int qcTotal = 0;
 	private JSONArray qcReasons = new JSONArray();
+    private String qcErrMsg = "";
 
-	public int getQcTotal() {
+    public String getQcErrMsg() {
+        return qcErrMsg;
+    }
+
+    public void setQcErrMsg(String qcErrMsg) {
+        this.qcErrMsg = qcErrMsg;
+    }
+
+    public int getQcTotal() {
 		return qcTotal;
 	}
 
@@ -253,7 +264,8 @@ public class TipsUpload {
 		}
 
         // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-        TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+       // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -905,11 +917,18 @@ public class TipsUpload {
 
 		Photo photo = new Photo();
 
-		JSONObject extContent = attachment.getJSONObject("extContent");
+        //20170809 判断是否存在extContent
+        if(attachment.containsKey("extContent")) {
+            JSONObject extContent = attachment.getJSONObject("extContent");
+            double lng = extContent.getDouble("longitude");
+            double lat = extContent.getDouble("latitude");
+            photo.setA_longitude(lng);
+            photo.setA_latitude(lat);
+            photo.setA_direction(extContent.getDouble("direction"));
+            photo.setA_shootDate(extContent.getString("shootDate"));
+            photo.setA_deviceNum(extContent.getString("deviceNum"));
+        }
 
-		double lng = extContent.getDouble("longitude");
-
-		double lat = extContent.getDouble("latitude");
 
 		// String uuid = fileName.replace(".jpg", "");
 		//
@@ -932,17 +951,8 @@ public class TipsUpload {
 
 		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
-		photo.setA_longitude(lng);
-
-		photo.setA_latitude(lat);
-
-		// photo.setA_sourceId(tip.getString("s_sourceId"));
-
-		photo.setA_direction(extContent.getDouble("direction"));
-
-		photo.setA_shootDate(extContent.getString("shootDate"));
-
-		photo.setA_deviceNum(extContent.getString("deviceNum"));
+        //Tips上传a_sourceId = 2
+		photo.setA_sourceId(2);
 
 		photo.setA_fileName(attachment.getString("content"));
 
@@ -950,6 +960,7 @@ public class TipsUpload {
 
 		photo.setA_refUuid("");
 
+        photo.setA_version(SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));//当前版本
 		return photo;
 	}
 
@@ -1055,20 +1066,33 @@ public class TipsUpload {
         java.sql.Connection regionDBConn = null;
 		try {
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
+                List<FieldRoadQCRecord> records = loadQualityContent(fileName);
+
                 oracleConn = DBConnector.getInstance().getTipsIdxConnection();
                 int dbId = subtask.getDbId();
                 regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
 
 				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
 				ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-				Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
-				String groupName = (String) subTaskMap.get("groupName");
-				String province = (String) subTaskMap.get("province");
-				String city = (String) subTaskMap.get("city");
-				int userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
-				String version = (String) subTaskMap.get("version");
-				String startDate = (String) subTaskMap.get("planStartDate");
-
+                Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
+                String groupName = "";
+                String province = "";
+                String city = "";
+                int userId = 0;
+                String version = "";
+                String startDate = "";
+                try {
+                    groupName = (String) subTaskMap.get("groupName");
+                    province = (String) subTaskMap.get("province");
+                    city = (String) subTaskMap.get("city");
+                    userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
+                    version = (String) subTaskMap.get("version");
+                    startDate = (String) subTaskMap.get("planStartDate");
+                }catch (Exception e) {
+                    qcErrMsg = "质检子任务" + subTaskId + "信息不完整";
+                    e.printStackTrace();
+                    return;
+                }
 				String deleteSql = "delete from FIELD_RD_QCRECORD " + "where PROBLEM_NUM = ?";
 
 				String insertSql = "INSERT INTO FIELD_RD_QCRECORD(UUID, AREA, FIELD_GROUP, LINK_PID, PROVINCE, "
@@ -1086,7 +1110,6 @@ public class TipsUpload {
 				deletePstmt = checkConn.prepareStatement(deleteSql);
 				insertPstmt = checkConn.prepareStatement(insertSql);
 
-				List<FieldRoadQCRecord> records = loadQualityContent(fileName);
 				hbaseConn = HBaseConnector.getInstance().getConnection();
 
 				htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));

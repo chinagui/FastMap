@@ -1,26 +1,26 @@
 package com.navinfo.dataservice.dao.glm.selector.lu;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.exception.DAOException;
-import com.navinfo.navicommons.exception.ServiceException;
-import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LuFaceSelector extends AbstractSelector {
 
@@ -154,15 +154,16 @@ public class LuFaceSelector extends AbstractSelector {
      * @param isLock 是否加锁
      * @return 相交面
      */
-    public List<LuFace> listLufaceRefWkt(String wkt, boolean isLock) throws ServiceException {
+    public List<LuFace> listLufaceRefWkt(String wkt, List<Integer> excludes, boolean isLock) throws ServiceException {
         List<LuFace> list = new ArrayList<>();
         String sql = "SELECT T.FACE_PID, T.GEOMETRY, T.KIND FROM LU_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
-                + ") = 'TRUE' AND T.U_RECORD <> 2";
+                + ") = 'TRUE' AND T.U_RECORD <> 2 AND T.FACE_PID NOT IN(:2)";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setString(1, wkt);
+            pstmt.setString(2, StringUtils.getInteStr(excludes));
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 LuFace face = new LuFace();

@@ -1158,33 +1158,31 @@ public class StaticsOperation {
 				@Override
 				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
-					Map<String,Object> map = new HashMap<String,Object>();
-					Set<Long> subtaskSet=new HashSet<>();
 					
-					long userId=0;
-					long taskId=0;
-					if(rs.next()) {						
-						if(taskId==0&&userId==0){
-							userId=rs.getLong("EXE_USER_ID");
-							taskId=rs.getLong("TASK_ID");}
-						if(taskId!=rs.getLong("TASK_ID")||userId!=rs.getLong("EXE_USER_ID")){
-							map.put("subtaskIds", subtaskSet);
-							list.add(map);
-							subtaskSet=new HashSet<>();
-							map = new HashMap<String,Object>();
-						}
+					while(rs.next()) labal:{	
+						Set<Long> subtaskSet = new HashSet<>();
+						Map<String,Object> map = new HashMap<String,Object>();
+					    long userId = rs.getLong("EXE_USER_ID");
+					    long taskId = rs.getLong("TASK_ID");
+						subtaskSet.add(rs.getLong("subtask_id"));
 						map.put("userId", userId);
 						map.put("taskId", taskId);
-						subtaskSet.add(rs.getLong("subtask_id"));
-						//map.put("status", rs.getInt("status"));
-						//map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE"), DateUtils.DATE_COMPACTED_FORMAT));
+						for(int i = 0; i < list.size(); i++){
+							Map<String, Object> taskMap = list.get(i);
+							if(Long.valueOf(taskMap.get("taskId").toString()) == taskId && Long.valueOf(taskMap.get("userId").toString()) == userId){
+								subtaskSet = (Set<Long>) taskMap.get("subtaskIds");
+								subtaskSet.add(rs.getLong("subtask_id"));
+								taskMap.put("subtaskIds", subtaskSet);
+//								list.remove(i);
+//								list.add(taskMap);
+								break labal;
+							}
+						}
+						map.put("subtaskIds", subtaskSet);
 						map.put("taskName", rs.getString("TASK_NAME"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("leaderName", rs.getString("LEADER_NAME"));
-						map.put("userName", rs.getString("USER_NAME"));						
-					}
-					if(taskId!=0){
-						map.put("subtaskIds", subtaskSet);
+						map.put("userName", rs.getString("USER_NAME"));	
 						list.add(map);
 					}
 					return list;

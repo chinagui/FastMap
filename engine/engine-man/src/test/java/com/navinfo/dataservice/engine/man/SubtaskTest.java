@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.man;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.token.AccessTokenFactory;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -237,5 +239,11 @@ public class SubtaskTest extends InitApplication{
 		}
 		SubtaskService service = SubtaskService.getInstance();
 		service.qualityUpdate(dataJson);
+	}
+	@Test
+	public void testSubTaskStatics() throws Exception{
+		String timestamp = "20170803";
+		List<Map<String, Object>> personList = StaticsOperation.staticsPersionJob(timestamp);
+		System.out.println(personList);
 	}
 }

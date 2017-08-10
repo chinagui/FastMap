@@ -60,7 +60,7 @@ public class JobTest {
 			JSONObject jobPra = new JSONObject();
 			jobPra.put("timestamp", new Date());
 
-			long jobId = JobService.getInstance().create("MultiSrc2FmDaySyncJob", jobPra, 0,0, "创建FM日库多源增量包");
+			long jobId = JobService.getInstance().create("taskStat", jobPra, 0,0, "创建FM日库多源增量包");
 //	    	int jobId = 3998;
 
 			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
@@ -73,6 +73,30 @@ public class JobTest {
 			job.run();
 //			job.execute();
 			job.getJobInfo().getResponse();*/
+			
+			System.out.println("Over.");
+			System.exit(0);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+		}
+	
+	@Test
+	public  void JobTest3() throws Exception {
+		//初始化context
+		JobScriptsInterface.initContext();
+
+	    try{
+			//执行job
+			int jobId = 1717;
+
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo jobInfo=apiService.getJobById(jobId);
+			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
+			job.run();
+//			job.execute();
+			job.getJobInfo().getResponse();
 			
 			System.out.println("Over.");
 			System.exit(0);

@@ -55,6 +55,7 @@ public class DiffService {
 		Map<String, Integer> sourceKindMap = new HashMap<String, Integer>();
 		Map<String, Integer> sourceChainMap = new HashMap<String, Integer>();
 
+		Integer a = new Integer(0);
 		
 		for (IxDealershipResult i : dealershipResult) {
 			sourceNameMap.put(i.getName().trim(), 1);
@@ -298,6 +299,8 @@ public class DiffService {
 							}
 							addr += resultDpAttrDiff.getAddress();
 							
+							a += 1;
+							log.info("=====================第" + a + "次调用百度接口=====================");
 							Geometry poiGeo=BaiduGeocoding.geocoder(addr);
 							if(poiGeo!=null){
 								resultDpAttrDiff.setGeometry(poiGeo);
@@ -325,6 +328,8 @@ public class DiffService {
 				insertList.add(resultDpAttrDiff);
 				if(resultDpAttrDiff.getGeometry()==null){
 					String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
+					a += 1;
+					log.info("=====================第" + a + "次调用百度接口=====================");
 					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
 					if(poiGeo!=null){
 						resultDpAttrDiff.setGeometry(poiGeo);
@@ -390,6 +395,8 @@ public class DiffService {
 						addr += resultDpAttrDiff.getCity();
 					}
 					addr += resultDpAttrDiff.getAddress();
+					a += 1;
+					log.info("=====================第" + a + "次调用百度接口=====================");
 					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
 					if(poiGeo!=null){
 						resultDpAttrDiff.setGeometry(poiGeo);

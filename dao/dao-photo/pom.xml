@@ -42,5 +42,13 @@
 	            </exclusion>
 	        </exclusions>
        </dependency>
+	    <dependency>
+	    	<groupId>com.navinfo.dataservice</groupId>
+	    	<artifactId>biz-commons</artifactId>
+	    </dependency>
+	    <dependency>
+	    	<groupId>com.navinfo.dataservice</groupId>
+	    	<artifactId>dao-glm-data</artifactId>
+	    </dependency>
 	</dependencies>
 </project>

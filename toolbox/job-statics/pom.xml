@@ -40,5 +40,9 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>edit-control-row</artifactId>
 	</dependency>
+      <dependency>
+          <groupId>com.navinfo.dataservice</groupId>
+          <artifactId>dao-fcc-data</artifactId>
+      </dependency>
   </dependencies>
 </project>

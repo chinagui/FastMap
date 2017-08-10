@@ -32,6 +32,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -173,6 +174,7 @@ public class UploadService {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public HashMap<Object,Object>  uploadResource(HttpServletRequest request) throws Exception {
+		
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
 		ServletFileUpload upload = new ServletFileUpload(factory);
@@ -220,13 +222,16 @@ public class UploadService {
 				}
 			}
 		}
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		userId = String.valueOf(tokenObj.getUserId());
+		
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
 			DBController dbController = new DBController();
 			HBaseController hbaseController = new HBaseController();
 				
 			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
-			String photoId = hbaseController.putPhoto(fileStream,2);
+			String photoId = hbaseController.putPhoto(fileStream,dbId,userId,pid);
 			
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			

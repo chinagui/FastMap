@@ -290,7 +290,7 @@ public class BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2017-4-8 下午4:14:57
 	 */
-	private void logicDel(String rowkey) throws Exception {
+	protected void logicDel(String rowkey) throws Exception {
         Connection hbaseConn = null;
         Table htab = null;
         java.sql.Connection oracleConn = null;
@@ -351,7 +351,7 @@ public class BaseTipsOperate {
 	 * @author: y
 	 * @time:2017-4-8 下午4:14:15
 	 */
-	private void physicalDel(String rowkey) throws Exception {
+	protected void physicalDel(String rowkey) throws Exception {
 		Connection hbaseConn = null;
         Table htab = null;
         java.sql.Connection oracleConn = null;

@@ -49,7 +49,10 @@ public class CollectorImport {
 			if(f.isFile() && f.getName().endsWith(".jpg")){
 				FileInputStream in = new FileInputStream(f);
 				System.out.println(f.getName());
-				//******zl 2016.12.09添加自动图片旋转**************
+				/*
+				 * 2017.08.10 zl 取消图片自动旋转功能,移动端对应人员:肖岩
+				 * //******zl 2016.12.09添加自动图片旋转**************
+				 
 				FileInputStream inn = new FileInputStream(f);
 				int rotateAngle = RotateImageUtils.rotateOrientatione(inn);//获取图片旋转角度
 				InputStream newIn =new FileInputStream(f);
@@ -61,9 +64,12 @@ public class CollectorImport {
 			    	}
 		    	}
 				//********************
-				controller.putPhoto(f.getName().replace(".jpg", ""),newIn);
+			controller.putPhoto(f.getName().replace(".jpg", ""),newIn);
 				in.close();
 				newIn.close();
+				*/
+				controller.putPhoto(f.getName().replace(".jpg", ""),in);
+				in.close();
 			}
 		}
 	}

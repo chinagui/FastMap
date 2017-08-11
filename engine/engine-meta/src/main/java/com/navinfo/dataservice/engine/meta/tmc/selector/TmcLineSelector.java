@@ -8,10 +8,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
-import com.navinfo.navicommons.database.sql.DBUtils;
-
 import net.sf.json.JSONArray;
 
 /**
@@ -99,8 +99,8 @@ public class TmcLineSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return tmcLine;

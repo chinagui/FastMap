@@ -26,13 +26,14 @@ import com.navinfo.navicommons.exception.ServiceException;
  * */
 public class TimelineService {
 	private static Logger log = LoggerRepos.getLogger(TimelineService.class);
-	/**
-	 * @param 操作对象的ID
-	 * @param 操作对象的name
-	 * @param 操作类型，0关闭
-	 * @param Connection
-	 * 
-	 * */
+
+    /**
+     * @param objectID
+     * @param name
+     * @param type
+     * @param conn
+     * @throws Exception
+     */
 	public static void recordTimeline(int objectID, String name, int type, Connection conn) throws Exception{
 		
 		String sql = "insert into MAN_TIMELINE t(t.obj_id,t.obj_type,t.operate_type,t.operate_desc)"
@@ -58,7 +59,7 @@ public class TimelineService {
 
         String sql = "insert into MAN_TIMELINE t(t.obj_id,t.obj_type,t.operate_type,t.operate_date,t.operate_desc)"
 
-                + "values(" + objectID + ",'" + name + "',TO_DATE('" + operateDate + "','yyyymmddhh24miss')," + type + ",'')";
+                + "values(" + objectID + ",'" + name + "'," + type + ",TO_DATE('" + operateDate + "','yyyymmddhh24miss'),'')";
         Connection conn = null;
         try{
             conn = DBConnector.getInstance().getManConnection();

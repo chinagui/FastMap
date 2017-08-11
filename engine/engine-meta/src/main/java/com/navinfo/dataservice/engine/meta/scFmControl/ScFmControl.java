@@ -45,7 +45,7 @@ public class ScFmControl {
 			} catch (Exception e) {
 				throw new Exception(e);
 			} finally {
-				DbUtils.close(conn);
+				DbUtils.closeQuietly(conn,pstmt,rs);
 			}
 		} catch (Exception e) {
 			throw new SQLException("加载scFmControlList失败："+ e.getMessage(), e);

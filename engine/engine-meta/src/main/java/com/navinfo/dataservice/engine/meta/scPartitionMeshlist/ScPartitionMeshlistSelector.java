@@ -228,8 +228,8 @@ public class ScPartitionMeshlistSelector {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(rs);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
 		}
 	}

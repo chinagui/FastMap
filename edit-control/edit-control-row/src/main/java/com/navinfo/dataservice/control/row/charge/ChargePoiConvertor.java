@@ -424,8 +424,8 @@ public class ChargePoiConvertor {
 		//当POI的pid为0时，此站或桩不转出（外业作业中的新增POI未经过行编）
 		if(pid == 0){return false;}
 		//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
-		List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
-		if(rows == null || rows.size() == 0){return false;}
+//		List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
+//		if(rows == null || rows.size() == 0){return false;}
 		return true;
 	}
 	
@@ -809,6 +809,10 @@ public class ChargePoiConvertor {
 							String socket = socker_pid.substring(0, index+1);
 							jso.put("socker_pid", socket+i);
 							list.add(jso);
+							//判断是否相等
+							if(list.size() >= socketSum){
+								break;
+							}
 							i++;
 						}
 					}else if(socketSum < sum){

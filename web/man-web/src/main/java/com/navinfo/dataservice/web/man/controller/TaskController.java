@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -604,8 +605,14 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int phaseId = dataJson.getInt("phaseId");
-			Connection conn=DBConnector.getInstance().getManConnection();
-			TaskProgressOperation.pushWebsocket(conn, phaseId);
+			Connection conn=null;
+			try{
+				conn=DBConnector.getInstance().getManConnection();
+				TaskProgressOperation.pushWebsocket(conn, phaseId);
+			}finally{
+				DbUtils.close(conn);
+			}
+			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));

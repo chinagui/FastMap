@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
 
 /**
@@ -124,51 +125,35 @@ public class GLM13002 extends baseRule {
                 + " ) AND (L.S_NODE_PID = N.NODE_PID OR L.E_NODE_PID = N.NODE_PID) AND L.U_RECORD <> 2 AND N.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
-
         ResultSet resultSet = null;
 
         try {
             pstmt = this.getConn().prepareStatement(sql);
-
             if (nodePids.size() > 1000) {
-
                 pstmt.setClob(1, pidClod);
             }
-
             resultSet = pstmt.executeQuery();
-
             while (resultSet.next()) {
-
                 int nodePid = resultSet.getInt("NODE_PID");
-
                 int linkPid = resultSet.getInt("LINK_PID");
-                
                 if(delLinks.contains(linkPid))
                 {
                 	continue;
                 }
-
                 if (nodeLinkMap.containsKey(nodePid)) {
-
                     nodeLinkMap.get(nodePid).add(linkPid);
-
                     if (nodeLinkMap.get(nodePid).size() > 2) {
-
                         this.setCheckResult("", "", 0);
-
                         return;
                     }
                 }
             }
 
         } catch (Exception e) {
-
             throw new Exception(e);
         } finally {
-
-            DBUtils.closeResultSet(resultSet);
-
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
     }
 

@@ -187,8 +187,9 @@ public class HBaseController {
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		Table htab =null;
 		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
 			Put put = new Put(rowkey.getBytes());
 			
 			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
@@ -330,8 +331,9 @@ public class HBaseController {
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		Table htab = null;
 		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
 			Put put = new Put(rowkey.getBytes());
 			
 			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
@@ -349,31 +351,41 @@ public class HBaseController {
 	
 	public List<Map<String, Object>> getPhotosByRowkey(JSONArray rowkeys) throws Exception{
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
-		List<Get> getList=new ArrayList<Get>();
-		for(Object rowkey:rowkeys){
-			Get get = new Get(((String)rowkey).getBytes());
-			getList.add(get);
-		}
-		Result[] rs = htab.get(getList);
+		Table htab = null;
 		List<Map<String, Object>> photos=new ArrayList<Map<String,Object>>();
-		String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
-		for (Result result : rs) {
-			if (result.isEmpty()) {continue;}
-			Map<String, Object> photoMap=new HashMap<String, Object>();
-			String rowkey = new String(result.getRow());
-			photoMap.put("rowkey", rowkey);
-//			byte[] thumbnail = FileUtils.makeSmallImage(result.getValue("data".getBytes(),
-//					"origin".getBytes()));
-//			photoMap.put("thumbnail", thumbnail);
-			String attribute = new String(result.getValue("data".getBytes(),
-					"attribute".getBytes()));
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			List<Get> getList=new ArrayList<Get>();
+			for(Object rowkey:rowkeys){
+				Get get = new Get(((String)rowkey).getBytes());
+				getList.add(get);
+			}
+			Result[] rs = htab.get(getList);
 			
-			JSONObject attrJson = JSONObject.fromObject(attribute);
-			if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
-				photoMap.put("version", 1);}
-			else{photoMap.put("version", 0);}
-			photos.add(photoMap);
+			String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+			for (Result result : rs) {
+				if (result.isEmpty()) {continue;}
+				Map<String, Object> photoMap=new HashMap<String, Object>();
+				String rowkey = new String(result.getRow());
+				photoMap.put("rowkey", rowkey);
+	//			byte[] thumbnail = FileUtils.makeSmallImage(result.getValue("data".getBytes(),
+	//					"origin".getBytes()));
+	//			photoMap.put("thumbnail", thumbnail);
+				String attribute = new String(result.getValue("data".getBytes(),
+						"attribute".getBytes()));
+				
+				JSONObject attrJson = JSONObject.fromObject(attribute);
+				if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
+					photoMap.put("version", 1);}
+				else{photoMap.put("version", 0);}
+				photos.add(photoMap);
+			}
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 		return photos;
 	}
@@ -391,17 +403,26 @@ public class HBaseController {
 		 Map<String, Integer> resultMap=new HashMap<String, Integer>();
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
-		List<Get> getList=new ArrayList<Get>();
-		for(Object rowkey:rowkeys){
-			Get get = new Get(((String)rowkey).getBytes());
-			getList.add(get);
-		}
-		Result[] rs = htab.get(getList);
-		for (Result result : rs) {
-			if (result.isEmpty()) {continue;}
-			String rowkey = new String(result.getRow());
-			resultMap.put(rowkey, 1);
+		Table htab =null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			List<Get> getList=new ArrayList<Get>();
+			for(Object rowkey:rowkeys){
+				Get get = new Get(((String)rowkey).getBytes());
+				getList.add(get);
+			}
+			Result[] rs = htab.get(getList);
+			for (Result result : rs) {
+				if (result.isEmpty()) {continue;}
+				String rowkey = new String(result.getRow());
+				resultMap.put(rowkey, 1);
+			}
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 		return resultMap;
 	}

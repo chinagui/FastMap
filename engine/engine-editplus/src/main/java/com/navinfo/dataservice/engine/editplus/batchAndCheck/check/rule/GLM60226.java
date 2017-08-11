@@ -1,5 +1,14 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
@@ -8,15 +17,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.navicommons.database.sql.DBUtils;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @Title: GLM60226
@@ -70,7 +70,7 @@ public class GLM60226 extends BasicCheckRule {
                 return;
             }
 
-            Connection conn = getCheckRuleCommand().getConn();
+            Connection conn = null;
             PreparedStatement pstmt = null;
             ResultSet resultSet = null;
 
@@ -81,6 +81,7 @@ public class GLM60226 extends BasicCheckRule {
                     + " || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE'";
             log.info(sql);
             try {
+            	conn =  getCheckRuleCommand().getConn(); 
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setLong(1, poi.getPid());
                 resultSet = pstmt.executeQuery();
@@ -135,12 +136,13 @@ public class GLM60226 extends BasicCheckRule {
                         setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
                     }
                 }
-            } catch (SQLException e) {
-                throw e;
-            } finally {
-                DBUtils.closeResultSet(resultSet);
-                DBUtils.closeStatement(pstmt);
-            }
+            }catch(Exception e){
+    			log.error(e.getMessage(),e);
+    			throw e;
+    		}finally {
+    			DbUtils.closeQuietly(resultSet);
+    			DbUtils.closeQuietly(pstmt);
+    		}
         }
     }
 

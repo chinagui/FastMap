@@ -107,7 +107,7 @@ public class TipsOperator {
 	        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 	        jsonTrackInfo.put("date", date);
 	        jsonTrackInfo.put("handler", handler);
-	        
+
 	        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
 	        if(jsonTrackInfo.containsKey("stage")) {
 	            int curStage = jsonTrackInfo.getInt("stage");
@@ -118,19 +118,23 @@ public class TipsOperator {
 	                }
 	            }else {
 	                int lastStage = lastTrack.getInt("stage");
-	                if(lastStage == curStage) {//更新
-	                    lastTrack.put("date", date);
-	                    lastTrack.put("handler", handler);
-	                    trackInfoArr.remove(trackInfoArr.size()-1);
-	                    trackInfoArr.add(lastTrack);
-	                }else{//新增
-	                    if(curStage == -1 && trackInfoArr.size() >= 2) {
-	                        JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
-	                        int lastSecondStage = lastSecondTrack.getInt("stage");
-	                        jsonTrackInfo.put("stage", lastSecondStage);
-	                    }
-	                    trackInfoArr.add(jsonTrackInfo);
-	                }
+                    if(lastStage == 7) {
+                        jsonTrackInfo.put("stage", lastStage);
+                    }else {
+                        if (lastStage == curStage) {//更新
+                            lastTrack.put("date", date);
+                            lastTrack.put("handler", handler);
+                            trackInfoArr.remove(trackInfoArr.size() - 1);
+                            trackInfoArr.add(lastTrack);
+                        } else {//新增
+                            if (curStage == -1 && trackInfoArr.size() >= 2) {
+                                JSONObject lastSecondTrack = trackInfoArr.getJSONObject(trackInfoArr.size() - 2);
+                                int lastSecondStage = lastSecondTrack.getInt("stage");
+                                jsonTrackInfo.put("stage", lastSecondStage);
+                            }
+                            trackInfoArr.add(jsonTrackInfo);
+                        }
+                    }
 	            }
 	        } else {
 	            lastTrack.put("date", date);
@@ -293,11 +297,16 @@ public class TipsOperator {
                     value.put("t_dEditMeth", editMeth);
                     tipsDao.setT_dEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_dEditStatus");
-                    if (oldEStatus == 0 && editStatus != 0) {
-                        jsonTrackInfo.put("stage", 2);
-                    }
-                    if(oldEStatus != 0 && editStatus == 0) {
-                        jsonTrackInfo.put("stage", -1);
+                    int stage = tipsDao.getStage();
+                    if(stage == 7) {//质检阶段待质检、已质检、有问题 stage=7
+                        jsonTrackInfo.put("stage", stage);
+                    }else{//作业阶段待作业stage=1,已作业、有问题stage=2,状态切换stage有变化
+                        if (oldEStatus == 0 && editStatus != 0) {
+                            jsonTrackInfo.put("stage", 2);
+                        }
+                        if(oldEStatus != 0 && editStatus == 0) {
+                            jsonTrackInfo.put("stage", -1);
+                        }
                     }
                 } else if (mdFlag.equals("m")) {//月编
                     value.put("t_mEditStatus", editStatus);
@@ -305,11 +314,16 @@ public class TipsOperator {
                     value.put("t_mEditMeth", editMeth);
                     tipsDao.setT_mEditMeth(editMeth);
                     int oldEStatus = track.getInt("t_mEditStatus");
-                    if (oldEStatus == 0 && editStatus != 0) {
-                        jsonTrackInfo.put("stage", 3);
-                    }
-                    if(oldEStatus !=0 && editStatus == 0) {
-                        jsonTrackInfo.put("stage", -1);
+                    int stage = tipsDao.getStage();
+                    if(stage == 7) {//质检阶段待质检、已质检、有问题 stage=7
+                        jsonTrackInfo.put("stage", stage);
+                    }else{//作业阶段待作业stage=1,已作业、有问题stage=2,状态切换stage有变化
+                        if (oldEStatus == 0 && editStatus != 0) {
+                            jsonTrackInfo.put("stage", 3);
+                        }
+                        if(oldEStatus !=0 && editStatus == 0) {
+                            jsonTrackInfo.put("stage", -1);
+                        }
                     }
                 }
                 jsonTrackInfo.put("date", date);
@@ -415,9 +429,7 @@ public class TipsOperator {
                                         int lastSecondStage = lastSecondTrack.getInt("stage");
                                         jsonTrackInfo.put("stage", lastSecondStage);
                                     }
-                                    if(curStage != -1) {
-                                        trackInfoArr.add(jsonTrackInfo);
-                                    }
+                                    trackInfoArr.add(jsonTrackInfo);
                                 }
                             }
                         } else {

@@ -2,14 +2,11 @@ package com.navinfo.dataservice.check.job;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.LogFlusher;
@@ -19,25 +16,22 @@ import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
-import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by ly on 2017/8/1.
  */
 public class DayLogCheckImportJob extends AbstractJob {
+
+    private Logger log = Logger
+            .getLogger(DayLogCheckImportJob.class);
 
     protected FmEditLock editLock = null;
 
@@ -67,15 +61,10 @@ public class DayLogCheckImportJob extends AbstractJob {
             OracleSchema logSchema = new OracleSchema(
                     DbConnectConfig.createConnectConfig(logDbInfo.getConnectParam()));
 
-            Date startData = getLogMaxDate(tarSchema);
-
-            if (startData==null)
-            {
-                startData=  new Date();
-            }
+            String lastOpId=getLastOpId( tarSchema);
 
             //1. 履历选择
-            logSelector = new DayLogCheckNonLockSelector(logSchema, startData);
+            logSelector = new DayLogCheckNonLockSelector(logSchema, lastOpId);
 
             String tempTable = logSelector.select();
             response("履历选择完成", null);
@@ -139,7 +128,7 @@ public class DayLogCheckImportJob extends AbstractJob {
 //        }
 //    }
 
-    private Date getLogMaxDate(OracleSchema tarSchema) throws Exception {
+    private String getLastOpId(OracleSchema tarSchema) throws Exception {
 
         Connection conn = null;
 
@@ -147,13 +136,13 @@ public class DayLogCheckImportJob extends AbstractJob {
 
         ResultSet resultSet = null;
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        String opId = null;
 
-        Date startData =df.parse("19000101000000");
         try {
 
             conn=  tarSchema.getPoolDataSource().getConnection();
-            String sql = "SELECT (MAX(T.OP_DT)) OP_DT FROM LOG_OPERATION T ";
+
+            String sql = "SELECT OP_ID FROM (SELECT * FROM LOG_OPERATION ORDER BY OP_SEQ DESC) WHERE ROWNUM = 1";
 
             pstmt = conn.prepareStatement(sql);
 
@@ -161,9 +150,11 @@ public class DayLogCheckImportJob extends AbstractJob {
 
             if (resultSet.next()) {
 
-                startData = resultSet.getTimestamp("OP_DT");
+                opId = resultSet.getString("OP_ID");
             }
-            return startData;
+
+            return opId;
+
         } catch (Exception e) {
 
             throw new Exception(e);
@@ -173,5 +164,6 @@ public class DayLogCheckImportJob extends AbstractJob {
             DbUtils.closeQuietly(conn);
         }
     }
+
 
 }

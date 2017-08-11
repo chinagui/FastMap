@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -43,94 +45,106 @@ public class GLM60236 extends BasicCheckRule {
 	public void run()throws Exception{
 		Map<Long, BasicObj> rows=getRowList();
 		loadReferDatas(rows.values());
-		Set<Long> pidList=new HashSet<Long>();
-		for(Long key:rows.keySet()){
-			BasicObj obj=rows.get(key);
-			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
-				pidList.add(obj.objPid());
-				try{
-					runCheck(obj);
-				}catch(Exception e){
-					log.warn(e.getMessage(),e);
+		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			Set<Long> pidList=new HashSet<Long>();
+			for(Long key:rows.keySet()){
+				BasicObj obj=rows.get(key);
+				if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+					pidList.add(obj.objPid());
+					try{
+						runCheck(obj);
+					}catch(Exception e){
+						log.warn(e.getMessage(),e);
+					}
 				}
 			}
-		}
-		if(pidList==null||pidList.size()==0){return;}
-		String pids=pidList.toString().replace("[", "").replace("]", "");
-		Connection conn = this.getCheckRuleCommand().getConn();
-		List<Clob> values=new ArrayList<Clob>();
-		String pidString="";
-		if(pidList.size()>1000){
-			Clob clob=ConnectionUtil.createClob(conn);
-			clob.setString(1, pids);
-			pidString=" IN (select to_number(column_value) from table(clob_to_table(?)))";
-			values.add(clob);
-			values.add(clob);
-		}else{
-			pidString=" IN ("+pids+")";
-		}
-		String sqlStr="SELECT C1.GROUP_ID       G1,"
-				+ "       C1.CHILD_POI_PID  C,"
-				+ "       P1.PARENT_POI_PID P1,"
-				+ "       P2.GROUP_ID       G2,"
-				+ "       P2.PARENT_POI_PID P2"
-				+ "  FROM IX_POI_CHILDREN C1,"
-				+ "       IX_POI_PARENT   P1,"
-				+ "       IX_POI_CHILDREN C2,"
-				+ "       IX_POI_PARENT   P2,"
-				+ "       IX_POI          P"
-				+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
-				+ "   AND C2.GROUP_ID = P2.GROUP_ID"
-				+ "   AND P.PID = C1.CHILD_POI_PID"
-				+ "   AND P1.PARENT_POI_PID > P2.PARENT_POI_PID"
-				+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
-				+ "   AND P.U_RECORD != 2"
-				+ "   AND C1.U_RECORD != 2"
-				+ "   AND C2.U_RECORD != 2"
-				+ "   AND P1.U_RECORD != 2"
-				+ "   AND P2.U_RECORD != 2"
-				+ "   AND C1.CHILD_POI_PID "+pidString
-				+ " UNION"
-				+ " SELECT C1.GROUP_ID       G1,"
-				+ "       C1.CHILD_POI_PID  C,"
-				+ "       P1.PARENT_POI_PID P1,"
-				+ "       P2.GROUP_ID       G2,"
-				+ "       P2.PARENT_POI_PID P2"
-				+ "  FROM IX_POI_CHILDREN C1,"
-				+ "       IX_POI_PARENT   P1,"
-				+ "       IX_POI_CHILDREN C2,"
-				+ "       IX_POI_PARENT   P2,"
-				+ "       IX_POI          P"
-				+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
-				+ "   AND C2.GROUP_ID = P2.GROUP_ID"
-				+ "   AND P.PID = C1.CHILD_POI_PID"
-				+ "   AND P1.PARENT_POI_PID != P2.PARENT_POI_PID"
-				+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
-				+ "   AND P.U_RECORD != 2"
-				+ "   AND C1.U_RECORD != 2"
-				+ "   AND C2.U_RECORD != 2"
-				+ "   AND P1.U_RECORD != 2"
-				+ "   AND P2.U_RECORD != 2"
-				+ "   AND P1.PARENT_POI_PID "+pidString;
-		PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
-		if(values!=null&&values.size()>0){
-			for(int i=0;i<values.size();i++){
-				pstmt.setClob(i+1,values.get(i));
+			if(pidList==null||pidList.size()==0){return;}
+			String pids=pidList.toString().replace("[", "").replace("]", "");
+			conn = this.getCheckRuleCommand().getConn();
+			List<Clob> values=new ArrayList<Clob>();
+			String pidString="";
+			if(pidList.size()>1000){
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, pids);
+				pidString=" IN (select to_number(column_value) from table(clob_to_table(?)))";
+				values.add(clob);
+			}else{
+				pidString=" IN ("+pids+")";
 			}
-		}			
-		ResultSet rs = pstmt.executeQuery();
-		//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
-		Set<Long> dupPid=new HashSet<Long>();
-		while (rs.next()) {
-			Long pidTmp1=rs.getLong("C");
-			Long pidTmp2=rs.getLong("P1");
-			Long pidTmp3=rs.getLong("P2");
-			if(!dupPid.contains(pidTmp1)||!dupPid.contains(pidTmp2)||!dupPid.contains(pidTmp3)){
-				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
-				setCheckResult("", targets, 0,"POI存在一子多父");
-				dupPid.add(pidTmp1);dupPid.add(pidTmp2);dupPid.add(pidTmp3);
+			String sqlStr="SELECT C1.GROUP_ID       G1,"
+					+ "       C1.CHILD_POI_PID  C,"
+					+ "       P1.PARENT_POI_PID P1,"
+					+ "       P2.GROUP_ID       G2,"
+					+ "       P2.PARENT_POI_PID P2"
+					+ "  FROM IX_POI_CHILDREN C1,"
+					+ "       IX_POI_PARENT   P1,"
+					+ "       IX_POI_CHILDREN C2,"
+					+ "       IX_POI_PARENT   P2,"
+					+ "       IX_POI          P"
+					+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
+					+ "   AND C2.GROUP_ID = P2.GROUP_ID"
+					+ "   AND P.PID = C1.CHILD_POI_PID"
+					+ "   AND P1.PARENT_POI_PID > P2.PARENT_POI_PID"
+					+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
+					+ "   AND P.U_RECORD != 2"
+					+ "   AND C1.U_RECORD != 2"
+					+ "   AND C2.U_RECORD != 2"
+					+ "   AND P1.U_RECORD != 2"
+					+ "   AND P2.U_RECORD != 2"
+					+ "   AND C1.CHILD_POI_PID "+pidString
+					+ " UNION"
+					+ " SELECT C1.GROUP_ID       G1,"
+					+ "       C1.CHILD_POI_PID  C,"
+					+ "       P1.PARENT_POI_PID P1,"
+					+ "       P2.GROUP_ID       G2,"
+					+ "       P2.PARENT_POI_PID P2"
+					+ "  FROM IX_POI_CHILDREN C1,"
+					+ "       IX_POI_PARENT   P1,"
+					+ "       IX_POI_CHILDREN C2,"
+					+ "       IX_POI_PARENT   P2,"
+					+ "       IX_POI          P"
+					+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
+					+ "   AND C2.GROUP_ID = P2.GROUP_ID"
+					+ "   AND P.PID = C1.CHILD_POI_PID"
+					+ "   AND P1.PARENT_POI_PID != P2.PARENT_POI_PID"
+					+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
+					+ "   AND P.U_RECORD != 2"
+					+ "   AND C1.U_RECORD != 2"
+					+ "   AND C2.U_RECORD != 2"
+					+ "   AND P1.U_RECORD != 2"
+					+ "   AND P2.U_RECORD != 2"
+					+ "   AND P1.PARENT_POI_PID "+pidString;
+			pstmt = conn.prepareStatement(sqlStr);;
+			if(values!=null&&values.size()>0){
+				for(int i=0;i<values.size();i++){
+					pstmt.setClob(i+1,values.get(i));
+				}
+			}			
+			rs = pstmt.executeQuery();
+			//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+			Set<Long> dupPid=new HashSet<Long>();
+			while (rs.next()) {
+				Long pidTmp1=rs.getLong("C");
+				Long pidTmp2=rs.getLong("P1");
+				Long pidTmp3=rs.getLong("P2");
+				if(!dupPid.contains(pidTmp1)||!dupPid.contains(pidTmp2)||!dupPid.contains(pidTmp3)){
+					String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
+					setCheckResult("", targets, 0,"POI存在一子多父");
+					dupPid.add(pidTmp1);dupPid.add(pidTmp2);dupPid.add(pidTmp3);
+				}
 			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
+		
 	}
 	
 	@Override

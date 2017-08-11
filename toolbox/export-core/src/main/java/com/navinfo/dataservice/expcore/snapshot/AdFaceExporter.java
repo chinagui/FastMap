@@ -29,47 +29,56 @@ public class AdFaceExporter {
 
 		String insertSql = "insert into gdb_adFace values("
 				+ "?,?, GeomFromText(?, 4326), ?, ?, ?)";
+		PreparedStatement pstm =null;
+		PreparedStatement stmt2 =null;
+		ResultSet rs =null;
+		try{
+			pstm = sqliteConn.prepareStatement(insertSql);
 
-		PreparedStatement pstm = sqliteConn.prepareStatement(insertSql);
+			String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.region_id),0) admin_id, a.geometry from ad_face a where a.u_record != 2  and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.region_id),0) admin_id, a.geometry from ad_face a where a.u_record != 2  and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+			Clob clob = conn.createClob();
+			clob.setString(1, StringUtils.join(meshes, ","));
 
-		Clob clob = conn.createClob();
-		clob.setString(1, StringUtils.join(meshes, ","));
+			stmt2 = conn.prepareStatement(sql);
 
-		PreparedStatement stmt2 = conn.prepareStatement(sql);
-
-		stmt2.setClob(1, clob);
-		
-		ResultSet rs = stmt2.executeQuery();
-
-		rs.setFetchSize(5000);
-
-		int count = 0;
-		
-		//WKT wkt = new WKT();
-		
-		while (rs.next()) {
+			stmt2.setClob(1, clob);
 			
-			pstm.setInt(1, rs.getInt("face_pid"));
-			pstm.setInt(2, rs.getInt("admin_id"));
-			STRUCT struct = (STRUCT) rs.getObject("geometry");
-			String geom = GeoTranslator.struct2Wkt(struct);
-			//String geom = new String(wkt.fromJGeometry(wkt.toJGeometry(rs.getBytes("geometry"))));
-			//System.out.println("face_pid:"+rs.getInt("face_pid")+" ,count : "+(count+1)+" geom"+ geom);
-			pstm.setString(3, geom);
-			pstm.setString(4, String.valueOf(rs.getInt("mesh_id")));
-			pstm.setString(5, operateDate);
-			pstm.setInt(6, 0);
-			pstm.executeUpdate();
+			rs = stmt2.executeQuery();
 
-			count += 1;
+			rs.setFetchSize(5000);
 
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
+			int count = 0;
+			
+			//WKT wkt = new WKT();
+			
+			while (rs.next()) {
+				
+				pstm.setInt(1, rs.getInt("face_pid"));
+				pstm.setInt(2, rs.getInt("admin_id"));
+				STRUCT struct = (STRUCT) rs.getObject("geometry");
+				String geom = GeoTranslator.struct2Wkt(struct);
+				//String geom = new String(wkt.fromJGeometry(wkt.toJGeometry(rs.getBytes("geometry"))));
+				//System.out.println("face_pid:"+rs.getInt("face_pid")+" ,count : "+(count+1)+" geom"+ geom);
+				pstm.setString(3, geom);
+				pstm.setString(4, String.valueOf(rs.getInt("mesh_id")));
+				pstm.setString(5, operateDate);
+				pstm.setInt(6, 0);
+				pstm.executeUpdate();
+
+				count += 1;
+
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
 			}
-		}
 
-		sqliteConn.commit();
+			sqliteConn.commit();
+		}finally{
+			try{if(rs!=null) rs.close();}catch(Exception e){}
+			try{if(stmt2!=null) stmt2.close();}catch(Exception e){}
+			try{if(pstm!=null) pstm.close();}catch(Exception e){}
+		}
+		
 	}
 }

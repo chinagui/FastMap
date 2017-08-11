@@ -191,9 +191,9 @@ public class IxPoiParentSelector extends AbstractSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rows;
@@ -244,9 +244,9 @@ public class IxPoiParentSelector extends AbstractSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rows;
@@ -296,9 +296,9 @@ public class IxPoiParentSelector extends AbstractSelector {
 			throw e;
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return rows;
 	}

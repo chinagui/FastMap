@@ -33,70 +33,80 @@ public class BkFaceExporter {
 
 		String insertSql = "insert into gdb_bkFace values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
-
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-//		String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-
-		//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
-		String sql = " select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
-					+ " union all "
-					+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) ";
-		Clob clob = conn.createClob();
-		clob.setString(1, StringUtils.join(meshes, ","));
-
-		PreparedStatement stmt2 = conn.prepareStatement(sql);
-
-		stmt2.setClob(1, clob);
-		stmt2.setClob(2, clob);
+		PreparedStatement prep =null;
+		PreparedStatement stmt2 =null;
+		ResultSet resultSet =null;
 		
-		ResultSet resultSet = stmt2.executeQuery();
+		try{
+			prep = sqliteConn.prepareStatement(insertSql);
 
-		resultSet.setFetchSize(5000);
+//			String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		int count = 0;
+			//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
+			String sql = " select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
+						+ " union all "
+						+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) ";
+			Clob clob = conn.createClob();
+			clob.setString(1, StringUtils.join(meshes, ","));
 
-		//*******zl 2017.02.21  去重pid 重复的结果******
-		List<Integer> pids = new ArrayList<Integer>();
-		
-		while (resultSet.next()) {
+			stmt2 = conn.prepareStatement(sql);
 
-			JSONObject json = enclosingBkFace(resultSet, operateDate);
+			stmt2.setClob(1, clob);
+			stmt2.setClob(2, clob);
+			
+			resultSet = stmt2.executeQuery();
 
-			int pid = json.getInt("pid");
+			resultSet.setFetchSize(5000);
 
-			if(!pids.contains(pid)){
+			int count = 0;
+
+			//*******zl 2017.02.21  去重pid 重复的结果******
+			List<Integer> pids = new ArrayList<Integer>();
+			
+			while (resultSet.next()) {
+
+				JSONObject json = enclosingBkFace(resultSet, operateDate);
+
+				int pid = json.getInt("pid");
+
+				if(!pids.contains(pid)){
+					
+					pids.add(pid);
 				
-				pids.add(pid);
-			
-			prep.setInt(1, pid);
+				prep.setInt(1, pid);
 
-			prep.setString(2, json.getString("geometry"));
+				prep.setString(2, json.getString("geometry"));
 
-			prep.setString(3, json.getString("display_style"));
+				prep.setString(3, json.getString("display_style"));
 
-			prep.setString(4, json.getString("display_text"));
+				prep.setString(4, json.getString("display_text"));
 
-			prep.setString(5, json.getString("meshid"));
+				prep.setString(5, json.getString("meshid"));
 
-			prep.setInt(6, json.getInt("kind"));
+				prep.setInt(6, json.getInt("kind"));
 
-			prep.setString(7, json.getString("op_date"));
+				prep.setString(7, json.getString("op_date"));
 
-			prep.setInt(8, json.getInt("op_lifecycle"));
+				prep.setInt(8, json.getInt("op_lifecycle"));
 
-			prep.executeUpdate();
+				prep.executeUpdate();
 
-			count += 1;
+				count += 1;
 
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+				
+				}
 			}
-			
-			}
+
+			sqliteConn.commit();
+		}finally{
+			try{if(resultSet!=null) resultSet.close();}catch(Exception e){}
+			try{if(stmt2!=null) stmt2.close();}catch(Exception e){}
+			try{if(prep!=null) prep.close();}catch(Exception e){}
 		}
-
-		sqliteConn.commit();
+		
 	}
 
 	private static JSONObject enclosingBkFace(ResultSet rs, String operateDate)

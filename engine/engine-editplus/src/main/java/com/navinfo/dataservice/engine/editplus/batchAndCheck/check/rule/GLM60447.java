@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -86,9 +89,12 @@ public class GLM60447 extends BasicCheckRule {
 				+ "   AND F.FACE_PID = T.FACE_PID"
 				+ "   AND A.ADMIN_ID IN ("+adminList.toString().replace("[", "").replace("]", "")+")";
 		Connection conn = this.getCheckRuleCommand().getConn();
-		PreparedStatement pstmt=conn.prepareStatement(sqlStr);
-		ResultSet rs = pstmt.executeQuery();
+		PreparedStatement pstmt=null;
+		ResultSet rs=null;
 		Map<String, Set<Long>> adminLinkMap=new HashMap<String, Set<Long>>();
+		try{
+		pstmt=conn.prepareStatement(sqlStr);
+		rs = pstmt.executeQuery();
 		while (rs.next()) {
 			String admin=rs.getString("ADMIN_ID");
 			Long linkPid=rs.getLong("LINK_PID");
@@ -97,6 +103,12 @@ public class GLM60447 extends BasicCheckRule {
 			}
 			adminLinkMap.get(admin).add(linkPid);
 		}
+	 } catch (SQLException e) {
+         throw e;
+     } finally {
+     	DbUtils.closeQuietly(rs);
+     	DbUtils.closeQuietly(pstmt);
+     }
 		for(Long pid:pids){
 			String adminId = null;
 			if(adminMap.containsKey(pid)){

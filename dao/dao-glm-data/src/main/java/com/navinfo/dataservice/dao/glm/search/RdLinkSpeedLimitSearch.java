@@ -207,7 +207,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 			throw new SQLException(e);
 		} finally {
 
-			DbUtils.closeQuietly((resultSet);
+			DbUtils.closeQuietly(resultSet);
 
 			DbUtils.closeQuietly(pstmt);
 		}

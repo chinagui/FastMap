@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,12 +64,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} // finally
 	}
 	
@@ -123,11 +122,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} 
 	}
 	
@@ -210,12 +208,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} // finally
 	}
 	
@@ -236,13 +232,12 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		finally{
-			if (conn != null) {
-				conn.close();
-			}
-		}//
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	
 	
@@ -333,11 +328,10 @@ public class DataEditController extends BaseController {
 		    return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("关闭品牌，原因：" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}finally{
-			if(conn!=null){
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

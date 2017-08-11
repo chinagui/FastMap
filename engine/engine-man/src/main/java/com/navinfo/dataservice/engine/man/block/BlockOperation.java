@@ -177,13 +177,15 @@ public class BlockOperation {
 	 */
 	public static boolean checkGridFinished(int blockId, int stage, int type) throws Exception {
 		Connection conn = null;
+		PreparedStatement stmt =null;
+		ResultSet rs = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			String sqlByblockId = "select grid_id from grid where block_id=" + blockId;
 
-			PreparedStatement stmt = conn.prepareStatement(sqlByblockId);
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement(sqlByblockId);
+			rs = stmt.executeQuery();
 			List<String> gridList = new ArrayList();
 			while (rs.next()) {
 				gridList.add(String.valueOf(rs.getInt(1)));
@@ -215,6 +217,8 @@ public class BlockOperation {
 			}
 			return true;
 		} catch (Exception e) {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
@@ -538,6 +542,8 @@ public class BlockOperation {
 	 */
 	public static List queryOperationBlocks(Connection conn, JSONArray blockArray) throws Exception {
 		// TODO Auto-generated method stub
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			List<Integer> updateBlockList = new ArrayList<Integer>();
@@ -552,8 +558,8 @@ public class BlockOperation {
 
 			String selectSql = "select block_id from block_man where status!=0 and block_id in " + BlockIds;
 
-			PreparedStatement stmt = conn.prepareStatement(selectSql);
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement(selectSql);
+			rs = stmt.executeQuery();
 			List<String> gridList = new ArrayList();
 			while (rs.next()) {
 				updateBlockList.add(rs.getInt(1));
@@ -565,6 +571,10 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -575,6 +585,8 @@ public class BlockOperation {
 	 */
 	public static List<Integer> queryOpenOperationBlocks(Connection conn, JSONArray blockArray) throws Exception {
 		// TODO Auto-generated method stub
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			List<Integer> updateBlockList = new ArrayList<Integer>();
@@ -589,8 +601,8 @@ public class BlockOperation {
 
 			String selectSql = "select block_Man_id from block_man where status=1 and block_man_id in " + BlockIds;
 
-			PreparedStatement stmt = conn.prepareStatement(selectSql);
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement(selectSql);
+			rs = stmt.executeQuery();
 			List<String> gridList = new ArrayList();
 			while (rs.next()) {
 				updateBlockList.add(rs.getInt(1));
@@ -602,6 +614,10 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 
@@ -678,26 +694,34 @@ public class BlockOperation {
 			selectSubTaskCount += " and s.stage=" + stage;
 		}
 		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		PreparedStatement stmt1 = null;
+		ResultSet rs1 = null;
+		float finishPercent = 0;
 		try {
 			stmt = conn.prepareStatement(selectSubTaskCount);
+			rs = stmt.executeQuery();
+			int subtaskCount = 0;
+			while (rs.next()) {
+	//			subtaskCount = rs.getInt("record_");
+				subtaskCount = rs.getInt("total");
+			}
+			if (subtaskCount == 0) {
+				return "0%";
+			}
+			stmt1 = conn.prepareStatement(selectFinishPercentSql);
+			rs1 = stmt1.executeQuery();
+			while (rs1.next()) {
+				finishPercent += rs1.getInt("finish_percent") / (subtaskCount * 100);
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		ResultSet rs = stmt.executeQuery();
-		int subtaskCount = 0;
-		while (rs.next()) {
-//			subtaskCount = rs.getInt("record_");
-			subtaskCount = rs.getInt("total");
-		}
-		if (subtaskCount == 0) {
-			return "0%";
-		}
-		float finishPercent = 0;
-		PreparedStatement stmt1 = conn.prepareStatement(selectFinishPercentSql);
-		ResultSet rs1 = stmt1.executeQuery();
-		while (rs1.next()) {
-			finishPercent += rs1.getInt("finish_percent") / (subtaskCount * 100);
+		}finally {
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(stmt1);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(rs1);
 		}
 		return String.valueOf(finishPercent * 100) + "%";
 	}

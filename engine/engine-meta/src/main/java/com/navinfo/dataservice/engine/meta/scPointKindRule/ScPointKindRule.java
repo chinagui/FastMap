@@ -60,7 +60,7 @@ public class ScPointKindRule {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_RULE失败：" + e.getMessage(), e);
@@ -99,7 +99,7 @@ public class ScPointKindRule {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_RULE失败：" + e.getMessage(), e);

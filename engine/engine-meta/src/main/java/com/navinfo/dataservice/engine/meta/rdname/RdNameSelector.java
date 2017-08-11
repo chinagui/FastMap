@@ -255,9 +255,7 @@ public class RdNameSelector {
 
 			throw new Exception(e);
 		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 
 		return resultAdmin;

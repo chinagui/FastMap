@@ -4,6 +4,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -22,9 +24,9 @@ public class LevelTest {
 
     @Test
     public void testQueryLevel() {
+    	Connection conn = null;
         try {
         	
-            Connection conn = null;
 
             
             String parameter = "{\"dbId\":19,\"pid\":4656744,\"poi_num\":\"0010110510LW502182\",\"kindCode\":\"130403\",\"chainCode\":null,\"name\":\"报刊亭\",\"rating\":0,\"level\":\"C\"}";
@@ -37,6 +39,8 @@ public class LevelTest {
             System.out.println(res);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }finally {
+        	DbUtils.closeQuietly(conn);
+		}
     }
 }

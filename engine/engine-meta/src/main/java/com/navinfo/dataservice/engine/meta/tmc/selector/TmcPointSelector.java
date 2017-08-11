@@ -6,11 +6,9 @@ package com.navinfo.dataservice.engine.meta.tmc.selector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
+import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
-import com.navinfo.navicommons.database.sql.DBUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -125,8 +123,8 @@ public class TmcPointSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return tmcPoint;

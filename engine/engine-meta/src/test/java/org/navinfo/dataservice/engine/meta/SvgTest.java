@@ -70,9 +70,7 @@ public class SvgTest {
 
 		} finally {
 			in.close();
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 	}
 	@Test

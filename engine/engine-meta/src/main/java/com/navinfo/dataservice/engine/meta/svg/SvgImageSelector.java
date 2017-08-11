@@ -105,9 +105,7 @@ public class SvgImageSelector {
 			throw e;
 
 		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 	}
 
@@ -150,9 +148,7 @@ public class SvgImageSelector {
 			throw e;
 
 		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 
 		return "";

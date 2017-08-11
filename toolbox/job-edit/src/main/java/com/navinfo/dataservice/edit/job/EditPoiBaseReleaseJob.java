@@ -408,8 +408,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 			try {
 				pstmt.close();
 			} catch (Exception e) {

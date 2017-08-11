@@ -107,8 +107,9 @@ public class ZoneLinkSearch implements ISearch {
 
 			throw new Exception(e);
 		} finally {
-			DBUtils.closeStatement(pstmt);
 			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			
 		}
 
 		return list;

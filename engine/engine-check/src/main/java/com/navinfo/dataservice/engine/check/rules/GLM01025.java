@@ -2,8 +2,11 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -12,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -74,35 +76,38 @@ public class GLM01025 extends baseRule {
                     sx = coords[0].x;
                     sy = coords[0].y;
                 }
-                PreparedStatement pstmt = getConn().prepareStatement(sql);
-                pstmt.setInt(1, rdLink.getsNodePid());
-                pstmt.setDouble(2, sx);
-                pstmt.setDouble(3, sy);
-                pstmt.setInt(4, rdLink.geteNodePid());
-                pstmt.setDouble(5, ex);
-                pstmt.setDouble(6, ey);
+                PreparedStatement pstmt = null;
+                ResultSet resultSet = null;
+                try {
+					pstmt = getConn().prepareStatement(sql);
+					pstmt.setInt(1, rdLink.getsNodePid());
+					pstmt.setDouble(2, sx);
+					pstmt.setDouble(3, sy);
+					pstmt.setInt(4, rdLink.geteNodePid());
+					pstmt.setDouble(5, ex);
+					pstmt.setDouble(6, ey);
 
-                ResultSet resultSet = pstmt.executeQuery();
-
-                boolean hasEnode = false;
-                boolean hasSnode = false;
-
-                while (resultSet.next()) {
-                    int nodePid = resultSet.getInt("node_pid");
-
-                    if (nodePid == rdLink.getsNodePid()) {
-                        hasSnode = true;
-                    } else if (nodePid == rdLink.geteNodePid()) {
-                        hasEnode = true;
-                    }
-                }
-
-                resultSet.close();
-                pstmt.close();
-                if (!hasEnode || !hasSnode) {
-                    this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + rdLink.getPid() + "]", rdLink.getMeshId());
-                    return;
-                }
+					resultSet = pstmt.executeQuery();
+					boolean hasEnode = false;
+					boolean hasSnode = false;
+					while (resultSet.next()) {
+					    int nodePid = resultSet.getInt("node_pid");
+					    if (nodePid == rdLink.getsNodePid()) {
+					        hasSnode = true;
+					    } else if (nodePid == rdLink.geteNodePid()) {
+					        hasEnode = true;
+					    }
+					}
+					if (!hasEnode || !hasSnode) {
+					    this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + rdLink.getPid() + "]", rdLink.getMeshId());
+					    return;
+					}
+                }catch (SQLException e) {
+        			throw e;
+        		} finally {
+        			DbUtils.closeQuietly(resultSet);
+        			DbUtils.closeQuietly(pstmt);
+        		}
             }
 
         }

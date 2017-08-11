@@ -36,80 +36,91 @@ import com.vividsolutions.jts.geom.Geometry;
 public class FM14Sum1115 extends BasicCheckRule {
 	
 	public void run() throws Exception {
-		Map<Long, BasicObj> rows=getRowList();
-//		List<Long> pidParent=new ArrayList<Long>();
-		List<Long> pidChildren=new ArrayList<Long>();
-		String[] checkKindArray={"130105","130800","130804","130806","130807"};
-		List checkKindList=Arrays.asList(checkKindArray);
-		for(Long key:rows.keySet()){
-			BasicObj obj=rows.get(key);
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi =(IxPoi) poiObj.getMainrow();
-			//已删除的数据不检查
-			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
-			String kind=poi.getKindCode();
-			if(!checkKindList.contains(kind)){
-				continue;
-			}
-            pidChildren.add(poi.getPid());
-//			if(kind.equals("230215")||kind.equals("230216"))
-//				{pidParent.add(poi.getPid());}
-		}
-		//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
-		Set<String> filterPid = new HashSet<String>();
-		
-		if(pidChildren!=null&&pidChildren.size()>0){
-			String pids=pidChildren.toString().replace("[", "").replace("]", "");
-			Connection conn = this.getCheckRuleCommand().getConn();
-			List<Clob> values=new ArrayList<Clob>();
-			String pidString="";
-			if(pidChildren.size()>1000){
-				Clob clob=ConnectionUtil.createClob(conn);
-				clob.setString(1, pids);
-				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
-				values.add(clob);
-			}else{
-				pidString=" PID IN ("+pids+")";
-			}
-
-			String sqlStr="WITH T AS"
-					+ " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE"
-					+ "    FROM IX_POI P1"
-					+ "   WHERE P1.U_RECORD != 2"
-					+ "     AND P1."+pidString+")"
-					+ " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID, T.PID2"
-					+ "  FROM T, IX_POI P"
-					+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
-					+ "   AND P.KIND_CODE IN ('230215', '230216')"
-					+ "   AND P.U_RECORD != 2"
-					+ " MINUS"
-					+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T"
-					+ " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ " AND C.U_RECORD!=2"
-					+ " AND P.U_RECORD!=2"
-					+ " AND C.CHILD_POI_PID =T.PID2";
-			log.info(sqlStr);
-			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
-			if(values!=null&&values.size()>0){
-				for(int i=0;i<values.size();i++){
-					pstmt.setClob(i+1,values.get(i));
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			Map<Long, BasicObj> rows=getRowList();
+	//		List<Long> pidParent=new ArrayList<Long>();
+			List<Long> pidChildren=new ArrayList<Long>();
+			String[] checkKindArray={"130105","130800","130804","130806","130807"};
+			List checkKindList=Arrays.asList(checkKindArray);
+			for(Long key:rows.keySet()){
+				BasicObj obj=rows.get(key);
+				IxPoiObj poiObj=(IxPoiObj) obj;
+				IxPoi poi =(IxPoi) poiObj.getMainrow();
+				//已删除的数据不检查
+				if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
+				String kind=poi.getKindCode();
+				if(!checkKindList.contains(kind)){
+					continue;
 				}
-			}			
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next()) {
-				Long pidTmp1=rs.getLong("PID");
-				Long pidTmp2=rs.getLong("PID2");
-				//STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-				//Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				if(!filterPid.contains(targets)){
-					setCheckResult("", targets, 0);
-				}
-				filterPid.add(targets);
-				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
+	            pidChildren.add(poi.getPid());
+	//			if(kind.equals("230215")||kind.equals("230216"))
+	//				{pidParent.add(poi.getPid());}
 			}
+			//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+			Set<String> filterPid = new HashSet<String>();
+			
+			if(pidChildren!=null&&pidChildren.size()>0){
+				String pids=pidChildren.toString().replace("[", "").replace("]", "");
+				conn = this.getCheckRuleCommand().getConn();
+				List<Clob> values=new ArrayList<Clob>();
+				String pidString="";
+				if(pidChildren.size()>1000){
+					Clob clob=ConnectionUtil.createClob(conn);
+					clob.setString(1, pids);
+					pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
+					values.add(clob);
+				}else{
+					pidString=" PID IN ("+pids+")";
+				}
+	
+				String sqlStr="WITH T AS"
+						+ " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE"
+						+ "    FROM IX_POI P1"
+						+ "   WHERE P1.U_RECORD != 2"
+						+ "     AND P1."+pidString+")"
+						+ " SELECT /*+ NO_MERGE(T)*/"
+						+ " P.PID, T.PID2"
+						+ "  FROM T, IX_POI P"
+						+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+						+ "   AND P.KIND_CODE IN ('230215', '230216')"
+						+ "   AND P.U_RECORD != 2"
+						+ " MINUS"
+						+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
+						+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T"
+						+ " WHERE P.GROUP_ID = C.GROUP_ID"
+						+ " AND C.U_RECORD!=2"
+						+ " AND P.U_RECORD!=2"
+						+ " AND C.CHILD_POI_PID =T.PID2";
+				log.info(sqlStr);
+				pstmt = conn.prepareStatement(sqlStr);
+				if(values!=null&&values.size()>0){
+					for(int i=0;i<values.size();i++){
+						pstmt.setClob(i+1,values.get(i));
+					}
+				}			
+				rs = pstmt.executeQuery();
+				while (rs.next()) {
+					Long pidTmp1=rs.getLong("PID");
+					Long pidTmp2=rs.getLong("PID2");
+					//STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+					//Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+					String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
+					if(!filterPid.contains(targets)){
+						setCheckResult("", targets, 0);
+					}
+					filterPid.add(targets);
+					filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
+				}
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
 //		if(pidParent!=null&&pidParent.size()>0){
 //			String pids=pidParent.toString().replace("[", "").replace("]", "");

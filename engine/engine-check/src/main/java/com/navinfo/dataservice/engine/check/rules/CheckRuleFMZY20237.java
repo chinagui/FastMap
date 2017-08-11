@@ -3,7 +3,10 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -109,11 +112,17 @@ public class CheckRuleFMZY20237 extends baseRule{
 		
 		ResultSet resultSet = null;
 		PreparedStatement pstmt = null;
-		
-		pstmt = conn.prepareStatement(sql);
-		resultSet = pstmt.executeQuery();
-		while (resultSet.next()) {
-			adminCode = resultSet.getInt("admin_id");
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				adminCode = resultSet.getInt("admin_id");
+			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return Integer.toString(adminCode);
 	}

@@ -2,8 +2,11 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -13,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -111,15 +113,22 @@ public class GLM50200 extends baseRule {
 	}
 
 	private List<Object> executeQuery(StringBuilder str) throws Exception {
-		PreparedStatement pstmt = this.getConn().prepareStatement(str.toString());
-		ResultSet resultSet = pstmt.executeQuery();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
 		List<Object> resultList = new ArrayList<Object>();
-
-		while (resultSet.next()) {
-			resultList.add(resultSet.getObject(1));
+		try {
+			pstmt = this.getConn().prepareStatement(str.toString());
+			resultSet = pstmt.executeQuery();
+	
+			while (resultSet.next()) {
+				resultList.add(resultSet.getObject(1));
+			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
-		resultSet.close();
-		pstmt.close();
 		return resultList;
 	}
 }

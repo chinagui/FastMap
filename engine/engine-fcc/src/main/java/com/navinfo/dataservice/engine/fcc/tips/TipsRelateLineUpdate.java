@@ -102,6 +102,8 @@ public class TipsRelateLineUpdate {
                 return updateRampTips();
             case "1211": // 10.IC\JCT f.id
                 return updateJCTTips();
+            case "1214":  //29. 20170811 删除在建 f.id
+                return updateDeleteBuild();
             case "1102":// 11 .红绿灯 [f_array].f
                 return updateTrafficSignalTips();
             case "1107":// 12.收费站 in.id+out.id 复杂的----
@@ -129,6 +131,8 @@ public class TipsRelateLineUpdate {
             case "1601":// 22. 环岛 [f_array].id
                 return updateFArray_Id();
             case "1604":// 23. 区域内道路 [f_array].id
+                return updateFArray_Id();
+            case "1520":// 30. 在建时间变更 [f_array].id
                 return updateFArray_Id();
             case "1702":// 24. 铁路道口 f.id
                 return updateSimpleF();
@@ -829,6 +833,19 @@ public class TipsRelateLineUpdate {
 		return updateSimpleF();
 
 	}
+	
+	
+
+	/**
+	 * @Description:删除在建 1214
+	 * @author: y
+	 * @return
+	 * @time:2017-4-13 上午10:06:20
+	 */
+	private TipsDao updateDeleteBuild() {
+		return updateSimpleF();
+
+	}
 
 	/**
 	 * @Description:1203 （道路方向） f.id
@@ -952,7 +969,7 @@ public class TipsRelateLineUpdate {
 		
 			//起终点的，需要替换g_location.将旧的坐标替换为新的两条或者多条线的坐标
 			if(index != -1 && ("1507".equals(sourceType) || "1508".equals(sourceType)
-					 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType))){
+					 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)||("1520").equals(sourceType))){
 				
 				json=GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,cutLines);
 				

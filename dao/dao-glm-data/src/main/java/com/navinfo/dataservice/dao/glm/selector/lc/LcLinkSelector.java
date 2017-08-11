@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
@@ -126,8 +128,8 @@ public class LcLinkSelector extends AbstractSelector {
    			throw e;
 
    		} finally {
-   			DBUtils.closeResultSet(resultSet);
-   			DBUtils.closeStatement(pstmt);
+   			DbUtils.closeQuietly(resultSet);
+   			DbUtils.closeQuietly(pstmt);
    		}
    	}
 }

@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -67,9 +69,9 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return poiEditStatusData;
 	}

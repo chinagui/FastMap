@@ -241,7 +241,7 @@ public class ProduceService {
 		}
 	}
 	public Map<String,Object> query(int programId) throws Exception {
-		final Connection conn=DBConnector.getInstance().getManConnection();
+		Connection conn=DBConnector.getInstance().getManConnection();
 		try{
 			String sql="SELECT P.INFOR_ID"
 					+ "  FROM PROGRAM P"
@@ -283,7 +283,7 @@ public class ProduceService {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception {
-		final Connection conn=DBConnector.getInstance().getManConnection();
+		Connection conn=DBConnector.getInstance().getManConnection();
 		try{
 			//对已关闭，但是未创建出品任务的情报项目，创建情报出品记录
 			String sql="INSERT INTO PRODUCE"

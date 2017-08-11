@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -66,7 +68,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 		}
 		if(pid==null||pid.size()==0){return;}
 		String pids=pid.toString().replace("[", "").replace("]", "");
-		Connection conn = this.getCheckRuleCommand().getConn();
+		Connection conn = null;
 		List<Clob> values=new ArrayList<Clob>();
 		String pidString="";
 		if(pid.size()>1000){
@@ -107,6 +109,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 		PreparedStatement pstmt=null;
 		ResultSet rs = null;
 		try{
+		conn = this.getCheckRuleCommand().getConn();
 		pstmt=conn.prepareStatement(sqlStr);;
 		if(values!=null&&values.size()>0){
 			for(int i=0;i<values.size();i++){
@@ -167,7 +170,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 					continue;
 				}
 			}
-			
+		 }	
 			
 //			boolean name1ok=false;
 //			boolean name2ok=false;
@@ -207,11 +210,12 @@ public class FM14Sum121001 extends BasicCheckRule {
 //				errorList.get(pid1).add(pid2);
 //				continue;
 //			}
-		}}catch (SQLException e) {
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
 			throw e;
-		} finally {
-			DBUtils.closeResultSet(rs);
-			DBUtils.closeStatement(pstmt);
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
 		
 		Map<String, String> kindNameByKindCode = api.getKindNameByKindCode();

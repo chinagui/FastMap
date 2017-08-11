@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -77,6 +78,7 @@ public class LogFlushUtil {
 			}
 			return flushResult;
 		}finally{
+			DbUtils.closeQuietly(rs);
 			logReader.close();
 		}
 		

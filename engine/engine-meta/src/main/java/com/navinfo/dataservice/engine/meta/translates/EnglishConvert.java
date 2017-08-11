@@ -343,13 +343,15 @@ public class EnglishConvert {
      * @return
      */
     private String convertEngKeyword(String result) {
-        StringBuilder sb = new StringBuilder();
 
         AtomicInteger atomicInteger = new AtomicInteger(1);
 
         int maxLength;
         do {
             maxLength = 0;
+            StringBuilder sb = new StringBuilder();
+
+            String finalBefore = "";
 
             for (Map.Entry<String, List<EngKeyword>> entry : TranslateDictData.getInstance().getDictEngKeyword().entrySet()) {
                 String key = ConvertUtil.joinSpace(entry.getKey());
@@ -490,6 +492,8 @@ public class EnglishConvert {
                     if (transLength > maxLength && transLength > key.length()) {
                         maxLength = transLength;
 
+                        finalBefore = beforeResult;
+
                         sb = new StringBuilder();
                         sb.append(beforeResult).append(" ");
                         engwords = connNum(convertHz2Num(engwords));
@@ -500,6 +504,16 @@ public class EnglishConvert {
             }
 
             if (StringUtils.isNotEmpty(sb.toString())) {
+                if (org.apache.commons.collections.CollectionUtils.isNotEmpty(param.wordIndex)) {
+                    int index = 0;
+                    for (Character character : finalBefore.toCharArray()) {
+                        if (ConvertUtil.isChinese(character)) {
+                            index++;
+                        }
+                    }
+                    param.wordIndex.remove(index);
+                }
+
                 result = sb.toString();
             }
         } while (maxLength > 0 && atomicInteger.addAndGet(1) <= 50);
@@ -542,7 +556,7 @@ public class EnglishConvert {
                     }
                 } else {
                     if (indexIterator.hasNext()) {
-                        result.append(param.pinyins.get(indexIterator.next()));
+                        result.append(param.pinyins.get(indexIterator.next()).toLowerCase());
                     }
                 }
             } else {

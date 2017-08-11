@@ -1,18 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Geometry;
-
-import oracle.sql.STRUCT;
-
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +9,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 /**
  * @Title: GLM60228
@@ -108,8 +109,9 @@ public class GLM60228 extends BasicCheckRule {
         } catch (SQLException e) {
             throw e;
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
     }
     
@@ -137,85 +139,17 @@ public class GLM60228 extends BasicCheckRule {
         } catch (SQLException e) {
             throw e;
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
     }
 
     
     @Override
     public void runCheck(BasicObj obj) throws Exception {
-//        if (obj.objName().equals(ObjectName.IX_POI)) {
-//            IxPoiObj poiObj = (IxPoiObj) obj;
-//            IxPoi poi = (IxPoi) poiObj.getMainrow();
-//            if (0 == poi.getXGuide() || 0 == poi.getYGuide()) {
-//                return;
-//            }
-//
-//            // 检查LC_FACE
-//            checkCoverLcFace(poi);
-//            // 检查LU_FACE
-//            checkCoverLuFace(poi);
-//        }
     }
 
-    private void checkCoverLcFace(IxPoi poi) throws Exception {
-        Geometry geometry = GeoTranslator.transform(poi.getGeometry(), GeoTranslator.dPrecisionMap, 5);
-        double length = GeometryUtils.getDistance(geometry.getCoordinate().y, geometry.getCoordinate().x, poi.getYGuide(), poi.getXGuide
-                ());
-
-        String sql = "SELECT T1.KIND, T1.DISPLAY_CLASS FROM LC_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " +
-                "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || " + "T2.GEOMETRY" + "" +
-                ".SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')' , 8307), " +
-                "'MASK=011011111') = 'TRUE' AND T1.KIND!=16";
-        log.info("GLM60228,checkCoverLcFace:"+sql);
-        Connection conn = getCheckRuleCommand().getConn();
-        PreparedStatement pstmt = null;
-        ResultSet resultSet = null;
-        try {
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, poi.getPid());
-            resultSet = pstmt.executeQuery();
-            while (resultSet.next()) {
-                int kind = resultSet.getInt("KIND");
-
-                int displayClass = resultSet.getInt("DISPLAY_CLASS");
-                if (1 == displayClass && (kind == KIND_RIVER_AREA || kind == KIND_SWAMP_POOL) && length < MAX_DISTANCE) {
-                    continue;
-                }
-
-                setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
-            }
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
-        }
-    }
-
-    private void checkCoverLuFace(IxPoi poi) throws Exception {
-        String sql = "SELECT 1 FROM LU_FACE T1, IX_POI T2 WHERE T2.PID = :1 AND T1.MESH_ID = T2.MESH_ID AND " + "T1.U_RECORD <> 2 AND "
-                + "T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || " + "T2.GEOMETRY.SDO_POINT.X || ' ' || " +
-                "T2.GEOMETRY.SDO_POINT.Y || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')' , 8307), " + "'MASK=011011111') = 'TRUE'";
-        log.info("GLM60228,checkCoverLuFace:"+sql);
-        Connection conn = getCheckRuleCommand().getConn();
-        PreparedStatement pstmt = null;
-        ResultSet resultSet = null;
-        try {
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, poi.getPid());
-            resultSet = pstmt.executeQuery();
-            while (resultSet.next()) {
-                setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
-            }
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
-        }
-    }
+  
 
     @Override
     public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {

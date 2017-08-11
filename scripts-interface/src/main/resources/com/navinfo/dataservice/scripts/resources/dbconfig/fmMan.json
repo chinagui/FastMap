@@ -1,16 +1,5 @@
 {
-	"tables": [{
-		"columnCount": 6,
-		"rowCount": 0,
-		"indexCount": 2,
-		"name": "SG_MESH_CITY"
-	},
-	{
-		"columnCount": 40,
-		"rowCount": 0,
-		"indexCount": 3,
-		"name": "SG_RAW_BLOCK"
-	},
+	"tables": [
 	{
 		"columnCount": 6,
 		"rowCount": 0,
@@ -30,7 +19,7 @@
 		"name": "INFOR_GRID_MAPPING"
 	},
 	{
-		"columnCount": 9,
+		"columnCount": 8,
 		"rowCount": 0,
 		"indexCount": 6,
 		"name": "BLOCK"
@@ -62,12 +51,6 @@
 	{
 		"columnCount": 9,
 		"rowCount": 0,
-		"indexCount": 1,
-		"name": "PROGRAM_PROGRESS"
-	},
-	{
-		"columnCount": 9,
-		"rowCount": 0,
 		"indexCount": 0,
 		"name": "USER_DEVICE"
 	},
@@ -82,12 +65,6 @@
 		"rowCount": 0,
 		"indexCount": 0,
 		"name": "FM_STAT_OVERVIEW_GROUP"
-	},
-	{
-		"columnCount": 9,
-		"rowCount": 0,
-		"indexCount": 1,
-		"name": "GRID_LOCK"
 	},
 	{
 		"columnCount": 8,
@@ -180,12 +157,6 @@
 		"name": "FM_STAT_DAY2MONTH"
 	},
 	{
-		"columnCount": 2,
-		"rowCount": 0,
-		"indexCount": 0,
-		"name": "FM_STAT_TASK_OVERVIEW"
-	},
-	{
 		"columnCount": 4,
 		"rowCount": 2000544,
 		"indexCount": 1,
@@ -216,9 +187,9 @@
 		"name": "CUSTOMISED_LAYER"
 	},
 	{
-		"columnCount": 4,
+		"columnCount": 5,
 		"rowCount": 0,
-		"indexCount": 2,
+		"indexCount": 0,
 		"name": "SUBTASK_QUALITY"
 	},
 	{
@@ -276,13 +247,7 @@
 		"name": "CITY"
 	},
 	{
-		"columnCount": 5,
-		"rowCount": 0,
-		"indexCount": 3,
-		"name": "SG_GRID_BLOCK"
-	},
-	{
-		"columnCount": 8,
+		"columnCount": 7,
 		"rowCount": 0,
 		"indexCount": 0,
 		"name": "ADMIN_GROUP_MAPPING"
@@ -357,9 +322,6 @@
 		"name": "APPLICATION_SEQ"
 	},
 	{
-		"name": "AUTOID"
-	},
-	{
 		"name": "BLOCK_MAN_SEQ"
 	},
 	{
@@ -405,9 +367,6 @@
 		"name": "PRODUCE_SEQ"
 	},
 	{
-		"name": "PROGRAM_PROGRESS_SEQ"
-	},
-	{
 		"name": "PROGRAM_SEQ"
 	},
 	{
@@ -440,9 +399,7 @@
 	{
 		"name": "USER_INFO_SEQ"
 	}],
-	"packages": [{
-		"name": "SPATIAL_UTILS"
-	}],
+	"packages": [],
 	"procedures": [],
 	"types": [{
 		"name": "VARCHAR_TAB"

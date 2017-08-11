@@ -1,21 +1,10 @@
 {
-	"tables": [{
-		"columnCount": 10,
-		"rowCount": 0,
-		"indexCount": 2,
-		"name": "BLOCK"
-	},
+	"tables": [
 	{
 		"columnCount": 4,
 		"rowCount": 0,
 		"indexCount": 4,
 		"name": "MISS_ROAD_DIDI"
-	},
-	{
-		"columnCount": 11,
-		"rowCount": 0,
-		"indexCount": 4,
-		"name": "GPS_RECORD"
 	},
 	{
 		"columnCount": 9,

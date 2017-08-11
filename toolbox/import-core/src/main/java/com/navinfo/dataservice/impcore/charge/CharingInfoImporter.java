@@ -15,6 +15,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -40,136 +41,150 @@ public class CharingInfoImporter {
 	 * stmt.close(); }
 	 */
 	private void resetUrecord(Connection conn) throws SQLException {
+		Statement stmt =null;
+		try{
+			stmt = conn.createStatement();
 
-		Statement stmt = conn.createStatement();
+			for (String table : tables) {
 
-		for (String table : tables) {
+				stmt.executeUpdate("UPDATE " + table + " SET U_RECORD=0");
+			}
 
-			stmt.executeUpdate("UPDATE " + table + " SET U_RECORD=0");
+		}finally{
+			DbUtils.closeQuietly(stmt);
 		}
-
-		stmt.close();
+		
 	}
 
 	public void run(String filePath, String outPath) throws Exception {
-		File file = new File(filePath);
-
-		InputStreamReader read = new InputStreamReader(
-				new FileInputStream(file));
-
-		BufferedReader reader = new BufferedReader(read);
-
-		String line;
-
-		Connection conn = DBConnector.getInstance().getMkConnection();
-
-		conn.setAutoCommit(false);
-
-		// clearDeepInfoTables(conn);
-
-		String querySql = "select 1 from ix_poi where pid=?";
-
-		PreparedStatement pstmt = conn.prepareStatement(querySql);
-
-		Statement stmt = conn.createStatement();
-
+		InputStreamReader read = null;
+		BufferedReader reader =null;
+		Connection conn =null;
+		PreparedStatement pstmt =null;
+		Statement stmt =null;
 		ResultSet rs = null;
+		PrintWriter pw =null;
+		try{
+			File file = new File(filePath);
 
-		List<Integer> pids = new ArrayList<Integer>();
+			read = new InputStreamReader(
+					new FileInputStream(file));
 
-		int plotCount = 0;
+			reader = new BufferedReader(read);
 
-		int stationCount = 0;
+			String line;
 
-		int total = 0;
+			conn = DBConnector.getInstance().getMkConnection();
 
-		int notfound = 0;
+			conn.setAutoCommit(false);
 
-		int cache = 0;
+			// clearDeepInfoTables(conn);
 
-		while ((line = reader.readLine()) != null) {
+			String querySql = "select 1 from ix_poi where pid=?";
 
-			if (total % 10000 == 0) {
-				logger.info("total:" + total + ",not found:" + notfound);
-			}
+			pstmt = conn.prepareStatement(querySql);
 
-			total++;
+			stmt = conn.createStatement();
 
-			JSONObject poi = JSONObject.fromObject(line);
 
-			int pid = poi.getInt("pid");
+			List<Integer> pids = new ArrayList<Integer>();
 
-			pstmt.setInt(1, pid);
+			int plotCount = 0;
 
-			rs = pstmt.executeQuery();
+			int stationCount = 0;
 
-			if (!rs.next()) {
-				notfound++;
-				pids.add(pid);
+			int total = 0;
+
+			int notfound = 0;
+
+			int cache = 0;
+
+			while ((line = reader.readLine()) != null) {
+
+				if (total % 10000 == 0) {
+					logger.info("total:" + total + ",not found:" + notfound);
+				}
+
+				total++;
+
+				JSONObject poi = JSONObject.fromObject(line);
+
+				int pid = poi.getInt("pid");
+
+				pstmt.setInt(1, pid);
+
+				rs = pstmt.executeQuery();
+
+				if (!rs.next()) {
+					notfound++;
+					pids.add(pid);
+					rs.close();
+					continue;
+				}
+
 				rs.close();
-				continue;
+
+				try {
+					// plot
+					int res = CharingPlotImporter.run(conn, stmt, poi);
+
+					if (res > 0) {
+						cache++;
+						plotCount++;
+					}
+					// station
+					res = CharingStationImporter.run(conn, stmt, poi);
+
+					if (res > 0) {
+						cache++;
+						stationCount++;
+					}
+
+				} catch (DataErrorException ex) {
+					logger.error("pid " + pid + ":" + ex.getMessage());
+				}
+
+				if (cache > 5000) {
+					stmt.executeBatch();
+					cache = 0;
+				}
 			}
 
-			rs.close();
-
-			try {
-				// plot
-				int res = CharingPlotImporter.run(conn, stmt, poi);
-
-				if (res > 0) {
-					cache++;
-					plotCount++;
-				}
-				// station
-				res = CharingStationImporter.run(conn, stmt, poi);
-
-				if (res > 0) {
-					cache++;
-					stationCount++;
-				}
-
-			} catch (DataErrorException ex) {
-				logger.error("pid " + pid + ":" + ex.getMessage());
-			}
-
-			if (cache > 5000) {
+			if (cache > 0) {
 				stmt.executeBatch();
-				cache = 0;
 			}
+
+			resetUrecord(conn);
+
+			conn.commit();
+
+
+			pw = new PrintWriter(outPath);
+
+			for (Integer pid : pids) {
+				pw.println(pid);
+			}
+
+			pw.flush();
+
+
+			logger.info("total:" + total + ",not found:" + notfound);
+
+			logger.info("IX_POI_CHARGINGPLOT  count:" + plotCount);
+
+			logger.info("IX_POI_CHARGINGSTATION count:" + stationCount);
+
+			logger.info("DONE.");
+
+			
+		}finally{
+			try{if(read!=null) read.close();}catch(Exception e){}
+			try{if(reader!=null) reader.close();}catch(Exception e){}
+			try{if(rs!=null) rs.close();}catch(Exception e){}
+			try{if(stmt!=null) stmt.close();}catch(Exception e){}
+			try{if(pstmt!=null) pstmt.close();}catch(Exception e){}
+			try{if(pw!=null) pw.close();}catch(Exception e){}
 		}
-
-		if (cache > 0) {
-			stmt.executeBatch();
-		}
-
-		stmt.close();
-
-		pstmt.close();
-
-		resetUrecord(conn);
-
-		conn.commit();
-
-		conn.close();
-
-		PrintWriter pw = new PrintWriter(outPath);
-
-		for (Integer pid : pids) {
-			pw.println(pid);
-		}
-
-		pw.flush();
-
-		pw.close();
-
-		logger.info("total:" + total + ",not found:" + notfound);
-
-		logger.info("IX_POI_CHARGINGPLOT  count:" + plotCount);
-
-		logger.info("IX_POI_CHARGINGSTATION count:" + stationCount);
-
-		logger.info("DONE.");
-
-		reader.close();
+		
 	}
 }

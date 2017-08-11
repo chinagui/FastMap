@@ -211,7 +211,7 @@ public class PoiSave {
 			logger.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	private Map<String, Integer> changeTaskInfo(int subtaskId,Map<String, Integer> taskInfo) throws Exception {
@@ -307,9 +307,8 @@ public class PoiSave {
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
-
 		} finally {
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 	}

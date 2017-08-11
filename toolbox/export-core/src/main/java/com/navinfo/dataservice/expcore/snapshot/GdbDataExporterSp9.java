@@ -33,63 +33,69 @@ public class GdbDataExporterSp9 {
 		Class.forName("org.sqlite.JDBC");
 
 		Connection sqliteConn = null;
+		Statement stmt =null;
+		try{
+			// enabling dynamic extension loading
+			// absolutely required by SpatiaLite
+			SQLiteConfig config = new SQLiteConfig();
+			config.enableLoadExtension(true);
 
-		// enabling dynamic extension loading
-		// absolutely required by SpatiaLite
-		SQLiteConfig config = new SQLiteConfig();
-		config.enableLoadExtension(true);
+			// create a database connection
+			sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
+					+ "/tmp/gdbdata.sqlite", config.toProperties());
+			stmt = sqliteConn.createStatement();
+			stmt.setQueryTimeout(30); // set timeout to 30 sec.
 
-		// create a database connection
-		sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + dir
-				+ "/tmp/gdbdata.sqlite", config.toProperties());
-		Statement stmt = sqliteConn.createStatement();
-		stmt.setQueryTimeout(30); // set timeout to 30 sec.
+			// loading SpatiaLite
+			stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
 
-		// loading SpatiaLite
-		stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
+			// enabling Spatial Metadata
+			// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
+			// GEOMETRY_COLUMNS
+			stmt.execute("SELECT InitSpatialMetadata()");
 
-		// enabling Spatial Metadata
-		// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
-		// GEOMETRY_COLUMNS
-		stmt.execute("SELECT InitSpatialMetadata()");
+			sqliteConn.setAutoCommit(false);
 
-		sqliteConn.setAutoCommit(false);
+			String operateDate = StringUtils.getCurrentTime();
 
-		String operateDate = StringUtils.getCurrentTime();
+			System.out.println("exporting rdline");
+			
+			RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting rdline");
+			System.out.println("exporting rdnode");
+
+			RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+
+			System.out.println("exporting bkline");
+
+			BkLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+
+			System.out.println("exporting bkface");
+
+			BkFaceExporterSp9.run(sqliteConn, stmt, conn, operateDate, meshes);
+
+			System.out.println("exporting rdlinegsc");
+
+			RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+			
+			System.out.println("exporting adface");
+
+			AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+
+			
+
+			String zipfile = dir + "/" + operateDate + ".zip";
+			// 压缩文件
+			ZipUtils.zipFile(dir + "/tmp/", zipfile);
+
+			FileUtil.deleteDirectory(file);
+			
+			return zipfile;
+		}finally{
+			try{if(stmt!=null)stmt.close();}catch(Exception e){}
+			try{if(sqliteConn!=null)sqliteConn.close();}catch(Exception e){}
+		}
 		
-		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-
-		System.out.println("exporting rdnode");
-
-		RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-
-		System.out.println("exporting bkline");
-
-		BkLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-
-		System.out.println("exporting bkface");
-
-		BkFaceExporterSp9.run(sqliteConn, stmt, conn, operateDate, meshes);
-
-		System.out.println("exporting rdlinegsc");
-
-		RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-		
-		System.out.println("exporting adface");
-
-		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-
-		sqliteConn.close();
-
-		String zipfile = dir + "/" + operateDate + ".zip";
-		// 压缩文件
-		ZipUtils.zipFile(dir + "/tmp/", zipfile);
-
-		FileUtil.deleteDirectory(file);
-		
-		return zipfile;
 
 	}
 	public static void main(String[] args) {

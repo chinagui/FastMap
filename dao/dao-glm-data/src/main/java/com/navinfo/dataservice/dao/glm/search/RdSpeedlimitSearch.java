@@ -208,7 +208,7 @@ public class RdSpeedlimitSearch implements ISearch {
 			e.printStackTrace();
 			throw new SQLException(e);
 		} finally {
-			DbUtils.close(resultSet);
+			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
 

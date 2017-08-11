@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
@@ -70,9 +72,9 @@ public class BatchSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return pois;
@@ -130,9 +132,9 @@ public class BatchSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rdLinks;
@@ -200,9 +202,9 @@ public class BatchSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rdLinks;

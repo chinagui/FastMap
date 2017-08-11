@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -106,8 +108,8 @@ public class LuLinkSearch implements ISearch {
 
 			throw new Exception(e);
 		} finally {
-			DBUtils.closeStatement(pstmt);
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(resultSet);
 		}
 
 		return list;
@@ -281,9 +283,9 @@ public class LuLinkSearch implements ISearch {
 
 			throw new Exception(e);
 		} finally {
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 		
 		return list;

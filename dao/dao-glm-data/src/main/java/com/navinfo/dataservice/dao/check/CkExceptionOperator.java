@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -230,40 +232,47 @@ public class CkExceptionOperator {
 
 	public JSONArray check(int pid, ObjType type) throws Exception {
 		JSONArray array = new JSONArray();
-
-		switch (type) {
-		case RDRESTRICTION:
-			String sql = "select column_value rule_id from table(package_check.fun_check(:1))";
-
-			PreparedStatement pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, pid);
-
-			ResultSet resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				String ruleId = resultSet.getString("rule_id");
-
-				String message = CheckConstant.getCheckMessage(ruleId);
-
-				CkException ck = new CkException();
-
-				ck.setRuleId(ruleId);
-				
-				ck.setTargets("RD_RESTRICTION :"+pid);
-
-				ck.setInformation(message);
-
-				this.insert(ck);
-
-				array.add(ck.Serialize(ObjLevel.BRIEF));
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			switch (type) {
+			case RDRESTRICTION:
+				String sql = "select column_value rule_id from table(package_check.fun_check(:1))";
+	
+				pstmt = conn.prepareStatement(sql);
+	
+				pstmt.setInt(1, pid);
+	
+				resultSet = pstmt.executeQuery();
+	
+				while (resultSet.next()) {
+					String ruleId = resultSet.getString("rule_id");
+	
+					String message = CheckConstant.getCheckMessage(ruleId);
+	
+					CkException ck = new CkException();
+	
+					ck.setRuleId(ruleId);
+					
+					ck.setTargets("RD_RESTRICTION :"+pid);
+	
+					ck.setInformation(message);
+	
+					this.insert(ck);
+	
+					array.add(ck.Serialize(ObjLevel.BRIEF));
+				}
+	
+			default:
+				break;
+	
 			}
-
-		default:
-			break;
-
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(resultSet);
 		}
-
 		return array;
 	}
 }

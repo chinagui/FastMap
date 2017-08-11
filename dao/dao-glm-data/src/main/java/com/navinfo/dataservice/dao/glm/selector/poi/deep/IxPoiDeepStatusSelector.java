@@ -112,9 +112,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 	}
@@ -250,9 +250,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 	}
@@ -290,9 +290,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 	}

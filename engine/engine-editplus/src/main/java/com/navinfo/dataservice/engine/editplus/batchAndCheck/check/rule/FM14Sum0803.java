@@ -50,8 +50,8 @@ public class FM14Sum0803 extends BasicCheckRule {
 			double yGuide = poi.getYGuide();
 			
 			if (xShow == 0 || yShow == 0 || xGuide == 0 || yGuide == 0) {
-//				throw new Exception("pid为" + poi.getPid() +"的POI的显示坐标或引导坐标（经、纬度）为0");
-				continue;
+//				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				setCheckResult("", String.format("[IX_POI,%d]", entry.getKey()), 0);
 			} else if (xShow <= 72 || xShow >= 138 || xGuide <= 72 || xGuide >= 138 || yShow <= 15 || yShow >= 55
 					|| yGuide <= 15 || yGuide >= 55) {
 				setCheckResult("", String.format("[IX_POI,%d]", entry.getKey()), 0);

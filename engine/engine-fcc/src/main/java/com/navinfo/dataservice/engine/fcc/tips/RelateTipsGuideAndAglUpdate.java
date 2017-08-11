@@ -95,6 +95,7 @@ public class RelateTipsGuideAndAglUpdate {
         case "1706"://27.ADAS打点   g_location到f.id
         case "1702":// 24. 铁路道口  g_location到f.id
         case "2101":// 26.删除道路标记f.id
+        case "1214":// 29.删除在建属性f.id
             return updateSimpleFPointTips();
         	
         	
@@ -117,6 +118,7 @@ public class RelateTipsGuideAndAglUpdate {
         case "1510":// 24.桥 
         case "1511":// 25.隧道 
         case "1514":// 26.施工 
+        case "1520":// 30.在建时间变更
             return updateStartEndPoint();
             
         case "1501":// 21.上下分离  

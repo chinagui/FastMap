@@ -457,10 +457,7 @@ public class SubtaskJob extends AbstractStatJob {
 					firstCollectDate = (String) subDayPoiStat.get("firstCollectDate");
 				}
 				if(subManTimelineStart != null && subManTimelineStart.size() > 0){
-					int operateType = (int) subManTimelineStart.get("operateType");
-					if(operateType == 1){
-						tipsFirstCollectDate = (String) subManTimelineStart.get("operateDate");
-					}
+					tipsFirstCollectDate = (String) subManTimelineStart.get("operateDate");
 				}
 				if(subTipsStat != null && subTipsStat.size() > 0){
 				}
@@ -491,10 +488,7 @@ public class SubtaskJob extends AbstractStatJob {
 			if(subtask.getStatus() == 0){
 				actualEndDate = sdf.format(new Date());
 				if(subManTimelineEnd != null && subManTimelineEnd.size() > 0){
-					int operateType = (int) subManTimelineEnd.get("operateType");
-					if(operateType == 0){
-						actualEndDate = (String) subManTimelineEnd.get("operateDate");
-					}
+					actualEndDate = (String) subManTimelineEnd.get("operateDate");
 				}
 			}
 			//距离计划结束时间天数

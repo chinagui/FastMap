@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
@@ -38,6 +39,8 @@ public class BatchLogFlushJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
+		Connection sourceDbConn =null;
+		Connection targetDbConn =null;
 		try{
 			BatchLogFlushJobRequest req = (BatchLogFlushJobRequest)this.request;
 			int batchDbId = req.getBatchDbId();
@@ -51,8 +54,8 @@ public class BatchLogFlushJob extends AbstractJob {
 			Region regionInfo = manApi.queryRegionByDbId(req.getTargetDbId());
 			
 			LogFlushUtil logUtils = LogFlushUtil.getInstance();
-			Connection sourceDbConn = logUtils.intiConenction(sourceDbInfo, true);
-			Connection targetDbConn =logUtils.intiConenction(targetDbInfo, true);
+			sourceDbConn = logUtils.intiConenction(sourceDbInfo, true);
+			targetDbConn =logUtils.intiConenction(targetDbInfo, true);
 			String tempTable = logUtils.createTempTable(sourceDbConn);//创建临时表，
 			logUtils.createTargetDbLink(sourceDbInfo, targetDbInfo);//创建指向目标库的dblink
 			this.response("数据库初始化完毕", jobResponse);
@@ -74,6 +77,9 @@ public class BatchLogFlushJob extends AbstractJob {
 			this.response("执行完毕", jobResponse);
 		}catch(Exception e){
 			throw new JobException(e);
+		}finally{
+			DbUtils.closeQuietly(sourceDbConn);
+			DbUtils.closeQuietly(targetDbConn);
 		}
 
 	}

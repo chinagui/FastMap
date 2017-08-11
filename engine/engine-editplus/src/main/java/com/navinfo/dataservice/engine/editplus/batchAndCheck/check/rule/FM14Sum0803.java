@@ -8,7 +8,6 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 /**
  * @Title: FM14Sum0804
@@ -45,17 +44,17 @@ public class FM14Sum0803 extends BasicCheckRule {
 			if (poiGeo == null)
 				continue;
 
-			Point point = poiGeo.getCentroid();
-			double xShow = point.getX();
-			double yShow = point.getY();
+			double xShow = poiGeo.getCoordinate().x;
+			double yShow = poiGeo.getCoordinate().y;
 			double xGuide = poi.getXGuide();
 			double yGuide = poi.getYGuide();
 			
 			if (xShow == 0 || yShow == 0 || xGuide == 0 || yGuide == 0) {
-				setCheckResult(poiGeo, poiObj, poi.getMeshId(), null);
+//				throw new Exception("pid为" + poi.getPid() +"的POI的显示坐标或引导坐标（经、纬度）为0");
+				continue;
 			} else if (xShow <= 72 || xShow >= 138 || xGuide <= 72 || xGuide >= 138 || yShow <= 15 || yShow >= 55
 					|| yGuide <= 15 || yGuide >= 55) {
-				setCheckResult(poiGeo, poiObj, poi.getMeshId(), null);
+				setCheckResult("", String.format("[IX_POI,%d]", entry.getKey()), 0);
 			}
 		}
 	}

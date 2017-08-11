@@ -127,8 +127,6 @@ public class RdRestrictionViaSelector extends AbstractSelector {
 				list.add(listVia);
 			}
 
-		} catch (Exception e) {
-
 		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);

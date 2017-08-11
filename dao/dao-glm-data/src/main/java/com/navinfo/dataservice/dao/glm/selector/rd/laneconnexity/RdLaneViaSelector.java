@@ -120,7 +120,6 @@ public class RdLaneViaSelector extends AbstractSelector {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
         }
-        
         return list;
     }
 

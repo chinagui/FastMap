@@ -106,8 +106,9 @@ public class AdLinkSearch implements ISearch {
 
 			throw new Exception(e);
 		} finally {
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(resultSet);
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			
 
 		}
 

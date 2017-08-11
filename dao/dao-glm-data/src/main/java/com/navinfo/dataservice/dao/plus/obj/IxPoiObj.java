@@ -1153,65 +1153,95 @@ public class IxPoiObj extends AbstractIxObj {
 		String strStreet="";
 		Statement stmt = null;
 		ResultSet rs = null;
-		ResultSet rs1=null;
-		ResultSet rs2=null;
-		ResultSet rs3=null;
-		ResultSet rs4=null;
-		ResultSet rs5=null;
-		ResultSet rs6=null;
-		ResultSet rs7=null;
 	    String sql1="SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' and ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid;
 		try {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql1);
 			while (rs.next()) {
 				if (rs.getInt("total")==1){
-					rs1=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT n.name_groupid FROM ix_poi_address ad,rd_name n WHERE n.lang_code='CHI' AND ad.street=n.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+")");
-					while(rs1.next()){
-						return rs1.getString("name");
+					ResultSet rs1=null;
+					try{
+						rs1=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT n.name_groupid FROM ix_poi_address ad,rd_name n WHERE n.lang_code='CHI' AND ad.street=n.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+")");
+						while(rs1.next()){
+							return rs1.getString("name");
+						}
+					}finally{
+						DbUtils.closeQuietly(rs1);
 					}
+					
 				}else if(rs.getInt("total")>1){
-					rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);
-				    while(rs2.next()){
-				    	if(rs2.getInt("total")==0){
-				    		rs3=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
-				    	    while(rs3.next()){
-				    	    	return rs3.getString("name");
-				    	    }
-				    	} else if (rs2.getInt("total")==1){
-				    		rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
-				    	    while(rs4.next()){
-				    	    	return rs4.getString("name");
-				    	    }
-				    	} else if(rs2.getInt("total")>1){
-				    		rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);	
-				    		while(rs5.next()){
-				    	    	rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid")+" and ad.poi_pid="+pid);	
-						    	while(rs6.next()){
-						    	    return rs6.getString("name");
-						    	 }
-				    	     }
-				    		rs7=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
-				    		while(rs7.next()){
-					    	    return rs7.getString("name");
-					    	 }
-				    	}		    		
-				    	}
+					ResultSet rs2=null;
+					try{
+						rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);
+					    while(rs2.next()){
+					    	if(rs2.getInt("total")==0){
+					    		ResultSet rs3=null;
+					    		try{
+						    		rs3=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
+						    	    while(rs3.next()){
+						    	    	return rs3.getString("name");
+						    	    }
+					    		}finally{
+					    			DbUtils.closeQuietly(rs3);
+					    		}
+					    	} else if (rs2.getInt("total")==1){
+					    		ResultSet rs4=null;
+					    	    try{
+					    	    	rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
+						    	    while(rs4.next()){
+						    	    	return rs4.getString("name");
+						    	    }
+					    		}finally{
+					    			DbUtils.closeQuietly(rs4);
+					    		}
+					    	} else if(rs2.getInt("total")>1){
+					    		ResultSet rs5=null;
+					    		try{
+					    			rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);	
+						    		while(rs5.next()){
+						    			ResultSet rs6=null;
+						    			try{
+							    	    	rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid")+" and ad.poi_pid="+pid);	
+									    	while(rs6.next()){
+									    	    return rs6.getString("name");
+									    	 }
+						    			}finally{
+						    				DbUtils.closeQuietly(rs6);
+						    			}
+						    	     }
+					    		}finally{
+					    			DbUtils.closeQuietly(rs5);
+					    		}
+					    		ResultSet rs7=null;
+					    		try{
+						    		rs7=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
+						    		while(rs7.next()){
+							    	    return rs7.getString("name");
+							    	}
+					    		}finally{
+					    			DbUtils.closeQuietly(rs7);
+					    		}
+					    	}		    		
+					    }
+					}finally{
+						DbUtils.closeQuietly(rs2);
+					}
+					
 				    }
 				}
 			}
 catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(rs1);
-			DbUtils.closeQuietly(rs2);
-			DbUtils.closeQuietly(rs3);
-			DbUtils.closeQuietly(rs4);
-			DbUtils.closeQuietly(rs5);
-			DbUtils.closeQuietly(rs6);
-			DbUtils.closeQuietly(rs7);
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(stmt);
+			try {
+				if(rs!=null)rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				if(stmt!=null)stmt.close();
+			} catch (Exception e) {
+			}
 		}
 		return strStreet;
 	}

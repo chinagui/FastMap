@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -257,9 +259,9 @@ public class AdLinkSearch implements ISearch {
 			throw new Exception(e);
 		} finally {
 			
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 

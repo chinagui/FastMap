@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -69,8 +70,8 @@ public class PoiGridSearch {
 		} catch (Exception e) {
 			throw e;
 		}finally {
-			DBUtils.closeConnection(conn);
-			DBUtils.closeConnection(manConn);
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(manConn);
 		}
 	}
 	
@@ -185,8 +186,8 @@ public class PoiGridSearch {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	

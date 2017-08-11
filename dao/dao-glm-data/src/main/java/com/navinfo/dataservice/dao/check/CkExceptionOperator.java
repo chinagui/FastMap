@@ -232,19 +232,19 @@ public class CkExceptionOperator {
 
 	public JSONArray check(int pid, ObjType type) throws Exception {
 		JSONArray array = new JSONArray();
-
-		switch (type) {
-		case RDRESTRICTION:
-			String sql = "select column_value rule_id from table(package_check.fun_check(:1))";
-			PreparedStatement pstmt =null;
-			ResultSet resultSet = null;
-			try{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			switch (type) {
+			case RDRESTRICTION:
+				String sql = "select column_value rule_id from table(package_check.fun_check(:1))";
+	
 				pstmt = conn.prepareStatement(sql);
 	
 				pstmt.setInt(1, pid);
 	
 				resultSet = pstmt.executeQuery();
-				
+	
 				while (resultSet.next()) {
 					String ruleId = resultSet.getString("rule_id");
 	
@@ -262,16 +262,17 @@ public class CkExceptionOperator {
 	
 					array.add(ck.Serialize(ObjLevel.BRIEF));
 				}
-			}finally{
-				DbUtils.closeQuietly(resultSet);
-				DbUtils.closeQuietly(pstmt);
+	
+			default:
+				break;
+	
 			}
-
-		default:
-			break;
-
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(resultSet);
 		}
-
 		return array;
 	}
 }

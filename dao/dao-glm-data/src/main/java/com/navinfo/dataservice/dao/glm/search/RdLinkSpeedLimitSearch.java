@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -205,9 +207,9 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 			throw new SQLException(e);
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly((resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return list;

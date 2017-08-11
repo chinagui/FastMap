@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -470,9 +472,9 @@ public class RdLinkSearch implements ISearch {
 			throw new Exception(e);
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return list;
@@ -505,9 +507,9 @@ public class RdLinkSearch implements ISearch {
 			throw new Exception(e);
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return list;

@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
@@ -70,8 +73,8 @@ public class AdLinkSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 
@@ -117,8 +120,8 @@ public class AdLinkSelector extends AbstractSelector {
             throw e;
 
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
 
         return links;
@@ -168,8 +171,8 @@ public class AdLinkSelector extends AbstractSelector {
    			throw e;
 
    		} finally {
-   			DBUtils.closeResultSet(resultSet);
-   			DBUtils.closeStatement(pstmt);
+   			DbUtils.closeQuietly(resultSet);
+   			DbUtils.closeQuietly(pstmt);
    		}
    	}
 }

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -64,19 +65,28 @@ public class RDLANE005  extends baseRule {
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);
 			
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
-			
-			boolean flg = false;
-			int connexityPid = 0;
-			Set<Integer> viaLinkSet = new HashSet<Integer>();
-			if (resultSet.next()){
-				connexityPid = resultSet.getInt("CONNEXITY_PID");
-				flg = true;
-				viaLinkSet.add(rdLaneVia.getLinkPid());
-			} 
-			resultSet.close();
-			pstmt.close();
+			boolean flg;
+			int connexityPid;
+			Set<Integer> viaLinkSet;
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+			try {
+				pstmt = this.getConn().prepareStatement(sql);	
+				resultSet = pstmt.executeQuery();
+				flg = false;
+				connexityPid = 0;
+				viaLinkSet = new HashSet<Integer>();
+				if (resultSet.next()){
+					connexityPid = resultSet.getInt("CONNEXITY_PID");
+					flg = true;
+					viaLinkSet.add(rdLaneVia.getLinkPid());
+				} 
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DbUtils.closeQuietly(resultSet);
+				DbUtils.closeQuietly(pstmt);
+			}
 			
 			for(IRow objInnerLoop : checkCommand.getGlmList()){
 				if(objInnerLoop instanceof RdLaneTopology){
@@ -222,14 +232,21 @@ public class RDLANE005  extends baseRule {
 		String sql = sb.toString();
 		log.info("RdLaneTopology后检查RDLANE005:" + sql);
 
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-		ResultSet resultSet = pstmt.executeQuery();
-		
-		while (resultSet.next()){
-			viaLinkSet.add(resultSet.getInt("LINK_PID")) ;
-		} 
-		resultSet.close();
-		pstmt.close();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()){
+				viaLinkSet.add(resultSet.getInt("LINK_PID")) ;
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		return viaLinkSet;
 	}
 

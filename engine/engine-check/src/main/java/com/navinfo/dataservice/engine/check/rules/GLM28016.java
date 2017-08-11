@@ -10,17 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
  * @ClassName: GLM28016
@@ -76,17 +74,24 @@ public class GLM28016 extends baseRule{
 				String sql = sb.toString();
 				log.info("RdInter前检查GLM28016:" + sql);
 				
-				PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-				ResultSet resultSet = pstmt.executeQuery();
-				
-				while (resultSet.next()){
-					//CRFI端点
-					rdInterNodeMap.put(resultSet.getInt("NODE_PID"), resultSet.getInt("PID"));
-					rdInterPidSet.add(resultSet.getInt("PID"));
+				PreparedStatement pstmt = null;
+				ResultSet resultSet = null;
+				try {
+					pstmt = this.getConn().prepareStatement(sql);	
+					resultSet = pstmt.executeQuery();
+					
+					while (resultSet.next()){
+						//CRFI端点
+						rdInterNodeMap.put(resultSet.getInt("NODE_PID"), resultSet.getInt("PID"));
+						rdInterPidSet.add(resultSet.getInt("PID"));
 
-				} 
-				resultSet.close();
-				pstmt.close();
+					} 
+				}catch (SQLException e) {
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(resultSet);
+					DbUtils.closeQuietly(pstmt);
+				}
 				
 				//CRFRoad内link涉及到的CRFI数量小于2，报错
 				if(rdInterPidSet.size()<2){
@@ -103,32 +108,39 @@ public class GLM28016 extends baseRule{
 				
 				String sql2 = sb2.toString();
 				
-				PreparedStatement pstmt2 = this.getConn().prepareStatement(sql2);	
-				ResultSet resultSet2 = pstmt2.executeQuery();
+				PreparedStatement pstmt2 = null;
+				ResultSet resultSet2 = null;
+				try {
+					pstmt2 = this.getConn().prepareStatement(sql2);	
+					resultSet2 = pstmt2.executeQuery();
 
-				while (resultSet2.next()){
-					List<Integer> nodes = new ArrayList<Integer>();
-					int s_node_pid = resultSet2.getInt("S_NODE_PID");
-					int e_node_pid = resultSet2.getInt("E_NODE_PID");
-					nodes.add(s_node_pid);
-					nodes.add(e_node_pid);
-					
-					if(rdLinkNodePidMap.containsKey(s_node_pid)){
-						int num = rdLinkNodePidMap.get(s_node_pid);
-						rdLinkNodePidMap.put(s_node_pid, num+1);
-					}else{
-						rdLinkNodePidMap.put(s_node_pid, 1);
-					}
-					if(rdLinkNodePidMap.containsKey(e_node_pid)){
-						int num = rdLinkNodePidMap.get(e_node_pid);
-						rdLinkNodePidMap.put(e_node_pid, num+1);
-					}else{
-						rdLinkNodePidMap.put(e_node_pid, 1);
-					}
-					rdLinks.put(resultSet2.getInt("LINK_PID"), nodes);
-				} 
-				resultSet2.close();
-				pstmt2.close();
+					while (resultSet2.next()){
+						List<Integer> nodes = new ArrayList<Integer>();
+						int s_node_pid = resultSet2.getInt("S_NODE_PID");
+						int e_node_pid = resultSet2.getInt("E_NODE_PID");
+						nodes.add(s_node_pid);
+						nodes.add(e_node_pid);
+						
+						if(rdLinkNodePidMap.containsKey(s_node_pid)){
+							int num = rdLinkNodePidMap.get(s_node_pid);
+							rdLinkNodePidMap.put(s_node_pid, num+1);
+						}else{
+							rdLinkNodePidMap.put(s_node_pid, 1);
+						}
+						if(rdLinkNodePidMap.containsKey(e_node_pid)){
+							int num = rdLinkNodePidMap.get(e_node_pid);
+							rdLinkNodePidMap.put(e_node_pid, num+1);
+						}else{
+							rdLinkNodePidMap.put(e_node_pid, 1);
+						}
+						rdLinks.put(resultSet2.getInt("LINK_PID"), nodes);
+					} 
+				}catch (SQLException e) {
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(resultSet2);
+					DbUtils.closeQuietly(pstmt2);
+				}
 				
 				Set<Integer> rdInterPidSet2 = new HashSet<Integer>();
 

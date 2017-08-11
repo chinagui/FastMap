@@ -202,15 +202,23 @@ public class PoiGuideLinkBatch {
 
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
-		Statement sourceStmt = conn.createStatement();
-		String sql = "SELECT DISTINCT LD.OB_PID FROM LOG_DETAIL LD,LOG_DETAIL_GRID LDG WHERE LD.ROW_ID=LDG.LOG_ROW_ID ";
-		ResultSet rs = sourceStmt.executeQuery(sql);
-		Map<Long,String> grids = new HashMap<Long,String>();
-		while(rs.next()){
-			String grid =calculator.calc("IX_POI","PID",rs.getLong("OB_PID"),conn).getGrids()[0];
-			grids.put(rs.getLong("OB_PID"), grid);
+		Statement sourceStmt =null;
+		ResultSet rs = null;
+		try{
+			sourceStmt = conn.createStatement();
+			String sql = "SELECT DISTINCT LD.OB_PID FROM LOG_DETAIL LD,LOG_DETAIL_GRID LDG WHERE LD.ROW_ID=LDG.LOG_ROW_ID ";
+			rs = sourceStmt.executeQuery(sql);
+			Map<Long,String> grids = new HashMap<Long,String>();
+			while(rs.next()){
+				String grid =calculator.calc("IX_POI","PID",rs.getLong("OB_PID"),conn).getGrids()[0];
+				grids.put(rs.getLong("OB_PID"), grid);
+			}
+			return grids;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(sourceStmt);
 		}
-		return grids;
+		
 	}
 
 	private void diffPoiGData(OracleSchema copVersionSchema) throws Exception {

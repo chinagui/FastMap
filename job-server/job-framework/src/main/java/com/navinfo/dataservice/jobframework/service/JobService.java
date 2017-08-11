@@ -364,11 +364,11 @@ public class JobService {
 				jobInfoSql+=" and j.descp like '%"+tableName+"%'";
 			}
 			String startDate = "";
-			if(parameterJson.containsKey("startDate") && parameterJson.getString("startDate") != null){
+			if(parameterJson.containsKey("startDate") && parameterJson.getString("startDate") != null && StringUtils.isNotEmpty(parameterJson.getString("startDate"))){
 				startDate = parameterJson.getString("startDate")+" 00:00:00";
 			}
 			String endDate = "";
-			if(parameterJson.containsKey("endDate") && parameterJson.getString("endDate") != null){
+			if(parameterJson.containsKey("endDate") && parameterJson.getString("endDate") != null && StringUtils.isNotEmpty(parameterJson.getString("endDate"))){
 				endDate = parameterJson.getString("endDate") +" 23:59:00";
 			}
 			if(startDate == null || StringUtils.isEmpty(startDate) 

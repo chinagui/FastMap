@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import com.drew.imaging.ImageProcessingException;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -257,7 +258,62 @@ public class FileUtils {
 		}
 		
 	}
-
+	
+	/**
+	 * @Title: rotateOrigin
+	 * @Description: 原图增加自动图片旋转
+	 * @param bytes
+	 * @return
+	 * @throws IOException
+	 * @throws ImageProcessingException  byte[]
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月11日 下午4:14:24 
+	 */
+	public static byte[] rotateOrigin(byte[] bytes) throws IOException, ImageProcessingException {
+		JPEGImageEncoder encoder = null;
+		BufferedImage tagImage = null;
+		Image srcImage = null;
+		
+		//**********2016.12.09 zl 添加图片自动旋转功能 **************
+		Image newImage = null;
+	    InputStream newIn = new ByteInputStream(bytes, bytes.length);//为计算图片旋转度准备的 in
+	    int rotateAngle = RotateImageUtils.rotateOrientatione(newIn);//获取图片旋转角度
+    	if(rotateAngle > 0){
+    		InputStream newImageIn = null;
+    		try{
+	    		 newImageIn = new ByteInputStream(bytes, bytes.length);//为计算生成新的图片Image准备的 in
+		    	 newImage = RotateImageUtils.rotateImage(ImageIO.read(newImageIn),rotateAngle);
+    		}finally{
+    			closeStream(newImageIn);
+    		}
+    	}
+    	if(newImage != null){
+    		srcImage = newImage;
+    	}else{
+    		ByteInputStream bis =null;
+    		try{
+	    		bis = new ByteInputStream(bytes, bytes.length);
+	    		srcImage = ImageIO.read(bis);
+    		}finally{
+    			closeStream(bis);
+    		}
+    	}
+		//*****************************************************
+    	ByteOutputStream bos=null;
+		try{
+			bos = new ByteOutputStream();
+	
+			encoder = JPEGCodec.createJPEGEncoder(bos);
+			encoder.encode((BufferedImage) srcImage);
+	
+			return bos.getBytes();
+		}finally{
+			closeStream(bos);
+		}
+		
+		
+	}
 	
 
 	public static void makeSmallImage(byte[] bytes, String dstImageFileName)
@@ -409,4 +465,6 @@ public class FileUtils {
 
 		System.out.println(new Date());
 	}
+
+	
 }

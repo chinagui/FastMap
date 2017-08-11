@@ -33,64 +33,73 @@ public class BkLinkExporter {
 
 		String insertSql = "insert into gdb_bkLine values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+		PreparedStatement prep =null;
+		PreparedStatement stmt2 =null;
+		ResultSet resultSet =null;
+		try{
+			prep = sqliteConn.prepareStatement(insertSql);
 
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+			String sql = "select a.link_pid,a.geometry,a.mesh_id,a.kind from rw_link a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String sql = "select a.link_pid,a.geometry,a.mesh_id,a.kind from rw_link a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+			Clob clob = conn.createClob();
+			clob.setString(1, StringUtils.join(meshes, ","));
 
-		Clob clob = conn.createClob();
-		clob.setString(1, StringUtils.join(meshes, ","));
+			stmt2 = conn.prepareStatement(sql);
 
-		PreparedStatement stmt2 = conn.prepareStatement(sql);
+			stmt2.setClob(1, clob);
+			
+			resultSet = stmt2.executeQuery();
 
-		stmt2.setClob(1, clob);
-		
-		ResultSet resultSet = stmt2.executeQuery();
+			resultSet.setFetchSize(5000);
 
-		resultSet.setFetchSize(5000);
+			Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
-		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+			int count = 0;
 
-		int count = 0;
+			while (resultSet.next()) {
 
-		while (resultSet.next()) {
+				JSONObject json = enclosingBkLine(resultSet, operateDate);
 
-			JSONObject json = enclosingBkLine(resultSet, operateDate);
+				int pid = json.getInt("pid");
 
-			int pid = json.getInt("pid");
+				if (map.containsKey(pid)) {
+					continue;
+				}
 
-			if (map.containsKey(pid)) {
-				continue;
+				map.put(pid, 0);
+
+				prep.setInt(1, pid);
+
+				prep.setString(2, json.getString("geometry"));
+
+				prep.setString(3, json.getString("display_style"));
+
+				prep.setString(4, json.getString("display_text"));
+
+				prep.setString(5, json.getString("meshid"));
+
+				prep.setInt(6, json.getInt("kind"));
+
+				prep.setString(7, json.getString("op_date"));
+
+				prep.setInt(8, json.getInt("op_lifecycle"));
+
+				prep.executeUpdate();
+
+				count += 1;
+
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
 			}
 
-			map.put(pid, 0);
-
-			prep.setInt(1, pid);
-
-			prep.setString(2, json.getString("geometry"));
-
-			prep.setString(3, json.getString("display_style"));
-
-			prep.setString(4, json.getString("display_text"));
-
-			prep.setString(5, json.getString("meshid"));
-
-			prep.setInt(6, json.getInt("kind"));
-
-			prep.setString(7, json.getString("op_date"));
-
-			prep.setInt(8, json.getInt("op_lifecycle"));
-
-			prep.executeUpdate();
-
-			count += 1;
-
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
-			}
+			sqliteConn.commit();
+		}finally{
+			try{if(resultSet!=null) resultSet.close();}catch(Exception e){}
+			try{if(stmt2!=null) stmt2.close();}catch(Exception e){}
+			try{if(prep!=null) prep.close();}catch(Exception e){}
 		}
-
-		sqliteConn.commit();
+		
 	}
 
 	private static JSONObject enclosingBkLine(ResultSet rs, String operateDate)

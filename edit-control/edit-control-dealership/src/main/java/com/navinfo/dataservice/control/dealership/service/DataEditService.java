@@ -536,19 +536,13 @@ public class DataEditService {
 			return "success ";
 		}catch(Exception e){
 			e.printStackTrace();
-			DbUtils.rollback(con);
-			DbUtils.rollback(mancon);
-			DbUtils.rollback(dailycon);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(mancon);
+			DbUtils.rollbackAndCloseQuietly(dailycon);
 		}finally{
-			if(con != null){
-				DbUtils.commitAndClose(con);
-			}
-			if(mancon != null){
-				DbUtils.commitAndClose(mancon);
-			}
-			if(dailycon != null){
-				DbUtils.commitAndClose(dailycon);
-			}
+			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.commitAndCloseQuietly(mancon);
+			DbUtils.commitAndCloseQuietly(dailycon);
 		}
 		return null;
 	}
@@ -898,9 +892,9 @@ public class DataEditService {
 	 * 
 	 * */
 	public Map<String, Object> getMetaKindCode(String chainCode, String dailytPoiCode) throws SQLException{
-		Connection Metacon = null;
+		Connection metaConn = null;
 		try{
-			Metacon = DBConnector.getInstance().getMetaConnection();
+			metaConn = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
 			String sql = "select t.r_kind_chain, t.r_kind,t.poikind,t.poikind_chain from SC_POINT_KIND_INNER2OUT t where t.r_kind_chain ='"+chainCode+"' and t.poikind ='"+dailytPoiCode+"'";
 			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
@@ -916,12 +910,12 @@ public class DataEditService {
 					return result;
 				}
 			};
-			return run.query(Metacon, sql, rs);
+			return run.query(metaConn, sql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(Metacon);
+			DbUtils.rollbackAndCloseQuietly(metaConn);
 			throw e;
 		}finally{
-			DbUtils.close(Metacon);
+			DbUtils.commitAndCloseQuietly(metaConn);
 		}
 	}
 	
@@ -1194,20 +1188,14 @@ public class DataEditService {
 			clearRelevancePoi(resultId, con);
 			inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 		}catch(Exception e){
-			DbUtils.rollback(con);
-			DbUtils.rollback(mancon);
-			DbUtils.rollback(dailycon);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(mancon);
+			DbUtils.rollbackAndCloseQuietly(dailycon);
 			throw e;
 		}finally{
-			if(con != null){
-				DbUtils.commitAndClose(con);
-			}
-			if(mancon != null){
-				DbUtils.commitAndClose(mancon);
-			}
-			if(dailycon != null){
-				DbUtils.commitAndClose(dailycon);
-			}
+			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.commitAndCloseQuietly(mancon);
+			DbUtils.commitAndCloseQuietly(dailycon);
 		}
 	}
 	
@@ -1344,12 +1332,12 @@ public class DataEditService {
         	}
  
 		}catch(Exception e){
-            DbUtils.rollback(dealershipConn);
-            DbUtils.rollback(poiConn);
+            DbUtils.rollbackAndCloseQuietly(dealershipConn);
+            DbUtils.rollbackAndCloseQuietly(poiConn);
             throw e;
 		}finally{
-            DbUtils.commitAndClose(dealershipConn);
-            DbUtils.commitAndClose(poiConn);
+			DbUtils.commitAndCloseQuietly(dealershipConn);
+			DbUtils.commitAndCloseQuietly(poiConn);
 		}
 		return null;
 	}
@@ -1441,7 +1429,9 @@ public class DataEditService {
 	 * @throws Exception 
 	 */
 	public void commitDealership(String chainCode, Connection conn,long userId) throws Exception {
+		Map<Integer, Connection> mapConn = new HashMap<Integer, Connection>();
 		try {
+			mapConn = DataPrepareService.getInstance().queryAllRegionConn();
 			List<IxDealershipResult> resultList = null;
 			if(StringUtils.isNotBlank(chainCode)){
 				resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
@@ -1450,71 +1440,64 @@ public class DataEditService {
 				
 				
 				for (IxDealershipResult result : resultList) {
-					Connection regionConn = null;
-					Connection mancon = null;
-					try {
-						String poiNum = result.getCfmPoiNum();
-						
-						mancon = DBConnector.getInstance().getManConnection();
-						int dbId = getDailyDbId(result.getRegionId(), mancon);
-						regionConn = DBConnector.getInstance().getConnectionById(dbId);
-						List<String> dealerShipCheckRuleList = getDealerShipCheckRule();//查询代理店检查项
-						int count = queryCKLogByPoiNum(poiNum,dealerShipCheckRuleList,regionConn);//查询该pid下有无错误log
-						if(count==0){
-							IxDealershipResult noLogResult = IxDealershipResultSelector.
-									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
-							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							Integer resultId = result.getResultId();
-							IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
-						}
-						
-						if(StringUtils.isNotBlank(poiNum)){//执行批处理
-							List<Long> pidList = new ArrayList<>();
-							pidList.add(selectPidByPoiNum(poiNum, regionConn).longValue());
-							Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(regionConn, pidList);
-							Set<String> tabNames = getChangeTableSet(logs);
-							// 获取poi对象
-							Map<Long, BasicObj> objs = null;
-							if (tabNames == null || tabNames.size() == 0) {
-								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, true, pidList, false, false);
-							} else {
-								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, false, pidList, false, false);
-							}
-							// 将poi对象与履历合并起来
-							ObjHisLogParser.parse(objs, logs);
-							OperationResult operationResult = new OperationResult();
-							operationResult.putAll(objs.values());
-
-							BatchCommand batchCommand = new BatchCommand();
-							batchCommand.setOperationName("BATCH_DEALERSHIP_RELEASE");
-							Batch batch = new Batch(regionConn, operationResult);
-							batch.operate(batchCommand);
-							System.out.println(batch.getName());
-							batch.persistChangeLog(OperationSegment.SG_ROW, 0);
-						}
-						
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw e;
-					} finally{
-						DbUtils.commitAndCloseQuietly(mancon);
-						DbUtils.commitAndCloseQuietly(regionConn);
+					String poiNum = result.getCfmPoiNum();
+					
+					Connection regionConn = mapConn.get(result.getRegionId());
+//						int dbId = getDailyDbId(result.getRegionId(), mancon);
+//						Connection regionConn = DBConnector.getInstance().getConnectionById(dbId);
+					
+					
+					List<String> dealerShipCheckRuleList = getDealerShipCheckRule();//查询代理店检查项
+					int count = queryCKLogByPoiNum(poiNum,dealerShipCheckRuleList,regionConn);//查询该pid下有无错误log
+					if(count==0){
+						IxDealershipResult noLogResult = IxDealershipResultSelector.
+								getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
+						updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
+						Integer resultId = result.getResultId();
+						IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+						Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+						IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 					}
+					
+					if(StringUtils.isNotBlank(poiNum)){//执行批处理
+						List<Long> pidList = new ArrayList<>();
+						pidList.add(selectPidByPoiNum(poiNum, regionConn).longValue());
+						Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(regionConn, pidList);
+						Set<String> tabNames = getChangeTableSet(logs);
+						// 获取poi对象
+						Map<Long, BasicObj> objs = null;
+						if (tabNames == null || tabNames.size() == 0) {
+							objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, true, pidList, false, false);
+						} else {
+							objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, false, pidList, false, false);
+						}
+						// 将poi对象与履历合并起来
+						ObjHisLogParser.parse(objs, logs);
+						OperationResult operationResult = new OperationResult();
+						operationResult.putAll(objs.values());
+
+						BatchCommand batchCommand = new BatchCommand();
+						batchCommand.setOperationName("BATCH_DEALERSHIP_RELEASE");
+						Batch batch = new Batch(regionConn, operationResult);
+						batch.operate(batchCommand);
+						System.out.println(batch.getName());
+						batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+					}
+					
 				}
-				
-		
-				
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			DbUtils.rollbackAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw e;
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.commitAndCloseQuietly(value);
+			}
 		}
 	}
 	
@@ -1726,9 +1709,9 @@ public class DataEditService {
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);
-		Connection conn=null;
+		Connection conn = null;
 		try{
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 			//导入到oracle库中
 			for(Map<String, Object> map:sourceMaps){
 				IxDealershipResult ixDealershipResult = new IxDealershipResult();
@@ -2209,8 +2192,8 @@ public class DataEditService {
 			DbUtils.rollbackAndCloseQuietly(dealershipConn);
 			log.error(e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(metaConn);
-			DbUtils.closeQuietly(dealershipConn);
+			DbUtils.commitAndCloseQuietly(metaConn);
+			DbUtils.commitAndCloseQuietly(dealershipConn);
 		}
 		
 		for (int i = 0; i < list.size(); i++) {
@@ -2555,13 +2538,14 @@ public class DataEditService {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
 	public int runDealershipCheck(JSONObject jsonReq,OperationResult opResult) throws Exception{
 		log.info("start runDealershipCheck");
-		int resultCount=0;
-		Connection conn=null;
+		int resultCount = 0;
+		Connection conn = null;
     	try{
     		 JSONObject dealershipInfo = JSONObject.fromObject(jsonReq.getString("dealershipInfo"));
              int wkfStatus= dealershipInfo.getInt("workflowStatus");

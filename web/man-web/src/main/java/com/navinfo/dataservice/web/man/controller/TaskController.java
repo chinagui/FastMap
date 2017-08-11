@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -604,8 +605,14 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int phaseId = dataJson.getInt("phaseId");
-			Connection conn=DBConnector.getInstance().getManConnection();
-			TaskProgressOperation.pushWebsocket(conn, phaseId);
+			Connection conn=null;
+			try{
+				conn=DBConnector.getInstance().getManConnection();
+				TaskProgressOperation.pushWebsocket(conn, phaseId);
+			}finally{
+				DbUtils.close(conn);
+			}
+			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
@@ -822,6 +829,33 @@ public class TaskController extends BaseController {
 			
 			int taskId = dataJson.getInt("taskId");
 			JSONObject result = TaskService.getInstance().getPlan(taskId);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("获取条件规划失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 为ocms提供任务数据列表
+	 * @param HttpServletRequest
+	 * @return ModelAndView
+	 * 
+	 * */
+	@RequestMapping(value="/task/forOcms")
+	public ModelAndView forOcms(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+						
+			String date ="";
+			if(dataJson.containsKey("date")){
+				date=dataJson.getString("date");
+			}
+			List<Map<String, Object>> result = TaskService.getInstance().forOcms(date);
 			
 			return new ModelAndView("jsonView", success(result));
 		}catch(Exception e){

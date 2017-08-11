@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -111,9 +113,9 @@ public class RdLinkRticSearch implements ISearch {
 			throw new Exception(e);
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return list;
@@ -211,9 +213,9 @@ public class RdLinkRticSearch implements ISearch {
 			throw new Exception(e);
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return list;

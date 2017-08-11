@@ -329,7 +329,7 @@ public class RowCrowdsControl {
 			logger.error(e.getMessage(), e);
 			throw new Exception("数据未获取到大区库信息，不入库");
 		}finally{
-			DbUtils.commitAndClose(manConn);
+			DbUtils.commitAndCloseQuietly(manConn);
 		}
 		return dbId;
 	}
@@ -352,7 +352,7 @@ public class RowCrowdsControl {
 			logger.error(e.getMessage(), e);
 			throw new Exception("数据未获取到大区库信息");
 		}finally{
-			DbUtils.commitAndClose(manConn);
+			DbUtils.commitAndCloseQuietly(manConn);
 		}
 		return dbId;
 	}

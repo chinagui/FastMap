@@ -6,7 +6,7 @@
 	<group name="personStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PersonStatStarter">
 		<job name="personDayJob"/>
 		<job name="dayPlanStat"/>
-		<!-- <job name="personTipsStat"/> -->
+		<job name="personTipsJob"/>
 	</group>
 	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>

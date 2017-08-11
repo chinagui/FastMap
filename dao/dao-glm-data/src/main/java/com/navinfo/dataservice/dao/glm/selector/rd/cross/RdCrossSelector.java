@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -212,8 +213,8 @@ public class RdCrossSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return result;
@@ -251,8 +252,8 @@ public class RdCrossSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return cross;
 	}
@@ -317,8 +318,8 @@ public class RdCrossSelector extends AbstractSelector {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return result;
 	}

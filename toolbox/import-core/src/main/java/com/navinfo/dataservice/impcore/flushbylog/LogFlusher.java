@@ -209,21 +209,27 @@ public abstract class LogFlusher {
 	protected  void moveLog(FlushResult flushResult, String tempTable) throws Exception {
 		
 		String dbLinkName=this.targetDbLink;
-		Statement stmt = this.sourceDbConn.createStatement();
-		String moveSql = "insert into log_detail@" + dbLinkName
-				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id"
-				+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
-		log.debug(moveSql);
-		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
-		
-		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
-				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID"
-				+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
-		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));	
-		
-		moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
-				+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T,LOG_DETAIL D WHERE L.OP_ID=T.OP_ID  AND L.OP_ID=D.OP_ID";
-		flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
+		Statement stmt =null;
+		try{
+			stmt = this.sourceDbConn.createStatement();
+			String moveSql = "insert into log_detail@" + dbLinkName
+					+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id"
+					+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+			log.debug(moveSql);
+			flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
+			
+			moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
+					+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID"
+					+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+			flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));	
+			
+			moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
+					+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T,LOG_DETAIL D WHERE L.OP_ID=T.OP_ID  AND L.OP_ID=D.OP_ID";
+			flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
+		}finally{
+			DbUtils.closeQuietly(stmt);
+		}
+	
 		
 
 	}
@@ -258,10 +264,11 @@ public abstract class LogFlusher {
 				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);
-		Statement sourceStmt = sourceDbConn.createStatement();
-
-		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
+		Statement sourceStmt = null;
+		ResultSet rs = null;
 		try{
+			sourceStmt = sourceDbConn.createStatement();
+			rs = sourceStmt.executeQuery(logQuerySql);
 			rs.setFetchSize(1000);
 			FlushResult flushResult =new FlushResult();
 			LogWriter logWriter = new LogWriter(targetDbConn);

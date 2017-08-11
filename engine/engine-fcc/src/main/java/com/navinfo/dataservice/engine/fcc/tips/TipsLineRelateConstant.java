@@ -9,6 +9,8 @@ import java.util.List;
  * @date 2017-4-19 下午7:18:41
  * @Description: tips关联关系配置（tips与link/测线的关联关系）
  * 
+ * 注意：没新增一类tips都需要在这里增加
+ * 
  */
 public class TipsLineRelateConstant {
 
@@ -62,6 +64,7 @@ public class TipsLineRelateConstant {
 		simpleF.add("1208"); // 停车场出入口Link
 		//simpleF.add("1209"); // 航线，规格已删除
 		simpleF.add("1704"); // 路口名称
+		simpleF.add("1214"); // 删除在建属性
 		
 		simpleF.add("1701"); //1701（障碍物）
 		simpleF.add("1702"); // 1702（铁路道口）
@@ -168,7 +171,7 @@ public class TipsLineRelateConstant {
 		f_array_Id.add("1601");// 22. 环岛 [f_array].id
 		f_array_Id.add("1604"); // 23. 区域内道路 [f_array].id
 		
-		
+		f_array_Id.add("1520"); // 24.在建时间变更 [f_array].id
 		
 		
 		

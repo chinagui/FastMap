@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.photo.HBaseConnector;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -263,7 +265,17 @@ public class CollectorImport {
 		return put;
 	}
 	
-	public static void importCrowdPhoto(InputStream inputStream, int angle, String fileName) throws Exception{
+	/**
+	 * 众包照片导入
+	 * @param inputStream
+	 * @param angle
+	 * @param fileName
+	 * @param x
+	 * @param y
+	 * @throws Exception
+	 * 修改众包照片入fcc库photo维护字段
+	 */
+	public static void importCrowdPhoto(InputStream inputStream, int angle, String fileName, double x, double y) throws Exception{
 		HBaseController controller = new HBaseController();
 		InputStream newIn = inputStream;
     	if(angle > 0){
@@ -277,9 +289,20 @@ public class CollectorImport {
 		
     	Photo photo = new Photo();
 		photo.setRowkey(rowKey);
+		// a_uuid和rowkey相同
+		photo.setA_uuid(rowKey);
 		photo.setA_version(SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.seasonVersion));
+		// a_content照片内容为：设施 2
 		photo.setA_content(2);
+		// a_sourceId来源为：众包POI 5
+		photo.setA_sourceId(5);
+		// a_latitude和a_longitude: 照片的经度和纬度
+		photo.setA_longitude(x);
+		photo.setA_latitude(y);
+		// 设置上传时间
+		String a_uploadDate = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
+		photo.setA_uploadDate(a_uploadDate);
 		
 		controller.putPhoto(rowKey, newIn, photo);
 		

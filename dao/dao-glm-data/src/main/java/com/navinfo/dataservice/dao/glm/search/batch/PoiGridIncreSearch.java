@@ -111,7 +111,7 @@ public class PoiGridIncreSearch {
 			logger.error(e.getMessage(),e);
 			throw e;
 		}finally {
-			DBUtils.closeConnection(manConn);
+			DbUtils.closeQuietly(manConn);
 		}
 	}
 	private Map<Long,IxPoi> loadDateSingleDb(int dbId,Map<String,String> gridDateMap)throws Exception{
@@ -251,8 +251,8 @@ public class PoiGridIncreSearch {
 		} catch(Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	
@@ -299,8 +299,8 @@ public class PoiGridIncreSearch {
 		}catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	
@@ -665,7 +665,7 @@ public class PoiGridIncreSearch {
 			logger.error(e.getMessage(),e);
 			throw e;
 		}finally {
-			DBUtils.closeConnection(manConn);
+			DbUtils.closeQuietly(manConn);
 		}
 	}
 	

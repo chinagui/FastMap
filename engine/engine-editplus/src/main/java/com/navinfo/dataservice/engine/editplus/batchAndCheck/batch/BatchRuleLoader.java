@@ -58,6 +58,8 @@ public class BatchRuleLoader {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
+							DbUtils.closeQuietly(resultSet);
+							DbUtils.closeQuietly(pstmt);
 							DbUtils.commitAndCloseQuietly(conn);
 						}
 					} catch (Exception e) {

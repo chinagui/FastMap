@@ -31,65 +31,75 @@ public class RdNodeExporter {
 
 		String insertSql = "insert into gdb_rdNode values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+		PreparedStatement prep =null;
+		PreparedStatement stmt2 =null;
+		ResultSet resultSet =null;
+		try{
+			prep = sqliteConn.prepareStatement(insertSql);
 
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+			//String sql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2 and c.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+			String sql = "select * from "
+					+ " (select  a.node_pid,a.is_main, "
+						+" (select  b.geometry from rd_node b where b.u_record != 2 and b.node_pid = a.node_pid ) geometry ,"
+						+" (select distinct min(c.mesh_id) from rd_node_mesh c where c.u_record != 2 and c.node_pid = a.node_pid  group by c.node_pid) mesh_id "
+						+" from "
+							+" (select distinct d.node_pid ,max(d.is_main) is_main from  rd_cross_node d where d.u_record != 2  group by d.node_pid ) a "
+							+ ") "
+					+ " where  mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+			System.out.println("sql:  "+sql);
+			
+			Clob clob = conn.createClob();
+			clob.setString(1, StringUtils.join(meshes, ","));
 
-		//String sql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2 and c.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-		String sql = "select * from "
-				+ " (select  a.node_pid,a.is_main, "
-					+" (select  b.geometry from rd_node b where b.u_record != 2 and b.node_pid = a.node_pid ) geometry ,"
-					+" (select distinct min(c.mesh_id) from rd_node_mesh c where c.u_record != 2 and c.node_pid = a.node_pid  group by c.node_pid) mesh_id "
-					+" from "
-						+" (select distinct d.node_pid ,max(d.is_main) is_main from  rd_cross_node d where d.u_record != 2  group by d.node_pid ) a "
-						+ ") "
-				+ " where  mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-		System.out.println("sql:  "+sql);
-		
-		Clob clob = conn.createClob();
-		clob.setString(1, StringUtils.join(meshes, ","));
+			stmt2 = conn.prepareStatement(sql);
 
-		PreparedStatement stmt2 = conn.prepareStatement(sql);
+			stmt2.setClob(1, clob);
+			
+			resultSet = stmt2.executeQuery();
 
-		stmt2.setClob(1, clob);
-		
-		ResultSet resultSet = stmt2.executeQuery();
+			resultSet.setFetchSize(5000);
 
-		resultSet.setFetchSize(5000);
+			int count = 0;
 
-		int count = 0;
+			while (resultSet.next()) {
 
-		while (resultSet.next()) {
+				JSONObject json = enclosingRdNode(resultSet, operateDate);
 
-			JSONObject json = enclosingRdNode(resultSet, operateDate);
+				int pid = json.getInt("pid");
 
-			int pid = json.getInt("pid");
+				prep.setInt(1, pid);
 
-			prep.setInt(1, pid);
+				prep.setString(2, json.getString("geometry"));
 
-			prep.setString(2, json.getString("geometry"));
+				prep.setString(3, json.getString("display_style"));
 
-			prep.setString(3, json.getString("display_style"));
+				prep.setString(4, json.getString("display_text"));
 
-			prep.setString(4, json.getString("display_text"));
+				prep.setString(5, json.getString("meshid"));
 
-			prep.setString(5, json.getString("meshid"));
+				prep.setInt(6, json.getInt("isMain"));
 
-			prep.setInt(6, json.getInt("isMain"));
+				prep.setString(7, json.getString("op_date"));
 
-			prep.setString(7, json.getString("op_date"));
+				prep.setInt(8, json.getInt("op_lifecycle"));
 
-			prep.setInt(8, json.getInt("op_lifecycle"));
+				prep.executeUpdate();
 
-			prep.executeUpdate();
+				count += 1;
 
-			count += 1;
-
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
 			}
-		}
 
-		sqliteConn.commit();
+			sqliteConn.commit();
+		}finally{
+			try{if(resultSet!=null)resultSet.close();}catch(Exception e){}
+			try{if(prep!=null)prep.close();}catch(Exception e){}
+			try{if(stmt2!=null)stmt2.close();}catch(Exception e){}
+			
+		}
+		
 	}
 
 	private static JSONObject enclosingRdNode(ResultSet rs, String operateDate)

@@ -65,7 +65,6 @@ public class GLM60236 extends BasicCheckRule {
 			clob.setString(1, pids);
 			pidString=" IN (select to_number(column_value) from table(clob_to_table(?)))";
 			values.add(clob);
-			values.add(clob);
 		}else{
 			pidString=" IN ("+pids+")";
 		}

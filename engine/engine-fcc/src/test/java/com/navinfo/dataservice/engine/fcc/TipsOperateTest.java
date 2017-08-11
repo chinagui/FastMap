@@ -57,7 +57,7 @@ public class TipsOperateTest extends InitApplication {
 	@Test
 	public void testEdit() {
 		
-		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"022001346610674F2C4822904C7C3E2C8CC5B3\",\"pid\":508000041,\"editStatus\":2,\"editMeth\":2}";
+		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"0212016086f35d16434fad8038541a01533abf\",\"pid\":508000041,\"editStatus\":0,\"editMeth\":2}";
 		
 		
 
@@ -128,10 +128,10 @@ public class TipsOperateTest extends InitApplication {
 		
 		JSONObject b=new JSONObject();
 		
-		b.put("rowkey", "021509E86F79D4FB174B728B9E552434D7D324");
+		b.put("rowkey", "02110417AAB99AD0124E91A3FE0076C14A8E8B");
 		
-		b.put("editStatus", 2);
-		b.put("editMeth", 2);
+		b.put("editStatus",0);
+		b.put("editMeth", 1);
 		
 		data.add(b);
 		

@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -195,6 +196,26 @@ public class Fm2ChargeInit {
 				System.out.println("dbId("+dbId+"),"+pidList.size());
 				if(pidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
+					//根据条件过滤数据
+					for(BasicObj obj:objs.values()){
+						IxPoiObj poiObj = (IxPoiObj) obj;
+						long pid = poiObj.objPid();
+						//当POI的pid为0时，此站或桩不转出（外业作业中的新增POI未经过行编）
+						if(pid == 0){objs.remove(pid);}
+						//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
+						List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
+						if(rows == null || rows.size() == 0){objs.remove(pid);}
+						if(rows != null && rows.size() > 0){
+							for (BasicRow row : rows) {
+								IxPoiChargingstation ixPoiChargingstation = (IxPoiChargingstation) row;
+								int type = ixPoiChargingstation.getChargingType();
+								if(type != 2 && type != 4){
+									List<BasicRow> childs = poiObj.getRowsByName("IX_POI_CHILDREN");
+									if(childs == null || childs.size() == 0 ){objs.remove(pid);}
+								}
+							}
+						}
+					}
 					//设置adminId
 					Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){

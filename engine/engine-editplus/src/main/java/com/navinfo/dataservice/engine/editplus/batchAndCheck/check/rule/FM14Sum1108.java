@@ -21,7 +21,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-import com.navinfo.navicommons.database.sql.DBUtils;
+import org.apache.commons.dbutils.DbUtils;
 
 /**
  * FM-14Sum-11-08 检查条件：非删除POI且存在父子关系； 检查原则：
@@ -134,8 +134,8 @@ public class FM14Sum1108 extends BasicCheckRule {
 			}catch (SQLException e) {
 				throw e;
 			} finally {
-				DBUtils.closeResultSet(rs);
-				DBUtils.closeStatement(pstmt);
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(pstmt);
 			}
 		}
 		

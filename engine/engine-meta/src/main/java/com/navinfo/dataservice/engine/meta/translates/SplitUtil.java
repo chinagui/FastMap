@@ -137,6 +137,7 @@ public class SplitUtil {
                         } else if (ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";
                         } else if (ConvertUtil.isChineseNum(currentChar)) {
+                            param.wordIndex.add(index - 1);
                             if (!ConvertUtil.isChineseNum(afterChar) || !connNum) {
                                 wordValue = currentChar + "/";
                             }

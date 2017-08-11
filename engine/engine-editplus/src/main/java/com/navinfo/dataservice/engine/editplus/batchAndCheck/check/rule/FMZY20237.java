@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -79,20 +81,29 @@ public class FMZY20237 extends BasicCheckRule {
 	 */
 	public String getAdminCodeByRegionId(int regionId) throws Exception {
 		int adminCode = 0;
-		Connection conn = getCheckRuleCommand().getConn();
-		StringBuilder sb = new StringBuilder();
-		sb.append("select admin_id from AD_ADMIN where region_id = ");
-		sb.append(regionId);
-		String sql = sb.toString();
-
-		ResultSet resultSet = null;
+		Connection conn = null;
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			conn = getCheckRuleCommand().getConn();
+			StringBuilder sb = new StringBuilder();
+			sb.append("select admin_id from AD_ADMIN where region_id = ");
+			sb.append(regionId);
+			String sql = sb.toString();
 
-		pstmt = conn.prepareStatement(sql);
-		resultSet = pstmt.executeQuery();
-		while (resultSet.next()) {
-			adminCode = resultSet.getInt("admin_id");
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				adminCode = rs.getInt("admin_id");
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
+		
 		return Integer.toString(adminCode);
 	}
 

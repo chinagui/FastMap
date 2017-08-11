@@ -124,9 +124,9 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>engine-sys</artifactId>
+			<artifactId>service-monitor</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>

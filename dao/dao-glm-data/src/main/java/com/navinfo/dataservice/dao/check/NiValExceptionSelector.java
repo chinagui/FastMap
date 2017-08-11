@@ -1092,12 +1092,16 @@ public class NiValExceptionSelector {
 			String sql = "SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
-					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
+//					+ "   AND ps.work_type = 1"
+					+ " AND ps.status in (1,2) "
+					+ " and (ps.quick_subtask_id="+subtask.getSubtaskId()+" or ps.medium_subtask_id="+subtask.getSubtaskId()+") "
 					// + "   and ip.u_record!=2"
-					+ "   AND sdo_within_distance(ip.geometry,"
+					/*+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"
 					+ subtask.getGeometry() + "', 8307),"
-					+ "                           'mask=anyinteract') = 'TRUE'";
+					+ "                           'mask=anyinteract') = 'TRUE'"*/
+					
+					;
 
 			log.info("getCheckPidList sql: " + sql);
 			QueryRunner run = new QueryRunner();

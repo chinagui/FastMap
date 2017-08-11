@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -86,17 +88,23 @@ public class GLM28017 extends baseRule {
 		String sql = sb.toString();
 		log.info("RdInter后检查GLM28017:" + sql);
 		
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			
-		ResultSet resultSet2 = pstmt.executeQuery();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet2 = null;
 		List<Integer> rdRoadPidList=new ArrayList<Integer>();
-
-		while (resultSet2.next()){
-			rdRoadPidList.add(resultSet2.getInt("PID"));
-		} 
-		resultSet2.close();
-		pstmt.close();
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet2 = pstmt.executeQuery();
+			while (resultSet2.next()){
+				rdRoadPidList.add(resultSet2.getInt("PID"));
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet2);
+			DbUtils.closeQuietly(pstmt);
+		}
 		return rdRoadPidList;
+
 	}
 
 	/**

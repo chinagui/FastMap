@@ -97,7 +97,7 @@
 	},
 	{
 		"columnCount": 5,
-		"rowCount": 344,
+		"rowCount": 172,
 		"indexCount": 0,
 		"name": "GLM_GRID_MAP"
 	},
@@ -145,7 +145,7 @@
 	},
 	{
 		"columnCount": 8,
-		"rowCount": 829,
+		"rowCount": 415,
 		"indexCount": 1,
 		"name": "GLM_TABLES"
 	},
@@ -163,7 +163,7 @@
 	},
 	{
 		"columnCount": 5,
-		"rowCount": 71,
+		"rowCount": 69,
 		"indexCount": 1,
 		"name": "SYS_CONFIG"
 	},
@@ -187,9 +187,6 @@
 	}],
 	"functions": [{
 		"name": "VARCHAR_TO_TABLE"
-	},
-	{
-		"name": "NEIGHBOR_GRID_SAMEMESH"
 	},
 	{
 		"name": "CLOB_TO_TABLE"
@@ -221,9 +218,7 @@
 	{
 		"name": "DB_SEQ"
 	}],
-	"packages": [{
-		"name": "SPATIAL_UTILS"
-	}],
+	"packages": [],
 	"procedures": [],
 	"types": [{
 		"name": "VARCHAR_TAB"

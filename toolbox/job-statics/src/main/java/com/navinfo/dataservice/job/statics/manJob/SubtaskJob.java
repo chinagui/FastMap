@@ -645,10 +645,5 @@ public class SubtaskJob extends AbstractStatJob {
 		}
 	}
 	
-	public static void main(String[] args) {
-		String timestamp = "20170802180000";
-		String lastTime = DateUtils.addSeconds(timestamp,-60*60);
-		System.out.println(lastTime);
-	}
 
 }

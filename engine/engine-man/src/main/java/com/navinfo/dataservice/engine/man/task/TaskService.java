@@ -48,6 +48,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
@@ -4922,6 +4923,57 @@ public class TaskService {
 			};
 			QueryRunner run = new QueryRunner();
 			Map<Integer, Integer> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List<Map<String, Object>> forOcms(String date)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT T.TASK_ID,"
+					+ "       T.NAME,"
+					+ "       U.GROUP_NAME,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       T.PLAN_START_DATE,"
+					+ "       T.PLAN_END_DATE,"
+					+ "       T.CREATE_DATE,"
+					+ "       P.TYPE"
+					+ "  FROM TASK T, USER_GROUP U, USER_INFO I, PROGRAM P"
+					+ " WHERE T.GROUP_ID = U.GROUP_ID"
+					+ "   AND U.LEADER_ID = I.USER_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID";
+			if(!StringUtils.isEmpty(date)){
+				selectSql=selectSql+ "   AND T.CREATE_DATE > TO_DATE('"+date+"', 'yyyy-mm-dd')";
+			}
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> task=new HashMap<>();
+						task.put("taskId", rs.getInt("TASK_ID"));
+						task.put("name", rs.getString("NAME"));
+						task.put("groupName", rs.getString("GROUP_NAME"));
+						task.put("userName", rs.getString("USER_REAL_NAME"));
+						task.put("planStartDate", DateUtils.format(rs.getTimestamp("PLAN_START_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
+						task.put("type", rs.getInt("type"));
+						result.add(task);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
 			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

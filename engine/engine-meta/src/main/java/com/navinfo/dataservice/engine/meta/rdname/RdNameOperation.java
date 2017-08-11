@@ -199,7 +199,7 @@ public RdName saveName(RdName rdName) throws Exception {
 			}
 			throw new Exception("新增道路名出错：" + e.getMessage(), e);
 		} finally {
-			DbUtils.close(pstmt);
+			DbUtils.closeQuietly(pstmt);
 			//conn由调用者关闭
 		}
 
@@ -428,8 +428,8 @@ public RdName saveName(RdName rdName) throws Exception {
 			DbUtils.rollback(conn);
 			throw new Exception("道路名出错：" + e.getMessage(), e);
 		} finally {
-			DbUtils.close(pstmt);
-			DbUtils.close(subPstms);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(subPstms);
 		}
 	}
 	

@@ -672,7 +672,6 @@ public class ImportPlan {
 	 * 
 	 * */
 	public Map<String,List<Map<String,Object>>> groupingBlockListBycity(List<Map<String,Object>> programList){
-		
 		int programSize = programList.size();
 		if(programSize == 0){
 			return new HashMap<>();
@@ -684,18 +683,11 @@ public class ImportPlan {
 		for(int j = 0; j < programSize; j++){
 			Map<String,Object> map = programList.get(j);
 			
-			List<Map<String,Object>> list = new ArrayList<>();
-			list.add(map);
 			cityID = map.get("CITY_ID").toString();
-			for(int i = j+1; i < programSize; i++){
-				blockMap = programList.get(i);
-				if(cityID.equals(blockMap.get("CITY_ID").toString())){
-					programList.remove(i);
-					programSize--;
-					list.add(blockMap);
-				}
+			if(!cityMap.containsKey(cityID)){
+				cityMap.put(cityID, new ArrayList<Map<String,Object>>());
 			}
-			cityMap.put(cityID, list);
+			cityMap.get(cityID).add(map);
 		}
 		return cityMap;
 	}
@@ -711,99 +703,99 @@ public class ImportPlan {
 	
 	public List<Map<String, Object>> conductProgramData(Map<String,List<Map<String,Object>>> map) throws Exception{
 		//先定义要用到的变量
-		String plan_start_date = DEFAULT_DATE_BEGAIN;
-		String plan_end_date = DEFAULT_DATE_END;
-		String collection_plan_start_date = DEFAULT_DATE_BEGAIN;
-		String collection_plan_end_date = DEFAULT_DATE_END;
-		String month_edit_plan_start_date = DEFAULT_DATE_BEGAIN;
-		String month_edit_plan_end_date = DEFAULT_DATE_END;
-		String produce_plan_start_date = DEFAULT_DATE_BEGAIN;
-		String produce_plan_end_date = DEFAULT_DATE_END;
 		String city_name = "";
 		int city_id = 0;
 		
 		List<Map<String,Object>> programList = new ArrayList<Map<String, Object>>();
 		for (String key : map.keySet()) {
+			String plan_start_date = DEFAULT_DATE_BEGAIN;
+			String plan_end_date = DEFAULT_DATE_END;
+			String collection_plan_start_date = DEFAULT_DATE_BEGAIN;
+			String collection_plan_end_date = DEFAULT_DATE_END;
+			String month_edit_plan_start_date = DEFAULT_DATE_BEGAIN;
+			String month_edit_plan_end_date = DEFAULT_DATE_END;
+			String produce_plan_start_date = DEFAULT_DATE_BEGAIN;
+			String produce_plan_end_date = DEFAULT_DATE_END;
 			List<Map<String,Object>> blockList = map.get(key);
-			 Map<String, Object> programMap = new HashMap<>();
-				for(Map<String, Object> blockMap : blockList){
-					//处理时间
-					if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_START_DATE").toString())){
-						if(plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
-							plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
-						}
-					}else{
-						plan_start_date = "";
+			Map<String, Object> programMap = new HashMap<>();
+			for(Map<String, Object> blockMap : blockList){
+				//处理时间
+				if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_START_DATE").toString())){
+					if(plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
+						plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
 					}
-					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
-						if(plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
-							plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
-						}
-					}else{
-						plan_end_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_START_DATE").toString())){
-						if(collection_plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
-							collection_plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
-						}
-					}else{
-						collection_plan_start_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_END_DATE").toString())){
-						if(collection_plan_end_date.compareTo(blockMap.get("COLLECT_PLAN_END_DATE").toString()) < 0){
-							collection_plan_end_date = blockMap.get("COLLECT_PLAN_END_DATE").toString();
-						}
-					}else{
-						collection_plan_end_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
-						if(month_edit_plan_start_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString()) > 0){
-							month_edit_plan_start_date = blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString();
-						}
-					}else{
-						month_edit_plan_start_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
-						if(month_edit_plan_end_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString()) < 0){
-							month_edit_plan_end_date = blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString();
-						}
-					}else{
-						month_edit_plan_end_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_START_DATE").toString())){
-						if(produce_plan_start_date.compareTo(blockMap.get("PRODUCE_PLAN_START_DATE").toString()) > 0){
-							produce_plan_start_date = blockMap.get("PRODUCE_PLAN_START_DATE").toString();
-						}
-					}else{
-						produce_plan_start_date = "";
-					}
-					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
-						if(produce_plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
-							produce_plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
-						}
-					}else{
-						produce_plan_end_date = "";
-					}
-				
-					city_name = blockMap.get("CITY_NAME").toString();
-					city_id = Integer.parseInt(blockMap.get("CITY_ID").toString());
+				}else{
+					plan_start_date = "";
 				}
-				programMap.put("NAME", city_name);
-				programMap.put("TYPE", 1);
-				programMap.put("DESCP", "");
-				programMap.put("PLAN_START_DATE", plan_start_date);
-				programMap.put("PLAN_END_DATE", plan_end_date);
-				programMap.put("COLLECT_PLAN_START_DATE", collection_plan_start_date);
-				programMap.put("COLLECT_PLAN_END_DATE", collection_plan_end_date);
-				programMap.put("MONTH_EDIT_PLAN_START_DATE", month_edit_plan_start_date);
-				programMap.put("MONTH_EDIT_PLAN_END_DATE", month_edit_plan_end_date);
-				programMap.put("PRODUCE_PLAN_START_DATE", produce_plan_start_date);
-				programMap.put("PRODUCE_PLAN_END_DATE", produce_plan_end_date);
-				programMap.put("CITY_ID", city_id);
-				programMap.put("STATUS", 1);
-				programMap.put("CREATE_USER_ID", "");
-				
-				programList.add(programMap);
+				if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
+					if(plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
+						plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
+					}
+				}else{
+					plan_end_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_START_DATE").toString())){
+					if(collection_plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
+						collection_plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
+					}
+				}else{
+					collection_plan_start_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_END_DATE").toString())){
+					if(collection_plan_end_date.compareTo(blockMap.get("COLLECT_PLAN_END_DATE").toString()) < 0){
+						collection_plan_end_date = blockMap.get("COLLECT_PLAN_END_DATE").toString();
+					}
+				}else{
+					collection_plan_end_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
+					if(month_edit_plan_start_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString()) > 0){
+						month_edit_plan_start_date = blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString();
+					}
+				}else{
+					month_edit_plan_start_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
+					if(month_edit_plan_end_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString()) < 0){
+						month_edit_plan_end_date = blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString();
+					}
+				}else{
+					month_edit_plan_end_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_START_DATE").toString())){
+					if(produce_plan_start_date.compareTo(blockMap.get("PRODUCE_PLAN_START_DATE").toString()) > 0){
+						produce_plan_start_date = blockMap.get("PRODUCE_PLAN_START_DATE").toString();
+					}
+				}else{
+					produce_plan_start_date = "";
+				}
+				if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
+					if(produce_plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
+						produce_plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
+					}
+				}else{
+					produce_plan_end_date = "";
+				}
+			
+				city_name = blockMap.get("CITY_NAME").toString();
+				city_id = Integer.parseInt(blockMap.get("CITY_ID").toString());
+			}
+			programMap.put("NAME", city_name);
+			programMap.put("TYPE", 1);
+			programMap.put("DESCP", "");
+			programMap.put("PLAN_START_DATE", plan_start_date);
+			programMap.put("PLAN_END_DATE", plan_end_date);
+			programMap.put("COLLECT_PLAN_START_DATE", collection_plan_start_date);
+			programMap.put("COLLECT_PLAN_END_DATE", collection_plan_end_date);
+			programMap.put("MONTH_EDIT_PLAN_START_DATE", month_edit_plan_start_date);
+			programMap.put("MONTH_EDIT_PLAN_END_DATE", month_edit_plan_end_date);
+			programMap.put("PRODUCE_PLAN_START_DATE", produce_plan_start_date);
+			programMap.put("PRODUCE_PLAN_END_DATE", produce_plan_end_date);
+			programMap.put("CITY_ID", city_id);
+			programMap.put("STATUS", 1);
+			programMap.put("CREATE_USER_ID", "");
+			
+			programList.add(programMap);
 		}
 		return programList;
 	}

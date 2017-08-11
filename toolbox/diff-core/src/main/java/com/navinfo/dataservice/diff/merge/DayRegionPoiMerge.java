@@ -175,68 +175,71 @@ public class DayRegionPoiMerge {
 		log.info("generate logs...");
 
 		String sql = "select p.pid,p.row_id,p.geometry old_geometry, q.geometry new_geometry   from ix_poi p,"+tempTableName+" q where p.pid=q.pid";
+		Statement stmt =null;
+		ResultSet rs = null;
+		Statement pstmt =null;
+		
+		try{
+			stmt = conn.createStatement();
 
-		Statement stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);
 
-		ResultSet rs = stmt.executeQuery(sql);
+			pstmt = conn.createStatement();
 
-		Statement pstmt = conn.createStatement();
+			LogWriter logWriter = new LogWriter();
 
-		LogWriter logWriter = new LogWriter();
+			int count = 0;
+			while (rs.next()) {
 
-		int count = 0;
-		while (rs.next()) {
+				IxPoi poi = new IxPoi();
 
-			IxPoi poi = new IxPoi();
+				poi.setPid(rs.getInt("pid"));
 
-			poi.setPid(rs.getInt("pid"));
+				poi.setRowId(rs.getString("row_id"));
 
-			poi.setRowId(rs.getString("row_id"));
+				STRUCT struct = (STRUCT) rs.getObject("old_geometry");
 
-			STRUCT struct = (STRUCT) rs.getObject("old_geometry");
+				Geometry oldGeometry = GeoTranslator.struct2Jts(struct);
 
-			Geometry oldGeometry = GeoTranslator.struct2Jts(struct);
+				struct = (STRUCT) rs.getObject("new_geometry");
 
-			struct = (STRUCT) rs.getObject("new_geometry");
+				Geometry newGeometry = GeoTranslator.struct2Jts(struct);
 
-			Geometry newGeometry = GeoTranslator.struct2Jts(struct);
+				LogOperation op = new LogOperation(UuidUtils.genUuid(), 5);
 
-			LogOperation op = new LogOperation(UuidUtils.genUuid(), 5);
+				op.setComSta(1);
 
-			op.setComSta(1);
+				op.setComDt(op.getOpDt());
 
-			op.setComDt(op.getOpDt());
+				addLogDetails(op, poi, oldGeometry, newGeometry);
 
-			addLogDetails(op, poi, oldGeometry, newGeometry);
+				addLogDayRelease(op);
 
-			addLogDayRelease(op);
+				logWriter.insertLogOperation2Sql(op, pstmt);
 
-			logWriter.insertLogOperation2Sql(op, pstmt);
+				count++;
+				logOpCount++;
 
-			count++;
-			logOpCount++;
+				if (count % 2000 == 0) {
+					pstmt.executeBatch();
+					pstmt.clearBatch();
+					count = 0;
 
-			if (count % 2000 == 0) {
+					log.info(logOpCount);
+				}
+			}
+
+			if (count > 0) {
 				pstmt.executeBatch();
-				pstmt.clearBatch();
-				count = 0;
-
 				log.info(logOpCount);
 			}
+
+			log.info("generate logs success");
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(stmt);
 		}
-
-		if (count > 0) {
-			pstmt.executeBatch();
-			log.info(logOpCount);
-		}
-
-		pstmt.close();
-
-		rs.close();
-
-		stmt.close();
-
-		log.info("generate logs success");
 
 	}
 

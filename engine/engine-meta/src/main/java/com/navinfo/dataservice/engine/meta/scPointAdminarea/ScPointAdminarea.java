@@ -64,7 +64,7 @@ public class ScPointAdminarea {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);
@@ -153,7 +153,7 @@ public class ScPointAdminarea {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);
@@ -243,10 +243,9 @@ public class ScPointAdminarea {
 									adminIdDataMap.put(adminId, map);
 								} 
 							} catch (Exception e) {
-								DbUtils.rollbackAndCloseQuietly(conn);
 								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_ADMINAREA失败："+ e.getMessage(), e);

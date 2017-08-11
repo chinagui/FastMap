@@ -62,7 +62,7 @@ public class ScPointKindNew {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn,pstmt,rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_NEW失败：" + e.getMessage(), e);
@@ -103,7 +103,7 @@ public class ScPointKindNew {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn,pstmt,rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_NEW失败：" + e.getMessage(), e);
@@ -144,7 +144,7 @@ public class ScPointKindNew {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn,pstmt,rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_NEW失败：" + e.getMessage(), e);
@@ -190,7 +190,7 @@ public class ScPointKindNew {
 						} catch (Exception e) {
 							throw new Exception(e);
 						} finally {
-							DbUtils.close(conn);
+							DbUtils.closeQuietly(conn,pstmt,rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载SC_POINT_KIND_NEW失败：" + e.getMessage(), e);

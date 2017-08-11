@@ -64,6 +64,12 @@ public class ExportQualityReport {
 						String fileName =  taskName + "质检报表";
 						
 						fileName+= DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+						//设置编码,解决乱码问题
+						System.out.println("old fileName: "+fileName);
+						String encoding = System.getProperty("file.encoding");
+						System.out.println("encoding : "+encoding);
+						fileName = new String(fileName.getBytes("UTF-8"),encoding);
+						System.out.println("fileName: "+fileName);
 						//导出poi 质检报表 poi_problem_summary
 						exportExcelPoi(path,checkConn,gridClob,fileName);
 						

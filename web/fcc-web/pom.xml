@@ -36,6 +36,12 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-edit</artifactId>
+			<exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<dependency>
@@ -46,6 +52,12 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-meta</artifactId>
+			<exclusions>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<dependency>
@@ -181,7 +193,19 @@
 		<dependency>
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>
+	 	</dependency>
+			<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.9.1</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.7</version>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<finalName>fcc</finalName>

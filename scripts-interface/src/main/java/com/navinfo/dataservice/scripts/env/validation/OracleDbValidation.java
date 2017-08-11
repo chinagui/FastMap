@@ -101,48 +101,51 @@ public class OracleDbValidation implements FosEnvValidation {
 
     private JSONObject loadConfig(OracleDbType dbType, String folder) throws Exception {
         log.info("load config file start");
-        URL url = OracleDbValidation.class.getResource(folder + dbType + ".json");
-        if (url == null) {
+        try {
+            URL url = OracleDbValidation.class.getResource(folder + dbType + ".json");
+            if (url == null) {
+                return null;
+            }
+            String path = url.getPath();
+            byte[] bytes = Files.readAllBytes(new File(path).toPath());
+            String line = new String(bytes);
+            JSONObject data = JSONObject.fromObject(line);
+            JSONArray array = data.getJSONArray("tables");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject table = array.getJSONObject(i);
+                String name = table.getString("name");
+                tableConfigMap.put(name, table);
+            }
+            array = data.getJSONArray("types");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                typeConfigSet.add(json.getString("name"));
+            }
+            array = data.getJSONArray("sequences");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                sequenceConfigSet.add(json.getString("name"));
+            }
+            array = data.getJSONArray("functions");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                functionConfigSet.add(json.getString("name"));
+            }
+            array = data.getJSONArray("packages");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                packageConfigSet.add(json.getString("name"));
+            }
+            array = data.getJSONArray("procedures");
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                procedureConfigSet.add(json.getString("name"));
+            }
+            log.info("load config file end");
+            return data;
+        }catch (Exception e){
             return null;
         }
-        String path = url.getPath();
-        byte[] bytes = Files.readAllBytes(new File(path).toPath());
-        String line = new String(bytes);
-        JSONObject data = JSONObject.fromObject(line);
-        JSONArray array = data.getJSONArray("tables");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject table = array.getJSONObject(i);
-            String name = table.getString("name");
-            tableConfigMap.put(name, table);
-        }
-        array = data.getJSONArray("types");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            typeConfigSet.add(json.getString("name"));
-        }
-        array = data.getJSONArray("sequences");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            sequenceConfigSet.add(json.getString("name"));
-        }
-        array = data.getJSONArray("functions");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            functionConfigSet.add(json.getString("name"));
-        }
-        array = data.getJSONArray("packages");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            packageConfigSet.add(json.getString("name"));
-        }
-        array = data.getJSONArray("procedures");
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            procedureConfigSet.add(json.getString("name"));
-        }
-
-        log.info("load config file end");
-        return data;
     }
 
     private void loadTables(Connection conn) throws Exception {
@@ -241,10 +244,10 @@ public class OracleDbValidation implements FosEnvValidation {
                 continue;
             }
             JSONObject json = tableConfigMap.get(tableName);
-            if (table.getInt("indexCount") != json.getInt("indexCount")) {
+            if (json.getInt("indexCount") > 0 && table.getInt("indexCount") != json.getInt("indexCount")) {
                 validationResult.errs.add(conn + ":table index count not match: " + tableName);
             }
-            if (table.getInt("columnCount") != json.getInt("columnCount")) {
+            if (json.getInt("columnCount") > 0 && table.getInt("columnCount") != json.getInt("columnCount")) {
                 validationResult.errs.add(conn + ":table column count not match: " + tableName);
             }
             int size = json.getInt("rowCount");
@@ -342,7 +345,7 @@ public class OracleDbValidation implements FosEnvValidation {
         }
         for (String name : packageConfigSet) {
             if (!packageSet.contains(name)) {
-                validationResult.errs.add(conn + ":packag missing: " + name);
+                validationResult.errs.add(conn + ":package missing: " + name);
             }
         }
 

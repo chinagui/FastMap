@@ -1,6 +1,6 @@
 {
 	"tables": [{
-		"columnCount": 40,
+		"columnCount": 41,
 		"rowCount": 0,
 		"indexCount": 0,
 		"name": "POI_PROBLEM_SUMMARY"
@@ -18,16 +18,10 @@
 		"name": "CHECK_PERCENT"
 	},
 	{
-		"columnCount": 44,
+		"columnCount": 45,
 		"rowCount": 0,
 		"indexCount": 2,
 		"name": "FIELD_RD_QCRECORD"
-	},
-	{
-		"columnCount": 5,
-		"rowCount": 0,
-		"indexCount": 1,
-		"name": "CHECK_RESULT"
 	},
 	{
 		"columnCount": 13,
@@ -43,7 +37,7 @@
 	},
 	{
 		"columnCount": 9,
-		"rowCount": 56,
+		"rowCount": 55,
 		"indexCount": 1,
 		"name": "TIPS_CHECK_RULE"
 	},

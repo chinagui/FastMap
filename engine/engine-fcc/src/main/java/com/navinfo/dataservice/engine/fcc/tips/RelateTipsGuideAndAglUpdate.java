@@ -364,7 +364,7 @@ public class RelateTipsGuideAndAglUpdate {
 		}
 
 		if( "1507".equals(sourceType) || "1508".equals(sourceType)
-				 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)){
+				 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)||"1520".equals(sourceType)){
 			JSONObject g_location = JSONObject.fromObject(this.json.getG_location());
 			JSONObject g_guide = JSONObject.fromObject(this.json.getG_guide());
 			

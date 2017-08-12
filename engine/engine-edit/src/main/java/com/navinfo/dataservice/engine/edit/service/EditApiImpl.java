@@ -121,10 +121,7 @@ public class EditApiImpl implements EditApi {
 		LogReader lr = new LogReader(conn);
 		int freshVerified = 0;
 		int status = 1;
-		if (!lr.isExistObjHis(pid)) {
-			freshVerified = 1;
-			status = 2;
-		}
+
 		if (lr.isExistObjHis(pid)){
 			if(lr.isOnlyPhotoAndMetoHis(pid)){
 				freshVerified = 1;

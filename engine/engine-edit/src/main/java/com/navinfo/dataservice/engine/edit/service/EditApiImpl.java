@@ -125,9 +125,15 @@ public class EditApiImpl implements EditApi {
 			freshVerified = 1;
 			status = 2;
 		}
-		if (lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)) {
+		if (lr.isExistObjHis(pid)){
+			if(lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified = 1;
+			}
+		}else{
 			freshVerified = 1;
+			status = 2;
 		}
+		
 		String sql = null;
 		if ("web".endsWith(platform)) {
 			sql = "UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.pid ="

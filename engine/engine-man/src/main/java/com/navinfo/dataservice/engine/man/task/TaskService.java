@@ -4040,8 +4040,12 @@ public class TaskService {
 			sb.append(" and d.is_important = 0");
 			
 			String sql = sb.toString();
-			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
+			SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String dateStr = dateformat.format(System.currentTimeMillis());
+			log.info(dateStr+"initPlanData接口根据重要一览表数据更新dataPlan表sql："+sql);
 			run.update(dailyConn, sql,clob);
+			String time = dateformat.format(System.currentTimeMillis());
+			log.info(time+"initPlanData接口根据重要一览表数据更新完成");
 		}catch(Exception e){
 			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
@@ -4148,24 +4152,31 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			
 			StringBuffer linksb = new StringBuffer();
+			
+			log.info("initPlanData接口参数wkt：" + wkt);
 			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
 			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 			String linkSql = linksb.toString();
 			Clob clob = ConnectionUtil.createClob(dailyConn);
 			clob.setString(1, wkt);
-			
-			log.info("linkSql"+linkSql);
+			SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String dateStr = dateformat.format(System.currentTimeMillis());
+			log.info(dateStr+"initPlanData接口：linkSql"+linkSql);
 			int linkNum = run.update(dailyConn, linkSql, clob);
+			String time = dateformat.format(System.currentTimeMillis());
+			log.info(time+"initPlanData接口：linkSql执行完成");
 			
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
 			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where ");
 			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 			String poiSql = poisb.toString();
-			
-			log.info("poiSql:"+poiSql);
+			String dateStr2 = dateformat.format(System.currentTimeMillis());
+			log.info(dateStr2+"initPlanData接口：poiSql:"+poiSql);
 			int poiNum = run.update(dailyConn, poiSql, clob);
+			String time2 = dateformat.format(System.currentTimeMillis());
+			log.info(time2+"initPlanData接口：poiSql执行完成");
 			
 			Map<String, Integer> result = new HashMap<>();
 			result.put("poiNum", poiNum);
@@ -4360,7 +4371,12 @@ public class TaskService {
 					updateDataPlanStatusByWkt(dailyConn, isPlanStatus, dataType, wkt, taskId);
 				}else{
 					log.info("没有上传wkt数据，为条件规划");
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					String dateStr = dateformat.format(System.currentTimeMillis());
+					log.info("开始执行TaskProgress查询："+dateStr);
 					TaskProgress taskPrograss = taskInPrograssCount(conn, taskId);
+					String dateStr2 = dateformat.format(System.currentTimeMillis());
+					log.info("TaskProgress查询完成："+dateStr2);
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
@@ -4375,9 +4391,11 @@ public class TaskService {
 						//元数据库中的pid，也需要更新到data_plan表中
 						List<Integer> reliabilityPid = queryReliabilityPid(minCount, maxCount);
 						//更新从元数据库中获取的pid到dataPlan表中
+						
 						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					}
 					//保存到taskPrograss表
+					
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
@@ -4548,6 +4566,9 @@ public class TaskService {
 		 * */
 		public void maintainTaskPrograss(Connection conn, TaskProgress taskPrograss, JSONObject dataJson, long userId) throws Exception{
 			try{
+				SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dateStr9 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan开始保存到taskPrograss表:" + dateStr9);
 				TaskProgress bean = new TaskProgress();
 				int taskId = dataJson.getInt("taskId");
 				String parameter = dataJson.getJSONObject("condition").toString();
@@ -4573,6 +4594,8 @@ public class TaskService {
 					bean.setPhaseId(phaseId);
 					TaskProgressOperation.updateTaskProgress(conn, bean);
 				}
+				String dateStr10 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan开始保存到taskPrograss表完成:" + dateStr10);
 			}catch(Exception e){
 				log.error("保存数据到taskPrograss表出错："+e.getMessage(),e);
 				throw e;
@@ -4628,7 +4651,13 @@ public class TaskService {
 					type = "1,2";
 				}
 				String sql = "update DATA_PLAN d set d.is_plan_selected = 0 where d.data_type in ("+type+") and d.task_id = "+taskId;
+				
+				SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dateStr3 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan开始执行不满足数据不作业的时间:" + dateStr3+" sql:"+sql);
 				run.execute(dailyConn, sql);
+				String dateStr4 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan执行不满足数据不作业完成:" + dateStr4);
 			}catch(Exception e){
 				throw e;
 			}
@@ -4670,8 +4699,13 @@ public class TaskService {
 					}
 					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
 					String poisql = poiSb.toString();
-					log.info("跟据条件保存POI数据sql:"+poisql);
+					
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					String dateStr5 = dateformat.format(System.currentTimeMillis());
+					log.info("save_plan开始跟据条件保存POI数据sql:" + dateStr5+ " sql:"+poisql);
 					run.execute(conn, poisql);
+					String dateStr6 = dateformat.format(System.currentTimeMillis());
+					log.info("save_plan保存POI数据执行完成:" + dateStr6);
 				}
 				
 				//更新road
@@ -4686,8 +4720,13 @@ public class TaskService {
 					}
 					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
 					String linksql = linkSb.toString();
-					log.info("跟据条件保存LINK数据sql:"+linksql);
+					
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					String dateStr5 = dateformat.format(System.currentTimeMillis());
+					log.info(dateStr5+"跟据条件保存LINK数据sql:"+linksql);
 					run.execute(conn, linksql);
+					String dateStr6 = dateformat.format(System.currentTimeMillis());
+					log.info(dateStr6+"跟据条件保存LINK完成");
 				}
 				
 			}catch(Exception e){
@@ -4717,10 +4756,14 @@ public class TaskService {
 				if(reliabilityPid.size() > 900){
 					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
 				}
-				
+				SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
-				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
+				String dateStr7 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan开始元数据库中获取的pid到dataPlan表:" + dateStr7+ " sql:" + sql);
 				run.execute(conn, sql);
+				
+				String dateStr8 = dateformat.format(System.currentTimeMillis());
+				log.info("save_plan开始元数据库中获取的pid到dataPlan表完成:" + dateStr8);
 			}catch(Exception e){
 				throw e;
 			}

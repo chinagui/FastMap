@@ -38,7 +38,8 @@ public abstract class JobPhase {
                 throw new Exception("未找到正在执行的步骤，无法继续执行");
             }
             if (jobProgress.getStatus() == JobProgressStatus.FAILURE) {
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.CREATED);
+            	jobProgress.setStatus(JobProgressStatus.CREATED);
+                jobProgressOperator.updateStatus(jobProgress);
             }
         } else {
             //新增一条记录

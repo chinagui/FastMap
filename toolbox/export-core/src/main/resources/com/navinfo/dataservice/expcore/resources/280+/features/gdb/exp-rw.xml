@@ -54,7 +54,7 @@
         目前仅支持按图幅提取
         -->
         <step value="13">
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RW_LINK
                       (PID)
@@ -111,7 +111,7 @@
         </step>
         <step value="16">
             <!--根据link提取RW_FEATURE，并去重-->
-            <sql sqlType="dataIntegrity">
+            <sql sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RW_LINK

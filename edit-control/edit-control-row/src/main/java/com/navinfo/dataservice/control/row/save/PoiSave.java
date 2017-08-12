@@ -68,10 +68,16 @@ public class PoiSave {
 			Map<String, Integer> newTaskInfo= changeTaskInfo(subtaskId,taskInfo);
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+ 
+			String tmpdata = json.get("data") == null ? "" : json.get("data").toString();
+			int poiLength = 0;
+			if(tmpdata.indexOf("{") == 0){
+				poiLength = json.getJSONObject("data").size();
+			}else if(tmpdata.indexOf("[") == 0){
+				poiLength = json.getJSONArray("data").size();
+			}
 
-			JSONObject poiData = json.getJSONObject("data");
-
-			if (poiData.size() == 0 && operType == OperType.UPDATE
+			if (poiLength == 0 && operType == OperType.UPDATE
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
 				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);
@@ -164,11 +170,19 @@ public class PoiSave {
 					}	
 				}
 				result = editApiImpl.runPoi(json);
-				if (OperType.CREATE != operType) {
-					pid = json.getInt("objId");
-					sb.append(",").append(String.valueOf(pid));
-				} else {
+				if (OperType.CREATE == operType) {
 					pid = result.getInt("pid");
+					sb.append(",").append(String.valueOf(pid));
+				} else if(OperType.BATCHMOVE == operType){
+					JSONArray logs = result.getJSONArray("log");
+					for(int i = 0; i<logs.size();i++){
+						JSONObject single = logs.getJSONObject(i);
+						pid = single.getInt("pid");
+						sb.append(",").append(String.valueOf(pid));
+					}
+				}
+				else {
+					pid = json.getInt("objId");
 					sb.append(",").append(String.valueOf(pid));
 				}
 				sb.deleteCharAt(0);
@@ -197,7 +211,7 @@ public class PoiSave {
 			logger.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	private Map<String, Integer> changeTaskInfo(int subtaskId,Map<String, Integer> taskInfo) throws Exception {
@@ -293,9 +307,8 @@ public class PoiSave {
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
-
 		} finally {
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 	}

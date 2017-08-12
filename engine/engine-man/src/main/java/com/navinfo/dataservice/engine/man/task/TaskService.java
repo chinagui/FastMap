@@ -48,6 +48,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
@@ -433,35 +434,42 @@ public class TaskService {
 				}
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
-				conn.commit();
+				//conn.commit();
 			}
 			//POI月编任务发布后，自动创建一个“POI专项”类型的子任务，状态为草稿
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
+					log.info("先创建质检月编子任务");
 					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					subtask.setTaskId(task.getTaskId());
 					//modify by songhe 
 					//月编子任务名称赋值原则：快线调用SubtaskService.autoInforName
-					String name = SubtaskService.getInstance().autoInforName(conn, subtask).getName();
-					subtask.setName(name);//任务名称+_作业组
-					if(StringUtils.isBlank(subtask.getName())){
-						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
-					}
 					subtask.setExeGroupId(task.getGroupId());
+					//subtask = SubtaskService.getInstance().autoInforName(conn, subtask);
+					//subtask.setName(name);//任务名称+_作业组					
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
 					subtask.setPlanEndDate(task.getPlanEndDate());
 					subtask.setStatus(2);//草稿
 					subtask.setStage(2);
 					subtask.setType(7);
+					subtask.setIsQuality(1);
 
-					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(conn,task.getTaskId());
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					subtask.setGeometry(wkt);
 
-					int subTaskId = SubtaskService.getInstance().createSubtask(subtask);
-					
+					int qualitySubTaskId = SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+					//质检和常规月编子任务创建用同一个对象，只是修改了两者有区别的字段。
+					log.info("再创建常规月编子任务");
+					if(StringUtils.isBlank(subtask.getName())&&task.getBlockId()!=0){
+						subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					}
+					subtask.setIsQuality(0);
+					subtask.setQualitySubtaskId(qualitySubTaskId);
+					int subTaskId = SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
+					SubtaskService.getInstance().updateQualityName(conn, qualitySubTaskId);
 					//modify by songhe
 					//若POI专项子任务有组id，则调用subtask/pushMsg的相关发布方法，将poi专项子任务发布
 					//月编子任务名称赋值
@@ -655,12 +663,14 @@ public class TaskService {
 			
 			//获取旧任务信息
 			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
-			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
-			if(oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法/日编任务			
+			if((oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1))||
+					(oldTask.getType()==1&&bean.getGroupId()==0)){
 				String adminCode = selectAdminCode(oldTask.getProgramId());
-				
+				int groupType=1;
+				if(oldTask.getType()==1){groupType=2;}
 				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
+					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, groupType);
 					if(userGroup!=null){
 						Integer userGroupID = userGroup.getGroupId();
 						bean.setGroupId(userGroupID);}
@@ -1229,7 +1239,7 @@ public class TaskService {
 			sb.append("                     END");
 			sb.append("                  END");
 			sb.append("               END ORDER_STATUS");
-			sb.append("          FROM (SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("          FROM (SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
@@ -1261,10 +1271,9 @@ public class TaskService {
 //			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
 //					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
 			
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
 			
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
@@ -1279,7 +1288,7 @@ public class TaskService {
 			sb.append("	             AND p.latest=1");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
-			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("	                          0             TASK_ID,");
 			sb.append("	                          NULL          NAME,");
 			sb.append("	                          4             STATUS,");
@@ -1303,7 +1312,7 @@ public class TaskService {
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
-			sb.append("	                          -1 job_status");
+			sb.append("	                          -1 tips2mark_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1313,7 +1322,7 @@ public class TaskService {
 			sb.append("	                   WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("	                     AND T.LATEST = 1)");
 			sb.append("	          UNION");
-			sb.append("           SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("           SELECT DISTINCT P.PROGRAM_ID,p.type programType,");
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
@@ -1341,13 +1350,17 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-			sb.append("                      nvl((select tpt.status"
-					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
-					+ "         where tpt.task_id = t.task_id"
-					+ "           and rownum = 1),-1) other2medium_Status,");
+//			sb.append("                      nvl((select tpt.status"
+//					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
+//					+ "         where tpt.task_id = t.task_id"
+//					+ "           and rownum = 1),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT J.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) JOB_STATUS");
+			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 "
+					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) tips2mark_STATUS");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
@@ -1392,34 +1405,10 @@ public class TaskService {
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
-						task.put("progress", rs.getInt("PROGRESS"));
+						task.put("progress", rs.getInt("PROGRESS"));	
 						
-						//统计无用，后续有了再加						
-//						int convertFlag=rs.getInt("CONVERT_FLAG");
-//						if(convertFlag==1){task.put("hasNoTaskData", 0);}
-//						else{						
-//							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-//							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-//								task.put("hasNoTaskData", 0);
-//							}else{
-//								task.put("hasNoTaskData", 1);
-//							}
-//						}
-						//hasNoTaskData 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
-						int other2mediumStatus=rs.getInt("other2medium_Status");
-						
-						task.put("hasNoTaskData", 0);
-
 						int type = rs.getInt("TYPE");
 						int status = rs.getInt("STATUS");
-						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
-						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
-							if(other2mediumStatus==TaskProgressOperation.taskCreate||other2mediumStatus==TaskProgressOperation.taskWorking){
-								task.put("hasNoTaskData", 2);
-							}else{
-								task.put("hasNoTaskData", 1);
-							}
-						}
 
 						JSONArray jobs = new JSONArray();
 						int tisp2markStatus = rs.getInt("TISP2MARK");
@@ -1436,7 +1425,24 @@ public class TaskService {
 								job.put("type", JobType.TiPS2MARK.value());
 								jobs.add(job);
 							}
+						}						
+						
+						//other2mediumJobStatus 1有无任务数据，需要转换；0没有无任务数据需要转换；2无任务转换进行中
+						int other2mediumStatus=rs.getInt("other2medium_Status");												
+						//采集，中线，开启状态的任务才可能有无任务转中，其他任务没有此按钮
+						if(status==1&&rs.getInt("BLOCK_ID")!=0&&type==0){
+							int other2mediumJobStatus=0;
+							if(tisp2markStatus!=-1){
+								other2mediumJobStatus=other2mediumStatus;
+							}else{
+								other2mediumJobStatus=0;
+							}
+							JSONObject job = new JSONObject();
+							job.put("status",other2mediumJobStatus);
+							job.put("type", JobType.NOTASK2MID.value());
+							jobs.add(job);
 						}
+						
 						task.put("jobs",jobs);
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -1454,10 +1460,11 @@ public class TaskService {
 							task.put("planEndDate",df.format(planEndDate));
 						}else{task.put("planEndDate", "");}
 						
-						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						task.put("roadPlanTotal", rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						//task.put("dataPlanStatus", rs.getInt("DATA_PLAN_STATUS"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
+						task.put("programType", rs.getInt("programType"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -1558,12 +1565,14 @@ public class TaskService {
 						
 						task.put("groupId",0);
 						task.put("groupName","");
+						task.put("programType",1);
 						
 						task.put("planStartDate", "");
 						task.put("planEndDate", "");
 						task.put("roadPlanTotal", 0);
 						task.put("poiPlanTotal", 0);
 						task.put("orderStatus", 5);
+						task.put("jobs", new JSONArray());
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -2179,6 +2188,29 @@ public class TaskService {
 	 */
 	public Task queryByTaskId(Connection conn,int taskId) throws Exception {
 		try{
+			Task task=queryNoGeoByTaskId(conn,taskId);
+			//获取任务grid和geo
+			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
+			task.setGridIds(gridIds);
+			
+			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
+			String wkt = GridUtils.grids2Wkt(jsonArray);
+			task.setGeometry(Geojson.wkt2Geojson(wkt));
+			
+			return task;	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * 返回task详细信息
+	 * 包含block,program,几何信息
+	 */
+	public Task queryNoGeoByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run=new QueryRunner();
 			String sql="SELECT T.TASK_ID,"
 					+ "       T.NAME,"
@@ -2192,6 +2224,10 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.POI_PLAN_IN,"
+					+ "       T.POI_PLAN_OUT,"
+					+ "       T.ROAD_PLAN_IN,"
+					+ "       T.ROAD_PLAN_OUT,"
 					+ "       T.DATA_PLAN_STATUS,"
 					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
@@ -2233,7 +2269,7 @@ public class TaskService {
 						task.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 						task.setLot(rs.getInt("LOT"));
 						task.setPoiPlanTotal(rs.getInt("POI_PLAN_TOTAL"));
-						task.setRoadPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
+						task.setRoadPlanTotal(rs.getFloat("ROAD_PLAN_TOTAL"));
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setBlockName(rs.getString("BLOCK_NAME"));
 						task.setWorkProperty(rs.getString("WORK_PROPERTY"));
@@ -2249,6 +2285,10 @@ public class TaskService {
 						task.setAdminName(rs.getString("ADMIN_NAME"));	
 						task.setInforStage(rs.getInt("INFOR_STAGE"));
 						task.setDataPlanStatus(rs.getInt("DATA_PLAN_STATUS"));
+						task.setPoiPlanIn(rs.getInt("POI_PLAN_IN"));
+						task.setPoiPlanOut(rs.getInt("POI_PLAN_OUT"));
+						task.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
+						task.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
@@ -2256,14 +2296,6 @@ public class TaskService {
 
 			};
 			Task task=run.query(conn, sql, rsHandler);
-			//获取任务grid和geo
-			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
-			task.setGridIds(gridIds);
-			
-			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
-			String wkt = GridUtils.grids2Wkt(jsonArray);
-			task.setGeometry(Geojson.wkt2Geojson(wkt));
-			
 			return task;	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -2309,8 +2341,14 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
-			map.put("poiPlanTotal", task.getPoiPlanTotal());
-			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			//modify by songhe
+			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
+			map.put("roadPlanIn", task.getRoadPlanIn());
+			map.put("roadPlanOut", task.getRoadPlanOut());
+			map.put("poiPlanIn", task.getPoiPlanIn());
+			map.put("poiPlanOut", task.getPoiPlanOut());
+//			map.put("poiPlanTotal", task.getPoiPlanTotal());
+//			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
@@ -2327,6 +2365,7 @@ public class TaskService {
 			map.put("method", task.getMethod());
 			map.put("adminName", task.getAdminName());
 			map.put("dataPlanStatus", task.getDataPlanStatus());
+			map.put("inforStage", task.getInforStage());
 			
 			return map;
 		}catch(Exception e){
@@ -3459,14 +3498,14 @@ public class TaskService {
 				}
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
-			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-			List<String> tipsPids=new ArrayList<String>(); 
- 				for(Object tipRowkey:tips){ 
- 					tipsPids.add(tipRowkey.toString()); 
- 				}
-				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				api.batchQuickTask(taskId, subtaskId,tipsPids); 
- 			}
+//			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+//			List<String> tipsPids=new ArrayList<String>(); 
+// 				for(Object tipRowkey:tips){ 
+// 					tipsPids.add(tipRowkey.toString()); 
+// 				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+//				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+// 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -3928,11 +3967,11 @@ public class TaskService {
 			String wkt = GeoTranslator.jts2Wkt(block.getOriginGeo());
 			result = insertPoiAndLinkToDataPlan(wkt, dailyConn, taskId);
 			
-			List<Integer> pois = queryImportantPid();
+			List<String> pois = queryImportantPid();
 			if(pois.size() > 0){
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i< pois.size(); i++){
-					sb.append(String.valueOf(pois.get(i))+",");
+					sb.append(pois.get(i)+",");
 				}
 				String poi = sb.deleteCharAt(sb.length()-1).toString(); 
 				log.info("重要POI一览表中的POI_ID为：" + poi);
@@ -3989,14 +4028,20 @@ public class TaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			StringBuffer sb = new StringBuffer();
-			sb.append("update DATA_PLAN d set d.is_important = 1 where d.pid in("+pois+") ");
-			
+			sb.append("update DATA_PLAN d"
+					+ "   set d.is_important = 1"
+					+ " where d.pid IN (select p.pid"
+					+ "                   from ix_poi p,"
+					+ "                        (select column_value from table(clob_to_table(?))) t"
+					+ "                  where p.poi_num = t.column_value)");
+			Clob clob=ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, pois);
 			sb.append("and d.task_id = "+taskId);
 			sb.append(" and d.is_important = 0");
 			
 			String sql = sb.toString();
 			log.info("根据重要一览表数据更新dataPlan表sql："+sql);
-			run.update(dailyConn, sql);
+			run.update(dailyConn, sql,clob);
 		}catch(Exception e){
 			log.error("根据重要POi数据更新dataPlan异常："+e.getMessage(),e);
 			throw e;
@@ -4008,10 +4053,10 @@ public class TaskService {
 	 * @throws SQLException 
 	 * 
 	 * */
-	public List<Integer> queryImportantPid() throws SQLException{
+	public List<String> queryImportantPid() throws SQLException{
 		//通过api调用
 		MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<Integer> pids = api.queryImportantPid();
+		List<String> pids = api.queryImportantPid();
 		return pids;
 	}
 	
@@ -4202,6 +4247,15 @@ public class TaskService {
 				dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 				String updateSql="update data_plan t set t.operate_date=sysdate where t.task_id="+ taskId;
 				run.execute(dailyConn, updateSql);
+				
+				//modify by songhe
+				//补充需求，根据dataPlan中的数据更新task表对应的统计值信息
+				int poiCount = calculateNeedWordPoiCount(dailyConn, taskId);
+				float linkLenght = calculateNeedWordLinkLength(dailyConn, taskId);
+				String updateCount = "update TASK t set t.poi_plan_total = "+poiCount+",t.road_plan_total = "+linkLenght+""
+						+ " where t.task_id = " + taskId;
+				log.info("根据dataPlan更新需要作业的数据sql:"+updateCount);
+				run.execute(con, updateCount);
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(con);
@@ -4211,6 +4265,67 @@ public class TaskService {
 				DbUtils.commitAndCloseQuietly(con);
 				DbUtils.commitAndCloseQuietly(dailyConn);
 			}
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中需要作业POI总数
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return int
+		 * 
+		 * */
+		public int calculateNeedWordPoiCount(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的poi总数
+				ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>(){
+					public Integer  handle(ResultSet rs) throws SQLException {
+						int result = 0;
+						if(rs.next()){
+							result = rs.getInt("count(1)");
+						}
+						return result;
+					}
+				};
+				String poiSql = "select count(1) from data_plan d where d.data_type = 1 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1";
+				log.info("计算taskId对应的data_plan中需要作业POI总数:"+poiSql);
+				return run.query(dailyConn, poiSql, rs);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中需要作业POI总数异常："+e.getMessage(), e);
+			}
+			return 0;
+		}
+		
+		/**
+		 * 计算taskId对应的data_plan中的需要作业的link长度总和
+		 * @param Connection dailyConn
+		 * @param int taskId
+		 * @return float
+		 * 
+		 * */
+		public float calculateNeedWordLinkLength(Connection dailyConn, int taskId){
+			try{
+				QueryRunner run = new QueryRunner();
+				//查询某个task下需要作业的Link长度
+				ResultSetHandler<Float> rsh = new ResultSetHandler<Float>(){
+					public Float handle(ResultSet rs) throws SQLException {
+						float result = 0f;
+						if(rs.next()){
+							result = rs.getFloat("result");
+						}
+						return result;
+					}
+				};
+				String linksql = "select sum(t.length) result from RD_LINK t where t.link_pid in ("
+						+ "select d.pid from data_plan d where d.data_type = 2 and d.task_id = "+taskId+" "
+						+ "and d.is_plan_selected = 1)";
+				log.info("计算taskId对应的data_plan中的需要作业的link长度总和:"+linksql);
+				return run.query(dailyConn, linksql, rsh);
+			}catch(Exception e){
+				log.error("计算taskId对应的data_plan中的需要作业的link长度总和异常："+e.getMessage(), e);
+			}
+			return 0f;
 		}
 		
 		/**
@@ -4738,7 +4853,136 @@ public class TaskService {
 				DbUtils.closeQuietly(conn);
 			}
 		}
-		
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT S.* FROM TASK T,SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND T.TASK_ID ="+taskId;
+			ResultSetHandler<List<Map<String,Object>>> rs = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> map = new HashMap<String,Object>();
+						int workKind = rs.getInt("WORK_KIND");
+						int subtaskId = rs.getInt("SUBTASK_ID");
+						int type = rs.getInt("TYPE");
+						int status = rs.getInt("STATUS");
+						map.put("subtaskId", subtaskId);
+						map.put("workKind", workKind);
+						map.put("type", type);
+						map.put("status", status);
+						result.add(map);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task的subtaskIds失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT T.TASK_ID,P.TYPE FROM TASK T,PROGRAM P WHERE T.PROGRAM_ID = P.PROGRAM_ID ";
+			ResultSetHandler<Map<Integer,Integer>> rs = new ResultSetHandler<Map<Integer,Integer>>() {
+				
+				@Override
+				public Map<Integer,Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Integer> result = new HashMap<Integer,Integer>();
+					while(rs.next()){
+						int taskId = rs.getInt("TASK_ID");
+						int programType = rs.getInt("TYPE");
+						result.put(taskId, programType);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			Map<Integer, Integer> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
-		
+	public List<Map<String, Object>> forOcms(String date)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT T.TASK_ID,"
+					+ "       T.NAME,"
+					+ "       U.GROUP_NAME,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       T.PLAN_START_DATE,"
+					+ "       T.PLAN_END_DATE,"
+					+ "       T.CREATE_DATE,"
+					+ "       P.TYPE"
+					+ "  FROM TASK T, USER_GROUP U, USER_INFO I, PROGRAM P"
+					+ " WHERE T.GROUP_ID = U.GROUP_ID"
+					+ "   AND U.LEADER_ID = I.USER_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID";
+			if(!StringUtils.isEmpty(date)){
+				selectSql=selectSql+ "   AND T.CREATE_DATE > TO_DATE('"+date+"', 'yyyy-mm-dd')";
+			}
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> task=new HashMap<>();
+						task.put("taskId", rs.getInt("TASK_ID"));
+						task.put("name", rs.getString("NAME"));
+						task.put("groupName", rs.getString("GROUP_NAME"));
+						task.put("userName", rs.getString("USER_REAL_NAME"));
+						task.put("planStartDate", DateUtils.format(rs.getTimestamp("PLAN_START_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
+						task.put("type", rs.getInt("type"));
+						result.add(task);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

@@ -25,6 +25,8 @@ public class ScPointAdminarea {
 	private Map<String, List<String>> contactMap= new HashMap<String, List<String>>();
 	
 	private Map<String, List<String>> dataMap= new HashMap<String, List<String>>();
+	
+	private Map<String, Map<String,String>> adminIdDataMap= new HashMap<String, Map<String,String>>();
 
 	private static class SingletonHolder {
 		private static final ScPointAdminarea INSTANCE = new ScPointAdminarea();
@@ -62,7 +64,7 @@ public class ScPointAdminarea {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);
@@ -151,7 +153,7 @@ public class ScPointAdminarea {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);
@@ -207,6 +209,51 @@ public class ScPointAdminarea {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 查询省市区名称
+	 * @return Map<String, Map<String,String>> :key,AdminId;value,对应的名称列表
+	 * @throws Exception
+	 */
+	public Map<String, Map<String,String>> scPointAdminareaByAdminId() throws Exception{
+		if (adminIdDataMap==null||adminIdDataMap.isEmpty()) {
+				synchronized (this) {
+					if (adminIdDataMap==null||adminIdDataMap.isEmpty()) {
+						try {
+							String sql = "SELECT distinct sp.adminareacode,sp.province,sp.province_short,sp.city,sp.city_short,sp.district,sp.district_short,sp.remark FROM SC_POINT_ADMINAREA sp";
+								
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									Map<String,String> map = new HashMap<String,String>();
+									String adminId = rs.getString("adminareacode");
+									String province=rs.getString("province");
+									String city=rs.getString("city");
+									String district=rs.getString("district");
+									map.put("adminId", adminId);
+									map.put("province", province);
+									map.put("city", city);
+									map.put("district", district);
+									adminIdDataMap.put(adminId, map);
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.closeQuietly(conn, pstmt, rs);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载SC_POINT_ADMINAREA失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return adminIdDataMap;
 	}
 	
 }

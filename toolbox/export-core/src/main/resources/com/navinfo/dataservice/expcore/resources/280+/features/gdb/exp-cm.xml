@@ -22,7 +22,7 @@
 			<!--提取跨图幅的点和面，及关联的线和面-->
 			<!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
 			<!--提取跨图幅的点（共线/共面的点）-->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+			<sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[             
 			  INSERT /*+ append */
 			  INTO TEMP_CMG_BUILDNODE
 			    (PID)
@@ -51,7 +51,7 @@
                     
            <step value="9">
              <!-- 提取跨图幅的node的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
 						 INTO TEMP_CMG_BUILDFACE
 						  (PID)
@@ -70,7 +70,7 @@
 
                          ]]></sql>                     
 			<!-- 提取跨图幅的link的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CMG_BUILDFACE
                            (PID)
@@ -100,7 +100,7 @@
            
            <step value="13">
             <!--根据跨图幅的线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CMG_BUILDLINK
                            (PID)
@@ -110,7 +110,7 @@
                          ]]></sql>
 
             <!--根据跨图幅的点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CMG_BUILDLINK
                       (PID)
@@ -418,7 +418,7 @@
         <!--提取跨图幅的点和面，及关联的线和面-->
       <!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
       <!--提取跨图幅的点（共线/共面的点）-->
-      <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+      <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[             
         INSERT /*+ append */
         INTO TEMP_CM_BUILDNODE
           (PID)
@@ -448,7 +448,7 @@
             <step value="9">
             
             	<!-- 提取跨图幅的node的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
              INTO TEMP_CM_BUILDFACE
               (PID)
@@ -468,7 +468,7 @@
                          ]]></sql>
                
                <!-- 提取跨图幅的link的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CM_BUILDFACE
                            (PID)
@@ -498,7 +498,7 @@
             
              <step value="13">  
             <!--根据跨图幅的线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity" ><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CM_BUILDLINK
                            (PID)
@@ -508,7 +508,7 @@
                          ]]></sql>
 
             <!--根据跨图幅的点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity" sqlExtendType="dataNotIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CM_BUILDLINK
                       (PID)

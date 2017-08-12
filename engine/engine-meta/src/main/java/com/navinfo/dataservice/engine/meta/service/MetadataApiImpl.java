@@ -161,6 +161,15 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointAdminarea.getInstance().scPointAdminareaDataMap();
 	}
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, Map<String,String>> :key,AdminId;value,对应的名称列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, Map<String,String>> scPointAdminareaByAdminId() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaByAdminId();
+	}
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception
@@ -564,8 +573,10 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	@Override
 	public String convertEng(String word, String admin) {
-        EnglishConvert convert = new EnglishConvert(admin);
-		return convert.convert(word);
+        EnglishConvert convert = new EnglishConvert();
+        convert.setAdminCode(admin);
+
+        return convert.convert(word);
 	}
 	
 	@Override
@@ -992,7 +1003,7 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	//获取重要POI的PID
 	@Override
-	public List<Integer> queryImportantPid() throws SQLException {
+	public List<String> queryImportantPid() throws SQLException {
 		return ScPointFieldAttentionPoi.getInstance().queryImportantPid();
 	}
 	
@@ -1007,5 +1018,34 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<Integer> queryReliabilityPid(int minNumber, int maxNumber) throws SQLException {
 		return ScQueryReliabilityPid.getInstance().ScQueryReliabilityPid(minNumber, maxNumber);
 	}
+	@Override
+	public Map<String,Integer> queryEditMethTipsCode() throws SQLException {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			String sql = " select code,D_EDIT_METH from sc_tips_code t ";
+			
+			ResultSetHandler<Map<String,Integer>> rsHandler = new ResultSetHandler<Map<String,Integer>> (){
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put(rs.getString(1), rs.getInt(2));
+					}
+					return map;
+				}	
+	    	};				
+
+	    	return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 
 }

@@ -9,7 +9,7 @@ import oracle.spatial.geometry.JGeometry;
  * 
  * */
 public class AddChainDataEntity {
-	private int resultId ;
+	private Integer resultId ;
 	private int workflowStatus ;
 	private int dealStatus ;
 	private int userId ;
@@ -61,11 +61,11 @@ public class AddChainDataEntity {
 	private double poiXGuide ;
 	private double poiYGuide ;
 	private Geometry geometry ;
-	private int regionId ;
-	public int getResultId() {
+	private Integer regionId ;
+	public Integer getResultId() {
 		return resultId;
 	}
-	public void setResultId(int resultId) {
+	public void setResultId(Integer resultId) {
 		this.resultId = resultId;
 	}
 	public int getWorkflowStatus() {
@@ -374,10 +374,10 @@ public class AddChainDataEntity {
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
 	}
-	public int getRegionId() {
+	public Integer getRegionId() {
 		return regionId;
 	}
-	public void setRegionId(int regionId) {
+	public void setRegionId(Integer regionId) {
 		this.regionId = regionId;
 	}
 	

@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,7 +22,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
  * @ClassName: GLM28018
@@ -84,16 +85,22 @@ public class GLM28018 extends baseRule{
 		String sql = sb.toString();
 		log.info("RdInter前检查GLM28009:" + sql);
 		
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			
-		ResultSet resultSet2 = pstmt.executeQuery();
-		List<Long> rdRoadPidList=new ArrayList<Long>();
-
-		while (resultSet2.next()){
-			rdRoadPidList.add(resultSet2.getLong("PID"));
-		} 
-		resultSet2.close();
-		pstmt.close();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet2 = null;
+		List<Long> rdRoadPidList;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet2 = pstmt.executeQuery();
+			rdRoadPidList = new ArrayList<Long>();
+			while (resultSet2.next()){
+				rdRoadPidList.add(resultSet2.getLong("PID"));
+			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet2);
+			DbUtils.closeQuietly(pstmt);
+		}
 		
 		for(long pid:rdRoadPidList){
 			if(!isClosedLoop(pid)){
@@ -258,17 +265,24 @@ public class GLM28018 extends baseRule{
 
 		String sql2 = sb2.toString();
 		log.info("查询所有RD_INTER_NODENode信息:" + sql2);
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql2);	
-	
 		
-		ResultSet resultSet2 = pstmt.executeQuery();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet2 = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql2);	
+			resultSet2 = pstmt.executeQuery();
 
-		while (resultSet2.next()){
-			rdInterNodeMap.put(resultSet2.getInt("NODE_PID"), resultSet2.getInt("PID"));
-		} 
-		resultSet2.close();
-		pstmt.close();
+			while (resultSet2.next()){
+				rdInterNodeMap.put(resultSet2.getInt("NODE_PID"), resultSet2.getInt("PID"));
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet2);
+			DbUtils.closeQuietly(pstmt);
+		}
 		return rdInterNodeMap;
+
 	}
 
 	/**
@@ -294,20 +308,28 @@ public class GLM28018 extends baseRule{
 
 		String sql = sb.toString();
 		log.info("查询所有link及Node信息:" + sql);
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);		
 		
-		ResultSet resultSet = pstmt.executeQuery();
-		while (resultSet.next()){
-			RdLink rdLink = new RdLink();
-			rdLink.setPid(resultSet.getInt("LINK_PID"));
-			rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
-			rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
-			rdLinkList.add(rdLink);
-			nodePidSet.add(resultSet.getInt("E_NODE_PID"));
-			nodePidSet.add(resultSet.getInt("S_NODE_PID"));
-		} 
-		resultSet.close();
-		pstmt.close();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);		
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()){
+				RdLink rdLink = new RdLink();
+				rdLink.setPid(resultSet.getInt("LINK_PID"));
+				rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
+				rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
+				rdLinkList.add(rdLink);
+				nodePidSet.add(resultSet.getInt("E_NODE_PID"));
+				nodePidSet.add(resultSet.getInt("S_NODE_PID"));
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
 	}
 	
 	

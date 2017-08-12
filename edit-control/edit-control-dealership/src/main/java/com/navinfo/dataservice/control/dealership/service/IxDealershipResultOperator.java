@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -565,7 +566,7 @@ public class IxDealershipResultOperator {
 	 * @param pois
 	 * @return
 	 */
-	public static JSONArray componentPoiData(List<IxPoi> pois) throws Exception {
+	public static JSONArray componentPoiData(List<IxPoi> pois, Connection connPoi) throws Exception {
 		JSONArray poiJson = new JSONArray();
 
 		for (IxPoi poi : pois) {
@@ -580,6 +581,15 @@ public class IxDealershipResultOperator {
 			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(), 0.00001, 5));
 			poiObj.put("xGuide", poi.getxGuide());
 			poiObj.put("yGuide", poi.getyGuide());
+			poiObj.put("open24h", poi.getOpen24h());
+			poiObj.put("regionId", poi.getRegionId());
+			poiObj.put("meshId", poi.getMeshId());
+			
+			if(connPoi != null){
+				LogReader logRead = new LogReader(connPoi);
+				int state = logRead.getObjectState(poi.getPid(), "IX_POI");
+				poiObj.put("status", state);
+			}
 
 			// 名称
 			JSONArray names = new JSONArray();

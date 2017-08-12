@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.meta.translates;
 
 
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.navicommons.database.sql.StringUtil;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -20,12 +19,12 @@ public class ConvertUtil {
 
 
     public static String convertNoWord(String sourceText){
-        String regex = "[Ｎｎ]+[ｏＯ]+(/。)+";
+        String regex = "[Nn]+[Oo]+[.]+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(sourceText);
+
         while (matcher.find()) {
-            sourceText = sourceText.replace(sourceText.substring(matcher.start(), matcher.end()), "Ｎｏ．");
-            matcher = pattern.matcher(sourceText);
+            sourceText = sourceText.replace(sourceText.substring(matcher.start(), matcher.end()), "No.");
         }
 
         return sourceText;
@@ -51,12 +50,13 @@ public class ConvertUtil {
         sourceText = sourceText.replaceAll(" \\( ", " (");
         sourceText = sourceText.replaceAll("\\( ", "(");
         sourceText = sourceText.replaceAll(" \\. ", ".");
+        sourceText = sourceText.replaceAll(" \\' ", ".");
         sourceText = sourceText.replaceAll(" & ", "&");
         sourceText = sourceText.replaceAll("& ", "&");
         sourceText = sourceText.replaceAll(" &", "&");
         sourceText = sourceText.replaceAll(" - ", "-");
         sourceText = sourceText.replaceAll("- ", "-");
-        sourceText = sourceText.replaceAll(" + ", "+");
+        sourceText = sourceText.replaceAll(" \\+ ", "+");
         sourceText = sourceText.replaceAll("\\+ ", "+");
         sourceText = sourceText.replaceAll(" / ", "/");
         sourceText = sourceText.replaceAll("/ ", "/");
@@ -65,7 +65,7 @@ public class ConvertUtil {
 
     public static String firstCapital(String sourceText){
         boolean flag = false;
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (Character c : sourceText.toCharArray()) {
             char wordValue = c;
             // 全角
@@ -138,7 +138,7 @@ public class ConvertUtil {
     }
 
     private static String convFullHashWidth(String sourceText, Integer convertType) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         String wordValue = "";
         if (TranslateConstant.HALF_TO_FULL == convertType) {
             for (Character c : sourceText.toCharArray()) {
@@ -192,15 +192,14 @@ public class ConvertUtil {
     }
 
     public static boolean isLetter(char c) {
-        if (isCapitalLetter(c) || isLittleLetter(c))
+        if (isCapitalLetter(c) || isLittleLetter(c)) {
             return true;
+        }
         return false;
     }
 
     public static boolean isNotLetter(char c) {
-        if (isCapitalLetter(c) || isLittleLetter(c))
-            return false;
-        return true;
+        return !isLetter(c);
     }
 
     public static boolean isCapitalLetter(char c) {
@@ -215,7 +214,22 @@ public class ConvertUtil {
         return false;
     }
 
-    public static void main(String[] args) {
-        System.out.println(isChinese('℃'));
+    public static String joinSpace(String words) {
+        return org.apache.commons.lang.StringUtils.join(words.split("(?!^)"), " ");
+    }
+
+    public static boolean contains(String str, String search) {
+        if (!org.apache.commons.lang.StringUtils.contains(search, " ")) {
+            search = joinSpace(search);
+        }
+        return org.apache.commons.lang.StringUtils.contains(str, search);
+    }
+
+    public static boolean notContains(String str, String search) {
+        return !contains(str, search);
+    }
+
+    public static boolean isChineseNum(Character character) {
+        return TranslateConstant.CHINESE_NUMBER.keySet().contains(String.valueOf(character));
     }
 }

@@ -95,11 +95,14 @@ public class RdObjectSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder(
-					"select b.name from( select c.NAME_GROUPID from rd_object_link a,rd_link_form b,rd_link_name c where a.pid = :1 and a.LINK_PID = b.LINK_PID and b.LINK_PID=c.LINK_PID and ((b.FORM_OF_WAY = 15 and c.NAME_TYPE = 1) or c.NAME_TYPE = 2) and a.U_RECORD !=2 group by c.NAME_GROUPID union all select /*+ leading(A,B) use_hash(A,B)*/ d.NAME_GROUPID from rd_object_inter a,rd_inter_link b,rd_link_form c,rd_link_name d where a.pid = 7514 and a.INTER_PID = b.PID and b.LINK_PID=c.LINK_PID and c.LINK_PID = d.LINK_PID and ((c.FORM_OF_WAY = 15 and d.NAME_TYPE = 1) or d.NAME_TYPE = 2) and a.U_RECORD !=2 group by d.NAME_GROUPID union all select /*+ leading(A,B) use_hash(A,B)*/ d.NAME_GROUPID from rd_object_road a,rd_road_link b,rd_link_form c,rd_link_name d where a.pid = 7514 and a.road_PID = b.PID and b.LINK_PID=c.LINK_PID and c.LINK_PID = d.LINK_PID and ((c.FORM_OF_WAY = 15 and d.NAME_TYPE = 1) or d.NAME_TYPE = 2) and a.U_RECORD !=2 group by d.NAME_GROUPID)tmp,rd_name b where tmp.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' group by tmp.NAME_GROUPID,b.name");
-			pstmt = getConn().prepareStatement(sb.toString());
+
+			String strSql="SELECT B.NAME FROM (SELECT C.NAME_GROUPID FROM RD_OBJECT_LINK A, RD_LINK_FORM B, RD_LINK_NAME C WHERE A.PID = :1 AND A.LINK_PID = B.LINK_PID AND B.LINK_PID = C.LINK_PID AND ((B.FORM_OF_WAY = 15 AND C.NAME_TYPE = 1) OR C.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY C.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_INTER A, RD_INTER_LINK   B, RD_LINK_FORM    C, RD_LINK_NAME    D WHERE A.PID = :2 AND A.INTER_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY D.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_ROAD A, RD_ROAD_LINK   B, RD_LINK_FORM   C, RD_LINK_NAME   D WHERE A.PID = :3 AND A.ROAD_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY D.NAME_GROUPID) TMP, RD_NAME B WHERE TMP.NAME_GROUPID = B.NAME_GROUPID(+) AND B.LANG_CODE(+) = 'CHI' GROUP BY TMP.NAME_GROUPID, B.NAME ";
+
+			pstmt = getConn().prepareStatement(strSql);
 
 			pstmt.setInt(1, pid);
+			pstmt.setInt(2, pid);
+			pstmt.setInt(3, pid);
 
 			resultSet = pstmt.executeQuery();
 

@@ -1,12 +1,18 @@
 package com.navinfo.dataservice.web.fcc.controller;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.*;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
@@ -14,6 +20,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
@@ -28,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.*;
 
 @Controller
@@ -237,7 +245,10 @@ public class TipsController extends BaseController {
             if(json.containsKey("subtaskId")){
                 subtaskId=json.getInt("subtaskId");
             }
-
+            
+            AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+            
             UploadService upload = UploadService.getInstance();
 
             String filePath = upload.unzipByJobId(jobId);
@@ -249,7 +260,7 @@ public class TipsController extends BaseController {
             Map<String, Photo> photoMap=new HashMap<String, Photo>();
 
             Map<String, Audio> audioMap=new HashMap<String, Audio>();
-
+            
             tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap);
 
             //CollectorImport.importPhoto(map, filePath + "/photo");
@@ -273,11 +284,16 @@ public class TipsController extends BaseController {
             logger.info("开始上传tips完成，jobId:"+jobId+"\tresult:"+result);
 
 
+            //记录上传日志。不抛出异常
+            insertStatisticsInfoNoException(jobId, subtaskId, userId,
+                    tipsUploader);
+
             //20170712 Tips上传增加外业质检问题记录上传
             logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
             tipsUploader.runQuality(filePath + "/"+ "rd_qcRecord.txt");
             result.put("qcTotal", tipsUploader.getQcTotal());
             result.put("qcReasons", tipsUploader.getQcReasons());
+            result.put("qcErrMsg", tipsUploader.getQcErrMsg());
 
             return new ModelAndView("jsonView", success(result));
 
@@ -289,6 +305,36 @@ public class TipsController extends BaseController {
         }
 
     }
+
+	/**
+	 * @Description:记录上传日志
+	 * @param jobId
+	 * @param subtaskId
+	 * @param userId
+	 * @param tipsUploader
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-9 上午11:09:43
+	 */
+	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
+			long userId, TipsUpload tipsUploader)  {
+		try{
+			SysLogStats log = new SysLogStats();
+			log.setLogType(SysLogConstant.TIPS_UPLOAD_TYPE);
+			log.setLogDesc(SysLogConstant.TIPS_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setFailureTotal(tipsUploader.getFailed());
+			log.setSuccessTotal(tipsUploader.getTotal()-tipsUploader.getFailed());  
+			log.setTotal(tipsUploader.getTotal());
+			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setEndTime(DateUtils.getSysDateFormat());
+			log.setErrorMsg(tipsUploader.getReasons().toString());
+			log.setUserId(String.valueOf(userId));
+			SysLogOperator.getInstance().insertSysLog(log);
+		
+		}catch (Exception e) {
+			logger.error("记录日志出错："+e.getMessage(), e);
+		}
+	}
 
     @RequestMapping(value = "/tip/export")
     public ModelAndView exportTips(HttpServletRequest request )
@@ -549,11 +595,6 @@ public class TipsController extends BaseController {
 
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-            JSONArray grids = jsonReq.getJSONArray("grids");
-            if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
-
             String type = jsonReq.getString("type");
             if (StringUtils.isEmpty(type)) {
                 throw new IllegalArgumentException("参数错误:type不能为空。");
@@ -593,13 +634,13 @@ public class TipsController extends BaseController {
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-            JSONArray grids = jsonReq.getJSONArray("grids");
+//            JSONArray grids = jsonReq.getJSONArray("grids");
 
             int subtaskId = jsonReq.getInt("subtaskId");
 
-            if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
+//            if (grids==null||grids.size()==0) {
+//                throw new IllegalArgumentException("参数错误:grids不能为空。");
+//            }
 
             if(!jsonReq.containsKey("workStatus")) {
                 throw new IllegalArgumentException("参数错误:workStatus不能为空。");
@@ -623,43 +664,7 @@ public class TipsController extends BaseController {
         }
     }
 
-// //     20170523 和于桐万冲确认该接口取消
-//	@RequestMapping(value = "/tip/getByWkt")
-//	public void getTipsByWkt(HttpServletRequest request,
-//							  HttpServletResponse response) throws ServletException, IOException {
-//
-//		String parameter = request.getParameter("parameter");
-//
-//		try {
-//			JSONObject jsonReq = JSONObject.fromObject(parameter);
-//
-//			String wkt = jsonReq.getString("wkt");
-//
-//			String flag = jsonReq.getString("flag");
-//
-//            if (StringUtils.isEmpty(wkt)) {
-//                throw new IllegalArgumentException("参数错误:wkt不能为空。");
-//            }
-//
-//            if (StringUtils.isNotEmpty(flag)) {
-//                throw new IllegalArgumentException("参数错误:flag不能为空。");
-//            }
-//
-//			TipsSelector selector = new TipsSelector();
-//
-//			JSONArray array = selector.searchDataByWkt(parameter, true);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleRegularResult(array));
-//
-//		} catch (Exception e) {
-//
-//			logger.error(e.getMessage(), e);
-//
-//			response.getWriter().println(
-//					ResponseUtils.assembleFailResult(e.getMessage()));
-//		}
-//	}
+
 
     @RequestMapping(value = "/tip/checkInfoTask")
     public void checkInfoTask(HttpServletRequest request,
@@ -694,7 +699,7 @@ public class TipsController extends BaseController {
             List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
             Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
             TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
-            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);//TODO:需要和李娅、俊芳确认是否使用了solr
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", total);
 
@@ -887,7 +892,11 @@ public class TipsController extends BaseController {
                                 HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
         logger.info("noTaskToMidTask:" + parameter);
+
+        Connection oracleConn = null;
         try {
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             if(!jsonReq.containsKey("taskId")) {
@@ -907,14 +916,100 @@ public class TipsController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", totalNum);
 
-            response.getWriter().println(
-                    ResponseUtils.assembleRegularResult(jsonObject));
+            response.getWriter().println(ResponseUtils.assembleRegularResult(jsonObject));
             logger.info("noTaskToMidTask:" + totalNum);
         } catch (Exception e) {
+            DBUtils.rollBack(oracleConn);
             logger.error(e.getMessage(), e);
             response.getWriter().println(
                     ResponseUtils.assembleFailResult(e.getMessage()));
+        } finally {
+            DBUtils.closeConnection(oracleConn);
         }
     }
 
+    @RequestMapping(value="/tip/exportGps")
+    public ModelAndView getGpsAndDeleteLinkTips(HttpServletRequest request) throws ServletException, IOException {
+    	  String parameter = request.getParameter("parameter");
+
+          try {
+
+              if (StringUtils.isEmpty(parameter)) {
+                  throw new IllegalArgumentException("parameter参数不能为空。");
+              }
+
+              JSONObject jsonReq = JSONObject.fromObject(parameter);
+              
+              int subTaskId = jsonReq.getInt("subtaskId");
+              
+              String beginTime = jsonReq.getString("beginTime");
+              
+              String endTime = jsonReq.getString("endTime");
+              
+              if(beginTime == null || beginTime.isEmpty() || endTime == null || endTime.isEmpty()){
+            	  throw new IllegalArgumentException("参数错误:起止时间不能为空。");
+              }
+              
+              int pageSize = jsonReq.getInt("pageSize");
+              
+              int curPage = jsonReq.getInt("pageNum");
+              
+              if(pageSize == 0 || curPage == 0){
+            	  throw new IllegalArgumentException("参数错误:分页数据不能为0");
+              }
+
+              TipsSelector selector = new TipsSelector();
+
+			JSONObject array = selector.searchGpsAndDeleteLinkTips(subTaskId, beginTime, endTime, pageSize, curPage,
+					jsonReq);
+              
+              return new ModelAndView("jsonView", success(array));
+
+          } catch (Exception e) {
+
+              logger.error(e.getMessage(), e);
+
+              return new ModelAndView("jsonView", fail(e.getMessage()));
+          }
+    }
+    
+    @RequestMapping(value = "/tip/poiRelateTips")
+    public ModelAndView getPoiRelateTips(HttpServletRequest request) throws ServletException, IOException{
+    	 String parameter = request.getParameter("parameter");
+
+         try {
+
+             if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+             }
+
+             JSONObject jsonReq = JSONObject.fromObject(parameter);
+             
+             int subTaskId = jsonReq.getInt("subtaskId");
+             
+             String id = jsonReq.getString("id");
+             
+             int buffer = jsonReq.getInt("buffer");
+             
+             int dbId = jsonReq.getInt("dbId");
+             
+             int programType = jsonReq.getInt("programType");
+             
+			if (id.isEmpty() || buffer == 0 || subTaskId == 0 || programType == 0) {
+				throw new IllegalArgumentException("参数错误");
+			}
+
+             TipsSelector selector = new TipsSelector();
+
+			JSONArray array = selector.searchPoiRelateTips(id, subTaskId, buffer, dbId, programType);
+             
+             return new ModelAndView("jsonView", success(array));
+
+         } catch (Exception e) {
+
+             logger.error(e.getMessage(), e);
+
+             return new ModelAndView("jsonView", fail(e.getMessage()));
+         }
+    }
 }

@@ -83,9 +83,9 @@ public class WordKind {
 			log.error(e.getMessage(), e);;
 			throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

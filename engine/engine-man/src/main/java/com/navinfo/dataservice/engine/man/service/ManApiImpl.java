@@ -28,13 +28,16 @@ import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.CpRegionProvinceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskProgressOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -434,4 +437,95 @@ public class ManApiImpl implements ManApi {
 		// TODO Auto-generated method stub
 		return SubtaskService.getInstance().getSubtaskInfoByQuality(qualitySubtaskId);
 	}
+
+	/**
+	 * 根据子任务Id查询同项目下的区域粗编子任务列表
+	 * @param int subTaskId
+	 * @throws Exception
+	 * 
+	 * */
+	@Override
+	public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception {
+		return ProgramService.getInstance().queryRudeSubTaskBySubTask(subTaskId);
+	}
+	
+	/**
+	 * 查询MAN_TIMELINE
+	 * objName:program,task,subtask,infor
+	 * @return	Map<Long,Map<String, Object>> key:objId
+	 * @throws ServiceException 
+	 */
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
+		return TimelineService.queryManTimelineByObjName(objName);
+	}
+	
+	/**
+	 * timestamp:yyyymmdd
+	 * 获取按照人天任务进行统计的管理列表
+	 * @return Map<String, Object>:	map.put("subtaskIds", subtaskSet);
+									map.put("userId", userId);
+									map.put("taskId", taskId);
+									map.put("taskName", rs.getString("TASK_NAME"));
+									map.put("cityName", rs.getString("CITY_NAME"));
+									map.put("leaderName", rs.getString("LEADER_NAME"));
+									map.put("userName", rs.getString("USER_NAME"));	
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, Object>> staticsPersionJob(String timestamp) throws Exception{
+		return StaticsOperation.staticsPersionJob(timestamp);
+	}
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Set<Integer>  grids
+	 * @throws ExceptionSELECT TASK_ID FROM TASK
+	 */
+	public Map<Integer, Integer> queryGridIdsByTaskId(int taskId) throws Exception{
+		return TaskService.getInstance().getGridMapByTaskId(taskId);
+	}
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception{
+		return TaskService.getInstance().querySubtaskByTaskId(taskId);
+	}
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception{
+		return TaskService.getInstance().queryProgramTypes();
+	}
+
+    /**
+     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+     * OBJ_TYPE:program,task,subtask,infor
+     * @return	Map<Long,Map<String, Object>> key:objId
+     * @throws ServiceException
+     */
+    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+                                                                     String objType, int operateType) throws Exception{
+        return TimelineService.queryTimelineByCondition(objId, objType, operateType);
+    }
+
+    /**
+     * 保存timeline
+     * @param objID
+     * @param objName
+     * @param objType
+     * @param operateDate
+     * @throws Exception
+     */
+    public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
+        TimelineService.saveTimeline(objID, objName, objType, operateDate);
+    }
 }

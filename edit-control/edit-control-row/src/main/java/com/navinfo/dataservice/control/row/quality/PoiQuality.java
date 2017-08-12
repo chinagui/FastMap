@@ -125,6 +125,7 @@ public class PoiQuality {
 				
 				logger.info("初始化poi_count_table表完成----");
 			}catch (Exception e) {
+				DbUtils.rollbackAndCloseQuietly(conn);
 				logger.error(e.getMessage(), e);
 				throw e;
 			} finally {
@@ -152,9 +153,11 @@ public class PoiQuality {
 
             pstmt.executeUpdate();
         } catch (Exception e) {
+        	DbUtils.rollbackAndCloseQuietly(conn);
         	logger.error(e.getMessage(), e);
 			throw e;
 		} finally{
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
@@ -167,12 +170,12 @@ public class PoiQuality {
 	 */
 	private List<Map<String, Object>> getGeometryAndSubtaskId() throws Exception {
 		Connection conn = null;
-		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
+			
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT ST.SUBTASK_ID,R.DAILY_DB_ID,sq.geometry,sq.quality_id FROM SUBTASK ST,TASK T,REGION R,subtask_quality sq ");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID AND T.REGION_ID = R.REGION_ID AND sq.subtask_id = st.subtask_id ");
@@ -202,6 +205,8 @@ public class PoiQuality {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
@@ -242,9 +247,11 @@ public class PoiQuality {
 
             pstmt.executeUpdate();
         } catch (Exception e) {
+        	DbUtils.rollbackAndCloseQuietly(conn);
         	logger.error(e.getMessage(), e);
 			throw e;
 		} finally {
+			DbUtils.closeQuietly(pstmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
@@ -1119,12 +1126,12 @@ public class PoiQuality {
 
 
 	public int existRecordInPoiCountTable(String poiNum,Connection conn) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
 
 			conn = DBConnector.getInstance().getCheckConnection();
 			
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 			String sql = "SELECT count(1) from poi_count_table WHERE FID = '" +poiNum+"'";
 			
 			pstmt = conn.prepareStatement(sql);
@@ -1137,6 +1144,9 @@ public class PoiQuality {
 		}catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
 			
 		
@@ -1150,10 +1160,10 @@ public class PoiQuality {
 	 * @throws Exception 
 	 */
 	public List<Integer> getPidListBySubTaskId(long subtaskId,Connection conn) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
 			
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT PID FROM POI_EDIT_STATUS E WHERE E.STATUS = 2 AND NOT EXISTS (");
 			sb.append( " SELECT 1 FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
@@ -1175,6 +1185,9 @@ public class PoiQuality {
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	
@@ -1187,11 +1200,10 @@ public class PoiQuality {
 	 * @throws Exception
 	 */
 	public Map<String, String> getCountTableInfoByFid(String poiNum,Connection conn) throws Exception{
-		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
 			
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 			String sql = "SELECT EXTRA,NAME_DATA_UNMODIFIED,POSITION_DATA_UNMODIFIED,CATEGORY_DATA_UNMODIFIED, "
 					+ "ADDRESS_DATA_UNMODIFIED,PHOTE_DATA_UNMODIFIED,FATHER_SON_DATA_UNMODIFIED,DEEP_DATA_UNMODIFIED, "
 					+ "LABEL_DATA_UNMODIFIED,RESTURANT_DATA_UNMODIFIED,LINK_DATA_UNMODIFIED,LEVEL_DATA_UNMODIFIED "
@@ -1222,6 +1234,9 @@ public class PoiQuality {
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	
@@ -1233,10 +1248,10 @@ public class PoiQuality {
 	 * @throws Exception 
 	 */
 	public boolean hasProblemByFid(String poiNum,Connection conn) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
 		try {
 
-			PreparedStatement pstmt = null;
-			ResultSet resultSet = null;
 			String sql = "SELECT count(1) FROM 	POI_PROBLEM_SUMMARY WHERE POI_NUM = '" +poiNum+"'";
 			
 			pstmt = conn.prepareStatement(sql);
@@ -1251,6 +1266,9 @@ public class PoiQuality {
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			throw e;
+		}finally{
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 		
 	}

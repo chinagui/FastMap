@@ -8,9 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcPointName;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
 /** 
 * @ClassName: TmcLineNameSelector 
@@ -65,8 +64,8 @@ public class TmcPointNameSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return tmcLineNames;

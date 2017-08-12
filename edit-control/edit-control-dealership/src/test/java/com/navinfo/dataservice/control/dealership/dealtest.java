@@ -81,12 +81,12 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	}
 	
 		@Test
-	public void testGetResultIdListByChain() throws Exception{
+	public void testCommitDealership() throws Exception{
 		DataEditService de = DataEditService.getInstance();
 		try {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getDealershipConnection();
-			de.commitDealership("900D", conn, 130);
+			de.commitDealership("415D", conn, 59);
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -98,7 +98,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			Connection conn = null;
 			conn = DBConnector.getInstance().getDealershipConnection();
 			//JSONArray data = de.loadWorkListService("4007", conn, 1674, 1);
-			JSONObject data=de.diffDetailService(33001, conn);
+			JSONObject data=de.diffDetailService(1946, conn);
 		}
 		
 		@Test
@@ -240,14 +240,14 @@ public class dealtest extends ClassPathXmlAppContextInit{
  		DataEditService de = DataEditService.getInstance();
  		try {
  			JSONObject jsonObj = new JSONObject();
- 			jsonObj.put("poiNum", "48903364");
- 			jsonObj.put("name", "腾迪");
- 			jsonObj.put("address", "紫竹院");
- 			jsonObj.put("telephone", "6871");
- 			jsonObj.put("location", "116.31946,39.93757");//116.31946,39.93757
+ 			jsonObj.put("poiNum", "");//48903364
+ 			jsonObj.put("name", "北京中进众旺汽车销售服务有限公司");
+ 			jsonObj.put("address", "");
+ 			jsonObj.put("telephone", "");
+ 			jsonObj.put("location", "");//116.31946,39.93757
  			jsonObj.put("proCode", "11");
- 			jsonObj.put("resultId", 33006);
- 			jsonObj.put("dbId", 13);
+ 			jsonObj.put("resultId", 1924);
+ 			jsonObj.put("dbId", 18);
  
  			JSONArray data = de.queryByCon(jsonObj);
  			

@@ -1,14 +1,19 @@
 package com.navinfo.dataservice.dao.photo;
 
+import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
@@ -21,6 +26,7 @@ import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -28,8 +34,17 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.ByteUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class HBaseController {
 
@@ -172,6 +187,39 @@ public class HBaseController {
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
+		Table htab =null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+					.fromObject(photo).toString().getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+			
+			htab.put(put);
+		}finally{
+			if (htab!=null){
+				htab.close();
+			}
+		}
+		
+		
+	}
+	public void putPhoto(String rowkey, InputStream in,Photo photo) throws Exception{
+		
+		int count = in.available();
+		
+		byte[] bytes = new byte[(int) count];
+
+		in.read(bytes);
+		
+		byte[] sbytes = FileUtils.makeSmallImage(bytes);
+		
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
 		try{
 			Put put = new Put(rowkey.getBytes());
@@ -198,6 +246,78 @@ public class HBaseController {
 		putPhoto(rowkey, in);
 		return rowkey;
 	}
+	//设置aContent
+	public String putPhoto(InputStream in,int aContent) throws Exception{
+		String rowkey = UuidUtils.genUuid();
+		Photo photo = new Photo();
+		
+		photo.setRowkey(rowkey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		photo.setA_content(aContent);
+		putPhoto(rowkey, in,photo);
+		return rowkey;
+	}
+	public static void main(String[] args) throws Exception {
+		HBaseController hbaseController = new HBaseController();
+		hbaseController.putPhoto(null,13,"1664",862);
+	}
+	//设置photo属性
+	public String putPhoto(InputStream in,int dbId,String userId, int pid) throws Exception{
+		String rowkey = UuidUtils.genUuid();
+		Photo photo = new Photo();
+		photo.setRowkey(rowkey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		
+		//2017.08.10添加到新属性
+		int a_uploadUser = 0;
+		if(StringUtils.isNotEmpty(userId)){
+			a_uploadUser = Integer.parseInt(userId);
+		}
+		String a_uploadDate = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
+		//坐标
+		double a_latitude = 0;
+		double a_longitude = 0;
+		java.sql.Connection conn=null;
+		try {
+			conn=DBConnector.getInstance().getConnectionById(dbId);
+			BasicObj obj=ObjSelector.selectByPid(conn, ObjectName.IX_POI, null,true, pid, false);
+			IxPoiObj poiObj = (IxPoiObj) obj;
+			IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
+			Geometry geometry = ixPoi.getGeometry();
+			a_latitude = geometry.getCoordinate().y;
+			a_longitude = geometry.getCoordinate().x;;
+		} catch (Exception e) {
+			System.out.println("pid("+pid+")的照片上传显示坐标查询失败:"+e.getMessage());
+		}finally {
+			DBUtils.closeConnection(conn);
+		}
+		photo.setA_uuid(rowkey);
+		photo.setA_uploadUser(a_uploadUser);
+		photo.setA_uploadDate(a_uploadDate);
+		photo.setA_latitude(a_latitude);
+		photo.setA_longitude(a_longitude);
+		photo.setA_title("");
+		photo.setA_subtitle("");
+		photo.setA_sourceId(7);
+		photo.setA_direction(0);
+		photo.setA_shootDate("");
+		photo.setA_deviceNum("");
+		photo.setA_content(2);
+		photo.setA_address("");
+		photo.setA_fileName("");
+		photo.setA_collectUser(0);
+		photo.setA_mesh(0);
+		photo.setA_admin("");
+		photo.setA_deviceOrient(0);
+		List<String> a_tag = new ArrayList<String>();
+		photo.setA_tag(a_tag);
+		photo.setA_refUuid("");
+		
+		putPhoto(rowkey, in,photo);
+		return rowkey;
+	}
 	
 	public void updatePhoto(String rowkey, InputStream in) throws Exception{
 		
@@ -211,8 +331,9 @@ public class HBaseController {
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		Table htab = null;
 		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
 			Put put = new Put(rowkey.getBytes());
 			
 			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
@@ -230,31 +351,41 @@ public class HBaseController {
 	
 	public List<Map<String, Object>> getPhotosByRowkey(JSONArray rowkeys) throws Exception{
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
-		List<Get> getList=new ArrayList<Get>();
-		for(Object rowkey:rowkeys){
-			Get get = new Get(((String)rowkey).getBytes());
-			getList.add(get);
-		}
-		Result[] rs = htab.get(getList);
+		Table htab = null;
 		List<Map<String, Object>> photos=new ArrayList<Map<String,Object>>();
-		String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
-		for (Result result : rs) {
-			if (result.isEmpty()) {continue;}
-			Map<String, Object> photoMap=new HashMap<String, Object>();
-			String rowkey = new String(result.getRow());
-			photoMap.put("rowkey", rowkey);
-//			byte[] thumbnail = FileUtils.makeSmallImage(result.getValue("data".getBytes(),
-//					"origin".getBytes()));
-//			photoMap.put("thumbnail", thumbnail);
-			String attribute = new String(result.getValue("data".getBytes(),
-					"attribute".getBytes()));
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			List<Get> getList=new ArrayList<Get>();
+			for(Object rowkey:rowkeys){
+				Get get = new Get(((String)rowkey).getBytes());
+				getList.add(get);
+			}
+			Result[] rs = htab.get(getList);
 			
-			JSONObject attrJson = JSONObject.fromObject(attribute);
-			if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
-				photoMap.put("version", 1);}
-			else{photoMap.put("version", 0);}
-			photos.add(photoMap);
+			String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+			for (Result result : rs) {
+				if (result.isEmpty()) {continue;}
+				Map<String, Object> photoMap=new HashMap<String, Object>();
+				String rowkey = new String(result.getRow());
+				photoMap.put("rowkey", rowkey);
+	//			byte[] thumbnail = FileUtils.makeSmallImage(result.getValue("data".getBytes(),
+	//					"origin".getBytes()));
+	//			photoMap.put("thumbnail", thumbnail);
+				String attribute = new String(result.getValue("data".getBytes(),
+						"attribute".getBytes()));
+				
+				JSONObject attrJson = JSONObject.fromObject(attribute);
+				if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
+					photoMap.put("version", 1);}
+				else{photoMap.put("version", 0);}
+				photos.add(photoMap);
+			}
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 		return photos;
 	}
@@ -272,17 +403,26 @@ public class HBaseController {
 		 Map<String, Integer> resultMap=new HashMap<String, Integer>();
 		
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
-		List<Get> getList=new ArrayList<Get>();
-		for(Object rowkey:rowkeys){
-			Get get = new Get(((String)rowkey).getBytes());
-			getList.add(get);
-		}
-		Result[] rs = htab.get(getList);
-		for (Result result : rs) {
-			if (result.isEmpty()) {continue;}
-			String rowkey = new String(result.getRow());
-			resultMap.put(rowkey, 1);
+		Table htab =null;
+		try{
+			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+			List<Get> getList=new ArrayList<Get>();
+			for(Object rowkey:rowkeys){
+				Get get = new Get(((String)rowkey).getBytes());
+				getList.add(get);
+			}
+			Result[] rs = htab.get(getList);
+			for (Result result : rs) {
+				if (result.isEmpty()) {continue;}
+				String rowkey = new String(result.getRow());
+				resultMap.put(rowkey, 1);
+			}
+		}catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
 		}
 		return resultMap;
 	}

@@ -621,6 +621,7 @@ public class ScRoadnameHwInfoService {
 		}finally{
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
 		return 0;
 		

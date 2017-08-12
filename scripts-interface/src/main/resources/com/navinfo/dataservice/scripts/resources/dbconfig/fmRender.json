@@ -1,0 +1,47 @@
+{
+	"tables": [
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "MISS_ROAD_DIDI"
+	},
+	{
+		"columnCount": 9,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "VECTOR_TAB"
+	},
+	{
+		"columnCount": 11,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "AU_GPSRECORD"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "MISS_ROAD_TENGXUN"
+	},
+	{
+		"columnCount": 4,
+		"rowCount": 0,
+		"indexCount": 4,
+		"name": "VECTOR_TAB_SUSPECT"
+	}],
+	"functions": [],
+	"sequences": [{
+		"name": "VECTOR_TAB_SUSPECT_SEQ"
+	},
+	{
+		"name": "MISS_ROAD_TENGXUN_SEQ"
+	},
+	{
+		"name": "MISS_ROAD_DIDI_SEQ"
+	},
+	],
+	"packages": [],
+	"procedures": [],
+	"types": []
+}

@@ -33,8 +33,7 @@ public class Parser_Tool {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String do_post(String url, List<NameValuePair> name_value_pair)
-			throws IOException {
+	public static String do_post(String url, List<NameValuePair> name_value_pair) throws IOException {
 		String body = "{UTF-8}";
 		HttpPost httpost = new HttpPost(url);
 		UrlEncodedFormEntity i = new UrlEncodedFormEntity(name_value_pair, body);
@@ -45,8 +44,6 @@ public class Parser_Tool {
 		return body;
 	}
 
-	
-	
 	/**
 	 * get 获取 rest 资源
 	 * 
@@ -55,32 +52,30 @@ public class Parser_Tool {
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	public static String do_get(String url) throws ClientProtocolException,
-			IOException {
-		
-	    	String body = "{}";		
-			HttpGet httpget = new HttpGet(url);
-			HttpResponse response = httpclient.execute(httpget);
-		
-			HttpEntity entity = response.getEntity();
-		
-			body = EntityUtils.toString(entity);
+	public static String do_get(String url) throws ClientProtocolException, IOException {
+
+		String body = "{}";
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = httpclient.execute(httpget);
+
+		HttpEntity entity = response.getEntity();
+
+		body = EntityUtils.toString(entity);
 		return body;
 	}
-	
+
 	public static String doGet(String strUrl) throws Exception {
-			
-			URL url = new URL(strUrl); 
-			URI uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
-			HttpClient client = new DefaultHttpClient(); 
-			HttpGet httpget = new HttpGet(uri);
-			HttpResponse response = client.execute(httpget);
-			HttpEntity entity = response.getEntity();
-			String body = EntityUtils.toString(entity);
-			return body;
+
+		URL url = new URL(strUrl);
+		URI uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
+		HttpClient client = new DefaultHttpClient();
+		HttpGet httpget = new HttpGet(uri);
+		HttpResponse response = client.execute(httpget);
+		HttpEntity entity = response.getEntity();
+		String body = EntityUtils.toString(entity);
+		return body;
 	}
 
-	
 	/**
 	 * get 获取 rest 资源
 	 * 
@@ -89,18 +84,17 @@ public class Parser_Tool {
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	public static String do_get2(String url) throws ClientProtocolException,
-			IOException {
+	public static String do_get2(String url) throws ClientProtocolException, IOException {
 		httpclient = new DefaultHttpClient();
 
-	    	String body = "{}";		
-			HttpGet httpget = new HttpGet(url);
-			HttpResponse response = httpclient.execute(httpget);
-		
-			HttpEntity entity = response.getEntity();
-		
-			body = EntityUtils.toString(entity);
-			httpclient.getConnectionManager().shutdown();
+		String body = "{}";
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = httpclient.execute(httpget);
+
+		HttpEntity entity = response.getEntity();
+
+		body = EntityUtils.toString(entity);
+		httpclient.getConnectionManager().shutdown();
 		return body;
 	}
 }

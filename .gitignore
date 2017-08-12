@@ -7,3 +7,8 @@
 .recommenders
 .idea
 *.iml
+logs
+log
+.idea
+engine/engine-fcc/dubbo-cache
+toolbox/job-man/target

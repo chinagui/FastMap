@@ -4,9 +4,13 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -42,7 +46,7 @@ public class TipsCheckOperator {
 	
 	/**
 	 * @Description:新增质检问题记录（一个tips只能增加一条）
-	 * @param wrong
+	 * @param jsonWrong
 	 * @return
 	 * @throws Exception
 	 * @author: y
@@ -92,7 +96,7 @@ public class TipsCheckOperator {
 
 	/**
 	 * @Description:查询tips的作业时间
-	 * @param tipsRowkey
+	 * @param rowkey
 	 * @return
 	 * @author: y
 	 * @throws Exception 
@@ -135,6 +139,10 @@ public class TipsCheckOperator {
 	        	logger.error("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
 				
 				throw new Exception("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+			}finally {
+				if(htab!=null){
+					htab.close();
+				}
 			}
 	        
 	}
@@ -208,7 +216,7 @@ public class TipsCheckOperator {
 
 	/**
 	 * @Description:修改tips质检状态
-	 * @param checkerId
+	 * @param rowkey
 	 * @param workStatus
 	 * @author: y
 	 * @param rowkey 
@@ -219,11 +227,18 @@ public class TipsCheckOperator {
 		
 		
 	    Connection hbaseConn = null;
+	    java.sql.Connection conn = null;
         Table htab = null;
         try {
     		// 获取solr数据
-    		JSONObject solrIndex = solrConn.getById(rowkey);
-    		
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+    		TipsDao tipsDao = operator.getById(rowkey);
+
+    		if(tipsDao==null){
+    			throw new Exception("数据不存在");
+			}
+
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
             htab = hbaseConn.getTable(TableName
@@ -268,14 +283,14 @@ public class TipsCheckOperator {
         		
         		t_dEditMeth=1;//0 不应用；1 人工作业；2 交互式作业；3 自动化；
 			}
+
+			tipsDao.setT_dEditStatus(t_dEditStatus);
         	
-        	solrIndex.put("t_dEditStatus", t_dEditStatus);
+        	tipsDao.setT_dEditMeth(t_dEditMeth);
         	
-        	solrIndex.put("t_dEditMeth", t_dEditMeth);
+        	tipsDao.setT_date(date);
         	
-        	solrIndex.put("t_date", date);
-        	
-        	solrConn.addTips(solrIndex);
+        	operator.updateOne(tipsDao);
         	
         	//更新hbase
         	lastTrack.put("date", date);
@@ -294,11 +309,13 @@ public class TipsCheckOperator {
  		    htab.put(put);
 
         }catch (Exception e) {
-        	
+			DbUtils.rollbackAndCloseQuietly(conn);
         	logger.error("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
-        	
         	throw new Exception("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
-		}	
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+			if(htab!=null){htab.close();}
+		}
 		
 	}
 

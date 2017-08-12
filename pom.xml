@@ -894,6 +894,12 @@
                 <artifactId>edit-control-column</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
+			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>service-monitor</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+			</dependency>
 			<!-- dataservice module end -->
 			<!-- navicop -->
 			<dependency>

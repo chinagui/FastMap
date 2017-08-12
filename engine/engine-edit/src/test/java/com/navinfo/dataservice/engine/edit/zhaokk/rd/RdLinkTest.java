@@ -10,6 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -46,7 +50,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		//parameter={"command":"CREATE","type":"RDLINK","data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[115.87520867586136,40.41680738802711],[115.87503030896187,40.416696093764195],[115.874964594841,40.416629725538144]]},"catchLinks":[]},"dbId":17}
+		// parameter={"command":"CREATE","type":"RDLINK","data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[115.87520867586136,40.41680738802711],[115.87503030896187,40.416696093764195],[115.874964594841,40.416629725538144]]},"catchLinks":[]},"dbId":17}
 		// {"command":"CREATE","dbId":17,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[116.3859374821186,40.00522677058955],[116.3860179677389,40.005098137296194],[116.38613194227219,40.005007962365426],[116.38617365799722,40.00510596742316],[116.3862982392311,40.00520725251356],[116.38636246104478,40.00511552385705],[116.38639479875565,40.00502645322839]]},"catchLinks":[{"linkPid":205002674,"lon":116.3860179677389,"lat":40.005098137296194},{"linkPid":205002674,"lon":116.38617365799722,"lat":40.00510596742316},{"linkPid":205002674,"lon":116.38636246104478,"lat":40.00511552385705}]},"type":"RDLINK"}
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.87520867586136,40.41680738802711],[115.87503030896187,40.416696093764195],[115.874964594841,40.416629725538144]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
@@ -186,12 +190,10 @@ public class RdLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
+
 	@Test
 	public void updateRdSe() throws Exception {
-		//parameter:{"command":"UPDATE","type":"RDSE","dbId":19,"data":{"outLinkPid":304003261,"rowId":"50D9DD0EBDB946239B7312EAE7E222FB","pid":303000012,"objStatus":"UPDATE"}}
+		// parameter:{"command":"UPDATE","type":"RDSE","dbId":19,"data":{"outLinkPid":304003261,"rowId":"50D9DD0EBDB946239B7312EAE7E222FB","pid":303000012,"objStatus":"UPDATE"}}
 		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSE\",\"dbId\":19,"
 				+ "\"data\":{\"pid\":303000012,\"outLinkPid\":304003261,\"rowId\":\"50D9DD0EBDB946239B7312EAE7E222FB\",\"pid\":303000012,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
@@ -202,8 +204,9 @@ public class RdLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
 	@Test
-	public void testRender() throws Exception{
+	public void testRender() throws Exception {
 		SearchProcess p = new SearchProcess();
 		p.setArray(null);
 		p.setDbId(13);
@@ -218,9 +221,29 @@ public class RdLinkTest extends InitApplication {
 		types.add(ObjType.LULINK);
 		types.add(ObjType.ZONENODE);
 		types.add(ObjType.ADADMIN);
-		int gap =10;
+		int gap = 10;
 
-		JSONObject data   = p.searchDataByTileWithGap(types, x, y, z, gap);
+		JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 		System.out.println(data);
+	}
+
+	@Test
+	public void testSysLog() throws Exception {
+		SysLogStats log = new SysLogStats();
+		log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
+		log.setLogDesc("jobId :"+SysLogConstant.POI_UPLOAD_DESC);
+		log.setFailureTotal(2);
+		log.setSuccessTotal(3);
+		log.setTotal(5);
+		log.setBeginTime(DateUtils.getSysDateFormat());
+		log.setEndTime(DateUtils.getSysDateFormat());
+		log.setErrorMsg("32342423423");
+		//log.setUserId(userId);
+		SysLogOperator.getInstance().insertSysLog(log);
+
+	}
+
+	public static void main(String[] args) {
+		System.out.println(DateUtils.getSysDateFormat("yyyy/MM/dd HH:mm:ss"));
 	}
 }

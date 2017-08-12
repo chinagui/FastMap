@@ -2,10 +2,13 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -16,7 +19,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class CHECK_CROSS_NOT_CONNECTED_NODE extends baseRule {
 
@@ -103,31 +105,23 @@ public class CHECK_CROSS_NOT_CONNECTED_NODE extends baseRule {
         sb.append(" and f.u_record != 2");
 
         PreparedStatement pstmt = null;
-
         ResultSet resultSet = null;
-
         try {
             pstmt = this.getConn().prepareStatement(sb.toString());
-
             pstmt.setInt(1, nodePid);
-
             pstmt.setInt(2, nodePid);
-
             resultSet = pstmt.executeQuery();
-
             while (resultSet.next()) {
                 RdLink rdLink = new RdLink();
-
                 ReflectionAttrUtils.executeResultSet(rdLink, resultSet);
-
                 links.add(rdLink);
             }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
-        }
+        }catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
         return links;
     }
 

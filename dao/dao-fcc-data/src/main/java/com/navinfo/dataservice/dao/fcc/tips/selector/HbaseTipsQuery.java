@@ -81,15 +81,17 @@ public class HbaseTipsQuery {
 																String[] queryColNames) throws Exception{
 		long start = System.currentTimeMillis();
 		Map<String, JSONObject> map = new HashMap<>();
+		Connection hbaseConn = null;
+		Table htab = null;
 		try {
 			if(rowkeys.size()==0){
 				return map;
 			}
 
-			Connection hbaseConn = HBaseConnector
+			hbaseConn = HBaseConnector
 					.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			List<Get> gets = new ArrayList<>();
@@ -116,10 +118,13 @@ public class HbaseTipsQuery {
 					if (queryColNames != null && queryColNames.length != 0) {
 						for (String colName : queryColNames) {
 							// 1.update track
-							JSONObject value = JSONObject.fromObject(new String(result
-									.getValue("data".getBytes(), colName.getBytes())));
-
-							resultJson.put(colName, value);
+							byte[] bytes = result.getValue("data".getBytes(), colName.getBytes());
+							if(bytes != null){
+								JSONObject value = JSONObject.fromObject(new String(bytes));
+								resultJson.put(colName, value);
+							}else{
+								resultJson.put(colName, "{}");
+							}
 						}
 						map.put(new String(result.getRow()), resultJson);
 					}
@@ -133,6 +138,10 @@ public class HbaseTipsQuery {
 
 			throw new Exception("根据rowkeys查询tips信息出错,原因："
 					+ e.getMessage(), e);
+		}finally {
+			if(htab!=null) {
+				htab.close();
+			}
 		}
 
 		long end = System.currentTimeMillis();
@@ -140,4 +149,6 @@ public class HbaseTipsQuery {
 
 		return map;
 	}
+
+
 }

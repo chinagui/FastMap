@@ -2,8 +2,12 @@ package com.navinfo.dataservice.integrated;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +15,7 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -19,11 +24,13 @@ import org.dom4j.io.SAXReader;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * 
@@ -32,6 +39,15 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class DeleteNotIntegratedData {
 	protected Logger log = Logger.getLogger(this.getClass());
+	private Set<String> meshes = new HashSet<String>();
+
+	public Set<String> getMeshes() {
+		return meshes;
+	}
+
+	public void setMeshes(Set<String> meshes) {
+		this.meshes = meshes;
+	}
 
 	public void execute(int dbId) throws Exception {
 		DataSource ds = null;
@@ -41,7 +57,14 @@ public class DeleteNotIntegratedData {
 			OracleSchema schema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			ds = schema.getPoolDataSource();
+			log.debug("创建临时表");
 			createOrTruncateTempTable(ds);
+			log.debug("创建RDLINK接边临时表");
+			this.createTempRdLinkTable(ds);
+			log.debug("接边数据提取");
+			this.insertTempRdLink(ds);
+			log.debug("接边数据删除");
+			this.deleteRdLinkData(ds);
 			Map<Integer, List<TableConfig>> configMap = parseConfigFile(ds);
 			Set<Integer> stepSet = configMap.keySet();
 			createTempTableIndex(ds);
@@ -52,9 +75,11 @@ public class DeleteNotIntegratedData {
 				List<TableConfig> tableConfigs = configMap.get(stepValue);
 				executeSql.execute(ds, tableConfigs);
 			}
+			log.debug("补充接边数据");
+			this.replenishRdLinkData(ds);
 
 		} catch (Exception e) {
-			log.error("", e);
+			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
 			if (ds != null) {
@@ -67,6 +92,107 @@ public class DeleteNotIntegratedData {
 			}
 
 		}
+	}
+
+	/**
+	 * 备份不是核心图幅数据
+	 * 
+	 * @param ds
+	 * @throws SQLException
+	 */
+	private void insertTempRdLink(DataSource ds) throws SQLException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {
+			conn = ds.getConnection();
+
+			/*
+			 * String ids = org.apache.commons.lang.StringUtils.join(
+			 * this.getMeshes(), ","); log.debug("meshes ===" +ids);
+			 */
+			String sql = "INSERT /*+append*/  INTO  TEMP_RDLINK_NOMESH_DATA  SELECT *FROM RD_LINK WHERE MESH_ID NOT IN (select mesh_id from m_mesh_type where type =1  ) ";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			log.error(e.getMessage() + "导出接边LINK报错", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		} finally {
+			if (conn != null) {
+				DBUtils.closeStatement(pstmt);
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+
+		}
+
+	}
+
+	/***
+	 * 清理数据
+	 * 
+	 * @param ds
+	 * @throws SQLException
+	 */
+	private void deleteRdLinkData(DataSource ds) throws SQLException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {
+
+			conn = ds.getConnection();
+			/*
+			 * String ids = org.apache.commons.lang.StringUtils.join(
+			 * this.getMeshes(), ",");
+			 * 
+			 * String sql = ""; log.debug("meshes ===" + ids);
+			 */
+			String sql = "DELETE FROM  RD_LINK WHERE MESH_ID NOT IN ( select mesh_id from m_mesh_type where type =1 ) ";
+			/*
+			 * Clob pidClod = ConnectionUtil.createClob(conn);
+			 * pidClod.setString(1, ids); sql = sqlInsert +
+			 * " NOT IN (select to_number(column_value) from table(clob_to_table(?)))"
+			 * ;
+			 */
+			pstmt = conn.prepareStatement(sql);
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			log.error(e.getMessage() + "删除接边LINK报错", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		} finally {
+			if (conn != null) {
+				DBUtils.closeStatement(pstmt);
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+
+		}
+	}
+
+	/***
+	 * 补充数据
+	 * 
+	 * @param ds
+	 * @throws SQLException
+	 */
+	private void replenishRdLinkData(DataSource ds) throws SQLException {
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+			QueryRunner runner = new QueryRunner();
+			String sql = "INSERT /*+append*/  INTO   RD_LINK  SELECT * FROM TEMP_RDLINK_NOMESH_DATA ";
+			log.debug(sql);
+			runner.execute(conn, sql);
+		} catch (Exception e) {
+			log.error(e.getMessage() + "补充接边LINK报错", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		} finally {
+			if (conn != null) {
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+
+		}
+
 	}
 
 	/**
@@ -92,6 +218,28 @@ public class DeleteNotIntegratedData {
 		} else {
 			dropTempTableIndex(ds);
 			String sql = "truncate table TEMP_NOT_INTEGRATED_DATA";
+			log.debug(sql);
+			runner.execute(ds, sql);
+		}
+	}
+
+	/**
+	 * 存放不是核心图幅外的link数据
+	 * 
+	 * @param version
+	 * @throws SQLException
+	 */
+	private void createTempRdLinkTable(DataSource ds) throws SQLException {
+		boolean exists = DataBaseUtils.isTableExists(ds,
+				"TEMP_RDLINK_NOMESH_DATA");
+
+		QueryRunner runner = new QueryRunner();
+		if (!exists) {
+			String sql = "CREATE TABLE TEMP_RDLINK_NOMESH_DATA AS SELECT *FROM RD_LINK WHERE 1 <> 1";
+			log.debug(sql);
+			runner.execute(ds, sql);
+		} else {
+			String sql = "truncate table TEMP_RDLINK_NOMESH_DATA";
 			log.debug(sql);
 			runner.execute(ds, sql);
 		}

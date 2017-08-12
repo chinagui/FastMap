@@ -23,7 +23,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -570,6 +569,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				ixPoi.setIndoor(indoorType);
 				//24小时开放--全天营业 OPEN_24H
 				int open24H =jo.getInt("open24H");
+				if(open24H == 0){
+					open24H =2;
+				}
 				ixPoi.setOpen24h(open24H);
 				//品牌chain--连锁品牌 CHAIN
 				if(!JSONUtils.isNull(jo.get("chain"))){
@@ -687,7 +689,14 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//修改履历
 				String log = null;
-				if(!JSONUtils.isNull(jo.get("log"))){
+				if(!JSONUtils.isNull(jo.get("log")) && StringUtils.isNotEmpty(jo.getString("log")) 
+						&& (jo.getString("log").contains("改名称") || jo.getString("log").contains("改分类") 
+								|| jo.getString("log").contains("改电话") || jo.getString("log").contains("改地址") 
+								|| jo.getString("log").contains("改邮编") || jo.getString("log").contains("改风味类型") 
+								|| jo.getString("log").contains("改父子关系")  || jo.getString("log").contains("改品牌") 
+								|| jo.getString("log").contains("改24小时") || jo.getString("log").contains("改星级") 
+								|| jo.getString("log").contains("改内部POI") || jo.getString("log").contains("改显示坐标")  
+								|| jo.getString("log").contains("改引导坐标") )){
 					log = jo.getString("log");
 				}else{
 					throw new Exception("修改履历log字段名不存在");
@@ -752,6 +761,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				//改24小时
 				if(StringUtils.contains(log,"改24小时")){
 					int open24H =jo.getInt("open24H");
+					if(open24H == 0){
+						open24H =2;
+					}
 					ixPoi.setOpen24h(open24H);
 				}
 				//改星级
@@ -775,6 +787,26 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					int indoorType =jo.getInt("indoorType");
 					ixPoi.setIndoor(indoorType);
 				}
+				//******2017.07.31**********
+				//改显示坐标
+				if(StringUtils.contains(log,"改显示坐标")){
+					double lng =jo.getDouble("lng");//经度
+					double lat =jo.getDouble("lat");//纬度
+					//显示坐标经纬度--显示坐标
+					Geometry point = GeoTranslator.point2Jts(lng, lat);
+					
+					ixPoi.setGeometry(point);
+				}
+				//改引导坐标
+				if(StringUtils.contains(log,"改引导坐标")){
+					double guidelon =jo.getDouble("guidelon");//经度
+					double guidelat =jo.getDouble("guidelat");//纬度
+					ixPoi.setXGuide(guidelon);
+					ixPoi.setYGuide(guidelat);
+					ixPoi.setLinkPid(0);
+				}
+				
+				
 				//改父子关系
 				if(StringUtils.contains(log,"改父子关系")){
 					//处理父子关系
@@ -918,59 +950,97 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		}else{
 			throw new Exception("联系方式contacts字段名不存在");
 		}
-		//查询IX_POI_RESTAURANT表
+		//查询IX_POI_CONTACT表
 		List<IxPoiContact> ixPoiContacts = poi.getIxPoiContacts();
 		if(!"[]".equals(contacts)){
 			JSONArray ja = JSONArray.fromObject(contacts);
-			//保存查询IX_POI_RESTAURANT表
-			List<IxPoiContact> contactList = new ArrayList<IxPoiContact>();
-			//多源中不存在，但是日库中存在的电话逻辑删除
-			for (IxPoiContact contact : ixPoiContacts) {
+			if(ixPoiContacts != null && ixPoiContacts.size() > 0){//原数据库中存在电话,多源上传文件中也存在
+				//获取多源上传所有 电话
+				List<String> jaList = new ArrayList<String>();
 				for (int i=0;i<ja.size();i++) {
 					JSONObject jso = ja.getJSONObject(i);
 					//号码number
 					if(!JSONUtils.isNull(jso.get("number"))){
 						String number = jso.getString("number");
-						if(!number.equals(contact.getContact())){
-							poi.deleteSubrow(contact);
-						}
+						jaList.add(number);
 					}else{
 						throw new Exception("号码number字段名不存在");
 					}
 				}
-				contactList.add(contact);
-			}
-			for (int i=0;i<ja.size();i++) {
-				JSONObject jso = ja.getJSONObject(i);
-				//号码number
-				String number = null;
-				if(!JSONUtils.isNull(jso.get("number"))){
-					number = jso.getString("number");
-				}else{
-					throw new Exception("号码number字段名不存在");
-				}
-				//联系方式类型type
-				int type = jso.getInt("type");
-				for (IxPoiContact contact : contactList) {
-					if(!number.equals(contact.getContact())){
-						//不一致，则将多源中电话和电话类型追加到日库中
-						//IX_POI_CONTACT表
-						IxPoiContact ixPoiContact = poi.createIxPoiContact();
-						ixPoiContact.setContact(number);
-						ixPoiContact.setContactType(type);
-					}else if(number.equals(contact.getContact())
-							&&type!=contact.getContactType()){
-						//不一致，则更新电话和电话类型追加到日库中
-						//IX_POI_CONTACT表
-						IxPoiContact ixPoiContact = poi.createIxPoiContact();
-						ixPoiContact.setContact(number);
-						ixPoiContact.setContactType(type);
-					}else if(number.equals(contact.getContact())
-							&&type == contact.getContactType()){
-						//一致，则不处理
+				//保存查询IX_POI_CONTACT表
+				List<IxPoiContact> contactList = new ArrayList<IxPoiContact>();
+				//库中电话的集合
+				List<String> oldConList = new ArrayList<String>();
+				//多源中不存在，但是日库中存在的电话逻辑删除
+				for (IxPoiContact contact : ixPoiContacts) {
+					System.out.println("contact : "+contact.getContact());
+					if(jaList.contains(contact.getContact())){//如果多源上传包含数据库中数据
+						contactList.add(contact);
+						oldConList.add(contact.getContact());
+					}else{//如果不包含,则删除数据库中数据
+						poi.deleteSubrow(contact);
 					}
+//					contactList.add(contact);
+				}
+				for (int i=0;i<ja.size();i++) {
+					JSONObject jso = ja.getJSONObject(i);
+					//号码number
+					String number = null;
+					if(!JSONUtils.isNull(jso.get("number"))){
+						number = jso.getString("number");
+					}else{
+						throw new Exception("号码number字段名不存在");
+					}
+					//联系方式类型type
+					int type = jso.getInt("type");
+					if(contactList != null  && contactList.size()>0){
+						if(oldConList.contains(number)){
+							for (IxPoiContact contact : contactList) {
+								if(number.equals(contact.getContact())
+										&& type!=contact.getContactType()){
+									//不一致，则更新电话和电话类型追加到日库中
+									//IX_POI_CONTACT表
+									IxPoiContact ixPoiContact = poi.createIxPoiContact();
+									ixPoiContact.setContact(number);
+									ixPoiContact.setContactType(type);
+								}
+							}
+						}else{//多源上传的 电话库中没有,至接新增
+							//IX_POI_CONTACT表
+							IxPoiContact ixPoiContact = poi.createIxPoiContact();
+							ixPoiContact.setContact(number);
+							ixPoiContact.setContactType(type);
+						}
+						
+					}else{//数据库中无可更新数据,至接将多源上传的电话新增进数据库
+						//IX_POI_CONTACT表
+						IxPoiContact ixPoiContact = poi.createIxPoiContact();
+						ixPoiContact.setContact(number);
+						ixPoiContact.setContactType(type);
+					}
+					
+				}
+			}else{//原数据库中不存在电话,多源上传文件中存在电话
+				//直接新增
+				for (int i=0;i<ja.size();i++) {
+					JSONObject jso = ja.getJSONObject(i);
+					//号码number
+					String number = null;
+					if(!JSONUtils.isNull(jso.get("number"))){
+						number = jso.getString("number");
+					}else{
+						throw new Exception("号码number字段名不存在");
+					}
+					//联系方式类型type
+					int type = jso.getInt("type");
+					//不一致，则更新电话和电话类型追加到日库中
+					//IX_POI_CONTACT表
+					IxPoiContact ixPoiContact = poi.createIxPoiContact();
+					ixPoiContact.setContact(number);
+					ixPoiContact.setContactType(type);
 				}
 			}
+
 		}else if("[]".equals(contacts)){
 			//逻辑删除日库中所有电话记录
 			for (IxPoiContact ixPoiContact : ixPoiContacts) {

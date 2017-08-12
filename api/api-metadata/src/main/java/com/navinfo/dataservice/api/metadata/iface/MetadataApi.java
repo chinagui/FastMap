@@ -49,6 +49,12 @@ public interface MetadataApi {
 	 */
 	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception;
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, Map<String,String>> :key,AdminId;value,对应的名称列表
+	 * @throws Exception
+	 */
+	public Map<String, Map<String,String>> scPointAdminareaByAdminId() throws Exception;
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception
@@ -438,7 +444,7 @@ public interface MetadataApi {
 	public int getCrowdTruck(String kindCode) throws Exception;
 	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
 	 //获取元数据库中重要POI的数据
-	public List<Integer> queryImportantPid() throws SQLException;
+	public List<String> queryImportantPid() throws SQLException;
 
 	 /**
 	  * @param reliability范围
@@ -446,5 +452,7 @@ public interface MetadataApi {
 	  *
 	  * */
 	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
+	
+	public Map<String,Integer> queryEditMethTipsCode() throws SQLException;
 
 }

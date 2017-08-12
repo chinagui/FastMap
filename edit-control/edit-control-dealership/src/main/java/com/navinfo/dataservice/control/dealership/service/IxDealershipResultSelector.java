@@ -216,14 +216,21 @@ public class IxDealershipResultSelector {
 	 * @throws Exception 
 	 */
 	public static IxDealershipResult getIxDealershipResultById(Integer resultId, Connection conn) throws Exception {
-		String sql = "SELECT * FROM IX_DEALERSHIP_RESULT t WHERE t.RESULT_ID=:1";
+		StringBuffer sb  = new StringBuffer();
+		sb.append("SELECT RESULT_ID,WORKFLOW_STATUS,DEAL_STATUS,USER_ID,TO_INFO_DATE,TO_CLIENT_DATE,PROVINCE,CITY,");
+		sb.append("PROJECT,KIND_CODE,CHAIN,NAME,NAME_SHORT,ADDRESS,TEL_SALE,TEL_SERVICE,TEL_OTHER,POST_CODE,NAME_ENG, ADDRESS_ENG,");
+		sb.append("PROVIDE_DATE,IS_DELETED,MATCH_METHOD,POI_NUM_1,POI_NUM_2,POI_NUM_3,POI_NUM_4,POI_NUM_5,SIMILARITY,FB_SOURCE,");
+		sb.append("FB_CONTENT,FB_AUDIT_REMARK,FB_DATE,CFM_STATUS,CFM_POI_NUM,CFM_MEMO,NVL(SOURCE_ID,0) SOURCE_ID,DEAL_SRC_DIFF,");
+		sb.append("DEAL_CFM_DATE,POI_KIND_CODE,POI_CHAIN,POI_NAME,POI_NAME_SHORT,POI_ADDRESS,POI_TEL,POI_POST_CODE,POI_X_DISPLAY,");
+		sb.append("POI_Y_DISPLAY,POI_X_GUIDE,POI_Y_GUIDE,GEOMETRY,REGION_ID,CFM_IS_ADOPTED FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID=:1");
+     		
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		
 		
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setInt(1, resultId);
 			resultSet = pstmt.executeQuery();
 
@@ -290,7 +297,7 @@ public class IxDealershipResultSelector {
 	 * @throws Exception
 	 */
 	public static Map<Integer, IxDealershipResult> getIxDealershipResultsBySql(Connection conn,String sql) throws Exception{
-		return new QueryRunner().query(conn, sql, getSourceHander());
+		return new QueryRunner().query(conn, sql, getResultHander());
 	}
 	/**
 	 * 得到客户确认-待发布中品牌数据
@@ -589,8 +596,16 @@ public class IxDealershipResultSelector {
 	 * @throws Exception 
 	 */
 	public static Geometry getGeometryByResultId(Integer resultId) throws Exception{
-		Connection dealerConn = DBConnector.getInstance().getDealershipConnection();
-		IxDealershipResult result = getIxDealershipResultById(resultId, dealerConn);
+		Connection dealerConn = null;
+		IxDealershipResult result = null;
+		try {
+			dealerConn = DBConnector.getInstance().getDealershipConnection();
+			result = getIxDealershipResultById(resultId, dealerConn);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(dealerConn);
+		} finally {
+			DbUtils.commitAndCloseQuietly(dealerConn);
+		}
 		return result.getGeometry();
 	}
 	

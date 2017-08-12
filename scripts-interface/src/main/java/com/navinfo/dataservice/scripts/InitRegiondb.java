@@ -52,54 +52,64 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
  * @Description: TODO
  */
 public class InitRegiondb {
+	
 
-	public static JSONObject execute(JSONObject request) throws Exception{
+	public static JSONObject execute(JSONObject request) throws Exception {
 		JSONObject response = new JSONObject();
 		Connection conn = null;
 		try {
-			String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-			Assert.notNull(gdbVersion, "gdbVersion不能为空,检查是否sys_config表中未配置当前gdb版本");
-			DbInfo fmgdb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
-//			Assert.notNull(fmgdbId, "fmgdbId不能为空");
-//			int fmMetaId = request.getInt("fmMetaId");
-//			Assert.notNull(fmMetaId, "fmMetaId不能为空");
+			String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.gdbVersion);
+			Assert.notNull(gdbVersion,
+					"gdbVersion不能为空,检查是否sys_config表中未配置当前gdb版本");
+			DbInfo fmgdb = DbService.getInstance().getOnlyDbByBizType(
+					"nationRoad");
+			response.put("gdbVersion ==", gdbVersion );
+		
+			// Assert.notNull(fmgdbId, "fmgdbId不能为空");
+			// int fmMetaId = request.getInt("fmMetaId");
+			// Assert.notNull(fmMetaId, "fmMetaId不能为空");
 			JSONArray regionIds = (JSONArray) request.get("regionIds");
 			Assert.notNull(regionIds, "regionIds不能为空");
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			int specSvrId = 0;
-			if(!JSONUtils.isNull(request.get("specSvrId"))){
+			if (!JSONUtils.isNull(request.get("specSvrId"))) {
 				specSvrId = request.getInt("specSvrId");
 			}
-			
+
 			int meshExtendCount = 0;
-			if(request.containsKey("meshExtendCount")){
+			if (request.containsKey("meshExtendCount")) {
 				meshExtendCount = request.getInt("meshExtendCount");
 			}
 			
 			conn = DBConnector.getInstance().getManConnection();
-			//得到图幅号
-			Map<Integer,List<String>> regionMeshMap = getRegionMeshMap(conn,regionIds);
-			for(Integer key:regionMeshMap.keySet()){
-				//先写入region表
-				insertRegions(conn,key);
-				//创建库
+			// 得到图幅号
+			Map<Integer, List<String>> regionMeshMap = getRegionMeshMap(conn,
+					regionIds);
+			response.put("map   size ==", regionMeshMap.size() );
+			for (Integer key : regionMeshMap.keySet()) {
+				response.put("key ==", key );
+			
+				// 先写入region表
+				insertRegions(conn, key);
+				// 创建库
 				Set<String> meshes = new HashSet<String>(regionMeshMap.get(key));
 				Set<String> extendMeshes = null;
-				if(meshExtendCount>0){
-					extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
-				}else{
-					extendMeshes=meshes;
+				if (meshExtendCount > 0) {
+					extendMeshes = MeshUtils.getNeighborMeshSet(meshes, 1);
+				} else {
+					extendMeshes = meshes;
 				}
-				//大区库不直接做检查批处理，不维护M_MESH_TYPE表
-				//创建日db
+				// 大区库不直接做检查批处理，不维护M_MESH_TYPE表
+				// 创建日db
 				JobInfo info1 = new JobInfo(0, "");
 				info1.setType("createDb");
 				JSONObject req1 = new JSONObject();
 				req1.put("dbName", "orcl");
 				req1.put("serverType", DbServerType.TYPE_ORACLE);
-				req1.put("userName", userNamePrefix+"_d_"+key);
-				req1.put("userPasswd", userNamePrefix+"_d_"+key);
+				req1.put("userName", userNamePrefix + "_d_" + key);
+				req1.put("userPasswd", userNamePrefix + "_d_" + key);
 				req1.put("bizType", "regionRoad");
 				req1.put("descp", "region db");
 				req1.put("gdbVersion", gdbVersion);
@@ -107,13 +117,14 @@ public class InitRegiondb {
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
-				if(job1.getJobInfo().getStatus()!=3){
-					String msg = (job1.getException()==null)?"未知错误。":"错误："+job1.getException().getMessage();
-					throw new Exception("创建日库DB过程中job内部发生"+msg);
+				if (job1.getJobInfo().getStatus() != 3) {
+					String msg = (job1.getException() == null) ? "未知错误。"
+							: "错误：" + job1.getException().getMessage();
+					throw new Exception("创建日库DB过程中job内部发生" + msg);
 				}
 				int dbDay = job1.getJobInfo().getResponse().getInt("outDbId");
-				response.put("region_"+key+"_day_db", dbDay);
-				JobInfo info2 = new JobInfo(0,"");
+				response.put("region_" + key + "_day_db", dbDay);
+				JobInfo info2 = new JobInfo(0, "");
 				info2.setType("gdbExport");
 				JSONObject req2 = new JSONObject();
 				req2.put("gdbVersion", gdbVersion);
@@ -126,161 +137,185 @@ public class InitRegiondb {
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
-				if(job2.getJobInfo().getStatus()!=3){
-					String msg = (job2.getException()==null)?"未知错误。":"错误："+job2.getException().getMessage();
-					throw new Exception("日库导数据过程中job内部发生"+msg);
+				if (job2.getJobInfo().getStatus() != 3) {
+					String msg = (job2.getException() == null) ? "未知错误。"
+							: "错误：" + job2.getException().getMessage();
+					throw new Exception("日库导数据过程中job内部发生" + msg);
 				}
-				response.put("region_"+key+"_day_exp", "success");
-				//删除不完整记录
-				DeleteNotIntegratedData deleteNotIntegratedData= new DeleteNotIntegratedData();
+				response.put("region_" + key + "_day_exp", "success");
+
+				// 给日库和月库安装包
+				installPckUtils(dbDay, 1);
+				// 删除不完整记录
+				DeleteNotIntegratedData deleteNotIntegratedData = new DeleteNotIntegratedData();
+				deleteNotIntegratedData.setMeshes(meshes);
 				deleteNotIntegratedData.execute(dbDay);
-				//给日库和月库安装包
-				installPckUtils(dbDay,1);
-				response.put("region_"+key+"_day_utils", "success");
-				//创建月db
-//				JobInfo info3 = new JobInfo(0, "");
-//				info3.setType("createDb");
-//				JSONObject req3 = new JSONObject();
-//				req3.put("dbName", "orcl");
-//				req3.put("userName", userNamePrefix+"_m_"+key);
-//				req3.put("userPasswd", userNamePrefix+"_m_"+key);
-//				req3.put("bizType", "regionRoad");
-//				req3.put("descp", "region db");
-//				req3.put("gdbVersion", gdbVersion);
-//				req3.put("serverType", DbServerType.TYPE_ORACLE);
-//				info3.setRequest(req3);
-//				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
-//				job3.run();
-//				if(job3.getJobInfo().getStatus()!=3){
-//					String msg = (job3.getException()==null)?"未知错误。":"错误："+job3.getException().getMessage();
-//					throw new Exception("创建月库DB过程中job内部发生"+msg);
-//				}
-//				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
-//				response.put("region_"+key+"_month", dbMonth);
-//				JobInfo info4 = new JobInfo(0,"");
-//				info4.setType("gdbFullCopy");
-//				JSONObject req4 = new JSONObject();
-//				req4.put("sourceDbId", dbDay);
-//				req4.put("targetDbId", dbMonth);
-//				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
-//				req4.put("gdbVersion", gdbVersion);
-//				info4.setRequest(req4);
-//				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
-//				job4.run();
-//				if(job4.getJobInfo().getStatus()!=3){
-//					String msg = (job4.getException()==null)?"未知错误。":"错误："+job4.getException().getMessage();
-//					throw new Exception("月库导数据过程中job内部发生"+msg);
-//				}
-//				response.put("region_"+key+"_month_exp", "success");
-				
-				//过渡期母库作为全部月库
-				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
-//				installPckUtils(dbMonth,2);
-				response.put("region_"+key+"_month_utils", "success");
-				//写入dbID
-//				insertDbIds(conn,key,dbDay,dbMonth);
-				insertDbIds(conn,key,dbDay,nationDb.getDbId());
-				//更新grid表
-				insertGrids(conn,key);
-				//维护情报的block
-				//maintainInfoBlock(conn,key);
+				response.put("region_" + key + "_day_utils", "success");
+				// 创建月db
+				// JobInfo info3 = new JobInfo(0, "");
+				// info3.setType("createDb");
+				// JSONObject req3 = new JSONObject();
+				// req3.put("dbName", "orcl");
+				// req3.put("userName", userNamePrefix+"_m_"+key);
+				// req3.put("userPasswd", userNamePrefix+"_m_"+key);
+				// req3.put("bizType", "regionRoad");
+				// req3.put("descp", "region db");
+				// req3.put("gdbVersion", gdbVersion);
+				// req3.put("serverType", DbServerType.TYPE_ORACLE);
+				// info3.setRequest(req3);
+				// AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
+				// job3.run();
+				// if(job3.getJobInfo().getStatus()!=3){
+				// String msg =
+				// (job3.getException()==null)?"未知错误。":"错误："+job3.getException().getMessage();
+				// throw new Exception("创建月库DB过程中job内部发生"+msg);
+				// }
+				// int dbMonth =
+				// job3.getJobInfo().getResponse().getInt("outDbId");
+				// response.put("region_"+key+"_month", dbMonth);
+				// JobInfo info4 = new JobInfo(0,"");
+				// info4.setType("gdbFullCopy");
+				// JSONObject req4 = new JSONObject();
+				// req4.put("sourceDbId", dbDay);
+				// req4.put("targetDbId", dbMonth);
+				// req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
+				// req4.put("gdbVersion", gdbVersion);
+				// info4.setRequest(req4);
+				// AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
+				// job4.run();
+				// if(job4.getJobInfo().getStatus()!=3){
+				// String msg =
+				// (job4.getException()==null)?"未知错误。":"错误："+job4.getException().getMessage();
+				// throw new Exception("月库导数据过程中job内部发生"+msg);
+				// }
+				// response.put("region_"+key+"_month_exp", "success");
+
+				// 过渡期母库作为全部月库
+				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType(
+						"nationRoad");
+				// installPckUtils(dbMonth,2);
+				response.put("region_" + key + "_month_utils", "success");
+				// 写入dbID
+				// insertDbIds(conn,key,dbDay,dbMonth);
+				insertDbIds(conn, key, dbDay, nationDb.getDbId());
+				// 更新grid表
+				insertGrids(conn, key);
+				// 维护情报的block
+				// maintainInfoBlock(conn,key);
 				conn.commit();
-				response.put("region_"+key+"_man_rows", "success");
+				response.put("region_" + key + "_man_rows", "success");
 			}
 			response.put("msg", "执行成功");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			response.put("msg", "ERROR:" + e.getMessage());
 			throw e;
-		}finally{
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 		return response;
 	}
-	
-	private static void createMetaDbLink(DataSource dataSource)throws Exception{
+
+	private static void createMetaDbLink(DataSource dataSource)
+			throws Exception {
 		DbLinkCreator cr = new DbLinkCreator();
-		DbInfo metaDb = DbService.getInstance().getOnlyDbByBizType(BizType.DB_META_ROAD);
-		cr.create("DBLINK_RMS", false, dataSource,metaDb.getDbUserName(),metaDb.getDbUserPasswd(),metaDb.getDbServer().getIp(),String.valueOf(metaDb.getDbServer().getPort()),metaDb.getDbServer().getServiceName());
+		DbInfo metaDb = DbService.getInstance().getOnlyDbByBizType(
+				BizType.DB_META_ROAD);
+		cr.create("DBLINK_RMS", false, dataSource, metaDb.getDbUserName(),
+				metaDb.getDbUserPasswd(), metaDb.getDbServer().getIp(), String
+						.valueOf(metaDb.getDbServer().getPort()), metaDb
+						.getDbServer().getServiceName());
 	}
 
-	
 	/**
 	 * @Title: createRegionDbLinks
 	 * @Description: 创建大区库的dblink
 	 * @param regionDbId
-	 * @throws Exception  void
-	 * @throws 
+	 * @throws Exception
+	 *             void
+	 * @throws
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月11日 下午8:40:41 
+	 * @date 2016年11月11日 下午8:40:41
 	 */
-	private static void createRegionDbLinks(DbInfo dbRegion)throws Exception{
+	private static void createRegionDbLinks(DbInfo dbRegion) throws Exception {
 		DbLinkCreator cr = new DbLinkCreator();
 		Connection metaConn = null;
-		try{
-			DbInfo db = DbService.getInstance()
-					.getOnlyDbByBizType(BizType.DB_META_ROAD); //获取元数据库的连接参数
-			
-			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
-			DataSource metaDataSource =MultiDataSourceFactory.getInstance().getDataSource(connConfig);
-			DataSource regDdataSource = MultiDataSourceFactory.getInstance().getDataSource(DbConnectConfig.createConnectConfig(dbRegion.getConnectParam())); //获取大区库的数据源
-			metaConn = metaDataSource.getConnection();//获取元数据库的连接
-			//创建元数据库dblink
+		try {
+			DbInfo db = DbService.getInstance().getOnlyDbByBizType(
+					BizType.DB_META_ROAD); // 获取元数据库的连接参数
+
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db
+					.getConnectParam());
+			DataSource metaDataSource = MultiDataSourceFactory.getInstance()
+					.getDataSource(connConfig);
+			DataSource regDdataSource = MultiDataSourceFactory.getInstance()
+					.getDataSource(
+							DbConnectConfig.createConnectConfig(dbRegion
+									.getConnectParam())); // 获取大区库的数据源
+			metaConn = metaDataSource.getConnection();// 获取元数据库的连接
+			// 创建元数据库dblink
 			String dbLinkName = null;
 			String dbUserName = dbRegion.getDbUserName();
-			if(dbUserName.contains("_d_")){
-				dbLinkName = "d_"+dbUserName.split("_d_")[1];
-			}else if(dbUserName.contains("_m_")){
-				dbLinkName = "m_"+dbUserName.split("_m_")[1];
+			if (dbUserName.contains("_d_")) {
+				dbLinkName = "d_" + dbUserName.split("_d_")[1];
+			} else if (dbUserName.contains("_m_")) {
+				dbLinkName = "m_" + dbUserName.split("_m_")[1];
 			}
-			if(dbLinkName != null && StringUtils.isNotEmpty(dbLinkName)){
-				cr.create("RG_DBLINK_"+dbLinkName, false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
+			if (dbLinkName != null && StringUtils.isNotEmpty(dbLinkName)) {
+				cr.create("RG_DBLINK_" + dbLinkName, false, metaDataSource,
+						dbRegion.getDbUserName(), dbRegion.getDbUserPasswd(),
+						dbRegion.getDbServer().getIp(),
+						String.valueOf(dbRegion.getDbServer().getPort()),
+						dbRegion.getDbServer().getServiceName());
 				metaConn.commit();
 			}
-		}finally{
+		} finally {
 			DbUtils.closeQuietly(metaConn);
 		}
-		 
+
 	}
-	
-	
+
 	/**
 	 * @Title: installPckUtils
 	 * @Description: (修改)(在初始化日大区库时增加创建元数据库对大区库的dblink)
 	 * @param dbId
-	 * @throws Exception  void
-	 * @throws 
+	 * @throws Exception
+	 *             void
+	 * @throws
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月11日 下午8:46:15 
+	 * @date 2016年11月11日 下午8:46:15
 	 */
-	private static void installPckUtils(int dbId,int dbType)throws Exception{
+	private static void installPckUtils(int dbId, int dbType) throws Exception {
 		Connection conn = null;
-		try{
-			DbInfo db = DbService.getInstance()
-					.getDbById(dbId);
-			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
-			//创建元数据库dblink
-			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig));
-			//************2016.11.11 zl****************
-			//在元数据库中创建大区库的dblink
-			//过渡期只有日库需要创建
-			if(dbType==1){
+		try {
+			DbInfo db = DbService.getInstance().getDbById(dbId);
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db
+					.getConnectParam());
+			// 创建元数据库dblink
+			createMetaDbLink(MultiDataSourceFactory.getInstance()
+					.getDataSource(connConfig));
+			// ************2016.11.11 zl****************
+			// 在元数据库中创建大区库的dblink
+			// 过渡期只有日库需要创建
+			if (dbType == 1) {
 				createRegionDbLinks(db);
 			}
-			
-			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
-			//修改log_action默认值
-			new QueryRunner().execute(conn, "ALTER TABLE LOG_ACTION MODIFY SRC_DB DEFAULT "+dbType);
+
+			conn = MultiDataSourceFactory.getInstance()
+					.getDataSource(connConfig).getConnection();
+			// 修改log_action默认值
+			new QueryRunner().execute(conn,
+					"ALTER TABLE LOG_ACTION MODIFY SRC_DB DEFAULT " + dbType);
 			//
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
-			//日库删除内业作业的行人导航数据
-			if(dbType==1){
+			// 日库删除内业作业的行人导航数据
+			if (dbType == 1) {
 				String delGdFile = "/com/navinfo/dataservice/scripts/resources/temp_delete_poi_gd.sql";
 				sqlExec.execute(delGdFile);
 			}
-			
+
 			PackageExec packageExec = new PackageExec(conn);
 			String spatialIndexSql = "/com/navinfo/dataservice/scripts/resources/create_spatial_utils_and_rebuild.sql";
 			packageExec.execute(spatialIndexSql);
@@ -288,117 +323,127 @@ public class InitRegiondb {
 			packageExec.execute(pckFile);
 			String pckFile2 = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
 			packageExec.execute(pckFile2);
-//			String pyutils = "/com/navinfo/dataservice/scripts/resources/pyutils.pck";
-//			packageExec.execute(pyutils,"UTF-8");
+			// String pyutils =
+			// "/com/navinfo/dataservice/scripts/resources/pyutils.pck";
+			// packageExec.execute(pyutils,"UTF-8");
 			conn.commit();
-		}finally{
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
-	private static Map<Integer,List<String>> getRegionMeshMap(Connection conn,Collection<Integer> regionIds)throws Exception{
+
+	private static Map<Integer, List<String>> getRegionMeshMap(Connection conn,
+			Collection<Integer> regionIds) throws Exception {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT C.REGION_ID,P.MESH FROM CP_REGION_PROVINCE C,CP_MESHLIST@METADB_LINK P WHERE C.ADMINCODE=P.ADMINCODE AND C.REGION_ID IN (");
 		sb.append(StringUtils.join(regionIds, ","));
 		sb.append(")");
 		QueryRunner run = new QueryRunner();
-		return run.query(conn, sb.toString(), new ResultSetHandler<Map<Integer,List<String>>>(){
+		return run.query(conn, sb.toString(),
+				new ResultSetHandler<Map<Integer, List<String>>>() {
 
-			@Override
-			public Map<Integer, List<String>> handle(ResultSet rs) throws SQLException {
-				Map<Integer,List<String>> results = new HashMap<Integer,List<String>>();
-				while(rs.next()){
-					int regionId = rs.getInt("REGION_ID");
-					List<String> meshes = results.get(regionId);
-					if(meshes==null){
-						meshes = new ArrayList<String>();
-						meshes.add(rs.getString("MESH"));
-						results.put(regionId, meshes);
-					}else{
-						meshes.add(rs.getString("MESH"));
+					@Override
+					public Map<Integer, List<String>> handle(ResultSet rs)
+							throws SQLException {
+						Map<Integer, List<String>> results = new HashMap<Integer, List<String>>();
+						while (rs.next()) {
+							int regionId = rs.getInt("REGION_ID");
+							List<String> meshes = results.get(regionId);
+							if (meshes == null) {
+								meshes = new ArrayList<String>();
+								meshes.add(rs.getString("MESH"));
+								results.put(regionId, meshes);
+							} else {
+								meshes.add(rs.getString("MESH"));
+							}
+						}
+						return results;
 					}
-				}
-				return results;
-			}
-			
-		});
+
+				});
 	}
-	private static void insertRegions(Connection conn,int regionId)throws Exception{
+
+	private static void insertRegions(Connection conn, int regionId)
+			throws Exception {
 		String sql = "INSERT INTO REGION(REGION_ID)VALUES(?)";
 		new QueryRunner().update(conn, sql, regionId);
 	}
-	
-	private static void insertGrids(Connection conn,int regionId)throws Exception{
+
+	private static void insertGrids(Connection conn, int regionId)
+			throws Exception {
 		QueryRunner run = new QueryRunner();
 		String sql = "UPDATE GRID G SET G.REGION_ID=? WHERE TRUNC(G.GRID_ID/100) IN (SELECT P.MESH FROM CP_MESHLIST@METADB_LINK P,CP_REGION_PROVINCE T WHERE P.ADMINCODE=T.ADMINCODE AND T.REGION_ID=?)";
-		run.update(conn, sql, regionId,regionId);
+		run.update(conn, sql, regionId, regionId);
 		String sql2 = "UPDATE GRID_LOCK_DAY SET REGION_ID=?,HANDLE_REGION_ID=? WHERE GRID_ID IN (SELECT GRID_ID FROM GRID WHERE REGION_ID=?)";
-		run.update(conn, sql2, regionId,regionId,regionId);
+		run.update(conn, sql2, regionId, regionId, regionId);
 		String sql3 = "UPDATE GRID_LOCK_MONTH SET REGION_ID=?,HANDLE_REGION_ID=? WHERE GRID_ID IN (SELECT GRID_ID FROM GRID WHERE REGION_ID=?)";
-		run.update(conn, sql3, regionId,regionId,regionId);
+		run.update(conn, sql3, regionId, regionId, regionId);
 	}
 
-	private static void insertDbIds(Connection conn,int regionId,int dayDbId,int monthDbId)throws Exception{
+	private static void insertDbIds(Connection conn, int regionId, int dayDbId,
+			int monthDbId) throws Exception {
 		String sql = "UPDATE REGION SET DAILY_DB_ID=?,MONTHLY_DB_ID=? WHERE REGION_ID=?";
-		new QueryRunner().update(conn, sql,dayDbId,monthDbId,regionId);
+		new QueryRunner().update(conn, sql, dayDbId, monthDbId, regionId);
 	}
-	private static void maintainInfoBlock(Connection conn,int regionId)throws Exception{
+
+	private static void maintainInfoBlock(Connection conn, int regionId)
+			throws Exception {
 		QueryRunner run = new QueryRunner();
 		String sql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,GEOMETRY,PLAN_STATUS,REGION_ID) VALUES (BLOCK_SEQ.NEXTVAL,100002,NULL,0,?)";
 		run.update(conn, sql, regionId);
 		String sql2 = "INSERT INTO BLOCK_GRID_MAPPING (GRID_ID,BLOCK_ID) SELECT G.GRID_ID,B.BLOCK_ID FROM BLOCK B,GRID G WHERE B.REGION_ID=G.REGION_ID AND B.CITY_ID=100002 AND B.REGION_ID=?";
-		run.update(conn, sql2,regionId);
+		run.update(conn, sql2, regionId);
 	}
-	
-	
-	private static void testExeSqlOrPck(){
+
+	private static void testExeSqlOrPck() {
 		Connection conn = null;
-		try{
+		try {
 			DbInfo db = DbService.getInstance().getDbById(19);
-			OracleSchema schema = new OracleSchema(DbConnectConfig.createConnectConfig(db.getConnectParam()));
+			OracleSchema schema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			conn = schema.getDriverManagerDataSource().getConnection();
-//			SqlExec sqlExec = new SqlExec(conn);
+			// SqlExec sqlExec = new SqlExec(conn);
 			PackageExec packageExec = new PackageExec(conn);
-//			String sqlFile = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
+			// String sqlFile =
+			// "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
 
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
-//			sqlExec.executeIgnoreError(sqlFile);
-			packageExec.execute(sqlFile,"UTF-8");
+			// sqlExec.executeIgnoreError(sqlFile);
+			packageExec.execute(sqlFile, "UTF-8");
 			conn.commit();
-		}catch(Exception e){
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			e.printStackTrace();
-		}finally{
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
-	public static void main(String[] args){
-//		testExeSqlOrPck();
-	testInstallPcks(111);
+
+	public static void main(String[] args) {
+		// testExeSqlOrPck();
+		testInstallPcks(111);
 	}
-	
-	private static void testInstallPcks(int dbId){
+
+	private static void testInstallPcks(int dbId) {
 		Connection conn = null;
-		
-			DbInfo db;
-			try {
-				db = DbService.getInstance()
-						.getDbById(dbId);
-				DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
-				//************2016.11.11 zl****************
-				//在元数据库中创建大区库的dblink
-				createRegionDbLinks(db);
-			} catch (DataHubException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		
+
+		DbInfo db;
+		try {
+			db = DbService.getInstance().getDbById(dbId);
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db
+					.getConnectParam());
+			// ************2016.11.11 zl****************
+			// 在元数据库中创建大区库的dblink
+			createRegionDbLinks(db);
+		} catch (DataHubException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
-	
+
 }

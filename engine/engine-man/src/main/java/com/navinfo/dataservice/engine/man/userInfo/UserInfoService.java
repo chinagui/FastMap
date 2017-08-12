@@ -610,7 +610,7 @@ public class UserInfoService {
 		Connection conn=null;
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item='"+firstWorkItem+"' AND u.user_id="+userId+" AND pc.type=1 ";
+		String selectSql = "SELECT pc.QC_VALUE FROM POI_COLUMN_QC_MAPPING u, POI_COLUMN_QC_CONF pc WHERE u.user_id="+userId+" AND u.qc_conf_id=pc.id AND pc.type=1 AND pc.first_work_item='"+firstWorkItem+"' ";
 		int qcLevel=0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();

@@ -187,7 +187,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getInsertTime());
 			};
-			if (bean!=null&&bean.getFeatureKind()!=null && bean.getFeatureKind()!=0 && StringUtils.isNotEmpty(bean.getFeatureKind().toString())){
+			if (bean!=null&&bean.getFeatureKind()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 				insertPart+=" FEATURE_KIND";
 				values+=" ? ";
@@ -241,7 +241,13 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				values+=" ? ";
 				value.add(bean.getRoadLength());
 			};
-			if (bean!=null&&bean.getSourceCode()!=null && bean.getSourceCode()!=0 && StringUtils.isNotEmpty(bean.getSourceCode().toString())){
+			if (bean!=null&&bean.getReportUserId()!=0){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
+				insertPart+=" REPORT_USER_ID";
+				values+=" ? ";
+				value.add(bean.getReportUserId());
+			};
+			if (bean!=null&&bean.getSourceCode()!=0 ){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 				insertPart+=" SOURCE_CODE";
 				values+=" ? ";
@@ -310,7 +316,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE,i.admin_code,i.infor_code,i.method");
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE,i.admin_code,i.infor_code,i.method,i.source_code,i.feature_kind,i.road_length");
 			sb.append("   FROM PROGRAM P, INFOR I       ");
 			sb.append("  WHERE P.INFOR_ID = I.INFOR_ID  ");
 			sb.append("    AND P.PROGRAM_ID = " + programId);
@@ -329,6 +335,10 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setInforCode(rs.getString("INFOR_CODE"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
 						infor.setMethod(rs.getString("METHOD"));
+						infor.setSourceCode(rs.getInt("source_code"));
+						//feature_kind,road_length
+						infor.setFeatureKind(rs.getInt("feature_kind"));
+						infor.setRoadLength(rs.getInt("road_length"));
 						return infor;
 					}
 					return null;

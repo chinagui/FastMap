@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.fcc.check;
 
+import java.sql.Clob;
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -7,19 +10,23 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckResultSelector;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckWrongSelector;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: TipsCheckSelector.java
@@ -30,7 +37,6 @@ import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
  */
 public class TipsCheckSelector {
 	
-	private SolrController solrConn = new SolrController();
 	
 	private static final Logger logger = Logger
 			.getLogger(TipsCheckSelector.class);
@@ -47,7 +53,7 @@ public class TipsCheckSelector {
 	 * @author: y
 	 * @time:2017-5-26 下午5:29:53
 	 */
-	public List<JSONObject> queryAllHashExtractTipsByTask(int worker,int checker, int checkTaskId, int workStatus) throws Exception {
+	public List<TipsDao> queryAllHashExtractTipsByTask(int worker,int checker, int checkTaskId, int workStatus) throws Exception {
 		
 		return queryAllHashExtractTipsByTask(worker, checker, checkTaskId, workStatus,null);
 		
@@ -65,8 +71,7 @@ public class TipsCheckSelector {
 	 * @author: y
 	 * @time:2017-5-26 下午5:29:53
 	 */
-	public List<JSONObject> queryAllHashExtractTipsByTask(int worker,int checker, int checkTaskId, int workStatus,String type) throws Exception {
-		
+	public List<TipsDao> queryAllHashExtractTipsByTask(int worker,int checker, int checkTaskId, int workStatus,String type) throws Exception {
 		try{
 			
 			JSONArray checkRowkeyList=new CheckResultSelector().queryByTipsRowkey(checkTaskId);
@@ -76,23 +81,28 @@ public class TipsCheckSelector {
 				throw new Exception("没有查询到当前任务的抽检记录："+checkTaskId+"请先进行抽检！");
 			}
 			
-			String solrQuery=new TipsRequestParam ().assambleSqlForCheckQuery(worker, checker, workStatus, checkRowkeyList);
+			String where=new TipsRequestParamSQL ().assambleSqlForCheckQuery(worker, checker, workStatus, checkRowkeyList);
 			
 			if(StringUtils.isEmpty(type)){
 				
-				solrQuery=solrQuery+" and s_sourceType: "+type;
+				where=where+" and s_sourceType='"+type+"'";
+			}
+			Connection oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+			try{
+		        String ids = checkRowkeyList.join(",");
+				Clob pidClod = ConnectionUtil.createClob(oracleConn);
+				pidClod.setString(1, ids);
+				List<TipsDao> tips = new TipsIndexOracleOperator(oracleConn).query("select * from tips_index where "+where, pidClod);
+				
+				return tips;
+			}finally{
+				DbUtils.closeQuietly(oracleConn);
 			}
 			
-			List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
-			
-			return tips;
-			
 		}catch (Exception e) {
-			
 			throw e;
-			
+		}finally{
 		}
-		
 	}
 
 
@@ -115,10 +125,10 @@ public class TipsCheckSelector {
 		 
 		 JSONObject jsonData=new JSONObject();
 		
-		 List<JSONObject> tips=queryAllHashExtractTipsByTask(workerId, checkerId, checkTaskId, workStatus);
+		 List<TipsDao> tips=queryAllHashExtractTipsByTask(workerId, checkerId, checkTaskId, workStatus);
 		 
-			for (JSONObject json : tips) {
-				int type = Integer.valueOf(json.getInt("s_sourceType"));
+			for (TipsDao tip : tips) {
+				int type = Integer.valueOf(tip.getS_sourceType());
 
 				if (map.containsKey(type)) {
 					map.put(type, map.get(type) + 1);
@@ -175,8 +185,12 @@ public class TipsCheckSelector {
 		
 		try{
 		
-			List<JSONObject> tips=queryAllHashExtractTipsByTask(workerId, checkerId, checkTaskId, workStatus,type);
-			
+			List<TipsDao> tipsDaoList=queryAllHashExtractTipsByTask(workerId, checkerId, checkTaskId, workStatus,type);
+			List<JSONObject> tips = new ArrayList<JSONObject>();
+			for(TipsDao tip:tipsDaoList){
+				JSONObject tipJson = TipsUtils.tipsFromJSONObject(tip);
+				tips.add(tipJson);
+			}
 			TipsSelector sel=new TipsSelector();
 			
 			snapotArr=sel.convert2Snapshot(tips, dbId, Integer.valueOf(type));

@@ -1,11 +1,16 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
+import com.alibaba.fastjson.JSON;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.navicommons.database.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,6 +20,7 @@ import java.sql.SQLException;
  * Created by wangshishuai3966 on 2017/7/7.
  */
 public class JobProgressOperator {
+	private Logger log = LoggerRepos.getLogger(JobProgressOperator.class);
 
     private Connection conn;
 
@@ -45,6 +51,21 @@ public class JobProgressOperator {
         String sql = "insert into job_progress values(?,?,?,?,SYSDATE,NULL,NULL,?,?,NULL)";
         run.update(conn, sql, jobProgress.getPhaseId(), jobProgress.getJobId(), jobProgress.getPhase(), jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter());
     }
+    
+    /**
+     * 每个阶段执行后，发送消息
+     * @param phaseId
+     */
+    public void pushMsg(long phaseId) {
+		try {
+            JobMessage jobMessage = getJobMessage(phaseId);
+            String message = JSON.toJSONString(jobMessage);
+            log.info("publishManJobMsg:"+message);
+            SysMsgPublisher.publishManJobMsg(message, jobMessage.getOperator());
+        } catch (Exception ex) {
+            log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
+        }
+	}
 
     /**
      * 读取已有的记录
@@ -79,8 +100,8 @@ public class JobProgressOperator {
      *
      * @throws SQLException
      */
-    public void updateStatus(JobProgress jobProgress, JobProgressStatus status) throws SQLException {
-        jobProgress.setStatus(status);
+    public void updateStatus(JobProgress jobProgress) throws SQLException {
+        //jobProgress.setStatus(status);
 
         QueryRunner run = new QueryRunner();
         String sql;

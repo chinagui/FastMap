@@ -269,11 +269,11 @@ public class DataEditService {
 				int poiPid = run.queryForInt(connPoi, queryPoiPid);
 
 				if (adoptedPoiNum.contains((Object) poiNum.replace("'", ""))
-						&& !corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))) {
+						&& (corresDealership.getCfmPoiNum()!=null&&!corresDealership.getCfmPoiNum().equals(poiNum.replace("'", "")))) {
 					adoptedPoiPid.add(poiPid);
 				}
 				
-				if(corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
+				if(corresDealership.getCfmPoiNum()!=null&&corresDealership.getCfmPoiNum().equals(poiNum.replace("'", ""))){
 					cfmPoiPid=poiPid;
 				}
 				
@@ -284,7 +284,7 @@ public class DataEditService {
 				matchPois.add(poi);
 			}
 
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(matchPois, connPoi);
 			JSONObject result = componentJsonData(corresDealership, poiArray, adoptedPoiPid, conn, dbId);
 			
 			//返回cfm_poi_num检查log
@@ -292,7 +292,7 @@ public class DataEditService {
 			
 			if(cfmPoiPid!=0){
 				NiValExceptionSelector selector = new NiValExceptionSelector(connPoi);
-				List<String> checkRuleList=selector.loadByOperationName("DEALERSHIP_SAVE");
+				List<String> checkRuleList = selector.loadByOperationName("DEALERSHIP_SAVE");
 				JSONArray checkResultsArr = selector.poiCheckResultList(cfmPoiPid,checkRuleList);
 				
 				log.put("data", checkResultsArr);
@@ -346,6 +346,9 @@ public class DataEditService {
 		dealershipMap.put("dbId", dbId);
 		dealershipMap.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
 		dealershipMap.put("cfmIsAdopted", dealership.getCfmIsAdopted());
+		dealershipMap.put("dealSrcDiff", dealership.getDealSrcDiff());
+		dealershipMap.put("dealStatus", dealership.getDealStatus());
+		
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
@@ -533,19 +536,13 @@ public class DataEditService {
 			return "success ";
 		}catch(Exception e){
 			e.printStackTrace();
-			DbUtils.rollback(con);
-			DbUtils.rollback(mancon);
-			DbUtils.rollback(dailycon);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(mancon);
+			DbUtils.rollbackAndCloseQuietly(dailycon);
 		}finally{
-			if(con != null){
-				DbUtils.commitAndClose(con);
-			}
-			if(mancon != null){
-				DbUtils.commitAndClose(mancon);
-			}
-			if(dailycon != null){
-				DbUtils.commitAndClose(dailycon);
-			}
+			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.commitAndCloseQuietly(mancon);
+			DbUtils.commitAndCloseQuietly(dailycon);
 		}
 		return null;
 	}
@@ -715,22 +712,23 @@ public class DataEditService {
 			log.info("resultId" + resultId + "在日库中对应的内容为空");
 			return;
 		}
+		String dailyPoiChain = resultKindCode.get("poi_chain").toString();
+		String dailytPoiCode = resultKindCode.get("poi_kind_code").toString();
 		//元数据库中数据
-		Map<String, Object> metaKindCode = getMetaKindCode(chainCode);
+		Map<String, Object> metaKindCode = getMetaKindCode(chainCode, dailytPoiCode);
 		if(metaKindCode == null || metaKindCode.size() == 0){
 			log.info("resultId" + resultId + "在元数据库中对应的内容为空");
 			return;
 		}
-		String dailyPoiChain = resultKindCode.get("poi_chain").toString();
-		String dailytPoiCode = resultKindCode.get("poi_kind_code").toString();
+
 		String MetaPoiChain = metaKindCode.get("poi_chain").toString();
 		String MetaPoiCode = metaKindCode.get("poi_kind_code").toString();
 		if(dailyPoiChain.equals(MetaPoiChain) && dailytPoiCode.equals(MetaPoiCode)){
-			String MetaKindChain = metaKindCode.get("r_kind_chain").toString();
-			String MetaKind = metaKindCode.get("r_kind").toString();
+//			String MetaKindChain = metaKindCode.get("r_kind_chain").toString();
+//			String MetaKind = metaKindCode.get("r_kind").toString();
 			//调用POI分类和品牌赋值方法
 			log.info(resultId+"调用POI分类和品牌赋值方法");
-			editResultTableBrands(resultId, MetaKindChain, MetaKind, con);
+			editResultTableBrands(resultId, dailyPoiChain, dailytPoiCode);
 			//调用生成POI履历
 			log.info(resultId+"调用生成POI履历");
 			JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId);
@@ -871,10 +869,10 @@ public class DataEditService {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result = new HashMap();
 					if (rs.next()) {
-						result.put("poi_kind_code", rs.getString("kind_code"));
-						result.put("poi_chain", rs.getString("chain"));
-						result.put("pid", rs.getInt("pid"));
-						result.put("row_id", rs.getObject("row_id"));
+						result.put("poi_kind_code", (rs.getString("kind_code") == null) ? "" : rs.getString("kind_code"));
+						result.put("poi_chain", (rs.getString("chain") == null) ? "" : rs.getString("chain"));
+						result.put("pid", (rs.getString("pid") == null) ? "" : rs.getString("pid"));
+						result.put("row_id", (rs.getString("row_id") == null) ? "" : rs.getString("row_id"));
 					}
 					return result;
 				}
@@ -893,31 +891,31 @@ public class DataEditService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public Map<String, Object> getMetaKindCode(String chainCode) throws SQLException{
-		Connection Metacon = null;
+	public Map<String, Object> getMetaKindCode(String chainCode, String dailytPoiCode) throws SQLException{
+		Connection metaConn = null;
 		try{
-			Metacon = DBConnector.getInstance().getMetaConnection();
+			metaConn = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
-			String sql = "select t.r_kind_chain, t.r_kind,t.poikind,t.poikind_chain from SC_POINT_KIND_INNER2OUT t where t.r_kind_chain ='"+chainCode+"'";
+			String sql = "select t.r_kind_chain, t.r_kind,t.poikind,t.poikind_chain from SC_POINT_KIND_INNER2OUT t where t.r_kind_chain ='"+chainCode+"' and t.poikind ='"+dailytPoiCode+"'";
 			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
 				@Override
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result = new HashMap();
 					if (rs.next()) {
-						result.put("poi_kind_code", rs.getString("poikind"));
-						result.put("poi_chain", rs.getString("poikind_chain"));
-						result.put("r_kind_chain", rs.getString("r_kind_chain"));
-						result.put("r_kind", rs.getString("r_kind"));
+						result.put("poi_kind_code", (rs.getString("poikind") == null) ? "" : rs.getString("poikind"));
+						result.put("poi_chain", (rs.getString("poikind_chain") == null) ? "" : rs.getString("poikind_chain"));
+						result.put("r_kind_chain", (rs.getString("r_kind_chain") == null) ? "" : rs.getString("r_kind_chain"));
+						result.put("r_kind", (rs.getString("r_kind") == null) ? "" : rs.getString("r_kind"));
 					}
 					return result;
 				}
 			};
-			return run.query(Metacon, sql, rs);
+			return run.query(metaConn, sql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(Metacon);
+			DbUtils.rollbackAndCloseQuietly(metaConn);
 			throw e;
 		}finally{
-			DbUtils.close(Metacon);
+			DbUtils.commitAndCloseQuietly(metaConn);
 		}
 	}
 	
@@ -927,14 +925,20 @@ public class DataEditService {
 	 * @param MetaKind
 	 * @throws Exception 
 	 * */
-	public void editResultTableBrands(int resultId, String brand, String kindCode, Connection con) throws Exception{
+	public void editResultTableBrands(int resultId, String poiChain, String poiKindCode) throws Exception{
+		Connection Metacon = null;
 		try{
+			Metacon = DBConnector.getInstance().getMetaConnection();
 			QueryRunner run = new QueryRunner();
-			String sql = "update IX_DEALERSHIP_RESULT t "
-					+ "set t.poi_kind_code = '"+kindCode+"', t.poi_chain = '"+brand+"' where t.RESULT_ID ="+resultId;
-			run.execute(con, sql);
+			String sql = "update SC_POINT_KIND_INNER2OUT t set t.r_kind = t.poikind, t.r_kind_chain = t.poikind_chain where t.poikind_chain = '"+poiChain+"' and t.poikind = "+poiKindCode+"";
+			log.info("POI品牌和分类赋值方法sql:" + sql);
+			run.execute(Metacon, sql);
 		}catch(Exception e){
+			log.error("POI品牌和分类赋值方法异常:" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(Metacon);
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(Metacon);
 		}
 	}
 	
@@ -1184,20 +1188,14 @@ public class DataEditService {
 			clearRelevancePoi(resultId, con);
 			inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 		}catch(Exception e){
-			DbUtils.rollback(con);
-			DbUtils.rollback(mancon);
-			DbUtils.rollback(dailycon);
+			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollbackAndCloseQuietly(mancon);
+			DbUtils.rollbackAndCloseQuietly(dailycon);
 			throw e;
 		}finally{
-			if(con != null){
-				DbUtils.commitAndClose(con);
-			}
-			if(mancon != null){
-				DbUtils.commitAndClose(mancon);
-			}
-			if(dailycon != null){
-				DbUtils.commitAndClose(dailycon);
-			}
+			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.commitAndCloseQuietly(mancon);
+			DbUtils.commitAndCloseQuietly(dailycon);
 		}
 	}
 	
@@ -1232,7 +1230,7 @@ public class DataEditService {
 	 * @param parameter
 	 * @param userId
 	 */
-	public void saveDataService(JSONObject parameter, long userId) throws Exception {
+	public OperationResult saveDataService(JSONObject parameter, long userId) throws Exception {
 	
         Connection poiConn = null;
         Connection dealershipConn = null;
@@ -1314,6 +1312,7 @@ public class DataEditService {
     			
     			//更新IX_DEALERSHIP_RESULT.workflow_status=3，且写履历
     			updateResultWkfStatus(9,resultId,dealershipConn,userId);
+    			return operationResult;
             }
             
             //审核意见为转外业、转客户
@@ -1333,13 +1332,14 @@ public class DataEditService {
         	}
  
 		}catch(Exception e){
-            DbUtils.rollback(dealershipConn);
-            DbUtils.rollback(poiConn);
+            DbUtils.rollbackAndCloseQuietly(dealershipConn);
+            DbUtils.rollbackAndCloseQuietly(poiConn);
             throw e;
 		}finally{
-            DbUtils.commitAndClose(dealershipConn);
-            DbUtils.commitAndClose(poiConn);
+			DbUtils.commitAndCloseQuietly(dealershipConn);
+			DbUtils.commitAndCloseQuietly(poiConn);
 		}
+		return null;
 	}
 	
 	public boolean isOccupied(String poiNum ,int resultId, Connection conn ) throws Exception {
@@ -1429,7 +1429,9 @@ public class DataEditService {
 	 * @throws Exception 
 	 */
 	public void commitDealership(String chainCode, Connection conn,long userId) throws Exception {
+		Map<Integer, Connection> mapConn = new HashMap<Integer, Connection>();
 		try {
+			mapConn = DataPrepareService.getInstance().queryAllRegionConn();
 			List<IxDealershipResult> resultList = null;
 			if(StringUtils.isNotBlank(chainCode)){
 				resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
@@ -1438,71 +1440,64 @@ public class DataEditService {
 				
 				
 				for (IxDealershipResult result : resultList) {
-					Connection regionConn = null;
-					Connection mancon = null;
-					try {
-						String poiNum = result.getCfmPoiNum();
-						
-						mancon = DBConnector.getInstance().getManConnection();
-						int dbId = getDailyDbId(result.getRegionId(), mancon);
-						regionConn = DBConnector.getInstance().getConnectionById(dbId);
-						List<String> dealerShipCheckRuleList = getDealerShipCheckRule();//查询代理店检查项
-						int count = queryCKLogByPoiNum(poiNum,dealerShipCheckRuleList,regionConn);//查询该pid下有无错误log
-						if(count==0){
-							IxDealershipResult noLogResult = IxDealershipResultSelector.
-									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
-							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
-							Integer resultId = result.getResultId();
-							IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-							IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
-						}
-						
-						if(StringUtils.isNotBlank(poiNum)){//执行批处理
-							List<Long> pidList = new ArrayList<>();
-							pidList.add(selectPidByPoiNum(poiNum, regionConn).longValue());
-							Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(regionConn, pidList);
-							Set<String> tabNames = getChangeTableSet(logs);
-							// 获取poi对象
-							Map<Long, BasicObj> objs = null;
-							if (tabNames == null || tabNames.size() == 0) {
-								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, true, pidList, false, false);
-							} else {
-								objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, false, pidList, false, false);
-							}
-							// 将poi对象与履历合并起来
-							ObjHisLogParser.parse(objs, logs);
-							OperationResult operationResult = new OperationResult();
-							operationResult.putAll(objs.values());
-
-							BatchCommand batchCommand = new BatchCommand();
-							batchCommand.setOperationName("BATCH_DEALERSHIP_RELEASE");
-							Batch batch = new Batch(regionConn, operationResult);
-							batch.operate(batchCommand);
-							System.out.println(batch.getName());
-							batch.persistChangeLog(OperationSegment.SG_ROW, 0);
-						}
-						
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw e;
-					} finally{
-						DbUtils.commitAndCloseQuietly(mancon);
-						DbUtils.commitAndCloseQuietly(regionConn);
+					String poiNum = result.getCfmPoiNum();
+					
+					Connection regionConn = mapConn.get(result.getRegionId());
+//						int dbId = getDailyDbId(result.getRegionId(), mancon);
+//						Connection regionConn = DBConnector.getInstance().getConnectionById(dbId);
+					
+					
+					List<String> dealerShipCheckRuleList = getDealerShipCheckRule();//查询代理店检查项
+					int count = queryCKLogByPoiNum(poiNum,dealerShipCheckRuleList,regionConn);//查询该pid下有无错误log
+					if(count==0){
+						IxDealershipResult noLogResult = IxDealershipResultSelector.
+								getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
+						updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
+						Integer resultId = result.getResultId();
+						IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+						Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+						IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 					}
+					
+					if(StringUtils.isNotBlank(poiNum)){//执行批处理
+						List<Long> pidList = new ArrayList<>();
+						pidList.add(selectPidByPoiNum(poiNum, regionConn).longValue());
+						Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(regionConn, pidList);
+						Set<String> tabNames = getChangeTableSet(logs);
+						// 获取poi对象
+						Map<Long, BasicObj> objs = null;
+						if (tabNames == null || tabNames.size() == 0) {
+							objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, true, pidList, false, false);
+						} else {
+							objs = ObjBatchSelector.selectByPids(regionConn, ObjectName.IX_POI, tabNames, false, pidList, false, false);
+						}
+						// 将poi对象与履历合并起来
+						ObjHisLogParser.parse(objs, logs);
+						OperationResult operationResult = new OperationResult();
+						operationResult.putAll(objs.values());
+
+						BatchCommand batchCommand = new BatchCommand();
+						batchCommand.setOperationName("BATCH_DEALERSHIP_RELEASE");
+						Batch batch = new Batch(regionConn, operationResult);
+						batch.operate(batchCommand);
+						System.out.println(batch.getName());
+						batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+					}
+					
 				}
-				
-		
-				
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			DbUtils.rollbackAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw e;
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			for (Connection value : mapConn.values()) {
+				DbUtils.commitAndCloseQuietly(value);
+			}
 		}
 	}
 	
@@ -1714,9 +1709,9 @@ public class DataEditService {
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impConfirmExcel(localFile);
-		Connection conn=null;
+		Connection conn = null;
 		try{
-			conn=DBConnector.getInstance().getDealershipConnection();
+			conn = DBConnector.getInstance().getDealershipConnection();
 			//导入到oracle库中
 			for(Map<String, Object> map:sourceMaps){
 				IxDealershipResult ixDealershipResult = new IxDealershipResult();
@@ -1901,7 +1896,7 @@ public class DataEditService {
 			
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
 			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, null);
 			return poiArray;
 			
 		}catch (Exception e) {
@@ -1934,6 +1929,7 @@ public class DataEditService {
 		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			StringBuilder sb = new StringBuilder();
 			boolean flag = false;
+			boolean need2Degree = false;//需要两公里扩圈
 			Geometry point = null;
 			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
 				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
@@ -1945,17 +1941,18 @@ public class DataEditService {
 					String wkt = "POINT(" +xLocation + " " + yLocation + ")";
 					point = new WKTReader().read(wkt);
 					sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-					assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+					need2Degree = true;
+					assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 					point = point.buffer(GeometryUtils.convert2Degree(2000));
 				}else{
-					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据代理店坐标关联名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
+					if (StringUtils.isNotBlank(proCode)) {//③输入条件不包含POI_NUM且不包含poi(x,y)显示坐标且包含省份时，根据省份或者省份确定范围，根据名称、地址或者电话进行查询，此种情况不进行2公里范围检索；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p,ad_admin ad ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						sb.append("AND p.region_id = ad.region_id AND ad.admin_id LIKE '"+proCode+"%' ");
-						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 					}else{//④输入条件不包含POI_NUM、不包含poi(x,y)显示坐标，不包含省份，根据名称或地址或电话关联代理店坐标2公里范围查询；
 						sb.append("SELECT DISTINCT p.pid FROM ix_poi p ");
-						assembleQueryPidListCon(sb, name, address, telephone);//针对高级查询组装条件
+						need2Degree = true;
+						assembleQueryPidListCon(sb, name, address, telephone,need2Degree);//针对高级查询组装条件
 						point = IxDealershipResultSelector.getGeometryByResultId(resultId);
 						String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
 						point = new WKTReader().read(wkt);
@@ -1969,10 +1966,12 @@ public class DataEditService {
 			if(flag){
 				pstmt.setString(1, poiNum);
 			}else{
-			    String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
-				Clob geom = ConnectionUtil.createClob(conn);			
-				geom.setString(1, wkt);
-			    pstmt.setClob(1,geom);
+				if(need2Degree){
+					String wkt = GeoTranslator.jts2Wkt(point,0.00001, 5);
+					Clob geom = ConnectionUtil.createClob(conn);			
+					geom.setString(1, wkt);
+				    pstmt.setClob(1,geom);
+				}
 			}
 			rs = pstmt.executeQuery();
 
@@ -2001,8 +2000,9 @@ public class DataEditService {
 	 * @param name
 	 * @param address
 	 * @param telephone
+	 * @param need2Degree 需要2公里扩圈 
 	 */
-	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone){
+	public void assembleQueryPidListCon(StringBuilder sb,String name,String address,String telephone,boolean need2Degree){
 		if(StringUtils.isNotBlank(name)){
 			sb.append(", ix_poi_name pn ");
 		}
@@ -2012,7 +2012,10 @@ public class DataEditService {
 		if(StringUtils.isNotBlank(telephone)){
 			sb.append(", ix_poi_contact pc ");
 		}
-		sb.append("WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" WHERE 1=1 ");
+		if(need2Degree){
+			sb.append("AND sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		}
 		if(StringUtils.isNotBlank(name)){
 			sb.append("AND p.pid = pn.poi_pid AND pn.name_class = 1 AND pn.name_type  = 2 AND pn.lang_code = 'CHI'"
 					+ " AND pn.name LIKE '%"+name+"%' ");
@@ -2067,10 +2070,17 @@ public class DataEditService {
 			List<Integer> resultIdList = new ArrayList<>();
 			List<String> chainCodeList = new ArrayList<>();
 			EditIxDealershipResult editIxDealershipResult = new EditIxDealershipResult();
+			boolean flag = false;
 			for(Map<String, Object> map : addDataMaps){
+				chainCode = map.get("chain").toString();
+				
+				chainCodeList.add(chainCode);
 				if(StringUtils.isBlank(map.get("number").toString())){
 					log.info("开始新增无序号的数据");
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+					addResultId2ResultIdList(resultIdList, resultIds);
+					flag = true;
 					continue;
 				}
 //				resultId = Integer.parseInt(map.get("number").toString());
@@ -2080,6 +2090,9 @@ public class DataEditService {
 				//新增
 				if("3".equals(history)){
 					editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+					HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+					addResultId2ResultIdList(resultIdList, resultIds);
+					flag = true;
 					log.info("补充增量数据新增完成");
 				}
 				//上传的resultID在库中不存在，异常
@@ -2090,36 +2103,39 @@ public class DataEditService {
 				if("1".equals(history) || "2".equals(history) || "4".equals(history)){
 					if("3".equals(map.get("dealStatus").toString()) && "9".equals(map.get("workFlowStatus").toString())){
 						editIxDealershipResult.editIxDealershipResult(conn, addChainDataEntity, "insert", map, userId);
+						HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
+						addResultId2ResultIdList(resultIdList, resultIds);
+						flag = true;
 						log.info("补充增量数据新增完成");
 					}else{
 						editIxDealershipResult.editIxDealershipResult(conn ,addChainDataEntity, "update", map, userId);
 						log.info("补充增量数据更新完成");
 					}
 				}
-				chainCode = map.get("chain").toString();
-				
-				chainCodeList.add(chainCode);
-			}
-			HashSet<Integer> resultIds = queryResultIdsForNoNumber(conn);
-			Iterator<Integer> it = resultIds.iterator();
-			while (it.hasNext()){
-				resultIdList.add(it.next());
 			}
 			
 			chainCodeList = removeDuplicate(chainCodeList);
 			log.info("开始根据chain:"+chainCode+"修改对应的品牌状态");
-			if(chainCodeList.size() > 0){
-				updateStatusByChain(conn, chainCodeList);
-			}
-			updateReulteData(conn, resultIdList);
+//			if(chainCodeList.size() > 0){
+//				updateStatusByChain(conn, chainCodeList);
+//			}
+//			updateReulteData(conn, resultIdList);
 			resultMap.put("resultIdList", resultIdList);
 			resultMap.put("chainCodeList", chainCodeList);
+			resultMap.put("flag", flag);
 			return resultMap;
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private void addResultId2ResultIdList(List<Integer> resultIdList,HashSet<Integer> resultIds) {
+		Iterator<Integer> it = resultIds.iterator();
+		if (it.hasNext()){
+			resultIdList.add(it.next());
 		}
 	}
 	
@@ -2176,8 +2192,8 @@ public class DataEditService {
 			DbUtils.rollbackAndCloseQuietly(dealershipConn);
 			log.error(e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(metaConn);
-			DbUtils.closeQuietly(dealershipConn);
+			DbUtils.commitAndCloseQuietly(metaConn);
+			DbUtils.commitAndCloseQuietly(dealershipConn);
 		}
 		
 		for (int i = 0; i < list.size(); i++) {
@@ -2188,7 +2204,8 @@ public class DataEditService {
 			String chain = list.get(i).get("chain").toString();
 			String name = list.get(i).get("name").toString();
 			String address = list.get(i).get("address").toString();
-			Integer history = Integer.valueOf(list.get(i).get("history").toString()) ;
+			String his = list.get(i).get("history").toString();
+			
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
 				throw new ServiceException("第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
@@ -2210,8 +2227,12 @@ public class DataEditService {
 			if(StringUtils.isEmpty(address) || !com.navinfo.dataservice.commons.util.ExcelReader.h2f(address).equals(address)){
 				throw new ServiceException("第" + (i+2) + "行中：厂商提供地址为空或不是全角");
 			}
-			if(!historyList.contains(history)){
-				throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+			if(StringUtils.isEmpty(his)){
+				throw new ServiceException("第" + (i+2) + "行中：变更履历为空");
+			} else {
+				if(!historyList.contains(Integer.valueOf(his))){
+					throw new ServiceException("第" + (i+2) + "行中：变更履历值不在{1,2,3,4}范围内");
+				}
 			}
 		}
 	}
@@ -2225,12 +2246,12 @@ public class DataEditService {
 	public HashSet<Integer> queryResultIdsForNoNumber(Connection conn) throws Exception{
 		try {
 			QueryRunner run = new QueryRunner();
-			String sql = "select RESULT_SEQ.currval as id from IX_DEALERSHIP_RESULT";
+			String sql = "SELECT RESULT_SEQ.CURRVAL AS ID FROM DUAL";
 			ResultSetHandler<HashSet<Integer>> rs = new ResultSetHandler<HashSet<Integer>>() {
 				@Override
 				public HashSet<Integer> handle(ResultSet rs) throws SQLException {
 					HashSet<Integer> hs = new HashSet<Integer>();
-					while(rs.next()){
+					if(rs.next()){
 						hs.add(rs.getInt("id"));
 					}
 					return hs;
@@ -2305,6 +2326,7 @@ public class DataEditService {
 	 * @throws Exception 
 	 */
 	public void checkImpAddData(Connection conn, List<Map<String, Object>> addDataMaps) throws Exception{
+		List<Integer> dealStatusList = Arrays.asList(0,1,2);
 		for(Map<String, Object> addDataMap : addDataMaps){
 			try{
 				String resultId = addDataMap.get("number").toString();
@@ -2314,7 +2336,6 @@ public class DataEditService {
 				if(StringUtils.isBlank(resultId) && !"3".equals(history)){
 					throw new Exception("序号为："+resultId+"变更履历为："+history+",文件不可上传！");
 				}
-				
 				if(StringUtils.isBlank(resultId)){
 					continue;
 				}
@@ -2324,22 +2345,26 @@ public class DataEditService {
 					continue;
 				}
 				String workFlowStatus = null;
-				String dealStatus = null;
+				int dealStatus = 0;
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值不为3(非新增)，
 				//且上传文件中“序号”在RESULT表result_id中存在,且(workflow_status=9 and deal_status<>3),则该文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && !"3".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					dealStatus = statusMap.get("dealStatus").toString();
-					if("9".equals(workFlowStatus) && !"3".equals(dealStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"dealStatus:"+dealStatus+"的文件不可上传！");
+					dealStatus = (int) statusMap.get("dealStatus");
+					if(2 == dealStatus){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				//若补充数据上传文件中“序号”有值，且文件中“变更履历”的值为2(删除)，
-				//且传文件中“序号”在RESULT表result_id中存在，且RESULT表中工艺状态为“外业处理完成，出品”即9，则该文件不可以上传
+				//且传文件中“序号”在RESULT表result_id中存在，且代理点状态为{0,1,2}，则文件不可以上传
 				if(StringUtils.isNotBlank(resultId) && "2".equals(history)){
 					workFlowStatus = statusMap.get("workFlowStatus").toString();
-					if("9".equals(workFlowStatus)){
-						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+					dealStatus = (int) statusMap.get("dealStatus");
+//					if("9".equals(workFlowStatus)){
+//						throw new Exception("序号为："+resultId+"，履历为："+history+"workFlowStatus:"+workFlowStatus+"的文件不可上传！");
+//					}
+					if(dealStatusList.contains(dealStatus)){
+						throw new Exception("序号为："+resultId+"，履历为："+history+"dealStatus:"+dealStatus+"的文件不可上传！");
 					}
 				}
 				addDataMap.put("workFlowStatus", workFlowStatus);
@@ -2472,8 +2497,7 @@ public class DataEditService {
 			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
 			sbTel.append(" WHERE I.POI_NUM =:1");
 			sbTel.append(" AND I.PID = C.POI_PID");
-			sbTel.append(" AND ((C.CONTACT_TYPE = 3 AND C.CONTACT_DEPART = 0) OR");
-			sbTel.append(" C.CONTACT_DEPART IN (32, 16, 8))");
+			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8)");
 			sbTel.append(" AND C.U_RECORD <> 2");
 			
 			pstmt = conn.prepareStatement(sbTel.toString());
@@ -2486,7 +2510,7 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				if (resultSet.getInt("CONTACT_DEPART")==32){
+				if (resultSet.getInt("CONTACT_DEPART")==0&&resultSet.getInt("CONTACT_TYPE")!=3){
 					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
 					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
@@ -2514,13 +2538,14 @@ public class DataEditService {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
-	public int runDealershipCheck(JSONObject jsonReq) throws Exception{
+	public int runDealershipCheck(JSONObject jsonReq,OperationResult opResult) throws Exception{
 		log.info("start runDealershipCheck");
-		int resultCount=0;
-		Connection conn=null;
+		int resultCount = 0;
+		Connection conn = null;
     	try{
     		 JSONObject dealershipInfo = JSONObject.fromObject(jsonReq.getString("dealershipInfo"));
              int wkfStatus= dealershipInfo.getInt("workflowStatus");
@@ -2529,7 +2554,10 @@ public class DataEditService {
              }
     		JSONObject poiData = JSONObject.fromObject(jsonReq.getString("poiData"));
         	int poiDbId = poiData.getInt("dbId");
-        	int objPid = poiData.getInt("objId");
+        	BasicObj obj=opResult.getAllObjs().get(0);
+        	com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi ixPoi = (com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi) obj.getMainrow();
+        	int objPid = (int) ixPoi.getPid();
+        
     	conn=DBConnector.getInstance().getConnectionById(poiDbId);
 		log.info("要检查的数据pid:"+objPid);
 		log.info("获取要检查的数据的履历");
@@ -2557,7 +2585,7 @@ public class DataEditService {
 		DeepCoreControl deepControl = new DeepCoreControl();
 		List<Integer> pidIntList=new ArrayList<Integer>();
 		pidIntList.add(objPid);
-		deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+		deepControl.cleanExByCkRule(poiDbId, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 		log.info("end 清理检查结果");
 		
 		Check check=new Check(conn, operationResult);

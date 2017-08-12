@@ -56,6 +56,7 @@ public class TomcatStatInfoLoader {
 		String json = null; 
 		String json_druid = null;
 		List<StatInfo> datas =null;
+		String endpoint = "FM-service-"+ip;
 		try {
 			
 			datas = new ArrayList<StatInfo>();
@@ -84,7 +85,7 @@ public class TomcatStatInfoLoader {
 				double gctmPercent = (double)Math.round(((gctm-gctmLast)/(step*1000))*10000)/100;
 						
 				StatInfo statInfo_memo = new StatInfo();
-				statInfo_memo.setEndpoint(ip);
+				statInfo_memo.setEndpoint(endpoint);
 				statInfo_memo.setMetric("fos.tomcat.memoUsed");
 				statInfo_memo.setTags("biz="+tomcat);
 				statInfo_memo.setValue(usedPercent);
@@ -92,7 +93,7 @@ public class TomcatStatInfoLoader {
 				statInfo_memo.setStep(step);
 				
 				StatInfo statInfo_gc = new StatInfo();
-				statInfo_gc.setEndpoint(ip);
+				statInfo_gc.setEndpoint(endpoint);
 				statInfo_gc.setMetric("fos.tomcat.gc");
 				statInfo_gc.setTags("biz="+tomcat);
 				statInfo_gc.setValue(gctmPercent);
@@ -121,7 +122,7 @@ public class TomcatStatInfoLoader {
 //					int PhysicalCloseCount = dbJobj.getInt("ActiveCount");//物理关闭总数
 					int unclosedCount = (LogicConnectCount-LogicCloseCount);
 					StatInfo statInfo_db_unclosed = new StatInfo();
-					statInfo_db_unclosed.setEndpoint(ip);
+					statInfo_db_unclosed.setEndpoint(endpoint);
 					statInfo_db_unclosed.setMetric("fos.tomcat.jdbc.unclosedConn");
 					statInfo_db_unclosed.setTags("biz="+tomcat+",db="+dbUserName);
 					statInfo_db_unclosed.setValue(unclosedCount);
@@ -129,7 +130,7 @@ public class TomcatStatInfoLoader {
 					statInfo_db_unclosed.setStep(step);
 					
 					StatInfo statInfo_db_active = new StatInfo();
-					statInfo_db_active.setEndpoint(ip);
+					statInfo_db_active.setEndpoint(endpoint);
 					statInfo_db_active.setMetric("fos.tomcat.jdbc.activeConn");
 					statInfo_db_active.setTags("biz="+tomcat+",db="+dbUserName);
 					statInfo_db_active.setValue(activeCount);

@@ -36,7 +36,8 @@ public class PhotoGetter {
 		byte[] photo = control.getPhotoByRowkey(rowkey);
 
 		if ("origin".equals(type)) {
-			return photo;
+			return FileUtils.rotateOrigin(photo);
+//			return photo;
 		} else {
 			return FileUtils.makeSmallImage(photo);
 		}

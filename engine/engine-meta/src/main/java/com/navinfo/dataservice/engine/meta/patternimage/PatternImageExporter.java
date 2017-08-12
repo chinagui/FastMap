@@ -215,9 +215,9 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D','CRPG')";
 		if(StringUtils.isNotEmpty(date)){
-			sql+=" and update_time > to_date('"
+			sql+=" and imp_date > to_date('"
 							+ date + "','yyyymmddhh24miss')";
 		}
 		
@@ -248,7 +248,7 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D','CRPG')";
 		//**********zl 2016.12.26**********
 		/*String sql = " select file_name,format,file_content,b_type ,m_type from sc_model_match_g  where b_type in ('2D','3D','HEG','CRPG','Dsign','SCHEMATIC','CRCG') "
 				+ " union all "

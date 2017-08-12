@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -72,11 +73,13 @@ public class GLM60085 extends BasicCheckRule {
     			}
     		}
     		return false;
-    	} catch (Exception e) {
-    		throw e;
-    	} finally {
-    		
-    	}
+    	}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
     }
 
 	@Override

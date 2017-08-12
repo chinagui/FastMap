@@ -113,10 +113,9 @@ public class PretreatmentTipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String rowkey = jsonReq.getString("rowkey");
-			
-			int delType = 1; //默认物理删除。0：逻辑删除；1：物理删除 2:无数据
-			
-//			int user = jsonReq.getInt("user");
+
+			//默认物理删除。0：逻辑删除；1：物理删除 2:不用删除
+			int delType = PretreatmentTipsOperator.TIP_PHYSICAL_DELETE;
 
             int subTaskId = jsonReq.getInt("subTaskId");
 
@@ -124,14 +123,12 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
 
-			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
-			
 			PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 			
 			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
-            if(delType == 0 || delType == 1) {
-                op.deleteByRowkey(rowkey, delType);
+            if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
+            	op2.deleteByRowkey(rowkey, delType);
             }
 
 			return new ModelAndView("jsonView", success());
@@ -193,9 +190,11 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 			}
 			
+			int dbId =jsonReq.getInt("dbId");//大区库id. 打断维护使用  
+			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType,dbId);
 
 			JSONObject  data=new JSONObject();
 			

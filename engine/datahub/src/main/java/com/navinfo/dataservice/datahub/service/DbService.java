@@ -288,57 +288,43 @@ public class DbService {
 	 */
 	public List<DbInfo> getDbsByBizType(String bizType)throws DataHubException{
 		List<DbInfo> dbis = new ArrayList<DbInfo>();
-		//DbInfo db=null;
 		Connection conn = null;
-		DataSource ds = null;
-		
-			
-		
 		try{
-			if(bizType != null && StringUtils.isNotEmpty(bizType)){
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE='"+bizType+"' AND D.DB_ROLE=0 "
-					+ " AND (D.DB_USER_NAME LIKE 'fm_regiondb_sp6_m_%' OR D.DB_USER_NAME LIKE 'fm_regiondb_sp6_d_%') ";
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			ds = MultiDataSourceFactory.getInstance().getSysDataSource();
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<DbInfo>> rsHandler = new ResultSetHandler<List<DbInfo>>(){
-				public List<DbInfo> handle(ResultSet rs) throws SQLException {
-					List<DbInfo> list = new ArrayList<DbInfo>();
-					while(rs.next()){
-						//D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,
-						//D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,
-						//S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME 
-						DbInfo dbInfo = new DbInfo();
-						DbServer dbServer =new DbServer();
-						dbInfo.setDbId(rs.getInt("DB_ID"));
-						dbInfo.setDbName(rs.getString("DB_NAME"));
-						dbInfo.setDbUserName(rs.getString("DB_USER_NAME"));
-						dbInfo.setDbUserPasswd(rs.getString("DB_USER_PASSWD"));
-						dbInfo.setDbRole(rs.getInt("DB_ROLE"));
-						dbInfo.setBizType(rs.getString("BIZ_TYPE"));
-						dbInfo.setTablespaceName(rs.getString("TABLESPACE_NAME"));
-						dbInfo.setGdbVersion(rs.getString("GDB_VERSION"));
-						dbInfo.setDbStatus(rs.getInt("DB_STATUS"));
-						dbInfo.setCreateTime(rs.getTimestamp("CREATE_TIME"));
-						dbInfo.setDescp(rs.getString("DESCP"));
-						dbServer.setSid(rs.getInt("SERVER_ID"));
-						dbServer.setType(rs.getString("SERVER_TYPE"));
-						dbServer.setIp(rs.getString("SERVER_IP"));
-						dbServer.setPort(rs.getInt("SERVER_PORT"));
-						dbServer.setServiceName(rs.getString("SERVICE_NAME"));
-						dbInfo.setDbServer(dbServer);
-						list.add(dbInfo);
+			if(bizType != null && StringUtils.isNotEmpty(bizType)) {
+				String sql = mainSql + " where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
+				conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+				QueryRunner run = new QueryRunner();
+				ResultSetHandler<List<DbInfo>> rsHandler = new ResultSetHandler<List<DbInfo>>() {
+					public List<DbInfo> handle(ResultSet rs) throws SQLException {
+						List<DbInfo> list = new ArrayList<DbInfo>();
+						while (rs.next()) {
+							DbInfo dbInfo = new DbInfo();
+							DbServer dbServer = new DbServer();
+							dbInfo.setDbId(rs.getInt("DB_ID"));
+							dbInfo.setDbName(rs.getString("DB_NAME"));
+							dbInfo.setDbUserName(rs.getString("DB_USER_NAME"));
+							dbInfo.setDbUserPasswd(rs.getString("DB_USER_PASSWD"));
+							dbInfo.setDbRole(rs.getInt("DB_ROLE"));
+							dbInfo.setBizType(rs.getString("BIZ_TYPE"));
+							dbInfo.setTablespaceName(rs.getString("TABLESPACE_NAME"));
+							dbInfo.setGdbVersion(rs.getString("GDB_VERSION"));
+							dbInfo.setDbStatus(rs.getInt("DB_STATUS"));
+							dbInfo.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+							dbInfo.setDescp(rs.getString("DESCP"));
+							dbServer.setSid(rs.getInt("SERVER_ID"));
+							dbServer.setType(rs.getString("SERVER_TYPE"));
+							dbServer.setIp(rs.getString("SERVER_IP"));
+							dbServer.setPort(rs.getInt("SERVER_PORT"));
+							dbServer.setServiceName(rs.getString("SERVICE_NAME"));
+							dbInfo.setDbServer(dbServer);
+							list.add(dbInfo);
+						}
+						return list;
 					}
-					return list;
-				}
-	    	};
-			
-			
-			
-			dbis = run.query(conn, sql,rsHandler);
-			//dbis = run.queryForList(ds, sql, bizType);
-					//(conn,sql, new DbResultSetHandler(true),bizType);
-			}	
+				};
+
+				dbis = run.query(conn, sql, rsHandler, bizType);
+			}
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

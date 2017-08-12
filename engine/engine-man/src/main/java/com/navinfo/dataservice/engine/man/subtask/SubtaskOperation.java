@@ -1,30 +1,8 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -44,10 +22,18 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /** 
  * @ClassName: SubtaskOperation
@@ -288,7 +274,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static int getSubtaskId(Connection conn, Subtask bean) throws Exception {
+	public static int getSubtaskId(Connection conn) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
@@ -742,12 +728,15 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id");
+			sb.append("select t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
+			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
+				sb.append(" and t.lot = "+dataJson.getInt("lot"));
+			}
 			sb.append(" and (st.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql + ")");
 
 			if (dataJson.containsKey("stage")){
@@ -799,6 +788,8 @@ public class SubtaskOperation {
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 						subtask.put("programType", rs.getInt("PROGRAM_TYPE"));
+						subtask.put("workKind", rs.getInt("work_kind"));
+						subtask.put("lot", rs.getInt("LOT"));
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
@@ -811,7 +802,7 @@ public class SubtaskOperation {
 						}
 
 						//采集poi,采集一体化，日编grid粗编，质检日编grid粗编，质检日编区域粗编
-						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
+						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||4==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -1101,10 +1092,10 @@ public class SubtaskOperation {
 			);
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			log.debug("get tips stat");
-			if(3 == subtask.getType()){
+			if(3 == subtask.getType()||4 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId, subtask.getIsQuality(), subtask.getExeUserId());
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getSubtaskId(), subtask.getGeometry(), subtask.getType(), subtask.getExeUserId(), subtask.getIsQuality());
 //				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
 				stat.put("tipsTotal", resultRoad.getInt("total"));

@@ -82,12 +82,20 @@
 		request="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJobRequest" >
 	</type>
 	<type name="poiDayStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJobRequest" >
+		class="com.navinfo.dataservice.job.statics.manJob.DayPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPoiStatJobRequest" >
 	</type>
-	<type name="poiMonthStat"
-		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"
-		request="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJobRequest" >
+	<type name="personDayJob"
+		class="com.navinfo.dataservice.job.statics.manJob.PersonDayJob"
+		request="com.navinfo.dataservice.job.statics.manJob.PersonDayJobRequest" >
+	</type>
+	<type name="personJob"
+		class="com.navinfo.dataservice.job.statics.manJob.PersonJob"
+		request="com.navinfo.dataservice.job.statics.manJob.PersonJobRequest" >
+	</type>
+	<type name="monthPoiStat"
+		class="com.navinfo.dataservice.job.statics.manJob.MonthPoiJob"
+		request="com.navinfo.dataservice.job.statics.manJob.MonthPoiJobRequest" >
 	</type>
 	<type name="DealershipTableAndDbDiffJob"
 		class="com.navinfo.dataservice.dealership.job.DealershipTableAndDbDiffJob"
@@ -106,4 +114,36 @@
 		class="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJob"
 		request="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJobRequest" >
 	</type>
+		<type name="taskMedium2QuickJob" 
+		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
+		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
+	</type>
+	<type name="subtaskStat"
+		class="com.navinfo.dataservice.job.statics.manJob.SubtaskJob"
+		request="com.navinfo.dataservice.job.statics.manJob.SubtaskJobRequest" >
+	</type>
+	<type name="dayPlanStat"
+		class="com.navinfo.dataservice.job.statics.manJob.DayPlanJob"
+		request="com.navinfo.dataservice.job.statics.manJob.DayPlanJobRequest" >
+	</type>
+	<type name="dayLogCheck"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckJobRequest">
+	</type>
+	<type name="dayLogCheckImport"
+		  class="com.navinfo.dataservice.check.job.DayLogCheckImportJob"
+		  request="com.navinfo.dataservice.check.job.DayLogCheckImportJobRequest">
+	</type>
+	<type name="taskStat"
+		  class="com.navinfo.dataservice.job.statics.manJob.TaskJob"
+		  request="com.navinfo.dataservice.job.statics.manJob.TaskJobRequest" >
+	</type>
+	<type name="tipsStat"
+		  class="com.navinfo.dataservice.job.statics.manJob.TipsJob"
+		  request="com.navinfo.dataservice.job.statics.manJob.TipsJobRequest" >
+	</type>
+    <type name="personTipsJob"
+          class="com.navinfo.dataservice.job.statics.manJob.PersonTipsJob"
+          request="com.navinfo.dataservice.job.statics.manJob.PersonTipsJobRequest" >
+    </type>
 	</mapping>

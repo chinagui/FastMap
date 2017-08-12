@@ -1,5 +1,13 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -9,19 +17,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.List;
+import net.sf.json.JSONObject;
 
 /**
  * Rdlink	html	PERMIT_CHECK_GSCNODE_NOT_MOVE
@@ -88,7 +87,6 @@ public class PermitCheckGscnodeNotMove extends baseRule {
                 if (null == getConn()) {
                     continue;
                 }
-
                 pstmt = getConn().prepareStatement(sql);
                 resultSet = pstmt.executeQuery();
                 while (resultSet.next()) {
@@ -110,8 +108,8 @@ public class PermitCheckGscnodeNotMove extends baseRule {
             } catch (Exception e) {
                 throw e;
             } finally {
-                DBUtils.closeResultSet(resultSet);
-                DBUtils.closeStatement(pstmt);
+                DbUtils.closeQuietly(resultSet);
+                DbUtils.closeQuietly(pstmt);
             }
         }
     }

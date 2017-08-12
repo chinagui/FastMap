@@ -57,10 +57,18 @@ public abstract class TrackUpload {
 	public void run(String fileName, String tableName) throws Exception {
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
         this.createTabIfNotExists(hbaseConn, tableName);
-		Table htab = hbaseConn.getTable(TableName
-				.valueOf(tableName));
-		loadFileContent(fileName, htab);
-		htab.close();
+        Table htab = null;
+        try{
+			htab = hbaseConn.getTable(TableName
+					.valueOf(tableName));
+			loadFileContent(fileName, htab);
+        }catch (Exception e) {
+			throw e;
+		}finally {
+			if(htab!=null){
+				htab.close();
+			}
+		}		
 	}
 
 	/**
@@ -71,32 +79,39 @@ public abstract class TrackUpload {
 	 * @throws Exception
 	 */
 	private void loadFileContent(String fileName, Table htab) throws Exception {
-		Scanner scanner = new Scanner(new FileInputStream(fileName));
-		List<Put> puts = new ArrayList<Put>();
-		int count = 0;
-		while (scanner.hasNextLine()) {
-			total++;
-			String rowkey = null;
-			try{
-				String line = scanner.nextLine();
-                JSONObject json = JSONObject.parseObject(line);
-                //获取rowkey
-                rowkey = this.getSourceRowkey(json);
-				//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
-				Put put = this.generatePut(json, rowkey);
-				puts.add(put);
-				count++;
-				if (count > 5000) {
-					htab.put(puts);
-					puts.clear();
-					count = 0;
+		FileInputStream fis = null;
+		try{
+			fis=new FileInputStream(fileName);
+			Scanner scanner = new Scanner(fis);
+			List<Put> puts = new ArrayList<Put>();
+			int count = 0;
+			while (scanner.hasNextLine()) {
+				total++;
+				String rowkey = null;
+				try{
+					String line = scanner.nextLine();
+	                JSONObject json = JSONObject.parseObject(line);
+	                //获取rowkey
+	                rowkey = this.getSourceRowkey(json);
+					//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
+					Put put = this.generatePut(json, rowkey);
+					puts.add(put);
+					count++;
+					if (count > 5000) {
+						htab.put(puts);
+						puts.clear();
+						count = 0;
+					}
+				}catch (Exception e) {
+					failed ++;
+					throw new Exception(e.getMessage());
 				}
-			}catch (Exception e) {
-				failed ++;
-				throw new Exception(e.getMessage());
 			}
+			htab.put(puts);
+		}finally{
+			if(fis!=null)fis.close();
 		}
-		htab.put(puts);
+		
 	}
 
     private static void createTabIfNotExists(Connection connection,

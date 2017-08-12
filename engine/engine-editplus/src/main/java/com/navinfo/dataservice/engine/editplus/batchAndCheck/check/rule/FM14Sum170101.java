@@ -4,12 +4,15 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -79,6 +82,9 @@ public class FM14Sum170101 extends BasicCheckRule {
 		if(pid!=null&&pid.size()>0){
 			String pids=pid.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
+			PreparedStatement pstmt=null;
+			ResultSet rs=null;
+		try{
 			List<Clob> values=new ArrayList<Clob>();
 			String pidString="";
 			if(pid.size()>1000){
@@ -112,13 +118,13 @@ public class FM14Sum170101 extends BasicCheckRule {
 					+ " AND N2.U_RECORD != 2"
 					+ " AND P1."+pidString
 					+ " AND P1.PID != P2.PID";
-			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
+			pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
 					pstmt.setClob(i+1,values.get(i));
 				}
 			}			
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			//过滤相同pid
 			Set<String> filterPid = new HashSet<String>();
 			while(rs.next()) {
@@ -134,6 +140,12 @@ public class FM14Sum170101 extends BasicCheckRule {
 				filterPid.add(targets);
 				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
 		}
 	}
 	

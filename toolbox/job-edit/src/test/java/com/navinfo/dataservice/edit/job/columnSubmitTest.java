@@ -199,7 +199,7 @@ public class columnSubmitTest {
 				
 				// 清理重分类检查结果
 				if (classifyRules.size()>0) {
-					deepControl.cleanExByCkRule(conn, pidList, classifyRules, "IX_POI");
+					deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");
 				}
 				
 			}

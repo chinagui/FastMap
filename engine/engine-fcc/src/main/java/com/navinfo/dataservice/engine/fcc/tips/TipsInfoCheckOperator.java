@@ -14,6 +14,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.apache.commons.dbutils.DbUtils;
+
 /**
  * Created by zhangjunfang on 2017/5/31.
  */
@@ -47,34 +49,37 @@ public class TipsInfoCheckOperator {
         }catch (Exception e) {
             e.printStackTrace();
         }finally {
+        	DbUtils.closeQuietly(pstmt);
 //            DBUtils.closeStatement(pstmt);
-            DBUtils.closeConnection(checkConn);
+            DbUtils.commitAndCloseQuietly(checkConn);
         }
         return 0;
     }
 
     public JSONObject listInfoCheckResult(int subTaskId, int curPage, int pageSize) {
         String sql = "select id,rowkey,rule_id,err_Msg,err_Level,severity,status,ck_Confirm,geometry" +
-                "          FROM tips_check_result WHERE task_id = ? order by rowkey,id";
+                "          FROM tips_check_result WHERE task_id = ? and status = 0 order by rowkey,id";
         String countSql = PageQueryUtils.decorateOracleCountSql(sql);
         sql = PageQueryUtils.decorateOraclePageSql(sql);
         Connection checkConn = null;
         PreparedStatement pstmtCount = null;
         PreparedStatement pstmtQuery = null;
+        ResultSet rs = null;
+        ResultSet rsQuery = null;
         JSONObject jsonObject = new JSONObject();
         try {
             checkConn = DBConnector.getInstance().getCheckConnection();
 //        DBConnector.getInstance().getCheckConnection();
             pstmtCount = checkConn.prepareStatement(countSql);
             pstmtCount.setInt(1, subTaskId);
-            ResultSet rs = pstmtCount.executeQuery();
+            rs = pstmtCount.executeQuery();
 
             int total = 0;
             while(rs.next()) {
                 total = rs.getInt(1);
             }
             jsonObject.put("total", total);
-            rs.close();
+            //rs.close();
 
             JSONArray jsonArray = new JSONArray();
 
@@ -86,7 +91,7 @@ public class TipsInfoCheckOperator {
                 pstmtQuery.setInt(1, subTaskId);
                 pstmtQuery.setInt(2, lastNum);
                 pstmtQuery.setInt(3, firstNum);
-                ResultSet rsQuery = pstmtQuery.executeQuery();
+                rsQuery = pstmtQuery.executeQuery();
                 while(rsQuery.next()) {
                     JSONObject resultObj = new JSONObject();
                     resultObj.put("id", rsQuery.getInt(1));
@@ -101,16 +106,18 @@ public class TipsInfoCheckOperator {
                     resultObj.put("geometry", GeoTranslator.struct2Wkt(struct));
                     jsonArray.add(resultObj);
                 }
-                rsQuery.close();
+                //rsQuery.close();
             }
             jsonObject.put("result", jsonArray);
 
         }catch (Exception e) {
             e.printStackTrace();
         }finally {
-            DBUtils.closeStatement(pstmtCount);
-            DBUtils.closeStatement(pstmtQuery);
-            DBUtils.closeConnection(checkConn);
+        	DbUtils.closeQuietly(rs);
+        	DbUtils.closeQuietly(rsQuery);
+            DbUtils.closeQuietly(pstmtCount);
+            DbUtils.closeQuietly(pstmtQuery);
+            DbUtils.rollbackAndCloseQuietly(checkConn);
         }
         return jsonObject;
     }

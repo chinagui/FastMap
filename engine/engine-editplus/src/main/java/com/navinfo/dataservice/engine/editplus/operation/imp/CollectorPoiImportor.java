@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
@@ -37,6 +38,9 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.ParseException;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -145,7 +149,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
-		CollectorUploadPois uploadPois = ((CollectorPoiImportorCommand)cmd).getPois();
+		/*CollectorUploadPois uploadPois = ((CollectorPoiImportorCommand)cmd).getPois();
 		init();
 		//处理修改的数据
 		Map<String,JSONObject> updatePois = uploadPois.getUpdatePois();
@@ -242,9 +246,114 @@ public class CollectorPoiImportor extends AbstractOperation {
 			}
 		}else{
 			log.info("无删除的poi数据需要导入");
+		}*/
+	}
+	
+	public void operate(AbstractCommand cmd,Map<String, Photo> photoMap, Long userId) throws Exception {
+		CollectorUploadPois uploadPois = ((CollectorPoiImportorCommand)cmd).getPois();
+		init();
+		//处理修改的数据
+		Map<String,JSONObject> updatePois = uploadPois.getUpdatePois();
+		if(updatePois!=null&&updatePois.size()>0){
+			//根据fid查询poi
+			//key:fid
+			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,updatePois.keySet(),true,true);
+			
+			for(Entry<String, JSONObject> entry:updatePois.entrySet()){
+				String fid = entry.getKey();
+				try{
+					IxPoiObj poiObj = null;
+					if(objs!=null&&objs.keySet().contains(fid)){
+						//处理未修改
+						poiObj = (IxPoiObj)objs.get(fid);
+						if(poiObj.opType().equals(OperationType.PRE_DELETED)){
+							log.info("fid:"+fid+"在库中已删除");
+							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
+							continue;
+						}else{
+							log.info("fid:"+fid+"在库中存在，作为修改处理");
+						}
+					}else{
+						//库中未找到数据，处理为新增
+						log.info("fid:"+fid+"在库中未找到，作为新增处理");
+						poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
+					}
+					setPoiAttr(poiObj,entry.getValue());
+					//******存储 photo 属性值 ******
+					setPhotoAttr(entry.getValue(),photoMap,userId);
+						
+					//************
+					//计算鲜度验证
+					if(StringUtils.isEmpty(entry.getValue().getString("rawFields")) 
+							&& poiObj.isFreshFlag()){//鲜度验证
+						freshVerPois.add(poiObj.objPid());
+//							if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
+//								noChangedPois.add(poiObj.objPid());
+//							}
+					}
+					//所有的poi
+					allPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
+						
+					result.putObj(poiObj);
+					successNum++;
+					//同一关系处理
+					//sameFid
+					String sFid = entry.getValue().getString("sameFid");
+					if(StringUtils.isEmpty(sFid)){
+						sps.deletePoiSp(entry.getValue().getString("fid"));
+					}else{
+						sps.addUpdatePoiSp(entry.getValue().getString("fid"),sFid);
+					}
+				}catch(Exception e){
+					errLogs.add(new ErrorLog(fid,0,"未分类错误："+e.getMessage()));
+					log.warn("fid（"+fid+"）入库发生错误："+e.getMessage());
+					log.warn(e.getMessage(),e);
+				}
+			}
+		}else{
+			log.info("无修改的poi数据需要导入");
+		}
+		//处理删除的数据
+		Map<String,JSONObject> deletePois = uploadPois.getDeletePois();
+		if(deletePois!=null&&deletePois.size()>0){
+			//根据fid查询poi
+			//key:fid
+			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,deletePois.keySet(),true,true);
+			if(objs!=null&&objs.size()>0){
+				Set<String> keys = objs.keySet();
+				Collection<BasicObj> values = objs.values();
+				for(BasicObj obj:values){
+					//删除
+					obj.deleteObj();
+					result.putObj(obj);
+					allPois.put(obj.objPid(), deletePois.get(((IxPoi)obj.getMainrow()).getPoiNum()).getString("rawFields"));
+					successNum++;
+					//关系数据处理
+					//同一关系处理
+					//sameFid
+					sps.deletePoiSp(((IxPoi)obj.getMainrow()).getPoiNum());
+				}
+				for(String fid:deletePois.keySet()){
+					if(!keys.contains(fid)){
+						log.info("删除的poi在库中未找到。fid:"+fid);
+						//
+						errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
+					}
+				}
+			}else{
+				log.info("删除的poi在库中均没找到。pids:"+StringUtils.join(deletePois.keySet(),","));
+				//err log
+				for(String fid:deletePois.keySet()){
+					errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
+				}
+			}
+		}else{
+			log.info("无删除的poi数据需要导入");
 		}
 	}
 	
+	
+
 	public void setPoiAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		//to-do
 		//table IX_POI
@@ -263,8 +372,12 @@ public class CollectorPoiImportor extends AbstractOperation {
 			JSONObject guide = jo.getJSONObject("guide");
 			double newXGuide = guide.getDouble("longitude");
 			ixPoi.setXGuide(DoubleUtil.keepSpecDecimal(newXGuide));
+			ixPoi.setOldXGuide(DoubleUtil.keepSpecDecimal(newXGuide));
+			
 			double newYGuide = guide.getDouble("latitude");
 			ixPoi.setYGuide(DoubleUtil.keepSpecDecimal(newYGuide));
+			ixPoi.setOldYGuide(DoubleUtil.keepSpecDecimal(newYGuide));
+			
 			long newLinkPid = guide.getLong("linkPid");
 			ixPoi.setLinkPid(newLinkPid);
 		}
@@ -572,6 +685,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 * 照片特殊处理，只增不删
 	 * @param poiObj
 	 * @param jo
+	 * @param photoMap 
 	 * @throws Exception
 	 */
 	private void setPhotoAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
@@ -753,7 +867,114 @@ public class CollectorPoiImportor extends AbstractOperation {
 		row.setParkingInfo(jo.getString("parkingInfo"));
 		row.setAvailableState(jo.getInt("availableState"));
 	}
-	
+	/**
+	 * @Title: setPhotoAttr
+	 * @Description: 存储 照片文件属性
+	 * @param poiJob
+	 * @param photoMap
+	 * @param userId  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月1日 下午2:46:00 
+	 */
+	private void setPhotoAttr(JSONObject poiJob, Map<String, Photo> photoMap, Long userId) {
+		JSONArray attachments = poiJob.getJSONArray("attachments");
+		if(attachments != null && attachments.size() > 0){
+			for (int i = 0; i < attachments.size(); i++) {
+
+				// attachment结构：{"id":"","type":1,"content":""}
+				JSONObject attachment = attachments.getJSONObject(i);
+
+				int type = attachment.getInt("type");
+
+				String content = "";
+				// 照片
+				if (1 == type) {
+
+					content = attachment.getString("content"); // 是文件名
+
+					Photo photo = getPhoto(attachment, poiJob,userId);
+
+					photoMap.put(content, photo); // 文件名为key
+
+					content = photo.getRowkey();
+				}
+				
+			}
+		}
+		
+	}
+	/**
+	 * @Title: getPhoto
+	 * @Description: 或 Photo 对象
+	 * @param attachment
+	 * @param poiObj
+	 * @param userId
+	 * @return  Photo
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月1日 下午2:46:56 
+	 */
+	private Photo getPhoto(JSONObject attachment, JSONObject poiObj, Long userId) {
+
+		Photo photo = new Photo();
+
+		String id = attachment.getString("id");
+		photo.setRowkey(id);
+		photo.setA_uuid(id);
+		photo.setA_uploadUser(userId.intValue());
+		photo.setA_uploadDate(poiObj.getString("t_operateDate"));
+		
+		JSONObject extContent = attachment.getJSONObject("extContent");
+		
+		if(extContent != null && !extContent.isEmpty()){
+			double lng = extContent.getDouble("longitude");
+
+			double lat = extContent.getDouble("latitude");
+
+			photo.setA_longitude(lng);
+
+			photo.setA_latitude(lat);
+			
+			photo.setA_direction(extContent.getDouble("direction"));
+
+			photo.setA_shootDate(extContent.getString("shootDate"));
+
+			photo.setA_deviceNum(extContent.getString("deviceNum"));
+		}else{
+			String geo = poiObj.getString("geometry");
+			Point point;
+			try {
+				point = (Point)JtsGeometryFactory.read(geo);
+				photo.setA_longitude(point.getX());
+				photo.setA_latitude(point.getY());
+			} catch (ParseException e) {
+				log.error("poi 读取坐标失败:", e);
+			}
+			
+			photo.setA_direction(0);
+
+			photo.setA_shootDate("");
+
+			photo.setA_deviceNum("");
+		}
+		
+		photo.setA_title("");
+		photo.setA_subtitle("");
+		photo.setA_sourceId(1);
+		photo.setA_content(2);
+		photo.setA_address("");
+		photo.setA_fileName(attachment.getString("content"));
+		photo.setA_collectUser(userId.intValue());
+		photo.setA_mesh(0);
+		photo.setA_admin("");
+		photo.setA_deviceOrient(0);
+		photo.setA_version(SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));//当前版本
+		photo.setA_tag(new ArrayList<String>());
+		photo.setA_refUuid("");
+		
+		return photo;
+	}
 	public static void main(String[] args) {
 
 //		JSONObject obj = JSONObject.fromObject("{\"key1\":\"\",\"key2\":null,\"key3\":[]}");

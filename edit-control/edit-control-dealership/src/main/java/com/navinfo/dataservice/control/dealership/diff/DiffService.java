@@ -14,6 +14,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
+import com.vividsolutions.jts.geom.Geometry;
 
 
 
@@ -54,6 +55,7 @@ public class DiffService {
 		Map<String, Integer> sourceKindMap = new HashMap<String, Integer>();
 		Map<String, Integer> sourceChainMap = new HashMap<String, Integer>();
 
+		Integer a = new Integer(0);
 		
 		for (IxDealershipResult i : dealershipResult) {
 			sourceNameMap.put(i.getName().trim(), 1);
@@ -296,9 +298,12 @@ public class DiffService {
 								addr += resultDpAttrDiff.getCity();
 							}
 							addr += resultDpAttrDiff.getAddress();
-								
-							if(BaiduGeocoding.geocoder(addr)!=null){
-								resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+							
+							a += 1;
+							log.info("=====================第" + a + "次调用百度接口=====================");
+							Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+							if(poiGeo!=null){
+								resultDpAttrDiff.setGeometry(poiGeo);
 							}else{
 								throw new Exception("无法获取geometry");
 							}
@@ -323,8 +328,11 @@ public class DiffService {
 				insertList.add(resultDpAttrDiff);
 				if(resultDpAttrDiff.getGeometry()==null){
 					String addr = resultDpAttrDiff.getProvince()+resultDpAttrDiff.getCity()+resultDpAttrDiff.getAddress();
-					if(BaiduGeocoding.geocoder(addr)!=null){
-						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					a += 1;
+					log.info("=====================第" + a + "次调用百度接口=====================");
+					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+					if(poiGeo!=null){
+						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
 						throw new Exception("无法获取geometry");
 					}
@@ -387,9 +395,11 @@ public class DiffService {
 						addr += resultDpAttrDiff.getCity();
 					}
 					addr += resultDpAttrDiff.getAddress();
-						
-					if(BaiduGeocoding.geocoder(addr)!=null){
-						resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(addr));
+					a += 1;
+					log.info("=====================第" + a + "次调用百度接口=====================");
+					Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+					if(poiGeo!=null){
+						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
 						throw new Exception("无法获取geometry");
 					}

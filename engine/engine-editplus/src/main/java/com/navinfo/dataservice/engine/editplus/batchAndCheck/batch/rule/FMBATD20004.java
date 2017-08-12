@@ -71,12 +71,13 @@ public class FMBATD20004 extends BasicBatchRule {
 			boolean flagCode1=false;
 			boolean flagCode3=false;
 			boolean flagCode4=false;
-			
-			for(IxPoiFlag ixPoiFlag:ixPoiFlags){
-				if(ixPoiFlag.getFlagCode().equals("110001110000")){flagCode0=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000260000")){flagCode1=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000270000")){flagCode3=true;}
-				if(ixPoiFlag.getFlagCode().equals("110000290000")){flagCode4=true;}
+			if(ixPoiFlags!=null&&ixPoiFlags.size()>0){
+				for(IxPoiFlag ixPoiFlag:ixPoiFlags){
+					if(ixPoiFlag.getFlagCode().equals("110001110000")){flagCode0=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000260000")){flagCode1=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000270000")){flagCode3=true;}
+					if(ixPoiFlag.getFlagCode().equals("110000290000")){flagCode4=true;}
+				}
 			}
 			
 			//处理poi_flag
@@ -84,7 +85,7 @@ public class FMBATD20004 extends BasicBatchRule {
 				//存在poi_flag记录
 				for(IxPoiFlagMethod poiFlag:poiFlags){
 					//常规子任务
-					if(subTaskWorkKind==0){
+					if(subTaskWorkKind==1){
 						if(poi.getHisOpType().equals(OperationType.INSERT)){
 							if(poiFlag.getSrcRecord()==0){poiFlag.setSrcRecord(1);}
 							if(poiFlag.getVerRecord()!=1){poiFlag.setVerRecord(1);}
@@ -125,33 +126,44 @@ public class FMBATD20004 extends BasicBatchRule {
 			}else{
 				IxPoiFlagMethod poiFlag=poiObj.createIxPoiFlagMethod();
 				//常规子任务
-				if(subTaskWorkKind==0){
+				if(subTaskWorkKind==1){
 					poiFlag.setSrcRecord(1);
 					poiFlag.setVerRecord(1);
 					poiFlag.setFieldVerified(1);
 					poiFlag.setPoiPid(poi.getPid());
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode1){
+						addIxPoiFlag(poiObj,"110000260000");
+					}
 				}
 				//众包子任务
 				if(subTaskWorkKind==2){
 					poiFlag.setSrcRecord(4);
 					poiFlag.setVerRecord(4);
 					poiFlag.setPoiPid(poi.getPid());
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode4){
+						addIxPoiFlag(poiObj,"110000290000");
+					}
 				}
 				//多源子任务
 				if(subTaskWorkKind==4){
 					poiFlag.setSrcRecord(3);
 					poiFlag.setVerRecord(3);
 					poiFlag.setPoiPid(poi.getPid());
+					if(poi.getHisOpType().equals(OperationType.INSERT) && !flagCode3){
+						addIxPoiFlag(poiObj,"110000270000");
+					}
 				}
 			}
 			//处理ix_poi_flag
 			if(poi.getHisOpType().equals(OperationType.INSERT)||poi.getHisOpType().equals(OperationType.UPDATE)){
-				for(IxPoiFlagMethod poiFlag:poiFlags){
-					if(poiFlag.getFieldVerified()==0&&flagCode0){
-						delIxPoiFlag(poiObj,"110001110000");
-					}
-					if(poiFlag.getFieldVerified()==1&&!flagCode0){
-						addIxPoiFlag(poiObj,"110001110000");
+				if(poiFlags != null && poiFlags.size() > 0){
+					for(IxPoiFlagMethod poiFlag:poiFlags){
+						if(poiFlag.getFieldVerified()==0&&flagCode0){
+							delIxPoiFlag(poiObj,"110001110000");
+						}
+						if(poiFlag.getFieldVerified()==1&&!flagCode0){
+							addIxPoiFlag(poiObj,"110001110000");
+						}
 					}
 				}
 			}
@@ -166,8 +178,12 @@ public class FMBATD20004 extends BasicBatchRule {
 	}
 	private void delIxPoiFlag(IxPoiObj poiObj,String flagCode) throws Exception {
 		List<IxPoiFlag> ixPoiFlags = poiObj.getIxPoiFlags();
-		for(IxPoiFlag ixPoiFlag:ixPoiFlags){
-			poiObj.deleteSubrow(ixPoiFlag);
+		if(ixPoiFlags!=null&&ixPoiFlags.size()>0){
+			for(IxPoiFlag ixPoiFlag:ixPoiFlags){
+				if(flagCode.equals(ixPoiFlag.getFlagCode())){
+					poiObj.deleteSubrow(ixPoiFlag);
+				}
+			}
 		}
 	}
 

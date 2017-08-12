@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -39,50 +40,22 @@ public class FccApiImpl implements FccApi{
 
     }
 
-//    @Override
-//    public JSONObject getSubTaskStats(JSONArray grids) throws Exception {
-//        JSONObject result=new JSONObject();
-//
-//        if (grids==null||grids.isEmpty()) {
-//
-//            throw new IllegalArgumentException("参数错误:grids不能为空。");
-//        }
-//
-//        TipsSelector selector = new TipsSelector();
-//
-//        //统计日编总量 stage=1
-//        int total=selector.getTipsCountByStage(grids, 1);
-//
-//        //统计日编已完成量stage=2 and t_dStatus=1
-//        int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
-//
-//        result.put("total", total);
-//
-//        result.put("finished", finished);
-//
-//        return result;
-//    }
 
     
     /**
      * 任务卡片统计：taskType=1是质检任务
      */
     @Override
-    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception {
+    public JSONObject getSubTaskStatsByWkt(int subtaskId, String wkt, int subTaskType,int handler, int isQuality) throws Exception {
         JSONObject result = new JSONObject();
-
-        if (wkt == null || wkt.isEmpty()) {
-
-            throw new IllegalArgumentException("参数错误:wkt不能为空。");
-        }
 
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量
-        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total",taskType,handler);
+        int total = selector.getTipsDayTotal(subtaskId, wkt, subTaskType,handler, isQuality, "total");
 
         //统计日编待作业
-        int prepared = selector.getTipsDayTotal(wkt, collectTaskIds, "prepared",taskType,handler);
+        int prepared = selector.getTipsDayTotal(subtaskId, wkt, subTaskType,handler, isQuality, "prepared");
 
         result.put("total", total);
 
@@ -335,7 +308,7 @@ public class FccApiImpl implements FccApi{
             throws Exception {
 
         TipsSelector selector = new TipsSelector();
-
+        
         //根据任务查询 任务下的所有tips的grid
         Set <Integer> grids=selector.getGridsListByTask(collectTaskid,com.navinfo.dataservice.dao.fcc.TaskType.Q_TASK_TYPE);
 
@@ -485,9 +458,9 @@ public class FccApiImpl implements FccApi{
 	}
 
     @Override
-    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType) throws Exception {
         TipsSelector selector = new TipsSelector();
-        Set<Integer> meshSet = selector.getTipsMeshIdSet(collectTaskSet);
+        Set<Integer> meshSet = selector.getTipsMeshIdSet(collectTaskSet,taskType);
         return meshSet;
     }
 

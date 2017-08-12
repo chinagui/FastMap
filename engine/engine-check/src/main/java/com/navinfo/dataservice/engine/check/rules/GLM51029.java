@@ -12,6 +12,7 @@ import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,13 @@ import java.util.List;
 public class GLM51029 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
+        List<Integer> excludes = new ArrayList<>();
+        for (IRow row : checkCommand.getGlmList()) {
+            if (row instanceof LcFace && row.status() == ObjStatus.DELETE) {
+                excludes.add(((LcFace) row).pid());
+            }
+        }
+
         for (IRow row : checkCommand.getGlmList()) {
             if (!(row instanceof LcFace) || row.status() == ObjStatus.DELETE) {
                 continue;
@@ -42,7 +50,7 @@ public class GLM51029 extends baseRule {
             }
             String wkt = GeoTranslator.jts2Wkt(geometry);
 
-            List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, false);
+            List<LcFace> list = new LcFaceSelector(getConn()).listLcface(wkt, excludes,false);
             for (LcFace lcFace : list) {
                 if (face.pid() == lcFace.pid()) {
                     continue;

@@ -21,7 +21,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.diff.FastPoi;
 import com.navinfo.dataservice.engine.editplus.diff.HandlerDealership;
 import com.navinfo.dataservice.engine.editplus.diff.PoiRecommender;
@@ -111,23 +110,29 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 			// 从result表查询品牌数据
 			// 表差分状态为删除deal_src_diff=2的数据
+			log.info("load deal_src_diff=2 删除的 data");
 			List<IxDealershipResult> delDealResultList = new ArrayList<IxDealershipResult>();
 			delDealResultList = (ArrayList) getResultByChain(2,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为更新deal_src_diff=4的数据
+			log.info("load deal_src_diff=4更新data");
 			List<IxDealershipResult> updateDealResultList = new ArrayList<IxDealershipResult>();
 			updateDealResultList = (ArrayList<IxDealershipResult>) getResultByChain(4,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为无变更deal_src_diff=1的数据
+			log.info("load deal_src_diff=1无变更data");
 			List<IxDealershipResult> nochangeDealResultList = new ArrayList<IxDealershipResult>();
 			nochangeDealResultList = (ArrayList<IxDealershipResult>) getResultByChain(1,sourceType,chainCodeList,resultIdList);
 
 			// 表差分状态为新增deal_src_diff=3的数据
+			log.info("load deal_src_diff=3新增data");
 			List<IxDealershipResult> addDealResultList = new ArrayList<IxDealershipResult>();
 			addDealResultList = (ArrayList) getResultByChain(3,sourceType,chainCodeList,resultIdList);
 
+			log.info("load 大区库连接map");
 			dbConMap = queryAllRegionConn();
 			
+			log.info("调用metadataApi,查询mapKindChain数据");
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, String> mapKindChain = metadataApi.scPointSpecKindCodeType15();
 
@@ -161,9 +166,11 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
+					log.info("开始查询poi:"+dealResult.getCfmPoiNum());
 					FastPoi poiObj = HandlerDealership.queryPoiByPoiNum(dealResult.getCfmPoiNum(),regionConn);
 					// 有pid
 					// 一览表与库是否相同
+					log.info("判断一览表和库是否相同");
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
 						dealResult.setWorkflowStatus(1); // 无需编辑
 					} else {
@@ -173,6 +180,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 无pid
 					// GEOCODING
 					// 推荐
+					log.info("没有有效poi,开始推荐");
 					PoiRecommender.conn = regionConn;
 					PoiRecommender.recommenderPoi(dealResult,metadataApi);
 					dealResult.setMatchMethod(2);
@@ -189,21 +197,26 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				}
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				if (hasValidPoi(dealResult, regionConn)) {
+					log.info("开始查询poi"+dealResult.getCfmPoiNum());
 					FastPoi poiObj = HandlerDealership.queryPoiByPoiNum(dealResult.getCfmPoiNum(), regionConn);
 					// 有pid
 					// 一览表与库是否相同
+					log.info("判断一览表与库是否相同");
 					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
 						dealResult.setWorkflowStatus(1); // 无需编辑
 					} else {
 						// 补充实时更新逻辑
 						// 母库POI属性无变更
+						log.info("判断母库POI属性无变更");
 						if (HandlerDealership.isNoChangePoiNature(dealResult, poiObj)) {
 							dealResult.setWorkflowStatus(1); // 无需编辑
 						} else {
 							// 是否为一览表品牌
+							log.info("是否为一览表品牌");
 							if (HandlerDealership.isDealershipChain(dealResult,mapKindChain)) {
 								dealResult.setWorkflowStatus(3); // 需内业录入
 							} else {
+								log.info("分类与品牌是否变更");
 								// 分类与品牌是否变更
 								if (HandlerDealership.isSameKindChain(dealResult, poiObj)) {
 									dealResult.setWorkflowStatus(1); // 无需编辑
@@ -217,6 +230,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 无pid
 					// GEOCODING
 					// 推荐补充
+					log.info("没有有效poi,开始推荐");
 					PoiRecommender.conn = regionConn;
 					PoiRecommender.recommenderPoi(dealResult,metadataApi);
 					dealResult.setMatchMethod(2);
@@ -234,6 +248,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				Connection regionConn = (Connection) dbConMap.get(dealResult.getRegionId());
 				// GEOCODING 补充
 				// 推荐补充
+				log.info("新增数据,开始推荐");
 				PoiRecommender.conn = regionConn;
 				PoiRecommender.recommenderPoi(dealResult,metadataApi);
 				dealResult.setMatchMethod(2);
@@ -247,13 +262,15 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
+			for (Connection value : dbConMap.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw new JobException(e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 			for (Connection value : dbConMap.values()) {  
-				DbUtils.commitAndCloseQuietly(value);}  
-
-
+				DbUtils.commitAndCloseQuietly(value);
+			}  
 		}
 	}
 
@@ -265,8 +282,8 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 	 * @throws Exception
 	 * 
 	 */
-	public List getResultByChain(int dealSrcDiff,int sourceType,List chainCodeList,List resultIdList) throws SQLException {
-
+	public List getResultByChain(int dealSrcDiff,int sourceType,List chainCodeList,List resultIdList) throws Exception {
+		log.info("getResultByChain start....");
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getDealershipConnection();
@@ -282,7 +299,8 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				resultIds = "(";
 				resultIds += StringUtils.join(resultIdList.toArray(), ",") + ")";
 			}
-		
+			log.info("sourceType:"+sourceType+",chains:"+chains+",resultIds:"+resultIds);
+			
 			StringBuffer sb = new StringBuffer();
 			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY, ");
 			sb.append(" r.is_deleted,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.cfm_is_adopted,r.poi_kind_code,r.poi_chain,");
@@ -295,7 +313,8 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			}else{
 				sb.append(" and r.result_id in "+resultIds);
 			}
-
+			String querySql=sb.toString();
+			log.info("query resultData sql:"+querySql);
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
 				public List handle(ResultSet rs) throws SQLException {
@@ -303,6 +322,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					List<IxDealershipResult> resultList = new ArrayList();
 					while (rs.next()) {
 						IxDealershipResult dealResult = new IxDealershipResult();
+						log.info("result_id:"+rs.getInt("result_id"));
 						dealResult.setResultId(rs.getInt("result_id"));
 						dealResult.setKindCode(rs.getString("kind_code"));
 						dealResult.setName(rs.getString("name"));
@@ -346,17 +366,18 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 						resultList.add(dealResult);
 
 					}
+					log.info("resultList："+resultList.size());
+					log.info("getResultByChain end....");
 					return resultList;
 				}
 			};
-
-			return run.query(conn, sb.toString(), rs);
+			return run.query(conn, querySql, rs);
 		} catch (Exception e) {
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("加载resultData失败：" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return null;
 	}
 
 
@@ -374,9 +395,10 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 
 	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
-		Map<Integer,Connection> MapConn = new HashMap<Integer, Connection>();
+		log.info("queryAllRegionConn start...");
+		Map<Integer,Connection> mapConn = new HashMap<Integer, Connection>();
 		String sql = "select t.daily_db_id,region_id from region t";
-
+		log.info("sql:"+sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		Connection conn = null;
@@ -386,15 +408,21 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
-					MapConn.put(rs.getInt("region_id"), regionConn);
+					mapConn.put(rs.getInt("region_id"), regionConn);
+					log.info("大区库region_id:"+rs.getInt("region_id")+"获取数据库连接成功");
 				}
-				return MapConn;
+				log.info("queryAllRegionConn end...");
+				return mapConn;
 
 		} catch (Exception e) {
-			for (Connection value : MapConn.values()) {  
-				DbUtils.commitAndCloseQuietly(value);}  
+			for (Connection value : mapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw new SQLException("加载region失败：" + e.getMessage(), e);
 		}finally {
+			for (Connection value : mapConn.values()) {
+				DbUtils.commitAndCloseQuietly(value);
+			}
 			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 	}

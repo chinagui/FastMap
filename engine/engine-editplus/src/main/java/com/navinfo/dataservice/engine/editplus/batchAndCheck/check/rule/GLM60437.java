@@ -87,13 +87,17 @@ public class GLM60437 extends BasicCheckRule {
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 							return;
 						}
+						boolean noMatch = true;
 						for (IxPoiName aliasCHIName : aliasCHINames) {
 							Pattern p1 = Pattern.compile(".*[\uFF10-\uFF19]{3,}.*"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
 							String aliasName = aliasCHIName.getName();
-							if(!p1.matcher(aliasName).matches()){
-								setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-								return;
+							if(p1.matcher(aliasName).matches()){
+								noMatch=false;
 							}
+						}
+						if(noMatch){
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+							return;
 						}
 					}
 				}

@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -62,12 +64,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} // finally
 	}
 	
@@ -122,11 +122,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} 
 	}
 	
@@ -168,9 +167,9 @@ public class DataEditController extends BaseController {
 			}
 			long userId = tokenObj.getUserId();
 			//保存数据
-			dealerShipEditService.saveDataService(parameter,userId);
+			OperationResult opResult=dealerShipEditService.saveDataService(parameter,userId);
 			//执行检查
-			int resultCount=dealerShipEditService.runDealershipCheck(parameter);
+			int resultCount=dealerShipEditService.runDealershipCheck(parameter,opResult);
 			
 			Map<String,Integer> result = new HashMap<>();
 			result.put("checkLogs", resultCount);
@@ -209,12 +208,10 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		} // finally
 	}
 	
@@ -235,13 +232,12 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		finally{
-			if (conn != null) {
-				conn.close();
-			}
-		}//
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	
 	
@@ -332,11 +328,10 @@ public class DataEditController extends BaseController {
 		    return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("关闭品牌，原因：" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}finally{
-			if(conn!=null){
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -402,18 +397,20 @@ public class DataEditController extends BaseController {
 
 			Map<String, Object> result = dealerShipEditService.addChainData(request, userId);	
 			
-			List<Integer> resultIdList = (List<Integer>) result.get("resultIdList");
-			List<String> chainCodeList = (List<String>)result.get("chainCodeList");
-			
-			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
-			JSONObject jobReq = new JSONObject();
-			jobReq.put("resultIdList", resultIdList);
-			jobReq.put("chainCodeList", chainCodeList);
-			jobReq.put("userId", userId);
-			
-			long jobId = jobApi.createJob("dealershipAddChainDataJob", jobReq, userId,0, "代理补充数据job");
-			
-			return new ModelAndView("jsonView", success(jobId));
+			if((boolean) result.get("flag")){
+				List<Integer> resultIdList = (List<Integer>) result.get("resultIdList");
+				List<String> chainCodeList = (List<String>)result.get("chainCodeList");
+				
+				JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+				JSONObject jobReq = new JSONObject();
+				jobReq.put("resultIdList", resultIdList);
+				jobReq.put("chainCodeList", chainCodeList);
+				jobReq.put("userId", userId);
+				long jobId = jobApi.createJob("dealershipAddChainDataJob", jobReq, userId,0, "代理补充数据job");
+				return new ModelAndView("jsonView", success(jobId));
+			} else {
+				return new ModelAndView("jsonView", success(0L));
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

@@ -15,6 +15,7 @@ import java.util.Set;
 
 import oracle.spatial.util.WKT;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -286,33 +287,40 @@ public class FlushGdb {
 		return srcDbInfo;
 	}
 	private static boolean flushData(FlushResult flushResult,String logQuerySql) throws Exception {
+		Statement sourceStmt =null;
+		ResultSet rs =null;
+		try{
+			sourceStmt = sourceConn.createStatement();
 
-		Statement sourceStmt = sourceConn.createStatement();
+			rs = sourceStmt.executeQuery(logQuerySql);
 
-		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
+			rs.setFetchSize(1000);
+			LogWriter logWriter = new LogWriter(destConn);
+			while (rs.next()) {
 
-		rs.setFetchSize(1000);
-		LogWriter logWriter = new LogWriter(destConn);
-		while (rs.next()) {
+				flushResult.addTotal();
 
-			flushResult.addTotal();
+				int opType = rs.getInt("op_tp");
+				String rowId = rs.getString("row_id");
+				String opId = rs.getString("op_id");
+				String newValue = rs.getString("new");
+				String tableName = rs.getString("tb_nm");
+				String tableRowId = rs.getString("tb_row_id");
 
-			int opType = rs.getInt("op_tp");
-			String rowId = rs.getString("row_id");
-			String opId = rs.getString("op_id");
-			String newValue = rs.getString("new");
-			String tableName = rs.getString("tb_nm");
-			String tableRowId = rs.getString("tb_row_id");
+				EditLog editLog = new EditLog(opType, rowId, opId, rowId,newValue, tableName, tableRowId);
+				ILogWriteListener listener = new LogWriteListener(flushResult);
+				logWriter.write(editLog , listener );
 
-			EditLog editLog = new EditLog(opType, rowId, opId, rowId,newValue, tableName, tableRowId);
-			ILogWriteListener listener = new LogWriteListener(flushResult);
-			logWriter.write(editLog , listener );
-
+			}
+			if(flushResult.getFailedTotal()>0){
+				return false;
+			}
+			return true;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(sourceStmt);
 		}
-		if(flushResult.getFailedTotal()>0){
-			return false;
-		}
-		return true;
+		
 	}
 
 

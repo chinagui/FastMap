@@ -31,7 +31,7 @@ public class Infor  {
 	private Timestamp insertTime;
 	
 	private Integer feedbackType;
-	private Integer featureKind;
+	private int featureKind;
 	
 	private String adminName;
 	private String adminCode;
@@ -46,8 +46,9 @@ public class Infor  {
 	
 	private String method;
 	private Integer roadLength;
-	private Integer sourceCode;
+	private int sourceCode;
 	private int inforStage;
+	private long reportUserId;//外业自采集情报作业员.source_code=2时，存在作业员，其它不应用
 	//private Map<String, Object> changeColumns=new HashMap<String, Object>();
 	
 	public Infor (){
@@ -125,14 +126,14 @@ public class Infor  {
 	/**
 	 * @return the featureKind
 	 */
-	public Integer getFeatureKind() {
+	public int getFeatureKind() {
 		return featureKind;
 	}
 
 	/**
 	 * @param featureKind the featureKind to set
 	 */
-	public void setFeatureKind(Integer featureKind) {
+	public void setFeatureKind(int featureKind) {
 		this.featureKind = featureKind;
 	}
 
@@ -251,14 +252,14 @@ public class Infor  {
 	/**
 	 * @return the sourceCode
 	 */
-	public Integer getSourceCode() {
+	public int getSourceCode() {
 		return sourceCode;
 	}
 
 	/**
 	 * @param sourceCode the sourceCode to set
 	 */
-	public void setSourceCode(Integer sourceCode) {
+	public void setSourceCode(int sourceCode) {
 		this.sourceCode = sourceCode;
 	}
 
@@ -290,6 +291,14 @@ public class Infor  {
 
 	public void setInforStage(int inforStage) {
 		this.inforStage = inforStage;
+	}
+
+	public long getReportUserId() {
+		return reportUserId;
+	}
+
+	public void setReportUserId(long reportUserId) {
+		this.reportUserId = reportUserId;
 	}
 	
 }

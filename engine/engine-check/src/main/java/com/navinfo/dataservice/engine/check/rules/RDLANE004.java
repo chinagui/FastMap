@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -167,20 +168,27 @@ public class RDLANE004 extends baseRule{
 		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
 		String sql = sb.toString();
 		log.info("前检查RdLane004:" + sql);
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-		ResultSet resultSet = pstmt.executeQuery();
-		while (resultSet.next()){
-			connexityPid = resultSet.getInt("PID");
-			int linkPid = resultSet.getInt("LINK_PID");
-			if(linkPidMap.containsKey(linkPid)){
-				int value = linkPidMap.get(linkPid) + 1;
-				linkPidMap.put(linkPid, value);
-			}else{
-				linkPidMap.put(linkPid, 1);
-			}
-		} 
-		resultSet.close();
-		pstmt.close();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()){
+				connexityPid = resultSet.getInt("PID");
+				int linkPid = resultSet.getInt("LINK_PID");
+				if(linkPidMap.containsKey(linkPid)){
+					int value = linkPidMap.get(linkPid) + 1;
+					linkPidMap.put(linkPid, value);
+				}else{
+					linkPidMap.put(linkPid, 1);
+				}
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		
 		for(IRow objInnerLoop : checkCommand.getGlmList()){
 			if(objInnerLoop instanceof RdLaneVia){
@@ -228,16 +236,24 @@ public class RDLANE004 extends baseRule{
 		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
 		String sql = sb.toString();
 		log.info("前检查RdLane004:" + sql);
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-		ResultSet resultSet = pstmt.executeQuery();
-		while (resultSet.next()){
-			connexityPid = resultSet.getInt("PID");
-			linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
-			linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
-			linkPidList.add(resultSet.getInt("LINK_PID")) ;
-		} 
-		resultSet.close();
-		pstmt.close();
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()){
+				connexityPid = resultSet.getInt("PID");
+				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
+				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
+				linkPidList.add(resultSet.getInt("LINK_PID")) ;
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		
 		for(IRow objInnerLoop : checkCommand.getGlmList()){
 			if(objInnerLoop instanceof RdLaneVia){
@@ -293,25 +309,34 @@ public class RDLANE004 extends baseRule{
 		sb.append(" AND R.U_RECORD <> 2");
 		String sql = sb.toString();
 		log.info("前检查RdLane004:" + sql);
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-		ResultSet resultSet = pstmt.executeQuery();
-		Map<Integer,Integer> nodePidList = new HashMap<Integer,Integer>();
-		while (resultSet.next()){
-			if(nodePidList.containsKey(resultSet.getInt("S_NODE_PID"))){
-				int num = nodePidList.get(resultSet.getInt("S_NODE_PID"));
-				nodePidList.put(resultSet.getInt("S_NODE_PID"), num+1);
-			}else{
-				nodePidList.put(resultSet.getInt("S_NODE_PID"), 1);
-			}
-			if(nodePidList.containsKey(resultSet.getInt("E_NODE_PID"))){
-				int num = nodePidList.get(resultSet.getInt("E_NODE_PID"));
-				nodePidList.put(resultSet.getInt("E_NODE_PID"), num+1);
-			}else{
-				nodePidList.put(resultSet.getInt("E_NODE_PID"), 1);
-			}
-		} 
-		resultSet.close();
-		pstmt.close();
+		Map<Integer, Integer> nodePidList;
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			nodePidList = new HashMap<Integer,Integer>();
+			while (resultSet.next()){
+				if(nodePidList.containsKey(resultSet.getInt("S_NODE_PID"))){
+					int num = nodePidList.get(resultSet.getInt("S_NODE_PID"));
+					nodePidList.put(resultSet.getInt("S_NODE_PID"), num+1);
+				}else{
+					nodePidList.put(resultSet.getInt("S_NODE_PID"), 1);
+				}
+				if(nodePidList.containsKey(resultSet.getInt("E_NODE_PID"))){
+					int num = nodePidList.get(resultSet.getInt("E_NODE_PID"));
+					nodePidList.put(resultSet.getInt("E_NODE_PID"), num+1);
+				}else{
+					nodePidList.put(resultSet.getInt("E_NODE_PID"), 1);
+				}
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		
 		if(nodePidList.size()!=(linkPidList.size()+1)){
 			this.setCheckResult("", "", 0);

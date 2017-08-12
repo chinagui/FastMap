@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.iface;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -264,5 +266,78 @@ public interface ManApi{
     public JSONArray getGridIdsByTaskId(int taskId) throws Exception;
     
     public JSONArray getAdminCodeAndProvince() throws Exception;
+    
+    /**
+     * 获取子任务下同项目的区域粗编子任务Id列表
+     * @param int subTaskId
+     * @throws Exception
+     * 
+     * */
+    public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception;
+    
+    /**
+	 * 查询MAN_TIMELINE
+	 * objName:program,task,subtask,infor
+	 * @return	Map<Long,Map<String, Object>> key:objId
+	 * @throws ServiceException 
+	 */
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	
+	/**
+	 * timestamp:yyyymmdd
+	 * 获取按照人天任务进行统计的管理列表
+	 * @return Map<String, Object>:	map.put("subtaskIds", subtaskSet);
+									map.put("userId", userId);
+									map.put("taskId", taskId);
+									map.put("taskName", rs.getString("TASK_NAME"));
+									map.put("cityName", rs.getString("CITY_NAME"));
+									map.put("leaderName", rs.getString("LEADER_NAME"));
+									map.put("userName", rs.getString("USER_NAME"));	
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> staticsPersionJob(String timestamp) throws Exception;
+	
+	/**
+	 * 查询task的grids
+	 * @author Han Shaoming
+	 * @return	Set<Integer>  grids
+	 * @throws Exception
+	 */
+	public Map<Integer, Integer> queryGridIdsByTaskId(int taskId) throws Exception;
+	
+	/**
+	 * 查询subtask详细信息
+	 * @author Han Shaoming
+	 * @return	List<Map<String,Object>> map key:fieldName,value:相应的值
+	 * @throws Exception
+	 */
+	public List<Map<String,Object>> querySubtaskByTaskId(int taskId) throws Exception;
+	
+	/**
+	 * 查询task对应的项目类型
+	 * @author Han Shaoming
+	 * @return	Map<Integer,Integer> key:taskId,value:programType 项目类型。1常规(中线)4快速更新(快线)9 虚拟项目
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> queryProgramTypes() throws Exception;
+
+    /**
+     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+     * OBJ_TYPE:program,task,subtask,infor
+     * @return	Map<Long,Map<String, Object>> key:objId
+     * @throws ServiceException
+     */
+    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+                                                                     String objType, int operateType) throws Exception;
+
+    /**
+     * 保存timeline
+     * @param objectID
+     * @param name
+     * @param type
+     * @param operateDate
+     * @throws Exception
+     */
+    public void saveTimeline(int objectID, String name, int type, String operateDate) throws Exception;
 }
 

@@ -32,7 +32,7 @@ public interface FccApi {
 	 * @author: y
 	 * @time:2017-7-12 下午5:46:13
 	 */
-	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds,int taskType,int handler) throws Exception;
+	public JSONObject getSubTaskStatsByWkt(int subtaskId, String wkt, int subTaskType,int handler, int isQuality) throws Exception;
 	
 	
 	public void tips2Aumark(JSONObject parameter) throws Exception;
@@ -113,6 +113,6 @@ public interface FccApi {
      * @param collectTaskSet
      * @return
      */
-    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception;
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet,int taskType) throws Exception;
 
 }

@@ -122,7 +122,7 @@
 
 
 	<!-- 交通信号灯 -->
-	<objectName name="RD_TRAFFICSIGNAL">
+<!-- 	<objectName name="RD_TRAFFICSIGNAL">
 		<step value="1">
 			<table name="RD_TRAFFICSIGNAL" pid="PID" OBJECT_TYPE="RD_TRAFFICSIGNAL">
 				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
@@ -130,7 +130,7 @@
 				<remove tableName="RD_TRAFFICSIGNAL" refPid="PID" />
 			</table>
 		</step>
-	</objectName>
+	</objectName> -->
 
 	<!-- 警示信息  280不再导出 -->
 <!-- 	<objectName name="RD_WARNINGINFO">
@@ -311,7 +311,7 @@
 	</objectName>
 
 	<!-- 详细车道 -->
-	<objectName name="RD_LANE">
+<!-- 	<objectName name="RD_LANE">
 		<step value="1">
 			<table name="RD_LANE" pid="LANE_PID" OBJECT_TYPE="RD_LANE">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
@@ -337,7 +337,7 @@
 				<remove tableName="RD_LANE_TOPO_VIA" refPid="TOPO_ID" />
 			</table>
 		</step>
-	</objectName>
+	</objectName> -->
 	<!-- 收费站 -->
 	<objectName name="RD_TOLLGATE">
 		<step value="1">
@@ -467,7 +467,7 @@
 		</step>
 	</objectName>
 	<!-- CRF -->
-	<objectName name="RD_OBJECT">
+	<!-- <objectName name="RD_OBJECT">
 		<step value="1">
 			<table name="RD_INTER_LINK" pid="PID" OBJECT_TYPE="RD_INTER">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
@@ -475,7 +475,7 @@
 			<table name="RD_INTER_NODE" pid="PID" OBJECT_TYPE="RD_INTER">
 				<ref column="NODE_PID" refTable="RD_NODE" refTablePid="NODE_PID" />
 			</table>
-			<!-- CRF 道路 -->
+			CRF 道路
 			<table name="RD_ROAD_LINK" pid="PID" OBJECT_TYPE="RD_ROAD">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
 			</table>
@@ -519,7 +519,7 @@
 				<remove tableName="RD_OBJECT_NAME" refPid="PID" />
 			</table>
 		</step>
-	</objectName>
+	</objectName> -->
 
 	<!-- 标牌 -->
 	<objectName name="RD_SIGNPOST">
@@ -805,7 +805,7 @@
 
 	</objectName>
 	<!-- 减速带 -->
-	<objectName name="RD_SPEEDBUMP">
+	<!-- <objectName name="RD_SPEEDBUMP">
 		<step value="1">
 			<table name="RD_SPEEDBUMP" pid="BUMP_PID" OBJECT_TYPE="RD_SPEEDBUMP">
 				<ref column="LINK_PID" refTable="RD_LINK" refTablePid="LINK_PID" />
@@ -813,7 +813,7 @@
 				<remove tableName="RD_SPEEDBUMP" refPid="BUMP_PID" />
 			</table>
 		</step>
-	</objectName>
+	</objectName> -->
 	
 	<!-- POI深度信息  
 	<objectName name="IX_POI_DETAIL">

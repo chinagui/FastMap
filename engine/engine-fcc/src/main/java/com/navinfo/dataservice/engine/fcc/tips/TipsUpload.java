@@ -4,43 +4,38 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.nirobot.common.utils.GeometryConvertor;
-import com.navinfo.nirobot.common.utils.JsonUtil;
-import com.navinfo.nirobot.common.utils.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -64,13 +59,13 @@ class ErrorType {
 
 }
 
-
-
 public class TipsUpload {
 
 	static int IMPORT_STAGE = 1;
 
-    static int IMPORT_TIP_STATUS = 2;
+	static int IMPORT_TIP_STATUS = 2;
+
+    static int TIMELINE_FIRST_DATE_TYPE = 1;
 
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
 
@@ -101,27 +96,38 @@ public class TipsUpload {
 	private int s_qSubTaskId = 0; // 快线子任务号
 	private int s_mTaskId = 0;// 中线任务号
 	private int s_mSubTaskId = 0; // 中线子任务号
-    private Subtask subtask = null;
-    private int qcTotal = 0;
-    private JSONArray qcReasons = new JSONArray();
+	private Subtask subtask = null;
+	private int qcTotal = 0;
+	private JSONArray qcReasons = new JSONArray();
+    private String qcErrMsg = "";
+    private String firstCollectTime = null;
+    private boolean isInsertFirstTime = false;
+
+    public String getQcErrMsg() {
+        return qcErrMsg;
+    }
+
+    public void setQcErrMsg(String qcErrMsg) {
+        this.qcErrMsg = qcErrMsg;
+    }
 
     public int getQcTotal() {
-        return qcTotal;
-    }
+		return qcTotal;
+	}
 
-    public void setQcTotal(int qcTotal) {
-        this.qcTotal = qcTotal;
-    }
+	public void setQcTotal(int qcTotal) {
+		this.qcTotal = qcTotal;
+	}
 
-    public JSONArray getQcReasons() {
-        return qcReasons;
-    }
+	public JSONArray getQcReasons() {
+		return qcReasons;
+	}
 
-    public void setQcReasons(JSONArray qcReasons) {
-        this.qcReasons = qcReasons;
-    }
+	public void setQcReasons(JSONArray qcReasons) {
+		this.qcReasons = qcReasons;
+	}
 
-    /**
+	/**
 	 * @param subtaskid
 	 * @throws Exception
 	 */
@@ -129,7 +135,7 @@ public class TipsUpload {
 
 		this.subTaskId = subtaskid;
 
-        solr = new SolrController();
+		solr = new SolrController();
 
 		initTaskId();
 	}
@@ -155,28 +161,34 @@ public class TipsUpload {
 				// 1，中线 4，快线
 				int taskType = taskMap.get("programType");
 
-				if (TaskType.M_TASK_TYPE == taskType) {//中线
+				if (TaskType.M_TASK_TYPE == taskType) {// 中线
 
 					s_mTaskId = taskId;// 中线任务号
 					s_mSubTaskId = subTaskId; // 中线子任务号
 
-                    //20170519 赋中线清空快线
-                    s_qTaskId = 0;
-                    s_qSubTaskId = 0;
+					// 20170519 赋中线清空快线
+					s_qTaskId = 0;
+					s_qSubTaskId = 0;
+
+                    //只查中线子任务的第一采集时间
+                    Map<Integer,Map<String, Object>> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                    if(timelineMap == null || timelineMap.size() == 0) {
+                        isInsertFirstTime = true;
+                    }
 				}
 
-				if (TaskType.Q_TASK_TYPE == taskType) {//快线
+				if (TaskType.Q_TASK_TYPE == taskType) {// 快线
 					s_qTaskId = taskId; // 快线任务号
 					s_qSubTaskId = subTaskId; // 快线子任务号
 
-                    //20170519 赋快线清空中线
-                    s_mTaskId = 0;
-                    s_mSubTaskId = 0;
-                }
+					// 20170519 赋快线清空中线
+					s_mTaskId = 0;
+					s_mSubTaskId = 0;
+				}
 
-                subtask = manApi.queryBySubtaskId(subTaskId);
-			}else{
-				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+subTaskId);
+				subtask = manApi.queryBySubtaskId(subTaskId);
+			} else {
+				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:" + subTaskId);
 			}
 
 		} catch (Exception e) {
@@ -218,44 +230,58 @@ public class TipsUpload {
 	 * @param photoMap
 	 * @throws Exception
 	 */
-	public void run(String fileName, Map<String, Photo> photoMap,
-			Map<String, Audio> audioMap) throws Exception {
+	public void run(String fileName, Map<String, Photo> photoMap, Map<String, Audio> audioMap) throws Exception {
+		java.sql.Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			total = 0;
 
-		total = 0;
+			failed = 0;
 
-		failed = 0;
+			reasons = new JSONArray();
 
-		reasons = new JSONArray();
+			currentDate = StringUtils.getCurrentTime();
 
-		currentDate = StringUtils.getCurrentTime();
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		Table htab = hbaseConn
-				.getTable(TableName.valueOf(HBaseConstant.tipTab));
+			List<Get> gets = loadFileContent(fileName, photoMap, audioMap);
 
-		List<Get> gets = loadFileContent(fileName, photoMap, audioMap);
+			loadOldTips(htab, gets);
 
-		loadOldTips(htab, gets);
+			List<Put> puts = new ArrayList<Put>();
+			List<TipsDao> solrIndexList = new ArrayList<TipsDao>();
 
-		List<Put> puts = new ArrayList<Put>();
-        List<JSONObject> solrIndexList = new ArrayList<>();
+			// 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
+			doInsert(puts, solrIndexList);
 
-		// 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
-		doInsert(puts, solrIndexList);
+			doUpdate(puts, solrIndexList);
 
-		doUpdate(puts, solrIndexList);
+			htab.put(puts);
+			TipsIndexOracleOperator indexOracleOperator = new TipsIndexOracleOperator(conn);
+			indexOracleOperator.update(solrIndexList);
 
-		htab.put(puts);
-        solr.addTips(solrIndexList);
+			htab.close();
 
-		htab.close();
+			// 道路名入元数据库
+			importRoadNameToMeta();
 
-		// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-		TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
+            //中线子任务第一采集时间
+            if(StringUtils.isNotEmpty(firstCollectTime)) {
+                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
+            }
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 
-		// 道路名入元数据库
-		importRoadNameToMeta();
+        // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
+		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
+       // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 	}
 
@@ -274,16 +300,14 @@ public class TipsUpload {
 			// 坐标
 			JSONObject nameTipJson = en.getValue();
 			JSONObject gLocation = nameTipJson.getJSONObject("g_location");
-            String sourceType = nameTipJson.getString("s_sourceType");
+			String sourceType = nameTipJson.getString("s_sourceType");
 
 			// 名称,调用元数据库接口入库
-			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil
-					.getBean("metaApi");
+			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metaApi");
 			JSONArray names = nameTipJson.getJSONArray("n_array");
 			for (Object name : names) {
 				// 修改 20170308，道路名去除空格，否则转英文报错
-				if (name != null
-						&& StringUtils.isNotEmpty(name.toString().trim())) {
+				if (name != null && StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
 						metaApi.nameImport(name.toString().trim(), gLocation, rowkey, sourceType);
 					} catch (Exception e) {
@@ -304,8 +328,7 @@ public class TipsUpload {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<Get> loadFileContent(String fileName,
-			Map<String, Photo> photoInfo, Map<String, Audio> AudioInfo)
+	private List<Get> loadFileContent(String fileName, Map<String, Photo> photoInfo, Map<String, Audio> AudioInfo)
 			throws Exception {
 		Scanner scanner = new Scanner(new FileInputStream(fileName));
 
@@ -330,8 +353,7 @@ public class TipsUpload {
 				if (lifecycle == 0) {
 					failed += 1;
 
-					reasons.add(newReasonObject(rowkey,
-							ErrorType.InvalidLifecycle));
+					reasons.add(newReasonObject(rowkey, ErrorType.InvalidLifecycle));
 
 					continue;
 				}
@@ -406,12 +428,11 @@ public class TipsUpload {
 				json.put("feedback", feedbackObj);
 
 				String sourceType = json.getString("s_sourceType");
-                JSONObject gLocation = json.getJSONObject("g_location");
-                JSONObject deep = json.getJSONObject("deep");
+				JSONObject gLocation = json.getJSONObject("g_location");
+				JSONObject deep = json.getJSONObject("deep");
 				if (sourceType.equals("2001")) {
 
-					double length = GeometryUtils.getLinkLength(GeoTranslator
-							.geojson2Jts(gLocation));
+					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(gLocation));
 
 					deep.put("len", length);
 
@@ -421,46 +442,44 @@ public class TipsUpload {
 				// 20170223添加：增加快线、中线任务号
 				updateTaskIds(json);
 
-                //20170519 Tips上传服务赋值
-                updateTipsStatus(json);
+				// 20170519 Tips上传服务赋值
+				updateTipsStatus(json);
 
 				// 道路名测线
-                JSONObject rdNameObject = new JSONObject();
-                rdNameObject.put("g_location", gLocation);
-                rdNameObject.put("s_sourceType", sourceType);
+				JSONObject rdNameObject = new JSONObject();
+				rdNameObject.put("g_location", gLocation);
+				rdNameObject.put("s_sourceType", sourceType);
 				if (sourceType.equals("1901")) {
-                    JSONArray names = deep.getJSONArray("n_array");
-                    rdNameObject.put("n_array",names);
+					JSONArray names = deep.getJSONArray("n_array");
+					rdNameObject.put("n_array", names);
 					roadNameTips.put(rowkey, rdNameObject);
-				}else if(sourceType.equals("1407")) {//高速分歧
-                    JSONArray infoArray = deep.getJSONArray("info");
-                    JSONArray names = new JSONArray();
-                    for(int i = 0; i < infoArray.size(); i++) {
-                        JSONObject infoObj = infoArray.getJSONObject(i);
-                        String exitStr = infoObj.getString("exit");
-                        if(exitStr.length() > 8) {
-                            String[] exitArray = exitStr.split("/");
-                            for(String perExit : exitArray) {
-                                names.add(perExit);
-                            }
-                        }else {
-                            names.add(exitStr);
-                        }
-                    }
-                    rdNameObject.put("n_array",names);
-                    roadNameTips.put(rowkey, rdNameObject);
-                    //桥、隧道、跨线立交桥、步行街、环岛、风景路线、立交桥、航线、Highway道路名
-                }else if(sourceType.equals("1510") || sourceType.equals("1511")
-                        || sourceType.equals("1509") || sourceType.equals("1507")
-                        || sourceType.equals("1601") || sourceType.equals("1607")
-                        || sourceType.equals("1705") || sourceType.equals("1209")
-                        || sourceType.equals("8006")) {
-                    JSONArray names = new JSONArray();
-                    String nameStr = deep.getString("name");
-                    names.add(nameStr);
-                    rdNameObject.put("n_array",names);
-                    roadNameTips.put(rowkey, rdNameObject);
-                }
+				} else if (sourceType.equals("1407")) {// 高速分歧
+					JSONArray infoArray = deep.getJSONArray("info");
+					JSONArray names = new JSONArray();
+					for (int i = 0; i < infoArray.size(); i++) {
+						JSONObject infoObj = infoArray.getJSONObject(i);
+						String exitStr = infoObj.getString("exit");
+						if (exitStr.length() > 8) {
+							String[] exitArray = exitStr.split("/");
+							for (String perExit : exitArray) {
+								names.add(perExit);
+							}
+						} else {
+							names.add(exitStr);
+						}
+					}
+					rdNameObject.put("n_array", names);
+					roadNameTips.put(rowkey, rdNameObject);
+					// 桥、隧道、跨线立交桥、步行街、环岛、风景路线、立交桥、航线、Highway道路名
+				} else if (sourceType.equals("1510") || sourceType.equals("1511") || sourceType.equals("1509")
+						|| sourceType.equals("1507") || sourceType.equals("1601") || sourceType.equals("1607")
+						|| sourceType.equals("1705") || sourceType.equals("1209") || sourceType.equals("8006")) {
+					JSONArray names = new JSONArray();
+					String nameStr = deep.getString("name");
+					names.add(nameStr);
+					rdNameObject.put("n_array", names);
+					roadNameTips.put(rowkey, rdNameObject);
+				}
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);
@@ -514,14 +533,15 @@ public class TipsUpload {
 
 	}
 
-    /**
-     * Tips上传FCC服务赋值
-     * @param json
-     */
-    public void updateTipsStatus(JSONObject json) {
-        json.put("t_tipStatus", TipsUpload.IMPORT_TIP_STATUS);
-        json.put("t_date", currentDate);
-    }
+	/**
+	 * Tips上传FCC服务赋值
+	 * 
+	 * @param json
+	 */
+	public void updateTipsStatus(JSONObject json) {
+		json.put("t_tipStatus", TipsUpload.IMPORT_TIP_STATUS);
+		json.put("t_date", currentDate);
+	}
 
 	/**
 	 * @Description:TOOD
@@ -576,14 +596,11 @@ public class TipsUpload {
 			try {
 				JSONObject jo = new JSONObject();
 
-				String track = new String(result.getValue("data".getBytes(),
-						"track".getBytes()));
+				String track = new String(result.getValue("data".getBytes(), "track".getBytes()));
 				jo.put("track", track);
 
-				if (result.containsColumn("data".getBytes(),
-						"feedback".getBytes())) {
-                    String fastFeedback = new String(result.getValue("data".getBytes(),
-                                    "feedback".getBytes()));
+				if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
+					String fastFeedback = new String(result.getValue("data".getBytes(), "feedback".getBytes()));
 					JSONObject feedback = TipsUtils.stringToSFJson(fastFeedback);
 
 					jo.put("feedback", feedback);
@@ -591,12 +608,10 @@ public class TipsUpload {
 					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 				}
 
-				String geometry = new String(result.getValue("data".getBytes(),
-						"geometry".getBytes()));
+				String geometry = new String(result.getValue("data".getBytes(), "geometry".getBytes()));
 				jo.put("geometry", geometry);
 
-				String deep = new String(result.getValue("data".getBytes(),
-						"deep".getBytes()));
+				String deep = new String(result.getValue("data".getBytes(), "deep".getBytes()));
 				jo.put("deep", deep);
 
 				oldTips.put(rowkey, jo);
@@ -612,7 +627,7 @@ public class TipsUpload {
 	 *
 	 * @param puts
 	 */
-	private void doInsert(List<Put> puts, List<JSONObject> solrIndexList) throws Exception {
+	private void doInsert(List<Put> puts, List<TipsDao> solrIndexList) throws Exception {
 		Set<Entry<String, JSONObject>> set = insertTips.entrySet();
 
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
@@ -638,8 +653,7 @@ public class TipsUpload {
 					// 差分判断是不是tips无变更(鲜度验证的tips)，是则不更新
 					if (isFreshnessVerification(oldTip, json)) {
 
-						reasons.add(newReasonObject(rowkey,
-								ErrorType.FreshnessVerificationData));
+						reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
 
 						continue;
 					}
@@ -650,13 +664,11 @@ public class TipsUpload {
 						failed += 1;
 						// -1表示old已删除
 						if (res == -1) {
-							reasons.add(newReasonObject(rowkey,
-									ErrorType.Deleted));
+							reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
 						}
 						// else =-2表示当前采集时间较旧
 						else {
-							reasons.add(newReasonObject(rowkey,
-									ErrorType.InvalidDate));
+							reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
 						}
 						continue;
 					}
@@ -664,21 +676,31 @@ public class TipsUpload {
 					put = updatePut(rowkey, json, oldTip);
 
 					// 修改的需要差分
-					allNeedDiffRowkeysCodeMap.put(rowkey,
-							json.getString("s_sourceType"));
+					allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
 
 				} else {
 					put = insertPut(rowkey, json);
 					// 修改的需要差分
-					allNeedDiffRowkeysCodeMap.put(rowkey,
-							json.getString("s_sourceType"));
+					allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
 				}
 
 				puts.add(put);
 
-                TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
-                solrIndexList.add(JSONObject.fromObject(tipsIndexModel));
+				TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
+				solrIndexList.add(tipsIndexModel);
 
+                //中线子任务第一采集时间
+                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                    if(StringUtils.isNotEmpty(firstCollectTime)) {
+                        long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
+                        long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");
+                        if(thisTime < lastTime) {//如果当前Tips时间小于之前记录的采集时间
+                            firstCollectTime = json.getString("t_operateDate");
+                        }
+                    }else{
+                        firstCollectTime = json.getString("t_operateDate");
+                    }
+                }
 			} catch (Exception e) {
 				failed += 1;
 
@@ -713,8 +735,7 @@ public class TipsUpload {
 		JSONObject trackOld = oldTip.getJSONObject("track");
 		int tCommandOld = trackOld.getInt("t_command");
 
-		String mdb5Old = MD5Utils.md5(g_locationOld + g_guideOld + deepOld
-				+ feedbackOld + tCommandOld);
+		String mdb5Old = MD5Utils.md5(g_locationOld + g_guideOld + deepOld + feedbackOld + tCommandOld);
 
 		// new
 		String g_locationNew = json.getString("g_location");
@@ -725,8 +746,7 @@ public class TipsUpload {
 		// JSONObject trackNew=json.getJSONObject("track");
 		int tCommandNew = json.getInt("t_command");
 
-		String mdb5New = MD5Utils.md5(g_locationNew + g_guideNew + deepNew
-				+ feedbackNew + tCommandNew);
+		String mdb5New = MD5Utils.md5(g_locationNew + g_guideNew + deepNew + feedbackNew + tCommandNew);
 
 		if (mdb5Old.equals(mdb5New)) {
 			return true;
@@ -739,21 +759,20 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-        // track
-        int stage = TipsUpload.IMPORT_STAGE;
-        //20170519 状态流转变更
-        int t_lifecycle = 3;
-        //track
-        TipsTrack track = new TipsTrack();
-        track.setT_lifecycle(t_lifecycle);
-        track.setT_date(currentDate);
-        track.setT_command(json.getInt("t_command"));
-        track.setT_tipStatus(json.getInt("t_tipStatus"));
-        track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
+		// track
+		int stage = TipsUpload.IMPORT_STAGE;
+		// 20170519 状态流转变更
+		int t_lifecycle = 3;
+		// track
+		TipsTrack track = new TipsTrack();
+		track.setT_lifecycle(t_lifecycle);
+		track.setT_date(currentDate);
+		track.setT_command(json.getInt("t_command"));
+		track.setT_tipStatus(json.getInt("t_tipStatus"));
+		track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
-        JSONObject trackJson = JSONObject.fromObject(track);
-		put.addColumn("data".getBytes(), "track".getBytes(), trackJson
-				.toString().getBytes());
+		JSONObject trackJson = JSONObject.fromObject(track);
+		put.addColumn("data".getBytes(), "track".getBytes(), trackJson.toString().getBytes());
 
 		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
 		JSONObject jsonSource = new JSONObject();
@@ -766,8 +785,7 @@ public class TipsUpload {
 			jsonSource.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource.toString().getBytes());
 
 		JSONObject jsonGeomTemplate = TipsUploadUtils.getGeometryConstruct();
 
@@ -781,16 +799,15 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "geometry".getBytes(),
+				TipsUtils.netJson2fastJson(jsonGeom).toString().getBytes());
 
-		put.addColumn("data".getBytes(), "deep".getBytes(),
-				json.getString("deep").getBytes());
+		put.addColumn("data".getBytes(), "deep".getBytes(), json.getString("deep").getBytes());
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "feedback".getBytes(),
+				TipsUtils.netJson2fastJson(feedback).toString().getBytes());
 
 		return put;
 	}
@@ -800,7 +817,7 @@ public class TipsUpload {
 	 *
 	 * @param puts
 	 */
-	private void doUpdate(List<Put> puts, List<JSONObject> solrIndexList) throws Exception {
+	private void doUpdate(List<Put> puts, List<TipsDao> solrIndexList) throws Exception {
 		Set<Entry<String, JSONObject>> set = updateTips.entrySet();
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
@@ -824,13 +841,11 @@ public class TipsUpload {
 
 				JSONObject json = en.getValue();
 
-
 				int lifecycle = json.getInt("t_lifecycle");
-				// 是否是鲜度验证的tips  lifecycle==1删除的，不进行鲜度验证
-				if (lifecycle!=1&&isFreshnessVerification(oldTip, json)) {
+				// 是否是鲜度验证的tips lifecycle==1删除的，不进行鲜度验证
+				if (lifecycle != 1 && isFreshnessVerification(oldTip, json)) {
 
-					reasons.add(newReasonObject(rowkey,
-							ErrorType.FreshnessVerificationData));
+					reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
 
 					continue;
 				}
@@ -843,8 +858,7 @@ public class TipsUpload {
 					if (res == -1) {
 						reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
 					} else {
-						reasons.add(newReasonObject(rowkey,
-								ErrorType.InvalidDate));
+						reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
 					}
 
 					continue;
@@ -853,12 +867,24 @@ public class TipsUpload {
 				Put put = updatePut(rowkey, json, oldTip);
 				puts.add(put);
 
-                TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
-                solrIndexList.add(JSONObject.fromObject(tipsIndexModel));
+				TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
+				solrIndexList.add(tipsIndexModel);
 
 				// 修改的需要差分
-				allNeedDiffRowkeysCodeMap.put(rowkey,
-						json.getString("s_sourceType"));
+				allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
+
+                //中线子任务第一采集时间
+                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                    if(StringUtils.isNotEmpty(firstCollectTime)) {
+                        long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
+                        long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");
+                        if(thisTime < lastTime) {//如果当前Tips时间小于之前记录的采集时间
+                            firstCollectTime = json.getString("t_operateDate");
+                        }
+                    }else{
+                        firstCollectTime = json.getString("t_operateDate");
+                    }
+                }
 
 			} catch (Exception e) {
 				failed += 1;
@@ -870,8 +896,7 @@ public class TipsUpload {
 		}
 	}
 
-	private Put updatePut(String rowkey, JSONObject json, JSONObject oldTip)
-			throws IOException {
+	private Put updatePut(String rowkey, JSONObject json, JSONObject oldTip) throws IOException {
 
 		Put put = new Put(rowkey.getBytes());
 
@@ -879,17 +904,16 @@ public class TipsUpload {
 
 		JSONObject oldTrack = oldTip.getJSONObject("track");
 
-        // track
-        int stage = TipsUpload.IMPORT_STAGE;
-        TipsTrack track = (TipsTrack) JSONObject.toBean(oldTrack, TipsTrack.class);
-        track.setT_lifecycle(t_lifecycle);
-        track.setT_date(currentDate);
-        track.setT_tipStatus(json.getInt("t_tipStatus"));
-        track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
+		// track
+		int stage = TipsUpload.IMPORT_STAGE;
+		TipsTrack track = (TipsTrack) JSONObject.toBean(oldTrack, TipsTrack.class);
+		track.setT_lifecycle(t_lifecycle);
+		track.setT_date(currentDate);
+		track.setT_tipStatus(json.getInt("t_tipStatus"));
+		track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
-        JSONObject trackJson = JSONObject.fromObject(track);
-        put.addColumn("data".getBytes(), "track".getBytes(), trackJson
-                .toString().getBytes());
+		JSONObject trackJson = JSONObject.fromObject(track);
+		put.addColumn("data".getBytes(), "track".getBytes(), trackJson.toString().getBytes());
 
 		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
 
@@ -903,8 +927,7 @@ public class TipsUpload {
 			jsonSource.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource.toString().getBytes());
 
 		JSONObject jsonGeomTemplate = TipsUploadUtils.getGeometryConstruct();
 
@@ -918,31 +941,35 @@ public class TipsUpload {
 			jsonGeom.put(key, json.get(key));
 		}
 
-		put.addColumn("data".getBytes(), "geometry".getBytes(), TipsUtils.netJson2fastJson(jsonGeom)
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "geometry".getBytes(),
+				TipsUtils.netJson2fastJson(jsonGeom).toString().getBytes());
 
-		put.addColumn("data".getBytes(), "deep".getBytes(),
-				json.getString("deep").getBytes());
+		put.addColumn("data".getBytes(), "deep".getBytes(), json.getString("deep").getBytes());
 
 		JSONObject feedback = json.getJSONObject("feedback");
 
-		put.addColumn("data".getBytes(), "feedback".getBytes(), TipsUtils.netJson2fastJson(feedback)
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "feedback".getBytes(),
+				TipsUtils.netJson2fastJson(feedback).toString().getBytes());
 
 		return put;
 	}
-
-	
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 
 		Photo photo = new Photo();
 
-		JSONObject extContent = attachment.getJSONObject("extContent");
+        //20170809 判断是否存在extContent
+        if(attachment.containsKey("extContent")) {
+            JSONObject extContent = attachment.getJSONObject("extContent");
+            double lng = extContent.getDouble("longitude");
+            double lat = extContent.getDouble("latitude");
+            photo.setA_longitude(lng);
+            photo.setA_latitude(lat);
+            photo.setA_direction(extContent.getDouble("direction"));
+            photo.setA_shootDate(extContent.getString("shootDate"));
+            photo.setA_deviceNum(extContent.getString("deviceNum"));
+        }
 
-		double lng = extContent.getDouble("longitude");
-
-		double lat = extContent.getDouble("latitude");
 
 		// String uuid = fileName.replace(".jpg", "");
 		//
@@ -965,24 +992,16 @@ public class TipsUpload {
 
 		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
-		photo.setA_longitude(lng);
-
-		photo.setA_latitude(lat);
-
-		// photo.setA_sourceId(tip.getString("s_sourceId"));
-
-		photo.setA_direction(extContent.getDouble("direction"));
-
-		photo.setA_shootDate(extContent.getString("shootDate"));
-
-		photo.setA_deviceNum(extContent.getString("deviceNum"));
+        //Tips上传a_sourceId = 2
+		photo.setA_sourceId(2);
 
 		photo.setA_fileName(attachment.getString("content"));
 
 		photo.setA_content(1);
 
-        photo.setA_refUuid(id);
+		photo.setA_refUuid("");
 
+        photo.setA_version(SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));//当前版本
 		return photo;
 	}
 
@@ -990,9 +1009,13 @@ public class TipsUpload {
 		JSONObject oldTrack = oldTips.getJSONObject("track");
 
 		int lifecycle = oldTrack.getInt("t_lifecycle");
-
+		if(!oldTrack.containsKey("t_trackInfo")) {
+			return 0;
+		}
 		JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
-	
+        if(tracks == null || tracks.size() == 0) {
+            return 0;
+        }
 		String lastDate = null;
 
 		// 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
@@ -1011,35 +1034,34 @@ public class TipsUpload {
 		JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 
 		int lastStage = lastTrack.getInt("stage");
-		
+
 		// lifecycle:0（无） 1（删除）2（修改）3（新增） ;
 		// 0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量；5 内业预处理；6 多源融合；
-		//1)是增量更新删除：不对比时间。  库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新 : -1表示old已删除
+		// 1)是增量更新删除：不对比时间。
+		// 库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新 : -1表示old已删除
 		if (lifecycle == 1 && lastStage == 4) {
 			return -1;
 		}
-		
-		//增量的：新增修改的和stage=0的一样处理，不判断时间
-		if(lifecycle!=1&&lastStage==4){
+
+		// 增量的：新增修改的和stage=0的一样处理，不判断时间
+		if (lifecycle != 1 && lastStage == 4) {
 			return 0;
 		}
-		
-		
-		if(lastStage==0){
+
+		if (lastStage == 0) {
 			return 0;
 		}
-		
-		
-		//2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-			//如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
-		if(lastDate==null && hasPreStage(tracks)){
+
+		// 2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
+		// 如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
+		if (lastDate == null && hasPreStage(tracks)) {
 			return 0;
-		}else{
-			if (operateDate.compareTo(lastDate) <= 0){
+		} else {
+			if (operateDate.compareTo(lastDate) <= 0) {
 				return -2;
 			}
 		}
-		//其他情况都返回0，包括 stage=0 、stage=4(除了增量更新删除的)
+		// 其他情况都返回0，包括 stage=0 、stage=4(除了增量更新删除的)
 		return 0;
 	}
 
@@ -1051,12 +1073,12 @@ public class TipsUpload {
 	 * @time:2017-4-19 下午12:56:35
 	 */
 	private boolean hasPreStage(JSONArray tracks) {
-		
-		for (int i = 0; i <  tracks.size(); i++) {
-			
+
+		for (int i = 0; i < tracks.size(); i++) {
+
 			JSONObject info = tracks.getJSONObject(i);
 
-			if (info.getInt("stage") == 5||info.getInt("stage") == 6) {
+			if (info.getInt("stage") == 5 || info.getInt("stage") == 6) {
 
 				return true;
 			}
@@ -1075,247 +1097,340 @@ public class TipsUpload {
 		return json;
 	}
 
-    public void runQuality(String fileName) throws Exception {
-        java.sql.Connection checkConn = null;
-        PreparedStatement deletePstmt = null;
-        PreparedStatement insertPstmt = null;
-        Connection hbaseConn = null;
-        Table htab = null;
-        try {
-            if (subtask != null && subtask.getIsQuality() == 1) {//是质检子任务
-                logger.info("start uplod qc problem,subtaskid:"+ subtask.getSubtaskId());
-                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-                Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
-                String groupName = (String)subTaskMap.get("groupName");
-                String province = (String)subTaskMap.get("province");
-                String city = (String)subTaskMap.get("city");
-                int userId = Integer.valueOf((String)subTaskMap.get("exeUserId"));
-                String version = (String)subTaskMap.get("version");
-                String startDate = (String)subTaskMap.get("plan_start_date");
-
-                String deleteSql = "delete from FIELD_RD_QCRECORD " +
-                        "where PROBLEM_NUM = ?";
-
-                String insertSql = "INSERT INTO FIELD_RD_QCRECORD(UUID, AREA, FIELD_GROUP, LINK_PID, PROVINCE, " +
-                        "CITY, ROWKEY, QC_SUBTASK, QC_SUBTASK_NAME, ROUTE_NUM, ESTAB_LEVEL, PROBLEM_NUM, " +
-                        "PHOTO_NUM, MESH_ID, GROUP_NAME, POI_FID, KIND_CODE, CLASS_TOP, CLASS_MEDIUM, " +
-                        "CLASS_BOTTOM, PROBLEM_TYPE, PROBLEM_PHENOMENON, PROBLEM_DESCRIPTION, INITIAL_CAUSE, " +
-                        "ROOT_CAUSE, CHECK_USERID, CHECK_TIME, COLLECTOR_USERID, COLLECTOR_TIME, " +
-                        "CHECK_DEPARTMENT, CHECK_MODE, MODIFY_DATE, MODIFY_USERID, CONFIRM_USERID, " +
-                        "VERSION, PROBLEM_LEVEL, PHOTO_EXIST, KIND, FC, MEMO_USERID, CLASS_WEIGHT, " +
-                        "PROBLEM_WEIGHT, TOTAL_WEIGHT, WORD_YEAR)" +
-                        "values (SEQ_FIELD_RD_QCRECORD.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-                checkConn = DBConnector.getInstance().getCheckConnection();
-                deletePstmt = checkConn.prepareStatement(deleteSql);
-                insertPstmt = checkConn.prepareStatement(insertSql);
-
+	public void runQuality(String fileName) throws Exception {
+		java.sql.Connection checkConn = null;
+		PreparedStatement deletePstmt = null;
+		PreparedStatement insertPstmt = null;
+		Connection hbaseConn = null;
+		Table htab = null;
+		java.sql.Connection oracleConn = null;
+        java.sql.Connection regionDBConn = null;
+		try {
+			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
                 List<FieldRoadQCRecord> records = loadQualityContent(fileName);
-                hbaseConn = HBaseConnector.getInstance().getConnection();
 
-                htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-                String problem_num = "";
-                int sq = 0;
-                for(FieldRoadQCRecord record : records) {
-                    try {
-                        sq ++;
-                        problem_num = record.getId();
+                oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+                int dbId = subtask.getDbId();
+                regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
 
-                        deletePstmt.setString(1, problem_num);
-                        deletePstmt.addBatch();
+				logger.info("start uplod qc problem,subtaskid:" + subtask.getSubtaskId());
+				ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                Map<String, Object> subTaskMap = manApi.getSubtaskInfoByQuality(subTaskId);
+                String groupName = "";
+                String province = "";
+                String city = "";
+                int userId = 0;
+                String version = "";
+                String startDate = "";
+                try {
+                    groupName = (String) subTaskMap.get("groupName");
+                    province = (String) subTaskMap.get("province");
+                    city = (String) subTaskMap.get("city");
+                    userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
+                    version = (String) subTaskMap.get("version");
+                    startDate = (String) subTaskMap.get("planStartDate");
+                }catch (Exception e) {
+                    qcErrMsg = "质检子任务" + subTaskId + "信息不完整";
+                    e.printStackTrace();
+                    return;
+                }
+				String deleteSql = "delete from FIELD_RD_QCRECORD " + "where PROBLEM_NUM = ?";
 
-                        insertPstmt.setString(1, "");
-                        insertPstmt.setString(2, groupName);
-                        insertPstmt.setString(3, record.getLink_pid());
-                        insertPstmt.setString(4, province);
-                        insertPstmt.setString(5, city);
-                        insertPstmt.setString(6, record.getRowkey());
-                        insertPstmt.setInt(7, subTaskId);
-                        insertPstmt.setString(8, subtask.getName());
-                        insertPstmt.setInt(9, 0);
-                        insertPstmt.setString(10, "");
-                        insertPstmt.setString(11, problem_num);
-                        insertPstmt.setString(12, "");
-                        //按照Tips统计坐标所在图幅统计
-                        JSONObject solrObj = solr.getById(record.getRowkey());
-                        String wkt = solrObj.getString("wkt");
-                        Geometry geo = GeoTranslator.wkt2Geometry(wkt);
-                        String mesh = TipsGridCalculate.calculate(geo).iterator().next().substring(0,6);
-                        insertPstmt.setInt(13, Integer.valueOf(mesh));
-                        insertPstmt.setString(14, "");
-                        insertPstmt.setString(15, "");
-                        insertPstmt.setString(16, "");
-                        insertPstmt.setString(17, record.getClass_top());
-                        insertPstmt.setString(18, record.getClass_bottom());
-                        insertPstmt.setString(19, record.getClass_bottom());
-                        insertPstmt.setString(20, record.getType());
-                        insertPstmt.setString(21, record.getPhenomenon());
-                        insertPstmt.setString(22, record.getDescription());
-                        insertPstmt.setString(23, record.getInitial_cause());
-                        insertPstmt.setString(24, record.getRoot_cause());
-                        insertPstmt.setString(25, record.getCheck_userid());
-                        insertPstmt.setString(26, record.getCheck_time());
-                        //当关联的link上tips外业有采集时，该link关联的所有tips都记录常规采集任务对应的userid,
-                        // 当关联link上挂接的tips全部未采集时，该字段记录为AAA.（是否采集过通过stage=1,handler=常规采集子任务userid判断）
-                        String collecorUserId = this.getCollectUserId(record.getLink_pid(), userId, htab);
-                        insertPstmt.setString(27, collecorUserId);
-                        //读取常规采集子任务的date
-                        insertPstmt.setString(28, startDate);
-                        insertPstmt.setString(29, "外业采集部");
-                        insertPstmt.setInt(30, subtask.getQualityMethod());
-                        insertPstmt.setString(31, record.getCheck_time());
-                        insertPstmt.setString(32, record.getCheck_userid());
-                        insertPstmt.setString(33, record.getConfirm_userid());
-                        //读取当前版本号
-                        insertPstmt.setString(34, version);
-                        insertPstmt.setString(35, "C");
-                        insertPstmt.setInt(36, 0);
+				String insertSql = "INSERT INTO FIELD_RD_QCRECORD(UUID, AREA, FIELD_GROUP, LINK_PID, PROVINCE, "
+						+ "CITY, ROWKEY, QC_SUBTASK, QC_SUBTASK_NAME, ROUTE_NUM, ESTAB_LEVEL, PROBLEM_NUM, "
+						+ "PHOTO_NUM, MESH_ID, GROUP_NAME, POI_FID, KIND_CODE, CLASS_TOP, CLASS_MEDIUM, "
+						+ "CLASS_BOTTOM, PROBLEM_TYPE, PROBLEM_PHENOMENON, PROBLEM_DESCRIPTION, INITIAL_CAUSE, "
+						+ "ROOT_CAUSE, CHECK_USERID, CHECK_TIME, COLLECTOR_USERID, COLLECTOR_TIME, "
+						+ "CHECK_DEPARTMENT, CHECK_MODE, MODIFY_DATE, MODIFY_USERID, CONFIRM_USERID, "
+						+ "VERSION, PROBLEM_LEVEL, PHOTO_EXIST, KIND, FC, MEMO_USERID, CLASS_WEIGHT, "
+						+ "PROBLEM_WEIGHT, TOTAL_WEIGHT, WORD_YEAR)"
+						+ "values (SEQ_FIELD_RD_QCRECORD.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+						+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        //查询关联link或者测线在fcc中是否有种别Tips
-                        String query = "relate_links:*|" + record.getLink_pid() + "|* OR id:" + record.getLink_pid();
-                        String fQuery = "(s_sourceType:1201 AND -t_lifecycle:1) OR s_sourceType:2001";
-                        List<JSONObject> snapotList = solr.queryTips(query, fQuery, 1);
-                        int kind = 0;//种别直接在FCC库中获取
-                        int fc = 0;//FC直接在GDB中获取
-                        int linkPid = 0;
-                        try {
-                            linkPid = Integer.valueOf(record.getLink_pid());
-                        } catch (Exception e) {
-                            e.printStackTrace();
+				checkConn = DBConnector.getInstance().getCheckConnection();
+				deletePstmt = checkConn.prepareStatement(deleteSql);
+				insertPstmt = checkConn.prepareStatement(insertSql);
+
+				hbaseConn = HBaseConnector.getInstance().getConnection();
+
+				htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+				String problem_num = "";
+				int sq = 0;
+				for (FieldRoadQCRecord record : records) {
+					try {
+						sq++;
+						problem_num = record.getId();
+
+						deletePstmt.setString(1, problem_num);
+						deletePstmt.addBatch();
+
+						// 按照Tips统计坐标所在图幅统计
+						TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+						TipsDao solrObj = operator.getById(record.getRowkey());
+                        String linkPidString = null;
+                        if(solrObj.getS_sourceType().equals("2001")) {//测线的linkid返回其本身
+                            linkPidString = solrObj.getId();
+                        }else{
+                            linkPidString = getQualityLinkPid(solrObj, regionDBConn);
                         }
-                        if (linkPid != 0) {
-                            int dbId = subtask.getDbId();
-                            java.sql.Connection regionDBConn = DBConnector.getInstance().getConnectionById(dbId);
-                            JSONObject linkObj = TipsImportUtils.queryLinkKindFC(regionDBConn, String.valueOf(linkPid));
-                            if (linkObj != null) {
-                                kind = linkObj.getInt("kind");
-                                fc = linkObj.getInt("fc");
-                            }
-                        }
+                        record.setLink_pid(linkPidString);
+						insertPstmt.setString(1, "");
+						insertPstmt.setString(2, groupName);
+						insertPstmt.setString(3, record.getLink_pid());
+						insertPstmt.setString(4, province);
+						insertPstmt.setString(5, city);
+						insertPstmt.setString(6, record.getRowkey());
+						insertPstmt.setInt(7, subTaskId);
+						insertPstmt.setString(8, subtask.getName());
+						insertPstmt.setInt(9, 0);
+						insertPstmt.setString(10, "");
+						insertPstmt.setString(11, problem_num);
+						insertPstmt.setString(12, "");
+						Geometry geo = solrObj.getWkt();
+						String mesh = TipsGridCalculate.calculate(geo).iterator().next().substring(0, 6);
+						insertPstmt.setInt(13, Integer.valueOf(mesh));
+						insertPstmt.setString(14, "");
+						insertPstmt.setString(15, "");
+						insertPstmt.setString(16, "");
+						insertPstmt.setString(17, record.getClass_top());
+						insertPstmt.setString(18, record.getClass_bottom());
+						insertPstmt.setString(19, record.getClass_bottom());
+						insertPstmt.setString(20, record.getType());
+						insertPstmt.setString(21, record.getPhenomenon());
+						insertPstmt.setString(22, record.getDescription());
+						insertPstmt.setString(23, record.getInitial_cause());
+						insertPstmt.setString(24, record.getRoot_cause());
+						insertPstmt.setString(25, record.getCheck_userid());
+						insertPstmt.setString(26, record.getCheck_time());
+						// 当关联的link上tips外业有采集时，该link关联的所有tips都记录常规采集任务对应的userid,
+						// 当关联link上挂接的tips全部未采集时，该字段记录为AAA.（是否采集过通过stage=1,handler=常规采集子任务userid判断）
+						String collecorUserId = this.getCollectUserId(operator, record.getLink_pid(), userId, htab);
+						insertPstmt.setString(27, collecorUserId);
+						// 读取常规采集子任务的date
+						insertPstmt.setString(28, startDate);
+						insertPstmt.setString(29, "外业采集部");
+						insertPstmt.setInt(30, subtask.getQualityMethod());
+						insertPstmt.setString(31, record.getCheck_time());
+						insertPstmt.setString(32, record.getCheck_userid());
+						insertPstmt.setString(33, record.getConfirm_userid());
+						// 读取当前版本号
+						insertPstmt.setString(34, version);
+						insertPstmt.setString(35, "C");
+						insertPstmt.setInt(36, 0);
 
-                        if (snapotList != null && snapotList.size() > 0) {//FCC存在
-                            JSONObject kindObj = snapotList.get(0);
-                            JSONObject deepObj = kindObj.getJSONObject("deep");
-                            kind = deepObj.getInt("kind");
-                        }
-                        insertPstmt.setInt(37, kind);
-                        insertPstmt.setInt(38, fc);
-                        String memoUserId = "";
-                        if (collecorUserId.equals("AAA")) {
-                            memoUserId = String.valueOf(userId);
-                        }
-                        insertPstmt.setString(39, memoUserId);
-                        insertPstmt.setString(40, "");
-                        insertPstmt.setString(41, "");
-                        insertPstmt.setString(42, "");
-                        insertPstmt.setString(43, "");
+						// 查询关联link或者测线在fcc中是否有种别Tips
+//						String where = "((t.s_sourceType='1201' AND t.t_lifecycle<>1) OR t.s_sourceType='2001')";
+//                        where += " AND (t.id = '" + record.getLink_pid() + "' OR EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE t.id=l.id and L.LINK_ID = '" + record.getLink_pid() + "'))";
+//                        String query = "select * from tips_index t where " + where;
+						String query = "WITH TMP AS\n" +
+                                " (SELECT ID\n" +
+                                "    FROM TIPS_INDEX T\n" +
+                                "   WHERE T.ID = '" + record.getLink_pid() + "'\n" +
+                                "     AND T.S_SOURCETYPE = '2001'\n" +
+                                "  UNION\n" +
+                                "  SELECT ID\n" +
+                                "    FROM TIPS_INDEX T\n" +
+                                "   WHERE T.S_SOURCETYPE = '1201'\n" +
+                                "     AND T.T_LIFECYCLE <> 1\n" +
+                                "     AND EXISTS (SELECT 1\n" +
+                                "            FROM TIPS_LINKS L\n" +
+                                "           WHERE T.ID = L.ID\n" +
+                                "             AND L.LINK_ID = '" + record.getLink_pid() + "'))\n" +
+                                "SELECT *\n" +
+                                "  FROM TIPS_INDEX T\n" +
+                                " WHERE EXISTS (SELECT 1 FROM TMP TT WHERE TT.ID = T.ID)";
+                        List<TipsDao> snapotList = operator.query(query);
+						int kind = 0;// 种别直接在FCC库中获取
+						int fc = 0;// FC直接在GDB中获取
+						int linkPid = 0;
+						try {
+							linkPid = Integer.valueOf(record.getLink_pid());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						if (linkPid != 0) {
+							JSONObject linkObj = TipsImportUtils.queryLinkKindFC(regionDBConn, String.valueOf(linkPid));
+							if (linkObj != null) {
+								kind = linkObj.getInt("kind");
+								fc = linkObj.getInt("fc");
+							}
+						}
 
-                        insertPstmt.addBatch();
+						if (snapotList != null && snapotList.size() > 0) {// FCC存在
+                            TipsDao kindObj = snapotList.get(0);
+							JSONObject deepObj = JSONObject.fromObject(kindObj.getDeep());
+							kind = deepObj.getInt("kind");
+						}
+						insertPstmt.setInt(37, kind);
+						insertPstmt.setInt(38, fc);
+						String memoUserId = "";
+						if (collecorUserId.equals("AAA")) {
+							memoUserId = String.valueOf(userId);
+						}
+						insertPstmt.setString(39, memoUserId);
+						insertPstmt.setString(40, "");
+						insertPstmt.setString(41, "");
+						insertPstmt.setString(42, "");
+						insertPstmt.setString(43, "");
 
-                        if(sq % 500 == 0) {
-                            deletePstmt.executeBatch();
-                            insertPstmt.executeBatch();
-                            checkConn.commit();
+						insertPstmt.addBatch();
+
+						if (sq % 500 == 0) {
+							deletePstmt.executeBatch();
+							insertPstmt.executeBatch();
+							checkConn.commit();
+						}
+					} catch (Exception e) {
+						JSONObject reasonObj = newReasonObject(problem_num, 1);
+						qcReasons.add(reasonObj);
+						e.printStackTrace();
+					}
+				}
+				try {
+					deletePstmt.executeBatch();
+					insertPstmt.executeBatch();
+					checkConn.commit();
+				} catch (Exception e) {
+					JSONObject reasonObj = newReasonObject(problem_num, 1);
+					qcReasons.add(reasonObj);
+					e.printStackTrace();
+				}
+				// Clob clob = ConnectionUtil.createClob(checkConn);
+				// clob.setString(1, builder.toString());
+				// deletePstmt.setClob(1, clob);
+				// deletePstmt.execute();
+				// checkConn.commit();
+				// DBUtils.closeStatement(deletePstmt);
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(checkConn);
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+            DbUtils.rollbackAndCloseQuietly(regionDBConn);
+			logger.error("质检问题上传失败，原因为：" + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			DBUtils.closeStatement(deletePstmt);
+			DBUtils.closeStatement(insertPstmt);
+			DbUtils.commitAndCloseQuietly(checkConn);
+            DbUtils.commitAndCloseQuietly(oracleConn);
+            DbUtils.commitAndCloseQuietly(regionDBConn);
+		}
+
+	}
+
+    private String getQualityLinkPid(TipsDao tipsDao, java.sql.Connection regionDBConn) throws Exception {
+        String linkPid = "";
+        try{
+            String deep = tipsDao.getDeep();
+            String sourceType = tipsDao.getS_sourceType();
+            if(StringUtils.isNotEmpty(deep)) {
+                JSONObject deepJson = JSONObject.fromObject(deep);
+                if (TipsStatConstant.fieldQCExpIdType.contains(sourceType)) {//exp.id
+                    JSONObject exp = deepJson.getJSONObject("exp");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFIdType.contains(sourceType)) {//f.id
+                    JSONObject exp = deepJson.getJSONObject("f");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFIdNodeType.contains(sourceType)) {
+                    //f.type<>3时，取f.id;f.type=3时，取该node关联的任意一条link
+                    JSONObject exp = deepJson.getJSONObject("f");
+                    int type = exp.getInt("type");
+                    String id = exp.getString("id");
+                    if (type != 3) {
+                        linkPid = exp.getString("id");
+                    } else {
+                        //TODO 该node关联的任意一条link
+                        String nodeLink = TipsImportUtils.queryNodeRelateLink(regionDBConn, id);
+                        if (StringUtils.isNotEmpty(nodeLink)) {
+                            linkPid = nodeLink;
                         }
-                    }catch (Exception e) {
-                        JSONObject reasonObj = newReasonObject(problem_num, 1);
-                        qcReasons.add(reasonObj);
-                        e.printStackTrace();
+                    }
+                } else if (TipsStatConstant.fieldQCInIdType.contains(sourceType)) {//in.id
+                    JSONObject exp = deepJson.getJSONObject("in");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCOutIdType.contains(sourceType)) {//out.id
+                    JSONObject exp = deepJson.getJSONObject("out");
+                    linkPid = exp.getString("id");
+                } else if (TipsStatConstant.fieldQCFArrayIdType.contains(sourceType)) {//farray.id
+                    JSONArray fArray = deepJson.getJSONArray("f_array");
+                    if (fArray != null && fArray.size() > 0) {
+                        JSONObject fObj = fArray.getJSONObject(0);
+                        linkPid = fObj.getString("id");
+                    }
+                } else if (TipsStatConstant.fieldQCPArrayIdType.contains(sourceType)) {//parray.id
+                    JSONArray pArray = deepJson.getJSONArray("p_array");
+                    if (pArray != null && pArray.size() > 0) {
+                        JSONObject pObj = pArray.getJSONObject(0);
+                        JSONObject fObj = pObj.getJSONObject("f");
+                        linkPid = fObj.getString("id");
                     }
                 }
-                try {
-                    deletePstmt.executeBatch();
-                    insertPstmt.executeBatch();
-                    checkConn.commit();
-                }catch (Exception e) {
-                    JSONObject reasonObj = newReasonObject(problem_num, 1);
-                    qcReasons.add(reasonObj);
-                    e.printStackTrace();
-                }
-//                Clob clob = ConnectionUtil.createClob(checkConn);
-//                clob.setString(1, builder.toString());
-//                deletePstmt.setClob(1, clob);
-//                deletePstmt.execute();
-//                checkConn.commit();
-//                DBUtils.closeStatement(deletePstmt);
             }
         }catch (Exception e) {
-            DbUtils.rollbackAndCloseQuietly(checkConn);
-            logger.error("质检问题上传失败，原因为：" + e.getMessage());
-            e.printStackTrace();
-        }finally {
-            DBUtils.closeStatement(deletePstmt);
-            DBUtils.closeStatement(insertPstmt);
-            DbUtils.commitAndCloseQuietly(checkConn);
+            throw new Exception("getQualityLinkPid获取linkpid失败！");
         }
-
+        return linkPid;
     }
 
-    private String getCollectUserId(String linkPid, int userId, Table htab) throws Exception {
-        String collecorUserId = "AAA";
-        String query = "relate_links:*|" + linkPid + "|*";
-        String fQuery = "-stage:0";
-        List<JSONObject> relateTips = solr.queryTips(query, fQuery);
-        SolrDocumentList sdList = solr.queryTipsSolrDocFilter(query, fQuery);
-        long totalNum = sdList.getNumFound();
-        if (totalNum <= Integer.MAX_VALUE) {
-            for (int j = 0; j < totalNum; j++) {
-                SolrDocument doc = sdList.get(j);
-                JSONObject snapshot = JSONObject.fromObject(doc);
-                String rowkey = snapshot.getString("id");
+	private String getCollectUserId(TipsIndexOracleOperator operator, String linkPid, int userId, Table htab) throws Exception {
+		String collecorUserId = "AAA";
 
-                JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-                JSONObject track = oldTip.getJSONObject("track");
-                JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-                for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-                    JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
-                    int stage = trackInfoObj.getInt("stage");
-                    if (stage == 1) {
-                        int handler = trackInfoObj.getInt("handler");
-                        if (handler == userId) {
-                            collecorUserId = String.valueOf(userId);
-                            break;
-                        }
+        String where = "t.stage=1 AND EXISTS(SELECT 1 FROM TIPS_LINKS L WHERE t.id=l.id AND L.LINK_ID = '" + linkPid + "') AND ROWNUM = 1";
+        String query = "select * from tips_index t where " + where;
+        List<TipsDao> relateTips = operator.query(query);
+        for (TipsDao snapshot : relateTips) {
+//            collecorUserId = String.valueOf(snapshot.getHandler());
+
+            JSONObject oldTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, snapshot.getId(), new String[]{"track"});
+            JSONObject track = oldTip.getJSONObject("track");
+            JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                JSONObject trackInfoObj = trackInfoArr.getJSONObject(i);
+                int stage = trackInfoObj.getInt("stage");
+                if (stage == 1) {
+                    int handler = trackInfoObj.getInt("handler");
+                    if (handler == userId) {
+                        collecorUserId = String.valueOf(userId);
+                        break;
                     }
                 }
             }
         }
-        return collecorUserId;
-    }
+		return collecorUserId;
+	}
 
-    /**
-     * 读取Tips文件，组装Get列表
-     *
-     * @param fileName
-     * @return
-     * @throws Exception
-     */
-    private List<FieldRoadQCRecord> loadQualityContent(String fileName)
-            throws Exception {
-        Scanner scanner = new Scanner(new FileInputStream(fileName));
-        List<FieldRoadQCRecord> records = new ArrayList<>();
-        qcTotal = 0;
-        while (scanner.hasNextLine()) {
-            qcTotal ++;
-            String problem_num = "";
-            try {
-                String line = scanner.nextLine();
-                com.alibaba.fastjson.JSONObject lineObj = com.alibaba.fastjson.JSONObject.parseObject(line);
-                problem_num = lineObj.getString("id");
-                FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(line, FieldRoadQCRecord.class);
-                problem_num = record.getId();
-                records.add(record);
-            } catch (Exception e) {
-                JSONObject reasonObj = newReasonObject(problem_num, ErrorType.InvalidData);
-                qcReasons.add(reasonObj);
-                logger.error("质检问题上传解析JSON失败" + problem_num + "，原因为：" + e.getMessage());
-            }
+	/**
+	 * 读取Tips文件，组装Get列表
+	 *
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 */
+	private List<FieldRoadQCRecord> loadQualityContent(String fileName) throws Exception {
+		Scanner scanner = new Scanner(new FileInputStream(fileName));
+		List<FieldRoadQCRecord> records = new ArrayList<>();
+		qcTotal = 0;
+		while (scanner.hasNextLine()) {
+			qcTotal++;
+			String problem_num = "";
+			try {
+				String line = scanner.nextLine();
+				com.alibaba.fastjson.JSONObject lineObj = com.alibaba.fastjson.JSONObject.parseObject(line);
+                lineObj.put("class_bottom", lineObj.getString("class"));
+				problem_num = lineObj.getString("id");
+				FieldRoadQCRecord record = com.alibaba.fastjson.JSONObject.parseObject(lineObj.toJSONString(), FieldRoadQCRecord.class);
+				problem_num = record.getId();
+				records.add(record);
+			} catch (Exception e) {
+				JSONObject reasonObj = newReasonObject(problem_num, ErrorType.InvalidData);
+				qcReasons.add(reasonObj);
+				logger.error("质检问题上传解析JSON失败" + problem_num + "，原因为：" + e.getMessage());
+			}
 
-        }
+		}
 
-        return records;
-    }
+		return records;
+	}
 
 	public static void main(String[] args) throws Exception {
 
@@ -1330,20 +1445,21 @@ public class TipsUpload {
 		 * 
 		 * System.out.println("成功");
 		 */
-//		TipsUpload l = new TipsUpload(0);
-//		l.run("F:\\FCC\\11151449646061.txt", null, null);
+		// TipsUpload l = new TipsUpload(0);
+		// l.run("F:\\FCC\\11151449646061.txt", null, null);
 
-        String str = "{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.000,40.01351567]}}";
-        //System.out.println(str.toString());
-        JSONObject strJson = TipsUtils.stringToSFJson(str);
-//
-//        com.alibaba.fastjson.JSONObject fj = TipsUtils.netJson2fastJson(strJson);
-//        System.out.println(fj.toString());
-//        System.out.println(strJson.toString());
-        JSONObject locJson1 = strJson.getJSONObject("g_location");
-        JSONArray jsonArray1  = locJson1.getJSONArray("coordinates");
-        System.out.println(jsonArray1.get(0));
-        System.out.println(jsonArray1.get(1));
-        System.out.println(GeoTranslator.transform(GeoTranslator.geojson2Jts(locJson1), 0.00001, 5));
+		String str = "{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.000,40.01351567]}}";
+		// System.out.println(str.toString());
+		JSONObject strJson = TipsUtils.stringToSFJson(str);
+		//
+		// com.alibaba.fastjson.JSONObject fj =
+		// TipsUtils.netJson2fastJson(strJson);
+		// System.out.println(fj.toString());
+		// System.out.println(strJson.toString());
+		JSONObject locJson1 = strJson.getJSONObject("g_location");
+		JSONArray jsonArray1 = locJson1.getJSONArray("coordinates");
+		System.out.println(jsonArray1.get(0));
+		System.out.println(jsonArray1.get(1));
+		System.out.println(GeoTranslator.transform(GeoTranslator.geojson2Jts(locJson1), 0.00001, 5));
 	}
 }

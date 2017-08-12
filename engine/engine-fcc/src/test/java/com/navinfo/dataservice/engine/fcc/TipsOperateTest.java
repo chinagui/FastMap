@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -17,6 +22,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -40,16 +46,65 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
  * @Description: TODO
  * 
  */
-public class TipsOperateTest {
+public class TipsOperateTest extends InitApplication {
+
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
 
 	@Test
 	public void testEdit() {
+		
+		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"0212016086f35d16434fad8038541a01533abf\",\"pid\":508000041,\"editStatus\":0,\"editMeth\":2}";
+		
+		
 
 		TipsOperator operate = new TipsOperator();
 
 		try {
-			operate.update("021901b0ad67e145be477bb1d2202181edfc84", 0, null,
-					"m", 0 ,0 );
+			 if (StringUtils.isEmpty(parameter)) {
+	                throw new IllegalArgumentException("parameter参数不能为空。");
+	            }
+			  JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+	            String rowkey = jsonReq.getString("rowkey");
+
+	            //int stage = jsonReq.getInt("stage");
+
+	            int handler = jsonReq.getInt("handler");
+
+	            String mdFlag= jsonReq.getString("mdFlag");
+
+	            int editStatus = jsonReq.getInt("editStatus");
+	            int editMeth = jsonReq.getInt("editMeth");
+
+	            if (StringUtils.isEmpty(rowkey)) {
+	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
+	            }
+
+	            if (StringUtils.isEmpty(mdFlag)) {
+	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+	            }
+
+	            //值域验证
+	            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+	                throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+	            }
+
+
+	            String pid = null;
+
+	            if (jsonReq.containsKey("pid")) {
+	                pid = jsonReq.getString("pid");
+	            }
+
+	            TipsOperator op = new TipsOperator();
+
+	            op.update(rowkey, handler, pid, mdFlag, editStatus, editMeth);
+	            
+	            System.out.println("----------------修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,10 +128,10 @@ public class TipsOperateTest {
 		
 		JSONObject b=new JSONObject();
 		
-		b.put("rowkey", "021509E86F79D4FB174B728B9E552434D7D324");
+		b.put("rowkey", "02110417AAB99AD0124E91A3FE0076C14A8E8B");
 		
-		b.put("editStatus", 2);
-		b.put("editMeth", 2);
+		b.put("editStatus",0);
+		b.put("editMeth", 1);
 		
 		data.add(b);
 		
@@ -106,33 +161,35 @@ public class TipsOperateTest {
 		try{
 
 		// String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
-		 String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
-		 if (StringUtils.isEmpty(parameter)) {
-             throw new IllegalArgumentException("parameter参数不能为空。");
-         }
-		    
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			//{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+		    String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
+		    parameter = "{\"mdFlag\":\"d\",\"handler\":1315,\"data\":[{\"rowkey\":\"028002b4eb017e06fd4690a2473409a33bc39b\",\"editStatus\"" +
+                    ":2,\"editMeth\":1}]}";
+            if (StringUtils.isEmpty(parameter)) {
+                 throw new IllegalArgumentException("parameter参数不能为空。");
+            }
 
-			JSONArray data = jsonReq.getJSONArray("data");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int handler = jsonReq.getInt("handler");
-			
-			String mdFlag= jsonReq.getString("mdFlag");
-			
-			 if (data==null||data.size()==0) {
-	                throw new IllegalArgumentException("参数错误:data不能为空");
-	         }
-			
-			 if (StringUtils.isEmpty(mdFlag)) {
-	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
-	         }
-			
-			  //值域验证
-         if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
-         	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
-         }
+            //{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+
+            JSONArray data = jsonReq.getJSONArray("data");
+
+            int handler = jsonReq.getInt("handler");
+
+            String mdFlag= jsonReq.getString("mdFlag");
+
+             if (data==null||data.size()==0) {
+                    throw new IllegalArgumentException("参数错误:data不能为空");
+             }
+
+             if (StringUtils.isEmpty(mdFlag)) {
+                    throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+             }
+
+                  //值域验证
+             if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+                 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+             }
 
 			TipsOperator op = new TipsOperator();
 
@@ -155,42 +212,39 @@ public class TipsOperateTest {
 		TipsOperator operate = new TipsOperator();
 
 		try {
-			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
-			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
-			 "1", "d", 1 ,1);
+//			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
+//			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
+//			 "1", "d", 1 ,1);
+            String parameter = "{taskId:1717}";
 
-//			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-//
-//			Table htab = hbaseConn.getTable(TableName
-//					.valueOf(HBaseConstant.tipTab));
-//
-//			Get get = new Get(rowkey.getBytes());
-//
-//			get.addColumn("data".getBytes(), "track".getBytes());
-//
-//			Result result = htab.get(get);
-//
-//			Put put = new Put(rowkey.getBytes());
-//
-//			JSONObject track = JSONObject.fromObject(new String(result
-//					.getValue("data".getBytes(), "track".getBytes())));
-//
-//			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
-//
-//			track.put("t_mStatus", 0);
-//
-//			track.put("t_dStatus", 0);
-//
-//			String date = StringUtils.getCurrentTime();
-//
-//			track.put("t_trackInfo", trackInfo);
-//
-//			track.put("t_date", date);
-//
-//			put.addColumn("data".getBytes(), "track".getBytes(), track
-//					.toString().getBytes());
-//
-//			htab.put(put);
+            java.sql.Connection oracleConn = null;
+            try {
+                oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+
+                JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+                if(!jsonReq.containsKey("taskId")) {
+                    throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+                }
+
+                int midTaskId = jsonReq.getInt("taskId");
+                if(midTaskId == 0) {
+                    throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+                }
+
+                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+                JSONArray gridList = manApi.getGridIdsByTaskId(midTaskId);
+                String wkt = GridUtils.grids2Wkt(gridList);
+                TipsOperator tipsOperator = new TipsOperator();
+                long totalNum = tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("total", totalNum);
+
+            } catch (Exception e) {
+                DBUtils.rollBack(oracleConn);
+            } finally {
+                DBUtils.closeConnection(oracleConn);
+            }
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -201,7 +255,7 @@ public class TipsOperateTest {
 	 @Test
 		public void testDel() {
 
-		 String parameter = "{\"rowkey\":\"022101a307336e19144eed9753865dfa3f2578\",\"subTaskId\":198}";
+		 String parameter = "{\"rowkey\":\"028001a693ba64bd1d455ca809e6486520f221\",\"subTaskId\":57}";
 			try {
 				if (StringUtils.isEmpty(parameter)) {
 					throw new IllegalArgumentException("parameter参数不能为空。");
@@ -223,7 +277,7 @@ public class TipsOperateTest {
 
 				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 
-				//delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
+				delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
 				if(delType == 0 || delType == 1) {
 					op.deleteByRowkey(rowkey, delType);

@@ -10,7 +10,6 @@ public class FieldRoadQCRecord {
     private String link_pid;
     private String id;
     private String class_top;
-    @SerializedName("class")
     private String class_bottom;
     private String type;
     private String phenomenon;

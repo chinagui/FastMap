@@ -3,16 +3,20 @@ package com.navinfo.dataservice.engine.statics;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.service.StaticsOperation;
 import com.navinfo.dataservice.engine.statics.service.StaticsService;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 
@@ -38,6 +42,7 @@ public class StaticTest {
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
+	
 	
 	
 //	@Test
@@ -76,4 +81,16 @@ public class StaticTest {
 //		temp = result;
 //	}
 
+	@Test
+	public void test01() {
+		List<Document> list;
+		try {
+			list = OracleDao.getSubtaskListWithStatistics();
+			System.out.println(list.toString());
+		} catch (ServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }

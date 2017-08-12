@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,9 +18,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -93,6 +94,7 @@ public class CollectScenario{
 			}
 			executor.shutdown();
 		}catch(Exception e){
+			log.error("注意：初始化脚本执行过程中有异常啦！记得重新执行该脚本！！！！！千万重新执行该脚本！！！！！！");
 			log.error(e.getMessage(),e);
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -140,7 +142,7 @@ public class CollectScenario{
 			initLinkTable(dailyConn);
 			//将link表中的所有数据保存到目标表中，且状态为车采
 			insertLinkTableFromTempTable(dailyConn);
-//			//1-2级的直接保存为车采
+//			1-2级的直接保存为车采
 //			insertEditPreCarColectionLink(dailyConn);
 			//10级及以上不考虑采集方式直接保存
 			insertEditPreOriginalLink(dailyConn);
@@ -153,9 +155,9 @@ public class CollectScenario{
 			//3-9保存
 			insertEditPreLinkBetweenTrheeAndNineFac(dailyConn);
 			//数据处理完成删除临时表
-			deleteTempTable(dailyConn);
+//			deleteTempTable(dailyConn);
 		}catch(Exception e){
-			log.error(e.getMessage(),e);
+			log.error("dailyDBId:" + dailyDBId + "执行有异常，请重新执行该脚本文件！");
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(dailyConn);
@@ -174,12 +176,12 @@ public class CollectScenario{
 			String sql = "delete LINK_EDIT_PRE";
 			log.info("初始化数据sql：" + sql);
 			run.execute(dailyConn, sql);
-//			String tableSql = "drop table LINK_PRE_TEST";
-//			log.info("初始化表sql：" + sql);
-//			run.execute(dailyConn, tableSql);
+			String tableSql = "drop table LINK_PRE_TEST";
+			log.info("初始化表sql：" + sql);
+			run.execute(dailyConn, tableSql);
+			dailyConn.commit();
 		}catch(Exception e){
-			log.error("初始化异常："+e.getMessage(),e);
-			throw e;
+			log.error("初始化异常");
 		}
 	}
 	
@@ -249,6 +251,7 @@ public class CollectScenario{
 			
 			log.info("从临时表中删除link和poi都重复的数据sql：" + sql);
 			run.execute(dailyConn, sql);
+			dailyConn.commit();
 		}catch(Exception e){
 			log.error("从临时表中删除link和poi都重复的数据异常："+e.getMessage(),e);
 			throw e;
@@ -311,12 +314,10 @@ public class CollectScenario{
 				QueryRunner run = new QueryRunner();
 
 				StringBuffer sb = new StringBuffer();
-				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length, t.range ");
-				sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t where t.range = 'A' ");
-				sb.append("group by t.LINK_PID) p ");
-				sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-				sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+importantPoiCount+")");
+				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in");
+				sb.append(" (select p.LINK_PID FROM (select t.LINK_PID, count(1) poicount,t.length, t.range");
+				sb.append(" from LINK_PRE_TEST t where t.range = 'A' group by t.LINK_PID,t.length,t.range) p");
+				sb.append(" where (p.poicount * 1.000 / p.LENGTH) * 100 >= "+importantPoiCount+")");
 
 				String sql = sb.toString();
 				
@@ -339,12 +340,10 @@ public class CollectScenario{
 				QueryRunner run = new QueryRunner();
 
 				StringBuffer sb = new StringBuffer();
-				sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-				sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length ");
-				sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t where t.address != 0 ");
-				sb.append("group by t.LINK_PID) p ");
-				sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-				sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+addressPoiCount+")");
+				sb.append(" update link_edit_pre t set t.scenario = 1 where t.pid in (");
+				sb.append(" select t.LINK_PID  FROM (select t.length, t.LINK_PID, count(1) poicount ");
+				sb.append(" from LINK_PRE_TEST t where t.address != 0 group by t.LINK_PID, t.length) t");
+				sb.append(" where (t.poicount * 1.000 / t.LENGTH) * 100 >= "+addressPoiCount+")");
 
 				String sql = sb.toString();
 				
@@ -367,12 +366,10 @@ public class CollectScenario{
 			QueryRunner run = new QueryRunner();
 			
 			StringBuffer sb = new StringBuffer();
-			sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in( ");
-			sb.append("select distinct q.LINK_PID FROM (select p.LINK_PID, p.poicount, t.length ");
-			sb.append("FROM (select t.LINK_PID, count(1) poicount from LINK_PRE_TEST t ");
-			sb.append("group by t.LINK_PID) p ");
-			sb.append("left join LINK_PRE_TEST t on t.link_pid = p.LINK_PID ");
-			sb.append("order by p.LINK_PID) q where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+normalPoiCount+")");
+			sb.append("update link_edit_pre t set t.scenario = 1 where t.pid in(");
+			sb.append(" select q.LINK_PID  FROM(select t.LINK_PID, count(1) poicount,t.length");
+			sb.append(" from LINK_PRE_TEST t group by t.LINK_PID,t.length) q");
+			sb.append(" where (q.poicount * 1.000 / q.LENGTH) * 100 >= "+normalPoiCount+")");
 
 			String sql = sb.toString();
 			log.info("保存普通POI数据sql：" + sql);
@@ -415,7 +412,7 @@ public class CollectScenario{
 		try{
 			//通过api调用元数据库重要POI一览表中的POI数据
 			MetadataApi api = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<Integer> importantPids = api.queryImportantPid();
+			List<String> importantPids = api.queryImportantPid();
 
 			if(importantPids == null || importantPids.size() == 0){ 
 				return; 
@@ -427,14 +424,27 @@ public class CollectScenario{
 			}
 			
 			String pids = sb.deleteCharAt(sb.length() - 1).toString();
-			String parameter = "d.LINK_PID";
-			if(importantPids.size() > 900){
-				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
-			}
+			//String parameter = "d.LINK_PID";
+//			if(importantPids.size() > 900){
+//				pids = JdbcSqlUtil.getInParameter(importantPids, parameter);
+//			}
 			
-			String sql = "update LINK_PRE_TEST d set d.RANGE = 'A' where d.LINK_PID in ("+pids+")";
+			StringBuffer sqlSb = new StringBuffer();
+			sqlSb.append("update LINK_PRE_TEST d"
+					+ "  set d.RANGE = 'A'"
+					+ "  where d.PID in (select p.pid"
+					+ "                   from ix_poi p,"
+					+ "                        (select column_value from table(clob_to_table(?))) t"
+					+ "                  where p.poi_num = t.column_value)");
+			Clob clob=ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, pids);
+			
+			String sql = sqlSb.toString();
+			
+			log.info("更新等级A的pids:" + pids);
 			log.info("从元数据库中查询出的重点POI更新到临时表sql:"+sql);
-			run.execute(dailyConn, sql);
+			run.update(dailyConn, sql, clob);
+			dailyConn.commit();
 		}catch(Exception e){
 			log.error("元数据库中查询出的重点POI更新到临时表异常:"+e.getMessage(),e);
 			throw e;
@@ -462,24 +472,24 @@ public class CollectScenario{
 		}
 	}
 	
-	/**
-	 * 数据处理完成删除临时表
-	 * @param
-	 * @throws Exception 
-	 * 
-	 * */
-	public void deleteTempTable(Connection dailyConn) throws Exception{
-		 try{
-				QueryRunner run = new QueryRunner();
-
-				String sql = "DROP TABLE LINK_PRE_TEST";
-				
-				log.info("删除临时表sql：" + sql);
-				run.execute(dailyConn, sql);
-			}catch(Exception e){
-				log.error("删除临时表异常："+e.getMessage(),e);
-			}
-	}
+//	/**
+//	 * 数据处理完成删除临时表
+//	 * @param
+//	 * @throws Exception 
+//	 * 
+//	 * */
+//	public void deleteTempTable(Connection dailyConn) throws Exception{
+//		 try{
+//				QueryRunner run = new QueryRunner();
+//
+//				String sql = "DROP TABLE LINK_PRE_TEST";
+//				
+//				log.info("删除临时表sql：" + sql);
+////				run.execute(dailyConn, sql);
+//			}catch(Exception e){
+//				log.error("删除临时表异常："+e.getMessage(),e);
+//			}
+//	}
 }
 	class MyTask implements Runnable {
 		   private int dailyDbId;

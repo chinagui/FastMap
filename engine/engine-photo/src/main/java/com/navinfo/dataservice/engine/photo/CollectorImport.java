@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +23,12 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.photo.HBaseConnector;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -47,7 +51,10 @@ public class CollectorImport {
 			if(f.isFile() && f.getName().endsWith(".jpg")){
 				FileInputStream in = new FileInputStream(f);
 				System.out.println(f.getName());
-				//******zl 2016.12.09添加自动图片旋转**************
+				/*
+				 * 2017.08.10 zl 取消图片自动旋转功能,移动端对应人员:肖岩
+				 * //******zl 2016.12.09添加自动图片旋转**************
+				 
 				FileInputStream inn = new FileInputStream(f);
 				int rotateAngle = RotateImageUtils.rotateOrientatione(inn);//获取图片旋转角度
 				InputStream newIn =new FileInputStream(f);
@@ -59,9 +66,12 @@ public class CollectorImport {
 			    	}
 		    	}
 				//********************
-				controller.putPhoto(f.getName().replace(".jpg", ""),newIn);
+			controller.putPhoto(f.getName().replace(".jpg", ""),newIn);
 				in.close();
 				newIn.close();
+				*/
+				controller.putPhoto(f.getName().replace(".jpg", ""),in);
+				in.close();
 			}
 		}
 	}
@@ -80,9 +90,10 @@ public class CollectorImport {
 		//******zl 2016.12.07 添加自动图片旋转**************
 		//需要旋转的图片,旋转后替换原有图片
 		//20161210, modifiedby liya 增加判断，如果路径不是个Directory，才进行旋转代码。因为tips传入的是文件路径，会报错
-		if(!file.isDirectory()){
+		//2017.08.10 zl 取消图片自动旋转功能,移动端对应人员:肖岩
+		/*if(!file.isDirectory()){
 			RotateImageUtils.rotateImage(dir);
-		}
+		}*/
 		//********************
 		
 		Map<String,byte[]> mapPhoto = FileUtils.readPhotos(dir);
@@ -128,6 +139,66 @@ public class CollectorImport {
 		
 		photoTab.close();
 	}
+	
+	public static void importPhotoNew(Map<String, Photo> map, String dir) throws Exception {
+
+		if (map.size() == 0) {
+			return;
+		}
+
+		File file = new File(dir);
+
+		if (!file.exists()) {
+			return;
+		}
+
+		if (!file.isDirectory()) {
+			RotateImageUtils.rotateImage(dir);
+		}
+
+		//传入map，按需读取二进制流，减小内存消耗
+		Map<String, byte[]> mapPhoto = FileUtils.readPhotosNew(map,dir);
+
+		Map<String, Integer> exitstPhoto = getAllExitsPhoto(map); // 找到所有的在数据库中已存在的照片,已存在则不再导入
+
+		Table photoTab = HBaseConnector.getInstance().getConnection()
+				.getTable(TableName.valueOf(HBaseConstant.photoTab));
+
+		List<Put> puts = new ArrayList<Put>();
+
+		Set<Entry<String, Photo>> set = map.entrySet();
+
+		Iterator<Entry<String, Photo>> it = set.iterator();
+
+		int num = 0;
+
+		while (it.hasNext()) {
+			Entry<String, Photo> entry = it.next();
+			// 缩略图不存储，参3为null
+			Put put = enclosedPut(entry, mapPhoto, null, exitstPhoto);
+
+			if (put == null) {
+				continue;
+			}
+
+			puts.add(put);
+
+			num++;
+
+			if (num >= 1000) {
+				photoTab.put(puts);
+
+				puts.clear();
+
+				num = 0;
+			}
+		}
+
+		photoTab.put(puts);
+
+		photoTab.close();
+	}
+
 	
 	/**
 	 * @Description:TOOD
@@ -195,7 +266,17 @@ public class CollectorImport {
 		return put;
 	}
 	
-	public static void importCrowdPhoto(InputStream inputStream, int angle, String fileName) throws Exception{
+	/**
+	 * 众包照片导入
+	 * @param inputStream
+	 * @param angle
+	 * @param fileName
+	 * @param x
+	 * @param y
+	 * @throws Exception
+	 * 修改众包照片入fcc库photo维护字段
+	 */
+	public static void importCrowdPhoto(InputStream inputStream, int angle, String fileName, double x, double y) throws Exception{
 		HBaseController controller = new HBaseController();
 		InputStream newIn = inputStream;
     	if(angle > 0){
@@ -206,7 +287,26 @@ public class CollectorImport {
 	    	}
     	}
     	String rowKey = fileName.replace(".jpg", "");
-		controller.putPhoto(rowKey, newIn);
+		
+    	Photo photo = new Photo();
+		photo.setRowkey(rowKey);
+		// a_uuid和rowkey相同
+		photo.setA_uuid(rowKey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
+		// a_content照片内容为：设施 2
+		photo.setA_content(2);
+		// a_sourceId来源为：众包POI 5
+		photo.setA_sourceId(5);
+		// a_latitude和a_longitude: 照片的经度和纬度
+		photo.setA_longitude(x);
+		photo.setA_latitude(y);
+		// 设置上传时间
+		String a_uploadDate = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
+		photo.setA_uploadDate(a_uploadDate);
+		
+		controller.putPhoto(rowKey, newIn, photo);
+		
 		newIn.close();
 	}
 }

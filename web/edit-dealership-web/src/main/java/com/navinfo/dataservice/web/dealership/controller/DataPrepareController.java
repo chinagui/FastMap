@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -126,17 +124,22 @@ public class DataPrepareController extends BaseController {
 //		response.setHeader("Access-Control-Allow-Methods",
 //				"POST, GET, OPTIONS, DELETE,PUT"); 
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
+			String chainName = dealerShipService.getChainNameByChainCode(chainCode);
 			
 			List<ExpIxDealershipResult> dealerBrandList = dealerShipService.searchTableDiff(chainCode);
 
 			ExportExcel<ExpIxDealershipResult> ex = new ExportExcel<ExpIxDealershipResult>();  
 			
-			String excelName = "表表差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			StringBuilder sb = new StringBuilder();
+			sb.append(chainName).append(chainCode).append("_").append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_表表差分导出");
+			String excelName = sb.toString();
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
 	        
@@ -275,6 +278,8 @@ public class DataPrepareController extends BaseController {
 	public void exportWorkResult(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -288,7 +293,10 @@ public class DataPrepareController extends BaseController {
 				throw new Exception("对应chain查询结果为空");
 			}
 			
-			String excelName = resultMap.get("excelName").toString();
+			StringBuilder sb = new StringBuilder();
+			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_作业成果导出");
+			String excelName = sb.toString();
+//			String excelName = resultMap.get("excelName").toString();
 			String [] excelTitle = (String[]) resultMap.get("title");
 			List<exportWorkResultEntity> exportWorkResultList = (List<exportWorkResultEntity>) resultMap.get("exportWorkResultList");
 			ExportExcel<exportWorkResultEntity> ex = new ExportExcel<exportWorkResultEntity>();  
@@ -318,17 +326,21 @@ public class DataPrepareController extends BaseController {
 	public void expDbDiff(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
+			String chainName = dealerShipService.getChainNameByChainCode(chainCode);
 			
 			List<ExpDbDiffResult> dealerBrandList = dealerShipService.searchDbDiff(chainCode);
 
 			ExportExcel<ExpDbDiffResult> ex = new ExportExcel<ExpDbDiffResult>();  
-			
-			String excelName = "表库差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			StringBuilder sb = new StringBuilder();
+			sb.append(chainName).append(chainCode).append("_").append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_表库差分导出");
+			String excelName = sb.toString();
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
 	        
@@ -370,6 +382,8 @@ public class DataPrepareController extends BaseController {
 	public void exportToClient(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -380,7 +394,9 @@ public class DataPrepareController extends BaseController {
 
 			ExportExcel<ExpClientConfirmResult> ex = new ExportExcel<ExpClientConfirmResult>();  
 			
-			String excelName = "客户确认-待发布列表"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			StringBuilder sb = new StringBuilder();
+			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_客户确认导出");
+			String excelName = sb.toString();
 			//转码防止乱码  
 	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
 	        

@@ -58,9 +58,10 @@ public class PoiRelease {
 			return jobId;
 		}catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			DbUtils.rollback(conn);
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

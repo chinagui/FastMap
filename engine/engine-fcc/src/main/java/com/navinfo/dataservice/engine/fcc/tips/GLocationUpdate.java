@@ -6,6 +6,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -28,10 +29,10 @@ public class GLocationUpdate {
 	 * @author: jiayong
 	 * @time:2017-7-4 下午3:25:31
 	 */
-	public  static  JSONObject updateStartEndPointLocation(int index,JSONObject  json2Update,String sourceType,List<JSONObject> cutLines) {
+	public  static  TipsDao updateStartEndPointLocation(int index,TipsDao json2Update,String sourceType,List<TipsDao> cutLines) {
 		//起终点的，需要替换g_location.将旧的坐标替换为新的两条或者多条线的坐标
 			
-		JSONObject g_location = JSONObject.fromObject(json2Update.getString("g_location")) ;
+		JSONObject g_location = JSONObject.fromObject(json2Update.getG_location()) ;
 		
 		JSONArray  coordinates = g_location.getJSONArray("coordinates");
 		
@@ -42,8 +43,8 @@ public class GLocationUpdate {
 			//旧测线所在位置
 			if(j == index){
 				
-				 for (JSONObject json : cutLines) {
-	    			 JSONObject newGeo = json.getJSONObject("g_location");
+				 for (TipsDao json : cutLines) {
+	    			 JSONObject newGeo = JSONObject.fromObject(json.getG_location());
 	    			
 	    			 JSONArray cutLineCoordinates = newGeo.getJSONArray("coordinates"); //打断后的线的几何
 	    			 
@@ -56,10 +57,10 @@ public class GLocationUpdate {
 				coordinates_new.add(coordinates.get(j));
 			}
 		}
-		
+
 		g_location.put("coordinates", coordinates_new);
-		
-		json2Update.put("g_location", g_location);
+
+		json2Update.setG_location(GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(g_location), 1, 5).toString());
 		
 		
 		return json2Update;
@@ -118,8 +119,8 @@ public class GLocationUpdate {
 	 * @author: y
 	 * @time:2017-7-5 下午5:22:29
 	 */
-	public static JSONObject updateAreaLineLocation(JSONArray geoArr,
-			JSONObject json) {
+	public static TipsDao updateAreaLineLocation(JSONArray geoArr,
+			TipsDao json) {
 		
 		LineString[] lines=new LineString[geoArr.size()] ;
 		
@@ -162,8 +163,8 @@ public class GLocationUpdate {
 		loc=loc.buffer(GeometryUtils.convert2Degree(5));
 		
 		JSONObject g_location= GeoTranslator.jts2Geojson(loc);
-		
-		json.put("g_location", g_location);
+
+		json.setG_location(g_location.toString());
 		
 		return json;
 	}

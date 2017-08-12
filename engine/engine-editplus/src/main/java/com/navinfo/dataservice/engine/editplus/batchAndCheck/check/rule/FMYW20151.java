@@ -22,6 +22,7 @@ import java.util.*;
  */
 public class FMYW20151 extends BasicCheckRule {
     @Override
+
     public void runCheck(BasicObj obj) throws Exception {
 
         if (!obj.objName().equals(ObjectName.IX_POI)) {
@@ -38,16 +39,34 @@ public class FMYW20151 extends BasicCheckRule {
             return;
         }
 
+        MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+
+        Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
+
+        Map<String, JSONObject> fts = new HashMap<>();
+
+        for (String strFt : ft.keySet()) {
+
+            if (strFt.length() > 1) {
+
+                fts.put(strFt, ft.get(strFt));
+            }
+        }
+
         Set<Character> allChars = new HashSet<>();
+
+        Set<String> fullNames = new HashSet<>();
 
         for (IxPoiAddress address : addresses) {
 
-            String langCode = address.getLangCode() == null ? "" : address.getLangCode();
+            String langCode=address.getLangCode()==null?"":address.getLangCode();
 
             if (!langCode.equals("CHI") || address.getFullname().isEmpty()) {
 
                 continue;
             }
+
+            fullNames.add(address.getFullname());
 
             char[] chars = address.getFullname().toCharArray();
 
@@ -57,33 +76,49 @@ public class FMYW20151 extends BasicCheckRule {
             }
         }
 
-        MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-
-        Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
-
         for (char item : allChars) {
 
-            String str = String.valueOf(item);
+            String strValue = String.valueOf(item);
 
-            if (!ft.containsKey(str)) {
+            if (!ft.containsKey(strValue)) {
 
                 continue;
             }
 
-            JSONObject data = ft.get(str);
+            JSONObject data = ft.get(strValue);
 
-            Object convert = data.get("convert");
+            setCheckResult( data , poiObj , strValue);
+        }
 
-            if (convert.equals(0)) {
+        for (String fullName : fullNames) {
 
-                IxPoi poi = (IxPoi) poiObj.getMainrow();
+            for (String strFt : fts.keySet()) {
 
-                String jt = (String) data.get("jt");
+                if (!fullName.contains(strFt)) {
 
-                String log = "“" + str + "”是繁体字，对应的简体字是“" + jt + "”，需确认是否转化";
+                    continue;
+                }
 
-                setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), log);
+                JSONObject data = fts.get(strFt);
+
+                setCheckResult( data , poiObj , strFt);
             }
+        }
+    }
+
+    private void setCheckResult(JSONObject data ,IxPoiObj poiObj ,String strFt)throws Exception
+    {
+        Object convert = data.get("convert");
+
+        if (convert.equals(0)) {
+
+            IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+            String jt = (String) data.get("jt");
+
+            String log = "“" + strFt + "”是繁体字，对应的简体字是“" + jt + "”，需确认是否转化";
+
+            setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), log);
         }
     }
 

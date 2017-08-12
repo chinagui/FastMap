@@ -4,7 +4,9 @@ import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
+import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -41,7 +43,8 @@ public class CloseMeshPhase extends JobPhase {
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
             jobProgressOperator = new JobProgressOperator(conn);
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.RUNNING);
+            jobProgress.setStatus(JobProgressStatus.RUNNING);
+            jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
 
             //业务逻辑
@@ -56,36 +59,53 @@ public class CloseMeshPhase extends JobPhase {
                 FccApi fccApi = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
                 Set<Integer> collectTaskSet = Day2MonthUtils.getTaskIdSet(conn, jobRelation.getItemId());
-                Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet);
+                Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet,4);
                 log.info("phaseId:"+jobProgress.getPhaseId()+",tips mesh:"+tipsMeshset.toString());
 
                 tipsMeshset.addAll(meshs);
+                
                 if(tipsMeshset.size()>0) {
-                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG=0,QUICK"+lot+"_FLAG=1 WHERE MESH IN "
+                	//快线传进来的参数为第3批次，不关闸；其他的，则与原始批次不一致的都要关闸
+                	meta = DBConnector.getInstance().getMetaConnection();
+                	if(lot!=3){
+	                	JSONObject dataJson=new JSONObject();
+	                	dataJson.put("openFlag", 0);
+	                	dataJson.put("quickAction", lot);
+	                	
+	                	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
+	                	log.info("快线批次赋值+图幅关闭");
+	                	//快线项目日落月关图幅时，只有批次不一致的才关闭图幅
+	                    
+	                    ConfigService.getInstance().mangeMesh(meta, dataJson);
+                	}
+                    log.info("快线批次赋值");//快线批次字段是所有图幅均赋值
+                    String updateSql = "UPDATE SC_PARTITION_MESHLIST SET QUICK"+lot+"_FLAG=1 WHERE MESH IN "
                             + tipsMeshset.toString().replace("[", "(").replace("]", ")");
                     log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
-                    meta = DBConnector.getInstance().getMetaConnection();
                     QueryRunner run = new QueryRunner();
                     run.update(meta, updateSql);
                 }
             }
             //更新状态为成功
-            jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.SUCCESS);
-            return jobProgress.getStatus();
+            jobProgress.setStatus(JobProgressStatus.SUCCESS);
+            jobProgressOperator.updateStatus(jobProgress);
+            //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败
             log.error(ex.getMessage(), ex);
             DbUtils.rollback(conn);
             DbUtils.rollback(meta);
+            jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
                 jobProgress.setOutParameter(ex.getMessage());
-                jobProgressOperator.updateStatus(jobProgress, JobProgressStatus.FAILURE);
+                jobProgressOperator.updateStatus(jobProgress);
             }
-            throw ex;
+            //throw ex;
         } finally {
             log.info("CloseMeshPhase end:phaseId "+jobProgress.getPhaseId() + ",status "+jobProgress.getStatus());
             DbUtils.commitAndCloseQuietly(conn);
             DbUtils.commitAndCloseQuietly(meta);
         }
+        return jobProgress.getStatus();
     }
 }

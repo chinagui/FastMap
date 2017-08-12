@@ -365,7 +365,13 @@ public class ProgramService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql="SELECT TASK_ID  FROM TASK WHERE PROGRAM_ID = "+programId+" AND STATUS != 0";
+			//快线项目关闭仅判断日编/采集任务，不判断月编任务
+			String selectSql="SELECT t.task_id"
+					+ "  FROM TASK T, PROGRAM P"
+					+ " WHERE T.STATUS != 0"
+					+ "   AND P.PROGRAM_ID = T.PROGRAM_ID"
+					+ "   AND (P.TYPE = 1 OR (P.TYPE = 4 AND T.TYPE IN (0, 1)))"
+					+ " and p.PROGRAM_ID = "+programId;
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 					List<Integer> taskList = new ArrayList<Integer>();
@@ -994,6 +1000,7 @@ public class ProgramService {
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
 					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("jobs", new JSONArray());
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -2036,8 +2043,12 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+					if(t.getType()==0&&infor.getSourceCode()==2){
+						t.setWorkKind("1|0|0|0");
+					}else if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
+					}else if(t.getType()==0){
+						t.setWorkKind("1|0|0|0");
 					}
 					UserGroup group =null;
 					/*web端有人触发的情报项目发布，导致的采集任务创建，则不赋组；
@@ -2056,7 +2067,14 @@ public class ProgramService {
 					if(group!=null){
 						t.setGroupId(group.getGroupId());
 					}
-					
+					if(t.getType()==0){
+						t.setRoadPlanTotal(infor.getRoadLength());
+						if(infor.getFeatureKind()==1){
+							t.setPoiPlanTotal(5);
+						}else{
+							t.setPoiPlanTotal(20);
+						}
+					}
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
 					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);	
@@ -2729,4 +2747,46 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 根据子任务获取同项目下的粗编子任务列表
+	 * @param int
+	 * @throws Exception 
+	 * 
+	 * */
+	public List<Integer> queryRudeSubTaskBySubTask(int subTaskId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("select st.subtask_id from  SUBTASK st where st.task_id in (");
+			sb.append("select t.task_id from TASK t where t.program_id =(");
+			sb.append("SELECT T.PROGRAM_ID FROM SUBTASK S, TASK T, PROGRAM P");
+			sb.append(" WHERE S.TASK_ID = T.TASK_ID AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND S.SUBTASK_ID = "+subTaskId+"))");
+			sb.append(" and st.type = 4");
+			
+			log.info("queryRudeSubTaskBySubTask sql :" + sb.toString());
+
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> result = new ArrayList<Integer>();
+					while(rs.next()){
+						result.add(rs.getInt("subtask_id"));
+					}
+					return result;
+				}
+			};
+			return run.query(conn, sb.toString(), rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 }

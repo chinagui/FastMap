@@ -347,6 +347,10 @@ public class StaticsService {
 
 	public JSONObject querymonthTaskOverView()throws Exception{
 		Connection conn = null;
+		PreparedStatement stmtGrid = null;
+		PreparedStatement stmtOther = null;
+		ResultSet rsGrid = null;
+		ResultSet rsOther =null;
 		try {	
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject gridRoadCuStaticsJson= new JSONObject();
@@ -393,8 +397,7 @@ public class StaticsService {
 					//POI专项概览”,"代理店"子任务个数"
 					+ " SELECT 'otherSubtaskCount' DESCP,ST.TYPE, COUNT(1) SUBNUM" + "  FROM SUBTASK ST"
 					+ " WHERE ST.TYPE IN (6, 7)" + " GROUP BY ST.TYPE";
-			PreparedStatement stmtGrid = null;
-			PreparedStatement stmtOther = null;
+			
 			try {
 				stmtGrid = conn.prepareStatement(gridSql);
 				stmtOther = conn.prepareStatement(otherSql);
@@ -402,8 +405,8 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			ResultSet rsGrid = stmtGrid.executeQuery();
-			ResultSet rsOther = stmtOther.executeQuery();
+			rsGrid = stmtGrid.executeQuery();
+			rsOther = stmtOther.executeQuery();
 		
 			while (rsGrid.next()) {
 				//道路精编grid
@@ -443,12 +446,21 @@ public class StaticsService {
 				log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
+				DbUtils.closeQuietly(stmtGrid);
+				DbUtils.closeQuietly(stmtOther);
+				DbUtils.closeQuietly(rsGrid);
+				DbUtils.closeQuietly(rsOther);
 				DbUtils.commitAndCloseQuietly(conn);
+				
 		}
 	}
 	
 	public JSONObject queryCollectOverView(int groupId) throws Exception {
 		Connection conn = null;
+		PreparedStatement stmtGrid = null;
+		PreparedStatement stmtSubtask = null;
+		ResultSet rsGrid = null;
+		ResultSet rsSubtask =null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 
@@ -488,8 +500,7 @@ public class StaticsService {
 					+ "	SUM(ASSIGNGRID.ASSIGNCOUNT) AlREADYASSIGNGRID FROM GROUPGRID, ASSIGNGRID "
 					+ "	WHERE GROUPGRID.BLOCK_ID = ASSIGNGRID.BLOCK_ID GROUP BY ASSIGNGRID.TYPE";
 
-			PreparedStatement stmtGrid = null;
-			PreparedStatement stmtSubtask = null;
+			
 			try {
 				stmtGrid = conn.prepareStatement(gridSql);
 				stmtSubtask = conn.prepareStatement(subtaskSql);
@@ -497,8 +508,8 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 }
-			ResultSet rsGrid = stmtGrid.executeQuery();
-			ResultSet rsSubtask = stmtSubtask.executeQuery();
+			rsGrid = stmtGrid.executeQuery();
+			rsSubtask = stmtSubtask.executeQuery();
 
 			while (rsGrid.next()) {
 				// poi采集
@@ -534,6 +545,10 @@ public class StaticsService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
+			DbUtils.closeQuietly(stmtGrid);
+			DbUtils.closeQuietly(stmtSubtask);
+			DbUtils.closeQuietly(rsGrid);
+			DbUtils.closeQuietly(rsSubtask);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
@@ -1603,6 +1618,7 @@ public class StaticsService {
 						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
 						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}else if(4==type){
+				//快线项目进行中和已关闭细分时，不判断月编任务状态
 				//情报
 				selectSql = "SELECT 0             PROGRAM_ID,"
 						+ "       C.INFOR_ID,"
@@ -1647,7 +1663,7 @@ public class StaticsService {
 						+ "       C.PLAN_STATUS,"
 						+ "       CASE P.STATUS"
 						+ "         WHEN 0 THEN 4"
-						+ "         ELSE CASE SUM(T.STATUS)"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 2 THEN 0 ELSE T.STATUS END)"
 						+ "            WHEN 0 THEN 3"
 						+ "            ELSE 2 END"
 						+ "         END TASK_STAT,"
@@ -1676,6 +1692,7 @@ public class StaticsService {
 						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
+						//+ "   AND T.TYPE IN (0, 1)"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
 						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}
@@ -2727,13 +2744,13 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", df.format(planStartDate));
+							overView.put("actualStartDate", overView.get("planStartDate"));
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
 							if(status==0){
-								overView.put("actualEndDate", df.format(planEndDate));
+								overView.put("actualEndDate", overView.get("planEndDate"));
 							}else{
 								overView.put("actualEndDate", null);
 							}							

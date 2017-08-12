@@ -1,8 +1,19 @@
 package com.navinfo.dataservice.dao.fcc.model;
 
+import com.navinfo.dataservice.commons.util.DateUtils;
+import oracle.sql.STRUCT;
+import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /** 
  * @ClassName: TipsDao
@@ -124,6 +135,9 @@ public class TipsDao {
 	public void setWkt(Geometry wkt) {
 		this.wkt = wkt;
 	}
+	public void setWkt(String wkt) throws Exception {
+		this.wkt = GeoTranslator.wkt2Geometry(wkt);;
+	}
 	public String getTipdiff() {
 		return tipdiff;
 	}
@@ -159,6 +173,9 @@ public class TipsDao {
 	}
 	public void setWktLocation(Geometry wktLocation) {
 		this.wktLocation = wktLocation;
+	}
+	public void setWktLocation(String wktLocation) throws Exception {
+		this.wktLocation = GeoTranslator.wkt2Geometry(wktLocation);
 	}
 	public int getT_tipStatus() {
 		return t_tipStatus;
@@ -208,8 +225,8 @@ public class TipsDao {
 	public void setRelate_nodes(String relate_nodes) {
 		this.relate_nodes = relate_nodes;
 	}
-	public Object[] toColsObjectArr(){
-		Object[] cols = new Object[21];
+	public Object[] toIndexMainArr(){
+		Object[] cols = new Object[19];
 		cols[0] = id;
 		cols[1] = stage;
 		cols[2] = t_date;
@@ -229,14 +246,123 @@ public class TipsDao {
 		cols[16] = s_project;
 		cols[17] = t_dEditMeth;
 		cols[18] = t_mEditMeth;
-		cols[19] = relate_links;
-		cols[20] = relate_nodes;
 		return cols;
 	}
-	public static void main(String[] args) {
-		TipsDao ti = new TipsDao();
-		ti.setT_mEditStatus(100);
-		JSONObject jo = JSONObject.fromObject(ti);
-		System.out.println(jo.toString());
+	public String[][] toIndexLinkArr(){
+		if(StringUtils.isEmpty(getRelate_links())){
+			return null;
+		}
+		String repStr = getRelate_links().replace("|", ",");
+		String[] raw = repStr.split(",");
+		Set<String> cols = new HashSet<String>();
+		for(String r:raw){
+			if(StringUtils.isNotEmpty(r)){
+				cols.add(r);
+			}
+		}
+		String[][] all = new String[cols.size()][];
+		int i = 0;
+		for(String col:cols){
+			all[i]=new String[]{getId(),col};
+			i++;
+		}
+		return all;
+	}
+
+	public String[][] toIndexNodeArr(){
+		if(StringUtils.isEmpty(getRelate_nodes())){
+			return null;
+		}
+		String repStr = getRelate_nodes().replace("|", ",");
+		String[] raw = repStr.split(",");
+		Set<String> cols = new HashSet<String>();
+		for(String r:raw){
+			if(StringUtils.isNotEmpty(r)){
+				cols.add(r);
+			}
+		}
+		String[][] all = new String[cols.size()][];
+		int i = 0;
+		for(String col:cols){
+			all[i]=new String[]{getId(),col};
+			i++;
+		}
+		return all;
+	}
+	public void loadResultSet(ResultSet rs) throws SQLException{
+		this.setId(rs.getString("id"));
+		this.setStage(rs.getInt("stage"));
+		this.setT_date(DateUtils.dateToString(rs.getTimestamp("t_date"),DateUtils.DATE_COMPACTED_FORMAT));
+		this.setT_operateDate(DateUtils.dateToString(rs.getTimestamp("t_operateDate"),DateUtils.DATE_COMPACTED_FORMAT));
+		this.setT_lifecycle(rs.getInt("t_lifecycle"));
+		this.setHandler(rs.getInt("handler"));
+		this.setS_mTaskId(rs.getInt("s_mTaskId"));
+		this.setS_qTaskId(rs.getInt("s_qTaskId"));
+		this.setS_mSubTaskId(rs.getInt("s_mSubTaskId"));
+		this.setS_qSubTaskId(rs.getInt("s_qSubTaskId"));
+		this.setS_sourceType(rs.getString("s_sourceType"));
+		this.setT_dEditStatus(rs.getInt("t_dEditStatus"));
+		this.setT_mEditStatus(rs.getInt("t_mEditStatus"));
+		this.setT_tipStatus(rs.getInt("t_tipStatus"));
+		this.setS_project(rs.getString("s_project"));
+		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
+		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
+		try {
+			STRUCT wkt = (STRUCT) rs.getObject("wkt");
+			this.setWkt(GeoTranslator.struct2Jts(wkt));
+			STRUCT wktLocation = (STRUCT) rs.getObject("wktLocation");
+			this.setWktLocation(GeoTranslator.struct2Jts(wktLocation));
+		}catch (Exception ex){
+			throw new SQLException(ex.getMessage());
+		}
+	}
+	public void loadHbase(JSONObject hbaseTips){
+		if(hbaseTips.containsKey("deep")) {
+			JSONObject deep = hbaseTips.getJSONObject("deep");
+			this.setDeep(deep.toString());
+		}
+		if(hbaseTips.containsKey("feedback")) {
+			JSONObject feedback = hbaseTips.getJSONObject("feedback");
+			this.setFeedback(feedback.toString());
+		}
+		if(hbaseTips.containsKey("geometry")) {
+			JSONObject geometry = hbaseTips.getJSONObject("geometry");
+			this.setG_guide(geometry.getJSONObject("g_guide").toString());
+			this.setG_location(geometry.getJSONObject("g_location").toString());
+		}
+		if(hbaseTips.containsKey("tipdiff")) {
+			JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
+			this.setTipdiff(tipdiff.toString());
+		}
+	}
+	public TipsDao copy(){
+		TipsDao tipsDao = new TipsDao();
+		tipsDao.setId(this.getId());
+		tipsDao.setStage(this.getStage());
+		tipsDao.setT_operateDate(this.getT_operateDate());
+		tipsDao.setT_lifecycle(this.getT_lifecycle());
+		tipsDao.setT_command(this.getT_command());
+		tipsDao.setHandler(this.getHandler());
+		tipsDao.setS_sourceType(this.getS_sourceType());
+		tipsDao.setWkt(this.getWkt());
+		tipsDao.setTipdiff(this.getTipdiff());
+		tipsDao.setS_qTaskId(this.getS_qTaskId());
+		tipsDao.setS_mTaskId(this.getS_mTaskId());
+		tipsDao.setS_qSubTaskId(this.getS_qSubTaskId());
+		tipsDao.setS_mSubTaskId(this.getS_mSubTaskId());
+		tipsDao.setWktLocation(this.getWktLocation());
+		tipsDao.setT_tipStatus(this.getT_tipStatus());
+		tipsDao.setT_dEditMeth(this.getT_dEditMeth());
+		tipsDao.setT_mEditMeth(this.getT_mEditMeth());
+		tipsDao.setT_mEditStatus(this.getT_mEditStatus());
+		tipsDao.setT_dEditStatus(this.getT_dEditStatus());
+		tipsDao.setS_project(this.getS_project());
+		tipsDao.setDeep(this.getDeep());
+		tipsDao.setG_location(this.getG_location());
+		tipsDao.setG_guide(this.getG_guide());
+		tipsDao.setFeedback(this.getFeedback());
+		tipsDao.setRelate_links(this.getRelate_links());
+		tipsDao.setRelate_nodes(this.getRelate_nodes());
+		return tipsDao;
 	}
 }

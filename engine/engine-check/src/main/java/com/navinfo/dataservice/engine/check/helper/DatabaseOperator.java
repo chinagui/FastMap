@@ -38,12 +38,17 @@ public class DatabaseOperator {
 	 * @throws Exception
 	 */
 	public List<Object> exeSelectAndMsg(Connection conn,String sql) throws Exception{
-		PreparedStatement pstmt = conn.prepareStatement(sql);		
-		ResultSet resultSet = pstmt.executeQuery();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=settleResultSetAndLog(resultSet);
-		releaseSource(pstmt,resultSet);
-		return resultList;
+		PreparedStatement pstmt = null;		
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);		
+			resultSet = pstmt.executeQuery();
+			List<Object> resultList=new ArrayList<Object>();
+			resultList=settleResultSetAndLog(resultSet);
+			return resultList;
+		}finally{
+			releaseSource(pstmt,resultSet);}
+		
 		}
 	
 	/**
@@ -54,28 +59,34 @@ public class DatabaseOperator {
 	 * @throws Exception
 	 */
 	public List<NiValException> getNiValExceptionFromSql(Connection conn,String sql) throws Exception{
-		PreparedStatement pstmt = conn.prepareStatement(sql);		
-		ResultSet resultSet = pstmt.executeQuery();
-		List<NiValException> resultList=new ArrayList<NiValException>();
-		while (resultSet.next()){
-			String pointWkt ="";
-			try{
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
-				Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
-				pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
-			}catch(Exception e){}
-			
-			String targets=resultSet.getString(2);
-			int meshId=resultSet.getInt(3);
-			
-			NiValException checkResult=new NiValException();
-			checkResult.setLoc(pointWkt);
-			checkResult.setTargets(targets);
-			checkResult.setMeshId(meshId);
-			resultList.add(checkResult);
-		} 
-		return resultList;
+		PreparedStatement pstmt = null;		
+		ResultSet resultSet =null;
+		try{
+			pstmt = conn.prepareStatement(sql);		
+			resultSet = pstmt.executeQuery();
+			List<NiValException> resultList=new ArrayList<NiValException>();
+			while (resultSet.next()){
+				String pointWkt ="";
+				try{
+					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+					Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
+					Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
+					pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+				}catch(Exception e){}
+				
+				String targets=resultSet.getString(2);
+				int meshId=resultSet.getInt(3);
+				
+				NiValException checkResult=new NiValException();
+				checkResult.setLoc(pointWkt);
+				checkResult.setTargets(targets);
+				checkResult.setMeshId(meshId);
+				resultList.add(checkResult);
+			} 
+			return resultList;
+		}finally{
+			releaseSource(pstmt,resultSet);
+		}
 	}
 	
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
@@ -95,8 +106,8 @@ public class DatabaseOperator {
 	}
 	
 	private void releaseSource(Statement stmt,ResultSet resultSet) throws SQLException{
-		resultSet.close();
-		stmt.close(); 
+		try{resultSet.close();}catch(Exception e){}
+		try{stmt.close();}catch(Exception e){}
 	}
 	
 	public static void main(String[] args) throws Exception{

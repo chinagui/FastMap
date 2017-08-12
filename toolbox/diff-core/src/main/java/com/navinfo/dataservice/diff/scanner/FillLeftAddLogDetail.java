@@ -111,6 +111,7 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		}finally{
+			DbUtils.closeQuietly(stmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;

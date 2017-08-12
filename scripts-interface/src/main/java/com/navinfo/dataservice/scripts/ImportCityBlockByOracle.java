@@ -105,9 +105,6 @@ public class ImportCityBlockByOracle {
 			String updCityGridSql = "UPDATE GRID SET CITY_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int cityCount=0;
 			for(City4Imp city:citys.values()){
-				if(!city.getCityName().equals("北京市")){
-					continue;
-				}
 				long cityId= getCityId(conn);
 				Geometry cityGeo = MeshUtils.meshes2Jts(city.getMeshes());
 				Clob clob = ConnectionUtil.createClob(conn);
@@ -135,13 +132,10 @@ public class ImportCityBlockByOracle {
 			System.out.println("read block table over. block size:"+blocks.size());
 			//write blocks
 
-			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY,ORIGIN_GEO) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?,?)";
+			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY,ORIGIN_GEO) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?,SDO_GEOMETRY(?,8307))";
 			String updBlockGridSql = "UPDATE GRID SET BLOCK_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			int bCount =0;
 			for(Block4Imp block:blocks.values()){
-				if(!block.getCityName().equals("北京市")){
-					continue;
-				}
 				long blockId= getBlockId(conn);
 				Geometry blockGeo = CompGridUtil.grids2Jts(block.getGrids());
 				Clob clob = ConnectionUtil.createClob(conn);

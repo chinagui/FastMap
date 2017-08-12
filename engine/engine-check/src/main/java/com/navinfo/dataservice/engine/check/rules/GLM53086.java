@@ -2,10 +2,12 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -94,38 +96,44 @@ public class GLM53086 extends baseRule{
 			String sql = sb.toString();
 			log.info("RdLinkRtic后检查GLM53049,判断link是否挂接在环岛或者特殊交通上:" + sql);
 
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);		
-			ResultSet resultSet = pstmt.executeQuery();
-			HashSetRdLinkAndPid hashSetRdLinkAndPid = new HashSetRdLinkAndPid();
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+			try {
+				pstmt = this.getConn().prepareStatement(sql);		
+				resultSet = pstmt.executeQuery();
+				HashSetRdLinkAndPid hashSetRdLinkAndPid = new HashSetRdLinkAndPid();
 
-			while (resultSet.next()){
-				RdLink rdLink = new RdLink();
-				rdLink.setPid(resultSet.getInt("LINK_PID"));
-				rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
-				rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
-				hashSetRdLinkAndPid.add(rdLink);
-			} 
-			resultSet.close();
-			pstmt.close();
-			//如果link没有挂接在环岛或者特殊交通上
-			if(hashSetRdLinkAndPid.size()==0){
-				return;
-			}
-
-			//link挂接在环岛或者特殊交通上，加载环岛/特殊交通link
-			ChainLoader chainLoader = new ChainLoader();
-			for(RdLink rdLink:hashSetRdLinkAndPid.getRdLinkSet()){
-				HashSetRdLinkAndPid huanDaoAndChain = chainLoader.loadHandaoChain(this.getConn(), rdLink);
-				if(huanDaoAndChain.size()==0){
-					continue;
+				while (resultSet.next()){
+					RdLink rdLink = new RdLink();
+					rdLink.setPid(resultSet.getInt("LINK_PID"));
+					rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
+					rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
+					hashSetRdLinkAndPid.add(rdLink);
+				} 
+				//如果link没有挂接在环岛或者特殊交通上
+				if(hashSetRdLinkAndPid.size()==0){
+					return;
 				}
-				check(huanDaoAndChain.getRdLinkPidSet(),rdLinkRtic.getLinkPid());
-				
-				HashSetRdLinkAndPid huanSpecTrafficChain = chainLoader.loadSpecTrafficChain(this.getConn(), rdLink);
-				if(huanSpecTrafficChain.size()==0){
-					continue;
+				//link挂接在环岛或者特殊交通上，加载环岛/特殊交通link
+				ChainLoader chainLoader = new ChainLoader();
+				for(RdLink rdLink:hashSetRdLinkAndPid.getRdLinkSet()){
+					HashSetRdLinkAndPid huanDaoAndChain = chainLoader.loadHandaoChain(this.getConn(), rdLink);
+					if(huanDaoAndChain.size()==0){
+						continue;
+					}
+					check(huanDaoAndChain.getRdLinkPidSet(),rdLinkRtic.getLinkPid());
+					
+					HashSetRdLinkAndPid huanSpecTrafficChain = chainLoader.loadSpecTrafficChain(this.getConn(), rdLink);
+					if(huanSpecTrafficChain.size()==0){
+						continue;
+					}
+					check(huanSpecTrafficChain.getRdLinkPidSet(),rdLinkRtic.getLinkPid());
 				}
-				check(huanSpecTrafficChain.getRdLinkPidSet(),rdLinkRtic.getLinkPid());
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DbUtils.closeQuietly(resultSet);
+				DbUtils.closeQuietly(pstmt);
 			}
 		}
 		

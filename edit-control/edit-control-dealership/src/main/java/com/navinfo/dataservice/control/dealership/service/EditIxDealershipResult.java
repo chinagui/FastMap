@@ -16,13 +16,13 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.dealership.service.excelModel.AddChainDataEntity;
 import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 
-import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 /**
@@ -74,7 +74,7 @@ public class EditIxDealershipResult {
 			addChainDataEntity.setPostCode(map.get("postCode").toString());
 			addChainDataEntity.setNameEng(map.get("nameEng").toString());
 			addChainDataEntity.setAddressEng(map.get("addressEng").toString());
-			addChainDataEntity.setProvideDate(map.get("provideOldSourceTime").toString());
+			addChainDataEntity.setProvideDate(DateUtils.longToString(System.currentTimeMillis(), DateUtils.DATE_COMPACTED_FORMAT));
 			addChainDataEntity.setIsDeleted(0);
 			int matchMethod = 0;
 			String cfmPoiNum = "";
@@ -91,8 +91,8 @@ public class EditIxDealershipResult {
 			if(sourceMap.get("sourceId") != null && StringUtils.isNotBlank(sourceMap.get("sourceId").toString())){
 				addChainDataEntity.setSourceId(Integer.parseInt(sourceMap.get("sourceId").toString()));
 			}
-			if(sourceMap.get("history") != null &&StringUtils.isNotBlank(map.get("history").toString())){
-				addChainDataEntity.setDealSrcDiff(Integer.parseInt(map.get("history").toString()));
+			if(StringUtils.isNotBlank(map.get("history").toString())){
+				addChainDataEntity.setDealSrcDiff(Integer.valueOf(map.get("history").toString()));
 			}
 			if(sourceMap.get("deaCfmDate") != null && StringUtils.isNotBlank(sourceMap.get("deaCfmDate").toString())){
 				addChainDataEntity.setDealCfmDate(sourceMap.get("deaCfmDate").toString());
@@ -138,8 +138,9 @@ public class EditIxDealershipResult {
 			
 			if(sourceMap.get("geometry") == null || StringUtils.isBlank(sourceMap.get("geometry").toString())){
 				String addr = addChainDataEntity.getProvince()+addChainDataEntity.getCity()+addChainDataEntity.getAddress();
-				if(BaiduGeocoding.geocoder(addr)!=null){
-					addChainDataEntity.setGeometry(BaiduGeocoding.geocoder(addr));
+				Geometry poiGeo=BaiduGeocoding.geocoder(addr);
+				if(poiGeo!=null){
+					addChainDataEntity.setGeometry(poiGeo);
 				}else{
 					throw new Exception("无法获取geometry");
 				}
@@ -155,6 +156,7 @@ public class EditIxDealershipResult {
 			addChainDataEntity.setProvince(map.get("province").toString());
 			addChainDataEntity.setCity(map.get("city").toString());
 			addChainDataEntity.setProject(map.get("project").toString());
+			log.info("更新项目值为：" + map.get("project").toString());
 			addChainDataEntity.setKindCode(map.get("kindCode").toString());
 			addChainDataEntity.setChain(map.get("chain").toString());
 			addChainDataEntity.setName(map.get("name").toString());
@@ -166,12 +168,16 @@ public class EditIxDealershipResult {
 			addChainDataEntity.setPostCode(map.get("postCode").toString());
 			addChainDataEntity.setNameEng(map.get("nameEng").toString());
 			addChainDataEntity.setAddressEng(map.get("addressEng").toString());
-			addChainDataEntity.setProvideDate(map.get("provideOldSourceTime").toString());
+			addChainDataEntity.setProvideDate(DateUtils.longToString(System.currentTimeMillis(), DateUtils.DATE_COMPACTED_FORMAT));
 			//处理省份信息
-			String province = provideProvince(map, sourceMap);
-			int regionId = getRegionIdByProvince(province);
-			addChainDataEntity.setRegionId(regionId);
-			
+			if(!map.get("province").toString().equals(sourceMap.get("pro").toString())){
+				String province = provideProvince(map, sourceMap);
+				Integer regionId = getRegionIdByProvince(province);
+				addChainDataEntity.setRegionId(regionId);
+			} else {
+				addChainDataEntity.setRegionId(null);
+			}
+			addChainDataEntity.setResultId(Integer.valueOf(map.get("number").toString()));
 			updateIxDealershipResult(conn, addChainDataEntity, userId);
 			log.info("更新成功");
 		}
@@ -186,7 +192,7 @@ public class EditIxDealershipResult {
 	public Map<String, Object> getSourceData(Connection conn, String resultId) throws Exception{
 		try {
 			QueryRunner run = new QueryRunner();
-			String sql = "select s.*,r.deal_src_diff from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where r.result_id = "+resultId+" and r.source_id = s.source_id ";
+			String sql = "select s.*,r.deal_src_diff,r.province AS pro from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where r.result_id = "+resultId+" and r.source_id = s.source_id ";
 			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
 				@Override
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
@@ -210,6 +216,7 @@ public class EditIxDealershipResult {
 						result.put("dealSrcDiff", rs.getString("DEAL_SRC_DIFF"));
 						result.put("province", rs.getString("PROVINCE"));
 						result.put("deaCfmDate", rs.getString("DEAL_CFM_DATE"));
+						result.put("pro", rs.getString("PRO"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -560,6 +567,7 @@ public class EditIxDealershipResult {
 			values.add(bean.getCity());
 			columns.add(" PROJECT=?  ");
 			values.add(bean.getProject());
+			log.info("项目值为:" + bean.getProject());
 			columns.add(" KIND_CODE=?  ");
 			values.add(bean.getKindCode());
 			columns.add(" CHAIN=?  ");
@@ -584,8 +592,10 @@ public class EditIxDealershipResult {
 			values.add(bean.getAddressEng());
 			columns.add(" PROVIDE_DATE=?  ");
 			values.add(bean.getProvideDate());
-			columns.add(" REGION_ID=?  ");
-			values.add(bean.getRegionId());
+			if(bean.getRegionId() != null){
+				columns.add(" REGION_ID=?  ");
+				values.add(bean.getRegionId());
+			}
 //			if (bean!=null&&StringUtils.isNotBlank(String.valueOf(bean.getIsDeleted()))){
 //				columns.add(" IS_DELETED=?  ");
 //				values.add(bean.getIsDeleted());
@@ -732,12 +742,12 @@ public class EditIxDealershipResult {
 	 * @throws Exception 
 	 * 
 	 * */
-	public int getRegionIdByProvince(String province) throws SQLException{
+	public Integer getRegionIdByProvince(String province) throws SQLException{
 		Connection conn = null;
 		try{
 			if(StringUtils.isBlank(province)){
 				log.info("省份信息为空，无法获取大区库regionId");
-				return -1;
+				return null;
 			}
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
@@ -745,7 +755,7 @@ public class EditIxDealershipResult {
 			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
 				@Override
 				public Integer handle(ResultSet rs) throws SQLException {
-					int regionId = -1;
+					Integer regionId = null;
 					if(rs.next()){
 						regionId = rs.getInt("REGION_ID");
 					}
@@ -756,9 +766,9 @@ public class EditIxDealershipResult {
 		}catch(Exception e){
 			log.error("根据省份名称查询regionId异常："+e);
 		}finally{
-			DbUtils.close(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return -1;
+		return null;
 	}
 	
 	/**

@@ -7,15 +7,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 /** 
  * @ClassName: StaticsOperation
@@ -1099,6 +1104,97 @@ public class StaticsOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+	/**
+	 * timestamp:yyyymmdd
+	 * 获取按照人天任务进行统计的管理列表
+	 * @return Map<String, Object>:	map.put("subtaskIds", subtaskSet);
+									map.put("userId", userId);
+									map.put("taskId", taskId);
+									map.put("taskName", rs.getString("TASK_NAME"));
+									map.put("cityName", rs.getString("CITY_NAME"));
+									map.put("leaderName", rs.getString("LEADER_NAME"));
+									map.put("userName", rs.getString("USER_NAME"));	
+	 * @throws Exception
+	 */
+	public static List<Map<String, Object>> staticsPersionJob(String timestamp) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+
+			String selectSql = "SELECT S.EXE_USER_ID,"
+					+ "       T.TASK_ID,"
+					+ "       S.SUBTASK_ID,"
+					+ "       T.NAME             TASK_NAME,"
+					+ "       C.CITY_NAME,"
+					+ "       L.USER_REAL_NAME   LEADER_NAME,"
+					+ "       E.USER_REAL_NAME   USER_NAME"
+					+ "  FROM TASK                     T,"
+					+ "       SUBTASK                  S,"
+					+ "       FM_STAT_OVERVIEW_SUBTASK FS,"
+					+ "       PROGRAM                  P,"
+					+ "       CITY                     C,"
+					+ "       USER_GROUP               G,"
+					+ "       USER_INFO                L,"
+					+ "       USER_INFO                E"
+					+ " WHERE T.TASK_ID = S.TASK_ID"
+					+ "   AND S.STATUS IN (0, 1)"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.TYPE = 1"
+					+ "   AND P.CITY_ID = C.CITY_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID"
+					+ "   AND G.LEADER_ID = L.USER_ID"
+					+ "   AND S.EXE_USER_ID = E.USER_ID"
+					+ "   AND T.TYPE = 0"
+					+ "   AND S.WORK_KIND = 1"
+					+ "   AND S.SUBTASK_ID = FS.SUBTASK_ID"
+					+ "   AND (FS.ACTUAL_END_DATE >= TO_DATE('"+timestamp+"', 'yyyymmdd') OR"
+					+ "       FS.ACTUAL_END_DATE IS NULL)";
+			
+			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String,Object>>>() {
+
+				@Override
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+					
+					while(rs.next()) labal:{	
+						Set<Long> subtaskSet = new HashSet<>();
+						Map<String,Object> map = new HashMap<String,Object>();
+					    long userId = rs.getLong("EXE_USER_ID");
+					    long taskId = rs.getLong("TASK_ID");
+						subtaskSet.add(rs.getLong("subtask_id"));
+						map.put("userId", userId);
+						map.put("taskId", taskId);
+						for(int i = 0; i < list.size(); i++){
+							Map<String, Object> taskMap = list.get(i);
+							if(Long.valueOf(taskMap.get("taskId").toString()) == taskId && Long.valueOf(taskMap.get("userId").toString()) == userId){
+								subtaskSet = (Set<Long>) taskMap.get("subtaskIds");
+								subtaskSet.add(rs.getLong("subtask_id"));
+								taskMap.put("subtaskIds", subtaskSet);
+//								list.remove(i);
+//								list.add(taskMap);
+								break labal;
+							}
+						}
+						map.put("subtaskIds", subtaskSet);
+						map.put("taskName", rs.getString("TASK_NAME"));
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("leaderName", rs.getString("LEADER_NAME"));
+						map.put("userName", rs.getString("USER_NAME"));	
+						list.add(map);
+					}
+					return list;
+				}
+			});
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

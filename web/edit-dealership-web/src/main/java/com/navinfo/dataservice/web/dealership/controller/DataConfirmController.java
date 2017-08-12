@@ -6,14 +6,13 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +40,8 @@ public class DataConfirmController extends BaseController {
 		Connection conn = null;
 
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject jsonObj = JSONObject.fromObject(request.getParameter("parameter"));
 
 			String chain = "";
@@ -52,9 +53,13 @@ public class DataConfirmController extends BaseController {
 			List<InformationExportResult> informationList = confirmService.getOutConfirmList(conn, chain);
 			ExportExcel<InformationExportResult> excel = new ExportExcel<InformationExportResult>();
 
-			StringBuilder excelName = new StringBuilder();
-			excelName.append("情报下载");
-			excelName.append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+//			StringBuilder excelName = new StringBuilder();
+//			excelName.append("情报下载");
+//			excelName.append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"));
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_情报下载导出");
+			String excelName = sb.toString();
 			response.addHeader("Content-Disposition",
 					"attachment;filename=" + new String(excelName.toString().getBytes("gb2312"), "ISO8859-1") + ".xls");
 
@@ -71,11 +76,11 @@ public class DataConfirmController extends BaseController {
 			//return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			//return new ModelAndView("jsonView", fail(e.toString()));
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

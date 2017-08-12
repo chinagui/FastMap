@@ -170,6 +170,8 @@ public class ExpXMLSQLManager {
             String id = element.attributeValue("id");
             String condition = element.attributeValue("condition");
             String sqlType = element.attributeValue("sqlType");
+            String sqlExtendType = element.attributeValue("sqlExtendType");
+            
 			
             String sql = element.getTextTrim();
             /*if(sqlType!=null){
@@ -180,6 +182,7 @@ public class ExpXMLSQLManager {
                 ExpSQL expSQL = new ExpSQL(id, sql);
                 expSQL.setCondition(condition);
                 expSQL.setSqlType(sqlType);
+                expSQL.setSqlExtendType(sqlExtendType);
 //                log.debug(expSQL.getSql());
                 //TODO:正式环境请注释生成临时表脚本的功能
                //getTempTable(expSQL.getSql());

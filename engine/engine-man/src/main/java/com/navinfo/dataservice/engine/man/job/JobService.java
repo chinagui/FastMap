@@ -15,6 +15,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -129,21 +130,21 @@ public class JobService {
      */
     public void updateJobProgress(long phaseId, JobProgressStatus status, String outParameter) throws Exception {
         Connection conn = null;
+        JobProgressOperator jobProgressOperator =null;
         try {
             log.info("updateJobProgress:phaseId:" + phaseId + ",status:" + status.value() + ",message:" + outParameter);
-            conn = DBConnector.getInstance().getManConnection();
-            JobProgressOperator jobProgressOperator = new JobProgressOperator(conn);
+            conn = DBConnector.getInstance().getManConnection();            
+            jobProgressOperator= new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
             conn.commit();
-
-            try {
-                JobMessage jobMessage = jobProgressOperator.getJobMessage(phaseId);
-                String message = JSON.toJSONString(jobMessage);
-                log.info("publishManJobMsg:"+message);
-                SysMsgPublisher.publishManJobMsg(message, jobMessage.getOperator());
-            } catch (Exception ex) {
-                log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
-            }
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+        }
+        //job接续步骤的执行不应该影响已有步骤的执行情况。此处后续异常不进行抛出
+        try{
+        	jobProgressOperator.pushMsg(phaseId);
 
             if (status == JobProgressStatus.FAILURE) {
                 //步骤失败，更新job状态为失败，停止执行
@@ -167,8 +168,8 @@ public class JobService {
             }
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
-            log.error(e.getMessage(), e);
-            throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
+            log.error("JOB继续执行失败，原因为:" + e.getMessage(), e);
+            //throw new Exception("更新JOB步骤状态失败，原因为:" + e.getMessage(), e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }
@@ -204,7 +205,9 @@ public class JobService {
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
-		}
+		}else if(jobType == JobType.MID2QUICK){		
+ 			runner = new TaskMedium2QuickRunner();		
+  		}
 		return runner;
 	}
 }

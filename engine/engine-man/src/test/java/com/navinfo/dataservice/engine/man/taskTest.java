@@ -19,6 +19,7 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -45,6 +46,19 @@ public class taskTest extends InitApplication{
 			String parameter = "{\"tasks\":[{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"workKind\":[],\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":0},{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":2}]}";
 			JSONObject dataJson = JSONObject.fromObject(parameter);				
 			TaskService.getInstance().create(0, dataJson);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+				
+	}
+	
+	@Test
+	public void taskTestQuery() throws Exception {
+		try {
+			// TODO Auto-generated constructor stub
+			String parameter = "{\"tasks\":[{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"workKind\":[],\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":0},{\"name\":\"天津市天津市东丽区郊区城区_20170713\",\"blockId\":652,\"programId\":317,\"lot\":0,\"poiPlanTotal\":0,\"roadPlanTotal\":0,\"producePlanStartDate\":\"20170713\",\"producePlanEndDate\":\"20170713\",\"planStartDate\":\"20170713\",\"planEndDate\":\"20170713\",\"type\":2}]}";
+			JSONObject dataJson = JSONObject.fromObject(parameter);				
+			TaskService.getInstance().query(22);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -145,7 +159,7 @@ public class taskTest extends InitApplication{
 	public void testPushMsg() throws Exception
 	{
 		JSONArray taskIds=new JSONArray();
-		taskIds.add(78);
+		taskIds.add(77);
 		String message = TaskService.getInstance().taskPushMsg(0, taskIds);
 		System.out.println(message);
 	}
@@ -220,4 +234,39 @@ public class taskTest extends InitApplication{
 		System.out.println(data);
 	}
 	
+	@Test
+	public void testBatchMidTaskByTaskId() throws Exception
+	{
+		int data = TaskService.getInstance().batchMidTaskByTaskId(135);
+		System.out.println(data);
+	}	
+
+	@Test
+	public void test01() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		String objName = "subtask";
+		Map<Integer, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		System.out.println(data.toString());
+		
+	}
+	
+	@Test
+	public void test02() throws Exception{
+		
+		int taskId = 2;
+		ManApi manApi= new ManApiImpl();
+		List<Map<String, Object>> set = manApi.querySubtaskByTaskId(taskId);
+		System.out.println(set.toString());
+		
+	}
+	
+	@Test
+	public void test03() throws Exception{
+		
+		ManApi manApi= new ManApiImpl();
+		Map<Integer, Integer> set = manApi.queryProgramTypes();
+		System.out.println(set.toString());
+		
+	}
 }

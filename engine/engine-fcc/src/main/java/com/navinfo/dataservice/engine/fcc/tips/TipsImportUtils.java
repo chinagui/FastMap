@@ -30,8 +30,7 @@ public class TipsImportUtils {
 
 	/**
 	 * 根据类型、位置、唯一ID组合ROWKEY
-	 * 
-	 * @param lonlat
+	 *
 	 * @param uniqId
 	 * @param type
 	 * @return
@@ -181,11 +180,12 @@ public class TipsImportUtils {
 			
 			for (int i = 0; i < glen; i++) {
 				
-				if (!g.isValid()) {
+				Geometry geo=g.getGeometryN(i);
+				if (!geo.isValid()) {
 					throw new Exception("invalid g_location");
 				}
 				
-				geos.add(g.getGeometryN(i));
+				geos.add(geo);
 				
 			}
 		}
@@ -307,6 +307,33 @@ public class TipsImportUtils {
                 jsonObject.put("fc", fc);
             }
             return jsonObject;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            if(pstmt != null) {
+                pstmt.close();
+            }
+            if(resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return null;
+    }
+
+    public static String queryNodeRelateLink(Connection conn, String id) throws Exception{
+        String sqlLink = "select rl.LINK_PID from rd_link rl where (rl.S_NODE_PID = :1 OR "
+                + "       rl.E_NODE_PID = :2) AND ROWNUM = 1 ";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sqlLink);
+            pstmt.setString(1, id);
+			pstmt.setString(2, id);
+            resultSet = pstmt.executeQuery();
+            if (resultSet.next()){//有记录
+                String linkPid = resultSet.getString("LINK_PID");
+                return linkPid;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }finally {

@@ -111,14 +111,14 @@ public RdName saveName(RdName rdName) throws Exception {
 
 			Integer nameId = rdName.getNameId();
 			Integer nameGroupid = rdName.getNameGroupid();
-			
+			System.out.println("before: nameId:"+nameId + " nameGroupid:"+nameGroupid);
 			if (rdName.getNameId() == null) {
 				nameId = applyPid();
 			}
 			if (rdName.getNameGroupid() == null) {
 				nameGroupid = applyPid();
 			}
-
+			System.out.println("after: nameId:"+nameId + " nameGroupid:"+nameGroupid);
 			pstmt.setLong(1, nameId);
 			pstmt.setLong(2, nameGroupid);
 			pstmt.setString(3, rdName.getLangCode());
@@ -199,7 +199,7 @@ public RdName saveName(RdName rdName) throws Exception {
 			}
 			throw new Exception("新增道路名出错：" + e.getMessage(), e);
 		} finally {
-			DbUtils.close(pstmt);
+			DbUtils.closeQuietly(pstmt);
 			//conn由调用者关闭
 		}
 
@@ -428,8 +428,8 @@ public RdName saveName(RdName rdName) throws Exception {
 			DbUtils.rollback(conn);
 			throw new Exception("道路名出错：" + e.getMessage(), e);
 		} finally {
-			DbUtils.close(pstmt);
-			DbUtils.close(subPstms);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(subPstms);
 		}
 	}
 	

@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,32 +13,23 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrClient;
-import org.hbase.async.Scanner;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
-import com.navinfo.dataservice.dao.fcc.SolrConnector;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOperator;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.datahub.service.DbService;
-import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.navinfo.dataservice.engine.fcc.tips.TipsLineRelateQuery;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
@@ -152,20 +142,20 @@ public class SyncTips2Oracle {
 			JSONObject trackJSON = JSONObject.fromObject(trackString);
 			String tDate = trackJSON.getString("t_date");
 			int lifecycle = trackJSON.getInt("t_lifecycle");
-			int command = trackJSON.getInt("t_command");
+//			int command = trackJSON.getInt("t_command");
 			int dEditMeth = trackJSON.getInt("t_dEditMeth");
 			int dEditStatus = trackJSON.getInt("t_dEditStatus");
 			int mEditMeth = trackJSON.getInt("t_mEditMeth");
 			int mEditStatus = trackJSON.getInt("t_mEditStatus");
 			int tipStatus = trackJSON.getInt("t_tipStatus");
-			ti.settDate(tDate);
-			ti.settLifecycle(lifecycle);
-			ti.settCommand(command);
-			ti.setTdEditMethod(dEditMeth);
-			ti.setTdEditStatus(dEditStatus);
-			ti.setTmEditMethod(mEditMeth);
-			ti.setTmEditStatus(mEditStatus);
-			ti.settTipStatus(tipStatus);
+			ti.setT_date(tDate);
+			ti.setT_lifecycle(lifecycle);
+//			ti.settCommand(command);
+			ti.setT_dEditMeth(dEditMeth);
+			ti.setT_dEditStatus(dEditStatus);
+			ti.setT_mEditMeth(mEditMeth);
+			ti.setT_mEditStatus(mEditStatus);
+			ti.setT_tipStatus(tipStatus);
 			
 			//track履历
 			JSONArray trackInfoArray = trackJSON.getJSONArray("t_trackInfo");
@@ -175,10 +165,14 @@ public class SyncTips2Oracle {
 			if(trackInfoArray != null && trackInfoArray.size() > 0) {
 				JSONObject lastTrack = trackInfoArray.getJSONObject(trackInfoArray.size() - 1);
 				stage = lastTrack.getInt("stage");
-				tOperateDate = lastTrack.getString("date");
-				handler = lastTrack.getInt("handler");
+				if(lastTrack.containsKey("date")){
+					tOperateDate = lastTrack.getString("date");
+				}
+				if(lastTrack.containsKey("handler")){
+					handler = lastTrack.getInt("handler");
+				}
 			}
-			ti.settOperateDate(tOperateDate);
+			ti.setT_operateDate(tOperateDate);
 			ti.setStage(stage);
 			ti.setHandler(handler);
 			
@@ -191,11 +185,11 @@ public class SyncTips2Oracle {
 			int qSubTaskId = sourceJSON.getInt("s_qSubTaskId");
 			int mSubTaskId = sourceJSON.getInt("s_mSubTaskId");
 			
-			ti.setsSourceType(sourceType);
-			ti.setSqTaskId(qTaskId);
-			ti.setSmTaskId(mTaskId);
-			ti.setSqSubtaskId(qSubTaskId);
-			ti.setSmSubtaskId(mSubTaskId);
+			ti.setS_sourceType(sourceType);
+			ti.setS_qTaskId(qTaskId);
+			ti.setS_mTaskId(mTaskId);
+			ti.setS_qSubTaskId(qSubTaskId);
+			ti.setS_mSubTaskId(mSubTaskId);
 			
 			//统计坐标
 			Geometry wkt = locationGeo;
@@ -216,15 +210,15 @@ public class SyncTips2Oracle {
 			
 			Map<String,String> relateMap = TipsLineRelateQuery.getRelateLine(sourceType, deepJSON);
 
-			ti.setRelateLinks(relateMap.get("relate_links"));
-			ti.setRelateNodes(relateMap.get("relate_nodes"));
+			ti.setRelate_links(relateMap.get("relate_links"));
+			ti.setRelate_nodes(relateMap.get("relate_nodes"));
 			
-			String diffString = JSON.NULL;
-			byte[] diffBytes = result.getValue(Bytes.toBytes("data"), Bytes.toBytes("tiffDiff"));
-			if(diffBytes != null) {
-				diffString = Bytes.toString(diffBytes);
-			}
-			ti.setTipDiff(diffString);
+//			String diffString = JSON.NULL;
+//			byte[] diffBytes = result.getValue(Bytes.toBytes("data"), Bytes.toBytes("tiffDiff"));
+//			if(diffBytes != null) {
+//				diffString = Bytes.toString(diffBytes);
+//			}
+//			ti(diffString);
 
 			return ti;
 		}catch(Exception e){

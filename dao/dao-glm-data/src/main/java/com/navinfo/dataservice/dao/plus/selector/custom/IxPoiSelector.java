@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmObject;
@@ -33,6 +34,9 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.SingleBatchSelRsHandler;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 
@@ -633,5 +637,225 @@ public class IxPoiSelector {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
+	}
+	
+	/**
+	 * 根据kindcode查询pid
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param pidList
+	 * @param isDele true:包括删除的记录
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<Long> getPidsByKindCode(Connection conn,String kindCode,boolean isDele) throws ServiceException{
+		List<Long> pids = new ArrayList<Long>();
+		if(kindCode == null){
+			return pids;
+		}
+		try{
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT DISTINCT PID FROM IX_POI WHERE KIND_CODE = '"+kindCode+"'");
+			if(!isDele){
+				sql.append(" AND U_RECORD <>2");
+			}
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long pid = rs.getLong("PID");
+						result.add(pid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getPidsByKindCode查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
+			return pids;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * 根据kindcode查询删除的pid
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<Long> getDelPidsByKindCode(Connection conn,String kindCode) throws ServiceException{
+		List<Long> pids = new ArrayList<Long>();
+		if(kindCode == null){
+			return pids;
+		}
+		try{
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT DISTINCT PID FROM IX_POI WHERE KIND_CODE = '"+kindCode+"'");
+			sql.append(" AND U_RECORD =2");
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long pid = rs.getLong("PID");
+						result.add(pid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getPidsByKindCode查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
+			return pids;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * 根据kindcode查询pid(FM到桩家初始化)
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<Long> getPidsByKindCodeInit(Connection conn,String kindCode) throws ServiceException{
+		List<Long> pids = new ArrayList<Long>();
+		if(kindCode == null){
+			return pids;
+		}
+		try{
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT DISTINCT I.PID FROM IX_POI I,IX_POI_CHARGINGSTATION S,IX_POI_PARENT P,IX_POI_CHILDREN C ");
+			sql.append(" WHERE I.PID = S.POI_PID AND I.PID = P.PARENT_POI_PID AND P.GROUP_ID = C.GROUP_ID ");
+			sql.append(" AND S.CHARGING_TYPE IN(1,3) AND S.U_RECORD <> 2 AND P.U_RECORD <> 2 AND C.U_RECORD <> 2 ");
+			sql.append(" AND I.KIND_CODE = '"+kindCode+"' AND I.U_RECORD <> 2 ");
+			sql.append(" UNION ");
+			sql.append(" SELECT DISTINCT I.PID FROM IX_POI I,IX_POI_CHARGINGSTATION S ");
+			sql.append(" WHERE I.PID = S.POI_PID AND S.CHARGING_TYPE IN(2,4) ");
+			sql.append(" AND S.U_RECORD <> 2 AND I.KIND_CODE = '"+kindCode+"' AND I.U_RECORD <> 2 ");
+			
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long pid = rs.getLong("PID");
+						result.add(pid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getPidsByKindCodeInit查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler);
+			return pids;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * 根据pidlist查询引导link三米范围内的link
+	 * @author gaopengrong
+	 * @param conn
+	 * @param pidList
+	 * @return linkInfo
+	 * @throws ServiceException
+	 */
+	public static Map<Long,JSONObject> getCalculateValuesByPid(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,JSONObject> dataValue = new HashMap<Long,JSONObject>();
+		if(pidList.isEmpty()){
+			return dataValue;
+		}
+		try{
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(pidList, ","));
+			String sql = " SELECT RD.LINK_PID,"
+	        +" RD.MESH_ID,"
+	        +" RD.GEOMETRY RD_GEOMETRY,"	
+	        +" IX.PID"
+	        +" FROM IX_POI IX, RD_LINK RD"
+	        +" WHERE SDO_NN(RD.GEOMETRY,"
+	        +" NAVI_GEOM.CREATEPOINT(IX.X_GUIDE, IX.Y_GUIDE),"
+	        +" 'SDO_NUM_RES=1 DISTANCE=3 UNIT=METER') = 'TRUE'"
+	        +" AND ix.pid IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			
+			ResultSetHandler<Map<Long,JSONObject>> rsHandler = new ResultSetHandler<Map<Long,JSONObject>>() {
+				public Map<Long,JSONObject> handle(ResultSet rs) throws SQLException {
+					Map<Long,JSONObject> datas = new HashMap<Long,JSONObject>();
+					while (rs.next()) {
+						JSONObject data = new JSONObject();
+						data.put("LINK_PID", rs.getLong("LINK_PID"));
+						data.put("MESH_ID", rs.getInt("MESH_ID"));
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("RD_GEOMETRY");
+						try {
+							data.put("RD_GEOMETRY",GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+						datas.put(rs.getLong("PID"), data);
+					}
+					return datas;
+				}
+			};
+			
+			log.info("getCalculateValuesByPid查询主表："+sql);
+			dataValue = new QueryRunner().query(conn,sql, rsHandler,clob);
+			return dataValue;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	/**
+	 * 查询poi的引导link是否存在，返回不存在的pidlist
+	 * @author gaopengrong
+	 * @param conn
+	 * @param pidList
+	 * @return pidList
+	 * @throws ServiceException
+	 */
+	public static List<Long> getPoiForLinkPidNotInRdLink(Connection conn,Set<Long> pidList) throws ServiceException{
+		List<Long> pids = new ArrayList<Long>();
+		try{
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(pidList, ","));
+			StringBuilder sql = new StringBuilder();
+			sql.append("select pid from ix_poi t  ");
+			sql.append(" where t.pid in (select column_value from table(clob_to_table(?)))   ");
+			sql.append(" and not exists(select 1 from rd_link r where r.link_pid=t.link_pid) ");
+
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long pid = rs.getLong("PID");
+						result.add(pid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getPoiForLinkPidNotInRdLink查询主表："+sql.toString());
+			pids = new QueryRunner().query(conn,sql.toString(), rsHandler,clob);
+			return pids;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
 	}
 }

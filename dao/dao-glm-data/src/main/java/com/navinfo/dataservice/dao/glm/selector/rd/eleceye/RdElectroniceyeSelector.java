@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -87,8 +89,8 @@ public class RdElectroniceyeSelector extends AbstractSelector {
             throw e;
 
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
 
         return eleceye;
@@ -195,8 +197,8 @@ public class RdElectroniceyeSelector extends AbstractSelector {
             throw e;
 
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
 
         return eleceyes;

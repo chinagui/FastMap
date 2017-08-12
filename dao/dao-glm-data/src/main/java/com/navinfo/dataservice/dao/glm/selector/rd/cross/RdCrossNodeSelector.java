@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -65,8 +66,8 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 		return node;
 	}
@@ -101,8 +102,8 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return 0;
@@ -144,9 +145,9 @@ public class RdCrossNodeSelector extends AbstractSelector {
 
 		} finally {
 
-			DBUtils.closeResultSet(resultSet);
+			DbUtils.closeQuietly(resultSet);
 
-			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return nodePids;

@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
@@ -113,8 +115,8 @@ public class RdBranchViaSelector extends AbstractSelector {
         } catch (Exception e) {
             throw e;
         } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+        	DbUtils.closeQuietly(resultSet);
+        	DbUtils.closeQuietly(pstmt);
         }
         return list;
     }

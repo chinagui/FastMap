@@ -130,9 +130,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			batchCommand.setOperationName("BATCH_POI_RELEASE");
 			batchCommand.setParameter(parameter);
 			Batch batch=new Batch(conn,batchData);
+			batch.setSubtaskId((int)jobInfo.getTaskId());
 			batch.operate(batchCommand);
 			changeReferData= batch.getChangeReferData();
-			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+			batch.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 			
 			//修改父子关系关联批到的数据任务号及状态
 			log.info("修改父子关系关联批到的数据任务号及状态");
@@ -407,8 +408,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 			try {
 				pstmt.close();
 			} catch (Exception e) {

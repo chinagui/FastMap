@@ -1,13 +1,21 @@
 package com.navinfo.dataservice.scripts.env.validation;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.navinfo.dataservice.commons.util.XMLUtils;
 import com.navinfo.dataservice.scripts.env.validation.model.FosServer;
+
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
 /** 
@@ -17,7 +25,7 @@ import org.dom4j.Element;
  * @Description: FosServerValidation.java
  */
 public class FosServerValidation implements FosEnvValidation{
-	
+	protected Logger log = Logger.getLogger(XMLUtils.class);
 	@Override
 	public ValidationResult validation() throws Exception {
 		ValidationResult result = new ValidationResult();
@@ -37,8 +45,9 @@ public class FosServerValidation implements FosEnvValidation{
 	}
 	
 	private List<FosServer> loadConfigs()throws Exception{
+		List<FosServer> servers = new ArrayList<FosServer>();
 		//...
-		Element valXmlRoot = XMLUtils.parseRoot("tomcat_validation_config.xml");
+		Element valXmlRoot = XMLUtils.parseXmlFile("server_validation_config.xml");
 		String serverDir = valXmlRoot.elementText("server-dir");
 		String tomcatDir = serverDir+"tomcat/";
 		String jobserverDir = serverDir+"job-server/";
@@ -50,7 +59,7 @@ public class FosServerValidation implements FosEnvValidation{
 			server.addSysConfig("SYS.dataSource.maxActive", "300");
 			//
 			if("tomcat".equals(server.getType())){
-				server.setServerDir(tomcatDir);
+				server.setServerDir(tomcatDir+server.getName()+"/");
 				server.addSysConfig("datasource.sql.type", "druid");
 			}else if("jobserver".equals(server.getType())){
 				server.setServerDir(jobserverDir);
@@ -75,57 +84,156 @@ public class FosServerValidation implements FosEnvValidation{
 					server.addDubboConfigs(confs);
 				}
 			}
+			log.info("parsed server:"+server.getName());
+			servers.add(server);
 		}
-		return null;
+		return servers;
 	}
 	
 	private void validateSysConfigXml(FosServer server,ValidationResult result)throws Exception{
 		//SysConfig file
 		String sysConfigFilePath = server.getServerDir()+server.getSysConfigFile();
+		log.info("sys xml file:"+sysConfigFilePath);
 		File sysConfigfile = new File(sysConfigFilePath);
 		if (!sysConfigfile.exists()) {
 			result.addErrs(server.getName()+"服务未配置SystemConfig.xml文件");
+			return;
 		}
-		Element sysConfigRoot = XMLUtils.parseRoot(sysConfigFilePath);
-		for(Entry<String,String> entry:server.getSysConfig().entrySet()){
-			Element e = sysConfigRoot.element(entry.getKey());
-			if(e==null){
-				result.addErrs(server.getName()+"服务的配置文件"+server.getSysConfigFile()+"未配置"+entry.getKey()+"参数");
+		InputStream is = null;
+		try{
+			is = new FileInputStream(sysConfigfile);
+			Element sysConfigRoot = XMLUtils.parseXmlFile(is);
+			for(Entry<String,String> entry:server.getSysConfig().entrySet()){
+				Element e = sysConfigRoot.element(entry.getKey());
+				if(e==null){
+					result.addErrs(server.getName()+"服务的配置文件"+server.getSysConfigFile()+"未配置"+entry.getKey()+"参数");
+					continue;
+				}
+				if(e.getText()==null||(!e.getText().equals(entry.getValue()))){
+					result.addErrs(server.getName()+"服务的配置文件"+server.getSysConfigFile()+"中"+entry.getKey()+"参数配置不正确");
+				}
 			}
-			if(e.getText()==null||(!e.getText().equals(entry.getValue()))){
-				result.addErrs(server.getName()+"服务的配置文件"+server.getSysConfigFile()+"中"+entry.getKey()+"参数配置不正确");
-			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+            	log.error(e.getMessage(),e);
+            }
 		}
 	}
 	
 	private void validateDubboConfigXml(FosServer server,ValidationResult result)throws Exception{
 		//file
+		if("null".equals(server.getDubboConfigFile())){
+			return;
+		}
 		String filePath = server.getServerDir()+server.getDubboConfigFile();
+		log.info("dubbo xml file:"+filePath);
 		File file = new File(filePath);
 		if (!file.exists()) {
 			result.addErrs(server.getName()+"服务未配置"+server.getDubboConfigFile()+"文件");
-		}
-		Element configRoot = XMLUtils.parseRoot(filePath);
-		for(Entry<String,String> entry:server.getDubboConfig().entrySet()){
-			Element e = configRoot.element(entry.getKey());
-			if(e==null){
-				result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置"+entry.getKey()+"参数");
-			}
-			if(e.getText()==null||(!e.getText().equals(entry.getValue()))){
-				result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"中"+entry.getKey()+"参数配置不正确");
-			}
-		}
-		//application
-		Element appEle = configRoot.element("dubbo:application");
-		if(appEle==null){
-			result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置application参数");
+			return;
 		}
 
-		Element monEle = configRoot.element("dubbo:monitor");
-		if(monEle==null){
-			result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置monitor参数");
+		InputStream is = null;
+		try{
+			is = new FileInputStream(file);
+
+			Element configRoot = XMLUtils.parseXmlFile(is);
+			for(Entry<String,String> entry:server.getDubboConfig().entrySet()){
+				Element e = configRoot.element(entry.getKey());
+				if(e==null){
+					result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置"+entry.getKey()+"参数");
+					continue;
+				}
+
+				if("consumer".equals(entry.getKey())){
+					String[] vs = entry.getValue().split(",");
+					if(e.attributeValue("timeout")==null||(!e.attributeValue("timeout").equals(vs[0]))){
+						result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"中"+entry.getKey()+"参数配置不正确");
+					}
+					if(e.attributeValue("retries")==null||(!e.attributeValue("retries").equals(vs[1]))){
+						result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"中"+entry.getKey()+"参数配置不正确");
+					}
+				}else if("registry".equals(entry.getKey())){
+					if(e.attributeValue("address")==null||(!e.attributeValue("address").equals(entry.getValue()))){
+						result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"中"+entry.getKey()+"参数配置不正确");
+					}
+				}
+			}
+			//application
+			Element appEle = configRoot.element("application");
+			if(appEle==null){
+				result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置application参数");
+			}else{
+				if(appEle.attributeValue("name")==null||(!hasDigit(appEle.attributeValue("name")))){
+					result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置application参数");
+				}
+			}
+
+			Element monEle = configRoot.element("monitor");
+			if(monEle==null){
+				result.addErrs(server.getName()+"服务的配置文件"+server.getDubboConfigFile()+"未配置monitor参数");
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+            	log.error(e.getMessage(),e);
+            }
 		}
 	}
-	
+	public static boolean hasDigit(String content) {
+        boolean flag = false;
+        Pattern p = Pattern.compile(".*\\d+.*");
+        Matcher m = p.matcher(content);
+        if (m.matches()) {
+            flag = true;
+        }
+        return flag;
+    }
+	public static void main(String[] args) {
+		String file = "F:\\dubbo-app-scripts.xml";
+		InputStream is = null;
+		try{
+			is = new FileInputStream(file);
+
+			Element configRoot = XMLUtils.parseXmlFile(is);
+			
+			//application
+			Element appEle = configRoot.element("application");
+
+			System.out.println(appEle.attributeValue("name"));
+
+			Element monEle = configRoot.element("monitor");
+
+			System.out.println(monEle.attributeValue("protocol"));
+			
+
+			Element myele = configRoot.element("my");
+			if(myele.getText()==null){
+				System.out.println("null obj");
+			}else{
+				System.out.println(myele.getText());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+            	e.printStackTrace();
+            }
+		}
+	}
 
 }

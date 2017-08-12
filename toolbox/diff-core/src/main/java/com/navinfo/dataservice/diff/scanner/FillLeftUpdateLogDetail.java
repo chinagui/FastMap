@@ -132,6 +132,7 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new SQLException("填充修改类型的履历出现错误。",e);
 		}finally{
+			DbUtils.closeQuietly(stmt);
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;

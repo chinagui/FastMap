@@ -4,17 +4,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectName;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -96,16 +93,24 @@ public class GLM02267 extends baseRule{
 					+ " AND ROL1.U_RECORD <> 2"
 					+ " AND RON1.U_RECORD <> 2";
 			log.info("RdObject后检查GLM02267:" + sql);
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
+			
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
 			List<Integer> rdObjectPidList=new ArrayList<Integer>();
+			try {
+				pstmt = this.getConn().prepareStatement(sql);	
+				resultSet = pstmt.executeQuery();
 
-			while (resultSet.next()){
-				rdObjectPidList.add(resultSet.getInt("PID"));
-			} 
-			resultSet.close();
-			pstmt.close();
-			return rdObjectPidList;			
+				while (resultSet.next()){
+					rdObjectPidList.add(resultSet.getInt("PID"));
+				} 
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DbUtils.closeQuietly(resultSet);
+				DbUtils.closeQuietly(pstmt);
+			}		
+			return rdObjectPidList;
 	}
 
 	/**

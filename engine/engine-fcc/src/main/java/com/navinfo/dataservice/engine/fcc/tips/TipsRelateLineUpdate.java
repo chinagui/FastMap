@@ -969,7 +969,7 @@ public class TipsRelateLineUpdate {
 		
 			//起终点的，需要替换g_location.将旧的坐标替换为新的两条或者多条线的坐标
 			if(index != -1 && ("1507".equals(sourceType) || "1508".equals(sourceType)
-					 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType))){
+					 || "1510".equals(sourceType) || "1511".equals(sourceType) || "1514".equals(sourceType)||("1520").equals(sourceType))){
 				
 				json=GLocationUpdate.updateStartEndPointLocation(index,json,sourceType,cutLines);
 				

@@ -1,18 +1,19 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.navicommons.database.sql.DBUtils;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @Title: FMYW20123
@@ -49,7 +50,7 @@ public class FMYW20123 extends BasicCheckRule {
                     flag = true;
                 }
             }
-
+          
             if (flag) {
                 String sql = "SELECT COUNT(1) COUNT_NUM FROM IX_POI IP, RD_LINK RL WHERE IP.PID = :1 AND IP.MESH_ID = RL.MESH_ID AND IP" +
                         ".U_RECORD <> 2 AND RL.U_RECORD <> 2 AND SDO_GEOM.SDO_DISTANCE(IP.GEOMETRY, RL.GEOMETRY, 0.00000005) < 5";
@@ -66,10 +67,11 @@ public class FMYW20123 extends BasicCheckRule {
                         }
                     }
                 } catch (SQLException e) {
-                    throw e;
+                	log.error(e.getMessage(),e);
+    				throw e;
                 } finally {
-                    DBUtils.closeResultSet(resultSet);
-                    DBUtils.closeStatement(pstmt);
+                	DbUtils.closeQuietly(resultSet);
+        			DbUtils.closeQuietly(pstmt);
                 }
             }
         }

@@ -99,13 +99,12 @@ public class TranslateTest {
         convert.setPriority("2");
         System.out.println(convert.convert("在西锦业二路与丈北路十店东3栋"));
 
-        System.out.println(convert.convert("北京四维图新股份有限公司"));
-        System.out.println(convert.convert("西红立交桥"));
-        System.out.println(convert.convert("贾晓静"));
-        System.out.println(convert.convert("望京一医院"));
-        System.out.println(convert.convert("北京 · 医院"));
-        System.out.println(convert.convert("5号路"));
-        System.out.println(convert.convert("永丰路3号收费站"));
+        System.out.println(convert.convert("北京四维图新股份有限公司", "Bei Jing Si Wei Tu Xin Gu Fen You Xian Gong Si"));
+        System.out.println(convert.convert("西红立交桥", "Xi Hong Li Jiao Qiao"));
+        System.out.println(convert.convert("贾晓静", "Jia Xiao Jing"));
+        System.out.println(convert.convert("望京一医院", "Wang Jing Yi Yi Yuan"));
+        System.out.println(convert.convert("5号路", "5 Hao Lu"));
+        System.out.println(convert.convert("永丰路3号收费站", "Yong Feng Lu 3 Hao Shou Fei Zhan"));
 
         TranslateDictData.getInstance().getDictEngKeyword();
     }

@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -13,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectName;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
  * @ClassName: GLM02266
@@ -166,16 +167,24 @@ public class GLM02266 extends baseRule{
 					+ " AND ROL1.U_RECORD <> 2";
 			
 			log.info("RdObject后检查GLM02266:" + sql);
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
-			List<Integer> rdObjectPidList=new ArrayList<Integer>();
-
-			while (resultSet.next()){
-				rdObjectPidList.add(resultSet.getInt("PID"));
-			} 
-			resultSet.close();
-			pstmt.close();
-			return rdObjectPidList;			
+			
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+			List<Integer> rdObjectPidList = new ArrayList<Integer>();
+			try {
+				pstmt = this.getConn().prepareStatement(sql);	
+				resultSet = pstmt.executeQuery();
+				while (resultSet.next()){
+					rdObjectPidList.add(resultSet.getInt("PID"));
+				} 
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DbUtils.closeQuietly(resultSet);
+				DbUtils.closeQuietly(pstmt);
+			}
+			return rdObjectPidList;
+			
 	}
 
 	/**
@@ -225,17 +234,21 @@ public class GLM02266 extends baseRule{
 		String sql = sb.toString();
 		log.info("RdObject后检查GLM02266:" + sql);
 		
-		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
-		ResultSet resultSet = pstmt.executeQuery();
-		
-		if (resultSet.next()){
-			num = resultSet.getInt("NUM");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sb.toString());	
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()){
+				num = resultSet.getInt("NUM");
+			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
-		resultSet.close();
-		pstmt.close();
-
 		return num;
-		
 	}
 
 	/**
@@ -245,7 +258,7 @@ public class GLM02266 extends baseRule{
 	 * CRFO是否存在满足条件的link
 	 */
 	private boolean isRdObjectShouldBeNamed(int pid) throws SQLException {
-		boolean flg = false;
+		boolean flag = false;
 		//CRFO是否存在满足条件的link
 		StringBuilder sb = new StringBuilder();
 		
@@ -291,16 +304,23 @@ public class GLM02266 extends baseRule{
 		sb.append(" AND ROR.PID = "  + pid + ")");
 		
 		log.info("RdObject后检查GLM02266:" + sb.toString());
-		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
-		ResultSet resultSet = pstmt.executeQuery();
-
 		
-		while (resultSet.next()){
-			flg = true;
-		} 
-		resultSet.close();
-		pstmt.close();
-		return flg;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sb.toString());	
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()){
+				flag = true;
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return flag;
+
 	}
 
 }

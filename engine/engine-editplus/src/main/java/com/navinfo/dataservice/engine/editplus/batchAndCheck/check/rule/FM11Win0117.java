@@ -4,12 +4,15 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import oracle.sql.STRUCT;
 
@@ -89,13 +92,16 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND P1.PID != P2.PID";
 
 			log.info("FM11Win0117:"+sqlStr);
-			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
+			PreparedStatement pstmt=null;
+			ResultSet rs = null;
+			try{
+			pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
 					pstmt.setClob(i+1,values.get(i));
 				}
 			}			
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			//过滤相同pid
 			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
@@ -110,6 +116,12 @@ public class FM11Win0117 extends BasicCheckRule {
 				filterPid.add(targets);
 				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
 		}
 		//100米内名称（name）和分类、品牌相同的新增设施和其他非删除设施,当分类={230210,230213,230214}时，需要增加停车场建筑物类型一起判断
 		if(pid2!=null&&pid2.size()>0){
@@ -159,13 +171,16 @@ public class FM11Win0117 extends BasicCheckRule {
 					+"      AND SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 100 "
 					+ "     AND P1.PID != P2.PID";
 			log.info("FM11Win0117:"+sqlStr);
-			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
+			PreparedStatement pstmt=null;
+			ResultSet rs = null;
+			try{
+			pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
 					pstmt.setClob(i+1,values.get(i));
 				}
 			}			
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			//过滤相同pid
 			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
@@ -180,6 +195,12 @@ public class FM11Win0117 extends BasicCheckRule {
 				filterPid.add(targets);
 				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
 		}
 	}
 	

@@ -120,4 +120,6 @@ public class PropConstant {
 	public static final String manPassword="man.password";
 	
 	public static final String gdbSqlitePassword="gdbsqlite.password";
+	
+	public static final String baiduGeocoding="baiduGeocoding";
 }

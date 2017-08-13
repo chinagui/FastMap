@@ -21,7 +21,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.diff.FastPoi;
 import com.navinfo.dataservice.engine.editplus.diff.HandlerDealership;
 import com.navinfo.dataservice.engine.editplus.diff.PoiRecommender;
@@ -263,13 +262,15 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
+			for (Connection value : dbConMap.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw new JobException(e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 			for (Connection value : dbConMap.values()) {  
-				DbUtils.commitAndCloseQuietly(value);}  
-
-
+				DbUtils.commitAndCloseQuietly(value);
+			}  
 		}
 	}
 
@@ -372,10 +373,10 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			};
 			return run.query(conn, querySql, rs);
 		} catch (Exception e) {
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("加载resultData失败：" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndClose(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -395,7 +396,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 	public Map<Integer, Connection> queryAllRegionConn() throws SQLException {
 		log.info("queryAllRegionConn start...");
-		Map<Integer,Connection> MapConn = new HashMap<Integer, Connection>();
+		Map<Integer,Connection> mapConn = new HashMap<Integer, Connection>();
 		String sql = "select t.daily_db_id,region_id from region t";
 		log.info("sql:"+sql);
 		PreparedStatement pstmt = null;
@@ -407,15 +408,16 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
-					MapConn.put(rs.getInt("region_id"), regionConn);
+					mapConn.put(rs.getInt("region_id"), regionConn);
 					log.info("大区库region_id:"+rs.getInt("region_id")+"获取数据库连接成功");
 				}
 				log.info("queryAllRegionConn end...");
-				return MapConn;
+				return mapConn;
 
 		} catch (Exception e) {
-			for (Connection value : MapConn.values()) {  
-				DbUtils.commitAndCloseQuietly(value);}  
+			for (Connection value : mapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
 			throw new SQLException("加载region失败：" + e.getMessage(), e);
 		}finally {
 			DbUtils.closeQuietly(conn, pstmt, rs);

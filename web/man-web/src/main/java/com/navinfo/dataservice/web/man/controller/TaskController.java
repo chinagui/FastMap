@@ -836,4 +836,31 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 为ocms提供任务数据列表
+	 * @param HttpServletRequest
+	 * @return ModelAndView
+	 * 
+	 * */
+	@RequestMapping(value="/task/forOcms")
+	public ModelAndView forOcms(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+						
+			String date ="";
+			if(dataJson.containsKey("date")){
+				date=dataJson.getString("date");
+			}
+			List<Map<String, Object>> result = TaskService.getInstance().forOcms(date);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("获取条件规划失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

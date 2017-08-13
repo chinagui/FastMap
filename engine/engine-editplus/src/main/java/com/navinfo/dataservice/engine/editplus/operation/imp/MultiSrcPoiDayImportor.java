@@ -349,7 +349,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
-				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
+				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行失败!":e.getMessage());
 			}
 		}
 		return ixPoiObjList;

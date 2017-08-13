@@ -48,6 +48,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
@@ -3847,13 +3848,17 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			StringBuffer sb = new StringBuffer();
 			
-			String programId = json.getString("programId");
+			//String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from TASK t where ");//t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
+			sb.append(" t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
 			sb.append(" and t.type = 0 ");
+			
+			if(json.containsKey("programId")){
+				sb.append(" and t.program_id = "+json.getString("programId"));
+			}
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){
@@ -4363,12 +4368,13 @@ public class TaskService {
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
-					//把不满足条件的数据状态更新为不需要作业
+					log.info("把不满足条件的数据状态更新为不需要作业");
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
-					//日库中的dataPlan更新数据
+					log.info("start 日库中的dataPlan更新数据");
 					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
-					
+					log.info("end 日库中的dataPlan更新数据");
 					if(dataType == 1 || dataType == 3){
+						log.info("更改置信度");
 						int minCount = condition.getInt("poiMultiMinCount");
 						int maxCount = condition.getInt("poiMultiMaxCount");
 						//元数据库中的pid，也需要更新到data_plan表中
@@ -4377,6 +4383,7 @@ public class TaskService {
 						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					}
 					//保存到taskPrograss表
+					log.info("保存条件到taskPrograss表");
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
@@ -4661,8 +4668,8 @@ public class TaskService {
 				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
-					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
+					poiSb.append("select 1 from IX_POI t where d.pid = t.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4676,8 +4683,8 @@ public class TaskService {
 				//更新road
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
-					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
+					linkSb.append("select 1 from RD_LINK r where d.pid = r.link_pid and r.u_record!=2 and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");
@@ -4709,17 +4716,17 @@ public class TaskService {
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i < reliabilityPid.size(); i++){
 					sb.append(reliabilityPid.get(i)+",");
-				}
-				
+				}				
 				String pids = sb.deleteCharAt(sb.length() - 1).toString();
-				String parameter = "d.pid";
-				if(reliabilityPid.size() > 900){
-					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
-				}
 				
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, pids);
+				
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 "
+						+ "where d.pid in (select to_number(column_value) from table(clob_to_table(?))) "
+						+ "and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
-				run.execute(conn, sql);
+				run.update(conn, sql,clob);
 			}catch(Exception e){
 				throw e;
 			}
@@ -4922,6 +4929,57 @@ public class TaskService {
 			};
 			QueryRunner run = new QueryRunner();
 			Map<Integer, Integer> result = run.query(conn,selectSql, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List<Map<String, Object>> forOcms(String date)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT T.TASK_ID,"
+					+ "       T.NAME,"
+					+ "       U.GROUP_NAME,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       T.PLAN_START_DATE,"
+					+ "       T.PLAN_END_DATE,"
+					+ "       T.CREATE_DATE,"
+					+ "       P.TYPE"
+					+ "  FROM TASK T, USER_GROUP U, USER_INFO I, PROGRAM P"
+					+ " WHERE T.GROUP_ID = U.GROUP_ID"
+					+ "   AND U.LEADER_ID = I.USER_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID";
+			if(!StringUtils.isEmpty(date)){
+				selectSql=selectSql+ "   AND T.CREATE_DATE > TO_DATE('"+date+"', 'yyyy-mm-dd')";
+			}
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> task=new HashMap<>();
+						task.put("taskId", rs.getInt("TASK_ID"));
+						task.put("name", rs.getString("NAME"));
+						task.put("groupName", rs.getString("GROUP_NAME"));
+						task.put("userName", rs.getString("USER_REAL_NAME"));
+						task.put("planStartDate", DateUtils.format(rs.getTimestamp("PLAN_START_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
+						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
+						task.put("type", rs.getInt("type"));
+						result.add(task);
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
 			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -239,10 +239,9 @@ public class IxPoiSelector extends AbstractSelector {
 		String  increDownLoadDate = gridDate.getString("date");
 		LogReader logReader = new LogReader(conn);
 		Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", gridId, increDownLoadDate);
-		int poiSize = getChangedPoiCount(poiStatus);
 		JSONObject ret = new JSONObject();
 		ret.put("gridId", gridId);
-		ret.put("flag", poiSize==0?0:1);
+		ret.put("flag", getChangedPoiCount(poiStatus)==0?0:1);
 		return ret;
 	}
 

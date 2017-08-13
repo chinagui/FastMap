@@ -28,7 +28,7 @@ public class photoTest {
 			int angle = 0;
 			String fileName = "1QAZ2WSX3EDC4RFV5TGB6YHN7UJM1QAZ.jpg";
 			System.out.println(fileName.length());
-			CollectorImport.importCrowdPhoto(new FileInputStream(file), angle, fileName);
+			CollectorImport.importCrowdPhoto(new FileInputStream(file), angle, fileName, 0, 0);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

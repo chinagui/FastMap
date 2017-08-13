@@ -270,13 +270,20 @@ public class PhotoController extends BaseController {
 			
 			String fileName = jsonReq.getString("fileName");
 			
+			double x = jsonReq.getDouble("x");
+			
+			double y = jsonReq.getDouble("y");
+			
 			MultipartFile file = multipartRequest.getFile(fileName);
 			
-			CollectorImport.importCrowdPhoto(file.getInputStream(), angle, fileName);
+			CollectorImport.importCrowdPhoto(file.getInputStream(), angle, fileName, x, y);
 			
 			return new ModelAndView("jsonView", success());
+			
 		} catch (Exception e) {
+			
 			logger.error(e.getMessage(),e);
+			
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}

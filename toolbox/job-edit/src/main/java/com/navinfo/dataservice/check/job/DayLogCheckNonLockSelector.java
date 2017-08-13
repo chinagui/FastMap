@@ -1,23 +1,26 @@
 package com.navinfo.dataservice.check.job;
 
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.util.Date;
 
 /**
  * Created by ly on 2017/8/1.
  */
 public class DayLogCheckNonLockSelector extends LogSelector {
 
-    Date startData ;
 
-    public DayLogCheckNonLockSelector(OracleSchema logSchema, Date startData) {
+    private Logger log = Logger
+            .getLogger(DayLogCheckNonLockSelector.class);
+
+    String lastOpId = null;
+
+    public DayLogCheckNonLockSelector(OracleSchema logSchema,String lastOpId) {
         super(logSchema);
 
-        this.startData = startData;
+        this.lastOpId = lastOpId;
     }
 
     @Override
@@ -26,11 +29,19 @@ public class DayLogCheckNonLockSelector extends LogSelector {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
         sb.append(tempTable);
-        sb.append(" SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P ");
 
-        String timeSqlFormat = DateUtils.dateToString(startData, DateUtils.DATE_COMPACTED_FORMAT);
+        if (lastOpId == null) {
 
-        sb.append(" WHERE p.op_dt > to_date('"+timeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
+            sb.append(" SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P ");
+
+        } else {
+            sb.append(" SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P WHERE P.OP_DT > (SELECT OP_DT FROM LOG_OPERATION ");
+            sb.append(" WHERE OP_ID = '");
+            sb.append(lastOpId);
+            sb.append("')");
+        }
+
+        log.debug( sb.toString());
 
         return run.update(conn, sb.toString());
     }

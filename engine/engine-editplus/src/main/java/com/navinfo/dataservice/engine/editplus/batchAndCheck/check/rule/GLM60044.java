@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import oracle.sql.STRUCT;
 
@@ -111,13 +114,16 @@ public class GLM60044 extends BasicCheckRule {
 					+ "   AND ((T1.PARKING_TYPE = '4' AND T2.PARKING_TYPE = '1') OR"
 					+ "       (T1.PARKING_TYPE = '1' AND T2.PARKING_TYPE = '4'))"
 					+ "   AND T1.U_RECORD <>2 AND T2.U_RECORD <>2";
-			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
+			PreparedStatement pstmt=null;
+			ResultSet rs = null;
+			try{
+			pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
 					pstmt.setClob(i+1,values.get(i));
 				}
 			}
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 			while(rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
@@ -140,6 +146,12 @@ public class GLM60044 extends BasicCheckRule {
 				filterPid.add(pid1);
 				filterPid.addAll(errorList.get(pid1));
 			}
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
 		}
 	}
 	

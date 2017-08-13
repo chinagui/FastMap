@@ -41,7 +41,7 @@ import net.sf.json.JSONObject;
 public class SubtaskJob extends AbstractStatJob {
 	private static final String subtask = "subtask";
 	private static final String grid_tips = "grid_tips";
-	private static final String subtask_tips = "subtask_tips";
+//	private static final String subtask_tips = "subtask_tips";
 	private static final String subtask_day_poi = "subtask_day_poi";
 	private static final String grid_month_poi = "grid_month_poi";
 	private static final String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
@@ -64,7 +64,8 @@ public class SubtaskJob extends AbstractStatJob {
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "subtask";
-			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName);
+			Map<Integer, Map<String, Object>> manTimelineStart = manApi.queryManTimelineByObjName(objName,1);
+			Map<Integer, Map<String, Object>> manTimelineEnd = manApi.queryManTimelineByObjName(objName,0);
 			//执行统计
 			List<Subtask> subtaskListNeedStat = OracleDao.getSubtaskListNeedStatistics();
 			//获取已关闭的统计
@@ -81,7 +82,7 @@ public class SubtaskJob extends AbstractStatJob {
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
 			Map<Integer, Map<String, Integer>> tipsStatData = getTipsStatData(timestamp);
-			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
+//			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
 			//统计子任务数据
 			Iterator<Subtask> subtaskItr = subtaskListNeedStat.iterator();
 			while(subtaskItr.hasNext()){
@@ -91,22 +92,26 @@ public class SubtaskJob extends AbstractStatJob {
 				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
 				subtask.setGridIds(gridIds);
 				//获取相应的统计数据
-				Map<String, Object> subManTimeline = null;
+				Map<String, Object> subManTimelineStart = null;
+				Map<String, Object> subManTimelineEnd = null;
 				Map<String, Object> subDayPoiStat = null;
 				Map<String, Object> subTipsStat = null;
-				if(manTimeline.containsKey(subtaskId)){
-					subManTimeline = manTimeline.get(subtaskId);
+				if(manTimelineStart.containsKey(subtaskId)){
+					subManTimelineStart = manTimelineStart.get(subtaskId);
+				}
+				if(manTimelineEnd.containsKey(subtaskId)){
+					subManTimelineEnd = manTimelineEnd.get(subtaskId);
 				}
 				if(dayPoiStatData.containsKey(subtaskId)){
 					subDayPoiStat = dayPoiStatData.get(subtaskId);
 				}
-				if(subTipsStatData.containsKey(subtaskId)){
-					subTipsStat = subTipsStatData.get(subtaskId);
-				}
+//				if(subTipsStatData.containsKey(subtaskId)){
+//					subTipsStat = subTipsStatData.get(subtaskId);
+//				}
 				Map<String, Integer> subMonthPoiStat = handleMonthPoiStatData(subtask, monthPoiStatData);
 				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData);
 				//处理具体统计数据
-				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimeline,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
+				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
 				
 				subtaskStatList.add(subtaskMap);
 			}
@@ -339,35 +344,35 @@ public class SubtaskJob extends AbstractStatJob {
 	 * 查询mongo中subtask_tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String,Object>> getSubTipsStatData(String timestamp) throws Exception{
-		try {
-			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(subtask_tips, filter);
-			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
-			//处理数据
-			while(iterator.hasNext()){
-				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Object> subtask = new HashMap<String,Object>();
-						JSONObject jso = content.getJSONObject(i);
-						int subtaskId = (int) jso.get("subtaskId");
-						String firstCollectDate = (String) jso.get("firstCollectDate");
-						subtask.put("firstCollectDate", firstCollectDate);
-						stat.put(subtaskId, subtask);
-					}
-				}
-			}
-			return stat;
-		} catch (Exception e) {
-			log.error("查询mongo库中subtask_tips统计数据报错"+e.getMessage());
-			throw new Exception("查询mongo库中subtask_tips统计数据报错"+e.getMessage(),e);
-		}
-	}
+//	public Map<Integer,Map<String,Object>> getSubTipsStatData(String timestamp) throws Exception{
+//		try {
+//			MongoDao mongoDao = new MongoDao(dbName);
+//			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
+//			FindIterable<Document> findIterable = mongoDao.find(subtask_tips, filter);
+//			MongoCursor<Document> iterator = findIterable.iterator();
+//			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+//			//处理数据
+//			while(iterator.hasNext()){
+//				//获取统计数据
+//				JSONObject json = JSONObject.fromObject(iterator.next());
+//				if(json.containsKey("content")){
+//					JSONArray content = json.getJSONArray("content");
+//					for(int i=0;i<content.size();i++){
+//						Map<String,Object> subtask = new HashMap<String,Object>();
+//						JSONObject jso = content.getJSONObject(i);
+//						int subtaskId = (int) jso.get("subtaskId");
+//						String firstCollectDate = (String) jso.get("firstCollectDate");
+//						subtask.put("firstCollectDate", firstCollectDate);
+//						stat.put(subtaskId, subtask);
+//					}
+//				}
+//			}
+//			return stat;
+//		} catch (Exception e) {
+//			log.error("查询mongo库中subtask_tips统计数据报错"+e.getMessage());
+//			throw new Exception("查询mongo库中subtask_tips统计数据报错"+e.getMessage(),e);
+//		}
+//	}
 	
 	
 	/**
@@ -375,6 +380,7 @@ public class SubtaskJob extends AbstractStatJob {
 	 * @author Han Shaoming
 	 * @param subtask
 	 * @param subManTimeline 
+	 * @param subManTimelineEnd 
 	 * @param subDayPoiStat 
 	 * @param subMonthPoiStat 
 	 * @param tipsStat 
@@ -382,7 +388,7 @@ public class SubtaskJob extends AbstractStatJob {
 	 * @return
 	 * @throws ParseException
 	 */
-	public Map<String, Object> getSubtaskStat(Subtask subtask, Map<String, Object> subManTimeline, Map<String, Integer> tipsStat,
+	public Map<String, Object> getSubtaskStat(Subtask subtask, Map<String, Object> subManTimelineStart, Map<String, Object> subManTimelineEnd, Map<String, Integer> tipsStat,
 			Map<String, Integer> subMonthPoiStat, Map<String, Object> subDayPoiStat, Map<String, Object> subTipsStat) throws Exception{
 		
 		int subtaskId = 0;
@@ -450,8 +456,10 @@ public class SubtaskJob extends AbstractStatJob {
 				if(subDayPoiStat != null && subDayPoiStat.size() > 0){
 					firstCollectDate = (String) subDayPoiStat.get("firstCollectDate");
 				}
+				if(subManTimelineStart != null && subManTimelineStart.size() > 0){
+					tipsFirstCollectDate = (String) subManTimelineStart.get("operateDate");
+				}
 				if(subTipsStat != null && subTipsStat.size() > 0){
-					tipsFirstCollectDate = (String) subTipsStat.get("firstCollectDate");
 				}
 				//处理具体时间
 				if(StringUtils.isNotEmpty(firstCollectDate) && StringUtils.isEmpty(tipsFirstCollectDate)){
@@ -479,8 +487,8 @@ public class SubtaskJob extends AbstractStatJob {
 			//实际结束时间
 			if(subtask.getStatus() == 0){
 				actualEndDate = sdf.format(new Date());
-				if(subManTimeline != null && subManTimeline.size() > 0){
-					actualEndDate = (String) subManTimeline.get("operateDate");
+				if(subManTimelineEnd != null && subManTimelineEnd.size() > 0){
+					actualEndDate = (String) subManTimelineEnd.get("operateDate");
 				}
 			}
 			//距离计划结束时间天数
@@ -637,10 +645,5 @@ public class SubtaskJob extends AbstractStatJob {
 		}
 	}
 	
-	public static void main(String[] args) {
-		String timestamp = "20170802180000";
-		String lastTime = DateUtils.addSeconds(timestamp,-60*60);
-		System.out.println(lastTime);
-	}
 
 }

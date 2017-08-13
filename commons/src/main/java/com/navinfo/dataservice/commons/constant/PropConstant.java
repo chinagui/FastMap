@@ -54,6 +54,8 @@ public class PropConstant {
 	
 	public static final String uploadPath = "dropbox.upload.path";
 	
+	public static final String uploadPathCustom = "dropbox.upload.path.custom";
+	
 	public static final String downloadFilePathRoot="dropbox.download.filepath.root";
 	
 	public static final String downloadUrlPathRoot="dropbox.download.urlpath.root";

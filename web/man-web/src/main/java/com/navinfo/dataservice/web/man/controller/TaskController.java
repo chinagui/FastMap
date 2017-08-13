@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.web.man.controller;
 
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -701,13 +700,8 @@ public class TaskController extends BaseController {
 				throw new Exception("缺少taskId");
 			}
 			
-			SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String dateStr = dateformat.format(System.currentTimeMillis());
 			int taskId = dataJson.getInt("taskId");
-			log.info("initPlanData接口taskId:" + taskId + "开始执行数据规划初始化:" + dateStr);
 			Map<String, Integer> result = TaskService.getInstance().initPlanData(taskId);
-			String time2 = dateformat.format(System.currentTimeMillis());
-			log.info("initPlanData接口taskId:" + taskId + "行数据规划初始化全部执行完成:" + time2);
 			
 			return new ModelAndView("jsonView", success(result));
 		}catch(Exception e){
@@ -806,12 +800,8 @@ public class TaskController extends BaseController {
 				throw new Exception("缺少taskId");
 			}
 			
-			SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String dateStr = dateformat.format(System.currentTimeMillis());
-			log.info("save_plan开始执行数据规划保存接口："+dateStr);
 			TaskService.getInstance().savePlan(dataJson, userId);
-			String dateStr2 = dateformat.format(System.currentTimeMillis());
-			log.info("save_plan数据规划保存接口执行完成："+dateStr2);
+			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);

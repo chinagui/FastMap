@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,51 +235,25 @@ public class IxPoiSelector extends AbstractSelector {
 	 */
 	@SuppressWarnings("static-access")
 	public JSONObject downloadCheck(JSONObject gridDate) throws Exception {
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT count(1) num");
-		sb.append(" FROM ix_poi");
-		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
-		sb.append(" AND u_date>'" + gridDate.getString("date") + "'");
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			GridUtils gu = new GridUtils();
-			String wkt = gu.grid2Wkt(gridDate.getString("grid"));
-
-			pstmt.setString(1, wkt);
-			resultSet = pstmt.executeQuery();
-
-			int num = 0;
-			if (resultSet.next()) {
-				num = resultSet.getInt("num");
-			}
-
-			JSONObject ret = new JSONObject();
-
-			ret.put("gridId", gridDate.getString("grid"));
-			if (num > 0) {
-				ret.put("flag", 1);
-			} else {
-				ret.put("flag", 0);
-			}
-
-			return ret;
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-
-			DBUtils.closeResultSet(resultSet);
-
-			DBUtils.closeStatement(pstmt);
-		}
+		String gridId = gridDate.getString("grid");
+		String  increDownLoadDate = gridDate.getString("date");
+		LogReader logReader = new LogReader(conn);
+		Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", gridId, increDownLoadDate);
+		int poiSize = getChangedPoiCount(poiStatus);
+		JSONObject ret = new JSONObject();
+		ret.put("gridId", gridId);
+		ret.put("flag", poiSize==0?0:1);
+		return ret;
 	}
+
+	private int getChangedPoiCount(Map<Integer, Collection<Long>> poiStatus) {
+		int	poiSize=0;	
+		for(Collection<Long> c:poiStatus.values()){
+			if(c!=null)poiSize+=c.size();
+		}
+		return poiSize;
+	}
+
 
 	/**
 	 * 根据pid获取POI的rowId

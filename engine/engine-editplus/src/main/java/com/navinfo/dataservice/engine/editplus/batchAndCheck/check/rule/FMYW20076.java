@@ -86,7 +86,7 @@ public class FMYW20076 extends BasicCheckRule {
                 List<IRow> forms = link.getForms();
                 for (IRow row : forms) {
                     int formOfWay = ((RdLinkForm) row).getFormOfWay();
-                    if (formOfWay == 14 || formOfWay == 15 || formOfWay == 20 || formOfWay == 20 || formOfWay == 22 || formOfWay == 30
+                    if (formOfWay == 14 || formOfWay == 15 || formOfWay == 20  || formOfWay == 22 || formOfWay == 30
                             || formOfWay == 31 || formOfWay == 33 || formOfWay == 50 || formOfWay == 52) {
                         setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId(), String.format
                                 ("普通POI不能与%s关联，请修改", RdLinkFormUtils.formToChi(formOfWay)));

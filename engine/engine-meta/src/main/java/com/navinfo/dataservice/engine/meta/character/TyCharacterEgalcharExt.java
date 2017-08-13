@@ -31,9 +31,9 @@ public class TyCharacterEgalcharExt {
 	 * @throws Exception
 	 */
 	public Map<String, List<String>> getExtentionTypeMap() throws Exception{
-		if (extentionTypeMap==null||extentionTypeMap.isEmpty()) {
+		if (extentionTypeMap.isEmpty()) {
 				synchronized (this) {
-					if (extentionTypeMap==null||extentionTypeMap.isEmpty()) {
+					if (extentionTypeMap.isEmpty()) {
 						try {
 							String sql = "SELECT EXTENTION_TYPE, CHARACTER"
 									+ "  FROM TY_CHARACTER_EGALCHAR_EXT"

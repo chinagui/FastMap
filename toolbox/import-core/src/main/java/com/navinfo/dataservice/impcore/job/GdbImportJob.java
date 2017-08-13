@@ -52,6 +52,8 @@ public class GdbImportJob extends AbstractJob {
 				logSelector.setGrids(req.getGrids());
 			}else if("fullAndNonLock".equals(req.getImpType())){
 				logSelector = new FullAndNonLockSelector(logSchema);
+			}else{
+				throw new JobException("unsupported req.impType:"+req.getImpType());
 			}
 			String tempTable = logSelector.select();
 			response("履历选择完成",null);

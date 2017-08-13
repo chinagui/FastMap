@@ -41,18 +41,12 @@ public class PoiRelease {
 			JSONObject jobReq = new JSONObject();
 			jobReq.put("targetDbId", dbId);
 			jobReq.put("gridIds", gridIds);
-			//get poi all check rules
-			/*conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "SELECT WM_CONCAT(RULE_CODE) FROM CK_RULE_COP WHERE SUITE_ID='suite1'";
-			String rules = new QueryRunner().queryForString(conn, sql);
-			JSONArray ckRulesJA = new JSONArray();
-			if(StringUtils.isNotEmpty(rules)){
-				ckRulesJA.addAll(Arrays.asList(rules.split(",")));
-			}
-			
-			jobReq.put("checkRules", ckRulesJA);*/
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
+			Integer JobIdExe = apiService.getJobByUserAndSubTask(userId,subtaskId,"editPoiBaseRelease");
+			if(JobIdExe!=null ){
+				throw new Exception("你已经存在jobid="+JobIdExe+"的提交job，正在执行；无法重复提交！");
+			}
 			jobId = apiService.createJob("editPoiBaseRelease", jobReq, userId,subtaskId,
 					"POI行编提交");
 			return jobId;

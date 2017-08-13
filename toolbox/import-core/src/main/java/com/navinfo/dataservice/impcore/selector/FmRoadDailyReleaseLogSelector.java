@@ -49,9 +49,10 @@ public class FmRoadDailyReleaseLogSelector extends DeafultDailyReleaseLogSelecto
 		}
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,this.getGrids()," T.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}else{
 			sb .append(" AND T.GRID_ID in (null) ");
 		}

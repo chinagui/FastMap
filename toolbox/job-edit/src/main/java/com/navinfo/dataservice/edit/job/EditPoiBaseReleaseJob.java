@@ -75,7 +75,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			Map<String, Set<String>> tabNames=ObjHisLogParser.getChangeTableSet(logs);
 			log.info("EditPoiBaseReleaseJob:加载检查对象");
 			//获取poi对象			
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
 					poiPids, false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
@@ -86,7 +87,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//获取log
 			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
 			Map<String, Set<String>> sametabNames=ObjHisLogParser.getChangeTableSet(samelogs);
-			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
+			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
 					groupIds, false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);

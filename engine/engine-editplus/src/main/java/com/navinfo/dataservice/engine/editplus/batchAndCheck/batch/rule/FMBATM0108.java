@@ -106,7 +106,7 @@ public class FMBATM0108 extends BasicBatchRule {
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
 		//POI新增或引导link为0
 		if(poi.getHisOpType().equals(OperationType.INSERT)){return true;}
-		if(Integer.valueOf(0).equals(poi.getLinkPid())){return true;}
+		if(Long.valueOf(0).equals(poi.getLinkPid())){return true;}
 		if(NotInRdLink.contains(poi.getPid())){return true;}
 		//修改引导坐标
 		if(poi.hisOldValueContains(IxPoi.X_GUIDE)||poi.hisOldValueContains(IxPoi.Y_GUIDE)){

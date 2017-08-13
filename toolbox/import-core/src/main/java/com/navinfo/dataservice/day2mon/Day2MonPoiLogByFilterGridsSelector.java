@@ -222,9 +222,10 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 		List<Object> values = new ArrayList<Object> ();
 		if(filterGrids!=null&&filterGrids.size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,filterGrids," g.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		sb.append(" )");
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);

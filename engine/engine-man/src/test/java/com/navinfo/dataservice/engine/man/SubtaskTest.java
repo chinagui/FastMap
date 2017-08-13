@@ -54,8 +54,9 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
-		String parameter ="{\"lineWkt\":\"LINESTRING(115.9964 40.37375,116.04309 40.24704,116.33148 40.15579)\"}"; 
+		String parameter ="{\"id1\":601,\"lineWkt\":\"LINESTRING(116.39915 39.89992,116.39825 39.89959,116.39727 39.89921,116.39714 39.89915,116.39697 39.89916)\"}"; 
+		//String parameter ="{\"id1\":602,\"lineWkt\":\"LINESTRING(116.39462 39.89913,116.39573 39.89922,116.3969 39.89918,116.39707 39.89915,116.39729 39.89915)\"}"; 
+		//String parameter ="{\"lineWkt\":\"LINESTRING(115.9964 40.37375,116.04309 40.24704,116.33148 40.15579)\"}"; 
 		//String parameter ="{\"id1\":372,\"id2\":375}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -65,7 +66,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=37;
+		int taskId=77;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}

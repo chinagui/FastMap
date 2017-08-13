@@ -1488,9 +1488,9 @@ public class DataEditService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			for (Connection value : mapConn.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw e;
 		}finally {

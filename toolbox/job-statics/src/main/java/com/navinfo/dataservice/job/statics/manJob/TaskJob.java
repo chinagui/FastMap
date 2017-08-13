@@ -122,7 +122,7 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "task";
-			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName);
+			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName,0);
 			//查询mongo中task_grid_tips相应的统计数据
 			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
 			//查询mongo中task_day_poi相应的统计数据

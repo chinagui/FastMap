@@ -4364,12 +4364,13 @@ public class TaskService {
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
-					//把不满足条件的数据状态更新为不需要作业
+					log.info("把不满足条件的数据状态更新为不需要作业");
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
-					//日库中的dataPlan更新数据
+					log.info("start 日库中的dataPlan更新数据");
 					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
-					
+					log.info("end 日库中的dataPlan更新数据");
 					if(dataType == 1 || dataType == 3){
+						log.info("更改置信度");
 						int minCount = condition.getInt("poiMultiMinCount");
 						int maxCount = condition.getInt("poiMultiMaxCount");
 						//元数据库中的pid，也需要更新到data_plan表中
@@ -4378,6 +4379,7 @@ public class TaskService {
 						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					}
 					//保存到taskPrograss表
+					log.info("保存条件到taskPrograss表");
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
@@ -4662,8 +4664,8 @@ public class TaskService {
 				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
-					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
+					poiSb.append("select 1 from IX_POI t where d.pid = t.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4677,8 +4679,8 @@ public class TaskService {
 				//更新road
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
-					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
+					linkSb.append("select 1 from RD_LINK r where d.pid = r.link_pid and r.u_record!=2 and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");
@@ -4710,17 +4712,17 @@ public class TaskService {
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i < reliabilityPid.size(); i++){
 					sb.append(reliabilityPid.get(i)+",");
-				}
-				
+				}				
 				String pids = sb.deleteCharAt(sb.length() - 1).toString();
-				String parameter = "d.pid";
-				if(reliabilityPid.size() > 900){
-					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
-				}
 				
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, pids);
+				
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 "
+						+ "where d.pid in (select to_number(column_value) from table(clob_to_table(?))) "
+						+ "and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
-				run.execute(conn, sql);
+				run.update(conn, sql,clob);
 			}catch(Exception e){
 				throw e;
 			}

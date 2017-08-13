@@ -1,14 +1,13 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.List;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by chaixin on 2017/1/19 0019.
@@ -19,7 +18,7 @@ public class CheckFaceMustComposedByClosedlink extends baseRule {
         for (IRow linkRow : checkCommand.getGlmList()) {
             if (linkRow instanceof ZoneLink) {
                 ZoneLink link = (ZoneLink) linkRow;
-                if (!link.status().equals(OperType.UPDATE)) continue;
+                if (!link.status().equals(ObjStatus.UPDATE)) continue;
                 if (!link.changedFields().containsKey("sNodePid") || !link.changedFields().containsKey("eNodePid"))
                     continue;
 

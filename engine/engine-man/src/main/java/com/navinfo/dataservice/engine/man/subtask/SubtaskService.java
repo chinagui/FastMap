@@ -620,7 +620,7 @@ public class SubtaskService {
 			if(newSubtask.getExeUserId()!=0&&newSubtask.getExeUserId()!=oldSubtask.getExeUserId()){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
-				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality().intValue()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
 			if(newSubtask.getExeGroupId()!=0&&newSubtask.getExeGroupId()!=oldSubtask.getExeGroupId()){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());

@@ -287,7 +287,8 @@ public class LogReader {
 		String tb_num=null;
 		String fd_lst=null;
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM='IX_POI_PHOTO' OR (de.TB_NM='IX_POI' AND  instr(de.FD_LST,'POI_MEMO')>0)) ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM='IX_POI_PHOTO' OR (de.TB_NM='IX_POI' AND  instr(de.FD_LST,'POI_MEMO')>0)) "
+				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI'))";
 
 		PreparedStatement pstmt = null;
 
@@ -1024,7 +1025,7 @@ public class LogReader {
 //		System.out.println(new Date());
 //		System.out.println(new Date());
 //		String objTable = "IX_POI";
-		int objPid = 55008520 ;
+		int objPid = 6058564 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
 //		List<Long> pidList = new ArrayList<Long>();
 //		pidList.add(505000108L);
@@ -1040,6 +1041,8 @@ public class LogReader {
 //		System.out.println(updatePids);
 //		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
 //		System.out.println(poiNumBySubtaskId);
-		System.out.println(new LogReader(con).isExistObjHis(objPid));
+		LogReader l=new LogReader(con);
+		System.out.println(l.isExistObjHis(objPid));
+		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
 	}
 }

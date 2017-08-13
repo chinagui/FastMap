@@ -24,7 +24,6 @@ import com.navinfo.dataservice.engine.man.log.ManLogOperation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.net.aso.e;
 import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;

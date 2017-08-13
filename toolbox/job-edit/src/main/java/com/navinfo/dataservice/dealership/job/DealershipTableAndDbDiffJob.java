@@ -420,9 +420,6 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			}
 			throw new SQLException("加载region失败：" + e.getMessage(), e);
 		}finally {
-			for (Connection value : mapConn.values()) {
-				DbUtils.commitAndCloseQuietly(value);
-			}
 			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 	}

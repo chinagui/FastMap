@@ -65,7 +65,7 @@ public class FMBATM0108 extends BasicBatchRule {
 			if(!isBatch(poiObj)){return;}
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			JSONObject linkInfo=poiInfo.get(poi.getPid());
-			if(linkInfo==null&&linkInfo.isEmpty()){
+			if(linkInfo==null||linkInfo.isEmpty()){
 				if(poi.getLinkPid()!=0){
 					poi.setLinkPid(0);
 				}

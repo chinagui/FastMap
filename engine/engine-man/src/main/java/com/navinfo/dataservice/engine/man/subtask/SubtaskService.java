@@ -3205,11 +3205,11 @@ public class SubtaskService {
 						boolean isChange=false;
 						for (int i = coordinates.size() - 1; i >= 1; i--) {
 							newLineCors.add(coordinates.get(i));
-			                if (GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p1,0.0000001)) {
+			                if (!p1.equals(coordinates.get(i))&&!p1.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p1,0.0000001)) {
 			                	newLineCors.add(p1);
 			                	isChange=true;
 			                }
-			                if (GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p2,0.0000001)) {
+			                if (!p2.equals(coordinates.get(i))&&!p2.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p2,0.0000001)) {
 			                	newLineCors.add(p2);
 			                	isChange=true;
 			                }

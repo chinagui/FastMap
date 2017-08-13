@@ -126,14 +126,14 @@ public class TimelineService {
      * @return Map<Long,Map<String, Object>> key:objId
      * @throws ServiceException
      */
-    public static Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception {
+    public static Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             QueryRunner queryRunner = new QueryRunner();
             //查询数据
-            String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_TYPE = ? ORDER BY OBJ_ID,OPERATE_DATE";
-            Object[] params = {objName};
+            String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_TYPE = ? AND OPERATE_TYPE = ? ORDER BY OBJ_ID,OPERATE_DATE ";
+            Object[] params = {objName,operateType};
             //处理结果集
             ResultSetHandler<Map<Integer,Map<String, Object>>> rsh = new ResultSetHandler<Map<Integer,Map<String, Object>>>() {
 
@@ -146,6 +146,7 @@ public class TimelineService {
                         int objId = rs.getInt("OBJ_ID");
                         map.put("objId", objId);
                         map.put("objType", rs.getString("OBJ_TYPE"));
+                        map.put("operateType", rs.getInt("OPERATE_TYPE"));
                         map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
                         data.put(objId, map);
                     }

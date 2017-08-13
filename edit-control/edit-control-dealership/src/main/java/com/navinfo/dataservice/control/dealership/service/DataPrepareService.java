@@ -1218,9 +1218,9 @@ public class DataPrepareService {
 			return ClientConfirmResultList;
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			for (Connection value : mapConn.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw e;
 		}finally {
@@ -1769,7 +1769,7 @@ public class DataPrepareService {
 			}
 		} catch (Exception e) {
 			for (Connection value : dbConMap.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw new Exception(e);
 		} finally {
@@ -1916,27 +1916,28 @@ public class DataPrepareService {
 	}
 
 	public Map<Integer, Connection> queryAllRegionConn() throws Exception {
-		Map MapConn = new HashMap();
-		try {
-			String sql = "select t.daily_db_id,region_id from region t";
+		Map<Integer,Connection> MapConn = new HashMap<Integer, Connection>();
+		String sql = "select t.daily_db_id,region_id from region t";
 
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			Connection conn = null;
-			try {
-				conn = DBConnector.getInstance().getManConnection();
-				pstmt = conn.prepareStatement(sql);
-				rs = pstmt.executeQuery();
-				while (rs.next()) {
-					Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
-					MapConn.put(rs.getInt("region_id"), regionConn);
-				}
-				return MapConn;
-			} finally {
-				DbUtils.closeQuietly(conn, pstmt, rs);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
+				MapConn.put(rs.getInt("region_id"), regionConn);
 			}
+			return MapConn;
 		} catch (Exception e) {
-			throw new Exception("加载region失败：" + e.getMessage(), e);
+			for (Connection value : MapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
+			throw new SQLException("加载region失败：" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 	}
 	

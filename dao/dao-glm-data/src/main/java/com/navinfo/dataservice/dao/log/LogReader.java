@@ -10,9 +10,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,12 +27,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -44,9 +41,20 @@ public class LogReader {
 
 	private Connection conn;
 
+	 @SuppressWarnings("serial")
+	private final static List<String> filterFdList = new ArrayList<String>(){{
+	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");
+	    }};
+	    @SuppressWarnings("serial")
+	    private final static List<String> filterMoFdList = new ArrayList<String>(){{
+	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");add("\"POI_MEMO\"");
+	    }};
+
 	public LogReader(Connection conn) {
 		this.conn = conn;
 	}
+	
+	
 
 	/**
 	 * 根据条件查询
@@ -276,9 +284,11 @@ public class LogReader {
 	 * @throws Exception
 	 */
 	public boolean isOnlyPhotoAndMetoHis(int objPid) throws Exception {
-
+		String tb_num=null;
+		String fd_lst=null;
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_MEMO')=0)) ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM='IX_POI_PHOTO' OR (de.TB_NM='IX_POI' AND  instr(de.FD_LST,'POI_MEMO')>0)) "
+				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI'))";
 
 		PreparedStatement pstmt = null;
 
@@ -288,15 +298,24 @@ public class LogReader {
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
-				return false;
-			} 
-			return true;
+				tb_num=resultSet.getString("tb_nm");
+				fd_lst=resultSet.getString("fd_lst");
+				boolean flag=true;
+				if ("IX_POI".equals(tb_num)){
+					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
+					 for(int j= 0 ; j<arrFd.length;j++){ 
+			            	if (!filterFdList.contains(arrFd[j])&& !"\"POI_MEMO\"".equals(arrFd[j]))
+			            	{ flag=false;break;}
+			            }  
+			    }
+				return flag;
+	      }
+			return false;
 		} catch (Exception e) {
 
 			throw e;
 
 		} finally {
-
 			DBUtils.closeResultSet(resultSet);
 
 			DBUtils.closeStatement(pstmt);
@@ -312,19 +331,31 @@ public class LogReader {
 	 * @throws Exception
 	 */
 	public boolean isExistObjHis(int objPid) throws Exception {
+		String tb_num=null;
+		String fd_lst=null;
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1  ";
-
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1";
+		
 		PreparedStatement pstmt = null;
-
 		ResultSet resultSet = null;
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
-				return true;
+				tb_num=resultSet.getString("tb_nm");
+				fd_lst=resultSet.getString("fd_lst");
+				if ("IX_POI".equals(tb_num)){
+					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
+					  for(int j= 0 ; j<arrFd.length;j++){
+			            	if (!filterFdList.contains(arrFd[j]))
+			            	{ return true;}
+			            }  
+				}else{
+					return true;
+				}
+				
 			} 
 			return false;
 		} catch (Exception e) {
@@ -982,33 +1013,36 @@ public class LogReader {
 
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1");
+				"regiondb_bvt_d_1", "regiondb_bvt_d_1");
 //		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
-		System.out.println(new Date());
-		String objName = "IX_POI";
-		String mainTabName = "IX_POI";
-		Collection<String> grids = null;
-		String startDate = "201707200000";
-		String endDate = "201707230000";
+//		System.out.println(new Date());
+//		String objName = "IX_POI";
+//		String mainTabName = "IX_POI";
+//		Collection<String> grids = null;
+//		String startDate = "201707200000";
+//		String endDate = "201707230000";
 //		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate);
-		System.out.println(new Date());
-		System.out.println(new Date());
-		String objTable = "IX_POI";
-		int objPid = 505000108 ;
+//		System.out.println(new Date());
+//		System.out.println(new Date());
+//		String objTable = "IX_POI";
+		int objPid = 6058564 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
-		List<Long> pidList = new ArrayList<Long>();
-		pidList.add(505000108L);
-		pidList.add(408000133L);
-		Map<Long, List<Map<String, Object>>> list = new LogReader(con).getLogByPid(objTable, pidList);
-		System.out.println(new Date());
-		System.out.println(list.toString());
+//		List<Long> pidList = new ArrayList<Long>();
+//		pidList.add(505000108L);
+//		pidList.add(408000133L);
+//		Map<Long, List<Map<String, Object>>> list = new LogReader(con).getLogByPid(objTable, pidList);
+//		System.out.println(new Date());
+//		System.out.println(list.toString());
 		//判断是否为充电站
 //		Collection<Long> updatedObjByPids = new LogReader(con).getUpdatedObjByPids(objName, pidList, startDate, endDate);
 //		System.out.println(updatedObjByPids);
 		
 //		Map<Integer,Collection<Long>> updatePids = new LogReader(con).getUpdatedObj(objName, mainTabName, null, "20170722150910", "20170723230000");
 //		System.out.println(updatePids);
-		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
-		System.out.println(poiNumBySubtaskId);
+//		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
+//		System.out.println(poiNumBySubtaskId);
+		LogReader l=new LogReader(con);
+		System.out.println(l.isExistObjHis(objPid));
+		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
 	}
 }

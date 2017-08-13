@@ -281,7 +281,7 @@ public interface ManApi{
 	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception;
 	
 	/**
 	 * timestamp:yyyymmdd

@@ -1263,7 +1263,7 @@ public class GeoTranslator {
 				continue;
 			}
 			//不是第一个点，判断交点是否在两点中间
-			if(isIntersection(coorBefore, linePoint, coord)){
+			if(!coord.equals(coorBefore)&&isIntersection(coorBefore, linePoint, coord)){
 				tmpLine.add(coord);
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;

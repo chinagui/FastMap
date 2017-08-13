@@ -241,16 +241,17 @@ public class IxPoiSelector extends AbstractSelector {
 		Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", gridId, increDownLoadDate);
 		JSONObject ret = new JSONObject();
 		ret.put("gridId", gridId);
-		ret.put("flag", getChangedPoiCount(poiStatus)==0?0:1);
+		ret.put("flag", getChangedPoiCount(poiStatus)?1:0);
 		return ret;
 	}
 
-	private int getChangedPoiCount(Map<Integer, Collection<Long>> poiStatus) {
-		int	poiSize=0;	
+	private boolean getChangedPoiCount(Map<Integer, Collection<Long>> poiStatus) {
 		for(Collection<Long> c:poiStatus.values()){
-			if(c!=null)poiSize+=c.size();
+			if(c != null && c.size() > 0){
+				return true;
+			}
 		}
-		return poiSize;
+		return false;
 	}
 
 

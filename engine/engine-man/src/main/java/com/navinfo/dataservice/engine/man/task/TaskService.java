@@ -2347,8 +2347,8 @@ public class TaskService {
 			map.put("roadPlanOut", task.getRoadPlanOut());
 			map.put("poiPlanIn", task.getPoiPlanIn());
 			map.put("poiPlanOut", task.getPoiPlanOut());
-//			map.put("poiPlanTotal", task.getPoiPlanTotal());
-//			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			map.put("poiPlanTotal", task.getPoiPlanTotal());
+			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
@@ -3848,13 +3848,17 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			StringBuffer sb = new StringBuffer();
 			
-			String programId = json.getString("programId");
+			//String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name from TASK t where ");//t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
+			sb.append(" t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
 			sb.append(" and t.type = 0 ");
+			
+			if(json.containsKey("programId")){
+				sb.append(" and t.program_id = "+json.getString("programId"));
+			}
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){

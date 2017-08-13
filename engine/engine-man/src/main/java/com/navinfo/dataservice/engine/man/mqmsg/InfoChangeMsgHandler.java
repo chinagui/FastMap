@@ -31,11 +31,13 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
+import com.navinfo.dataservice.engine.man.log.ManLogOperation;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
@@ -97,10 +99,15 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			StringBuilder logs = new StringBuilder();
+			logs.append(e.getMessage());
+			logs.append(";infor=");
+			logs.append(message);
+			ManLogOperation.insertLog("inforCreate", logs.toString());
 			throw e;
 		} finally {
 			log.info("end infor:"+message);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn);				
 		}
 	}
 	

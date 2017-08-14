@@ -80,7 +80,7 @@ public class TimelineService {
 	 * @return Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public static Map<String, Object> queryTimelineByCondition(int objId,
+	public static Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
                                                                              String objType, int operateType) throws Exception {
 		Connection conn = null;
 		try {
@@ -91,22 +91,24 @@ public class TimelineService {
                     " ORDER BY OBJ_ID,OPERATE_DATE";
 			Object[] params = {objId, objType, operateType};
 			//处理结果集
-			ResultSetHandler<Map<String, Object>> rsh = new ResultSetHandler<Map<String, Object>>() {
+			ResultSetHandler<Map<Integer,Map<String, Object>>> rsh = new ResultSetHandler<Map<Integer,Map<String, Object>>>() {
 				
 				@Override
-				public Map<String, Object> handle(ResultSet rs) throws SQLException {
-                    Map<String, Object> map = new HashMap<String, Object>();
+				public Map<Integer,Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Map<String, Object>> data = new HashMap<Integer,Map<String, Object>>();
 					//处理数据
-					if(rs.next()){
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
 						int objId = rs.getInt("OBJ_ID");
 						map.put("objId", objId);
 						map.put("objType", rs.getString("OBJ_TYPE"));
 						map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+						data.put(objId, map);
 					}
-					return map;
+					return data;
 				}
 			};
-            Map<String, Object> result = queryRunner.query(conn, sql, rsh, params);
+			Map<Integer,Map<String, Object>> result = queryRunner.query(conn, sql, rsh, params);
 			//返回数据
 			return result;
 		} catch (Exception e) {

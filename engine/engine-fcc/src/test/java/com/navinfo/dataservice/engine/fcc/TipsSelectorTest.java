@@ -525,7 +525,7 @@ public class TipsSelectorTest extends InitApplication {
 
 	@Test
 	public void testImport() {
-		String parameter = "{\"jobId\":333,\"subtaskId\":807}";
+		String parameter = "{\"jobId\":74,\"subtaskId\":772}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);

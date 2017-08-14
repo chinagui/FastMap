@@ -171,7 +171,7 @@ public class TipsUpload {
 					s_qSubTaskId = 0;
 
                     //只查中线子任务的第一采集时间
-                    Map<Integer,Map<String, Object>> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
                     if(timelineMap == null || timelineMap.size() == 0) {
                         isInsertFirstTime = true;
                     }
@@ -268,7 +268,7 @@ public class TipsUpload {
 			importRoadNameToMeta();
 
             //中线子任务第一采集时间
-            if(StringUtils.isNotEmpty(firstCollectTime)) {
+            if(StringUtils.isNotEmpty(firstCollectTime) && total-failed > 0) {
                 ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
                 manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
             }
@@ -735,7 +735,11 @@ public class TipsUpload {
 		JSONObject trackOld = oldTip.getJSONObject("track");
 		int tCommandOld = trackOld.getInt("t_command");
 
-		String mdb5Old = MD5Utils.md5(g_locationOld + g_guideOld + deepOld + feedbackOld + tCommandOld);
+        Geometry g_locationOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationOld));
+        String g_locationOldWkt = GeoTranslator.jts2Wkt(g_locationOldGeo);
+        Geometry g_guideOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideOld));
+        String g_guideOldWkt = GeoTranslator.jts2Wkt(g_guideOldGeo);
+		String mdb5Old = MD5Utils.md5(g_locationOldWkt + g_guideOldWkt + deepOld + feedbackOld + tCommandOld);
 
 		// new
 		String g_locationNew = json.getString("g_location");
@@ -745,8 +749,11 @@ public class TipsUpload {
 
 		// JSONObject trackNew=json.getJSONObject("track");
 		int tCommandNew = json.getInt("t_command");
-
-		String mdb5New = MD5Utils.md5(g_locationNew + g_guideNew + deepNew + feedbackNew + tCommandNew);
+        Geometry g_locationNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationNew));
+        String g_locationNewWkt = GeoTranslator.jts2Wkt(g_locationNewGeo);
+        Geometry g_guideNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideNew));
+        String g_guideNewWkt = GeoTranslator.jts2Wkt(g_guideNewGeo);
+		String mdb5New = MD5Utils.md5(g_locationNewWkt + g_guideNewWkt + deepNew + feedbackNew + tCommandNew);
 
 		if (mdb5Old.equals(mdb5New)) {
 			return true;
@@ -1106,6 +1113,7 @@ public class TipsUpload {
 		java.sql.Connection oracleConn = null;
         java.sql.Connection regionDBConn = null;
 		try {
+            String firstCollectTime = "";
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
                 List<FieldRoadQCRecord> records = loadQualityContent(fileName);
 
@@ -1129,6 +1137,13 @@ public class TipsUpload {
                     userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
                     version = (String) subTaskMap.get("version");
                     startDate = (String) subTaskMap.get("planStartDate");
+
+                    //查询质检子任务对应的常规子任务的第一采集时间
+                    int collectSubTaskId = (Integer) subTaskMap.get("collectSubTaskId");
+                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(collectSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                    if(timelineMap != null && timelineMap.size() > 0) {
+                        firstCollectTime = (String)timelineMap.get("operateDate");
+                    }
                 }catch (Exception e) {
                     qcErrMsg = "质检子任务" + subTaskId + "信息不完整";
                     e.printStackTrace();
@@ -1207,7 +1222,7 @@ public class TipsUpload {
 						String collecorUserId = this.getCollectUserId(operator, record.getLink_pid(), userId, htab);
 						insertPstmt.setString(27, collecorUserId);
 						// 读取常规采集子任务的date
-						insertPstmt.setString(28, startDate);
+						insertPstmt.setString(28, firstCollectTime);
 						insertPstmt.setString(29, "外业采集部");
 						insertPstmt.setInt(30, subtask.getQualityMethod());
 						insertPstmt.setString(31, record.getCheck_time());

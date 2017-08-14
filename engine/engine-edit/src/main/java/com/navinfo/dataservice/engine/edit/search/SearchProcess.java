@@ -18,6 +18,7 @@ import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -84,6 +85,8 @@ public class SearchProcess {
 	}
 
 	private int dbId;
+	private int z;
+	private int taskId;
 
 	public int getDbId() {
 		return dbId;
@@ -327,8 +330,8 @@ public class SearchProcess {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年7月4日 上午10:30:49
 	 */
-	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
-			int y, int z, int gap, int taskId) throws Exception {
+	public JSONObject searchDataByTileWithGapForMan(List<ObjType> types, int x,
+			int y, int z, int gap) throws Exception {
 		JSONObject json = new JSONObject();
 
 		try {
@@ -350,15 +353,29 @@ public class SearchProcess {
 							}
 						}
 						List<SearchSnapshot> list = null;
-						if (type == ObjType.IXPOI) {
-							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-							list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
-									gap, taskId);
-						} else if (type == ObjType.RDLINK) {
-							RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-							list = rdLinkSearch.searchDataByTileWithGap(x, y,
-									z, gap, taskId);
+						
+						if(z <= 14){
+							if (type == ObjType.IXPOI) {
+								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+								list = ixPoiSearch.searchDataByTileWithGapSnapshot(x, y, z,
+										gap, taskId);
+							} else if (type == ObjType.RDLINK) {
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
+								list = rdLinkSearch.searchDataByTileWithGapSnapshot(x, y,
+										z, gap, taskId);
+							}
+						}else{
+							if (type == ObjType.IXPOI) {
+								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+								list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
+										gap, taskId);
+							} else if (type == ObjType.RDLINK) {
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
+								list = rdLinkSearch.searchDataByTileWithGap(x, y,
+										z, gap, taskId);
+							}
 						}
+						
 						for (SearchSnapshot snapshot : list) {
 							snapshot.setDbId(dbId);
 						}
@@ -384,13 +401,7 @@ public class SearchProcess {
 					throw e;
 
 				} finally {
-					if (conn != null) {
-						try {
-							conn.close();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
+					DbUtils.closeQuietly(conn);
 				}
 			}
 			for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
@@ -1126,4 +1137,20 @@ public class SearchProcess {
 		 * 
 		 * } System.out.println(json);
 		 */}
+
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(int z) {
+		this.z = z;
+	}
+
+	public int getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(int taskId) {
+		this.taskId = taskId;
+	}
 }

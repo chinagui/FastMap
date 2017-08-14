@@ -3312,6 +3312,8 @@ public class SubtaskService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			logs.append(";error=");
+			logs.append(e.getMessage());
 			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -3894,40 +3896,40 @@ public class SubtaskService {
 	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			String sql="SELECT G.GROUP_NAME,"
-					+ "       C.PROVINCE_NAME,"
-					+ "       C.CITY_NAME,"
-					+ "       S.EXE_USER_ID,"
-					+ "       QS.QUALITY_METHOD,s.plan_start_date"
-					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
-					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
-					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
-					+ "   AND QS.TASK_ID = T.TASK_ID"
-					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "   AND P.CITY_ID = C.CITY_ID"
-					+ "   AND T.GROUP_ID = G.GROUP_ID";
-			QueryRunner run=new QueryRunner();
-			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+            conn = DBConnector.getInstance().getManConnection();
+            String sql="SELECT G.GROUP_NAME,"
+                    + "       C.PROVINCE_NAME,"
+                    + "       C.CITY_NAME,"
+                    + "       S.EXE_USER_ID,"
+                    + "       QS.QUALITY_METHOD,S.PLAN_START_DATE,S.SUBTASK_ID"
+                    + "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+                    + " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
+                    + "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
+                    + "   AND QS.TASK_ID = T.TASK_ID"
+                    + "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+                    + "   AND P.CITY_ID = C.CITY_ID"
+                    + "   AND T.GROUP_ID = G.GROUP_ID";
+            QueryRunner run=new QueryRunner();
+            return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
 
-				@Override
-				public Map<String, Object> handle(ResultSet rs) throws SQLException {
-					if(rs.next()){
-						Map<String, Object> returnObj=new HashMap<String, Object>();
-						returnObj.put("groupName", rs.getString("GROUP_NAME"));
-						returnObj.put("province", rs.getString("PROVINCE_NAME"));
-						returnObj.put("city", rs.getString("CITY_NAME"));
-						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
-						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
-						SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-						returnObj.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
-						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-						return returnObj;
-					}
-					return null;
-				}
-				
-			});
+                @Override
+                public Map<String, Object> handle(ResultSet rs) throws SQLException {
+                    if(rs.next()){
+                        Map<String, Object> returnObj=new HashMap<String, Object>();
+                        returnObj.put("groupName", rs.getString("GROUP_NAME"));
+                        returnObj.put("province", rs.getString("PROVINCE_NAME"));
+                        returnObj.put("city", rs.getString("CITY_NAME"));
+                        returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
+                        returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+                        returnObj.put("planStartDate", DateUtils.formatDate(rs.getTimestamp("PLAN_START_DATE")));
+                        returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+                        returnObj.put("collectSubTaskId", rs.getInt("SUBTASK_ID"));
+                        return returnObj;
+                    }
+                    return null;
+                }
+
+            });
 		}catch(Exception e){
 			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -53,11 +53,12 @@ public class PoiController extends BaseController {
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
+			String beginTime = DateUtils.getSysDateFormat();
 			UploadResult result = PoiServiceNew.getInstance().upload(jobId, subtaskId, userId);
 			
 			//记录上传日志。不抛出异常
             insertStatisticsInfoNoException(jobId, subtaskId, userId,
-            		result);
+            		result,beginTime);
 			
 			return new ModelAndView("jsonView", success(result));
 		}catch(Exception e){
@@ -78,7 +79,7 @@ public class PoiController extends BaseController {
 	 * @date 2017年8月10日 下午12:29:41 
 	 */
 	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
-			long userId, UploadResult result)  {
+			long userId, UploadResult result,String beginTime)  {
 		try{
 			SysLogStats log = new SysLogStats();
 			log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
@@ -86,7 +87,7 @@ public class PoiController extends BaseController {
 			log.setFailureTotal(result.getTotal()-result.getSuccess());
 			log.setSuccessTotal(result.getSuccess());  
 			log.setTotal(result.getTotal());
-			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setBeginTime(beginTime);
 			log.setEndTime(DateUtils.getSysDateFormat());
 			JSONArray jsonArrFail = JSONArray.fromObject(result.getFail());
 			log.setErrorMsg(jsonArrFail.toString());

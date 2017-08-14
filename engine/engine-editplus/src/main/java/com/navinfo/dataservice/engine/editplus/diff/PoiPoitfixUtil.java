@@ -35,8 +35,8 @@ public static boolean checkName(String s1,String s2)
 	value1=getIndex(s1);
 	value2=getIndex(s2);
 	if(value1==-1L||value2==-1L)
-	return true;
-	return value1==value2;
+		return true;
+	return value1.equals(value2);
 }
 	
 	public static void main(String[] args) {

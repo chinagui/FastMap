@@ -106,9 +106,10 @@ public class Day2MonPoiLogByTaskIdSelector extends DefaultLogSelector{
 				List<Object> values = new ArrayList<Object> ();
 				if(grids!=null&&grids.size()>0){
 					SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," g.GRID_ID ");
-					if (inClause!=null)
+					if (inClause!=null){
 						sb .append(" AND "+ inClause.getSql());
-					values.addAll(inClause.getValues());
+						values.addAll(inClause.getValues());
+					}
 				}
 				sb.append(" )\r\n");
 				SqlClause sqlClause = new SqlClause(sb.toString(),values);
@@ -151,9 +152,10 @@ public class Day2MonPoiLogByTaskIdSelector extends DefaultLogSelector{
 		List<Object> values = new ArrayList<Object> ();
 		if(grids!=null&&grids.size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," g.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		return sqlClause;

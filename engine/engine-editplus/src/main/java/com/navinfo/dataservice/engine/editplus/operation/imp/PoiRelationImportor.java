@@ -358,7 +358,7 @@ public class PoiRelationImportor extends AbstractOperation{
 						}
 						//没有加载到父对象，则不维护该父子关系
 						errLog.put(emptyFidPid.toString(), "无法根据POI PID:"+emptyFidPid +" 找到poi对象");
-						pidSamePoiPid.remove(sameFidPid.get(emptyFidPid));
+						pidSamePoiPid.remove(Long.valueOf(sameFidPid.get(emptyFidPid)));
 					}
 				}
 				//加载 ix_samepoi 

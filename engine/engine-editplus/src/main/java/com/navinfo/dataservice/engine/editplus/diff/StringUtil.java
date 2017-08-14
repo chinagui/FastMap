@@ -50,7 +50,7 @@ public class StringUtil {
 	public static String contactFormat(String contact){
 		if(!"".equals(contact) && null != contact){
 			StringBuffer str = new StringBuffer();
-			String[] split = contact.split("|");
+			String[] split = contact.split("\\|");
 			for(String temp :split){
 				if(temp.indexOf("-") == -1 && temp.length() == 11){//手机
 					temp = "0086-"+temp+"-";

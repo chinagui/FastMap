@@ -202,7 +202,7 @@ public class ComputeCityBlockByJson {
 
 	private void computeBlocks()throws Exception{
 		blocks = new ArrayList<Block>();
-		if(cityBlockMap==null&&cityBlockMap.size()==0){
+		if(cityBlockMap==null||cityBlockMap.size()==0){
 			System.out.println("city is empty. Do nothing.");
 			return;
 		}

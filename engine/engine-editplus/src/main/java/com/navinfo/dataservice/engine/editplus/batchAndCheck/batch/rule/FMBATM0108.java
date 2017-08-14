@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,10 +12,14 @@ import java.util.Set;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.utils.AdFaceSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -61,7 +66,12 @@ public class FMBATM0108 extends BasicBatchRule {
 			JSONObject linkInfo = poiInfo.get(poi.getPid());
 			if (linkInfo == null || linkInfo.isEmpty()) {
 				if (poi.getLinkPid() != 0) {
-					poi.semeshId = linkInfo.getInt("MESH_ID");
+					poi.setLinkPid(0);
+				}
+			} else {
+				long linkPid = linkInfo.getLong("LINK_PID");
+				Geometry geom = GeoTranslator.wkt2Geometry(linkInfo.getString("RD_GEOMETRY"));
+				int meshId = linkInfo.getInt("MESH_ID");
 				Coordinate nearestPoint = GeometryUtils.GetNearestPointOnLine(poi.getGeometry().getCoordinate(), geom);
 				Geometry tmpPoint = new GeometryFactory().createPoint(nearestPoint);
 				int side = GeometryUtils.calulatPointSideOflink(poi.getGeometry(), geom, tmpPoint, true);
@@ -92,7 +102,6 @@ public class FMBATM0108 extends BasicBatchRule {
 	 * @param poiObj
 	 * @return
 	 */
-
 	private boolean isBatch(IxPoiObj poiObj) {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 		// POI新增或引导link为0
@@ -110,13 +119,6 @@ public class FMBATM0108 extends BasicBatchRule {
 			String oldXguide = String.valueOf(poi.getHisOldValue(IxPoi.X_GUIDE));
 			String newXguide = String.valueOf(poi.getXGuide());
 			if (!oldXguide.equals(newXguide)) {
-
-tLinkPid(0);
-				}
-			} else {
-				long linkPid = linkInfo.getLong("LINK_PID");
-				Geometry geom = GeoTranslator.wkt2Geometry(linkInfo.getString("RD_GEOMETRY"));
-				int 
 				return true;
 			}
 		}

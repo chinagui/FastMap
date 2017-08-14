@@ -1,25 +1,28 @@
 package com.navinfo.dataservice.control.app.download;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Clob;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.control.service.UploadResult;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
@@ -47,7 +50,7 @@ public class PoiDownloadOperation {
 	 * @return url
 	 * @throws Exception
 	 */
-	public String generateZip(Map<String,String> gridDateMap,int subtaskId) throws Exception{
+	public String generateZip(Map<String,String> gridDateMap,int subtaskId,long userId) throws Exception{
 		try{
 			Date startTime = new Date();
 			String day = StringUtils.getCurrentDay();
@@ -66,15 +69,22 @@ public class PoiDownloadOperation {
 			if (!file.exists()) {
 				file.mkdirs();
 			}
+			//初始化存储图片属性的map
+			Map<String, Object> logMap=new HashMap<String, Object>();
+			logMap.put("beginTime", DateUtils.getSysDateFormat());
 			logger.info("export ix_poi to poi.txt--->start");
-			export2Txt(gridDateMap, filePath, "poi.txt");
+			export2Txt(gridDateMap, filePath, "poi.txt",logMap);
 			logger.info("export ix_poi to poi.txt--->end");
 			if(subtaskId > 0){
 				logger.info("export pid to --->start");
 				export2TxtBySubtaskId(filePath, subtaskId);
 				logger.info("export pid--->end");
 			}
+			logMap.put("endTime", DateUtils.getSysDateFormat());
+			logMap.put("userId", userId);
+			logMap.put("uuid", uuid);
 			
+			insertStatisticsInfoNoException(subtaskId, userId, logMap);
 			String zipFileName = uuid + ".zip";
 
 			String zipFullName = parentPath + zipFileName;
@@ -99,6 +109,27 @@ public class PoiDownloadOperation {
 	}
 	
 
+	private void insertStatisticsInfoNoException( int subtaskId,
+			long userId, Map<String, Object> logMap)  {
+		try{
+			SysLogStats log = new SysLogStats();
+			/*log.setLogType(SysLogConstant.);
+			log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setFailureTotal(result.getTotal()-result.getSuccess());
+			log.setSuccessTotal(result.getSuccess());  
+			log.setTotal(result.getTotal());
+			log.setBeginTime(beginTime);
+			log.setEndTime(DateUtils.getSysDateFormat());
+			JSONArray jsonArrFail = JSONArray.fromObject(result.getFail());
+			log.setErrorMsg(jsonArrFail.toString());
+			log.setUserId(String.valueOf(userId));
+			SysLogOperator.getInstance().insertSysLog(log);*/
+		
+		}catch (Exception e) {
+			logger.error("记录日志出错："+e.getMessage(), e);
+		}
+	}
+	
 	/**
 	 * 
 	 * @param grids
@@ -107,7 +138,7 @@ public class PoiDownloadOperation {
 	 * @throws Exception
 	 */
 	public void export2Txt(Map<String,String> gridDateMap,  String folderName,
-			String fileName) throws Exception {
+			String fileName,Map<String, Object> logMap) throws Exception {
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
 		}
@@ -126,6 +157,7 @@ public class PoiDownloadOperation {
 				pw.println(ja.getJSONObject(j).toString());
 			}
 			logger.info("file write ok");
+			logMap.put("total", data.size());
 		} catch (Exception e) {
 			throw e;
 		} finally {

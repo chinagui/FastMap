@@ -417,7 +417,8 @@ public class PinyinConverter {
 			char[] chars = word.toCharArray();
 			
 			for(char strChar : chars){
-				String str = String.valueOf(strChar);
+				//去字符并且去空格
+				String str = String.valueOf(strChar).replaceAll(" ", "");
 				
 				List<String> pyList = polyphoneConvert( str, conn);
 				String py ="";
@@ -438,8 +439,10 @@ public class PinyinConverter {
 					}
 					phonetic +=polyphone;
 				}else{
-					py = pyConvert(str, adminId, null, conn);
-					py = py.substring(0, 1).toUpperCase() + py.substring(1);
+					if(str != null && StringUtils.isNotEmpty(str)){
+						py = pyConvert(str, adminId, null, conn);
+						py = py.substring(0, 1).toUpperCase() + py.substring(1);
+					}
 					if(phonetic !=null && StringUtils.isNotEmpty(phonetic)){
 						phonetic +=" ";
 					}

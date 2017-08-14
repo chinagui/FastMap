@@ -12,17 +12,14 @@ import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -30,8 +27,6 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
 import java.util.*;
@@ -1299,8 +1294,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}
 		
 		String oldLocation = tipsDao.getG_location();
-		
-		if(!oldLocation.equals(gLocation)){
+        Geometry oldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(oldLocation));
+        String oldWkt = GeoTranslator.jts2Wkt(oldGeo);
+        Geometry gLocationGeo = GeoTranslator.geojson2Jts(gLocation);
+        String gLocationWkt = GeoTranslator.jts2Wkt(gLocationGeo);
+		if(!oldWkt.equals(gLocationWkt)){
 			
 			return true;
 		}
@@ -1813,7 +1811,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 	/**
 	 * 保存测线打断后维护的数据结果
-	 * @param updateArray
+	 * @param updateResult
 	 * @param user 
 	 * @throws Exception 
 	 */
@@ -1904,7 +1902,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-16 下午5:21:09
 	 */
-	public void deleteByRowkey(String rowkey, int delType) throws Exception {
+	public void deleteByRowkey(String rowkey, int delType, int subTaskId) throws Exception {
 		try {
 			
 			//物理删除
@@ -1916,7 +1914,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 			//逻辑删除
 			else{
-				super.logicDel(rowkey);
+                prepLogicDel(rowkey, subTaskId);
 			}
 
 		} catch (SolrServerException e) {
@@ -1929,7 +1927,90 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 	}
 
+    /**
+     * @Description:逻辑删除tips(将t_lifecycle改为1：删除)
+     * @param rowkey：被删除的tips的rowkey
+     * @author: y
+     * @throws Exception
+     * @time:2017-4-8 下午4:14:57
+     */
+    protected void prepLogicDel(String rowkey, int subTaskId) throws Exception {
+        Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection oracleConn = null;
+        try {
+            //修改hbase
+            hbaseConn = HBaseConnector.getInstance().getConnection();
 
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+            Get get = new Get(rowkey.getBytes());
+
+            get.addColumn("data".getBytes(), "track".getBytes());
+            get.addColumn("data".getBytes(), "source".getBytes());
+
+            Result result = htab.get(get);
+
+            if (result.isEmpty()) {
+                throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey：" + rowkey);
+            }
+
+            Put put = new Put(rowkey.getBytes());
+
+            JSONObject trackJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "track".getBytes())));
+
+            TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
+            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE);
+            put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track).toString()
+                    .getBytes());
+
+            //20170813逻辑删除维护子任务ID
+            JSONObject sourceJson = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "source".getBytes())));
+            Map<String, Integer> taskMap = this.getTaskInfoMap(subTaskId);//// 1，中线 4，快线
+            int taskType = taskMap.get("programType");
+            int taskId = taskMap.get("taskId");
+            if(taskType == TaskType.Q_TASK_TYPE) {//快线子任务
+                sourceJson.put("s_qTaskId", taskId);
+                sourceJson.put("s_qSubTaskId", subTaskId);
+                sourceJson.put("s_mTaskId", 0);
+                sourceJson.put("s_mSubTaskId", 0);
+            }else if(taskType == TaskType.M_TASK_TYPE) {//中线子任务
+                sourceJson.put("s_mTaskId", taskId);
+                sourceJson.put("s_mSubTaskId", subTaskId);
+                sourceJson.put("s_qTaskId", 0);
+                sourceJson.put("s_qSubTaskId", 0);
+            }
+            put.addColumn("data".getBytes(), "source".getBytes(), sourceJson.toString()
+                    .getBytes());
+
+            htab.put(put);
+
+            //同步更新index
+            oracleConn = DBConnector.getInstance().getTipsIdxConnection();
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
+            TipsDao tipsIndex = operator.getById(rowkey);
+            tipsIndex = this.tipSaveUpdateTrackSolr(track, tipsIndex);
+            tipsIndex.setS_qTaskId(sourceJson.getInt("s_qTaskId"));
+            tipsIndex.setS_qSubTaskId(sourceJson.getInt("s_qSubTaskId"));
+            tipsIndex.setS_mTaskId(sourceJson.getInt("s_mTaskId"));
+            tipsIndex.setS_mSubTaskId(sourceJson.getInt("s_mSubTaskId"));
+            List<TipsDao> tipsIndexList = new ArrayList<TipsDao>();
+            tipsIndexList.add(tipsIndex);
+            operator.update(tipsIndexList);
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(oracleConn);
+            e.printStackTrace();
+            logger.error("逻辑删除失败"+rowkey+":", e);
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+            DbUtils.commitAndCloseQuietly(oracleConn);
+        }
+
+    }
 
     /**
 	 * @Description:测线删除，需要删除测线上挂接的所有tips
@@ -2365,6 +2446,30 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}
 		return taskType;
 	}
+
+    /**
+     * 根据任务号 获取任务类型
+     * @param taskId
+     * @return
+     * @throws Exception
+     */
+    private Map<String, Integer> getTaskInfoMap(int taskId) throws Exception {
+        // 调用 manapi 获取 任务类型、及任务号
+        int taskType = 0;
+        ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+        try {
+            Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(taskId);
+            if (taskMap != null) {
+                // 1，中线 4，快线
+                return taskMap;
+            }else{
+                throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+taskId);
+            }
+        }catch (Exception e) {
+            logger.error("根据子任务号，获取任务任务号及任务类型出错：" + e.getMessage(), e);
+            throw e;
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         PretreatmentTipsOperator operator = new PretreatmentTipsOperator();

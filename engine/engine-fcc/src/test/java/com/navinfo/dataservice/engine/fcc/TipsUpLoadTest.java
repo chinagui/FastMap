@@ -25,8 +25,8 @@ public class TipsUpLoadTest extends InitApplication {
 	public void tesUpload() {
 	//	String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"projectId\":11,\"objId\":100002773}";
 		try {
-			TipsUpload a = new TipsUpload(806);
-			a.runQuality("F:/FCC/rd_qcRecord.txt");
+			TipsUpload a = new TipsUpload(755);
+			a.runQuality("F:/FCC/tips.txt");
             JSONObject result = new JSONObject();
             result.put("qcTotal", a.getQcTotal());
             result.put("qcReasons", a.getQcReasons());

@@ -171,7 +171,7 @@ public class TipsUpload {
 					s_qSubTaskId = 0;
 
                     //只查中线子任务的第一采集时间
-                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                    Map<Integer,Map<String, Object>> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
                     if(timelineMap == null || timelineMap.size() == 0) {
                         isInsertFirstTime = true;
                     }
@@ -268,7 +268,7 @@ public class TipsUpload {
 			importRoadNameToMeta();
 
             //中线子任务第一采集时间
-            if(StringUtils.isNotEmpty(firstCollectTime) && total-failed > 0) {
+            if(StringUtils.isNotEmpty(firstCollectTime)) {
                 ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
                 manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
             }
@@ -1113,7 +1113,6 @@ public class TipsUpload {
 		java.sql.Connection oracleConn = null;
         java.sql.Connection regionDBConn = null;
 		try {
-            String firstCollectTime = "";
 			if (subtask != null && subtask.getIsQuality() == 1) {// 是质检子任务
                 List<FieldRoadQCRecord> records = loadQualityContent(fileName);
 
@@ -1137,13 +1136,6 @@ public class TipsUpload {
                     userId = Integer.valueOf((String) subTaskMap.get("exeUserId"));
                     version = (String) subTaskMap.get("version");
                     startDate = (String) subTaskMap.get("planStartDate");
-
-                    //查询质检子任务对应的常规子任务的第一采集时间
-                    int collectSubTaskId = (Integer) subTaskMap.get("collectSubTaskId");
-                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(collectSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
-                    if(timelineMap != null && timelineMap.size() > 0) {
-                        firstCollectTime = (String)timelineMap.get("operateDate");
-                    }
                 }catch (Exception e) {
                     qcErrMsg = "质检子任务" + subTaskId + "信息不完整";
                     e.printStackTrace();
@@ -1222,7 +1214,7 @@ public class TipsUpload {
 						String collecorUserId = this.getCollectUserId(operator, record.getLink_pid(), userId, htab);
 						insertPstmt.setString(27, collecorUserId);
 						// 读取常规采集子任务的date
-						insertPstmt.setString(28, firstCollectTime);
+						insertPstmt.setString(28, startDate);
 						insertPstmt.setString(29, "外业采集部");
 						insertPstmt.setInt(30, subtask.getQualityMethod());
 						insertPstmt.setString(31, record.getCheck_time());

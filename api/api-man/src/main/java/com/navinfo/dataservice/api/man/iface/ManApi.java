@@ -327,7 +327,7 @@ public interface ManApi{
      * @return	Map<Long,Map<String, Object>> key:objId
      * @throws ServiceException
      */
-    public Map<String, Object> queryTimelineByCondition(int objId,
+    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
                                                                      String objType, int operateType) throws Exception;
 
     /**

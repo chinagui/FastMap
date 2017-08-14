@@ -28,8 +28,8 @@ public class DefaultLogSelector extends LogSelector {
 	protected int selectLog(Connection conn) throws Exception{
 		QueryRunner run = new QueryRunner();
 		SqlClause sqlClause = this.getPrepareSql(conn);
-		this.log.debug(sqlClause.getSql());
 		if (sqlClause==null) return 0;
+		this.log.debug(sqlClause.getSql());
 		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
 			return run.update(conn, sqlClause.getSql());
 		}
@@ -40,8 +40,8 @@ public class DefaultLogSelector extends LogSelector {
 		
 		QueryRunner run = new QueryRunner();
 		SqlClause sqlClause = this.getExtendLogSql(conn);
-		this.log.debug(sqlClause.getSql());
 		if (sqlClause==null) return 0;
+		this.log.debug(sqlClause.getSql());
 		int result =0;
 		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
 			result= run.update(conn, sqlClause.getSql());
@@ -68,9 +68,10 @@ public class DefaultLogSelector extends LogSelector {
 		List<Object> values = new ArrayList<Object> ();
 		if(grids!=null&&grids.size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," T.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		return sqlClause;

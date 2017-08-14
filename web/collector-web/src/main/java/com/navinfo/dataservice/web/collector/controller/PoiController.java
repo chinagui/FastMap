@@ -82,7 +82,7 @@ public class PoiController extends BaseController {
 		try{
 			SysLogStats log = new SysLogStats();
 			log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
-			log.setLogDesc(SysLogConstant.POI_UPLOAD_TYPE+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
 			log.setFailureTotal(result.getTotal()-result.getSuccess());
 			log.setSuccessTotal(result.getSuccess());  
 			log.setTotal(result.getTotal());

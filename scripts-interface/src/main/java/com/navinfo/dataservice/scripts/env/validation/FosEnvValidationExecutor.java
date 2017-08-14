@@ -26,6 +26,9 @@ public class FosEnvValidationExecutor {
 			case ORACLE:
 				validation = new OracleDbValidation();
 				break;
+			case SERVER:
+				validation = new FosServerValidation();
+				break;
 			default:
 				log.info("validation type not support:"+type);
 				System.exit(-1);

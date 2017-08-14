@@ -45,7 +45,7 @@ public class FMBAT20137 extends BasicBatchRule {
 			if(!isBatch(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String newKindCode=poi.getKindCode();
-			if(newKindCode.equals("190100") ||newKindCode.equals("190100")
+			if(newKindCode.equals("190100") 
 			||newKindCode.equals("190101")||newKindCode.equals("190102")||newKindCode.equals("190103")
 			||newKindCode.equals("190104")||newKindCode.equals("190105")||newKindCode.equals("190106")
 			||newKindCode.equals("190107")||newKindCode.equals("190108")||newKindCode.equals("190109")

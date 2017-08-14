@@ -89,7 +89,7 @@ public class UploadService {
 				chunkSize);
 
 		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.uploadPath);
+				PropConstant.uploadPathCustom);
 
 		File file = new File(uploadPath + "/" + jobId);
 
@@ -137,14 +137,15 @@ public class UploadService {
 		
 		File tempFile = new File(uploadItem.getName());
 		
-		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.uploadPath);
+		DBController controller = new DBController();
+
+		JSONObject jsonRow = controller.getUploadInfo(jobId);
+
+		String filePath = jsonRow.getString("filePath") + "/" + jobId;
 		
-		File file = new File(uploadPath+"/"+jobId,chunkNo+"_"+tempFile.getName());
+		File file = new File(filePath,chunkNo+"_"+tempFile.getName());
 		
 		uploadItem.write(file);
-		
-		DBController controller = new DBController();
 		
 		controller.updateProgress(jobId);
 		

@@ -364,11 +364,11 @@ public class JobService {
 				jobInfoSql+=" and j.descp like '%"+tableName+"%'";
 			}
 			String startDate = "";
-			if(parameterJson.containsKey("startDate") && parameterJson.getString("startDate") != null){
+			if(parameterJson.containsKey("startDate") && parameterJson.getString("startDate") != null && StringUtils.isNotEmpty(parameterJson.getString("startDate"))){
 				startDate = parameterJson.getString("startDate")+" 00:00:00";
 			}
 			String endDate = "";
-			if(parameterJson.containsKey("endDate") && parameterJson.getString("endDate") != null){
+			if(parameterJson.containsKey("endDate") && parameterJson.getString("endDate") != null && StringUtils.isNotEmpty(parameterJson.getString("endDate"))){
 				endDate = parameterJson.getString("endDate") +" 23:59:00";
 			}
 			if(startDate == null || StringUtils.isEmpty(startDate) 
@@ -426,5 +426,42 @@ public class JobService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+
+	/**
+	 * 获取执行中的任务
+	 * @param userId
+	 * @param subtaskId
+	 * @param jobType
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType) throws ServiceException {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "select j.job_id  from job_info j where j.user_id =?  and j.task_id=?  and j.job_type=? and j.status=2";
+			log.info("getLatestJob jobInfoSql: "+jobInfoSql);
+			return run.query(conn, jobInfoSql, new ResultSetHandler<Integer>(){
+				
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs!=null &&rs.next()){
+						return rs.getInt(1);
+					}
+					return null;
+				}
+				
+			},userId,subtaskId,jobType);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//return jobObj;
 	}
 }

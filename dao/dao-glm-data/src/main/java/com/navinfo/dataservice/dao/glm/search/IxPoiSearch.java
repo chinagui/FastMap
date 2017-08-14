@@ -967,8 +967,8 @@ public class IxPoiSearch implements ISearch {
 				if (addr.getLangCode().equals("CHT")) {
 					String addrName = addr.getAddrname();
 					if (!addrName.isEmpty()) {
-						String[] addrNamelis = addrName.split("|");
-						String[] strAddrlis = strAddr.split("|");
+						String[] addrNamelis = addrName.split("\\|");
+						String[] strAddrlis = strAddr.split("\\|");
 						for (int i = 0; i < addrNamelis.length; i++) {
 							String addrNameSingle = addrNamelis[i];
 							if (!addrNameSingle.isEmpty()) {
@@ -993,8 +993,8 @@ public class IxPoiSearch implements ISearch {
 
 					String roadName = addr.getRoadname();
 					if (!roadName.isEmpty()) {
-						String[] roadNamelis = roadName.split("|");
-						String[] strRoadlis = strRoad.split("|");
+						String[] roadNamelis = roadName.split("\\|");
+						String[] strRoadlis = strRoad.split("\\|");
 						for (int i = 0; i < roadNamelis.length; i++) {
 							String roadNameSingle = roadNamelis[i];
 							if (!roadNameSingle.isEmpty()) {
@@ -1038,7 +1038,7 @@ public class IxPoiSearch implements ISearch {
 	private List<List<String>> pyConvertor(String word) throws Exception {
 		List<List<String>> result = new ArrayList<List<String>>();
 		try {
-			word.replace(" ", "");
+			word=word.replace(" ", "");
 			for (int i = 0; i < word.length(); i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {

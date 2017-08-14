@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -76,16 +77,23 @@ public class RdLane002 extends baseRule {
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);
 			
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
-			
-			while (resultSet.next()){
-				int linkPid = resultSet.getInt("LINK_PID");
-				viaLinkMap.put(linkPid, 1);
-				connexityPid = resultSet.getInt("CONNEXITY_PID");
-			} 
-			resultSet.close();
-			pstmt.close();
+			PreparedStatement pstmt = null;
+			ResultSet resultSet = null;
+			try {
+				pstmt = this.getConn().prepareStatement(sql);	
+				resultSet = pstmt.executeQuery();
+				
+				while (resultSet.next()){
+					int linkPid = resultSet.getInt("LINK_PID");
+					viaLinkMap.put(linkPid, 1);
+					connexityPid = resultSet.getInt("CONNEXITY_PID");
+				} 
+			}catch (SQLException e) {
+				throw e;
+			} finally {
+				DbUtils.closeQuietly(resultSet);
+				DbUtils.closeQuietly(pstmt);
+			}
 
 			//如果删除的经过线不是线线车信经过线，则不检查
 			if(viaLinkMap.size()==0){
@@ -284,14 +292,21 @@ public class RdLane002 extends baseRule {
 		String sql = sb.toString();
 		log.info("RdLaneTopology后检查RDLANE005:" + sql);
 
-		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-		ResultSet resultSet = pstmt.executeQuery();
-		
-		while (resultSet.next()){
-			linkPidMap.put(resultSet.getInt("LINK_PID"),1) ;
-		} 
-		resultSet.close();
-		pstmt.close();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.getConn().prepareStatement(sql);	
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()){
+				linkPidMap.put(resultSet.getInt("LINK_PID"),1) ;
+			} 
+		}catch (SQLException e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		return linkPidMap;
 	}
 

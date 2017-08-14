@@ -5,6 +5,8 @@ import java.net.URLEncoder;
 
 import org.apache.http.client.ClientProtocolException;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -16,7 +18,7 @@ import net.sf.json.JSONObject;
  */
 public class BaiduGeocoding {
 	static String ak = "K2giwlevB8Ilmh3yUok5Lisu";
-	static String url = "http://api.map.baidu.com/geocoder/v2/?address=";
+	static String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.baiduGeocoding)+"address=";
 	static String url2 = "&output=json&ak=" + ak;
 
 	public static Geometry geocoder(String str) throws ClientProtocolException, IOException, ParseException {

@@ -75,7 +75,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			Map<String, Set<String>> tabNames=ObjHisLogParser.getChangeTableSet(logs);
 			log.info("EditPoiBaseReleaseJob:加载检查对象");
 			//获取poi对象			
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
 					poiPids, false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
@@ -86,7 +87,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//获取log
 			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
 			Map<String, Set<String>> sametabNames=ObjHisLogParser.getChangeTableSet(samelogs);
-			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
+			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
 					groupIds, false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);
@@ -130,9 +132,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			batchCommand.setOperationName("BATCH_POI_RELEASE");
 			batchCommand.setParameter(parameter);
 			Batch batch=new Batch(conn,batchData);
+			batch.setSubtaskId((int)jobInfo.getTaskId());
 			batch.operate(batchCommand);
 			changeReferData= batch.getChangeReferData();
-			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+			batch.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 			
 			//修改父子关系关联批到的数据任务号及状态
 			log.info("修改父子关系关联批到的数据任务号及状态");

@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import com.navinfo.dataservice.commons.kmeans.KPoint;
 import com.navinfo.dataservice.commons.kmeans.Kmeans;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
+import com.navinfo.dataservice.engine.man.log.ManLogOperation;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -618,7 +620,7 @@ public class SubtaskService {
 			if(newSubtask.getExeUserId()!=0&&newSubtask.getExeUserId()!=oldSubtask.getExeUserId()){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
-				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality().intValue()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
 			if(newSubtask.getExeGroupId()!=0&&newSubtask.getExeGroupId()!=oldSubtask.getExeGroupId()){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
@@ -871,8 +873,7 @@ public class SubtaskService {
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							subtask.put("geometryJSON",Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+							log.warn("子任务geometry查询错误,"+e1.getMessage());
 						}
 						//refer_GEOMETRY
 						STRUCT referStruct = (STRUCT) rs.getObject("refer_GEOMETRY");
@@ -881,8 +882,7 @@ public class SubtaskService {
 							String referClobStr = GeoTranslator.struct2Wkt(referStruct);
 							subtask.put("referGeometryJSON",Geojson.wkt2Geojson(referClobStr));
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+							log.warn("子任务refer geometry查询错误,"+e1.getMessage());
 						}						
 						
 						subtask.put("taskId",rs.getInt("TASK_ID"));
@@ -3067,6 +3067,7 @@ public class SubtaskService {
 	 */
 	public void paintRefer(int taskId, JSONObject condition)  throws Exception {
 		Connection conn = null;
+		StringBuilder logs = new StringBuilder();
 		try {
 			String lineWkt="";
 			int id1=0;
@@ -3080,7 +3081,9 @@ public class SubtaskService {
 			if(condition.containsKey("id2")){
 				id2=condition.getInt("id2");
 			}
-			log.info("paintRefer taskId="+taskId+";condition="+condition.toString());
+			
+			logs.append("paintRefer taskId="+taskId+";condition="+condition.toString());
+			log.info(logs);
 			
 			conn=DBConnector.getInstance().getManConnection();
 			
@@ -3088,6 +3091,9 @@ public class SubtaskService {
 			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 			JSONObject conditionQuery2=new JSONObject();
 			conditionQuery2.put("blockId", task.getBlockId());
+			
+			logs.append(";blockId=");
+			logs.append(task.getBlockId());
 			
 			JSONArray ids=new JSONArray();
 			if(id1!=0){ids.add(id1);}
@@ -3109,6 +3115,8 @@ public class SubtaskService {
 				if(id1==0){//切分block
 					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
 					Geometry referGeo = block.getOriginGeo();
+					logs.append(";blockOriginGeo=");
+					logs.append(GeoTranslator.jts2Wkt(referGeo));
 					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
 					//线是否穿过面
 					Geometry interGeo=referGeoLine.intersection(lineGeo);						
@@ -3147,6 +3155,8 @@ public class SubtaskService {
 					log.info("start 切割选定面");
 					SubtaskRefer refer=refers.get(0);
 					Geometry referGeo = refer.getGeometry();
+					logs.append(";不规则圈geo1=");
+					logs.append(GeoTranslator.jts2Wkt(referGeo));
 					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
 					//线是否穿过面
 					interGeo=referGeoLine.intersection(lineGeo);						
@@ -3205,11 +3215,11 @@ public class SubtaskService {
 						boolean isChange=false;
 						for (int i = coordinates.size() - 1; i >= 1; i--) {
 							newLineCors.add(coordinates.get(i));
-			                if (GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p1,0.0000001)) {
+			                if (!p1.equals(coordinates.get(i))&&!p1.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p1,0.0000001)) {
 			                	newLineCors.add(p1);
 			                	isChange=true;
 			                }
-			                if (GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p2,0.0000001)) {
+			                if (!p2.equals(coordinates.get(i))&&!p2.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p2,0.0000001)) {
 			                	newLineCors.add(p2);
 			                	isChange=true;
 			                }
@@ -3263,7 +3273,10 @@ public class SubtaskService {
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
 				Geometry geo1 = refers.get(0).getGeometry();
 				Geometry geo2 = refers.get(1).getGeometry();
-				
+				logs.append(";不规则圈geo1=");
+				logs.append(GeoTranslator.jts2Wkt(geo1));
+				logs.append(";不规则圈geo2=");
+				logs.append(GeoTranslator.jts2Wkt(geo2));
 				Geometry unionGeo=geo1.union(geo2);
 				
 				if(!unionGeo.isSimple()){throw new ServiceException("合并后不是简单面，请重新选择");}
@@ -3302,6 +3315,7 @@ public class SubtaskService {
 			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			ManLogOperation.insertLog("paintRefer", logs.toString());
 		}
 	}
 	

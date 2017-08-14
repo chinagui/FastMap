@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -20,6 +23,7 @@ public class BatchInitPlan {
 		log.info("start");
 		JobScriptsInterface.initContext();
 		List<Map<String, Object>> allTask = TaskService.getInstance().unPlanlist(new JSONObject());
+		Set<Integer> errorTaskIds=new HashSet<Integer>();
 		for(Map<String, Object> task:allTask){
 			int taskId=0;
 			try{
@@ -28,9 +32,11 @@ public class BatchInitPlan {
 				TaskService.getInstance().initPlanData(taskId);
 				log.info("end init "+taskId);
 			}catch (Exception e) {
+				errorTaskIds.add(taskId);
 				log.warn("init "+taskId+" error", e);
 			}
 		}
+		log.info("success "+(allTask.size()-errorTaskIds.size())+",error "+errorTaskIds.size()+";error list "+errorTaskIds.toString());
 		log.info("end");
 		System.exit(0);
 	}

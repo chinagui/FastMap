@@ -57,7 +57,7 @@ public class DBController {
 			pstmt.setString(2, fileName);
 
 			String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath);
+					PropConstant.uploadPathCustom);
 
 			pstmt.setString(3, uploadPath);
 

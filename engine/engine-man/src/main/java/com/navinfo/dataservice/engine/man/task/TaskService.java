@@ -2347,8 +2347,8 @@ public class TaskService {
 			map.put("roadPlanOut", task.getRoadPlanOut());
 			map.put("poiPlanIn", task.getPoiPlanIn());
 			map.put("poiPlanOut", task.getPoiPlanOut());
-//			map.put("poiPlanTotal", task.getPoiPlanTotal());
-//			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			map.put("poiPlanTotal", task.getPoiPlanTotal());
+			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());

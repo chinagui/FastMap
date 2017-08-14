@@ -4669,12 +4669,12 @@ public class TaskService {
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
 					poiSb.append("update DATA_PLAN p set p.is_plan_selected = 1 where exists (");
-					poiSb.append("select 1 from IX_POI t where p.pid = t.pid and t.u_record!=2 and ");
+					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
-					poiSb.append(")and p.data_type = 1 and p.is_plan_selected = 0 and p.task_id = " + taskId + ")");
+					poiSb.append(")and dp.data_type = 1 and dp.is_plan_selected = 0 and dp.task_id = " + taskId + ")and p.data_type = 1 and p.is_plan_selected = 0 and p.task_id = " + taskId);
 					String poisql = poiSb.toString();
 					log.info("跟据条件保存POI数据sql:"+poisql);
 					run.execute(conn, poisql);
@@ -4684,13 +4684,13 @@ public class TaskService {
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
 					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
-					linkSb.append("select 1 from RD_LINK r where d.pid = r.link_pid and r.u_record!=2 and ");
+					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");
 						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
-					linkSb.append(")and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
+					linkSb.append(")and dp.data_type = 2 and dp.is_plan_selected = 0 and dp.task_id = "+taskId+")and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
 					String linksql = linkSb.toString();
 					log.info("跟据条件保存LINK数据sql:"+linksql);
 					run.execute(conn, linksql);

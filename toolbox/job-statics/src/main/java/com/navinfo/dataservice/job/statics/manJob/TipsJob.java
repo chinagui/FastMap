@@ -111,11 +111,11 @@ public class TipsJob extends AbstractStatJob {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Map<String, Object>> gridTipsTaskList = new ArrayList<>();
-		Map<String, Object> gridTipsTaskMap = new HashMap<>();
 		List<Map<String, Object>> gridTipsNoTaskList = new ArrayList<>();
-		Map<String, Object> gridTipsNoTaskMap = new HashMap<>();
-		List<Integer> gridTaskList = new ArrayList<>();
-		List<Integer> gridNoTaskList = new ArrayList<>();
+		Map<String, Object> tipsTaskMap = new HashMap<>();
+		Map<String, Object> tipsNoTaskMap = new HashMap<>();
+		Map<Integer,Map<String, Object>> gridTipsTaskMap = new HashMap<>();
+		Map<Integer,Map<String, Object>> gridTipsNoTaskMap = new HashMap<>();
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
 		try{
@@ -137,12 +137,12 @@ public class TipsJob extends AbstractStatJob {
 				
 				int grid = getGrid(rs);
 				
-				if(gridId!=grid&&(!gridTaskList.contains(grid))) {
+				if(gridId!=grid&&(!gridTipsTaskMap.containsKey(grid))) {
 					gridTipsTaskMap = new HashMap<>(); 
 					gridId = grid;
-					gridTipsTaskMap.put("gridId",gridId);
-					gridTipsTaskList.add(gridTipsTaskMap);
-					gridTaskList.add(gridId);
+					tipsTaskMap.put("gridId",gridId);
+					gridTipsTaskList.add(tipsTaskMap);
+					gridTipsTaskMap.put(gridId, tipsTaskMap);
 					subtaskEditAllNum = 0; 
 					subtaskEditFinishNum = 0; 
 					taskEditAllNum = 0; 
@@ -150,6 +150,9 @@ public class TipsJob extends AbstractStatJob {
 					taskCreateByEditNum = 0; 
 					taskEditFinishNum = 0;
 				}
+				
+				tipsTaskMap = gridTipsTaskMap.get(grid);
+				
 				int stage = rs.getInt("stage");
 				if(rs.getInt("t_dEditStatus")==2){
 					subtaskEditAllNum++;
@@ -183,13 +186,13 @@ public class TipsJob extends AbstractStatJob {
 				}
 				
 				
-				gridTipsTaskMap.put("subtaskEditAllNum", subtaskEditAllNum);
-				gridTipsTaskMap.put("subtaskEditFinishNum", subtaskEditFinishNum);
-				gridTipsTaskMap.put("taskEditAllNum", taskEditAllNum);
-				gridTipsTaskMap.put("taskNoEditAllNum", taskNoEditAllNum);
-				gridTipsTaskMap.put("taskCreateByEditNum", taskCreateByEditNum);
-				gridTipsTaskMap.put("taskEditFinishNum", taskEditFinishNum);
-				gridTipsTaskMap.put("noTaskTotal", 0);
+				tipsTaskMap.put("subtaskEditAllNum", subtaskEditAllNum);
+				tipsTaskMap.put("subtaskEditFinishNum", subtaskEditFinishNum);
+				tipsTaskMap.put("taskEditAllNum", taskEditAllNum);
+				tipsTaskMap.put("taskNoEditAllNum", taskNoEditAllNum);
+				tipsTaskMap.put("taskCreateByEditNum", taskCreateByEditNum);
+				tipsTaskMap.put("taskEditFinishNum", taskEditFinishNum);
+				tipsTaskMap.put("noTaskTotal", 0);
 				
 			}
 			
@@ -203,33 +206,35 @@ public class TipsJob extends AbstractStatJob {
 				
 				int grid = getGrid(rs);
 				
-				if(gridId!=grid&&(!gridNoTaskList.contains(grid))) {
+				if(gridId!=grid&&(!gridTipsNoTaskMap.containsKey(grid))) {
 					gridTipsNoTaskMap = new HashMap<>(); 
 					gridId = grid;
-					gridTipsNoTaskMap.put("gridId",gridId);
-					gridTipsNoTaskList.add(gridTipsNoTaskMap);
-					gridNoTaskList.add(gridId);
+					tipsNoTaskMap.put("gridId",gridId);
+					gridTipsNoTaskList.add(tipsNoTaskMap);
+					gridTipsNoTaskMap.put(gridId, tipsNoTaskMap);
 					noTaskTotal = 0;
 				}
 				
 				noTaskTotal++;
 				
-				gridTipsNoTaskMap.put("subtaskEditAllNum", 0);
-				gridTipsNoTaskMap.put("subtaskEditFinishNum", 0);
-				gridTipsNoTaskMap.put("taskEditAllNum", 0);
-				gridTipsNoTaskMap.put("taskNoEditAllNum", 0);
-				gridTipsNoTaskMap.put("taskCreateByEditNum", 0);
-				gridTipsNoTaskMap.put("taskEditFinishNum", 0);
-				gridTipsNoTaskMap.put("noTaskTotal",noTaskTotal);
+				tipsNoTaskMap = gridTipsNoTaskMap.get(gridId);
+				
+				tipsNoTaskMap.put("subtaskEditAllNum", 0);
+				tipsNoTaskMap.put("subtaskEditFinishNum", 0);
+				tipsNoTaskMap.put("taskEditAllNum", 0);
+				tipsNoTaskMap.put("taskNoEditAllNum", 0);
+				tipsNoTaskMap.put("taskCreateByEditNum", 0);
+				tipsNoTaskMap.put("taskEditFinishNum", 0);
+				tipsNoTaskMap.put("noTaskTotal",noTaskTotal);
 				
 			}
 	
 			
 			
-			for (Map<String, Object> tipsNoTaskMap : gridTipsNoTaskList) {
-				for (Map<String, Object> tipsTaskMap: gridTipsTaskList) {
-					if((int)tipsTaskMap.get("gridId")==(int)tipsNoTaskMap.get("gridId")){
-						tipsTaskMap.put("noTaskTotal", tipsNoTaskMap.get("noTaskTotal"));
+			for (Map<String, Object> tipNoTaskMap : gridTipsNoTaskList) {
+				for (Map<String, Object> tipTaskMap: gridTipsTaskList) {
+					if((int)tipTaskMap.get("gridId")==(int)tipNoTaskMap.get("gridId")){
+						tipTaskMap.put("noTaskTotal", tipNoTaskMap.get("noTaskTotal"));
 						break;
 					}
 				}
@@ -263,7 +268,6 @@ public class TipsJob extends AbstractStatJob {
 	
 	public List<Map<String, Object>> getTaskGridTips(Connection conn) {
 		List<Map<String, Object>> tipsAddLenList = new ArrayList<>();
-		Map<String, Object> tipsAddLenMap = null;
 		List<Map<String, Object>> tipsUploadNumList = new ArrayList<>();
 		List<Map<String, Object>> taskGridTipsList = new ArrayList<>();
 		
@@ -272,19 +276,17 @@ public class TipsJob extends AbstractStatJob {
 		try{
 			String baseAddLenSql = " WKTLOCATION from tips_index where s_sourceType in (2001,2002) AND t_lifecycle=3 " ;
 			String sql = "SELECT s_mtaskid,"+baseAddLenSql+" AND s_mtaskid <> 0 ORDER BY s_mtaskid";//中线新增测线
-			int taskId = 0;
-			double tipsAddLen = 0.0;
-			
+
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			
-			compomentTipsAddLenMap(pstmt, rs, taskId, tipsAddLen, tipsAddLenList, tipsAddLenMap);
+			compomentTipsAddLenMap(rs,tipsAddLenList);
 			
 			String sql1 = "SELECT s_qtaskid,"+baseAddLenSql+" AND s_qtaskid <> 0 ORDER BY s_qtaskid";//快线新增测线
 			pstmt = conn.prepareStatement(sql1);
 			rs = pstmt.executeQuery();
 			
-			compomentTipsAddLenMap(pstmt, rs, taskId, tipsAddLen, tipsAddLenList, tipsAddLenMap);
+			compomentTipsAddLenMap(rs,tipsAddLenList);
 			
 			String baseTipsUploadNumSql = " COUNT(1) FROM tips_index WHERE t_tipstatus =2 AND " ;
 			String sql2 = "SELECT s_mtaskid,"+baseTipsUploadNumSql+" s_mtaskid <> 0 GROUP BY s_mtaskid";//中线采集上传
@@ -345,8 +347,11 @@ public class TipsJob extends AbstractStatJob {
 	}
 	
 	
-	public void compomentTipsAddLenMap(PreparedStatement pstmt,ResultSet rs,int taskId,double tipsAddLen,
-			List<Map<String, Object>> taskGridTipsList,Map<String, Object> taskGridTipsMap) throws SQLException{
+	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList) throws SQLException{
+		int taskId = 0;
+		double tipsAddLen = 0.0;
+		Map<String, Object> taskGridTipsMap = null;
+
 		while(rs.next()){
 			if(taskId!=rs.getInt(1)) {
 				taskGridTipsMap = new HashMap<>(); 
@@ -361,13 +366,17 @@ public class TipsJob extends AbstractStatJob {
 			try {
 				geometry = GeoTranslator.struct2Jts(geoStruct);
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
+				log.warn(e.getMessage(), e);
 			}
 			
-			
+			if(geometry==null){
+				continue;
+			}
 			tipsAddLen+=GeometryUtils.getLinkLength(geometry);//根据geometry求里程
 			DecimalFormat df=new DecimalFormat("0.00");
 			taskGridTipsMap.put("tipsAddLen",df.format(tipsAddLen).toString());
+			
+
 		}
 	}
 
@@ -377,7 +386,6 @@ public class TipsJob extends AbstractStatJob {
 	 * @return
 	 */
 	public List<Map<String,Object>> getSubtaskTips(Connection conn) {
-		final List<Map<String, Object>> subtaskTipsList = new ArrayList<>();
 			try{
 				QueryRunner run = new QueryRunner();
 				
@@ -387,6 +395,7 @@ public class TipsJob extends AbstractStatJob {
 					@Override
 					public List<Map<String, Object>> handle(ResultSet rs)
 							throws SQLException {
+						List<Map<String, Object>> subtaskTipsList = new ArrayList<>();
 						while(rs.next()){
 							Map<String, Object> subtaskTipsMap = new HashMap<>(); 
 							subtaskTipsMap.put("subtaskId",rs.getInt(1));

@@ -735,7 +735,11 @@ public class TipsUpload {
 		JSONObject trackOld = oldTip.getJSONObject("track");
 		int tCommandOld = trackOld.getInt("t_command");
 
-		String mdb5Old = MD5Utils.md5(g_locationOld + g_guideOld + deepOld + feedbackOld + tCommandOld);
+        Geometry g_locationOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationOld));
+        String g_locationOldWkt = GeoTranslator.jts2Wkt(g_locationOldGeo);
+        Geometry g_guideOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideOld));
+        String g_guideOldWkt = GeoTranslator.jts2Wkt(g_guideOldGeo);
+		String mdb5Old = MD5Utils.md5(g_locationOldWkt + g_guideOldWkt + deepOld + feedbackOld + tCommandOld);
 
 		// new
 		String g_locationNew = json.getString("g_location");
@@ -745,8 +749,11 @@ public class TipsUpload {
 
 		// JSONObject trackNew=json.getJSONObject("track");
 		int tCommandNew = json.getInt("t_command");
-
-		String mdb5New = MD5Utils.md5(g_locationNew + g_guideNew + deepNew + feedbackNew + tCommandNew);
+        Geometry g_locationNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationNew));
+        String g_locationNewWkt = GeoTranslator.jts2Wkt(g_locationNewGeo);
+        Geometry g_guideNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideNew));
+        String g_guideNewWkt = GeoTranslator.jts2Wkt(g_guideNewGeo);
+		String mdb5New = MD5Utils.md5(g_locationNewWkt + g_guideNewWkt + deepNew + feedbackNew + tCommandNew);
 
 		if (mdb5Old.equals(mdb5New)) {
 			return true;

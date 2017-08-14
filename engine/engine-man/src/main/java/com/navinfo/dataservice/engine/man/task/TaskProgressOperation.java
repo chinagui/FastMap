@@ -24,7 +24,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
 
 public class TaskProgressOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskProgressOperation.class);

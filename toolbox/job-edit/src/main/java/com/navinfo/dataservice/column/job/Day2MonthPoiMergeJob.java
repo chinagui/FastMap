@@ -844,9 +844,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		List<Object> values = new ArrayList<Object> ();
 		if(grids!=null&&grids.size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," g.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		return sqlClause;
@@ -877,8 +878,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,taskIds,str);
 			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
+				values.addAll(inClause.getValues());
 			}
-			values.addAll(inClause.getValues());
+			
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		log.info("查询存在履历的grids:"+sqlClause.getSql());

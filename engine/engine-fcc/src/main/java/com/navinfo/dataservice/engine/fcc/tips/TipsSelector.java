@@ -2246,6 +2246,7 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			queryTotal += " ORDER BY t_date DESC";
 			Page page = operator.queryPage(queryTotal, curPage, pageSize);
 
 			long totalNum = page.getTotalCount();

@@ -19,4 +19,5 @@ public interface JobApi {
 	List<JobInfo> getJobInfoList(JSONObject parameterJson)throws Exception;
 	JobInfo getLatestJobByDescp(String descp)throws Exception;
 	JobInfo getJobByDescp(String descp)throws Exception;
+	Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType)throws Exception;
 }

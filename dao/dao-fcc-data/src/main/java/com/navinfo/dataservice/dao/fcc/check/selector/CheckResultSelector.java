@@ -61,7 +61,7 @@ public class CheckResultSelector {
 			
 			pst=conn.prepareStatement(sql);
 			
-			pst.setInt(0, checkTaskId);
+			pst.setInt(1, checkTaskId);
 			
 			rs=pst.executeQuery();
 			

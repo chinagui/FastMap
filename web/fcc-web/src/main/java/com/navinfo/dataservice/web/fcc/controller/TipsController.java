@@ -235,6 +235,8 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("parameter参数不能为空。");
             }
 
+            String beginDate = DateUtils.getSysDateFormat();
+
             JSONObject json = JSONObject.fromObject(parameter);
 
             int jobId = json.getInt("jobId");
@@ -286,7 +288,7 @@ public class TipsController extends BaseController {
 
             //记录上传日志。不抛出异常
             insertStatisticsInfoNoException(jobId, subtaskId, userId,
-                    tipsUploader);
+                    tipsUploader, beginDate);
 
             //20170712 Tips上传增加外业质检问题记录上传
             logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
@@ -317,7 +319,7 @@ public class TipsController extends BaseController {
 	 * @time:2017-8-9 上午11:09:43
 	 */
 	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
-			long userId, TipsUpload tipsUploader)  {
+			long userId, TipsUpload tipsUploader, String beginDate)  {
 		try{
 			SysLogStats log = new SysLogStats();
 			log.setLogType(SysLogConstant.TIPS_UPLOAD_TYPE);
@@ -325,7 +327,7 @@ public class TipsController extends BaseController {
 			log.setFailureTotal(tipsUploader.getFailed());
 			log.setSuccessTotal(tipsUploader.getTotal()-tipsUploader.getFailed());  
 			log.setTotal(tipsUploader.getTotal());
-			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setBeginTime(beginDate);
 			log.setEndTime(DateUtils.getSysDateFormat());
 			log.setErrorMsg(tipsUploader.getReasons().toString());
 			log.setUserId(String.valueOf(userId));

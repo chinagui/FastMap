@@ -4668,13 +4668,13 @@ public class TaskService {
 				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
-					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
-					poiSb.append("select 1 from IX_POI t where d.pid = t.pid and t.u_record!=2 and ");
+					poiSb.append("update DATA_PLAN p set p.is_plan_selected = 1 where exists (");
+					poiSb.append("select 1 from IX_POI t where p.pid = t.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
-					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					poiSb.append(")and p.data_type = 1 and p.is_plan_selected = 0 and p.task_id = " + taskId + ")");
 					String poisql = poiSb.toString();
 					log.info("跟据条件保存POI数据sql:"+poisql);
 					run.execute(conn, poisql);
@@ -4690,7 +4690,7 @@ public class TaskService {
 						linkSb.append("or ");
 						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
-					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					linkSb.append(")and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId+")");
 					String linksql = linkSb.toString();
 					log.info("跟据条件保存LINK数据sql:"+linksql);
 					run.execute(conn, linksql);

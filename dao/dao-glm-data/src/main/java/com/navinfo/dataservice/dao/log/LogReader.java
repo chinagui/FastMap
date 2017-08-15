@@ -568,7 +568,7 @@ public class LogReader {
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		
 		sb.append(" WITH A AS                                                                    ");
-		sb.append("  (SELECT /*+ORDERED/D.OB_PID, MAX(P.OP_DT) DT                                           ");
+		sb.append("  (SELECT /*+ORDERED*/D.OB_PID, MAX(P.OP_DT) DT                                           ");
 		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
 		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
 		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
@@ -589,7 +589,7 @@ public class LogReader {
 		}
 		sb.append("    GROUP BY OB_PID),                                                         ");
 		sb.append(" B AS                                                                         ");
-		sb.append("  (SELECT /*+ORDERED/D.OB_PID, D.OP_TP                                                   ");
+		sb.append("  (SELECT /*+ORDERED*/D.OB_PID, D.OP_TP                                                   ");
 		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
 		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
 		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");

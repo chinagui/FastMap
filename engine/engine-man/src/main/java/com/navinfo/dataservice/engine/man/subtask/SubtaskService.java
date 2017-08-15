@@ -3312,6 +3312,8 @@ public class SubtaskService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			logs.append(";error=");
+			logs.append(e.getMessage());
 			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);

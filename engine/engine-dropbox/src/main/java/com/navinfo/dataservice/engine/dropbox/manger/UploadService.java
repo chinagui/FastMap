@@ -89,7 +89,7 @@ public class UploadService {
 				chunkSize);
 
 		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.uploadPath);
+				PropConstant.uploadPathCustom);
 
 		File file = new File(uploadPath + "/" + jobId);
 
@@ -137,14 +137,15 @@ public class UploadService {
 		
 		File tempFile = new File(uploadItem.getName());
 		
-		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.uploadPath);
+		DBController controller = new DBController();
+
+		JSONObject jsonRow = controller.getUploadInfo(jobId);
+
+		String filePath = jsonRow.getString("filePath") + "/" + jobId;
 		
-		File file = new File(uploadPath+"/"+jobId,chunkNo+"_"+tempFile.getName());
+		File file = new File(filePath,chunkNo+"_"+tempFile.getName());
 		
 		uploadItem.write(file);
-		
-		DBController controller = new DBController();
 		
 		controller.updateProgress(jobId);
 		
@@ -292,7 +293,7 @@ public class UploadService {
 	    return result;
 	}
 	
-	public String uploadInfoFile(String urlString, String fileName, String filePath,String subtaskId,long userId) throws IOException{
+	public String uploadInfoFile(String urlString, String fileName, String filePath,String subtaskId,long userId, int jobId) throws IOException{
 		URL url=new URL(urlString);
 	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
 	    connection.setDoInput(true);
@@ -301,6 +302,7 @@ public class UploadService {
 	    connection.addRequestProperty("FileName", fileName);
 	    connection.addRequestProperty("subtaskId",subtaskId);
 	    connection.addRequestProperty("userId",String.valueOf(userId));
+	    connection.addRequestProperty("jobId", String.valueOf(jobId));
 	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
 	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
 	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());

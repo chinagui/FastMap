@@ -49,15 +49,15 @@ public class TipsCheckTest extends InitApplication {
 		JSONArray gridsList = JSONArray
 				.fromObject("[59564432,59564433,59564410,59565402,59565401,59565400,59565313,59564423,59564332,59564422,59564333,59564421,59565410,59565411,59564420,59565420,59565421,59565303,59564323,59564431,59564430]");
 
-		JSONObject param = new JSONObject();
-		param.put("subTaskId", 283);
+	/*	JSONObject param = new JSONObject();
+		param.put("subTaskId", 632);
 		param.put("checkerId", 456);
 		param.put("checkerName", "质检员1");
-		param.put("grids", gridsList);
+		param.put("grids", gridsList);*/
 
 		//String parameter = param.toString();
 		//238
-		String parameter="{\"subTaskId\":238,\"checkerId\":2699,\"checkerName\":\"冯佳\",\"grids\":[60560233]}";
+		String parameter="{\"subTaskId\":688,\"checkerId\":2699,\"checkerName\":\"冯佳\",\"grids\":[60560233]}";
 
 		try {
 

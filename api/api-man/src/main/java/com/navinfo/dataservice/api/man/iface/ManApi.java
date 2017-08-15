@@ -281,7 +281,7 @@ public interface ManApi{
 	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception;
 	
 	/**
 	 * timestamp:yyyymmdd
@@ -321,14 +321,14 @@ public interface ManApi{
 	 */
 	public Map<Integer,Integer> queryProgramTypes() throws Exception;
 
-    /**
-     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
-     * OBJ_TYPE:program,task,subtask,infor
-     * @return	Map<Long,Map<String, Object>> key:objId
-     * @throws ServiceException
-     */
-    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
-                                                                     String objType, int operateType) throws Exception;
+	/**
+	 * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+	 * OBJ_TYPE:program,task,subtask,infor
+	 * @return	Map<Long,Map<String, Object>> key:objId
+	 * @throws ServiceException
+	 */
+	public Map<String, Object> queryTimelineByCondition(int objId,
+														String objType, int operateType) throws Exception;
 
     /**
      * 保存timeline

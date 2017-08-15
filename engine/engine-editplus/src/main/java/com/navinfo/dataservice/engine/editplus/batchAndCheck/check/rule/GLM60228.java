@@ -83,7 +83,7 @@ public class GLM60228 extends BasicCheckRule {
         String sql = "SELECT T1.KIND, T1.DISPLAY_CLASS,T2.PID,T2.GEOMETRY,T2.MESH_ID,T2.X_GUIDE,T2.Y_GUIDE FROM LC_FACE T1, IX_POI T2 WHERE T2.PID IN (select to_number(column_value) from table(clob_to_table(?))) AND T1.MESH_ID = T2.MESH_ID AND " +
                 "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || " + "T2.GEOMETRY" + "" +
                 ".SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')' , 8307), " +
-                "'MASK=011011111') = 'TRUE' AND T1.KIND!=16 AND (T1.DISPLAY_CLASS != 1 OR (T1.KIND != 2 AND T1.KIND != 3)) AND T2.X_GUIDE != 0 AND T2.Y_GUIDE != 0";
+                "'MASK=011011111') = 'TRUE' AND T1.KIND!=16 AND T2.X_GUIDE != 0 AND T2.Y_GUIDE != 0";
         log.info("GLM60228,checkCoverLcFace:"+sql);
         Connection conn = getCheckRuleCommand().getConn();
         PreparedStatement pstmt = null;
@@ -95,21 +95,22 @@ public class GLM60228 extends BasicCheckRule {
             pstmt.setClob(1, clob);
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
+            	int disPlayClass = resultSet.getInt("DISPLAY_CLASS");
+            	int kind = resultSet.getInt("KIND");
             	long poiPid = resultSet.getLong("PID");
             	int meshId = resultSet.getInt("MESH_ID");
 				STRUCT struct = (STRUCT) resultSet.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				double length = GeometryUtils.getDistance(geometry.getCoordinate().y, geometry.getCoordinate().x, resultSet.getDouble("Y_GUIDE"), resultSet.getDouble("X_GUIDE"));
-                if (length < MAX_DISTANCE) {
-                    continue;
-                }
+				 if (disPlayClass == 1 && (kind==KIND_RIVER_AREA||kind==KIND_SWAMP_POOL) && length < MAX_DISTANCE) {
+	                    continue;
+	             }
 
                 setCheckResult(geometry, String.format("[IX_POI,%s]", poiPid), meshId);
             }
         } catch (SQLException e) {
             throw e;
         } finally {
-        	
         	DbUtils.closeQuietly(resultSet);
         	DbUtils.closeQuietly(pstmt);
         }

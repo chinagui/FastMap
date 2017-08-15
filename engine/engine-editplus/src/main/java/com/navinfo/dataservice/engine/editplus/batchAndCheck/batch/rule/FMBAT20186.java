@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -268,16 +269,19 @@ public class FMBAT20186 extends BasicBatchRule {
 		boolean childContactEqualsParent = false;  
 		if((parentContactList==null ||parentContactList.isEmpty())&&
 				(childContactList==null ||childContactList.isEmpty())){childContactEqualsParent = true; }//父子电话都为空
-		for (IxPoiContact parentIxPoiContact : parentContactList) {
-			for (IxPoiContact ixPoiContact : childContactList) {
-				if(parentIxPoiContact.getContact().equals(ixPoiContact.getContact())
-						&&parentIxPoiContact.getContactType()==ixPoiContact.getContactType()
-						&&parentIxPoiContact.getContactDepart()==ixPoiContact.getContactDepart()
-						&&parentIxPoiContact.getPriority()==ixPoiContact.getPriority()){
-					childContactEqualsParent = true;
+		if(CollectionUtils.isNotEmpty(parentContactList)){
+			for (IxPoiContact parentIxPoiContact : parentContactList) {
+				for (IxPoiContact ixPoiContact : childContactList) {
+					if(parentIxPoiContact.getContact().equals(ixPoiContact.getContact())
+							&&parentIxPoiContact.getContactType()==ixPoiContact.getContactType()
+							&&parentIxPoiContact.getContactDepart()==ixPoiContact.getContactDepart()
+							&&parentIxPoiContact.getPriority()==ixPoiContact.getPriority()){
+						childContactEqualsParent = true;
+					}
 				}
 			}
 		}
+		
 		return childContactEqualsParent;
 	}
 

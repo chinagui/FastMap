@@ -119,15 +119,20 @@ public class EditApiImpl implements EditApi {
 	public void updatePoifreshVerified(int pid, String platform)
 			throws Exception {
 		LogReader lr = new LogReader(conn);
+		if(lr.getObjectState(pid, "IX_POI")==3){
+
 		int freshVerified = 0;
 		int status = 1;
-		if (!lr.isExistObjHis(pid)) {
+
+		if (lr.isExistObjHis(pid)){
+			if(lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified = 1;
+			}
+		}else{
 			freshVerified = 1;
 			status = 2;
 		}
-		if (lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)) {
-			freshVerified = 1;
-		}
+		
 		String sql = null;
 		if ("web".endsWith(platform)) {
 			sql = "UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.pid ="
@@ -146,6 +151,7 @@ public class EditApiImpl implements EditApi {
 
 		} finally {
 			DBUtils.closeStatement(pstmt);
+		}
 		}
 	}
 

@@ -54,9 +54,10 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		//String parameter ="{\"id1\":242,\"lineWkt\":\"LINESTRING(116.6188430786133 39.78848914776114,116.6531753540039 39.772130775078956,116.69368743896483 39.77160302089718)\"}"; 
-		String parameter ="{\"lineWkt\":\"LINESTRING(115.9964 40.37375,116.04309 40.24704,116.33148 40.15579)\"}"; 
-		//String parameter ="{\"id1\":372,\"id2\":375}"; 
+		//String parameter ="{\"id1\":601,\"lineWkt\":\"LINESTRING(116.39915 39.89992,116.39825 39.89959,116.39727 39.89921,116.39714 39.89915,116.39697 39.89916)\"}"; 
+		//String parameter ="{\"id1\":653,\"lineWkt\":\"LINESTRING(115.15869 34.54502,115.04883 34.49999999999999,114.875 34.52918999999999)\"}"; 
+		String parameter ="{\"lineWkt\":\"LINESTRING(105.125 29.94066000000001,105.06912 29.86685,105.03891 29.79894,105.00000000000001 29.77511000000001,104.92905000000002 29.66666666666666,104.92905000000002 29.583333333333343,104.95789 29.47188,104.96887000000002 29.41666666666668)\"}"; 
+		//String parameter ="{\"id1\":656,\"id2\":662}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -65,7 +66,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=37;
+		int taskId=14362;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}

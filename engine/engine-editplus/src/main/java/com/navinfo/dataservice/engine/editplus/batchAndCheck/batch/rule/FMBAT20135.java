@@ -65,7 +65,9 @@ public class FMBAT20135 extends BasicBatchRule {
 					break;
 				} 
 			}
-			
+			//********2017.08.13 zl ****** 
+			if(officialName == null) return;
+			//****************************
 			standardName = poiObj.getOfficeStandardEngName(officialName.getNameGroupid());
 			if (standardName != null && StringUtils.isNotEmpty(standardName.getName())) {
 				hasStandardName = true;

@@ -11,6 +11,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 
+import net.sf.json.JSONObject;
+
 /**
  * @ClassName: PingConverterTest
  * @author Zhang Xiaolong
@@ -65,18 +67,31 @@ public class PingConverterTest {
 
 		System.out.println(res[1]);*/
 		
-		String newWord = py.wordConvert("Ｓ２７0", "310000");
-		System.out.println("newWord: "+newWord);
+		/*String newWord = py.wordConvert("Ｓ２７0", "310000");
+		System.out.println("newWord: "+newWord);*/
+		String newWord = "北京 · 医院";
 		
-		String[] res1 = py.pyVoiceConvert(newWord, null, "310000", null);
+		/*String[] res1 = py.pyVoiceConvert(newWord, null, null, null);
 		//("上海弄堂", "310000", null);
 
 		System.out.println(res1);
 		
 		System.out.println(res1[0]);
 		
-		System.out.println(res1[1]);
+		System.out.println(res1[1]);*/
+		
+		 String result = py.pyPolyphoneConvert(newWord, null);
+         String voiceStr = py.voiceConvert(newWord, null, null, null);
 
+         if (result != null) {
+             JSONObject json = new JSONObject();
+
+             json.put("phonetic", result);
+             
+             json.put("voicefile", voiceStr);
+             System.out.println(json);
+         }
+        
 	}
 	
 //	@Test

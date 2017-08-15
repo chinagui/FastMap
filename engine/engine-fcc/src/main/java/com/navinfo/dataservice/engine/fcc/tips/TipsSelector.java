@@ -1887,10 +1887,10 @@ public class TipsSelector {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
+			throw new Exception("Tips下载检查接口checkUpdate报错", e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		return 0;
 	}
 
 	/**
@@ -2246,6 +2246,7 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
+			queryTotal += " ORDER BY T_DATE DESC, ID";
 			Page page = operator.queryPage(queryTotal, curPage, pageSize);
 
 			long totalNum = page.getTotalCount();

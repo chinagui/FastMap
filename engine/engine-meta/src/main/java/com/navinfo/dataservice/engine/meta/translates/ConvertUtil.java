@@ -140,7 +140,7 @@ public class ConvertUtil {
     private static String convFullHashWidth(String sourceText, Integer convertType) {
         StringBuilder result = new StringBuilder();
         String wordValue = "";
-        if (TranslateConstant.HALF_TO_FULL == convertType) {
+        if (TranslateConstant.HALF_TO_FULL .equals(convertType) ) {
             for (Character c : sourceText.toCharArray()) {
                 wordValue = c.toString();
                 for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictFhWidth().entrySet()) {
@@ -150,7 +150,7 @@ public class ConvertUtil {
                 }
                 result.append(wordValue);
             }
-        } else if(TranslateConstant.FULL_TO_HALF == convertType) {
+        } else if(TranslateConstant.FULL_TO_HALF.equals( convertType)) {
             for (Character c : sourceText.toCharArray()) {
                 wordValue = c.toString();
                 for (Map.Entry<String, String> e : TranslateDictData.getInstance().getDictFhWidth().entrySet()) {

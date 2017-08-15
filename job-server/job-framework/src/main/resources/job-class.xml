@@ -77,10 +77,6 @@
 	<type name="metaValidation"
 		class="com.navinfo.dataservice.cop.waistcoat.job.MetaValidationJob"
 		request="com.navinfo.dataservice.cop.waistcoat.job.MetaValidationJobRequest" />
-	<type name="poiDayStatics"
-		class="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJob"
-		request="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJobRequest" >
-	</type>
 	<type name="poiDayStat"
 		class="com.navinfo.dataservice.job.statics.manJob.DayPoiJob"
 		request="com.navinfo.dataservice.job.statics.manJob.DayPoiStatJobRequest" >

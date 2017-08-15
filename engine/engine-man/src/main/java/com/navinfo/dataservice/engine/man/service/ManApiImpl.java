@@ -455,8 +455,8 @@ public class ManApiImpl implements ManApi {
 	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
-		return TimelineService.queryManTimelineByObjName(objName);
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception{
+		return TimelineService.queryManTimelineByObjName(objName,operateType);
 	}
 	
 	/**
@@ -512,7 +512,7 @@ public class ManApiImpl implements ManApi {
      * @return	Map<Long,Map<String, Object>> key:objId
      * @throws ServiceException
      */
-    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+    public  Map<String, Object> queryTimelineByCondition(int objId,
                                                                      String objType, int operateType) throws Exception{
         return TimelineService.queryTimelineByCondition(objId, objType, operateType);
     }

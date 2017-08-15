@@ -44,9 +44,10 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 		sb.append(getRelStaClause());
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(this.getSourceDbConn(),this.getGrids()," T.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		sb.append(" AND "+this.getFeatureFilter());
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);

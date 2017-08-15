@@ -1,31 +1,17 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.custom.PoiAdminIdSelHandler;
-import com.navinfo.navicommons.database.QueryRunner;
-import org.apache.commons.dbutils.DbUtils;
-
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /**
  * 批处理对象：代理店提交的POI数据（新增、修改(包含鲜度验证)、删除）；

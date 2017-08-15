@@ -202,11 +202,12 @@ public class JobService {
 	 */
 	private JobRunner jobFactory(JobType jobType){
 		JobRunner runner=null;
-		if(jobType==JobType.DAY2MONTH){
+		/*if(jobType==JobType.DAY2MONTH){
 			runner= new Day2MonthJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
-		}else if(jobType==JobType.NOTASK2MID){
+		}else*/
+		if(jobType==JobType.NOTASK2MID){
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		
  			runner = new TaskMedium2QuickRunner();		

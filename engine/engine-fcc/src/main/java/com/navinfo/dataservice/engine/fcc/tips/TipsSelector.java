@@ -1887,10 +1887,10 @@ public class TipsSelector {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
+			throw new Exception("Tips下载检查接口checkUpdate报错", e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		return 0;
 	}
 
 	/**

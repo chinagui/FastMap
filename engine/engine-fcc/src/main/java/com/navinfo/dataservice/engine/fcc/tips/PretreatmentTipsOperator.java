@@ -1849,12 +1849,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             return delType;
         }catch (Exception e) {
             e.printStackTrace();
+			throw new Exception("判断Tips删除类型报错", e);
         }finally {
             if(htab != null) {
                 htab.close();
             }
         }
-        return 2;
 	}
 
 	/**
@@ -1885,7 +1885,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
-			throw e;
+			throw new Exception("测线打断报错", e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(tipsConn);
 		}

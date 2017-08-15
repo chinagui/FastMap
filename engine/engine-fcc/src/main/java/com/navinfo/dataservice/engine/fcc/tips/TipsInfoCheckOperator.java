@@ -27,7 +27,7 @@ public class TipsInfoCheckOperator {
      * @param status
      * @param ckConfirm
      */
-    public int updateInfoCheckResult(int resultId, int status, int ckConfirm) {
+    public int updateInfoCheckResult(int resultId, int status, int ckConfirm) throws Exception {
         Connection checkConn = null;
         PreparedStatement pstmt = null;
         String updateSql = "update tips_check_result t set t.status = ?, t.ck_exception = ?, t.is_show = ?," +
@@ -35,28 +35,26 @@ public class TipsInfoCheckOperator {
 
         try {
             checkConn = DBConnector.getInstance().getCheckConnection();
-//            QueryRunner run = new QueryRunner();
-//            return run.update(checkConn, updateSql, status, status, status == 1 ? 0 : 1, ckConfirm, resultId);
-//        DBConnector.getInstance().getCheckConnection();
             pstmt = checkConn.prepareStatement(updateSql);
             pstmt.setInt(1, status);
             pstmt.setInt(2, status);
             pstmt.setInt(3, status == 1 ? 0 : 1);
             pstmt.setInt(4, ckConfirm);
             pstmt.setInt(5, resultId);
-            pstmt.executeUpdate();
+            int count = pstmt.executeUpdate();
             checkConn.commit();
+            return count;
         }catch (Exception e) {
             e.printStackTrace();
+            DbUtils.rollbackAndCloseQuietly(checkConn);
+            throw new Exception("更新检查结果报错", e);
         }finally {
         	DbUtils.closeQuietly(pstmt);
-//            DBUtils.closeStatement(pstmt);
             DbUtils.commitAndCloseQuietly(checkConn);
         }
-        return 0;
     }
 
-    public JSONObject listInfoCheckResult(int subTaskId, int curPage, int pageSize) {
+    public JSONObject listInfoCheckResult(int subTaskId, int curPage, int pageSize) throws Exception {
         String sql = "select id,rowkey,rule_id,err_Msg,err_Level,severity,status,ck_Confirm,geometry" +
                 "          FROM tips_check_result WHERE task_id = ? and status = 0 order by rowkey,id";
         String countSql = PageQueryUtils.decorateOracleCountSql(sql);
@@ -69,7 +67,6 @@ public class TipsInfoCheckOperator {
         JSONObject jsonObject = new JSONObject();
         try {
             checkConn = DBConnector.getInstance().getCheckConnection();
-//        DBConnector.getInstance().getCheckConnection();
             pstmtCount = checkConn.prepareStatement(countSql);
             pstmtCount.setInt(1, subTaskId);
             rs = pstmtCount.executeQuery();
@@ -79,8 +76,6 @@ public class TipsInfoCheckOperator {
                 total = rs.getInt(1);
             }
             jsonObject.put("total", total);
-            //rs.close();
-
             JSONArray jsonArray = new JSONArray();
 
             if(total > 0) {
@@ -112,12 +107,14 @@ public class TipsInfoCheckOperator {
 
         }catch (Exception e) {
             e.printStackTrace();
+            DbUtils.rollbackAndCloseQuietly(checkConn);
+            throw new Exception("查询检查结果列表报错", e);
         }finally {
         	DbUtils.closeQuietly(rs);
         	DbUtils.closeQuietly(rsQuery);
             DbUtils.closeQuietly(pstmtCount);
             DbUtils.closeQuietly(pstmtQuery);
-            DbUtils.rollbackAndCloseQuietly(checkConn);
+            DbUtils.commitAndCloseQuietly(checkConn);
         }
         return jsonObject;
     }

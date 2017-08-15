@@ -14,6 +14,10 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.spi.AudioFileWriter;
 
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -59,15 +63,19 @@ public class TipsExportTest extends InitApplication{
 
 	@Test
 	public void tesDownload() {
-		try {
-		//	String  parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"20161030174626\"},{\"grid\":59567511,\"date\":\"20161030174626\"},{\"grid\":59567501,\"date\":\"20161030174626\"}]}";
-			
-			String  parameter="{\"condition\":[{\"grid\":59566333,\"date\":\"\"},{\"grid\":59566332,\"date\":\"\"},{\"grid\":59566313,\"date\":\"\"},{\"grid\":59566322,\"date\":\"\"},{\"grid\":59566323,\"date\":\"\"},{\"grid\":59566312,\"date\":\"\"}]}";
-			//parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"\"},{\"grid\":59567511,\"date\":\"\"},{\"grid\":59567501,\"date\":\"\"}]}";
-			
-			//parameter="{\"condition\":[{\"grid\":59565721,\"date\":\"20161103090651\"},{\"grid\":59565623,\"date\":\"20161103090651\"},{\"grid\":59565632,\"date\":\"20161103090651\"},{\"grid\":59566700,\"date\":\"20161103090651\"},{\"grid\":59565731,\"date\":\"20161103090651\"},{\"grid\":59565633,\"date\":\"20161103090651\"},{\"grid\":59565720,\"date\":\"20161103090651\"},{\"grid\":59566701,\"date\":\"20161103090651\"},{\"grid\":59565622,\"date\":\"20161103090651\"},{\"grid\":59565730,\"date\":\"20161103090651\"},{\"grid\":59566602,\"date\":\"20161103090651\"},{\"grid\":59566603,\"date\":\"20161103090651\"}]}";
-			
-			//parameter="{\"condition\":[{\"grid\":60562531,\"date\":\"\"},{\"grid\":60562530,\"date\":\"\"},{\"grid\":60562510,\"date\":\"\"},{\"grid\":60562502,\"date\":\"\"},{\"grid\":60562512,\"date\":\"\"},{\"grid\":60562520,\"date\":\"\"},{\"grid\":60562503,\"date\":\"\"},{\"grid\":60562533,\"date\":\"\"},{\"grid\":60562511,\"date\":\"\"},{\"grid\":60562501,\"date\":\"\"},{\"grid\":60562500,\"date\":\"\"},{\"grid\":60562532,\"date\":\"\"},{\"grid\":60562522,\"date\":\"\"},{\"grid\":60562513,\"date\":\"\"},{\"grid\":60562523,\"date\":\"\"},{\"grid\":60562521,\"date\":\"\"}]}";
+        long userId = 1234;
+        String beginDate = DateUtils.getSysDateFormat();
+        String uuid = UuidUtils.genUuid();
+        String parameter = "{\"condition\":[{\"grid\":59566333,\"date\":\"\"},{\"grid\":59566332,\"date\":\"\"},{\"grid\":59566313,\"date\":\"\"},{\"grid\":59566322,\"date\":\"\"},{\"grid\":59566323,\"date\":\"\"},{\"grid\":59566312,\"date\":\"\"}]}";
+
+        try {
+            //	String  parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"20161030174626\"},{\"grid\":59567511,\"date\":\"20161030174626\"},{\"grid\":59567501,\"date\":\"20161030174626\"}]}";
+
+            //parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"\"},{\"grid\":59567511,\"date\":\"\"},{\"grid\":59567501,\"date\":\"\"}]}";
+
+            //parameter="{\"condition\":[{\"grid\":59565721,\"date\":\"20161103090651\"},{\"grid\":59565623,\"date\":\"20161103090651\"},{\"grid\":59565632,\"date\":\"20161103090651\"},{\"grid\":59566700,\"date\":\"20161103090651\"},{\"grid\":59565731,\"date\":\"20161103090651\"},{\"grid\":59565633,\"date\":\"20161103090651\"},{\"grid\":59565720,\"date\":\"20161103090651\"},{\"grid\":59566701,\"date\":\"20161103090651\"},{\"grid\":59565622,\"date\":\"20161103090651\"},{\"grid\":59565730,\"date\":\"20161103090651\"},{\"grid\":59566602,\"date\":\"20161103090651\"},{\"grid\":59566603,\"date\":\"20161103090651\"}]}";
+
+            //parameter="{\"condition\":[{\"grid\":60562531,\"date\":\"\"},{\"grid\":60562530,\"date\":\"\"},{\"grid\":60562510,\"date\":\"\"},{\"grid\":60562502,\"date\":\"\"},{\"grid\":60562512,\"date\":\"\"},{\"grid\":60562520,\"date\":\"\"},{\"grid\":60562503,\"date\":\"\"},{\"grid\":60562533,\"date\":\"\"},{\"grid\":60562511,\"date\":\"\"},{\"grid\":60562501,\"date\":\"\"},{\"grid\":60562500,\"date\":\"\"},{\"grid\":60562532,\"date\":\"\"},{\"grid\":60562522,\"date\":\"\"},{\"grid\":60562513,\"date\":\"\"},{\"grid\":60562523,\"date\":\"\"},{\"grid\":60562521,\"date\":\"\"}]}";
 /*
 			
 			//parameter="{\"condition\":[{\"grid\":60561722,\"date\":\"20161121154107\"}]}";
@@ -99,90 +107,109 @@ public class TipsExportTest extends InitApplication{
 			//parameter="{\"condition\":[{\"grid\":60561201,\"date\":\"\"}]}";
 			parameter="{\"condition\":[{\"grid\":59566213,\"date\":\"\"},{\"grid\":59566200,\"date\":\"\"},{\"grid\":59566223,\"date\":\"\"},{\"grid\":59566222,\"date\":\"\"},{\"grid\":59566230,\"date\":\"\"},{\"grid\":59566231,\"date\":\"\"},{\"grid\":59566220,\"date\":\"\"},{\"grid\":59566210,\"date\":\"\"},{\"grid\":59566211,\"date\":\"\"},{\"grid\":59566212,\"date\":\"\"},{\"grid\":59566203,\"date\":\"\"},{\"grid\":59566202,\"date\":\"\"},{\"grid\":59566201,\"date\":\"\"},{\"grid\":59566221,\"date\":\"\"},{\"grid\":59566232,\"date\":\"\"},{\"grid\":59566233,\"date\":\"\"}]}";
 			*/
-			
-			//parameter="{\"condition\":[{\"grid\":59567233,\"date\":\"\"},{\"grid\":59567330,\"date\":\"\"},{\"grid\":59567331,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560203,\"date\":\"\"},{\"grid\":60560213,\"date\":\"\"},{\"grid\":60560300,\"date\":\"\"},{\"grid\":60560301,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":60560310,\"date\":\"\"},{\"grid\":60560311,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"}]}";
-			
-			//parameter="{\"condition\":[{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567323,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567322,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"}]}";
-			String uuid = UuidUtils.genUuid();
-			
-			JSONObject jsonReq=JSONObject.fromObject(parameter);
 
-			String filePath = "E:/fcc/" + uuid + "/";
+            //parameter="{\"condition\":[{\"grid\":59567233,\"date\":\"\"},{\"grid\":59567330,\"date\":\"\"},{\"grid\":59567331,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560203,\"date\":\"\"},{\"grid\":60560213,\"date\":\"\"},{\"grid\":60560300,\"date\":\"\"},{\"grid\":60560301,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":60560310,\"date\":\"\"},{\"grid\":60560311,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"}]}";
 
-			File file = new File(filePath);
+            //parameter="{\"condition\":[{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567323,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567322,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"}]}";
 
-			if (!file.exists()) {
-				file.mkdirs();
-			}
-			//grid和date的对象数组
-			JSONArray condition = jsonReq.getJSONArray("condition");
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			TipsExporter op = new TipsExporter();
-			
-			Map<String, Set<String>> images = new HashMap<>();
+            String filePath = "E:/fcc/" + uuid + "/";
 
-			int expCount=op.export(condition, filePath, "tips.txt", images);
-			
-			
-			//2.模式图下载： 1406和1401需要导出模式图
-			if(images.size() > 0) {
-				Set<String> modelPtn = new HashSet<>();
-				Set<String> vectorPtn = new HashSet<>();
-				for(String key : images.keySet()) {
-					if(key.equals("1401") || key.equals("1406")) {
-						modelPtn.addAll(images.get(key));
-					}else if(key.equals("1402")) {
-						vectorPtn.addAll(images.get(key));
-					}
-				}
-				if(modelPtn.size() > 0 || vectorPtn.size() > 0) {
-					PatternImageExporter exporter = new PatternImageExporter();
-					exporter.export2SqliteByNames(filePath, modelPtn, vectorPtn);
-				}
-			}
+            File file = new File(filePath);
 
-			String zipFileName = uuid + ".zip";
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            //grid和date的对象数组
+            JSONArray condition = jsonReq.getJSONArray("condition");
 
-			String zipFullName = filePath+"/" + zipFileName;
-			
-			String day = StringUtils.getCurrentDay();
+            TipsExporter op = null;//new TipsExporter();
+
+            Map<String, Set<String>> images = new HashMap<>();
+
+            int expCount = op.export(condition, filePath, "tips.txt", images);
+
+
+            //2.模式图下载： 1406和1401需要导出模式图
+            if (images.size() > 0) {
+                Set<String> modelPtn = new HashSet<>();
+                Set<String> vectorPtn = new HashSet<>();
+                for (String key : images.keySet()) {
+                    if (key.equals("1401") || key.equals("1406")) {
+                        modelPtn.addAll(images.get(key));
+                    } else if (key.equals("1402")) {
+                        vectorPtn.addAll(images.get(key));
+                    }
+                }
+                if (modelPtn.size() > 0 || vectorPtn.size() > 0) {
+                    PatternImageExporter exporter = new PatternImageExporter();
+                    exporter.export2SqliteByNames(filePath, modelPtn, vectorPtn);
+                }
+            }
+
+            String zipFileName = uuid + ".zip";
+
+            String zipFullName = filePath + "/" + zipFileName;
+
+            String day = StringUtils.getCurrentDay();
             //3.打zip包
-			ZipUtils.zipFile(filePath, zipFullName);
-			
-			String serverUrl =  SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.serverUrl);
-			
-			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.downloadUrlPathTips);
+            ZipUtils.zipFile(filePath, zipFullName);
+
+            String serverUrl = SystemConfigFactory.getSystemConfig().getValue(
+                    PropConstant.serverUrl);
+
+            String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
+                    PropConstant.downloadUrlPathTips);
             //4.返回的url
-			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
-					+ zipFileName;
-			
-			System.out.println("导出成功:"+filePath);
-			
-			JSONObject data=null;
-			if(expCount>0){
-				data=new JSONObject();
-				data.put("url", filePath);
-				
-				data.put("downloadDate",  DateUtils.dateToString(new Date(),
-						DateUtils.DATE_COMPACTED_FORMAT));	
-			}
-			
-			Map<String,Object> result = new HashMap<String,Object>();
-	    	result.put("errcode", 0);
-	    	result.put("errmsg", "success");
-	    	result.put("data", data);
-			
-			System.out.println(JSONObject.fromObject(result));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	public static void transFile(byte[] fileBt,String fileName){
+            String url = serverUrl + downloadUrlPath + File.separator + day + "/"
+                    + zipFileName;
+
+            System.out.println("导出成功:" + filePath);
+
+            JSONObject data = null;
+            if (expCount > 0) {
+                data = new JSONObject();
+                data.put("url", filePath);
+
+                data.put("downloadDate", DateUtils.dateToString(new Date(),
+                        DateUtils.DATE_COMPACTED_FORMAT));
+            }
+
+            Map<String, Object> result = new HashMap<String, Object>();
+            result.put("errcode", 0);
+            result.put("errmsg", "success");
+            result.put("data", data);
+
+            System.out.println(JSONObject.fromObject(result));
+            //Tips下载记录日志 sys库中
+            insertExportLog(beginDate, userId, expCount, uuid, "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errMsg = "下载tips出错,parameter:" + parameter + "错误信息:" + e.getMessage();
+            insertExportLog(beginDate, userId, 0, uuid, errMsg);
+        }
+    }
+    private void insertExportLog(String beginDate, long userId, int expCount, String uuid, String errMsg) {
+        try{
+            SysLogStats log = new SysLogStats();
+            log.setLogType(SysLogConstant.TIPS_DOWNLOAD_TYPE);
+            log.setLogDesc(SysLogConstant.TIPS_DOWNLOAD_DESC+",uuid :"+uuid);
+            log.setFailureTotal(0);
+            log.setSuccessTotal(expCount);
+            log.setTotal(expCount);
+            log.setBeginTime(beginDate);
+            log.setEndTime(DateUtils.getSysDateFormat());
+            log.setErrorMsg(errMsg);
+            log.setUserId(String.valueOf(userId));
+            SysLogOperator.getInstance().insertSysLog(log);
+        }catch (Exception e) {
+
+        }
+    }
+
+
+    public static void transFile(byte[] fileBt,String fileName){
         String filePath = "E:\\testE\\exp\\";   //文件路径
         FileOutputStream fstream =null;
         try

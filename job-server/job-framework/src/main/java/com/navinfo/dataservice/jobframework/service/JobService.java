@@ -427,4 +427,41 @@ public class JobService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * 获取执行中的任务
+	 * @param userId
+	 * @param subtaskId
+	 * @param jobType
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType) throws ServiceException {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "select j.job_id  from job_info j where j.user_id =?  and j.task_id=?  and j.job_type=? and j.status=2";
+			log.info("getLatestJob jobInfoSql: "+jobInfoSql);
+			return run.query(conn, jobInfoSql, new ResultSetHandler<Integer>(){
+				
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs!=null &&rs.next()){
+						return rs.getInt(1);
+					}
+					return null;
+				}
+				
+			},userId,subtaskId,jobType);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//return jobObj;
+	}
 }

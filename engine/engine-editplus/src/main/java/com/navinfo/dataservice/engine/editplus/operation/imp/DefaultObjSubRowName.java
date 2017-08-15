@@ -143,5 +143,7 @@ public class DefaultObjSubRowName {
 		}
 		return tabNames;
 	}
-	
+	public static void main(String[] args){
+		System.out.println(null instanceof JSONNull);
+	}
 }

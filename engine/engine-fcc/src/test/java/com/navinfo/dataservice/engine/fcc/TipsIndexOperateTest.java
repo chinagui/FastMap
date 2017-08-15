@@ -33,7 +33,7 @@ public class TipsIndexOperateTest extends InitApplication{
 
       	Connection conn = null;
     	
-    	String rowkey="02120103a629e5246f47f9a6f22d7521b8a5b1";
+    	String rowkey="022001A166B7F75D7B495C9D667A0BB706B355";
 		
  		try 
  		{ 
@@ -49,9 +49,13 @@ public class TipsIndexOperateTest extends InitApplication{
         	
         	System.out.println(dao.getRelate_links());
         	
-        	dao.setStage(2);
+        	System.out.println(dao.getWkt());
         	
-        	r.updateOne(dao);
+        	System.out.println(dao.getWktLocation());
+        	
+ /*       	dao.setStage(2);
+        	
+        	r.updateOne(dao);*/
         	
         	System.out.println("修改成功");
  		}catch (Exception e) {

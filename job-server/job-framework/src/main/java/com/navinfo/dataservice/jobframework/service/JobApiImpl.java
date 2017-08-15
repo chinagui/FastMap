@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.exception.ServiceException;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -84,6 +86,11 @@ public class JobApiImpl implements JobApi{
 		return "Hello,Job Api.";
 	}
 	public static void main(String[] args){
+		
+	}
+	@Override
+	public Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType) throws Exception {
+		return JobService.getInstance().getJobByUserAndSubTask(userId,subtaskId,jobType);
 		
 	}
 	

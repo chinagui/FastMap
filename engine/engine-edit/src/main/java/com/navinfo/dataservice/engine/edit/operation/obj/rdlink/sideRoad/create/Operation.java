@@ -154,7 +154,7 @@ public class Operation implements IOperation {
 
 				RdLink link = intersectionMap.get(geo);
 
-				if (linkMapTmp.containsKey(geo)) {
+				if (linkMapTmp.containsKey(link)) {
 					continue;
 				}
 

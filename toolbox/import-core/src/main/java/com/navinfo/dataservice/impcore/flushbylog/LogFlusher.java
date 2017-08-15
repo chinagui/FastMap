@@ -302,8 +302,8 @@ public abstract class LogFlusher {
 	private  int prepareLog()throws Exception{
 		QueryRunner run = new QueryRunner();
 		SqlClause sqlClause = this.getPrepareSql();
-		this.log.debug(sqlClause.getSql());
 		if (sqlClause==null) return 0;
+		this.log.debug(sqlClause.getSql());
 		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
 			return run.update(this.sourceDbConn, sqlClause.getSql());
 		}

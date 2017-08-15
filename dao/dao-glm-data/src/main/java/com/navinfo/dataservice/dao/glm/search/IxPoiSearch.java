@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
@@ -372,6 +374,95 @@ public class IxPoiSearch implements ISearch {
 
 		}
 
+		return list;
+	}
+	
+	/**
+	 * @Title: searchDataByTileWithGap
+	 * @Description: TODO
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 *             List<SearchSnapshot>
+	 * @throws
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 上午10:57:18
+	 */
+	public List<SearchSnapshot> searchDataByTileWithGapSnapshot(int x, int y, int z,
+			int gap, int taskId) throws Exception {
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("WITH TMP1 AS");
+		sb.append(" (SELECT I.PID,");
+		sb.append("         I.GEOMETRY");
+		sb.append("    FROM IX_POI I");
+		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");
+		sb.append("                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+		sb.append("     AND I.U_RECORD != 2)");
+		sb.append(" SELECT /*+ORDERED ,NO_MERGE(B)*/");
+		sb.append(" B.PID,");
+		sb.append(" B.GEOMETRY,");
+		sb.append(" A.IS_PLAN_SELECTED,");
+		sb.append(" A.IS_IMPORTANT");
+		sb.append("  FROM TMP1 B, DATA_PLAN A");
+		sb.append(" WHERE B.PID = A.PID");
+		sb.append("   AND A.DATA_TYPE = 1");
+		sb.append("   AND A.TASK_ID = :2");
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			log.info("sql: " + sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			log.info("wkt:" + wkt);
+			pstmt.setString(1, wkt);
+			pstmt.setInt(2, taskId);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));
+				m.put("isImportant", resultSet.getInt("is_important"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(21);
+
+				snapshot.setI(resultSet.getInt("pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				Geojson.point2Pixel(geojson, z, px, py);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 		return list;
 	}
 
@@ -1038,7 +1129,7 @@ public class IxPoiSearch implements ISearch {
 	private List<List<String>> pyConvertor(String word) throws Exception {
 		List<List<String>> result = new ArrayList<List<String>>();
 		try {
-			word.replace(" ", "");
+			word=word.replace(" ", "");
 			for (int i = 0; i < word.length(); i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {

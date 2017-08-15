@@ -275,6 +275,7 @@ public class TipsUpload {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("Tips上传报错", e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
         }

@@ -4,11 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import net.sf.json.JSONArray;
@@ -384,21 +380,23 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 
 		log.debug(pageSql);
 
+        final Set<String> rowkeySet = new HashSet<>();
 		ResultSetHandler<Page> resultSetHandler = new ResultSetHandler<Page>() {
 			int total=0;
 			@Override
 			public Page handle(ResultSet rs) throws SQLException {
 				Page page = new Page(pageNum);
 				page.setPageSize(pageSize);
-				Map<String, TipsDao> map = new HashMap<>();
+				List<TipsDao> list = new ArrayList<>();
 				while (rs.next()) {
 					TipsDao dao = new TipsDao();
 					dao.loadResultSet(rs);
-					map.put(dao.getId(), dao);
+                    rowkeySet.add(dao.getId());
+					list.add(dao);
 					total=rs.getInt("TOTAL_RECORD_NUM");
 				}
 				page.setTotalCount(total);
-				page.setResult(map);
+				page.setResult(list);
 				return page;
 			}
 		};
@@ -408,9 +406,9 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		newParams[params.length + 1] = pageStartNum;
 
 		Page page = run.query(conn, pageSql, resultSetHandler, newParams);
-		Map<String, TipsDao> map = (Map<String, TipsDao>)page.getResult();
-		if(map.size()>0) {
-			List<TipsDao> result = loadHbaseProperties(map);
+		List<TipsDao> list = (List<TipsDao>)page.getResult();
+		if(list.size()>0) {
+			List<TipsDao> result = loadHbaseProperties(rowkeySet, list);
 			page.setResult(result);
 		}else{
 			page.setResult(new ArrayList<TipsDao>());
@@ -501,6 +499,22 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		}
 		return result;
 	}
+
+    private List<TipsDao> loadHbaseProperties(Set<String> rowkeySet, List<TipsDao> list) throws Exception{
+        List<TipsDao> result = new ArrayList<>();
+        String[] queryColNames = { "deep", "geometry", "feedback", "tipdiff" };
+        Map<String, JSONObject> hbaseMap = HbaseTipsQuery.getHbaseTipsByRowkeys(rowkeySet, queryColNames);
+        for (TipsDao dao : list) {
+            if (!hbaseMap.containsKey(dao.getId())) {
+                throw new Exception("tip not found in hbase,rowkey:" + dao.getId());
+            }
+
+            JSONObject hbaseTips = hbaseMap.get(dao.getId());
+            dao.loadHbase(hbaseTips);
+            result.add(dao);
+        }
+        return result;
+    }
 
     @Override
     public void delete(String rowkey) throws DaoOperatorException {

@@ -45,11 +45,7 @@ public class LogReader {
 	private final static List<String> filterFdList = new ArrayList<String>(){{
 	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");
 	    }};
-	    @SuppressWarnings("serial")
-	    private final static List<String> filterMoFdList = new ArrayList<String>(){{
-	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");add("\"POI_MEMO\"");
-	    }};
-
+	    
 	public LogReader(Connection conn) {
 		this.conn = conn;
 	}

@@ -126,7 +126,7 @@ public class PretreatmentTipsController extends BaseController {
 			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
             if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
-            	op2.deleteByRowkey(rowkey, delType);
+            	op2.deleteByRowkey(rowkey, delType, subTaskId);
             }
 
 			return new ModelAndView("jsonView", success());

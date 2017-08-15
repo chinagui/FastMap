@@ -382,6 +382,93 @@ public class RdLinkSearch implements ISearch {
 		return list;
 	}
 	
+	/**
+	 * @Title: searchDataByTileWithGap
+	 * @Description: TODO
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param taskId
+	 * @return
+	 * @throws Exception  List<SearchSnapshot>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年7月4日 上午10:56:53 
+	 */
+	public List<SearchSnapshot> searchDataByTileWithGapSnapshot(int x, int y, int z,
+			int gap,int taskId) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = "with tmp1 as"
+				+ " (select l.link_pid,"
+				+ "         l.direct,"
+				+ "         l.kind,"
+				+ "         l.geometry"
+				+ "    from rd_link l"
+				+ "   where sdo_relate(l.geometry,sdo_geometry(:1,8307),"
+				+ "                    'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'"
+				+ "     and l.u_record != 2)"
+				+ " select /*+ordered*/a.link_pid,a.direct,a.kind,a.geometry, e.scenario, f.is_plan_selected"
+				+ "  from tmp1 a,"
+				+ "       link_edit_pre e,"
+				+ "       data_plan f"
+				+ " where a.link_pid = e.pid(+)"
+				+ "   and a.link_pid = f.pid"
+				+ "   and f.data_type = 2"
+				+ "   and f.task_id = :2";
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			log.info("sql: "+sql);
+			pstmt = conn.prepareStatement(sql);
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+			pstmt.setInt(2, taskId);
+			log.info(wkt);
+			log.info(taskId);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("kind"));
+				m.put("b", "");
+				m.put("d", resultSet.getInt("direct"));				
+				m.put("isPlanSelected", resultSet.getInt("is_plan_selected"));				
+				m.put("n", resultSet.getInt("scenario"));
+				snapshot.setM(m);
+				snapshot.setT(4);
+				snapshot.setI(resultSet.getInt("link_pid"));
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+				snapshot.setG(jo.getJSONArray("coordinates"));
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return list;
+	}
+	
 	private List<SearchSnapshot> searchData(ResultSet resultSet)
 			throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();

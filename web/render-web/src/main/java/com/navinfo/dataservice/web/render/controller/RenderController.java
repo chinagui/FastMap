@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,11 +35,21 @@ public class RenderController extends BaseController {
 			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+		
+		if (jsonReq.containsKey("platform")
+				&& jsonReq.getString("platform") != null
+				&& jsonReq.getString("platform").equals("dataPlan")) {
+			response.getWriter().println(manRender(jsonReq));
+		}else {
+			response.getWriter().println(commonRender(jsonReq));
+		}
+	}
+	
+	private String commonRender(JSONObject jsonReq) {
 		Connection conn = null;
 
 		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			JSONArray array = null;
 
 			JSONArray type = jsonReq.getJSONArray("types");
@@ -89,46 +101,84 @@ public class RenderController extends BaseController {
 				}
 
 			} else {
-				if (jsonReq.containsKey("platform")
-						&& jsonReq.getString("platform") != null
-						&& jsonReq.getString("platform").equals("dataPlan")) {
-					int taskId = jsonReq.getInt("taskId");
-
-					// 当 大于等于 17 级时 且 含platform = dataPlan
-					conn = DBConnector.getInstance().getConnectionById(dbId);
-
-					SearchProcess p = new SearchProcess();
-					p.setArray(array);
-					p.setDbId(dbId);
-					data = p.searchDataByTileWithGap(types, x, y, z, gap,
-							taskId);
-
-				} else {
-					SearchProcess p = new SearchProcess();
-					p.setArray(array);
-					p.setDbId(dbId);
-					data = p.searchDataByTileWithGap(types, x, y, z, gap);
-
-				}
-
+				SearchProcess p = new SearchProcess();
+				p.setArray(array);
+				p.setDbId(dbId);
+				data = p.searchDataByTileWithGap(types, x, y, z, gap);
 			}
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return ResponseUtils.assembleRegularResult(data);
 		} catch (Exception e) {
-
 			logger.error(e.getMessage(), e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage()));
-
+			return ResponseUtils.assembleFailResult(e.getMessage());
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	private String manRender(JSONObject jsonReq){
+		try {
+			JSONArray array = null;
+			JSONArray type = jsonReq.getJSONArray("types");
+
+			int dbId = jsonReq.getInt("dbId");
+			if (jsonReq.containsKey("noQFilter")) {
+				array = jsonReq.getJSONArray("noQFilter");
 			}
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			List<ObjType> types = new ArrayList<ObjType>();
+
+			for (int i = 0; i < type.size(); i++) {
+				types.add(ObjType.valueOf(type.getString(i)));
+			}
+
+			JSONObject data = null;
+
+			if (z <= 10) {
+
+				List<ObjType> tileTypes = new ArrayList<ObjType>();
+
+				for (ObjType t : types) {
+					if (t == ObjType.RDLINK || t == ObjType.ADLINK
+							|| t == ObjType.RWLINK) {
+						tileTypes.add(t);
+					}
+				}
+				if (!tileTypes.isEmpty()) {
+					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z,
+							dbId);
+
+					if (data == null) {
+						data = new JSONObject();
+					}
+
+					data.putAll(jo);
+				}
+
+			} else {
+				int taskId = jsonReq.getInt("taskId");
+				SearchProcess p = new SearchProcess();
+				p.setArray(array);
+				p.setDbId(dbId);
+				p.setZ(z);
+				p.setTaskId(taskId);
+				data = p.searchDataByTileWithGapForMan(types, x, y, z, gap);
+			}
+			return ResponseUtils.assembleRegularResult(data);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return ResponseUtils.assembleFailResult(e.getMessage());
 		}
 	}
 

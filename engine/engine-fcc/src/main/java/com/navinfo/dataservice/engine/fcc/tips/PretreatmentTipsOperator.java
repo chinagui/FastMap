@@ -1,8 +1,35 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.io.IOException;
+import java.sql.Clob;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -11,30 +38,14 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.dataservice.engine.fcc.tips.check.GdbDataQuery;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * 预处理tips操作类
@@ -1075,7 +1086,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		Connection hbaseConn = null;
 		java.sql.Connection tipsConn=null;
         Table htab = null;
-        Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+       // Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
 			tipsConn =DBConnector.getInstance().getTipsIdxConnection();
             JSONObject source = jsonInfo.getJSONObject("source");
@@ -1098,30 +1109,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 logger.error("新增tips出错：原因：显示坐标非法");
                 throw new Exception("新增tips出错：原因：显示坐标非法");
             }
-
-            if(sourceType.equals("1205") || sourceType.equals("1206")
-                    || sourceType.equals("1211")) {//新增或者修改
-                JSONObject deepJson = jsonInfo.getJSONObject("deep");
-                JSONObject fJson = deepJson.getJSONObject("f");
-                String relateId = fJson.getString("id");
-                int relateLinkType = fJson.getInt("type");
-
-                if(relateLinkType == 1) {//GDB LINK
-                    java.sql.Connection oraConn = DBConnector.getInstance().getConnectionById(dbId);
-                    boolean isGdbHas = TipsPreCheckUtils.hasInGdb(oraConn, relateId);
-                    if(isGdbHas) {
-                        logger.error("新增tips出错：原因：关联要素具有上线下分离属性link");
-                        throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性link");
-                    }
-                }
-
-                boolean isSolrHas = TipsPreCheckUtils.hasInOracle(tipsConn, relateId);
-                if(isSolrHas) {//Solr
-                    logger.error("新增tips出错：原因：关联要素具有上线下分离属性Tips");
-                    throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性Tips");
-                }
-            }
-
+            
+            //预处理保存前检查
+            preCheck(jsonInfo, dbId, tipsConn, sourceType,command);
+            
+            
             hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
@@ -1151,7 +1143,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 			
 			//需要进行tips差分
-			allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
+			//allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
 
 		} catch (Exception e) {
 			logger.error("更新tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
@@ -1168,6 +1160,152 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		//20170808  确认，web渲染不再使用差分结果。因此取消差分 
 		//TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
         return rowkey;
+	}
+
+	/**
+	 * @Description:预处理保存前检查
+	 * @param jsonInfo：要保存的tips信息
+	 * @param dbId：大区库Id
+	 * @param tipsConn:tips索引库连接
+	 * @param sourceType：tips类型
+	 * @param command  新增或者修改
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-14 下午4:06:27
+	 */
+	private void preCheck(JSONObject jsonInfo, int dbId,
+			java.sql.Connection tipsConn, String sourceType, int command) throws Exception {
+		  java.sql.Connection oraConn =null;
+		try{
+			oraConn=DBConnector.getInstance().getConnectionById(dbId);
+			if(sourceType.equals("1205") || sourceType.equals("1206")
+			        || sourceType.equals("1211")) {//新增或者修改
+			    JSONObject deepJson = jsonInfo.getJSONObject("deep");
+			    JSONObject fJson = deepJson.getJSONObject("f");
+			    String relateId = fJson.getString("id");
+			    int relateLinkType = fJson.getInt("type");
+
+			    if(relateLinkType == 1) {//GDB LINK
+			        boolean isGdbHas = TipsPreCheckUtils.hasInGdb(oraConn, relateId);
+			        if(isGdbHas) {
+			            logger.error("新增tips出错：原因：关联要素具有上线下分离属性link");
+			            throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性link");
+			        }
+			    }
+
+			    boolean isSolrHas = TipsPreCheckUtils.hasInOracle(tipsConn, relateId);
+			    if(isSolrHas) {//Solr
+			        logger.error("新增tips出错：原因：关联要素具有上线下分离属性Tips");
+			        throw new Exception("新增tips出错：原因：关联要素具有上线下分离属性Tips");
+			    }
+			}
+			//测线检查
+			else if("2001".equals(sourceType)&&command == COMMAND_UPADATE){
+	            	
+	            	checkMeasureLine(jsonInfo,tipsConn,oraConn);
+	        }
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(oraConn);
+			logger.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(oraConn);
+		}
+		
+            
+	}
+
+	/**
+	 * @Description:测线修形检查-
+	 * 测线上有立交，且修行后的测线的几何，和原有的组成线的交点不等于1.则提示报错：“测线上存在立交，且修行后交点不为1 ，不允许修形”
+	 * @param jsonInfo:修形后的斜线
+	 * @author: y
+	 * @param oraConn 大区库的连接
+	 * @param tipsConn tips索引库的连接
+	 * @throws Exception 
+	 * @time:2017-8-14 下午4:01:52
+	 */
+	private void checkMeasureLine(JSONObject jsonInfo, java.sql.Connection tipsConn, java.sql.Connection oraConn) throws Exception {
+		String rowkey = jsonInfo.getString("rowkey");
+	     JSONObject geoJson = jsonInfo.getJSONObject("geometry");
+         JSONObject locationJson = geoJson.getJSONObject("g_location");
+         Geometry locationGeo = GeoTranslator.geojson2Jts(locationJson);
+         
+         StringBuffer gdbRdLinkPids=new StringBuffer(""); //gdb 的rd_link
+         StringBuffer gdbRwLinkPids=new StringBuffer(""); //gdb 的rw_link 铁路
+         StringBuffer tipsRowkeys=new StringBuffer(""); //其他测线
+         //1.查询，是否有立交tips
+         String query = "select * from tips_index i where i.s_sourcetype=1116 AND  exists(select 1 from tips_links l where i.id=l.id"
+         		+ " and l.Link_Id=? )";
+         TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+         List<TipsDao> gscTipsDaos = operator.query(query, rowkey);
+         //每一个立交
+ 		 for (TipsDao gsc : gscTipsDaos) {
+ 			JSONObject deep= JSONObject.fromObject( gsc.getDeep());
+ 			JSONArray  f_array=deep.getJSONArray("f_array");
+ 			//加一个判断，如果原来立交组成线有三条，修行后和原来的交点不想交，则不允许修形--20170815和凌云确认
+ 			if(f_array.size()>2){
+ 				Geometry gscLocation = GeoTranslator.geojson2Jts(JSONObject.fromObject(gsc.getG_location()));
+ 				boolean isInterscts=locationGeo.intersects(gscLocation); //测线和原有立交点不想交
+ 				if(!isInterscts){
+ 					throw new Exception("操作错误\n提示：测线上存在立交，且修行后交点不为1 ，不允许修形");
+ 				}
+ 			}
+ 			
+ 			for (Object object : f_array) {
+ 				JSONObject fInfo = JSONObject.fromObject(object);
+ 				//查其他组成线
+ 				String id=fInfo.getString("id");
+ 				if(!rowkey.equals(id)){
+ 					//1.是RDLInk
+ 					if(fInfo.getInt("type")==1){
+ 						gdbRdLinkPids.append(id);
+ 					}
+ 					//2是测线
+ 					if(fInfo.getInt("type")==2){
+ 						tipsRowkeys.append(id);
+ 					}
+ 					//3是铁路
+ 					if(fInfo.getInt("type")==3){
+ 						gdbRwLinkPids.append(id);
+ 					}
+ 				}
+ 				
+			}
+ 		}
+ 		 
+ 		 //2.查询其他关联线的几何
+ 		 List<Geometry> lineGeoList=new ArrayList<Geometry>();
+ 		 GdbDataQuery oraQuery=new GdbDataQuery(oraConn);
+ 		 //测线，索引库查wktlocation 就可以
+ 		 if(tipsRowkeys.length()>0){
+ 			List<Geometry> tipsGeo=new ArrayList<Geometry>();
+ 			 String sql="SELECT * FROM tips_index  d WHERE ID IN(?)";
+ 			 Clob  pidClob=ConnectionUtil.createClob(tipsConn,tipsRowkeys.toString());
+ 			 List<TipsDao>  tipsList=new TipsIndexOracleOperator(tipsConn).query(sql, pidClob);
+ 			 for (TipsDao tipsDao : tipsList) {
+ 				tipsGeo.add(tipsDao.getWktLocation());
+			 }
+ 		 }
+ 		 //铁路
+ 		 if(gdbRwLinkPids.length()>0){
+ 			lineGeoList.addAll(oraQuery.queryLineGeometry("RW_LINK", gdbRwLinkPids.toString()));
+ 		 }
+ 		 //rd_link
+ 		 if(gdbRdLinkPids.length()>0){
+ 			lineGeoList.addAll(oraQuery.queryLineGeometry("RD_LINK", gdbRwLinkPids.toString()));
+ 		 }
+ 		 
+ 		 //3.判断各个线和当前修形的测线是不是有两个交点，若有，则返回报错
+ 		 for (Geometry geometry : lineGeoList) {
+ 			
+ 			Geometry interGeo=locationGeo.intersection(geometry);
+ 			
+ 			if(interGeo!=null&&interGeo.getNumGeometries()>2){
+ 				throw new Exception("操作错误\n提示：测线上存在立交，且修行后交点不为1 ，不允许修形");
+ 			}
+ 		}
+ 		 
 	}
 
 	/**

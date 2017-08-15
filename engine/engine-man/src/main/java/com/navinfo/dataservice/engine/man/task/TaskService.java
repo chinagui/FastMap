@@ -4154,7 +4154,7 @@ public class TaskService {
 			StringBuffer linksb = new StringBuffer();
 			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where  t.u_record != 2 and ");
-			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String linkSql = linksb.toString();
 			Clob clob = ConnectionUtil.createClob(dailyConn);
 			clob.setString(1, wkt);
@@ -4165,7 +4165,7 @@ public class TaskService {
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
 			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where  p.u_record != 2 and ");
-			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);

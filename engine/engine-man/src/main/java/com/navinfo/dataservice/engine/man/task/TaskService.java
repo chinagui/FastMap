@@ -3583,11 +3583,13 @@ public class TaskService {
 		String selectPid = "select pes.pid"
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
-				 + " and pes.status ！= 0"
-				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
+				 + " and pes.status != 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
 		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
-		return run.update(dailyConn, updateSql);
+		Clob clob = ConnectionUtil.createClob(dailyConn);
+		clob.setString(1, wkt);
+		return run.update(dailyConn, updateSql,clob);
 	}
 	
 	
@@ -3699,7 +3701,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			Task task = queryByTaskId(conn, taskId);
+			Task task = queryNoGeoByTaskId(conn, taskId);
 			return batchNoTaskMidData(conn, task);
 		}catch(Exception e){
 			log.error("", e);
@@ -3850,7 +3852,7 @@ public class TaskService {
 			
 			//String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from TASK t where ");//t.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name,t.region_id from TASK t where ");//t.program_id = "+programId);
 			//未规划草稿状态
 			sb.append(" t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
@@ -3877,6 +3879,7 @@ public class TaskService {
 					map.put("taskId", rs.getInt("task_id"));
 					map.put("name", rs.getString("name"));
 					map.put("blockId", rs.getInt("block_id"));
+					map.put("regionId", rs.getInt("region_id"));
 					result.add(map);
 				}
 				return result;

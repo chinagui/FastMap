@@ -72,7 +72,7 @@ public class ResourseFilter implements Filter {
 					type = "0";
 				}else{
 					if(requestUri.indexOf("?")>0)
-						requestUri = requestUri.split("?")[0];
+						requestUri = requestUri.split("\\?")[0];
 					url = requestUri.replace(path+"springmvc", "");
 					type = "1";
 					app = path;

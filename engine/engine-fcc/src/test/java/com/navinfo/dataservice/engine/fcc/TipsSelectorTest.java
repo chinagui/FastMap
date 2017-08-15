@@ -512,10 +512,20 @@ public class TipsSelectorTest extends InitApplication {
 
 	}
 
+    @Test
+    public void testListInfoTipsByPage() throws Exception {
+        String parameter = "{\"subTaskId\":772,\"programType\":4,\"curPage\":1,\"pageSize\":10,\"tipStatus\":1}";
+        TipsSelector selector = new TipsSelector();
+        JSONObject jsonObject = selector.listInfoTipsByPage(parameter);
+        System.out.println("*********************************************");
+        System.out.println("*********************************************");
+        System.out.println("*********************************************");
+        System.out.println(jsonObject.toString());
+    }
 
 	@Test
 	public void testImport() {
-		String parameter = "{\"jobId\":74,\"subtaskId\":721}";
+		String parameter = "{\"jobId\":74,\"subtaskId\":772}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);

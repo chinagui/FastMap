@@ -119,6 +119,8 @@ public class EditApiImpl implements EditApi {
 	public void updatePoifreshVerified(int pid, String platform)
 			throws Exception {
 		LogReader lr = new LogReader(conn);
+		if(lr.getObjectState(pid, "IX_POI")==3){
+
 		int freshVerified = 0;
 		int status = 1;
 
@@ -149,6 +151,7 @@ public class EditApiImpl implements EditApi {
 
 		} finally {
 			DBUtils.closeStatement(pstmt);
+		}
 		}
 	}
 

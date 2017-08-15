@@ -25,16 +25,16 @@ public class BatchInitPlan {
 		JobScriptsInterface.initContext();
 		List<Map<String, Object>> allTask = TaskService.getInstance().unPlanlist(new JSONObject());
 		Set<Integer> errorTaskIds=new HashSet<Integer>();
-		//按照大区分组并行跑
-		Map<Integer,Set<Integer>> regionTaskMap=new HashMap<>();
-		for(Map<String, Object> task:allTask){
-			int taskId=(int) task.get("taskId");
-			int regionId=(int) task.get("regionId");
-			if(!regionTaskMap.containsKey(regionId)){
-				regionTaskMap.put(regionId, new HashSet<Integer>());
-			}
-			regionTaskMap.get(regionId).add(taskId);
-		}
+//		//按照大区分组并行跑
+//		Map<Integer,Set<Integer>> regionTaskMap=new HashMap<>();
+//		for(Map<String, Object> task:allTask){
+//			int taskId=(int) task.get("taskId");
+//			int regionId=(int) task.get("regionId");
+//			if(!regionTaskMap.containsKey(regionId)){
+//				regionTaskMap.put(regionId, new HashSet<Integer>());
+//			}
+//			regionTaskMap.get(regionId).add(taskId);
+//		}
 		for(Map<String, Object> task:allTask){
 			int taskId=0;
 			try{

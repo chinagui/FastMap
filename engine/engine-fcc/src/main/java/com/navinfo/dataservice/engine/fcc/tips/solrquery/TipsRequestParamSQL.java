@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.fcc.tips.solrquery;
 import java.util.*;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -537,23 +539,21 @@ public class TipsRequestParamSQL {
 		return new OracleWhereClause(builder.toString(), values);
 	}
 
-    public OracleWhereClause getTaskRender(String parameter, java.sql.Connection tipsConn) throws Exception {
+    public OracleWhereClause getTaskRender(String parameter, String renderWkt, java.sql.Connection tipsConn,
+                                           Subtask subtask) throws Exception {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
         JSONArray workStatus = jsonReq.getJSONArray("workStatus");
-        int subtaskId = jsonReq.getInt("subtaskId");
-
-        ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-        Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
         // solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
+        //builder.append("sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ");
         List<Object> values = new ArrayList<Object>();
+        values.add(ConnectionUtil.createClob(tipsConn, renderWkt));
         values.add(ConnectionUtil.createClob(tipsConn, subtask.getGeometry()));
 
         StringBuilder taskBuilder = null;
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtask.getSubtaskId());
         if (taskSet != null && taskSet.size() > 0) {
             taskBuilder = this.getSolrIntSetQueryNoAnd(taskSet, "s_qTaskId");
         }
@@ -577,7 +577,8 @@ public class TipsRequestParamSQL {
             // 20170712修改。 如果是区域粗编子任务，tips列表中只统计显示FC预处理Tips（s_sourceType=8001）
             //根据日编子任务查找项目ID，再根据项目ID查找项目ID下的日编子任务
             //TODO 晓毅提供接口
-            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtaskId);
+            ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+            List<Integer> projectSet = apiService.queryRudeSubTaskBySubTask(subtask.getSubtaskId());
             StringBuilder projectBuilder = new StringBuilder();
             this.getIntArrayQueryFromString(projectBuilder, projectSet, "s_project");
             //20170808修改，服务不再限制类型，由web控制。输入：玉秀、王屯

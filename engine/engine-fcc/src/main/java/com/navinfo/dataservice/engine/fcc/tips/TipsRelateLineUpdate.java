@@ -12,6 +12,7 @@ import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
@@ -42,6 +44,9 @@ public class TipsRelateLineUpdate {
 	private String oldRowkey=""; //打断前测线的rowkey
 	private int dbId;
 	Connection tipsConn=null; //tips索引库连接
+	
+	private static final Logger logger = Logger
+			.getLogger(PretreatmentTipsOperator.class);
 	
 	/**
 	 * @param json
@@ -901,7 +906,7 @@ public class TipsRelateLineUpdate {
                 String id = fInfo.getString("id");
                 if (type == 2 && id.equals(oldRowkey)) {
                 	//获取到，打断后和立交g_location相交的线
-                	TipsDao dao=calIntersectLine();
+                	 TipsDao dao=calIntersectLine();
 	               	 JSONObject newFInfo =JSONObject.fromObject(fInfo);//创建一个新的
 	    			 newFInfo.put("id", dao.getId());
 	    			 //计算，打断后组成线和立交几何，左右2米的一个几何弧端
@@ -944,9 +949,28 @@ public class TipsRelateLineUpdate {
 	 * @time:2017-8-15 上午10:10:11
 	 */
 	private TipsDao calIntersectLine() {
+		logger.info("===========:开始判断打断后关联线：calIntersectLine===========" );
+		logger.info("===========:cutLines.size()："+cutLines.size()+"===========" );
 		for (TipsDao lineTipsDao : cutLines) {
-			Geometry  lineGeo=GeoTranslator.geojson2Jts(JSONObject.fromObject(lineTipsDao.getG_location()));
-			boolean isIntersects=lineGeo.intersects(GeoTranslator.geojson2Jts(JSONObject.fromObject(json.getG_location())));
+			Geometry  cutLineGeo=GeoTranslator.geojson2Jts(JSONObject.fromObject(lineTipsDao.getG_location()));
+			logger.info("===========CutlineGeo:"+cutLineGeo);
+			logger.info("===========lineGeo:"+JSONObject.fromObject(json.getG_location()));
+			logger.info("===========lineGeoJts:"+GeoTranslator.geojson2Jts(JSONObject.fromObject(json.getG_location())));
+			
+			// 将坐标点扩大100000倍，（web给的坐标点，可能不在线上，有一定的误差）
+			cutLineGeo = GeoTranslator.transform(cutLineGeo, 100000, 5);
+			Point gscLocation=(Point)GeoTranslator.geojson2Jts(JSONObject.fromObject(json.getG_location()));
+			gscLocation = (Point)GeoTranslator.transform(gscLocation, 100000, 5);
+			
+			Coordinate pointCoor = GeometryUtils.getLinkPedalPointOnLine(gscLocation.getCoordinate(), cutLineGeo); //立交点，和打断线的垂足
+			
+			Point newPoint = JtsGeometryFactory.createPoint(pointCoor);
+			boolean isIntersects=false;
+			if(!newPoint.isEmpty()&&Math.abs(newPoint.getX() - gscLocation.getX()) < 1
+					&& Math.abs(newPoint.getY() - gscLocation.getY()) < 1){
+				 isIntersects=true;
+			}
+			//boolean isIntersects=cutLineGeo.intersects(gscLocation);
 			if(isIntersects){
 				return lineTipsDao;
 			}

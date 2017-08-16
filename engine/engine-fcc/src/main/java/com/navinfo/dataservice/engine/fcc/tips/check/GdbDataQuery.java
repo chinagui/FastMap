@@ -48,7 +48,7 @@ public class GdbDataQuery {
 	 */
     public  List<Geometry> queryLineGeometry(String tableName,String pids) throws Exception{
     	List<Geometry> geoList=new ArrayList<Geometry>();
-        String sqlLink = "SELECT K.GEOMETRY GEOMETRY  FROM "+tableName+" K WHERE   K.LINK_PID IN(?)";
+        String sqlLink = "SELECT K.GEOMETRY GEOMETRY  FROM "+tableName+" K WHERE   K.LINK_PID IN (select to_char(column_value) from table(clob_to_table(?)))";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {

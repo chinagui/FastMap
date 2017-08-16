@@ -42,9 +42,11 @@ public class LogReader {
 	private Connection conn;
 
 	 @SuppressWarnings("serial")
-	private final static List<String> filterFdList = new ArrayList<String>(){{
+	private final static List<String> filterFdList = new ArrayList<String>(){{ add("\"FIELD_STATE\""); add("\"OLD_NAME\"");
+	add("\"OLD_ADDRESS\"");add("\"OLD_KIND\"");add("\"LOG\"");add("\"POI_MEMO\"");
 	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");
 	    }};
+	   
 	    
 	public LogReader(Connection conn) {
 		this.conn = conn;
@@ -284,7 +286,7 @@ public class LogReader {
 		String fd_lst=null;
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
 				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM='IX_POI_PHOTO' OR (de.TB_NM='IX_POI' AND  instr(de.FD_LST,'POI_MEMO')>0)) "
-				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI'))";
+				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI') AND OB_PID=de.OB_PID)";
 
 		PreparedStatement pstmt = null;
 
@@ -326,7 +328,7 @@ public class LogReader {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isExistObjHis(int objPid) throws Exception {
+	public boolean isFreshVerified(int objPid) throws Exception {
 		String tb_num=null;
 		String fd_lst=null;
 
@@ -343,17 +345,16 @@ public class LogReader {
 				tb_num=resultSet.getString("tb_nm");
 				fd_lst=resultSet.getString("fd_lst");
 				if ("IX_POI".equals(tb_num)){
+					  if(fd_lst.isEmpty()){return false;}
 					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
 					  for(int j= 0 ; j<arrFd.length;j++){
 			            	if (!filterFdList.contains(arrFd[j]))
-			            	{ return true;}
+			            	{ return false;}
 			            }  
-				}else{
-					return true;
+				}else if(!("IX_POI_PHOTO".equals(tb_num)||"IX_POI_AUDIO".equals(tb_num)))
+					return false;
 				}
-				
-			} 
-			return false;
+			return true;
 		} catch (Exception e) {
 
 			throw e;
@@ -568,7 +569,7 @@ public class LogReader {
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		
 		sb.append(" WITH A AS                                                                    ");
-		sb.append("  (SELECT D.OB_PID, MAX(P.OP_DT) DT                                           ");
+		sb.append("  (SELECT /*+ORDERED*/D.OB_PID, MAX(P.OP_DT) DT                                           ");
 		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
 		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
 		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
@@ -589,7 +590,7 @@ public class LogReader {
 		}
 		sb.append("    GROUP BY OB_PID),                                                         ");
 		sb.append(" B AS                                                                         ");
-		sb.append("  (SELECT D.OB_PID, D.OP_TP                                                   ");
+		sb.append("  (SELECT /*+ORDERED*/D.OB_PID, D.OP_TP                                                   ");
 		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
 		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
 		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
@@ -1021,7 +1022,7 @@ public class LogReader {
 //		System.out.println(new Date());
 //		System.out.println(new Date());
 //		String objTable = "IX_POI";
-		int objPid = 6058564 ;
+		int objPid = 55005398 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
 //		List<Long> pidList = new ArrayList<Long>();
 //		pidList.add(505000108L);
@@ -1038,7 +1039,7 @@ public class LogReader {
 //		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
 //		System.out.println(poiNumBySubtaskId);
 		LogReader l=new LogReader(con);
-		System.out.println(l.isExistObjHis(objPid));
-		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
+		System.out.println(l.isFreshVerified(objPid));
+//		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
 	}
 }

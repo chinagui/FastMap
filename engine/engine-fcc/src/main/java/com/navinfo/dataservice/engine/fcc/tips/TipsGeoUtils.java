@@ -340,7 +340,7 @@ public class TipsGeoUtils {
 		Geometry resultLine = JtsGeometryFactory.createLineString(coordinatesResult);
 		
 		
-		return GeoTranslator.transform(resultLine, 1, 5);
+		return GeoTranslator.transform(resultLine, 1, 5); //坐标转换一下，保留5位小数
 	}
 
 	/**

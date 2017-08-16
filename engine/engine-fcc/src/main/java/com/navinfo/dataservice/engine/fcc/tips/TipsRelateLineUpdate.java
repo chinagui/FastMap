@@ -970,7 +970,7 @@ public class TipsRelateLineUpdate {
 					&& Math.abs(newPoint.getY() - gscLocation.getY()) < 1){
 				 isIntersects=true;
 			}
-			//boolean isIntersects=cutLineGeo.intersects(gscLocation);
+			//boolean isIntersects=cutLineGeo.intersects(gscLocation);  //这个地方计算相交，不能用这个方法，因为web给的立交的交点，不一定在线上，存在偏差。所以用上面的代码替代
 			if(isIntersects){
 				return lineTipsDao;
 			}

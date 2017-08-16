@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,26 +8,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkExporter {
 
@@ -69,11 +61,7 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add evaluPlan integer;");
 		//***********************************
 
-		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
-//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
-
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+		
 
 		//String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select a.link_pid,listagg(B.NAME,'/') within group(order by name_class,seq_num) name from rd_link_name a, rd_name b where a.name_groupid = b.name_groupid AND a.NAME_CLASS in (1,2) and b.lang_code = 'CHI' and a.u_record != 2  group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where (type in (0, 4, 5, 6) or (type=2 and vehicle=2147483784)) and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 		//**********zl 2016.12.27 *************
@@ -104,8 +92,14 @@ public class RdLinkExporter {
 		//*************************************
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
-
+		//****2017.08.15 zl **********
+		//被追踪的 Set<integer> 集合
+		Set<Integer> beTracedSet = new HashSet<Integer>();
 		
+		//查询所有断头路的 link_pid 集合
+		List<Integer> linkNodePids = getDlinkNodePids(conn,clob);
+		//****************************
+		System.out.println("linkNodePids: "+linkNodePids.size()+"");
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
 
 		stmt2.setClob(1, clob);
@@ -113,104 +107,316 @@ public class RdLinkExporter {
 		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
-		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-
-		int count = 0;
-
+//		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		
+		//所有断头路及追踪到的link 集合 赋值为3
+		JSONArray dLinkJsonArr = new JSONArray();
+		//剩余link
+		JSONArray linkJsonArr = new JSONArray();
+		int total = 0 ;
 		while (resultSet.next()) {
-
-			JSONObject json = enclosingRdLine(resultSet, operateDate,conn);
-
+			total+=1;
+			JSONObject json = enclosingRdLine(resultSet, operateDate,conn,linkNodePids,beTracedSet);
 			int pid = json.getInt("pid");
-
-			if (map.containsKey(pid)) {
+			/*if (map.containsKey(pid)) {
 				continue;
 			}
-
-			map.put(pid, 0);
-
-			prep.setInt(1, pid);
-
-			prep.setString(2, json.getString("geometry"));
-//			prep.setInt(2, json.getInt("isADAS"));
-
-			prep.setString(3, json.getString("display_style"));
-
-			prep.setString(4, json.getString("display_text"));
-
-			prep.setString(5, json.getString("meshid"));
-
-			prep.setInt(6, json.getInt("kind"));
-
-			prep.setInt(7, json.getInt("direct"));
-
-			prep.setInt(8, json.getInt("appInfo"));
-
-			prep.setInt(9, json.getInt("tollInfo"));
-
-			prep.setInt(10, json.getInt("multiDigitized"));
-
-			prep.setInt(11, json.getInt("specialTraffic"));
-
-			prep.setInt(12, json.getInt("fc"));
-
-			prep.setInt(13, json.getInt("laneNum"));
-
-			prep.setInt(14, json.getInt("laneLeft"));
-
-			prep.setInt(15, json.getInt("laneRight"));
-
-			prep.setInt(16, json.getInt("isViaduct"));
-
-			prep.setInt(17, json.getInt("paveStatus"));
-
-			byte[] forms = json.getString("forms").getBytes();
-
-			prep.setBinaryStream(18, new ByteArrayInputStream(forms),
-					forms.length);
-
-			byte[] styleFactors = json.getString("styleFactors").getBytes();
-
-			prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
-					styleFactors.length);
-
-			byte[] speedLimit = json.getString("speedLimit").getBytes();
-
-			prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
-					speedLimit.length);
-
-			prep.setString(21, json.getString("op_date"));
-
-			prep.setInt(22, json.getInt("op_lifecycle"));
-
-			byte[] names = json.getString("names").getBytes();
-
-			prep.setBinaryStream(23, new ByteArrayInputStream(names),
-					names.length);
-
-			//
-			prep.setLong(24, json.getLong("sNodePid"));
-			prep.setLong(25, json.getLong("eNodePid"));
-			
-			prep.setInt(26, json.getInt("isADAS"));
-			
-			prep.setInt(27, json.getInt("scenario"));
-			
-			prep.setInt(28, json.getInt("evaluPlan"));
-
-			prep.executeUpdate();
-
-			count += 1;
-
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
+			map.put(pid, 0);*/
+			if(beTracedSet.contains(pid)){
+				//断头路及追踪到的link 集合 
+				dLinkJsonArr.add(json);
+			}else{
+				linkJsonArr.add(json);
 			}
+			
 		}
+		System.out.println("总条数: "+total);
+		System.out.println("被追踪的link: "+beTracedSet.size());
+		System.out.println("断头路及被追踪的linkarr: "+dLinkJsonArr.size());
+		System.out.println("other linkarr: "+linkJsonArr.size());
+		
+		//保存数据进 sqlite 数据库
+		//保存断头路及被追踪的数据
+		saveLinkToSqlite(sqliteConn,dLinkJsonArr);
+		//保存其他数据
+		saveLinkToSqlite(sqliteConn,linkJsonArr);
 
+		
 		sqliteConn.commit();
 	}
 
-	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, Connection conn)
+	/**
+	 * @Title: saveLinkToSqlite
+	 * @Description: 保存数据进sqlite 数据库
+	 * @param sqliteConn
+	 * @param linkJsonArr  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月15日 下午9:52:06 
+	 */
+	private static void saveLinkToSqlite(Connection sqliteConn, JSONArray linkJsonArr) {
+		PreparedStatement prep = null ;
+		String insertSql = "insert into gdb_rdLine values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			int count = 0;
+
+			//循环断头路及追踪到的link
+			if(linkJsonArr != null && linkJsonArr.size() > 0){
+				for(Object obj : linkJsonArr){
+					JSONObject json = (JSONObject) obj;
+					
+					int pid = json.getInt("pid");
+
+					prep.setInt(1, pid);
+
+					prep.setString(2, json.getString("geometry"));
+//					prep.setInt(2, json.getInt("isADAS"));
+
+					prep.setString(3, json.getString("display_style"));
+
+					prep.setString(4, json.getString("display_text"));
+
+					prep.setString(5, json.getString("meshid"));
+
+					prep.setInt(6, json.getInt("kind"));
+
+					prep.setInt(7, json.getInt("direct"));
+
+					prep.setInt(8, json.getInt("appInfo"));
+
+					prep.setInt(9, json.getInt("tollInfo"));
+
+					prep.setInt(10, json.getInt("multiDigitized"));
+
+					prep.setInt(11, json.getInt("specialTraffic"));
+
+					prep.setInt(12, json.getInt("fc"));
+
+					prep.setInt(13, json.getInt("laneNum"));
+
+					prep.setInt(14, json.getInt("laneLeft"));
+
+					prep.setInt(15, json.getInt("laneRight"));
+
+					prep.setInt(16, json.getInt("isViaduct"));
+
+					prep.setInt(17, json.getInt("paveStatus"));
+
+					byte[] forms = json.getString("forms").getBytes();
+
+					prep.setBinaryStream(18, new ByteArrayInputStream(forms),
+							forms.length);
+
+					byte[] styleFactors = json.getString("styleFactors").getBytes();
+
+					prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
+							styleFactors.length);
+
+					byte[] speedLimit = json.getString("speedLimit").getBytes();
+
+					prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
+							speedLimit.length);
+
+					prep.setString(21, json.getString("op_date"));
+
+					prep.setInt(22, json.getInt("op_lifecycle"));
+
+					byte[] names = json.getString("names").getBytes();
+
+					prep.setBinaryStream(23, new ByteArrayInputStream(names),
+							names.length);
+
+					//
+					prep.setLong(24, json.getLong("sNodePid"));
+					prep.setLong(25, json.getLong("eNodePid"));
+					
+					prep.setInt(26, json.getInt("isADAS"));
+					
+					prep.setInt(27, json.getInt("scenario"));
+					
+					prep.setInt(28, json.getInt("evaluPlan"));
+
+					prep.executeUpdate();
+
+					count += 1;
+
+					if (count % 5000 == 0) {
+						sqliteConn.commit();
+					}
+				}
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			DbUtils.closeQuietly(prep);
+		}
+		
+	}
+
+	private static void saveLinkToSqlite(Connection sqliteConn, JSONObject json) {
+		PreparedStatement prep = null ;
+		String insertSql = "insert into gdb_rdLine values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+
+			//循环断头路及追踪到的link
+			if(json != null){
+				
+					
+					int pid = json.getInt("pid");
+
+					prep.setInt(1, pid);
+
+					prep.setString(2, json.getString("geometry"));
+//					prep.setInt(2, json.getInt("isADAS"));
+
+					prep.setString(3, json.getString("display_style"));
+
+					prep.setString(4, json.getString("display_text"));
+
+					prep.setString(5, json.getString("meshid"));
+
+					prep.setInt(6, json.getInt("kind"));
+
+					prep.setInt(7, json.getInt("direct"));
+
+					prep.setInt(8, json.getInt("appInfo"));
+
+					prep.setInt(9, json.getInt("tollInfo"));
+
+					prep.setInt(10, json.getInt("multiDigitized"));
+
+					prep.setInt(11, json.getInt("specialTraffic"));
+
+					prep.setInt(12, json.getInt("fc"));
+
+					prep.setInt(13, json.getInt("laneNum"));
+
+					prep.setInt(14, json.getInt("laneLeft"));
+
+					prep.setInt(15, json.getInt("laneRight"));
+
+					prep.setInt(16, json.getInt("isViaduct"));
+
+					prep.setInt(17, json.getInt("paveStatus"));
+
+					byte[] forms = json.getString("forms").getBytes();
+
+					prep.setBinaryStream(18, new ByteArrayInputStream(forms),
+							forms.length);
+
+					byte[] styleFactors = json.getString("styleFactors").getBytes();
+
+					prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
+							styleFactors.length);
+
+					byte[] speedLimit = json.getString("speedLimit").getBytes();
+
+					prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
+							speedLimit.length);
+
+					prep.setString(21, json.getString("op_date"));
+
+					prep.setInt(22, json.getInt("op_lifecycle"));
+
+					byte[] names = json.getString("names").getBytes();
+
+					prep.setBinaryStream(23, new ByteArrayInputStream(names),
+							names.length);
+
+					//
+					prep.setLong(24, json.getLong("sNodePid"));
+					prep.setLong(25, json.getLong("eNodePid"));
+					
+					prep.setInt(26, json.getInt("isADAS"));
+					
+					prep.setInt(27, json.getInt("scenario"));
+					
+					prep.setInt(28, json.getInt("evaluPlan"));
+
+					prep.executeUpdate();
+
+					//count += 1;
+
+						sqliteConn.commit();
+					
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			DbUtils.closeQuietly(prep);
+		}
+		
+	}
+	/**
+	 * @Title: getDlinkPids
+	 * @Description: 查询断头路集合
+	 * @param conn
+	 * @param clob
+	 * @return  List<Integer>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月15日 上午11:26:56 
+	 */
+	private static List<Integer> getDlinkNodePids(Connection conn, Clob clob) {
+		System.out.println("查询断头路集合: 开始时间:"+DateUtils.getSysDateFormat());
+		PreparedStatement stmtNode =null;
+		ResultSet resultSetNode = null;
+		List<Integer> nodePids = null;
+		
+		String sql = "with tmp1 as (select s_node_pid, e_node_pid from rd_link "
+				+ "where mesh_id in (select to_number(column_value) from table(clob_to_table(:1))) ), tmp2 as (select " +
+                "b.link_pid, s_node_pid from rd_link b where exists (select null from tmp1 a where a.s_node_pid = b" +
+                ".s_node_pid) and b.u_record != 2 union select b.link_pid, e_node_pid from rd_link b where exists " +
+                "(select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b.u_record != 2), tmp3 as (select b" +
+                ".link_pid, s_node_pid as e_node_pid from rd_link b where exists (select null from tmp1 a where a" +
+                ".e_node_pid = b.s_node_pid) and b.u_record != 2 union select b.link_pid, e_node_pid from rd_link b " +
+                "where exists (select null from tmp1 a where a.e_node_pid = b.e_node_pid) and b.u_record != 2), tmp4 " +
+                "as (select s_node_pid pid from tmp2 group by s_node_pid having count(*) = 1), tmp5 as (select " +
+                "e_node_pid pid from tmp3 group by e_node_pid having count(*) = 1), tmp6 as (select pid from tmp4 " +
+                "union select pid from tmp5)  "
+                + "select distinct(a.node_pid) node_pid from rd_node a  " 
+                +"where exists (select null from tmp6 b where a .node_pid = b.pid) and a.u_record != 2  ";
+		
+			System.out.println("getDlinkPids sql : "+sql);
+		try {
+			 
+			nodePids = new ArrayList<Integer>();
+			stmtNode = conn.prepareStatement(sql);
+
+			stmtNode.setClob(1, clob);
+
+			resultSetNode = stmtNode.executeQuery();
+			while (resultSetNode.next()) {
+				nodePids.add(resultSetNode.getInt("node_pid"));
+			}
+			System.out.println("共查处断头路: "+nodePids.size()+" 条");
+			System.out.println(" 查询结束时间:"+DateUtils.getSysDateFormat());
+			return nodePids;
+		} catch (Exception e) {
+			System.out.println("查询断头路集合失败: "+e.getMessage());
+			return nodePids;
+		}finally {
+			if(resultSetNode != null){
+				DbUtils.closeQuietly(resultSetNode);
+			}
+			if(stmtNode != null) {
+				DbUtils.closeQuietly(stmtNode);
+			}
+		}
+		
+	}
+
+	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, Connection conn, List<Integer> linkNodePids, Set<Integer> beTracedSet)
 			throws Exception {
 
 		JSONObject json = new JSONObject();
@@ -421,71 +627,96 @@ public class RdLinkExporter {
 		int adasFlag = rs.getInt("ADAS_FLAG");
 		double linkLength = rs.getDouble("LENGTH");
 		int isADAS  = 2;
-		if(adasFlag == 1){
-			isADAS = 1;
-		}else if(adasFlag == 0 || adasFlag == 2){
-			List<Integer> formList = new ArrayList<>();
-			for (int i = 0; i < formsArray.size(); i++) {
-				JSONObject formsJson = formsArray.getJSONObject(i);
-				formList.add(formsJson.getInt("form"));
-			}
-			if(kind > 7){//7级以下道路
-				isADAS = 3;
-			}else if(formList.contains(35) && direct == 1){//双向调头口
-				isADAS = 3;
-			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
-//				System.out.println("begin kind == 7 && linkLength < 1000  linkPid :"+pid);
-//				System.out.println(" begin time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-				//计算此link 的sNode和eNode 出现的次数
-				//*****************2017.05.09 zl*************
-				Integer sNodePid = rs.getInt("S_NODE_PID");
-				Integer eNodePid = rs.getInt("E_NODE_PID");
-				//计算断头路 
-				double length = linkLength;
-				//根据当前snode 和 enode 获取下一个link
-				List<RdLink> nextLinks_s = loadNextLink(sNodePid ,pid,conn);
-				List<RdLink> nextLinks_e = loadNextLink(eNodePid ,pid,conn);
-				List<RdLink> nextLinks = new ArrayList<RdLink>();
-				int nextNodePid =0;
-				if(nextLinks_s.size() == 0 && nextLinks_e.size() == 1){//追踪eNode
-					nextLinks=nextLinks_e;
-					nextNodePid=eNodePid;
-				}else if(nextLinks_e.size() == 0 && nextLinks_s.size() == 1){//追踪sNode
-					nextLinks_e=nextLinks_s;
-					nextNodePid=sNodePid;
+		//****2017.08.15 zl **********
+		//判断是否已在被追踪到的集合中,如果在赋值3
+		//System.out.println("pid: "+pid +" beTracedSet.contains(pid):"+beTracedSet.contains(pid));
+		if(beTracedSet != null && beTracedSet.size() > 0 && beTracedSet.contains(pid)){//是否已被追踪过了
+			//System.out.println("已经被追踪,赋值3");
+			isADAS = 3;
+		}else{
+			
+			if(adasFlag == 1){
+				isADAS = 1;
+			}else if(adasFlag == 0 || adasFlag == 2){
+				List<Integer> formList = new ArrayList<>();
+				for (int i = 0; i < formsArray.size(); i++) {
+					JSONObject formsJson = formsArray.getJSONObject(i);
+					formList.add(formsJson.getInt("form"));
 				}
-				
-				while (nextLinks.size() == 1) {
-					RdLink nextLink = nextLinks.get(0);
+				if(kind > 7){//7级以下道路
+					isADAS = 3;
+				}else if(formList.contains(35) && direct == 1){//双向调头口
+					isADAS = 3;
+				}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
+					//System.out.println("进入断头路判断");
+					Integer sNodePid = rs.getInt("S_NODE_PID");
+					Integer eNodePid = rs.getInt("E_NODE_PID");
+					if(linkNodePids != null && linkNodePids.size() >0 && (linkNodePids.contains(sNodePid) || linkNodePids.contains(eNodePid))){
+						//添加到断头路集合
+						beTracedSet.add(pid);
+						//System.out.println("断头路: "+pid+" sNodePid :"+sNodePid + " eNodePid:" +eNodePid);
+	//				System.out.println("linkNodePids.contains(sNodePid):"+linkNodePids.contains(sNodePid)+" linkNodePids.contains(eNodePid):"+linkNodePids.contains(eNodePid));
+	//				System.out.println("begin kind == 7 && linkLength < 1000  linkPid :"+pid);
+	//				System.out.println(" begin time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+					//计算此link 的sNode和eNode 出现的次数
+					//*****************2017.05.09 zl*************
 					
-					if(nextLink.getKind() == 7){
-						length+=nextLink.getLength();
-					}
-					if(length >= 1000){
-						break;
+					//计算断头路 
+					double length = linkLength;
+					//根据当前snode 和 enode 获取下一个link
+					List<RdLink> nextLinks_s = loadNextLink(sNodePid ,pid,conn);
+					List<RdLink> nextLinks_e = loadNextLink(eNodePid ,pid,conn);
+					List<RdLink> nextLinks = new ArrayList<RdLink>();
+					int nextNodePid =0;
+					if(nextLinks_s.size() == 0 && nextLinks_e.size() == 1){//追踪eNode
+						nextLinks=nextLinks_e;
+						nextNodePid=eNodePid;
+					}else if(nextLinks_e.size() == 0 && nextLinks_s.size() == 1){//追踪sNode
+						nextLinks=nextLinks_s;
+						nextNodePid=sNodePid;
 					}
 					
-					nextNodePid = (nextNodePid == nextLink.getsNodePid()) ? nextLink
-							.geteNodePid() : nextLink.getsNodePid();
-					
-					List<RdLink> nextLinkList = loadNextLink(nextNodePid ,nextLink.getPid(),conn);
-					if (nextLinkList.size() == 1) {
-						// 赋值查找下一组联通links  继续循环
-						nextLinks=nextLinkList;
-					}else{
-						break;
+					while (nextLinks.size() == 1) {
+						RdLink nextLink = nextLinks.get(0);
+						
+						if(nextLink.getKind() == 7){
+							length+=nextLink.getLength();
+							//****2017.08.15 zl 将次link添加到被追踪到的数据集合中*
+							if(length < 1000){
+								beTracedSet.add(nextLink.getPid());
+							}
+							//**********************************************
+						}
+						if(length >= 1000){
+							break;
+						}
+						
+						nextNodePid = (nextNodePid == nextLink.getsNodePid()) ? nextLink
+								.geteNodePid() : nextLink.getsNodePid();
+						
+						List<RdLink> nextLinkList = loadNextLink(nextNodePid ,nextLink.getPid(),conn);
+						if (nextLinkList.size() == 1) {
+							// 赋值查找下一组联通links  继续循环
+							nextLinks=nextLinkList;
+						}else{
+							break;
+						}
 					}
+					
+					
+					if(length < 1000){
+						isADAS =3;
+					}
+					
+					}
+	//				else{
+	//					System.out.println("非断头路: "+pid);
+	//				}
+	//				System.out.println(" end  length: "+length+" isADAS:"+isADAS);
+	//				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 				}
-				
-				
-				if(length < 1000){
-					isADAS =3;
-				}
-//				System.out.println(" end  length: "+length+" isADAS:"+isADAS);
-//				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 			}
 		}
-		
 		json.put("isADAS", isADAS);
 		json.put("scenario", rs.getInt("scenario"));
 		
@@ -683,10 +914,11 @@ public class RdLinkExporter {
                     +"  and (l.s_node_pid = "+nodePid+" or l.e_node_pid = "+nodePid+" )";
 //		
 		PreparedStatement stmt = null;
+		ResultSet resultSet = null;
 		List<RdLink> rdLinkList=null;
 		try {
 			stmt = conn.prepareStatement(sql);
-			ResultSet resultSet = stmt.executeQuery();
+			resultSet = stmt.executeQuery();
 
 			resultSet.setFetchSize(5000);
 
@@ -709,7 +941,10 @@ public class RdLinkExporter {
 			e.printStackTrace();
 		}finally {
 			if(stmt != null){
-				stmt.close();
+				DbUtils.closeQuietly(stmt);
+			}
+			if(resultSet != null){
+				DbUtils.closeQuietly(resultSet);
 			}
 		}
 		//****************************************

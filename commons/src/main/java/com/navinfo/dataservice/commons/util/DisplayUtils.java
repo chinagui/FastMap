@@ -1295,7 +1295,7 @@ public class DisplayUtils {
 			double distBack = 0;
 
 			int current = seqNum;
-			System.out.println("current: "+current+" coords.length: "+coords.length);
+			//System.out.println("current: "+current+" coords.length: "+coords.length);
 			Coordinate coord = coords[current];
 			DoublePoint curPoint = JtsGeometryConvertor.convert(coord);
 			coorsBack.add(coord);

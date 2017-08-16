@@ -3732,10 +3732,10 @@ public class TaskService {
 			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
 				@Override
 				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
-					List<Map<String, Object>> taskList = new ArrayList<>(500);
+					List<Map<String, Object>> taskList = new ArrayList<>();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(result.next()){
-						Map<String, Object> task = new HashMap<>(512);
+						Map<String, Object> task = new HashMap<>(32);
 						task.put("programId", result.getInt("program_id"));
 						task.put("programName", result.getString("p_name"));
 						task.put("programType", result.getInt("p_type"));

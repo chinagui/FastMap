@@ -23,20 +23,29 @@ public class FM14Sum060401 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			//充电桩（230227）不参与检查
+		if (obj.objName().equals(ObjectName.IX_POI)) {
+			IxPoiObj poiObj = (IxPoiObj) obj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+			// 充电桩（230227）不参与检查
 			String kindCode = poi.getKindCode();
-			if(kindCode == null || "230227".equals(kindCode)){return;}
-			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
-			if(ixPoiAddress == null){return;}
+			if (kindCode == null || "230227".equals(kindCode)) {
+				return;
+			}
+			IxPoiAddress ixPoiAddress = poiObj.getCHAddress();
+			if (ixPoiAddress == null) {
+				return;
+			}
 			String fullname = ixPoiAddress.getFullname();
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+			if (ixPoiName == null) {
+				return;
+			}
 			String name = ixPoiName.getName();
-			if(fullname == null || name == null){return;}
-			if(fullname.equals(name)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+			if (fullname == null || name == null) {
+				return;
+			}
+			if (fullname.equals(name)) {
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 			}
 		}
 	}

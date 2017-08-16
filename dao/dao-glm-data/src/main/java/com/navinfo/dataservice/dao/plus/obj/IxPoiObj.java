@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -29,6 +28,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiEvent;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiIcon;
@@ -44,7 +44,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiTourroute;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiVideo;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 
 
 
@@ -1481,7 +1480,7 @@ catch (Exception e) {
 		Map<String,Object> ixPoiOldValues = ixPoi.getOldValues();
 		if(ixPoiOldValues!=null){
 			for(String key:ixPoiOldValues.keySet()){
-				if(key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)||key.equals(IxPoi.OLD_X_GUIDE)||key.equals(IxPoi.OLD_Y_GUIDE)){
+				if(key.equals(IxPoi.FIELD_STATE)||key.equals(IxPoi.OLD_NAME)||key.equals(IxPoi.OLD_ADDRESS)||key.equals(IxPoi.OLD_KIND)||key.equals(IxPoi.LOG)||key.equals(IxPoi.POI_MEMO)||key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)||key.equals(IxPoi.OLD_X_GUIDE)||key.equals(IxPoi.OLD_Y_GUIDE)){
 					continue;
 				}else{
 					return false;
@@ -1491,7 +1490,7 @@ catch (Exception e) {
 		//是否有任何子表变更
 		for(Map.Entry<String, List<BasicRow>> entry:this.subrows.entrySet()){
 			//过滤ix_poi_photo
-			if(IxPoiObj.IX_POI_PHOTO.equals(entry.getKey())){
+			if(IxPoiObj.IX_POI_PHOTO.equals(entry.getKey())||IxPoiObj.IX_POI_AUDIO.equals(entry.getKey())){
 				continue;
 			}
 			List<BasicRow> subrowList = entry.getValue();

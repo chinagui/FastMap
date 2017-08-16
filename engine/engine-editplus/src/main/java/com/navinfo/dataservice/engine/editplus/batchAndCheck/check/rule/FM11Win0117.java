@@ -87,7 +87,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND P1.U_RECORD!=2"
 					+ "     AND N1.U_RECORD!=2"
 					+ "     AND N2.U_RECORD!=2"
-					+"		AND SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 100"
+					+"		AND SDO_WITHIN_DISTANCE(P2.GEOMETRY, P1.GEOMETRY, 'DISTANCE=100 UNIT=METER') = 'TRUE'"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID";
 
@@ -139,7 +139,7 @@ public class FM11Win0117 extends BasicCheckRule {
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " SELECT P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
+					+ " SELECT  P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_PARKING PK1,"
@@ -168,7 +168,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N1.U_RECORD!=2"
 					+ "     AND N2.U_RECORD!=2"
 					+ "     AND P1."+pidString
-					+"      AND SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 100 "
+					+"      AND SDO_WITHIN_DISTANCE(P2.GEOMETRY, P1.GEOMETRY, 'DISTANCE=100 UNIT=METER') = 'TRUE' "
 					+ "     AND P1.PID != P2.PID";
 			log.info("FM11Win0117:"+sqlStr);
 			PreparedStatement pstmt=null;

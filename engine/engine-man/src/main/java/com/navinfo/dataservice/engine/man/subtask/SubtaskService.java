@@ -3088,7 +3088,7 @@ public class SubtaskService {
 			conn=DBConnector.getInstance().getManConnection();
 			
 			//1.nowait方式锁与blockId下的子任务圈以及对应的采集子任务，并获取范围
-			Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
+			Task task = TaskService.getInstance().queryNoGeoByTaskId(conn, taskId);
 			JSONObject conditionQuery2=new JSONObject();
 			conditionQuery2.put("blockId", task.getBlockId());
 			
@@ -3111,21 +3111,23 @@ public class SubtaskService {
 				 * //wkt,判断要拆分的子任务圈是否已开启，未开启则锁表，并获取geo；已开启则返回
 			//若没有子任务，则直接拆分block；否则拆分子任务圈，并删除采集子任务与不规则圈的关联
 				 */
-				Geometry lineGeo=GeoTranslator.wkt2Geometry(lineWkt);
+				Geometry lineGeo=GeoTranslator.transform(GeoTranslator.wkt2Geometry(lineWkt), 1, 6);
+				lineGeo=GeoTranslator.removeSameNode(lineGeo);
 				if(id1==0){//切分block
 					Block block = BlockService.getInstance().queryByBlockId(conn,task.getBlockId());
 					Geometry referGeo = block.getOriginGeo();
 					logs.append(";blockOriginGeo=");
 					logs.append(GeoTranslator.jts2Wkt(referGeo));
+					referGeo=GeoTranslator.removeSameNode(referGeo);
 					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
 					//线是否穿过面
-					Geometry interGeo=referGeoLine.intersection(lineGeo);						
+					Geometry interGeo=GeoTranslator.transform(referGeoLine.intersection(lineGeo), 1, 6);						
 					if(interGeo==null||interGeo.getCoordinates().length==0){throw new ServiceException("线面没有交点");}
 					if(interGeo.getCoordinates().length!=2){
 						throw new ServiceException("线面交点大于2个，请重新画线");
 					}					
 					
-					Geometry midLine=referGeo.intersection(lineGeo);
+					Geometry midLine=GeoTranslator.transform(referGeo.intersection(lineGeo), 1, 6);
 					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
 					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
 					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
@@ -3135,10 +3137,13 @@ public class SubtaskService {
 					
 					//line所切割的面对应的子任务是否开启
 					//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。					
-					List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+					List<Geometry> addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo,6);
 					//5.保存信息
 					for(Geometry g:addGeo){
-						if(!g.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+						//if(!g.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+						if(!g.getGeometryType().equals("Polygon")){
+							throw new ServiceException("切割后不是简单面，请重新画线");
+						}
 						SubtaskRefer referNew=new SubtaskRefer();
 						referNew.setBlockId(task.getBlockId());
 						referNew.setGeometry(g);
@@ -3157,9 +3162,10 @@ public class SubtaskService {
 					Geometry referGeo = refer.getGeometry();
 					logs.append(";不规则圈geo1=");
 					logs.append(GeoTranslator.jts2Wkt(referGeo));
+					referGeo=GeoTranslator.removeSameNode(referGeo);
 					Geometry referGeoLine=GeoTranslator.createLineString(referGeo.getCoordinates());
 					//线是否穿过面
-					interGeo=referGeoLine.intersection(lineGeo);						
+					interGeo=GeoTranslator.transform(referGeoLine.intersection(lineGeo),1,6);						
 					if(interGeo==null||interGeo.getCoordinates().length==0){
 						log.info("线面没有交点");
 						throw new ServiceException("线面没有交点，请重新画线;");
@@ -3169,7 +3175,7 @@ public class SubtaskService {
 						throw new ServiceException("线面交点不为2个，请重新画线;");
 					}		
 					
-					Geometry midLine=referGeo.intersection(lineGeo);
+					Geometry midLine=GeoTranslator.transform(referGeo.intersection(lineGeo),1,6);
 					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
 					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
 					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
@@ -3190,7 +3196,7 @@ public class SubtaskService {
 							subtaskRelates.add(s);
 						}
 					}
-					addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo);
+					addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo,6);
 					log.info("end 切割选定面");
 					
 					//处理邻接不规则面
@@ -3228,7 +3234,7 @@ public class SubtaskService {
 						if(isChange){
 							List<Geometry> subLines=new ArrayList<Geometry>();
 							subLines.add(GeoTranslator.createLineString(newLineCors));
-							Geometry pTmp = GeoTranslator.getCalLineToPython(subLines);
+							Geometry pTmp = GeoTranslator.getCalLineToPythonWithoutCheck(subLines);
 							referTmp.setGeometry(pTmp);
 							SubtaskReferOperation.updateGeo(conn,referTmp);
 							log.info("邻接不规则圈进行修改id="+referTmp.getId()+",wkt="+pTmp.toText());
@@ -3277,7 +3283,9 @@ public class SubtaskService {
 				logs.append(GeoTranslator.jts2Wkt(geo1));
 				logs.append(";不规则圈geo2=");
 				logs.append(GeoTranslator.jts2Wkt(geo2));
-				Geometry unionGeo=geo1.union(geo2);
+				geo1=GeoTranslator.removeSameNode(geo1);
+				geo2=GeoTranslator.removeSameNode(geo2);
+				Geometry unionGeo=GeoTranslator.transform(geo1.union(geo2),1,6);
 				
 				if(!unionGeo.isSimple()){throw new ServiceException("合并后不是简单面，请重新选择");}
 				JSONObject geoJson = GeoTranslator.jts2Geojson(unionGeo);
@@ -3312,6 +3320,8 @@ public class SubtaskService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			logs.append(";error=");
+			logs.append(e.getMessage());
 			throw new ServiceException("getsubtaskUserMap，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -3882,60 +3892,60 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	/**
-	 * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
-	 * key：groupName,province,city,userId,version
-	 * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
-	 * @param qualitySubtaskId 质检子任务号
-	 * @returngetSubtaskInfoByQuality
-	 * @throws Exception
-	 */
-	public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			String sql="SELECT G.GROUP_NAME,"
-					+ "       C.PROVINCE_NAME,"
-					+ "       C.CITY_NAME,"
-					+ "       S.EXE_USER_ID,"
-					+ "       QS.QUALITY_METHOD,s.plan_start_date"
-					+ "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
-					+ " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
-					+ "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
-					+ "   AND QS.TASK_ID = T.TASK_ID"
-					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
-					+ "   AND P.CITY_ID = C.CITY_ID"
-					+ "   AND T.GROUP_ID = G.GROUP_ID";
-			QueryRunner run=new QueryRunner();
-			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
 
-				@Override
-				public Map<String, Object> handle(ResultSet rs) throws SQLException {
-					if(rs.next()){
-						Map<String, Object> returnObj=new HashMap<String, Object>();
-						returnObj.put("groupName", rs.getString("GROUP_NAME"));
-						returnObj.put("province", rs.getString("PROVINCE_NAME"));
-						returnObj.put("city", rs.getString("CITY_NAME"));
-						returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
-						returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
-						SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-						returnObj.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
-						returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-						return returnObj;
-					}
-					return null;
-				}
-				
-			});
-		}catch(Exception e){
-			log.error("提交质检圈异常，原因为："+e.getMessage(),e);
-			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new Exception("提交质检圈异常:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+    /**
+     * 子任务对应任务基地名，子任务省、市、对应的常规子任务作业员、子任务质检方式，当前版本
+     * key：groupName,province,city,userId,version
+     * 应用场景：（采集端）道路外业质检上传获取子任务相关信息
+     * @param qualitySubtaskId 质检子任务号
+     * @returngetSubtaskInfoByQuality
+     * @throws Exception
+     */
+    public Map<String, Object> getSubtaskInfoByQuality(int qualitySubtaskId) throws Exception{
+        Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            String sql="SELECT G.GROUP_NAME,"
+                    + "       C.PROVINCE_NAME,"
+                    + "       C.CITY_NAME,"
+                    + "       S.EXE_USER_ID,"
+                    + "       QS.QUALITY_METHOD,S.PLAN_START_DATE,S.SUBTASK_ID"
+                    + "  FROM SUBTASK QS, TASK T, PROGRAM P, CITY C, SUBTASK S, USER_GROUP G"
+                    + " WHERE QS.SUBTASK_ID = "+qualitySubtaskId
+                    + "   AND QS.SUBTASK_ID = S.QUALITY_SUBTASK_ID"
+                    + "   AND QS.TASK_ID = T.TASK_ID"
+                    + "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+                    + "   AND P.CITY_ID = C.CITY_ID"
+                    + "   AND T.GROUP_ID = G.GROUP_ID";
+            QueryRunner run=new QueryRunner();
+            return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+
+                @Override
+                public Map<String, Object> handle(ResultSet rs) throws SQLException {
+                    if(rs.next()){
+                        Map<String, Object> returnObj=new HashMap<String, Object>();
+                        returnObj.put("groupName", rs.getString("GROUP_NAME"));
+                        returnObj.put("province", rs.getString("PROVINCE_NAME"));
+                        returnObj.put("city", rs.getString("CITY_NAME"));
+                        returnObj.put("exeUserId", rs.getString("EXE_USER_ID"));
+                        returnObj.put("qualityMethod", rs.getString("QUALITY_METHOD"));
+                        returnObj.put("planStartDate", DateUtils.formatDate(rs.getTimestamp("PLAN_START_DATE")));
+                        returnObj.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+                        returnObj.put("collectSubTaskId", rs.getInt("SUBTASK_ID"));
+                        return returnObj;
+                    }
+                    return null;
+                }
+
+            });
+        }catch(Exception e){
+            log.error("查询getSubtaskInfoByQuality异常，原因为："+e.getMessage(),e);
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("查询getSubtaskInfoByQuality异常:"+e.getMessage(),e);
+        }finally{
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 
     /**
      * 计算子任务所属大区库的所有图幅信息

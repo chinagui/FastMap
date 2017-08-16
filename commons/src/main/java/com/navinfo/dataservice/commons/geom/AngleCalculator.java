@@ -284,12 +284,12 @@ public class AngleCalculator {
 
 		final static double Rc = 6378137;
 		final static double Rj = 6356725;
-		double m_LoDeg, m_LoMin, m_LoSec;
-		double m_LaDeg, m_LaMin, m_LaSec;
-		double m_Longitude, m_Latitude;
-		double m_RadLo, m_RadLa;
-		double Ec;
-		double Ed;
+		public double m_LoDeg, m_LoMin, m_LoSec;
+		public double m_LaDeg, m_LaMin, m_LaSec;
+		public double m_Longitude, m_Latitude;
+		public double m_RadLo, m_RadLa;
+		public double Ec;
+		public double Ed;
 
 		public LngLatPoint(double longitude, double latitude) {
 			m_LoDeg = (int) longitude;

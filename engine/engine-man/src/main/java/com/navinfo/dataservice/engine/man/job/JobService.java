@@ -206,7 +206,7 @@ public class JobService {
 			runner= new Day2MonthJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
-		}else */
+		}else*/
 		if(jobType==JobType.NOTASK2MID){
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		

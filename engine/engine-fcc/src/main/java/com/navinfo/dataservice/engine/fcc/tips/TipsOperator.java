@@ -78,8 +78,6 @@ public class TipsOperator {
 					"data".getBytes(), "track".getBytes())));
 	
 			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-	//        int editStatus = json.getInt("editStatus");
-	//        int editMeth = json.getInt("editMeth");
 	
 	        JSONObject jsonTrackInfo = new JSONObject();
 	        if(mdFlag.equals("d")) {//日编
@@ -165,7 +163,6 @@ public class TipsOperator {
 							.toString().getBytes());
 				}
 			}
-//			JSONObject solrIndex = solr.getById(rowkey);
 			
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			
@@ -195,34 +192,13 @@ public class TipsOperator {
 			}
 			
 			tipsOp.update(newTis);
-			
-//	        if(jsonTrackInfo.containsKey("stage")) {
-//	            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
-//	        }
-//	
-//			solrIndex.put("t_date", date);
-//	
-//	        if(mdFlag.equals("d")) {//日编
-//	            solrIndex.put("t_dEditStatus", editStatus);
-//	            solrIndex.put("t_dEditMeth", editMeth);
-//	        }else if(mdFlag.equals("m")) {//月编
-//	            solrIndex.put("t_mEditStatus", editStatus);
-//	            solrIndex.put("t_mEditMeth", editMeth);
-//	        }
-//	
-//			solrIndex.put("handler", handler);
-//	
-//			if (newDeep != null) {
-//				solrIndex.put("deep", newDeep);
-//			}
-//	
-//			solr.addTips(solrIndex);
 	
 			htab.put(put);
 	
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
+            throw new Exception("Tips编辑出错", e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
@@ -351,14 +327,12 @@ public class TipsOperator {
         }catch (Exception e) {
             e.printStackTrace();
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("Tips批量更新状态出错", e);
 		}finally {
         	DbUtils.commitAndCloseQuietly(conn);
             if(htab != null) {
                 htab.close();
             }
-//            if(hbaseConn != null) {
-//                hbaseConn.close();
-//            }
         }
 
 	}

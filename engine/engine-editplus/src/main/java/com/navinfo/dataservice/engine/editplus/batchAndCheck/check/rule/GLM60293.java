@@ -137,15 +137,21 @@ public class GLM60293 extends BasicCheckRule {
 					+ "   AND N2.NAME_CLASS = 1"
 					+ "   AND N2.NAME_TYPE = 2"
 					+ "   AND N2.LANG_CODE IN ('CHI', 'CHT')"
-					+ "   AND T.PID1 = A1.POI_PID"
-					+ "   AND A1.LANG_CODE IN ('CHI', 'CHT')"
-					+ "   AND T.PID2 = A2.POI_PID"
-					+ "   AND A2.LANG_CODE IN ('CHI', 'CHT')"
-					+ "   AND A1.FULLNAME = A2.FULLNAME"
 					+ "   AND N1.U_RECORD <> 2"
 					+ "   AND N2.U_RECORD <> 2"
-					+ "   AND A1.U_RECORD <> 2"
-					+ "   AND A2.U_RECORD <> 2";
+					+ "   AND T.PID1 = A1.POI_PID(+) "
+					+ "   AND T.PID2 = A2.POI_PID(+) "
+					+ "   AND ("
+					+ "        (A1.LANG_CODE IN ('CHI', 'CHT') "
+					+ "   AND A2.LANG_CODE IN ('CHI', 'CHT') "
+					+ "   AND A1.FULLNAME = A2.FULLNAME "
+					+ "   AND A1.U_RECORD <> 2 AND A2.U_RECORD <> 2) "
+					+ "   OR (A1.LANG_CODE IS NULL AND A2.LANG_CODE IS NULL "
+					+ "   AND A1.FULLNAME IS NULL AND A2.FULLNAME IS NULL "
+					+ "   AND A1.U_RECORD IS NULL AND A2.U_RECORD IS NULL)"
+					+ "   OR(A1.U_RECORD = 2 AND A2.U_RECORD = 2)"
+					+ "   )";
+					
 			log.info(sqlStr);
 			PreparedStatement pstmt=null;
 			ResultSet rs = null;

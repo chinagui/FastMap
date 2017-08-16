@@ -6,14 +6,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.net.aso.f;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.geom.AngleCalculator.LngLatPoint;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
@@ -22,10 +26,6 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * @ClassName: TipsRelateLineUpdate.java
@@ -742,15 +742,16 @@ public class TipsRelateLineUpdate {
 	 * @Description:"1102":// 红绿灯 [f_array].f.id (f唯一是对象)
 	 * @author: y
 	 * @return
+	 * @throws Exception 
 	 * @time:2017-4-13 上午10:06:58
 	 */
-	private TipsDao updateTrafficSignalTips() {
+	private TipsDao updateTrafficSignalTips() throws Exception {
 
 		return updateFAarrary_F();
 
 	}
 
-	private TipsDao updateFAarrary_F() {
+	private TipsDao updateFAarrary_F() throws Exception {
 		boolean hasMeasuringLine = false;
         try {
             JSONObject deep = JSONObject.fromObject(this.json.getDeep());
@@ -797,6 +798,7 @@ public class TipsRelateLineUpdate {
             }
         }catch (Exception e) {
             e.printStackTrace();
+            throw e;
         }
 		return null;
 	}
@@ -871,19 +873,89 @@ public class TipsRelateLineUpdate {
 
 	/**
 	 * @Description:1116 立交 [f_array].id
+	 * 测线打断后，
+	 * 示例：原有立交组成线，L1，C1;C1打断后，变成C2、C3;C2立交的g_location(原立交位置/交点)相交，则组成线取C2.
+	 * geo:几何弧端，取交点处，左右两米的几何
+	 * g_location：不变
+	 * z:继承
 	 * @author: y
 	 * @return
+	 * @throws Exception 
 	 * @time:2017-4-13 上午9:58:25
 	 */
-	private TipsDao updateGSCTips() {
+	private TipsDao updateGSCTips() throws Exception {
 
-		return updateFArray_Id();
+		boolean hasMeasuringLine = false;
 
+		JSONObject deep = JSONObject.fromObject(this.json.getDeep());
+
+		JSONArray f_array = deep.getJSONArray("f_array");
+
+		JSONArray f_array_new = new JSONArray(); // 一个新的f_array数组
+		
+		for (Object object : f_array) {
+			JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
+			// 关联link是测线的
+            if(fInfo != null && fInfo.containsKey("type")) {
+                int type = fInfo.getInt("type");
+                String id = fInfo.getString("id");
+                if (type == 2 && id.equals(oldRowkey)) {
+                	//获取到，打断后和立交g_location相交的线
+                	TipsDao dao=calIntersectLine();
+	               	 JSONObject newFInfo =JSONObject.fromObject(fInfo);//创建一个新的
+	    			 newFInfo.put("id", dao.getId());
+	    			 //计算，打断后组成线和立交几何，左右2米的一个几何弧端
+    				 Geometry  lineGeo=GeoTranslator.geojson2Jts(JSONObject.fromObject(dao.getG_location()));
+    				 Point  gscPointGeo=(Point)GeoTranslator.geojson2Jts(JSONObject.fromObject(json.getG_location()));
+	    			 Geometry geo=TipsGeoUtils.getGscLineGeo(lineGeo,gscPointGeo);
+	    			 JSONObject  newGeo= GeoTranslator.jts2Geojson(geo);
+	    			 //只有立交有geo
+	    			 if(newFInfo.containsKey("geo")){
+	    				 newFInfo.put("geo", newGeo); 
+	    			 }
+	    			 f_array_new.add(newFInfo); // 添加新对象到新数组
+                     hasMeasuringLine = true;
+                }
+                //如果关联的不是当前测线，则将原来的也添加到新数组
+                else{
+                	
+                	f_array_new.add(fInfo); // 添加到新数组
+                	
+                }
+            }
+		}
+		
+		// 如果有测线，则修改，并返回
+		if (hasMeasuringLine) {
+			deep.put("f_array", f_array_new);// 新的
+			json.setDeep(deep.toString()); //1.修改deep
+			return json;
+		}
+
+		return json;
 	}
 
 	
+
 	/**
-	 * 特殊说明：起终点+范围线+立交，测线打断后需要 将讲的测线替换为打断后的所有测线
+	 * @Description:计算打断后和立交g_location相交的线
+	 * @return
+	 * @author: y
+	 * @time:2017-8-15 上午10:10:11
+	 */
+	private TipsDao calIntersectLine() {
+		for (TipsDao lineTipsDao : cutLines) {
+			Geometry  lineGeo=GeoTranslator.geojson2Jts(JSONObject.fromObject(lineTipsDao.getG_location()));
+			boolean isIntersects=lineGeo.intersects(GeoTranslator.geojson2Jts(JSONObject.fromObject(json.getG_location())));
+			if(isIntersects){
+				return lineTipsDao;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 特殊说明：起终点+范围线，测线打断后需要 将讲的测线替换为打断后的所有测线
 	 * @Description:TOOD
 	 * @return
 	 * @author: 

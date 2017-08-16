@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 /**
  * Created by zhangjunfang on 2017/6/8.
  */
@@ -34,14 +36,10 @@ public class TipsPreCheckUtils {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw e;
         }finally {
-            if(pstmt != null) {
-                pstmt.close();
-            }
-            if(resultSet != null) {
-                resultSet.close();
-            }
+        	 DbUtils.closeQuietly(resultSet);
+             DbUtils.closeQuietly(pstmt);
         }
         return false;
     }

@@ -213,7 +213,7 @@ public class DataConfirmService {
 					log.error("“情报类型”为空，文件不可以上传");
 					throw new Exception("“情报类型”为空，文件不可以上传");
 				} else {
-					if(!infoTypeList.contains(Integer.valueOf(infoType))){
+					if(StringUtils.isNumeric(infoType) == false || !infoTypeList.contains(Integer.valueOf(infoType))){
 						log.error("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
 						throw new Exception("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
 					}

@@ -33,7 +33,7 @@ public class TomcatStatInfoLoader {
 			//推送数据
 			try {
 				String url = "http://"+ip+":"+port+"/"+tomcat;
-				List<StatInfo> datas = getTomcatInfoList(url,ip,tomcat,time);
+				List<StatInfo> datas = getTomcatInfoList(url,ip,tomcat,port,time);
 				String result = AgentUtils.pushData(datas);
 				log.info(result);
 				
@@ -44,7 +44,7 @@ public class TomcatStatInfoLoader {
 		}
 	}
 	
-	public static List<StatInfo> getTomcatInfoList(String url,String ip,String tomcat, long time){
+	public static List<StatInfo> getTomcatInfoList(String url,String ip,String tomcat, String port, long time){
 		String service_url = url+"/monitoring";
 		Map<String,String> parMap = new HashMap<String, String>();
 		parMap.put("part", "currentRequests"); 
@@ -87,7 +87,7 @@ public class TomcatStatInfoLoader {
 				StatInfo statInfo_memo = new StatInfo();
 				statInfo_memo.setEndpoint(endpoint);
 				statInfo_memo.setMetric("fos.tomcat.memoUsed");
-				statInfo_memo.setTags("biz="+tomcat);
+				statInfo_memo.setTags("biz="+tomcat+",port="+port);
 				statInfo_memo.setValue(usedPercent);
 				statInfo_memo.setTimestemp(time);
 				statInfo_memo.setStep(step);
@@ -95,7 +95,7 @@ public class TomcatStatInfoLoader {
 				StatInfo statInfo_gc = new StatInfo();
 				statInfo_gc.setEndpoint(endpoint);
 				statInfo_gc.setMetric("fos.tomcat.gc");
-				statInfo_gc.setTags("biz="+tomcat);
+				statInfo_gc.setTags("biz="+tomcat+",port="+port);
 				statInfo_gc.setValue(gctmPercent);
 				statInfo_gc.setTimestemp(time);
 				statInfo_gc.setStep(step);
@@ -124,7 +124,7 @@ public class TomcatStatInfoLoader {
 					StatInfo statInfo_db_unclosed = new StatInfo();
 					statInfo_db_unclosed.setEndpoint(endpoint);
 					statInfo_db_unclosed.setMetric("fos.tomcat.jdbc.unclosedConn");
-					statInfo_db_unclosed.setTags("biz="+tomcat+",db="+dbUserName);
+					statInfo_db_unclosed.setTags("biz="+tomcat+",port="+port+",db="+dbUserName);
 					statInfo_db_unclosed.setValue(unclosedCount);
 					statInfo_db_unclosed.setTimestemp(time);
 					statInfo_db_unclosed.setStep(step);
@@ -132,7 +132,7 @@ public class TomcatStatInfoLoader {
 					StatInfo statInfo_db_active = new StatInfo();
 					statInfo_db_active.setEndpoint(endpoint);
 					statInfo_db_active.setMetric("fos.tomcat.jdbc.activeConn");
-					statInfo_db_active.setTags("biz="+tomcat+",db="+dbUserName);
+					statInfo_db_active.setTags("biz="+tomcat+",port="+port+",db="+dbUserName);
 					statInfo_db_active.setValue(activeCount);
 					statInfo_db_active.setTimestemp(time);
 					statInfo_db_active.setStep(step);

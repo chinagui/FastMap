@@ -68,6 +68,7 @@ public class PoiSave {
 			Map<String, Integer> newTaskInfo= changeTaskInfo(subtaskId,taskInfo);
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			EditApiImpl editApiImpl = new EditApiImpl(conn);
  
 			String tmpdata = json.get("data") == null ? "" : json.get("data").toString();
 			int poiLength = 0;
@@ -81,31 +82,13 @@ public class PoiSave {
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
 				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);
+				editApiImpl.updatePoifreshVerified(json.getInt("objId"));
 				JSONArray ret = new JSONArray();
 				result.put("log", ret);
 				result.put("check", ret);
 				return result;
 			}
-
-			// StringBuffer buf = new StringBuffer();
-			//
-			// int pid = 0;
-			//
-			// if (operType != OperType.CREATE) {
-			// if (objType == ObjType.IXSAMEPOI) {
-			// String poiPids = JsonUtils.getStringValueFromJSONArray(json
-			// .getJSONArray("poiPids"));
-			// buf.append(poiPids);
-			// } else {
-			// pid = json.getInt("objId");
-			//
-			// buf.append(String.valueOf(pid));
-			// }
-			// } else {
-			// pid = result.getInt("pid");
-			// buf.append(String.valueOf(pid));
-			// }
-			EditApiImpl editApiImpl = new EditApiImpl(conn);
+			
 			editApiImpl.setToken(userId);
 			editApiImpl.setSubtaskId(subtaskId);
 			StringBuffer sb = new StringBuffer();
@@ -198,7 +181,7 @@ public class PoiSave {
 			upatePoiStatus(sb.toString(), conn, newTaskInfo,true);
 
 			if (operType == OperType.UPDATE) {
-				editApiImpl.updatePoifreshVerified(pid, "web");
+				editApiImpl.updatePoifreshVerified(pid);
 			}
 
 			return result;

@@ -76,7 +76,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			String pidString = " PID IN (" + pids + ")";
 			String sqlStr = "SELECT P1.PID PID_MAIN,P1.KIND_CODE KIND_MAIN,P2.PID,P2.KIND_CODE "
 					+ " FROM IX_POI P1,IX_POI P2"
-					+ " WHERE SDO_NN(P2.GEOMETRY,P1.GEOMETRY,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+					+ " WHERE SDO_WITHIN_DISTANCE(P2.GEOMETRY, P1.GEOMETRY, 'DISTANCE=3 UNIT=METER') = 'TRUE'"
 					+ "	AND P1." + pidString + " AND P2.KIND_CODE IN ('200103', '200104', '120101') "
 					+ "AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" + " AND P1.PID <> P2.PID";
 			log.info("FM-14-Sum-11-08 sql:" + sqlStr);

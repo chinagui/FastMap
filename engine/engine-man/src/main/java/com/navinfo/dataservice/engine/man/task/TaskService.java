@@ -3583,11 +3583,13 @@ public class TaskService {
 		String selectPid = "select pes.pid"
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
-				 + " and pes.status ！= 0"
-				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
+				 + " and pes.status != 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
 		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
-		return run.update(dailyConn, updateSql);
+		Clob clob = ConnectionUtil.createClob(dailyConn);
+		clob.setString(1, wkt);
+		return run.update(dailyConn, updateSql,clob);
 	}
 	
 	
@@ -3699,7 +3701,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			Task task = queryByTaskId(conn, taskId);
+			Task task = queryNoGeoByTaskId(conn, taskId);
 			return batchNoTaskMidData(conn, task);
 		}catch(Exception e){
 			log.error("", e);
@@ -3721,10 +3723,11 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
+			String selectSql = "select st.subtask_id, st.geometry as st_geometry, st.name as st_name, st.stage as st_stage, st.work_kind, b.geometry, "
+					+ "p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
 					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
-					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
-					+ " and t.type = 0 and t.LATEST = 1";
+					+ "from subtask st, task t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id and st.task_id = t.task_id"
+					+ " and t.type = 0 and t.latest = 1";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
 				@Override
@@ -3732,7 +3735,7 @@ public class TaskService {
 					List<Map<String, Object>> taskList = new ArrayList<>();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(result.next()){
-						Map<String, Object> task = new HashMap<>();
+						Map<String, Object> task = new HashMap<>(32);
 						task.put("programId", result.getInt("program_id"));
 						task.put("programName", result.getString("p_name"));
 						task.put("programType", result.getInt("p_type"));
@@ -3761,6 +3764,19 @@ public class TaskService {
 						} catch (Exception e) {
 							log.error("geometry转JSON失败，原因为:" + e.getMessage());
 						}
+						//modify by song
+						//服务情报对接变更，添加返回子任务信息2017/08/16
+						task.put("subtaskId", result.getInt("subtask_id"));
+						STRUCT stStruct = (STRUCT) result.getObject("st_geometry");
+						try{
+							String clobStr = GeoTranslator.struct2Wkt(stStruct);
+							task.put("subtaskGeometry", Geojson.wkt2Geojson(clobStr));
+						}catch(Exception e){
+							log.error("子任务geometry转JSON失败，原因为:" + e.getMessage());
+						}
+						task.put("subtaskName", result.getString("st_name"));
+						task.put("subtaskStage", result.getInt("st_stage"));
+						task.put("subtaskWorkKind", result.getString("work_kind"));
 						
 						taskList.add(task);
 					}
@@ -3850,7 +3866,7 @@ public class TaskService {
 			
 			//String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from TASK t where ");//t.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name,t.region_id from TASK t where ");//t.program_id = "+programId);
 			//未规划草稿状态
 			sb.append(" t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
@@ -3877,6 +3893,7 @@ public class TaskService {
 					map.put("taskId", rs.getInt("task_id"));
 					map.put("name", rs.getString("name"));
 					map.put("blockId", rs.getInt("block_id"));
+					map.put("regionId", rs.getInt("region_id"));
 					result.add(map);
 				}
 				return result;
@@ -4154,7 +4171,7 @@ public class TaskService {
 			StringBuffer linksb = new StringBuffer();
 			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
 			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where  t.u_record != 2 and ");
-			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String linkSql = linksb.toString();
 			Clob clob = ConnectionUtil.createClob(dailyConn);
 			clob.setString(1, wkt);
@@ -4165,7 +4182,7 @@ public class TaskService {
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
 			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where  p.u_record != 2 and ");
-			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);
@@ -4669,7 +4686,7 @@ public class TaskService {
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
 					poiSb.append("update DATA_PLAN p set p.is_plan_selected = 1 where exists (");
-					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and t.u_record!=2 and ");
+					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and dp.pid = p.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4684,7 +4701,7 @@ public class TaskService {
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
 					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
-					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and ");
+					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and d.pid = dp.pid and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");

@@ -26,6 +26,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -90,6 +91,10 @@ public class UploadService {
 
 		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.uploadPathCustom);
+		if(StringUtils.isEmpty(uploadPath)){
+			uploadPath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);
+		}
 
 		File file = new File(uploadPath + "/" + jobId);
 

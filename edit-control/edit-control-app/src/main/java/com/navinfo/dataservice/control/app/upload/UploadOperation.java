@@ -418,8 +418,6 @@ public class UploadOperation {
 								} else {
 									upatePoiStatusForAndroid(conn, 0, rawFields,1,poiJson.getInt("pid"));
 								}
-								EditApiImpl editApiImpl = new EditApiImpl(conn);
-								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"),"andriod");
 								
 								conn.commit();
 								count++;

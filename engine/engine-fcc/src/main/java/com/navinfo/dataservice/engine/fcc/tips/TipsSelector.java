@@ -83,6 +83,7 @@ public class TipsSelector {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
+            throw e;
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
@@ -1312,8 +1313,11 @@ public class TipsSelector {
 			jsonData.put("total", total);
 			jsonData.put("rows", data);
 			return jsonData;
-		} finally {
-			DbUtils.close(oracelConn);
+		} catch (Exception e){
+            DbUtils.rollbackAndCloseQuietly(oracelConn);
+            throw new Exception("Tips统计报错", e);
+        }finally {
+			DbUtils.commitAndCloseQuietly(oracelConn);
 		}
 
 	}
@@ -1387,7 +1391,9 @@ public class TipsSelector {
 					"select * from tips_index where " + where.getSql(), where
 							.getValues().toArray());
 
-		} finally {
+		} catch (Exception e){
+            throw new Exception("获取Tips快照报错", e);
+        }finally {
 			DbUtils.closeQuietly(oracleConn);
 		}
 		List<JSONObject> tipsJsonList = convertToJsonList(tips);
@@ -1486,7 +1492,7 @@ public class TipsSelector {
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error("data error：" + json.get("id") + ":" + e.getMessage(), e.getCause());
-				throw new Exception("data error：" + json.get("id") + ":" + e.getMessage(), e.getCause());
+				throw new Exception("获取快照报错:" + json.get("id") + ":" + e.getMessage(), e.getCause());
 
 			}
 
@@ -1887,10 +1893,10 @@ public class TipsSelector {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
+			throw new Exception("Tips下载检查接口checkUpdate报错", e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
-		return 0;
 	}
 
 	/**
@@ -2064,6 +2070,7 @@ public class TipsSelector {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+            throw new Exception("查询未提交的数据报错", e);
 		} finally {
 			DbUtils.closeQuietly(oracleConn);
 		}
@@ -2228,7 +2235,9 @@ public class TipsSelector {
 			}
 			statObj.put("length", length);
 			return statObj;
-		} finally {
+		} catch (Exception e){
+            throw new Exception("任务统计报错", e);
+        }finally {
 			DbUtils.closeQuietly(oracleConn);
 		}
 	}
@@ -2246,7 +2255,7 @@ public class TipsSelector {
 
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-			queryTotal += " ORDER BY t_date DESC";
+			queryTotal += " ORDER BY T_DATE DESC, ID";
 			Page page = operator.queryPage(queryTotal, curPage, pageSize);
 
 			long totalNum = page.getTotalCount();
@@ -2429,6 +2438,7 @@ public class TipsSelector {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			DbUtils.rollbackAndClose(conn);
 			e.printStackTrace();
+            throw new Exception("加载Tips报错", e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 			DbUtils.closeQuietly(conn);
@@ -2552,6 +2562,7 @@ public class TipsSelector {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
+            throw new Exception("查询Tips报错", e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}

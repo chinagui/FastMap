@@ -604,8 +604,30 @@ public class PoiEditStatus {
 				pids.addAll(freshVerPois);
 				Clob fPidsClob = ConnectionUtil.createClob(conn);
 				fPidsClob.setString(1, StringUtils.join(freshVerPois,","));
-				String freshSql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=NULL WHERE PID in (SELECT TO_NUMBER(COLUMN_VALUE) PID  FROM TABLE(CLOB_TO_TABLE(?))) AND STATUS IN (0,3)";
-				run.update(conn, freshSql, fPidsClob);
+				StringBuilder sb = new StringBuilder();
+			
+				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("SET (P.FRESH_VERIFIED, \n");
+				sb.append("P.RAW_FIELDS, \n");
+				sb.append("P.STATUS)=(SELECT 1, \n");
+				sb.append(" NULL, \n");
+				sb.append(" CASE \n");
+				sb.append(" WHEN EXISTS \n");
+				sb.append("  (SELECT 1 \n");                     
+				sb.append("  FROM LOG_DETAIL L \n");                     
+				sb.append("  WHERE L.OB_PID =E.PID \n");    
+				sb.append("  AND (TB_NM = 'IX_POI_PHOTO' \n");   
+				sb.append("  OR (L.TB_NM = 'IX_POI' AND \n"); 
+				sb.append("  INSTR(L.FD_LST, 'POI_MEMO') > 0))) THEN \n"); 
+				sb.append("  1 \n");
+				sb.append("  ELSE \n");
+				sb.append("   2 \n");
+				sb.append("  END POI_STATUS FROM POI_EDIT_STATUS E WHERE E.PID=P.PID) \n");
+				sb.append("   WHERE P.PID IN \n");
+				sb.append("   (SELECT TO_NUMBER(COLUMN_VALUE) PID FROM TABLE(CLOB_TO_TABLE(?))) \n");
+				sb.append("   AND P.STATUS IN (0, 3) \n");
+				
+				run.update(conn, sb.toString(), fPidsClob);
 				
 			}
 			

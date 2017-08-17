@@ -54,10 +54,10 @@ public class SubtaskTest extends InitApplication{
 		 * 
 		 * LINESTRING(116.3001 39.7,116.7 39.7)
 		 */
-		String parameter ="{\"id1\":601,\"lineWkt\":\"LINESTRING(116.39915 39.89992,116.39825 39.89959,116.39727 39.89921,116.39714 39.89915,116.39697 39.89916)\"}"; 
-		//String parameter ="{\"id1\":602,\"lineWkt\":\"LINESTRING(116.39462 39.89913,116.39573 39.89922,116.3969 39.89918,116.39707 39.89915,116.39729 39.89915)\"}"; 
-		//String parameter ="{\"lineWkt\":\"LINESTRING(115.9964 40.37375,116.04309 40.24704,116.33148 40.15579)\"}"; 
-		//String parameter ="{\"id1\":372,\"id2\":375}"; 
+		//String parameter ="{\"id1\":601,\"lineWkt\":\"LINESTRING(116.39915 39.89992,116.39825 39.89959,116.39727 39.89921,116.39714 39.89915,116.39697 39.89916)\"}"; 
+		String parameter ="{\"id1\":859,\"lineWkt\":\"LINESTRING(85.67859999999999 47.41666666666665,85.87909999999998 47.41666666666665,85.8942 47.42971,85.88425 47.45061,85.87499999999999 47.455490000000005,85.85506 47.45363,85.85163 47.44736,85.84991 47.43343,85.84682 47.42321,85.83344 47.42135,85.67791000000001 47.41666666666665)\"}"; 
+		//String parameter ="{\"lineWkt\":\"LINESTRING(87.00000000000001 46.94182,87.27814 47.14303,87.38937 47.250000000000014,87.43229 47.27574,87.5 47.27503999999999,87.60567 47.26152,87.67811 47.24102,87.70111 47.23985,87.71759 47.23006,87.72823 47.20021,87.70626 47.147,87.55863 47.05211,87.43813 47,87.30286 46.91666666666666,87.12499999999999 46.85362)\"}"; 
+		//String parameter ="{\"id1\":842,\"id2\":837}"; 
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -66,7 +66,7 @@ public class SubtaskTest extends InitApplication{
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		SubtaskService service = SubtaskService.getInstance();
-		int taskId=77;
+		int taskId=14362;
 		service.paintRefer(taskId, dataJson);	
 		System.out.print("end paintRefer");
 	}

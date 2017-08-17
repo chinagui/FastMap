@@ -1265,6 +1265,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  				}
  			}
  			
+ 			//三条线组成的link,则修行后，交点必须是原来的交点，否则不允许修形 ？？？？？？
+ 			if(f_array.size()>2){
+ 				
+ 			}
+ 			
+ 			
+ 			
  			for (Object object : f_array) {
  				JSONObject fInfo = JSONObject.fromObject(object);
  				//查其他组成线

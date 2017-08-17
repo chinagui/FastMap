@@ -1026,6 +1026,64 @@ public class GeoTranslator {
 
 		return flag;
 	}
+	
+	/**
+	 * 返回点距离线最近的距离
+	 * @param lineCoordinates 线几何
+	 * @param coord 点
+	 * @return double 最新的距离
+	 * @throws Exception
+	 */
+	public static double minDistince(Coordinate[] lineCoordinates, Coordinate coord,int precision) throws Exception {
+		double minDis=10.0;
+		Coordinate coorBefore=null;
+		for(Coordinate linePoint:lineCoordinates){
+			//交点与线的端点相同
+			if(coord.equals(linePoint)){
+				return 0.0;
+			}
+			//是否第一个点
+			if(coorBefore==null){
+				coorBefore=linePoint;
+				continue;
+			}
+			//不是第一个点，判断交点是否在两点中间
+			double myDis=distince(coorBefore, linePoint, coord, precision);
+			if(minDis>myDis){
+				minDis=myDis;
+			}
+			coorBefore=linePoint;
+		}
+		return minDis;
+	}
+	
+	/**
+	 * 点p0距离点p1和p2的线的距离
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return double 距离
+	 * @throws Exception
+	 */
+	public static double distince(Coordinate p1, Coordinate p2,
+			Coordinate p0,int precision) throws Exception {
+
+		Coordinate[] coordinates = new Coordinate[2];
+
+		coordinates[0] = p1;
+
+		coordinates[1] = p2;
+
+		LineString line = (LineString) transform(
+				geoFactory.createLineString(coordinates), 100000, precision);
+
+		Point point = (Point) transform(geoFactory.createPoint(p0), 100000, precision);
+		return line.distance(point);
+	}
 
 	public static long round(double d) {
 		return d < 0 ? (long) d : (long) (d + 0.5);
@@ -1215,9 +1273,11 @@ public class GeoTranslator {
 		
 		//coord1，coord2为端点的线段
 		Geometry midLine=GeoTranslator.transform(polygon.intersection(line),1,precision);
-		Geometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0]);
-		unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
-		boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+		//List<Coordinate> p1SEnodes=new ArrayList<>();
+		MyGeometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0],null,precision);
+		//List<Coordinate> p2SEnodes=new ArrayList<>();
+		unionGeo=GeoTranslator.addCoorToGeo(unionGeo.getGeo(), interGeo.getCoordinates()[1],null,precision);
+		boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo.getGeo());
 		if(!isIn){
 			throw new Exception("线不在面内，请重新划线");
 		}
@@ -1239,7 +1299,7 @@ public class GeoTranslator {
 //			}
 //		}
 		
-		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
+		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(unionGeo.getGeo(), coord1, coord2);
 				
 		List<Geometry> polygonLine1=new ArrayList<Geometry>();
 		List<Geometry> polygonLine2=new ArrayList<Geometry>();
@@ -1286,20 +1346,32 @@ public class GeoTranslator {
 	
 	/**
 	 * 点coord加到geo的形状点中
+	 * 1.若有传入插入位置的前后形状点，则用前后形状点判断；
+	 * 2.否则，按照最短距离取一个位置插入，距离相同随机取。并将前后点放入List<Coordinate> SENodes中
+	 * 支持插入具体位置，支持自动计算插入位置（插入距离线段最近的位置）。若点插入则，返回几何+具体的位置
 	 * @param geo
 	 * @param coord
+	 * @param SENodes 插入位置的前后形状点
 	 * @return
      * @throws Exception 
      * @throws JSONException 
 	 */
-	public static Geometry addCoorToGeo(Geometry geo,Coordinate coord) throws JSONException, Exception{
+	public static MyGeometry addCoorToGeo(Geometry geo,Coordinate coord,List<Coordinate> SENodes,int precision) throws JSONException, Exception{
 		//点将线切成多段
 		Coordinate[] lineCoordinates = geo.getCoordinates();
 		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
 		Coordinate coorBefore=null;
+		double minDis=0.0;
+		if(SENodes==null||SENodes.size()==0){
+			minDis=minDistince(lineCoordinates, coord, precision);
+		}
+		List<Coordinate> mySENodes=new ArrayList<>();
+		//点只能插入一次。
+		boolean insertFlag=false;
 		for(Coordinate linePoint:lineCoordinates){
 			//交点与线的端点相同
-			if(coord.equals(linePoint)){
+			if(!insertFlag&&coord.equals(linePoint)){
+				insertFlag=true;
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;
@@ -1310,12 +1382,33 @@ public class GeoTranslator {
 				coorBefore=linePoint;
 				continue;
 			}
-			//不是第一个点，判断交点是否在两点中间
-			if(!coord.equals(coorBefore)&&isIntersection(coorBefore, linePoint, coord)){
-				tmpLine.add(coord);
-				tmpLine.add(linePoint);
-				coorBefore=linePoint;
-				continue;
+			/*不是第一个点，判断交点是否在两点中间。
+			1.若有传入插入位置的前后形状点，则用前后形状点判断；
+			2.否则，按照最短距离取一个位置插入，距离相同随机取。并将前后点放入List<Coordinate> SENodes中*/
+			if(!insertFlag&&!coord.equals(coorBefore)){
+				if(SENodes!=null&&SENodes.size()>0){
+					if((coorBefore.equals(SENodes.get(0))&&linePoint.equals(SENodes.get(1)))
+							||(coorBefore.equals(SENodes.get(1))&&linePoint.equals(SENodes.get(0)))){
+						insertFlag=true;
+						tmpLine.add(coord);
+						tmpLine.add(linePoint);
+						mySENodes.add(coorBefore);
+						mySENodes.add(linePoint);
+						coorBefore=linePoint;
+						continue;
+					}
+				}else{
+					double myDis=distince(coorBefore,linePoint, coord, precision);
+					if(minDis==myDis){
+						insertFlag=true;
+						tmpLine.add(coord);
+						tmpLine.add(linePoint);
+						mySENodes.add(coorBefore);
+						mySENodes.add(linePoint);
+						coorBefore=linePoint;
+						continue;
+					}
+				}
 			}
 			tmpLine.add(linePoint);
 			coorBefore=linePoint;
@@ -1323,13 +1416,15 @@ public class GeoTranslator {
 		List<Geometry> subLines=new ArrayList<Geometry>();
 		subLines.add(GeoTranslator.createLineString(tmpLine));
 		Geometry p = GeoTranslator.getCalLineToPythonWithoutCheck(subLines);
-		return p;
+		MyGeometry myGeometry=new MyGeometry();
+		myGeometry.setGeo(p);
+		myGeometry.setSENodes(mySENodes);
+		return myGeometry;
 	}
 	
 	/**
-	 * 处理geo，去除相邻的重复点
-	 * @param geo
-	 * @param coord
+	 * 处理geo，去除相邻的重复点.
+	 * @param geo 线几何/面几何。
 	 * @return
      * @throws Exception 
      * @throws JSONException 

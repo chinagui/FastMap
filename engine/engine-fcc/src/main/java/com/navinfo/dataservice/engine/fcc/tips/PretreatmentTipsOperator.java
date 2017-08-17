@@ -1329,9 +1329,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  			
  			Geometry interGeo=locationGeo.intersection(geometry);
  			
- 			System.out.println(interGeo.getNumGeometries());
- 			
- 			if(interGeo!=null&&interGeo.getNumGeometries()>1){
+ 			if(interGeo==null||interGeo.isEmpty()||interGeo.getNumGeometries()!=1){
  				throw new Exception("操作错误\n提示：测线上存在立交，且修行后交点不为1 ，不允许修形");
  			}
  		}

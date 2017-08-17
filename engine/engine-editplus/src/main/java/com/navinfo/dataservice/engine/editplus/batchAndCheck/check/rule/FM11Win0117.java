@@ -25,7 +25,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.vividsolutions.jts.geom.Geometry;
 /**
  * FM-11Win-01-17
- * 检查条件：Lifecycle=3（新增）且kindcode!={130403,210215,180208,230222}
+ * 检查条件：Lifecycle=3（新增）且kindcode!={130403,210215,180208,230222,230227}
  * 检查原则：
  * 100米内名称（name）和分类、品牌相同的新增设施和其他非删除设施，成对显示，颜色区分新增与删除
  * 当分类={230210、230213,230214}时，需要增加停车场建筑物类型一起判断
@@ -47,7 +47,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)||!poi.getHisOpType().equals(OperationType.INSERT)){
 				continue;}
 			String kind=poi.getKindCode();
-			if(kind.equals("130403")||kind.equals("210215")||kind.equals("180208")||kind.equals("230222"))
+			if(kind.equals("130403")||kind.equals("210215")||kind.equals("180208")||kind.equals("230222")||kind.equals("230227"))
 				{continue;}
 			if(kind.equals("230210")||kind.equals("230213")||kind.equals("230214")){pid2.add(poi.getPid());}
 			else{pid1.add(poi.getPid());}
@@ -138,8 +138,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
-			String sqlStr="WITH T AS"
-					+ " SELECT  P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
+			String sqlStr= " SELECT  P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_PARKING PK1,"
@@ -155,7 +154,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N1.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND P2.PID = N2.POI_PID"
 					+ "     AND P2.PID = PK2.POI_PID"
-					+ "     AND NVL(PK1.parking_typE,'null') = NVL(PK2.parking_typE,'null')"
+					+ "     AND NVL(PK1.PARKING_TYPE,'null') = NVL(PK2.PARKING_TYPE,'null')"
 					+ "     AND N2.NAME_CLASS = 1"
 					+ "     AND N2.NAME_TYPE = 2"
 					+ "     AND N2.LANG_CODE IN ('CHI', 'CHT')"

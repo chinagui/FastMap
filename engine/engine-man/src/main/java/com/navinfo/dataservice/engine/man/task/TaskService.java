@@ -3723,10 +3723,11 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
+			String selectSql = "select st.subtask_id, st.geometry as st_geometry, st.name as st_name, st.stage as st_stage, st.work_kind, b.geometry, "
+					+ "p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
 					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
-					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
-					+ " and t.type = 0 and t.LATEST = 1";
+					+ "from subtask st, task t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id and st.task_id = t.task_id"
+					+ " and t.type = 0 and t.latest = 1";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
 				@Override
@@ -3734,7 +3735,7 @@ public class TaskService {
 					List<Map<String, Object>> taskList = new ArrayList<>();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(result.next()){
-						Map<String, Object> task = new HashMap<>();
+						Map<String, Object> task = new HashMap<>(32);
 						task.put("programId", result.getInt("program_id"));
 						task.put("programName", result.getString("p_name"));
 						task.put("programType", result.getInt("p_type"));
@@ -3763,6 +3764,19 @@ public class TaskService {
 						} catch (Exception e) {
 							log.error("geometry转JSON失败，原因为:" + e.getMessage());
 						}
+						//modify by song
+						//服务情报对接变更，添加返回子任务信息2017/08/16
+						task.put("subtaskId", result.getInt("subtask_id"));
+						STRUCT stStruct = (STRUCT) result.getObject("st_geometry");
+						try{
+							String clobStr = GeoTranslator.struct2Wkt(stStruct);
+							task.put("subtaskGeometry", Geojson.wkt2Geojson(clobStr));
+						}catch(Exception e){
+							log.error("子任务geometry转JSON失败，原因为:" + e.getMessage());
+						}
+						task.put("subtaskName", result.getString("st_name"));
+						task.put("subtaskStage", result.getInt("st_stage"));
+						task.put("subtaskWorkKind", result.getString("work_kind"));
 						
 						taskList.add(task);
 					}

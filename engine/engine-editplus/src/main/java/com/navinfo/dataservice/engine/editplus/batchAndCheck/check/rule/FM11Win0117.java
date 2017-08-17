@@ -138,8 +138,7 @@ public class FM11Win0117 extends BasicCheckRule {
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
-			String sqlStr="WITH T AS"
-					+ " SELECT  P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
+			String sqlStr= " SELECT  P2.PID PID2, P1.PID PID1,P1.GEOMETRY,P1.MESH_ID"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_PARKING PK1,"
@@ -155,7 +154,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N1.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND P2.PID = N2.POI_PID"
 					+ "     AND P2.PID = PK2.POI_PID"
-					+ "     AND NVL(PK1.parking_typE,'null') = NVL(PK2.parking_typE,'null')"
+					+ "     AND NVL(PK1.PARKING_TYPE,'null') = NVL(PK2.PARKING_TYPE,'null')"
 					+ "     AND N2.NAME_CLASS = 1"
 					+ "     AND N2.NAME_TYPE = 2"
 					+ "     AND N2.LANG_CODE IN ('CHI', 'CHT')"

@@ -4672,7 +4672,7 @@ public class TaskService {
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
 					poiSb.append("update DATA_PLAN p set p.is_plan_selected = 1 where exists (");
-					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and t.u_record!=2 and ");
+					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and dp.pid = p.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
@@ -4687,7 +4687,7 @@ public class TaskService {
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
 					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
-					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and ");
+					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and d.pid = dp.pid and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");

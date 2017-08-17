@@ -28,60 +28,69 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class FMGLM60271 extends BasicCheckRule {
 
-	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
-	
+	private Map<Long, Long> parentMap = new HashMap<Long, Long>();
+
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
+		if (obj.objName().equals(ObjectName.IX_POI)) {
+			IxPoiObj poiObj = (IxPoiObj) obj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-			if(kindCode == null){return;}
-			//是否有父
-			if(!parentMap.containsKey(poi.getPid())){return;}
-			Long parentId=parentMap.get(poi.getPid());
+			if (kindCode == null) {
+				return;
+			}
+			// 是否有父
+			if (!parentMap.containsKey(poi.getPid())) {
+				return;
+			}
+			Long parentId = parentMap.get(poi.getPid());
 			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			if (parentPoiObj == null) {
+				return;
+			}
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null ||"220100".equals(kindCodeP)){return;}
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			Map<String, Integer> searchScFmControl = metadataApi.searchScFmControl(kindCodeP);
-			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
-			if(searchScFmControl == null || searchScFmControl.isEmpty()){
-				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
+			if (kindCodeP == null || "220100".equals(kindCodeP)) {
+				return;
 			}
-			//子poi内部标识
+			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String, Integer> searchScFmControl = metadataApi.searchScFmControl(kindCodeP);
+			String targets = "[IX_POI," + poi.getPid() + "];[IX_POI," + parentId + "]";
+			if (searchScFmControl == null || searchScFmControl.isEmpty()) {
+				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
+			}
+			// 子poi内部标识
 			int indoor = poi.getIndoor();
-			if(searchScFmControl != null && !searchScFmControl.isEmpty()){
-				if(searchScFmControl.containsKey(kindCodeP)){
+			if (searchScFmControl != null && !searchScFmControl.isEmpty()) {
+				if (searchScFmControl.containsKey(kindCodeP)) {
 					int parent = searchScFmControl.get(kindCodeP);
-					if(parent == 2 && indoor==0){
-						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "正常POI与内部POI的父制作父子关系");
-					}
-					else if(parent == 0){
+					if (parent == 2 && indoor == 0) {
+						setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "正常POI与内部POI的父制作父子关系");
+					} else if (parent == 0) {
 						String poiNumP = parentPoi.getPoiNum();
 						Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
-						if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
-							setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
+						if (searchScPointFocus == null || !searchScPointFocus.containsKey(poiNumP)) {
+							setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
 						}
 					}
 				}
 			}
-			
+
 		}
 	}
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		Set<Long> pidList=new HashSet<Long>();
-		for(BasicObj obj:batchDataList){
+		Set<Long> pidList = new HashSet<Long>();
+		for (BasicObj obj : batchDataList) {
 			pidList.add(obj.objPid());
 		}
 		parentMap = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
-		Set<String> referSubrow=new HashSet<String>();
-		//referSubrow.add("IX_POI_NAME");
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
+		Set<String> referSubrow = new HashSet<String>();
+		// referSubrow.add("IX_POI_NAME");
+		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI,
+				referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 

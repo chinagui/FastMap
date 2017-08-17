@@ -235,13 +235,11 @@ public class RelateTipsGuideAndAglUpdate {
 				 Geometry geoLine=TipsGeoUtils.getGscLineGeo(lineGeomtry,gscPoint);
 				 JSONObject  newGeo= GeoTranslator.jts2Geojson(geoLine);
 			     newFInfo1.put("geo", newGeo); //更新geo
-			     System.out.println("XXXXXXXXXXXXXXXXXXXXXnewGeo1:"+newGeo);
 				 
 			     
 				 Geometry geoTheOtherLine=TipsGeoUtils.getGscLineGeo(otherLineGeo,gscPoint);
 				 JSONObject  newGeoTheOther= GeoTranslator.jts2Geojson(geoTheOtherLine);
 			     newFInfo2.put("geo", newGeoTheOther); //更新geo
-			     System.out.println("XXXXXXXXXXXxnewGeoTheOther:"+newGeoTheOther);
 				 
 				 f_array_new.add(newFInfo1); // 添加新对象到新数组
 				 f_array_new.add(newFInfo2); // 添加新对象到新数组
@@ -250,12 +248,12 @@ public class RelateTipsGuideAndAglUpdate {
 				// 如果有测线，则修改，并返回
 				if (hasMeasuringLine) {
 					json.setG_location(newLocationJson.toString());
+					json.setG_guide(newLocationJson.toString()); //立交没有引导坐标，显示坐标变化，引导坐标也需要改
 					deep.put("f_array", f_array_new);// 新的
 					json.setDeep(deep.toString()); //1.修改deep
 					return json;
 				}
 			}
-			
 			
 			//>2则说明三条线以上，三条线以上，则必须是原原来交点相同，修行前有判断，所以这里不用在维护 g_location.但是,geo需要重新维护
 			if(f_array.size()>2){

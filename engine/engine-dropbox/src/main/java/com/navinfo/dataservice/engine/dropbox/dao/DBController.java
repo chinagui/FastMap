@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -55,9 +56,14 @@ public class DBController {
 			pstmt.setInt(1, autoId);
 
 			pstmt.setString(2, fileName);
-
+			
+			
 			String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPathCustom);
+			if(StringUtils.isEmpty(uploadPath)){
+				uploadPath = SystemConfigFactory.getSystemConfig().getValue(
+						PropConstant.uploadPath);
+			}
 
 			pstmt.setString(3, uploadPath);
 

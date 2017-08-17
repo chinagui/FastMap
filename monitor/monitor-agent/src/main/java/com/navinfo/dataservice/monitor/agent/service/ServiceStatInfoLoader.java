@@ -82,7 +82,7 @@ public class ServiceStatInfoLoader{
 					String metricVisitCount = "fos.service.visitCount";
 					String metricResTime = "fos.service.responseTime";
 					String metricInterfaceStatus = "fos.service.interfaceStatus";
-					String tags = "biz="+tomcat+",name="+name;
+					String tags = "biz="+tomcat+",port="+port+",name="+name;
 					//上一次数据
 					int	hitsLast = 0;
 					int durationsSumLast = 0;
@@ -151,7 +151,7 @@ public class ServiceStatInfoLoader{
 				}
 				//处理tomcat总访问次数
 				String metricTotalVisitCount = "fos.service.totalVisitCount";
-				String tags = "biz="+tomcat;
+				String tags = "biz="+tomcat+",port="+port;
 				//上一次数据
 				int	totalVisitCountLast = 0;
 				if(statInfoPre.size() > 0){

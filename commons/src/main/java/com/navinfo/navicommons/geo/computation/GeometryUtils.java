@@ -604,8 +604,11 @@ public class GeometryUtils {
 
             pedalPoint = GetPedalPoint(point1, point2, point);
 
-            boolean isPointAtLine = IsPointAtLineInter(point1, point2,
-                    pedalPoint);
+            if (point1.equals(point2)) {
+                continue;
+            }
+
+            boolean isPointAtLine = IsPointAtLineInter(point1, point2, pedalPoint);
 
             // 如果在线上
             if (isPointAtLine) {

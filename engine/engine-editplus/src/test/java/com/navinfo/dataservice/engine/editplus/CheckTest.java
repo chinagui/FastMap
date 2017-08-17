@@ -57,22 +57,25 @@ public class CheckTest extends ClassPathXmlAppContextInit{
 
     @Test
     public void check() throws Exception {
-        GLM60227 check = new GLM60227();
+        FMDGC008 check = new FMDGC008();
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);
         check.setCheckRuleCommand(command);
 
         Set<Long> pids = new HashSet<Long>();
-        pids.add(503000141L);
-        pids.add(408000138L);
-        pids.add(407000136L);
+        String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 2000";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        ResultSet resultSet = pstmt.executeQuery();
+        while (resultSet.next()) {
+            pids.add(resultSet.getLong("PID"));
+        }
 
         CheckRule checkRule = new CheckRule();
         checkRule.setObjNameSet(ObjectName.IX_POI);
         check.setCheckRule(checkRule);
 
-        Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, false);
+        Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, true, pids, false, false);
         Map<String, Map<Long, BasicObj>> map = new HashMap<>();
         map.put(ObjectName.IX_POI, pois);
         command.setAllDatas(map);

@@ -98,7 +98,7 @@ public class FMDGC008 extends BasicCheckRule {
                     "   AND SDO_NN(T2.GEOMETRY," + 
                     "              SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
                     "                           8307)," + 
-                    "              'SDO_NUM_RES=3'," +
+                    "              'SDO_NUM_RES=10'," +
                     "              1) = 'TRUE'" + 
                     "   AND T2.U_RECORD <> 2" + 
                     " GROUP BY T1.PID" + 

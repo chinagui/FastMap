@@ -62,11 +62,14 @@ public class ExportTipsFromHadoop {
 				JSONObject jsonObj = new JSONObject();
 
 				Result[] results = htab.get(rowkeys);
+				
 				for (Result result : results) {
 
 					if (result.isEmpty()) {
 						continue;
 					}
+					
+					jsonObj.put("rowkey", new String(result.getRow()));
 
 					for (KeyValue rowKV : result.raw()) {
 						jsonObj.put(new String(rowKV.getQualifier()), new String(rowKV.getValue()));
@@ -80,12 +83,16 @@ public class ExportTipsFromHadoop {
 			
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
+			
 			e.printStackTrace();
 		}
-		finally{
+		finally{	
 			pw.close();
+			
 			htab.close();
+			
 			hbaseConn.close();
+			
 			System.out.println("Success, export is over...");
 		}
 	}
@@ -123,6 +130,8 @@ public class ExportTipsFromHadoop {
 			}
 		}
 
+		reader.close();
+		
 		return taskInfo;
 	}
 
@@ -155,6 +164,7 @@ public class ExportTipsFromHadoop {
 					List<Get> rowkeys = new ArrayList<>();
 
 					while (rs.next()) {
+						
 						Get dao = new Get(rs.getString(1).getBytes());
 						rowkeys.add(dao);
 					}
@@ -167,9 +177,11 @@ public class ExportTipsFromHadoop {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			
 		} finally {
 			DbUtils.close(oracleConn);
 		}
+		
 		return result;
 	}
 }

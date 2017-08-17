@@ -44,6 +44,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.geom.MyGeometry;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -3101,10 +3102,10 @@ public class SubtaskService {
 			if(ids.size()!=0){conditionQuery2.put("ids", ids);}
 			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
 
-			JSONObject conditionQuery=new JSONObject();
-			conditionQuery.put("taskId", taskId);
-			conditionQuery.put("stage", 0);				
-			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
+//			JSONObject conditionQuery=new JSONObject();
+//			conditionQuery.put("taskId", taskId);
+//			conditionQuery.put("stage", 0);				
+//			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
 			
 			if(!StringUtils.isEmpty(lineWkt)){
 				/*
@@ -3128,9 +3129,9 @@ public class SubtaskService {
 					}					
 					
 					Geometry midLine=GeoTranslator.transform(referGeo.intersection(lineGeo), 1, 6);
-					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
-					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
-					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+					MyGeometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0],null,6);
+					unionGeo=GeoTranslator.addCoorToGeo(unionGeo.getGeo(), interGeo.getCoordinates()[1],null,6);
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo.getGeo());
 					if(!isIn){
 						throw new Exception("线不在面内，请重新划线");
 					}
@@ -3155,7 +3156,7 @@ public class SubtaskService {
 					//交点
 					Geometry interGeo=null;
 					List<Geometry> addGeo=null;
-					List<Subtask> subtaskRelates=new ArrayList<>();
+					//List<Subtask> subtaskRelates=new ArrayList<>();
 					
 					log.info("start 切割选定面");
 					SubtaskRefer refer=refers.get(0);
@@ -3176,9 +3177,12 @@ public class SubtaskService {
 					}		
 					
 					Geometry midLine=GeoTranslator.transform(referGeo.intersection(lineGeo),1,6);
-					Geometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0]);
-					unionGeo=GeoTranslator.addCoorToGeo(unionGeo, interGeo.getCoordinates()[1]);
-					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo);
+					
+					MyGeometry unionGeo=GeoTranslator.addCoorToGeo(referGeo, interGeo.getCoordinates()[0],null,6);
+					List<Coordinate> p1SENodes=unionGeo.getSENodes();
+					unionGeo=GeoTranslator.addCoorToGeo(unionGeo.getGeo(), interGeo.getCoordinates()[1],null,6);
+					List<Coordinate> p2SENodes=unionGeo.getSENodes();
+					boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo.getGeo());
 					//boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, referGeo);
 					if(!isIn){
 						log.info("线不在面内");
@@ -3187,15 +3191,15 @@ public class SubtaskService {
 					
 					//line所切割的面对应的子任务是否开启
 					//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
-					for(Subtask s: subtasks){
-						if(s.getReferId()==refer.getId()){
-							if(s.getStatus()==1){
-								throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
-							}
-							s.setReferId(0);
-							subtaskRelates.add(s);
-						}
-					}
+//					for(Subtask s: subtasks){
+//						if(s.getReferId()==refer.getId()){
+//							if(s.getStatus()==1){
+//								throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+//							}
+//							s.setReferId(0);
+//							subtaskRelates.add(s);
+//						}
+//					}
 					addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo,6);
 					log.info("end 切割选定面");
 					
@@ -3215,29 +3219,26 @@ public class SubtaskService {
 						if(interGeoTmp==null||interGeoTmp.getCoordinates().length==0){
 							continue;
 						}
-						List<Coordinate> newLineCors=new ArrayList<Coordinate>();
+						MyGeometry unionTmp=new MyGeometry();
 						//有交点
-						List<Coordinate> coordinates = Arrays.asList(referGeoLineTmp.getCoordinates());
 						boolean isChange=false;
-						for (int i = coordinates.size() - 1; i >= 1; i--) {
-							newLineCors.add(coordinates.get(i));
-			                if (!p1.equals(coordinates.get(i))&&!p1.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p1,0.0000001)) {
-			                	newLineCors.add(p1);
-			                	isChange=true;
-			                }
-			                if (!p2.equals(coordinates.get(i))&&!p2.equals(coordinates.get(i-1))&&GeoTranslator.isIntersection(coordinates.get(i), coordinates.get(i - 1), p2,0.0000001)) {
-			                	newLineCors.add(p2);
-			                	isChange=true;
-			                }
-			            }
-						newLineCors.add(coordinates.get(0));
+						if(p1SENodes!=null&&p1SENodes.size()>0){
+							unionTmp=GeoTranslator.addCoorToGeo(referGeoTmp, interGeo.getCoordinates()[0],p1SENodes,6);
+							if(unionTmp.getSENodes()!=null&&unionTmp.getSENodes().size()>0){
+								isChange=true;
+							}
+						}
+						if(p2SENodes!=null&&p2SENodes.size()>0){
+							unionTmp=GeoTranslator.addCoorToGeo(unionTmp.getGeo(), interGeo.getCoordinates()[0],p2SENodes,6);
+							if(unionTmp.getSENodes()!=null&&unionTmp.getSENodes().size()>0){
+								isChange=true;
+							}
+						}
 						if(isChange){
-							List<Geometry> subLines=new ArrayList<Geometry>();
-							subLines.add(GeoTranslator.createLineString(newLineCors));
-							Geometry pTmp = GeoTranslator.getCalLineToPythonWithoutCheck(subLines);
-							referTmp.setGeometry(pTmp);
+							if(!unionTmp.getGeo().isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+							referTmp.setGeometry(unionTmp.getGeo());
 							SubtaskReferOperation.updateGeo(conn,referTmp);
-							log.info("邻接不规则圈进行修改id="+referTmp.getId()+",wkt="+pTmp.toText());
+							log.info("邻接不规则圈进行修改id="+referTmp.getId());
 						}						
 					}
 					
@@ -3254,9 +3255,9 @@ public class SubtaskService {
 					idSet.add(id1);
 					SubtaskReferOperation.delete(conn, idSet);
 					
-					for(Subtask s:subtaskRelates){
-						SubtaskOperation.updateSubtask(conn, s);
-					}
+//					for(Subtask s:subtaskRelates){
+//						SubtaskOperation.updateSubtask(conn, s);
+//					}
 				}				
 			}else{
 				/*
@@ -3265,16 +3266,16 @@ public class SubtaskService {
 				 */
 				//1.nowait方式锁id1,id2对应的不规则圈，子任务
 				//2.是否开启，开启返回
-				List<Subtask> subtaskRelates=new ArrayList<>();
-				for(Subtask s: subtasks){
-					if(s.getReferId()==id1||s.getReferId()==id2){
-						if(s.getStatus()==1){
-							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
-						}
-						s.setReferId(0);
-						subtaskRelates.add(s);
-					}
-				}
+//				List<Subtask> subtaskRelates=new ArrayList<>();
+//				for(Subtask s: subtasks){
+//					if(s.getReferId()==id1||s.getReferId()==id2){
+//						if(s.getStatus()==1){
+//							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+//						}
+//						s.setReferId(0);
+//						subtaskRelates.add(s);
+//					}
+//				}
 				//3.合并范围，去除关系
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
 				Geometry geo1 = refers.get(0).getGeometry();
@@ -3302,9 +3303,9 @@ public class SubtaskService {
 				idSet.add(id2);
 				SubtaskReferOperation.delete(conn, idSet);
 				
-				for(Subtask s:subtaskRelates){
-					SubtaskOperation.updateSubtask(conn, s);
-				}
+//				for(Subtask s:subtaskRelates){
+//					SubtaskOperation.updateSubtask(conn, s);
+//				}
 				
 				//若合并后，该block下只有一个不规则圈，则直接将block的不规则圈赋值给该不规则圈
 				JSONObject conditionQuery3=new JSONObject();

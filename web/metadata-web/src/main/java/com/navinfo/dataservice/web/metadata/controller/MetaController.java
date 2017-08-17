@@ -419,16 +419,68 @@ public class MetaController extends BaseController {
                 url += "/byname/" + zipFileName;
             } else if (jsonReq.containsKey("date")) {
                 String date = jsonReq.getString("date");
+                if(date != null  && StringUtils.isNotEmpty(date)){
+                	path += "/bydate";
 
-                path += "/bydate";
+                    dir = path + "/" + currentDate;
 
-                dir = path + "/" + currentDate;
+                    exporter.export2SqliteByDate(dir, date);
 
-                exporter.export2SqliteByDate(dir, date);
+                    url += "/bydate/" + zipFileName;
+                }else{
+                	//在 date没有值的情况下,返回全量模式图zip包路径
+//                	path += "/init";
+            		File fileInit = new File(path);
+            		
+            		File[] fileInits = fileInit.listFiles();
+            		
+            		long version = 0;
+            		
+            		for(File f:fileInits){
+            			
+            			if(!f.isFile()){
+            				continue;
+            			}
+            			
+            			String name = f.getName();
+            			
+            			int index= name.indexOf(".");
+            			
+            			if(index==-1){
+            				continue;
+            			}
+            			long tmpVersion = Long.parseLong(name.substring(0, index));
+            			
+            			if (tmpVersion > version){
+            				version = tmpVersion;
+            			}
+            		}
+            		zipFileName = version+".zip";
+            		File lastestFile = new File(path+"/"+version+".zip");
+            		
+                	url += "/" + zipFileName;
+    	        	 long filesize = lastestFile.length();
+    	
+    	             String versionStr = zipFileName.replace(".zip", "");
+    	
+    	             JSONObject json = new JSONObject();
+    	
+    	             ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
+    	
+    	             String specVersion = man.querySpecVersionByType(3);
+    	
+    	             json.put("version", versionStr);
+    	
+    	             json.put("url", url);
+    	
+    	             json.put("filesize", filesize);
+    	
+    	             json.put("specVersion", specVersion);
 
-                url += "/bydate/" + zipFileName;
+                     return new ModelAndView("jsonView", success(json));
+                }
             } else {
-                throw new Exception("错误的参数");
+               throw new Exception("错误的参数");
             }
 
             ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");

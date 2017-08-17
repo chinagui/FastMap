@@ -3229,13 +3229,15 @@ public class SubtaskService {
 							}
 						}
 						if(p2SENodes!=null&&p2SENodes.size()>0){
-							unionTmp=GeoTranslator.addCoorToGeo(unionTmp.getGeo(), interGeo.getCoordinates()[0],p2SENodes,6);
+							unionTmp=GeoTranslator.addCoorToGeo(unionTmp.getGeo(), interGeo.getCoordinates()[1],p2SENodes,6);
 							if(unionTmp.getSENodes()!=null&&unionTmp.getSENodes().size()>0){
 								isChange=true;
 							}
 						}
 						if(isChange){
-							if(!unionTmp.getGeo().isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+							if(!unionTmp.getGeo().getGeometryType().equals("Polygon")){
+								throw new ServiceException("切割后不是简单面，请重新画线");
+							}
 							referTmp.setGeometry(unionTmp.getGeo());
 							SubtaskReferOperation.updateGeo(conn,referTmp);
 							log.info("邻接不规则圈进行修改id="+referTmp.getId());
@@ -3244,7 +3246,9 @@ public class SubtaskService {
 					
 					//5.保存信息
 					for(Geometry g:addGeo){
-						if(!g.isSimple()){throw new ServiceException("切割后不是简单面，请重新画线");}
+						if(!g.getGeometryType().equals("Polygon")){
+							throw new ServiceException("切割后不是简单面，请重新画线");
+						}
 						SubtaskRefer referNew=new SubtaskRefer();
 						referNew.setBlockId(refer.getBlockId());
 						referNew.setGeometry(g);

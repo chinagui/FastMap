@@ -1,15 +1,4 @@
-/**
- * 
- */
 package com.navinfo.dataservice.dao.glm.selector.rd.crf;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -23,6 +12,14 @@ import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: RdObjectSelector
@@ -96,7 +93,7 @@ public class RdObjectSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 
-			String strSql="SELECT B.NAME FROM (SELECT C.NAME_GROUPID FROM RD_OBJECT_LINK A, RD_LINK_FORM B, RD_LINK_NAME C WHERE A.PID = :1 AND A.LINK_PID = B.LINK_PID AND B.LINK_PID = C.LINK_PID AND ((B.FORM_OF_WAY = 15 AND C.NAME_TYPE = 1) OR C.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY C.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_INTER A, RD_INTER_LINK   B, RD_LINK_FORM    C, RD_LINK_NAME    D WHERE A.PID = :2 AND A.INTER_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY D.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_ROAD A, RD_ROAD_LINK   B, RD_LINK_FORM   C, RD_LINK_NAME   D WHERE A.PID = :3 AND A.ROAD_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 GROUP BY D.NAME_GROUPID) TMP, RD_NAME B WHERE TMP.NAME_GROUPID = B.NAME_GROUPID(+) AND B.LANG_CODE(+) = 'CHI' GROUP BY TMP.NAME_GROUPID, B.NAME ";
+			String strSql="SELECT B.NAME FROM (SELECT C.NAME_GROUPID FROM RD_OBJECT_LINK A, RD_LINK_FORM B, RD_LINK_NAME C WHERE A.PID = :1 AND A.LINK_PID = B.LINK_PID AND B.LINK_PID = C.LINK_PID AND ((B.FORM_OF_WAY = 15 AND C.NAME_TYPE = 1) OR C.NAME_TYPE = 2) AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_INTER A, RD_INTER_LINK   B, RD_LINK_FORM    C, RD_LINK_NAME    D WHERE A.PID = :2 AND A.INTER_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND C.U_RECORD != 2 AND D.U_RECORD != 2 GROUP BY D.NAME_GROUPID UNION ALL SELECT /*+ leading(A,B) use_hash(A,B)*/ D.NAME_GROUPID FROM RD_OBJECT_ROAD A, RD_ROAD_LINK   B, RD_LINK_FORM   C, RD_LINK_NAME   D WHERE A.PID = :3 AND A.ROAD_PID = B.PID AND B.LINK_PID = C.LINK_PID AND C.LINK_PID = D.LINK_PID AND ((C.FORM_OF_WAY = 15 AND D.NAME_TYPE = 1) OR D.NAME_TYPE = 2) AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND C.U_RECORD != 2 AND D.U_RECORD != 2 GROUP BY D.NAME_GROUPID) TMP, RD_NAME B WHERE TMP.NAME_GROUPID = B.NAME_GROUPID(+) AND B.LANG_CODE(+) = 'CHI' GROUP BY TMP.NAME_GROUPID, B.NAME ";
 
 			pstmt = getConn().prepareStatement(strSql);
 

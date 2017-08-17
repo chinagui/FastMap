@@ -901,7 +901,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	
 	private List<Integer> meshs2grids(List<Integer> meshs) throws Exception {
 		List<Integer> grids =new ArrayList<Integer>();
-		for(int m:meshs){
+		for(Object obj:meshs){
+			int m=0;
+			if(obj instanceof Integer){  
+				obj=(int) obj;
+			}else if(obj instanceof String){  
+				obj =Integer.parseInt(String.valueOf(obj));
+            }
 			for(int i=0;i<4;i++){
 				for(int j=0;j<4;j++){
 					grids.add(m*100 + i*10+ j);
@@ -943,18 +949,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			JSONObject jsonReq = JSONObject.fromObject(callDmsGetLockApi(parameter));
 			if(jsonReq.getInt("errcode")==0){
 				if(jsonReq.get("data")!=null){
-					JSONObject json = JSONObject.fromObject(jsonReq.get("data"));
-					for(Object obj:json.keySet()){
-						int key=0;
-						if(obj instanceof Integer){  
-							key=(int) obj;
-						}else if(obj instanceof String){  
-							key =Integer.parseInt(String.valueOf(obj));
-			            }
-						dmsLockMeshes.put(key, (String) json.get(obj));
-					}
+					dmsLockMeshes =(Map<Integer,String>) jsonReq.get("data");
 				}
-				
 			}
 			log.info("DMS被锁图幅:"+dmsLockMeshes);		
 		} catch (Exception e) {

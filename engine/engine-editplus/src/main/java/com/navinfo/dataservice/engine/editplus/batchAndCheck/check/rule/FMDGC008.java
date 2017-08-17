@@ -90,18 +90,19 @@ public class FMDGC008 extends BasicCheckRule {
                 pidString = " PID IN (" + StringUtils.join(map.keySet(), ",") + ")";
             }
 
-            String sql = "SELECT /*+ INDEX(T2 RD_LINK_GEOMETRY) */" +
-                    " T1.PID" +
-                    "  FROM IX_POI T1, RD_LINK T2" +
-                    " WHERE T1.U_RECORD <> 2" +
-                    "   AND T2.U_RECORD <> 2" +
+            String sql = "SELECT /*+ INDEX(T2 RD_LINK_GEOMETRY) */" + 
+                    " T1.PID" + 
+                    "  FROM IX_POI T1, RD_LINK T2" + 
+                    " WHERE T1.U_RECORD <> 2" + 
                     "   AND T1." + pidString +
-                    "   AND SDO_NN(T2.GEOMETRY," +
-                    "              SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," +
-                    "                           8307)," +
-                    "              'SDO_NUM_RES=1'," +
-                    "              1) = 'TRUE'" +
-                    "   AND SDO_NN_DISTANCE(1) >= 3";
+                    "   AND SDO_NN(T2.GEOMETRY," + 
+                    "              SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
+                    "                           8307)," + 
+                    "              'SDO_NUM_RES=30'," +
+                    "              1) = 'TRUE'" + 
+                    "   AND T2.U_RECORD <> 2" + 
+                    " GROUP BY T1.PID" + 
+                    " HAVING MIN(SDO_NN_DISTANCE(1)) >= 3";
 
             pstmt = conn.prepareStatement(sql);
             if (CollectionUtils.isNotEmpty(values)) {

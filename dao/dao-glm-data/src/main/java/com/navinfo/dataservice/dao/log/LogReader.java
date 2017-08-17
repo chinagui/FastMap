@@ -345,7 +345,7 @@ public class LogReader {
 				tb_num=resultSet.getString("tb_nm");
 				fd_lst=resultSet.getString("fd_lst");
 				if ("IX_POI".equals(tb_num)){
-					  if(fd_lst.isEmpty()){return false;}
+					  if(fd_lst==null){return false;}
 					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
 					  for(int j= 0 ; j<arrFd.length;j++){
 			            	if (!filterFdList.contains(arrFd[j]))
@@ -1022,7 +1022,7 @@ public class LogReader {
 //		System.out.println(new Date());
 //		System.out.println(new Date());
 //		String objTable = "IX_POI";
-		int objPid = 55005398 ;
+		int objPid = 408000056 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
 //		List<Long> pidList = new ArrayList<Long>();
 //		pidList.add(505000108L);

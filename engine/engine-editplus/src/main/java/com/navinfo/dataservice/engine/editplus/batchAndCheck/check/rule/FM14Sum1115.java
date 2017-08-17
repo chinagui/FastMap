@@ -84,7 +84,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 						+ " SELECT /*+ NO_MERGE(T)*/"
 						+ " P.PID, T.PID2"
 						+ "  FROM T, IX_POI P"
-						+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+						+ " WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY, T.G2, 'DISTANCE=3 UNIT=METER') = 'TRUE'"
 						+ "   AND P.KIND_CODE IN ('230215', '230216')"
 						+ "   AND P.U_RECORD != 2"
 						+ " MINUS"

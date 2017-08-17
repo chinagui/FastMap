@@ -81,6 +81,7 @@ public class PoiSave {
 			if (poiLength == 0 && operType == OperType.UPDATE
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
+				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);
 				editApiImpl.updatePoifreshVerified(json.getInt("objId"));
 				JSONArray ret = new JSONArray();
 				result.put("log", ret);

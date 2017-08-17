@@ -41,8 +41,6 @@ public class ExportTipsFromHadoop {
 
 		Table htab = null;
 		
-		PrintWriter pw = new PrintWriter("tips_info_record");
-		
 		String path = args[0];
 
 		try {
@@ -56,6 +54,8 @@ public class ExportTipsFromHadoop {
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			for (Map.Entry<String, String> taskInfo : taskInfoes.entrySet()) {
+				
+				PrintWriter pw = new PrintWriter(taskInfo.getValue() + "_tips_info_record.txt");
 				
 				List<Get> rowkeys = getSelectedRowKeys(taskInfo);
 				
@@ -77,18 +77,18 @@ public class ExportTipsFromHadoop {
 
 					pw.println(jsonObj);
 				} // for
+				
+				pw.flush();
+				
+				pw.close();
 			}//for
-			
-			pw.flush();
 			
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
 			
 			e.printStackTrace();
 		}
-		finally{	
-			pw.close();
-			
+		finally{				
 			htab.close();
 			
 			hbaseConn.close();

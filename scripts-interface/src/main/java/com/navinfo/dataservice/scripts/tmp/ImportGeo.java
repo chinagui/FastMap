@@ -26,14 +26,19 @@ import oracle.sql.STRUCT;
 public class ImportGeo {
 	private static Logger log = LogManager.getLogger(ImportGeo.class);
 	/**
+	 * 参数文件路径：D:\\temp\\test.txt
+	 * txt格式： 
+	 * 2021 LINESTRING(85.67859999999999 47.41666666666665,85.87909999999998 47.41666666666665)
+	 * GEO2 LINESTRING(85.67859999999999 47.41666666666665,85.87909999999998 47.41666666666665)
+	 * 导入的目标位置：man库,geo_tmp表，表结构：(id varchar(100),geo sdo_geometry() )
 	 * @param args
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
 		log.info("start");
 		JobScriptsInterface.initContext();
-		//String filepath = String.valueOf(args[0]);
-		String filepath ="D:\\temp\\test.txt";
+		String filepath = String.valueOf(args[0]);
+		//String filepath ="D:\\temp\\test.txt";
 		Connection conn=DBConnector.getInstance().getManConnection();
 		List<String> contents=TxtReader.readTxtFile(filepath);
 		List<Map<String,String>> sources=new ArrayList<>();

@@ -1273,10 +1273,10 @@ public class GeoTranslator {
 		
 		//coord1，coord2为端点的线段
 		Geometry midLine=GeoTranslator.transform(polygon.intersection(line),1,precision);
-		List<Coordinate> p1SEnodes=new ArrayList<>();
-		MyGeometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0],p1SEnodes,precision);
-		List<Coordinate> p2SEnodes=new ArrayList<>();
-		unionGeo=GeoTranslator.addCoorToGeo(unionGeo.getGeo(), interGeo.getCoordinates()[1],p2SEnodes,precision);
+		//List<Coordinate> p1SEnodes=new ArrayList<>();
+		MyGeometry unionGeo=GeoTranslator.addCoorToGeo(polygon, interGeo.getCoordinates()[0],null,precision);
+		//List<Coordinate> p2SEnodes=new ArrayList<>();
+		unionGeo=GeoTranslator.addCoorToGeo(unionGeo.getGeo(), interGeo.getCoordinates()[1],null,precision);
 		boolean isIn=GeometryUtils.InteriorAnd2Intersection(midLine, unionGeo.getGeo());
 		if(!isIn){
 			throw new Exception("线不在面内，请重新划线");
@@ -1299,7 +1299,7 @@ public class GeoTranslator {
 //			}
 //		}
 		
-		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(polygon, coord1, coord2);
+		List<Geometry> subPolygonLines = GeoTranslator.splitGeoByPoint(unionGeo.getGeo(), coord1, coord2);
 				
 		List<Geometry> polygonLine1=new ArrayList<Geometry>();
 		List<Geometry> polygonLine2=new ArrayList<Geometry>();

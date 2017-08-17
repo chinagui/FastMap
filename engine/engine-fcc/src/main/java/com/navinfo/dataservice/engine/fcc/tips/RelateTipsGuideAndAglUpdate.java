@@ -167,7 +167,7 @@ public class RelateTipsGuideAndAglUpdate {
 			int otherLineType=0;//立交的另一条组成线类型
 			
 			//只有一条说明就是原有测线本身，是修形，替换g_location,如果》1说明是跨图幅打断了，打断，已经在打断中维护过了
-			if(linesAfterCut.size()==1){
+			if(linesAfterCut.size()==1&&f_array.size()==2){
 				lineRowkey= linesAfterCut.get(0).getId();
 				lineLocation=JSONObject.fromObject(linesAfterCut.get(0).getG_location()) ;//测线的id
 				
@@ -256,7 +256,7 @@ public class RelateTipsGuideAndAglUpdate {
 			}
 			
 			//>2则说明三条线以上，三条线以上，则必须是原原来交点相同，修行前有判断，所以这里不用在维护 g_location.但是,geo需要重新维护
-			if(f_array.size()>2){
+			if(linesAfterCut.size()==1&&f_array.size()>2){
 				lineRowkey= linesAfterCut.get(0).getId();
 				lineLocation=JSONObject.fromObject(linesAfterCut.get(0).getG_location()) ;//测线的id
 				Geometry lineGeo =  GeoTranslator.geojson2Jts(lineLocation);
@@ -264,7 +264,6 @@ public class RelateTipsGuideAndAglUpdate {
 				JSONObject  gscLocation= JSONObject.fromObject(json.getG_location());
 				Point gscPoint = (Point) GeoTranslator.geojson2Jts(gscLocation);
 				
-				JSONArray  new_f_array=new JSONArray();
 				
 				for (Object object : f_array) {
 					JSONObject fInfo = JSONObject.fromObject(object); // 是个对象
@@ -274,26 +273,25 @@ public class RelateTipsGuideAndAglUpdate {
 		                String id = fInfo.getString("id");
 		            	//是当前的测线，则需要改geo
 		                if (type == 2 && id.equals(lineRowkey)) {
-		                	 hasMeasuringLine=true;
 			               	 JSONObject newInfo =JSONObject.fromObject(fInfo);//创建一个新的
 			               	 Geometry geoTheOtherLine=TipsGeoUtils.getGscLineGeo(lineGeo,gscPoint);
 							 JSONObject  newGeoTheOther= GeoTranslator.jts2Geojson(geoTheOtherLine);
 							 newInfo.put("geo", newGeoTheOther); //更新geo
-						     new_f_array.add(newInfo);
+							 f_array_new.add(newInfo);
 						     hasMeasuringLine=true;
 		                }else{
-		                	 new_f_array.add(fInfo);
+		                	f_array_new.add(fInfo);
 		                }
 		            }
-		            
-					// 如果有测线，则修改，并返回
-					if (hasMeasuringLine) {
-						deep.put("f_array", f_array_new);// 新的
-						json.setDeep(deep.toString()); //1.修改deep
-						return json;
-					}
-				return json;
+		       
 		 	}
+			// 如果有测线，则修改，并返回
+			if (hasMeasuringLine) {
+				deep.put("f_array", f_array_new);// 新的
+				json.setDeep(deep.toString()); //1.修改deep
+				return json;
+			}
+		   return json;
 			}
 			
 		} catch (Exception e) {

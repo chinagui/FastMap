@@ -29,38 +29,45 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class FMYW20051 extends BasicCheckRule {
 
-	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
-	
+	private Map<Long, Long> parentMap = new HashMap<Long, Long>();
+
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		if(obj.objName().equals(ObjectName.IX_POI)){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			//是否有父
-			if(!parentMap.containsKey(poi.getPid())){return;}
-			Long parentId=parentMap.get(poi.getPid());
+		if (obj.objName().equals(ObjectName.IX_POI)) {
+			IxPoiObj poiObj = (IxPoiObj) obj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+			// 是否有父
+			if (!parentMap.containsKey(poi.getPid())) {
+				return;
+			}
+			Long parentId = parentMap.get(poi.getPid());
 			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			if (parentPoiObj == null) {
+				return;
+			}
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null || !"220100".equals(kindCodeP)){return;}
+			if (kindCodeP == null || !"220100".equals(kindCodeP)) {
+				return;
+			}
 			String vipFlag = parentPoi.getVipFlag();
-			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
-			//父POI.vip_flag=2
-			if(vipFlag != null){
+			String targets = "[IX_POI," + poi.getPid() + "];[IX_POI," + parentId + "]";
+			// 父POI.vip_flag=2
+			if (vipFlag != null) {
 				String str = vipFlag.replace('|', ',');
 				List<Integer> vipFlags = StringUtils.getIntegerListByStr(str);
-				if(vipFlags.contains(2)){
-					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+				if (vipFlags.contains(2)) {
+					setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), null);
 					return;
 				}
 			}
-			//POI_NUM在元数据库SC_POINT_FOCUS.POI_NUM列表且SC_POINT_FOCUS.TYPE=2中不存在
+			// POI_NUM在元数据库SC_POINT_FOCUS.POI_NUM列表且SC_POINT_FOCUS.TYPE=2中不存在
 			String poiNumP = parentPoi.getPoiNum();
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
-			if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
-				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+			if (searchScPointFocus == null || !searchScPointFocus.containsKey(poiNumP)) {
+				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), null);
 				return;
 			}
 		}
@@ -68,14 +75,15 @@ public class FMYW20051 extends BasicCheckRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		Set<Long> pidList=new HashSet<Long>();
-		for(BasicObj obj:batchDataList){
+		Set<Long> pidList = new HashSet<Long>();
+		for (BasicObj obj : batchDataList) {
 			pidList.add(obj.objPid());
 		}
 		parentMap = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
-		Set<String> referSubrow=new HashSet<String>();
-		//referSubrow.add("IX_POI_NAME");
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
+		Set<String> referSubrow = new HashSet<String>();
+		// referSubrow.add("IX_POI_NAME");
+		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI,
+				referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 

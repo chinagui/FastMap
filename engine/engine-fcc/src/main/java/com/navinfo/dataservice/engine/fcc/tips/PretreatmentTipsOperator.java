@@ -1272,15 +1272,30 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  				if(!rowkey.equals(id)){
  					//1.是RDLInk
  					if(fInfo.getInt("type")==1){
- 						gdbRdLinkPids.append(id);
+ 						if(gdbRdLinkPids.length()>0){
+ 							gdbRdLinkPids.append(","+id);
+ 						}else{
+ 							gdbRdLinkPids.append(id);
+ 						}
+ 						
  					}
  					//2是测线
  					if(fInfo.getInt("type")==2){
- 						tipsRowkeys.append(id);
+ 						if(tipsRowkeys.length()>0){
+ 							tipsRowkeys.append(","+id);
+ 						}else{
+ 							tipsRowkeys.append(id);
+ 						}
+ 						
  					}
  					//3是铁路
  					if(fInfo.getInt("type")==3){
- 						gdbRwLinkPids.append(id);
+ 						if(gdbRwLinkPids.length()>0){
+ 							gdbRwLinkPids.append(","+id);
+ 						}else{
+ 							gdbRwLinkPids.append(id);
+ 						}
+ 						
  					}
  				}
  				
@@ -1293,7 +1308,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  		 //测线，索引库查wktlocation 就可以
  		 if(tipsRowkeys.length()>0){
  			List<Geometry> tipsGeo=new ArrayList<Geometry>();
- 			 String sql="SELECT * FROM tips_index  d WHERE ID IN(?)";
+ 			 String sql="SELECT * FROM tips_index  d WHERE ID IN (select to_char(column_value) from table(clob_to_table(?)))";
  			 Clob  pidClob=ConnectionUtil.createClob(tipsConn,tipsRowkeys.toString());
  			 List<TipsDao>  tipsList=new TipsIndexOracleOperator(tipsConn).query(sql, pidClob);
  			 for (TipsDao tipsDao : tipsList) {
@@ -1306,7 +1321,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  		 }
  		 //rd_link
  		 if(gdbRdLinkPids.length()>0){
- 			lineGeoList.addAll(oraQuery.queryLineGeometry("RD_LINK", gdbRwLinkPids.toString()));
+ 			lineGeoList.addAll(oraQuery.queryLineGeometry("RD_LINK", gdbRdLinkPids.toString()));
  		 }
  		 
  		 //3.判断各个线和当前修形的测线是不是有两个交点，若有，则返回报错
@@ -1314,7 +1329,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  			
  			Geometry interGeo=locationGeo.intersection(geometry);
  			
- 			if(interGeo!=null&&interGeo.getNumGeometries()>2){
+ 			if(interGeo==null||interGeo.isEmpty()||interGeo.getNumGeometries()!=1){
  				throw new Exception("操作错误\n提示：测线上存在立交，且修行后交点不为1 ，不允许修形");
  			}
  		}
@@ -1350,7 +1365,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		//跨图幅不需要打断，直接保存
 		if(geoList==null||geoList.size()==0){
 			
-			doInsert(tipsConn,jsonInfo, htab, date); 
 			
 			returnRowkey=oldRowkey;
 			
@@ -1358,7 +1372,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			//2.维护角度的时候，判断一一下测线的显示坐标是否改了，没有改不维护（提高效率）
 			
 			if(hasModifyGlocation){
-				
 				TipsDao  obj=new TipsDao();
 			    obj.setId(oldRowkey);
 			    obj.setG_location(gLocation.toString());
@@ -1366,6 +1379,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			    //allTips就是当前的tips
 				maintainHookTips(tipsConn,oldRowkey,user, allTips,hasModifyGlocation,dbId);
 			}
+				
+			doInsert(tipsConn,jsonInfo, htab, date);  //报错放在后面，先维护关系，再保存
 			
 			
 			return returnRowkey;  
@@ -1849,12 +1864,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             return delType;
         }catch (Exception e) {
             e.printStackTrace();
+			throw new Exception("判断Tips删除类型报错", e);
         }finally {
             if(htab != null) {
                 htab.close();
             }
         }
-        return 2;
 	}
 
 	/**
@@ -1885,7 +1900,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
-			throw e;
+			throw new Exception("测线打断报错", e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(tipsConn);
 		}

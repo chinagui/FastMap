@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
@@ -35,36 +34,45 @@ public class FMYW20030 extends BasicCheckRule {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-//			if(poi.getPid()==19880121){
-//				log.info("");
-//			}
-			//分类为230210停车场、230213换乘停车场（P+R停车场）、230214货车专用停车场时，只能做为230218电动汽车充电站的父，否则报log1
+			// if(poi.getPid()==19880121){
+			// log.info("");
+			// }
+			// 分类为230210停车场、230213换乘停车场（P+R停车场）、230214货车专用停车场时，只能做为230218电动汽车充电站的父，否则报log1
 			// ：停车场的子POI不是电动汽车充电站
 			if (kindCode.equals("230210") || kindCode.equals("230213") || kindCode.equals("230214")) {
 				List<IxPoiChildren> childs = poiObj.getIxPoiChildrens();
-				if(childs!=null&&childs.size()>0){
-					for(IxPoiChildren c:childs){
-						IxPoiObj cPoiObj =(IxPoiObj) myReferDataMap.get(ObjectName.IX_POI).get(c.getChildPoiPid());
+				if (childs != null && childs.size() > 0) {
+					for (IxPoiChildren c : childs) {
+						IxPoiObj cPoiObj = (IxPoiObj) myReferDataMap.get(ObjectName.IX_POI).get(c.getChildPoiPid());
 						IxPoi cPoi = (IxPoi) cPoiObj.getMainrow();
-						if(cPoi.getOpType().equals(OperationType.PRE_DELETED)){
-							continue;}
-						if(!cPoi.getKindCode().equals("230218")){
-							String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+cPoi.getPid()+"]";
+						if (cPoi.getOpType().equals(OperationType.PRE_DELETED)) {
+							continue;
+						}
+						if (!cPoi.getKindCode().equals("230218")) {
+							String targets = "[IX_POI," + poi.getPid() + "];[IX_POI," + cPoi.getPid() + "]";
 							setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "停车场的子POI不是电动汽车充电站");
 							return;
 						}
-					}					
+					}
 				}
 			}
-			//如果分类不是230218电动汽车充电站，存在父子关系时，其父POI的分类不能是230210停车场、230213换乘停车场（P+R停车场）、
-			//230214货车专用停车场，否则报log2：非电动汽车充电站分类的父POI不能是停车场
-			if (kindCode.equals("230218")) {return;}
-			if (parentIds == null || !parentIds.containsKey(poi.getPid())) {return;}
+			// 如果分类不是230218电动汽车充电站，存在父子关系时，其父POI的分类不能是230210停车场、230213换乘停车场（P+R停车场）、
+			// 230214货车专用停车场，否则报log2：非电动汽车充电站分类的父POI不能是停车场
+			if (kindCode.equals("230218")) {
+				return;
+			}
+			if (parentIds == null || !parentIds.containsKey(poi.getPid())) {
+				return;
+			}
 			Long parentPid = parentIds.get(poi.getPid());
-			IxPoiObj parentPoiObj =(IxPoiObj) myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			IxPoiObj parentPoiObj = (IxPoiObj) myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
+			if (parentPoiObj == null) {
+				return;
+			}
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
-			if (parentPoi.getKindCode().equals("230210") || parentPoi.getKindCode().equals("230213") || parentPoi.getKindCode().equals("230214")) {
-				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentPid+"]";
+			if (parentPoi.getKindCode().equals("230210") || parentPoi.getKindCode().equals("230213")
+					|| parentPoi.getKindCode().equals("230214")) {
+				String targets = "[IX_POI," + poi.getPid() + "];[IX_POI," + parentPid + "]";
 				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "非电动汽车充电站分类的父POI不能是停车场");
 				return;
 			}
@@ -73,24 +81,26 @@ public class FMYW20030 extends BasicCheckRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		Set<Long> pidList=new HashSet<Long>();
-		Set<Long> referPidList=new HashSet<Long>();
-		for(BasicObj obj:batchDataList){
+		Set<Long> pidList = new HashSet<Long>();
+		Set<Long> referPidList = new HashSet<Long>();
+		for (BasicObj obj : batchDataList) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
 			if (kindCode.equals("230210") || kindCode.equals("230213") || kindCode.equals("230214")) {
 				List<IxPoiChildren> childs = poiObj.getIxPoiChildrens();
-				if(childs!=null&&childs.size()>0){
-					for(IxPoiChildren c:childs){
-						referPidList.add(c.getChildPoiPid());}
+				if (childs != null && childs.size() > 0) {
+					for (IxPoiChildren c : childs) {
+						referPidList.add(c.getChildPoiPid());
+					}
 				}
 			}
 			pidList.add(poi.getPid());
 		}
 		parentIds = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
 		referPidList.addAll(parentIds.values());
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(referPidList, ObjectName.IX_POI, null, false);
+		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(referPidList, ObjectName.IX_POI, null,
+				false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 

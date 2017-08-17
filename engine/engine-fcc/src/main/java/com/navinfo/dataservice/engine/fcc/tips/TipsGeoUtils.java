@@ -214,12 +214,11 @@ public class TipsGeoUtils {
 								point.getCoordinate(), c_array[num])==0.0){
 							c_start = c_array[num - 1];
 							c_end = c_array[num+1];
+						}else{
+							//否则：向左取
+							c_start = c_array[num - 1];
+							c_end = c_array[num];
 						}
-						
-						//否则：向左取
-						c_start = c_array[num - 1];
-						c_end = c_array[num];
-						
 					    boolean isPointAtLine = IsPointAtLineInter(c_start, c_end,
 							   point.getCoordinate());
 

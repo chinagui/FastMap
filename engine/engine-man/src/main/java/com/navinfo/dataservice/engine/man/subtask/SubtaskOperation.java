@@ -68,15 +68,19 @@ public class SubtaskOperation {
 			List<Object> value = new ArrayList<Object>();
 			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " NAME= " + "'" + bean.getName() + "'";
+				updateSql += " NAME= '" + bean.getName() + "'";
+			};
+			if (changeFields.containsKey("TYPE")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " TYPE= " + bean.getType() ;
 			};
 			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " DESCP= " + "'" + bean.getDescp() + "'";
+				updateSql += " DESCP= '" + bean.getDescp() + "'";
 			};
 			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_START_DATE= " + "to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
+				updateSql += " PLAN_START_DATE= to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (changeFields.containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -88,7 +92,7 @@ public class SubtaskOperation {
 			};
 			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
+				updateSql += " PLAN_END_DATE= to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (changeFields.containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}

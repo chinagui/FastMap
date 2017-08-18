@@ -3701,7 +3701,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			Task task = queryNoGeoByTaskId(conn, taskId);
+			Task task = queryByTaskId(conn, taskId);
 			return batchNoTaskMidData(conn, task);
 		}catch(Exception e){
 			log.error("", e);

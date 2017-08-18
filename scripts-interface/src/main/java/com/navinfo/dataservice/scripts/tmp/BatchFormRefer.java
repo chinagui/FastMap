@@ -5,26 +5,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.bcel.generic.NEW;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.junit.runner.Result;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class BatchFormRefer {

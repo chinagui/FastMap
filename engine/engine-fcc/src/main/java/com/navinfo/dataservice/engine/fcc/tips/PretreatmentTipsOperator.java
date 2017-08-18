@@ -33,6 +33,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
@@ -1259,9 +1260,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  			//加一个判断，如果原来立交组成线有三条，修行后和原来的交点不想交，则不允许修形--20170815和凌云确认
  			if(f_array.size()>2){
  				Geometry gscLocation = GeoTranslator.geojson2Jts(JSONObject.fromObject(gsc.getG_location()));
- 				boolean isInterscts=locationGeo.intersects(gscLocation); //测线和原有立交点不想交
- 				if(!isInterscts){
- 					throw new Exception("操作错误\n提示：测线上存在立交，且修行后交点不为1 ，不允许修形");
+ 			//	boolean isInterscts=locationGeo.intersects(gscLocation); //测线和原有立交点不想交  这个方法不合适，web的立交点，存在误差，不一定在交点处（不一定在线上）
+ 				if(!isIntersect(locationGeo,(Point)gscLocation)){
+ 					throw new Exception("操作错误\n提示：测线上存在立交，组成线为3条，修行后与原交点不相交，不允许修形");
  				}
  			}
  			
@@ -1314,6 +1315,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  			 for (TipsDao tipsDao : tipsList) {
  				tipsGeo.add(tipsDao.getWktLocation());
 			 }
+ 			lineGeoList.addAll(tipsGeo);
  		 }
  		 //铁路
  		 if(gdbRwLinkPids.length()>0){
@@ -1335,9 +1337,35 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  		}
  		 
 	}
+	
+	
+	
+	/**
+	 * @Description:计算修形后的测线和立交g_location相交的线
+	 * @return
+	 * @author: y
+	 * @param locationGeo  测线的几何
+	 * @param gscLocation  立交交点
+	 * @time:2017-8-15 上午10:10:11
+	 */
+	private boolean isIntersect(Geometry locationGeo, Point gscLocation) {
+			// 将坐标点扩大100000倍，（web给的坐标点，可能不在线上，有一定的误差）
+			locationGeo = GeoTranslator.transform(locationGeo, 100000, 5);
+			gscLocation = (Point)GeoTranslator.transform(gscLocation, 100000, 5);
+			
+			//立交点，和测线线的垂足
+			Coordinate pointCoor = GeometryUtils.getLinkPedalPointOnLine(gscLocation.getCoordinate(), locationGeo); 
+			Point newPoint = JtsGeometryFactory.createPoint(pointCoor);
+			if(!newPoint.isEmpty()&&Math.abs(newPoint.getX() - gscLocation.getX()) < 1
+					&& Math.abs(newPoint.getY() - gscLocation.getY()) < 1){
+				 return true;
+			}
+		return false;
+	}
+
 
 	/**
-	 * @Description:TOOD
+	 * @Description:按图幅打断
 	 * @param jsonInfo
 	 * @param user
 	 * @param sourceType
@@ -1370,7 +1398,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			//这个地方需要加 维护测线上关联tips的角度和引导link
 			//2.维护角度的时候，判断一一下测线的显示坐标是否改了，没有改不维护（提高效率）
-			
 			if(hasModifyGlocation){
 				TipsDao  obj=new TipsDao();
 			    obj.setId(oldRowkey);

@@ -428,3 +428,6 @@ comment on table LINK_EDIT_PRE
 -- Add comments to the columns 
 comment on column LINK_EDIT_PRE.scenario
   is '0 不参与计算道路1 步采一体化2 车采一体化3 图像工艺（预留暂不开放）4 1+0工艺（预留暂不开放）';
+  
+create index data_plan_index1 on DATA_PLAN (data_type, task_id, is_plan_selected);
+create index DD on LINK_EDIT_PRE (PID);

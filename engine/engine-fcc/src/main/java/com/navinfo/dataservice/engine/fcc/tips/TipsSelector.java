@@ -584,6 +584,14 @@ public class TipsSelector {
 					obj.put("cons", deep.getInt("cons"));
 					m.put("e", obj);
 				}
+				//删除道路标记，要求返回id  type .输入：吴振
+				if(type==2101){
+					if(deep!=null&&deep.getJSONObject("f")!=null){
+						m.put("c", deep.getJSONObject("f").getString("id"));
+						m.put("d", deep.getJSONObject("f").getInt("type"));
+					}
+					
+				}
 
 				// 返回差分结果：20160213修改
 				//20170808 修改。web渲染不再需要差分字段
@@ -2606,8 +2614,16 @@ public class TipsSelector {
 				if(isDeleteLink){
 					poiList.addAll(handlePoiRelateDeleteLink(tip,poiSelector));
 				}
-						
-				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
+				
+				if(tipGeo == null){
+					continue;
+				}
+				//pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
+				
+				//与web端保持一致，转换为墨卡托投影
+				Geometry wgs2mector = GeometryUtils.lonLat2Mercator(tipGeo);
+				Geometry pointBuffermector = wgs2mector.buffer(buffer);
+				pointBuffer = GeometryUtils.Mercator2lonLat(pointBuffermector);
 
 				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
 

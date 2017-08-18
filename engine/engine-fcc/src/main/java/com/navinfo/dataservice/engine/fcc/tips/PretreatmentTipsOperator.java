@@ -1315,6 +1315,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
  			 for (TipsDao tipsDao : tipsList) {
  				tipsGeo.add(tipsDao.getWktLocation());
 			 }
+ 			lineGeoList.addAll(tipsGeo);
  		 }
  		 //铁路
  		 if(gdbRwLinkPids.length()>0){

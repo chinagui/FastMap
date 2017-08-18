@@ -122,6 +122,7 @@ public class GLM60236 extends BasicCheckRule {
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
 					pstmt.setClob(i+1,values.get(i));
+					pstmt.setClob(i+2,values.get(i));
 				}
 			}			
 			rs = pstmt.executeQuery();

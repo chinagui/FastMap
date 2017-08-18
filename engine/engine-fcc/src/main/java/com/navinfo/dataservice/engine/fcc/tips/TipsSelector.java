@@ -2614,8 +2614,16 @@ public class TipsSelector {
 				if(isDeleteLink){
 					poiList.addAll(handlePoiRelateDeleteLink(tip,poiSelector));
 				}
-						
-				pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
+				
+				if(tipGeo == null){
+					continue;
+				}
+				//pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
+				
+				//与web端保持一致，转换为墨卡托投影
+				Geometry wgs2mector = GeometryUtils.lonLat2Mercator(tipGeo);
+				Geometry pointBuffermector = wgs2mector.buffer(buffer);
+				pointBuffer = GeometryUtils.Mercator2lonLat(pointBuffermector);
 
 				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
 

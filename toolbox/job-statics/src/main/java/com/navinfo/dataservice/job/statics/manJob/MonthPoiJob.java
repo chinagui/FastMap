@@ -161,8 +161,8 @@ public class MonthPoiJob extends AbstractStatJob {
 				ResultSetHandler<Map<Integer, Map<String, Integer>>> rsHandler = new ResultSetHandler<Map<Integer, Map<String, Integer>>>() {
 					public Map<Integer, Map<String, Integer>> handle(ResultSet rs) throws SQLException {
 						Map<Integer,Map<String,Integer>> gridStat = new HashMap<Integer,Map<String,Integer>>();
-						//处理poi的统计
-						Map<Integer,Set<Long>> pids = new HashMap<Integer,Set<Long>>();
+						//处理poi的统计,key:gridId,value:map(key:pid,value:状态)
+						Map<Integer,Map<Long,List<Integer>>> pids = new HashMap<Integer,Map<Long,List<Integer>>>();
 						while (rs.next()) {
 						    int secondWorkStatus = rs.getInt("SECOND_WORK_STATUS");
 						    STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -183,20 +183,18 @@ public class MonthPoiJob extends AbstractStatJob {
 							    }
 							    if(secondWorkStatus==1||secondWorkStatus==2||secondWorkStatus==3){
 							    	logAllNum++;
+							    	//记录pid所有状态
+							    	if(!pids.containsKey(gridId)){
+							    		pids.put(gridId, new HashMap<Long,List<Integer>>());
+							    	}
+							    	Map<Long, List<Integer>> map = pids.get(gridId);
+							    	if(!map.containsKey(pid)){
+							    		map.put(pid, new ArrayList<Integer>());
+							    	}
+							    	map.get(pid).add(secondWorkStatus);
 							    }
 							    if(secondWorkStatus==3){
 							    	logFinishNum++;
-							    	//改pid所有的记录都为3,才算完成
-							    	if(!pids.containsKey(gridId)){
-							    		pids.put(gridId, new HashSet<Long>());
-							    	}
-							    	pids.get(gridId).add(pid);
-							    }
-							    //如果该pid有状态为1或2的,则移除
-							    if(secondWorkStatus==1||secondWorkStatus==2){
-							    	if(pids.containsKey(gridId)){
-							    		pids.get(gridId).remove(pid);
-							    	}
 							    }
 							    value.put("logAllNum", logAllNum);
 							    value.put("logFinishNum", logFinishNum);
@@ -212,8 +210,19 @@ public class MonthPoiJob extends AbstractStatJob {
 							int gridId = entry.getKey();
 							Map<String, Integer> value = entry.getValue();
 							int poiFinishNum = 0;
+							//如果该pid有状态为1或2的,则移除
+							Set<Long> poiFinishSet = new HashSet<Long>();
 							if(pids.containsKey(gridId)){
-								poiFinishNum = pids.get(gridId).size();
+								Map<Long, List<Integer>> map = pids.get(gridId);
+								for(Entry<Long, List<Integer>> en : map.entrySet()){
+									long pid = en.getKey();
+									List<Integer> statusList = en.getValue();
+									if(statusList.contains(1) || statusList.contains(2)){
+										continue;
+									}
+									poiFinishSet.add(pid);
+								}
+								poiFinishNum = poiFinishSet.size();
 							}
 							value.put("poiFinishNum", poiFinishNum);
 						}

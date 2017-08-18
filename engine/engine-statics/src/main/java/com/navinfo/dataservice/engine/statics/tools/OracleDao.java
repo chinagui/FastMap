@@ -250,15 +250,11 @@ public class OracleDao {
 			conn = DBConnector.getInstance().getManConnection();
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务，月编（poi专项）
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
-			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
-					+ " FROM SUBTASK S"
-					+ " WHERE S.STATUS IN (0, 1)"
-//					+ " AND S.TYPE IN (0, 1, 2, 3, 4,5,6,7,8,9,10)"
-					+ " AND NOT EXISTS (SELECT 1"
-					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
-					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
-					+ " AND FSOS.STATUS = 0)"
-					+ " ORDER BY SUBTASK_ID";
+			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,"
+					+ " S.TASK_ID,P.TYPE PROGRAM_TYPE FROM SUBTASK S,TASK T,PROGRAM P "
+					+ " WHERE S.TASK_ID = T.TASK_ID AND T.PROGRAM_ID = P.PROGRAM_ID "
+					+ " AND S.STATUS IN (0, 1) AND NOT EXISTS (SELECT 1 FROM FM_STAT_OVERVIEW_SUBTASK FSOS "
+					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID AND FSOS.STATUS = 0) ORDER BY S.SUBTASK_ID";
 			
 			return run.query(conn, sql, new ResultSetHandler<List<Subtask>>() {
 
@@ -275,7 +271,7 @@ public class OracleDao {
 						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
-						
+						subtask.setSubType(rs.getInt("PROGRAM_TYPE"));
 						list.add(subtask);		
 					}
 					return list;
@@ -293,7 +289,7 @@ public class OracleDao {
 	/**
 	 * 获取所有不需要被统计的子任务列表
 	 */
-	public static List<Document> getSubtaskListWithStatistics() throws ServiceException {
+	public static List<Integer> getSubtaskListWithStatistics() throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
@@ -307,44 +303,46 @@ public class OracleDao {
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE FSOS.STATUS = 0";
 			
-			ResultSetHandler<List<Document>> rsHandler = new ResultSetHandler<List<Document>>(){
-				public List<Document> handle(ResultSet rs) throws SQLException {
-					List<Document> list = new ArrayList<Document>();
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> list = new ArrayList<Integer>();
 					while(rs.next()){
-						Document subtask = new Document();
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("taskId", rs.getInt("TASK_ID"));
-						subtask.put("percent", rs.getInt("PERCENT"));
-						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
-						subtask.put("planDate", rs.getInt("PLAN_DATE"));
-						subtask.put("progress", rs.getInt("PROGRESS"));
-						subtask.put("statDate", DateUtils.timestamptoString(rs.getTimestamp("STAT_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						subtask.put("statTime", DateUtils.timestamptoString(rs.getTimestamp("STAT_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
-						subtask.put("status", rs.getInt("STATUS"));
-						
-						
-						subtask.put("planStartDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						subtask.put("planEndDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						subtask.put("actualStartDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						subtask.put("actualEndDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						
-						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
-						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));
-						subtask.put("percentPoi", rs.getInt("PERCENT_POI"));
-						
-						subtask.put("totalRoad", rs.getInt("TOTAL_ROAD"));
-						subtask.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
-						subtask.put("percentRoad", rs.getInt("PERCENT_ROAD"));
-
-						CLOB gridPercentDetails = (CLOB) rs.getClob("GRID_PERCENT_DETAILS");
-						String gridPercentDetails1 = StringUtil.ClobToString(gridPercentDetails);
-						JSONObject dataJson = null;
-						if(!gridPercentDetails1.isEmpty()){
-							dataJson = JSONObject.fromObject(gridPercentDetails1);
-						}
-						subtask.put("gridPercentDetails", dataJson);
-
-						list.add(subtask);
+						int subtaskId = rs.getInt("SUBTASK_ID");
+						list.add(subtaskId);
+//						Document subtask = new Document();
+//						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+//						subtask.put("taskId", rs.getInt("TASK_ID"));
+//						subtask.put("percent", rs.getInt("PERCENT"));
+//						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+//						subtask.put("planDate", rs.getInt("PLAN_DATE"));
+//						subtask.put("progress", rs.getInt("PROGRESS"));
+//						subtask.put("statDate", DateUtils.timestamptoString(rs.getTimestamp("STAT_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+//						subtask.put("statTime", DateUtils.timestamptoString(rs.getTimestamp("STAT_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
+//						subtask.put("status", rs.getInt("STATUS"));
+//						
+//						
+//						subtask.put("planStartDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+//						subtask.put("planEndDate", DateUtils.timestamptoString(rs.getTimestamp("PLAN_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+//						subtask.put("actualStartDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_START_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+//						subtask.put("actualEndDate", DateUtils.timestamptoString(rs.getTimestamp("ACTUAL_END_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+//						
+//						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
+//						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));
+//						subtask.put("percentPoi", rs.getInt("PERCENT_POI"));
+//						
+//						subtask.put("totalRoad", rs.getInt("TOTAL_ROAD"));
+//						subtask.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
+//						subtask.put("percentRoad", rs.getInt("PERCENT_ROAD"));
+//
+//						CLOB gridPercentDetails = (CLOB) rs.getClob("GRID_PERCENT_DETAILS");
+//						String gridPercentDetails1 = StringUtil.ClobToString(gridPercentDetails);
+//						JSONObject dataJson = null;
+//						if(!gridPercentDetails1.isEmpty()){
+//							dataJson = JSONObject.fromObject(gridPercentDetails1);
+//						}
+//						subtask.put("gridPercentDetails", dataJson);
+//
+//						list.add(subtask);
 					}
 					return list;
 				}

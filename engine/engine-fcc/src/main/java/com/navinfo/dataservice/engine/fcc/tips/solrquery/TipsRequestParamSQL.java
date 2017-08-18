@@ -386,7 +386,7 @@ public class TipsRequestParamSQL {
 
 	public String getTipsMobileWhere(String date,
 			int[] notExpSourceType) {
-		String param = " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ";
+		String param = " sdo_filter(wktlocation,sdo_geometry(:1,8307)) = 'TRUE' ";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"

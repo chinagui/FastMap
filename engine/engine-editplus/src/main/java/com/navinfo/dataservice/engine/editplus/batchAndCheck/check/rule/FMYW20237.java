@@ -73,8 +73,15 @@ public class FMYW20237 extends BasicCheckRule {
                 pidString = " PID IN (" + pidStr + ")";
             }
 
-            String sql = "SELECT IP.PID" + "  FROM IX_POI IP, RD_LINK RL, RD_LINK_FORM RLF" + " WHERE IP." + pidString + "   AND IP" +
-                    ".LINK_PID = RL.LINK_PID" + "   AND RL.LINK_PID = RLF.LINK_PID" + "   AND RLF.FORM_OF_WAY = 52";
+            String sql = "SELECT IP.PID" +
+                    "  FROM IX_POI IP, RD_LINK RL, RD_LINK_FORM RLF" +
+                    " WHERE IP." + pidString +
+                    "   AND IP.LINK_PID = RL.LINK_PID" +
+                    "   AND RL.LINK_PID = RLF.LINK_PID" +
+                    "   AND RLF.FORM_OF_WAY = 52" +
+                    "   AND IP.U_RECORD <> 2" +
+                    "   AND RL.U_RECORD <> 2" +
+                    "   AND RLF.U_RECORD <> 2";
 
             PreparedStatement pstmt = null;
             ResultSet rs = null;

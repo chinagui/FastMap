@@ -954,6 +954,61 @@ public class GeometryUtils {
 
     }
 
+    /**
+     * WGS84坐标系转成墨卡托投影
+     */
+	public static Geometry lonLat2Mercator(Geometry geo) {
+		Coordinate[] coors = geo.getCoordinates();
+		
+		if(coors.length < 2){
+			return null;
+		}
+		
+		Coordinate[] newcoors = new Coordinate[coors.length];
+		int i = 0;
+
+		for (Coordinate coor : coors) {
+			double x = coor.x * metersPerDegree;
+			double y = Math.log(Math.tan((90 + coor.y) * Math.PI / 360)) / (Math.PI / 180);
+			y = y * metersPerDegree;
+			newcoors[i] = new Coordinate(x, y);
+			i++;
+		}
+
+		GeometryFactory factory = new GeometryFactory();
+		Geometry geonew = factory.createLineString(newcoors);
+
+		return geonew;
+	}
+
+	/**
+	 * 墨卡托投影转成WGS84
+	 */
+	public static Geometry Mercator2lonLat(Geometry geo) {
+		Coordinate[] coors = geo.getCoordinates();
+		
+		if(coors.length < 2){
+			return null;
+		}
+		
+		Coordinate[] newcoors = new Coordinate[coors.length];
+		int i = 0;
+
+		for (Coordinate coor : coors) {
+			double x = coor.x / metersPerDegree;
+			double y = coor.y / metersPerDegree;
+			y = 180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180)) - Math.PI / 2);
+
+			newcoors[i] = new Coordinate(x, y);
+			i++;
+		}
+
+		GeometryFactory factory = new GeometryFactory();
+		Geometry geonew = factory.createPolygon(newcoors);
+
+		return geonew;
+	}
+    
     public static void main(String[] args) throws Exception {
 
         WKTReader r = new WKTReader();

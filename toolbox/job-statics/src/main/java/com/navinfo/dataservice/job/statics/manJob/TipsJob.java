@@ -111,24 +111,14 @@ public class TipsJob extends AbstractStatJob {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Map<String, Object>> gridTipsTaskList = new ArrayList<>();
-		List<Map<String, Object>> gridTipsNoTaskList = new ArrayList<>();
 		Map<String, Object> tipsTaskMap = new HashMap<>();
-		Map<String, Object> tipsNoTaskMap = new HashMap<>();
 		Map<Integer,Map<String, Object>> gridTipsTaskMap = new HashMap<>();
-		Map<Integer,Map<String, Object>> gridTipsNoTaskMap = new HashMap<>();
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
 		try{
 			
 			int gridId = 0;
-			int subtaskEditAllNum = 0; 
-			int subtaskEditFinishNum = 0; 
-			int taskEditAllNum = 0; 
-			int taskNoEditAllNum = 0; 
-			int taskCreateByEditNum = 0; 
-			int taskEditFinishNum = 0; 
-			int noTaskTotal = 0;
-			
+
 			String sql = "SELECT wkt,t_dEditStatus,stage,s_sourceType FROM tips_index WHERE s_qtaskid <> 0 AND t_tipStatus = 2 ORDER BY s_qtaskid" ;
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
@@ -137,21 +127,23 @@ public class TipsJob extends AbstractStatJob {
 				
 				int grid = getGrid(rs);
 				
-				if(gridId!=grid&&(!gridTipsTaskMap.containsKey(grid))) {
-					gridTipsTaskMap = new HashMap<>(); 
+				if(!gridTipsTaskMap.containsKey(grid)) {
+					tipsTaskMap = new HashMap<>(); 
 					gridId = grid;
 					tipsTaskMap.put("gridId",gridId);
+					tipsTaskMap.put("noTaskTotal", 0);
 					gridTipsTaskList.add(tipsTaskMap);
 					gridTipsTaskMap.put(gridId, tipsTaskMap);
-					subtaskEditAllNum = 0; 
-					subtaskEditFinishNum = 0; 
-					taskEditAllNum = 0; 
-					taskNoEditAllNum = 0; 
-					taskCreateByEditNum = 0; 
-					taskEditFinishNum = 0;
 				}
 				
 				tipsTaskMap = gridTipsTaskMap.get(grid);
+				
+				Integer subtaskEditAllNum = tipsTaskMap.containsKey("subtaskEditAllNum")?(Integer) tipsTaskMap.get("subtaskEditAllNum"):0;
+				Integer subtaskEditFinishNum = tipsTaskMap.containsKey("subtaskEditFinishNum")?(Integer)tipsTaskMap.get("subtaskEditFinishNum"):0;
+				Integer taskEditAllNum = tipsTaskMap.containsKey("taskEditAllNum")?(Integer)tipsTaskMap.get("taskEditAllNum"):0;
+				Integer taskNoEditAllNum = tipsTaskMap.containsKey("taskNoEditAllNum")?(Integer)tipsTaskMap.get("taskNoEditAllNum"):0;
+				Integer taskCreateByEditNum = tipsTaskMap.containsKey("taskCreateByEditNum")?(Integer) tipsTaskMap.get("taskCreateByEditNum"):0;
+				Integer taskEditFinishNum = tipsTaskMap.containsKey("taskEditFinishNum")?(Integer)tipsTaskMap.get("taskEditFinishNum"):0;
 				
 				int stage = rs.getInt("stage");
 				if(rs.getInt("t_dEditStatus")==2){
@@ -182,7 +174,6 @@ public class TipsJob extends AbstractStatJob {
 							} 
 						}
 					}
-					
 				}
 				
 				
@@ -192,10 +183,8 @@ public class TipsJob extends AbstractStatJob {
 				tipsTaskMap.put("taskNoEditAllNum", taskNoEditAllNum);
 				tipsTaskMap.put("taskCreateByEditNum", taskCreateByEditNum);
 				tipsTaskMap.put("taskEditFinishNum", taskEditFinishNum);
-				tipsTaskMap.put("noTaskTotal", 0);
 				
 			}
-			
 			
 			
 			String sql1 = "SELECT wkt FROM tips_index WHERE S_QTASKID = 0 AND S_MTASKID = 0 AND t_tipStatus = 2 AND s_sourceType not like '80%'" ;
@@ -206,42 +195,29 @@ public class TipsJob extends AbstractStatJob {
 				
 				int grid = getGrid(rs);
 				
-				if(gridId!=grid&&(!gridTipsNoTaskMap.containsKey(grid))) {
-					gridTipsNoTaskMap = new HashMap<>(); 
+				if(!gridTipsTaskMap.containsKey(grid)) {
+					tipsTaskMap = new HashMap<>(); 
 					gridId = grid;
-					tipsNoTaskMap.put("gridId",gridId);
-					gridTipsNoTaskList.add(tipsNoTaskMap);
-					gridTipsNoTaskMap.put(gridId, tipsNoTaskMap);
-					noTaskTotal = 0;
-				}
+					tipsTaskMap.put("gridId",gridId);
+					tipsTaskMap.put("subtaskEditAllNum", 0);
+					tipsTaskMap.put("subtaskEditFinishNum", 0);
+					tipsTaskMap.put("taskEditAllNum", 0);
+					tipsTaskMap.put("taskNoEditAllNum", 0);
+					tipsTaskMap.put("taskCreateByEditNum", 0);
+					tipsTaskMap.put("taskEditFinishNum", 0);
+					gridTipsTaskList.add(tipsTaskMap);
+					gridTipsTaskMap.put(gridId, tipsTaskMap);
+				}				
 				
+				tipsTaskMap = gridTipsTaskMap.get(gridId);
+				
+				Integer noTaskTotal = tipsTaskMap.containsKey("noTaskTotal")?(Integer)tipsTaskMap.get("noTaskTotal"):0;
 				noTaskTotal++;
 				
-				tipsNoTaskMap = gridTipsNoTaskMap.get(gridId);
-				
-				tipsNoTaskMap.put("subtaskEditAllNum", 0);
-				tipsNoTaskMap.put("subtaskEditFinishNum", 0);
-				tipsNoTaskMap.put("taskEditAllNum", 0);
-				tipsNoTaskMap.put("taskNoEditAllNum", 0);
-				tipsNoTaskMap.put("taskCreateByEditNum", 0);
-				tipsNoTaskMap.put("taskEditFinishNum", 0);
-				tipsNoTaskMap.put("noTaskTotal",noTaskTotal);
+				tipsTaskMap.put("noTaskTotal",noTaskTotal);
 				
 			}
 	
-			
-			
-			for (Map<String, Object> tipNoTaskMap : gridTipsNoTaskList) {
-				for (Map<String, Object> tipTaskMap: gridTipsTaskList) {
-					if((int)tipTaskMap.get("gridId")==(int)tipNoTaskMap.get("gridId")){
-						tipTaskMap.put("noTaskTotal", tipNoTaskMap.get("noTaskTotal"));
-						break;
-					}
-				}
-			}
-			
-			
-			
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new ThreadExecuteException("Tips数据统计失败");

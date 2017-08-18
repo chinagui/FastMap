@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +12,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -23,12 +26,9 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.alibaba.druid.util.StringUtils;
-import com.ctc.wstx.util.StringUtil;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.model.TipsDao;
-import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONObject;
@@ -54,33 +54,9 @@ public class ExportTipsFromHadoop {
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			for (Map.Entry<String, String> taskInfo : taskInfoes.entrySet()) {
-				
-				PrintWriter pw = new PrintWriter(taskInfo.getValue() + "_tips_info_record.txt");
-				
-				List<Get> rowkeys = getSelectedRowKeys(taskInfo);
-				
-				JSONObject jsonObj = new JSONObject();
 
-				Result[] results = htab.get(rowkeys);
+				handleDataByPoolAndTask(taskInfo,htab);
 				
-				for (Result result : results) {
-
-					if (result.isEmpty()) {
-						continue;
-					}
-					
-					jsonObj.put("rowkey", new String(result.getRow()));
-
-					for (KeyValue rowKV : result.raw()) {
-						jsonObj.put(new String(rowKV.getQualifier()), new String(rowKV.getValue()));
-					}
-
-					pw.println(jsonObj);
-				} // for
-				
-				pw.flush();
-				
-				pw.close();
 			}//for
 			
 		} catch (Exception e) {
@@ -184,4 +160,92 @@ public class ExportTipsFromHadoop {
 		
 		return result;
 	}
+	
+	/**
+	 * 优化：多线程运算，加快速度
+	 * 
+	 * @param taskInfo
+	 * @param htab
+	 * @throws Exception
+	 */
+	private static void handleDataByPoolAndTask(Map.Entry<String, String> taskInfo,Table htab) throws Exception{
+
+		PrintWriter pw = new PrintWriter(taskInfo.getValue() + "_tips_info_record.txt");
+		
+	    final int maxRowKeySize = 1000;
+	    
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+        
+        List<Get> rowkeys = getSelectedRowKeys(taskInfo);
+        
+        int loopSize = rowkeys.size() % maxRowKeySize == 0 ? rowkeys.size() / maxRowKeySize : rowkeys.size() / maxRowKeySize + 1;
+        
+        ArrayList<Future<Result[]>> results = new ArrayList<Future<Result[]>>();
+        		
+        for (int loop = 0; loop < loopSize; loop++)
+        {
+            int end = (loop + 1) * maxRowKeySize > rowkeys.size() ? rowkeys.size() : (loop + 1) * maxRowKeySize;
+                
+            List<Get> partRowKeys = rowkeys.subList(loop * maxRowKeySize, end);
+            
+            HbaseDataGetter hbaseDataGetter = new HbaseDataGetter(partRowKeys,htab);
+            
+            Future<Result[]> result = pool.submit(hbaseDataGetter);
+            
+            results.add(result);
+        }	
+
+        JSONObject jsonObj = new JSONObject();
+        
+        for(Future<Result[]> item : results){
+    		for (Result result : item.get()) {
+    			   			
+    			if (result.isEmpty()) {
+    				continue;
+    			}
+
+    			jsonObj.put("rowkey", new String(result.getRow()));
+
+    			for (KeyValue rowKV : result.raw()) {
+    				jsonObj.put(new String(rowKV.getQualifier()), new String(rowKV.getValue()));
+    			}
+
+    			pw.println(jsonObj);
+    		} // for
+        }//for
+		
+		pw.flush();
+
+		pw.close();
+	}
+	
 }
+
+class HbaseDataGetter implements Callable<Result[]>
+{
+    private List<Get> rowkeys;
+    
+    private Table htab = null;;
+    
+    public HbaseDataGetter(List<Get> rowKeys,Table htab)
+    {
+        this.rowkeys = rowKeys;
+        this.htab = htab;
+    }
+
+    @Override
+	public Result[] call() throws Exception {
+		Result[] partresults = new Result[rowkeys.size()];
+
+		try {
+			partresults = htab.get(rowkeys);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+
+		return partresults;
+	}
+}
+

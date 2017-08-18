@@ -147,7 +147,7 @@ public class FMDGC008 extends BasicCheckRule {
 
             label1:
             for (Map.Entry<Long, IxPoi> entry : noAssociationLink.entrySet()) {
-                Coordinate coordinate = new Coordinate(entry.getValue().getXGuide(), entry.getValue().getYGuide());
+                Coordinate coordinate = entry.getValue().getGeometry().getCoordinate();
 
                 boolean has30M = false;
 
@@ -177,7 +177,7 @@ public class FMDGC008 extends BasicCheckRule {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
 
-            logger.info("FMDGC008: (SPEND TIME: " + (System.currentTimeMillis() - startTime) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
+            logger.info("FMDGC008: (SPEND TIME: " + ((System.currentTimeMillis() - startTime) >> 10) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
         }
     }
 }

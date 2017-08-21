@@ -751,7 +751,7 @@ public class SubtaskOperation {
 					sb.append(" and st.STAGE in (0) ");
 					//modify by songhe 2017/08.21
 					//只将外业采集的子任务传给采集端
-					sb.append(" and st.work_kind = 1");
+					sb.append(" and st.work_kind = 1 ");
 				}
 //				else if(1 == platForm){
 //					//编辑端

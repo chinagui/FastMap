@@ -2,7 +2,6 @@ package com.navinfo.dataservice.control.dealership.service;
 
 import java.sql.Connection;
 
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
@@ -23,7 +22,6 @@ public class IxDealershipHistoryOperator {
 				run.execute(conn,sqlStr);
 			};
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
 		}

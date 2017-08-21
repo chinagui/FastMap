@@ -85,16 +85,16 @@ public class Parser_Tool {
 	 * @throws IOException
 	 */
 	public static String do_get2(String url) throws ClientProtocolException, IOException {
-		httpclient = new DefaultHttpClient();
+		HttpClient httpclient2 = new DefaultHttpClient();
 
 		String body = "{}";
 		HttpGet httpget = new HttpGet(url);
-		HttpResponse response = httpclient.execute(httpget);
+		HttpResponse response = httpclient2.execute(httpget);
 
 		HttpEntity entity = response.getEntity();
 
 		body = EntityUtils.toString(entity);
-		httpclient.getConnectionManager().shutdown();
+		httpclient2.getConnectionManager().shutdown();
 		return body;
 	}
 }

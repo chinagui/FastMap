@@ -3777,7 +3777,7 @@ public class TaskService {
 						task.put("subtaskName", result.getString("st_name"));
 						task.put("subtaskStage", result.getInt("st_stage"));
 						task.put("subtaskWorkKind", result.getString("work_kind"));
-						task.put("subtaskStatus", result.getString("substatus"));
+						task.put("subtaskStatus", result.getInt("substatus"));
 						
 						taskList.add(task);
 					}

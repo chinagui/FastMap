@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -167,6 +165,7 @@ public class ExportStatFromMongo {
 			System.out.println("ERROR:need args:路径,时间,表名");
 			return;
 		}
+		//0-路径,1-表名,2-时间(没有timestamp的字段赋值"")
 		execute(args[0],args[1],args[2]);
 //		execute("D:/temp","task","20170820160000");
 		System.out.println("Over.");

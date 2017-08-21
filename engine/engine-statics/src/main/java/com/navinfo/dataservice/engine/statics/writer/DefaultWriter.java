@@ -1,12 +1,15 @@
 package com.navinfo.dataservice.engine.statics.writer;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
+import com.alibaba.dubbo.common.json.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -57,12 +60,15 @@ public class DefaultWriter {
 			//初始化统计collection
 			initMongoDb(collectionName,timestamp);
 			//统计信息入库
-			Document resultDoc=new Document();
-			resultDoc.put("timestamp",timestamp);
-			resultDoc.put("content",messageJSON.getJSONArray(collectionName));
-	
 			MongoDao md = new MongoDao(dbName);
-			md.insertOne(collectionName, resultDoc);
+			List<Document> docs=new ArrayList<>();
+			for(Object tmp:messageJSON.getJSONArray(collectionName)){
+				Document resultDoc=new Document();
+				resultDoc.put("timestamp",timestamp);
+				resultDoc.putAll((JSONObject)tmp);
+				docs.add(resultDoc);
+			}
+			md.insertMany(collectionName, docs);
 		}
 		log.info("end write2Mongo");
 	}

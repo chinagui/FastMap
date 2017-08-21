@@ -1895,33 +1895,105 @@ public class SubtaskService {
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
+					List<Integer> referIds = new ArrayList<Integer>();
 					while(rs.next()){				
 						HashMap<String,Object> map = new HashMap<String,Object>();
-						map.put("id", rs.getInt("ID"));
-						int status=rs.getInt("status");
-						if(status==3){map.put("status", 1);}
-						else{map.put("status", status);}
+						int id = rs.getInt("ID");
+						map.put("id", id);
+						int status = rs.getInt("status");
+						if(status == 3){
+							map.put("status", 1);
+						}else{
+							map.put("status", status);
+						}
 						try {
 							STRUCT struct=(STRUCT)rs.getObject("geometry");
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
-						}							
+						}
+						referIds.add(id);
 						list.add(map);		
-					}					
+					}
+					queryNameByReferId(referIds, list);
 					return list;
 				}	    		
-	    	}		;
+	    	};
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	if (json.containsKey("wkt")) {
+	    	if (json.containsKey("wkt")){
 	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
-	    	}else{return run.query(conn, selectSql, rsHandler);}
+	    	}else{
+	    		return run.query(conn, selectSql, rsHandler);
+	    	}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 根据id求对应的作业员姓名
+	 * @param List<Integer>
+	 * @param List<HashMap<String,Object>>
+	 * 
+	 * */
+	@SuppressWarnings("unchecked")
+	public void queryNameByReferId(List<Integer> referIds, List<HashMap<String,Object>> list){
+		Connection conn = null;
+		try{
+			if(referIds.size() == 0){
+				return;
+			}
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i< referIds.size(); i++){
+				sb.append(referIds.get(i)+",");
+			}
+			String refers = sb.deleteCharAt(sb.length()-1).toString(); 
+		
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<Map<Integer, Object>> rsHandler = new ResultSetHandler<Map<Integer, Object>>(){
+				public Map<Integer, Object> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Object> result = new HashMap<>();
+					while(rs.next()){
+						List<String> names = new ArrayList<>();
+						int isQuality = rs.getInt("is_quality");
+						int referId = rs.getInt("refer_id");
+						String userName = rs.getString("USER_REAL_NAME");
+						if(result.containsKey(referId)){
+							names = (List<String>) result.get(referId);
+							if(isQuality != 1){
+								names.add(userName);
+							}
+						}else{
+							if(isQuality != 1){
+								names.add(userName);
+							}
+						}
+						result.put(referId, names);
+					}
+					return result;
+				}	    		
+	    	};
+	    	Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, refers);
+			
+	    	String sql = "select t.is_quality,t.refer_id,U.USER_REAL_NAME from SUBTASK t,USER_INFO U WHERE t.refer_id in "
+	    			+ "(select to_number(column_value) from table(clob_to_table(?))) and U.USER_ID = t.exe_user_id";
+	    	Map<Integer, Object> nameMap = run.query(conn, sql, rsHandler, clob);
+	    	
+    		for(HashMap<String, Object> map : list){
+    			int referId = (int) map.get("id");
+    			List<String> names = (List<String>) nameMap.get(referId);
+    			map.put("exeUsers", (names == null) ? new ArrayList<>() : names);
+    		}
+		}catch(Exception e){
+			log.error("根据子任务圈id求对应的作业员姓名异常" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

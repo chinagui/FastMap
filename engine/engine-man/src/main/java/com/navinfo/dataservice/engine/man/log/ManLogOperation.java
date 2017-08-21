@@ -22,7 +22,7 @@ public class ManLogOperation {
 		try{
 			List<Object> values = new ArrayList<Object>();
 
-			String baseSql = "insert into man_log (id,short_desc,logs) value(man_log_seq.nextval,?,?)";
+			String baseSql = "insert into man_log (id,short_desc,logs,operate_date) values(man_log_seq.nextval,?,?,sysdate)";
 			QueryRunner run = new QueryRunner();
 			
 			values.add(manLog.getShortDesc());
@@ -44,7 +44,7 @@ public class ManLogOperation {
 			conn=DBConnector.getInstance().getManConnection();
 			List<Object> values = new ArrayList<Object>();
 
-			String baseSql = "insert into man_log (id,short_desc,logs) values (man_log_seq.nextval,?,?)";
+			String baseSql = "insert into man_log (id,short_desc,logs,operate_date) values (man_log_seq.nextval,?,?,sysdate)";
 			QueryRunner run = new QueryRunner();
 			
 			values.add(shortDesc);

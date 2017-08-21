@@ -229,7 +229,6 @@ public class TaskJob extends AbstractStatJob {
 			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
 			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			filter.put("status", 0);
 			FindIterable<Document> findIterable = mongoDao.find(task, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
@@ -242,8 +241,11 @@ public class TaskJob extends AbstractStatJob {
 					for(int i=0;i<content.size();i++){
 						JSONObject jso = content.getJSONObject(i);
 						int taskId = (int) jso.get("taskId");
-						Map<String,Object> map = jso;
-						stat.put(taskId, map);
+						int status = (int) jso.get("status");
+						if(status == 0){
+							Map<String,Object> map = jso;
+							stat.put(taskId, map);
+						}
 					}
 				}
 			}

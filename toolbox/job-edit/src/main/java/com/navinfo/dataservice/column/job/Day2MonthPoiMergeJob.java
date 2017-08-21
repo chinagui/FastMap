@@ -866,7 +866,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
 				"    and s.status = 3");
 		if(taskType==0&&(taskIds==null||taskIds.size()==0)){
-			sb.append(" and s.quick_task_id=0 ");
+			sb.append(" and s.medium_task_id<>0 ");
 		}
 				 
 		List<Object> values = new ArrayList<Object> ();

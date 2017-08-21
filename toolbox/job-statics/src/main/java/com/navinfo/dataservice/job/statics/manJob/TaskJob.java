@@ -235,18 +235,12 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						JSONObject jso = content.getJSONObject(i);
-						int taskId = (int) jso.get("taskId");
-						int status = (int) jso.get("status");
-						if(status == 0){
-							Map<String,Object> map = jso;
-							stat.put(taskId, map);
-						}
-					}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				int taskId = (int) jso.get("taskId");
+				int status = (int) jso.get("status");
+				if(status == 0){
+					Map<String,Object> map = jso;
+					stat.put(taskId, map);
 				}
 			}
 			return stat;
@@ -272,16 +266,10 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						JSONObject jso = content.getJSONObject(i);
-						int subtaskId = (int) jso.get("subtaskId");
-						Map<String,Object> map = jso;
-						stat.put(subtaskId, map);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				int subtaskId = (int) jso.get("subtaskId");
+				Map<String,Object> map = jso;
+				stat.put(subtaskId, map);
 			}
 			return stat;
 		} catch (Exception e) {
@@ -330,25 +318,19 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Object> task = new HashMap<String,Object>();
-						JSONObject jso = content.getJSONObject(i);
-						int taskId = (int) jso.get("taskId");
-						double tipsAddLen = 0;
-						String tipsAddLenS = (String) jso.get("tipsAddLen");
-						if(StringUtils.isNotEmpty(tipsAddLenS)){
-							tipsAddLen = Double.parseDouble(tipsAddLenS);
-						}
-						int tipsUploadNum = (int) jso.get("tipsUploadNum");
-						task.put("collectRoadActualTotal", tipsAddLen);
-						task.put("collectTipsCollectUploadNum", tipsUploadNum);
-						task.put("collectLinkAddTotal", tipsAddLen);
-						stat.put(taskId, task);
-					}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Object> task = new HashMap<String,Object>();
+				int taskId = (int) jso.get("taskId");
+				double tipsAddLen = 0;
+				String tipsAddLenS = (String) jso.get("tipsAddLen");
+				if(StringUtils.isNotEmpty(tipsAddLenS)){
+					tipsAddLen = Double.parseDouble(tipsAddLenS);
 				}
+				int tipsUploadNum = (int) jso.get("tipsUploadNum");
+				task.put("collectRoadActualTotal", tipsAddLen);
+				task.put("collectTipsCollectUploadNum", tipsUploadNum);
+				task.put("collectLinkAddTotal", tipsAddLen);
+				stat.put(taskId, task);
 			}
 			return stat;
 		} catch (Exception e) {
@@ -371,29 +353,23 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Object> task = new HashMap<String,Object>();
-						JSONObject jso = content.getJSONObject(i);
-						int taskId = (int) jso.get("taskId");
-						int poiFinishNum = (int) jso.get("poiFinishNum");
-						int poiUploadNum = (int) jso.get("poiUploadNum");
-						int poiUnfinishNum = (int) jso.get("poiUnfinishNum");
-						int poiUnFreshNum = (int) jso.get("poiUnFreshNum");
-						int poiFinishAndPlanNum = (int) jso.get("poiFinishAndPlanNum");
-						int poiFreshNum = (int) jso.get("poiFreshNum");
-						task.put("poiUploadNum", poiUploadNum);
-						task.put("poiFinishNum", poiFinishNum);
-						task.put("poiUnfinishNum", poiUnfinishNum);
-						task.put("poiActualFinishNum", poiUnFreshNum);
-						task.put("poiUnFreshNum", poiUnFreshNum);
-						task.put("poiFinishAndPlanNum", poiFinishAndPlanNum);
-						task.put("poiFreshNum", poiFreshNum);
-						stat.put(taskId, task);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Object> task = new HashMap<String,Object>();
+				int taskId = (int) jso.get("taskId");
+				int poiFinishNum = (int) jso.get("poiFinishNum");
+				int poiUploadNum = (int) jso.get("poiUploadNum");
+				int poiUnfinishNum = (int) jso.get("poiUnfinishNum");
+				int poiUnFreshNum = (int) jso.get("poiUnFreshNum");
+				int poiFinishAndPlanNum = (int) jso.get("poiFinishAndPlanNum");
+				int poiFreshNum = (int) jso.get("poiFreshNum");
+				task.put("poiUploadNum", poiUploadNum);
+				task.put("poiFinishNum", poiFinishNum);
+				task.put("poiUnfinishNum", poiUnfinishNum);
+				task.put("poiActualFinishNum", poiUnFreshNum);
+				task.put("poiUnFreshNum", poiUnFreshNum);
+				task.put("poiFinishAndPlanNum", poiFinishAndPlanNum);
+				task.put("poiFreshNum", poiFreshNum);
+				stat.put(taskId, task);
 			}
 			return stat;
 		} catch (Exception e) {
@@ -416,26 +392,20 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Integer> task = new HashMap<String,Integer>();
-						JSONObject jso = content.getJSONObject(i);
-						int gridId = (int) jso.get("gridId");
-						int taskEditAllNum = (int) jso.get("taskEditAllNum");
-						int taskEditFinishNum = (int) jso.get("taskEditFinishNum");
-						int taskNoEditAllNum = (int) jso.get("taskNoEditAllNum");
-						int taskCreateByEditNum = (int) jso.get("taskCreateByEditNum");
-						int noTaskTotal = (int) jso.get("noTaskTotal");
-						task.put("dayEditTipsAllNum", taskEditAllNum);
-						task.put("dayEditTipsFinishNum", taskEditFinishNum);
-						task.put("dayEditTipsUnfinishNum", taskNoEditAllNum);
-						task.put("tipsCreateByEditNum", taskCreateByEditNum);
-						task.put("notaskdata_tips_num", noTaskTotal);
-						tipsStat.put(gridId, task);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Integer> task = new HashMap<String,Integer>();
+				int gridId = (int) jso.get("gridId");
+				int taskEditAllNum = (int) jso.get("taskEditAllNum");
+				int taskEditFinishNum = (int) jso.get("taskEditFinishNum");
+				int taskNoEditAllNum = (int) jso.get("taskNoEditAllNum");
+				int taskCreateByEditNum = (int) jso.get("taskCreateByEditNum");
+				int noTaskTotal = (int) jso.get("noTaskTotal");
+				task.put("dayEditTipsAllNum", taskEditAllNum);
+				task.put("dayEditTipsFinishNum", taskEditFinishNum);
+				task.put("dayEditTipsUnfinishNum", taskNoEditAllNum);
+				task.put("tipsCreateByEditNum", taskCreateByEditNum);
+				task.put("notaskdata_tips_num", noTaskTotal);
+				tipsStat.put(gridId, task);
 			}
 			return tipsStat;
 		} catch (Exception e) {
@@ -495,22 +465,16 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Integer> task = new HashMap<String,Integer>();
-						JSONObject jso = content.getJSONObject(i);
-						int gridId = (int) jso.get("gridId");
-						int logAllNum = (int) jso.get("logAllNum");
-						int logFinishNum = (int) jso.get("logFinishNum");
-						int poiFinishNum = (int) jso.get("poiFinishNum");
-						task.put("logAllNum", logAllNum);
-						task.put("logFinishNum", logFinishNum);
-						task.put("poiFinishNum", poiFinishNum);
-						monthPoiStat.put(gridId, task);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Integer> task = new HashMap<String,Integer>();
+				int gridId = (int) jso.get("gridId");
+				int logAllNum = (int) jso.get("logAllNum");
+				int logFinishNum = (int) jso.get("logFinishNum");
+				int poiFinishNum = (int) jso.get("poiFinishNum");
+				task.put("logAllNum", logAllNum);
+				task.put("logFinishNum", logFinishNum);
+				task.put("poiFinishNum", poiFinishNum);
+				monthPoiStat.put(gridId, task);
 			}
 			return monthPoiStat;
 		} catch (Exception e) {
@@ -564,18 +528,12 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Integer> task = new HashMap<String,Integer>();
-						JSONObject jso = content.getJSONObject(i);
-						int subtaskId = (int) jso.get("subtaskId");
-						int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
-						task.put("day2MonthNum", day2MonthPoiNum);
-						monthPoiStat.put(subtaskId, task);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Integer> task = new HashMap<String,Integer>();
+				int subtaskId = (int) jso.get("subtaskId");
+				int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
+				task.put("day2MonthNum", day2MonthPoiNum);
+				monthPoiStat.put(subtaskId, task);
 			}
 			return monthPoiStat;
 		} catch (Exception e) {
@@ -622,18 +580,12 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Integer> task = new HashMap<String,Integer>();
-						JSONObject jso = content.getJSONObject(i);
-						int gridId = (int) jso.get("gridId");
-						int poiNum = (int) jso.get("poiNum");
-						task.put("poiNum", poiNum);
-						monthPoiStat.put(gridId, task);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Integer> task = new HashMap<String,Integer>();
+				int gridId = (int) jso.get("gridId");
+				int poiNum = (int) jso.get("poiNum");
+				task.put("poiNum", poiNum);
+				monthPoiStat.put(gridId, task);
 			}
 			return monthPoiStat;
 		} catch (Exception e) {
@@ -736,18 +688,12 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Object> subtask = new HashMap<String,Object>();
-						JSONObject jso = content.getJSONObject(i);
-						int subtaskId = (int) jso.get("subtaskId");
-						int tipsTotal = (int) jso.get("tipsTotal");
-						subtask.put("tipsTotal", tipsTotal);
-						stat.put(subtaskId, subtask);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Object> subtask = new HashMap<String,Object>();
+				int subtaskId = (int) jso.get("subtaskId");
+				int tipsTotal = (int) jso.get("tipsTotal");
+				subtask.put("tipsTotal", tipsTotal);
+				stat.put(subtaskId, subtask);
 			}
 			return stat;
 		} catch (Exception e) {
@@ -811,18 +757,12 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				if(json.containsKey("content")){
-					JSONArray content = json.getJSONArray("content");
-					for(int i=0;i<content.size();i++){
-						Map<String,Object> subtask = new HashMap<String,Object>();
-						JSONObject jso = content.getJSONObject(i);
-						int subtaskId = (int) jso.get("subtaskId");
-						int poiUploadNum = (int) jso.get("poiUploadNum");
-						subtask.put("poiUploadNum", poiUploadNum);
-						stat.put(subtaskId, subtask);
-					}
-				}
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Object> subtask = new HashMap<String,Object>();
+				int subtaskId = (int) jso.get("subtaskId");
+				int poiUploadNum = (int) jso.get("poiUploadNum");
+				subtask.put("poiUploadNum", poiUploadNum);
+				stat.put(subtaskId, subtask);
 			}
 			return stat;
 		} catch (Exception e) {

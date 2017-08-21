@@ -67,17 +67,24 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			infor.setNewsDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("newsDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			
-			Calendar aCalendar = Calendar.getInstance();
-			aCalendar.setTime(infor.getExpectDate());
-			int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
-			aCalendar.setTime(new Date());
-			int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
+//			Calendar aCalendar = Calendar.getInstance();
+//			aCalendar.setTime();
+//			int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
+//			aCalendar.setTime(new Date());
+//			int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
+			
+			Timestamp date1=infor.getExpectDate();
+			String d2=DateUtils.dateToString(new Date(), DateUtils.DATE_WITH_SPLIT_YMD);
+			Timestamp date2=new Timestamp(DateUtils.stringToLong(d2, DateUtils.DATE_WITH_SPLIT_YMD));
+			
+		    long diff = date2.getTime() - date1.getTime();
+		    long days = diff / (1000 * 60 * 60 * 24);			
 
-			if((day2-day1)<-21){
+			if(days<-21){
 				infor.setMethod("矢量制作");
-			}else if((day2-day1)==-21){
+			}else if(days==-21){
 				infor.setMethod("预采集");
-			}else if((day2-day1)>=-6){
+			}else if(days>=-6){
 				infor.setMethod("正式采集");
 			}
 			

@@ -426,6 +426,7 @@ public class SubtaskService {
 				//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
 				dataJson.discard("qualitySubtaskId");
 			}
+			
 			//是否创建质检子任务，这里更改了创建的标识字段为isQuailty
 			if(dataJson.containsKey("hasQuality")){
 				hasQuality = dataJson.getInt("hasQuality");	
@@ -448,6 +449,11 @@ public class SubtaskService {
 			}				
 			//正常修改子任务
 			Subtask subtask = createSubtaskBean(userId,dataJson);
+			//判断是否有质检子任务,已有质检子任务，则从数据库中获取对应的质检id
+			Subtask commonSubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
+			if(commonSubtask.getQualitySubtaskId()!=null&&commonSubtask.getQualitySubtaskId()!=0){
+				qualitySubtaskId=commonSubtask.getQualitySubtaskId();
+			}
 			Integer newQualitySubtaskId=qualitySubtaskId;
 			//创建或者修改常规任务时，均要调用修改质检任务的代码
 			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
@@ -464,7 +470,7 @@ public class SubtaskService {
 				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 			}else{
 				if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
-					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
+					Subtask qualitySubtask = commonSubtask;
 					if(!StringUtils.isEmpty(subtask.getName())){
 						qualitySubtask.setName(subtask.getName()+"_质检");}
 					qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
@@ -662,7 +668,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD,ST.WORK_KIND ");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,st.is_quality,st.QUALITY_METHOD,ST.WORK_KIND,st.quality_subtask_id ");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -690,6 +696,7 @@ public class SubtaskService {
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setIsQuality(rs.getInt("IS_QUALITY"));
 						subtask.setQualityMethod(rs.getInt("QUALITY_METHOD"));
+						subtask.setQualitySubtaskId(rs.getInt("QUALITY_SUBTASK_ID"));
 						// 增加workKind
 						subtask.setWorkKind(rs.getInt("WORK_KIND"));
 						

@@ -100,7 +100,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void testDate() throws Exception {
 		System.out.println("start"); 
-		Timestamp date1=new Timestamp(DateUtils.stringToLong("2018-03-22", DateUtils.DATE_WITH_SPLIT_YMD));
+		Timestamp date1=new Timestamp(DateUtils.stringToLong("2016-11-22", DateUtils.DATE_WITH_SPLIT_YMD));
 		Calendar aCalendar = Calendar.getInstance();
 		aCalendar.setTime(date1);
 		int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
@@ -118,6 +118,13 @@ public class commonTest extends InitApplication {
 	    long diff = date2.getTime() - date1.getTime();
 	    long days = diff / (1000 * 60 * 60 * 24);
 	    System.out.println(days);
+	    if(days<-21){
+	    	System.out.println("矢量制作");
+		}else if(days==-21){
+			System.out.println("预采集");
+		}else if(days>=-6){
+			System.out.println("正式采集");
+		}
 		
 //		if((day2-day1)<-21){
 //			infor.setMethod("矢量制作");

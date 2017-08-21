@@ -168,20 +168,16 @@ public class PersonJob extends AbstractStatJob {
 		//统计一个任务下所有子任务的personTips
 		while(personTips.hasNext()){
 			JSONObject tipsJson = JSONObject.fromObject(personTips.next());
-			JSONArray tipsContent = tipsJson.getJSONArray("content");
 			double tipsAddLen = 0;
 			double tipsAllLen = 0;
 			int subtaskId = 0;
-			for(int j = 0; j < tipsContent.size(); j++){
- 				Map<String, Object> map = new HashMap<>();
-				Map<String, Object> tipsData = (Map<String, Object>) tipsContent.get(j);
-				subtaskId = Integer.parseInt(tipsData.get("subtaskId").toString());
-				tipsAddLen = Double.valueOf(tipsData.get("tipsAddLen").toString());
-				tipsAllLen = Double.valueOf(tipsData.get("tipsAllLen").toString());
-				map.put("tipsAddLen", String.valueOf(tipsAddLen));
-				map.put("tipsAllLen", String.valueOf(tipsAllLen));
-			    result.put(subtaskId, map);
-			}
+			Map<String, Object> map = new HashMap<>();
+			subtaskId = Integer.parseInt(tipsJson.get("subtaskId").toString());
+			tipsAddLen = Double.valueOf(tipsJson.get("tipsAddLen").toString());
+			tipsAllLen = Double.valueOf(tipsJson.get("tipsAllLen").toString());
+			map.put("tipsAddLen", String.valueOf(tipsAddLen));
+			map.put("tipsAllLen", String.valueOf(tipsAllLen));
+		    result.put(subtaskId, map);
 		}
 		return result;
 	}
@@ -203,24 +199,20 @@ public class PersonJob extends AbstractStatJob {
 		//统计所有的子任务的数据
 		while(person.hasNext()){
 			JSONObject json = JSONObject.fromObject(person.next());
-			JSONArray content = json.getJSONArray("content");
 			int poiUploadNum = 0;
 			int poiFreshNum = 0;
 			int poiFinishNum = 0;
 			int subtaskId = 0;
-			for(int i = 0; i < content.size(); i++){
-				Map<String, Integer> data = (Map<String, Integer>) content.get(i);
-				Map<String, Integer> map = new HashMap<>();
-				subtaskId = data.get("subtaskId");
-				poiUploadNum = data.get("uploadNum");
-				poiFreshNum = data.get("freshNum");
-				poiFinishNum = data.get("finishNum");
-				
-				map.put("poiUploadNum", poiUploadNum);
-				map.put("poiFreshNum", poiFreshNum);
-				map.put("poiFinishNum", poiFinishNum);
-				subtaskData.put(subtaskId, map);
-			}
+			Map<String, Integer> map = new HashMap<>();
+			subtaskId = (int) json.get("subtaskId");
+			poiUploadNum = (int) json.get("uploadNum");
+			poiFreshNum = (int) json.get("freshNum");
+			poiFinishNum = (int) json.get("finishNum");
+			
+			map.put("poiUploadNum", poiUploadNum);
+			map.put("poiFreshNum", poiFreshNum);
+			map.put("poiFinishNum", poiFinishNum);
+			subtaskData.put(subtaskId, map);
 		}
 		return subtaskData;
 	}

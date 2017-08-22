@@ -52,8 +52,9 @@ public class ServiceInvokeUtil
                 json = servicePost.getResponseBodyAsString();
             }
             else
-            {
-                json = "{success : false,msg:'调用服务失败！'}";
+            {  
+            	log.error("url调用失败：status="+status);
+                json = "{success : false,msg:'调用服务失败！status="+status+"'}";
             }
         } catch (IOException e)
         {

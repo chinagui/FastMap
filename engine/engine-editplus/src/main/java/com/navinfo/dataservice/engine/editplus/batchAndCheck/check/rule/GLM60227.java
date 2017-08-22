@@ -64,7 +64,7 @@ public class GLM60227 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T2.link_pid" + 
+        String sql = "SELECT T1.PID" + 
                 "  FROM IX_POI T1, RW_LINK T2" + 
                 " WHERE T1." + pidString +
                 "   AND T1.U_RECORD <> 2" + 

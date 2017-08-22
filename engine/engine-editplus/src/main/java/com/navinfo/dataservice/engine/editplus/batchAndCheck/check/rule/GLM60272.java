@@ -36,8 +36,16 @@ public class GLM60272 extends BasicCheckRule {
 			IxSamePoiObj poiObj = (IxSamePoiObj) obj;
 			List<IxSamepoiPart> parts = poiObj.getIxSamepoiParts();
 			List<Long> samePoiPids = new ArrayList<>();
+			Long parentPid1 = null;
+			Long parentPid2 = null;
 			for (IxSamepoiPart tmp : parts) {
 				samePoiPids.add(tmp.getPoiPid());
+			}
+			if(childParentMap.containsKey(samePoiPids.get(0))){
+				parentPid1 = childParentMap.get(samePoiPids.get(0));
+			}
+			if(childParentMap.containsKey(samePoiPids.get(1))){
+				parentPid2 = childParentMap.get(samePoiPids.get(1));
 			}
 			Set<Long> childSet = childParentMap.keySet();
 			// 父子关系列表
@@ -60,8 +68,9 @@ public class GLM60272 extends BasicCheckRule {
 				int num = 0;
 				while (childParentMap.containsKey(childPid)) {
 					Long parentPid = childParentMap.get(pid);
-					if (allChildParent.contains(parentPid) && !childSet.containsAll(samePoiPids)) {
+					if (allChildParent.contains(parentPid) && (!childSet.containsAll(samePoiPids) || samePoiPids.contains(parentPid1) || samePoiPids.contains(parentPid2))) {
 						String targets = "";
+						allChildParent.addAll(samePoiPids);
 						for (Long tmpPid : allChildParent) {
 							if (!StringUtils.isEmpty(targets)) {
 								targets = targets + ";";

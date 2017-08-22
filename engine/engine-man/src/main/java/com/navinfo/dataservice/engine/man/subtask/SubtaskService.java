@@ -1422,6 +1422,13 @@ public class SubtaskService {
 			sb.append(" AND T.BLOCK_ID = B.BLOCK_ID");
 			sb.append(" AND B.CITY_ID = C.CITY_ID");
 			sb.append(" AND S.SUBTASK_ID =" + subtaskId);
+			sb.append(" UNION ALL");
+			sb.append(" SELECT TO_NUMBER(I.ADMIN_CODE)");
+			sb.append("   FROM INFOR I, PROGRAM P, TASK T, SUBTASK S");
+			sb.append("  WHERE I.INFOR_ID = P.INFOR_ID");
+			sb.append("    AND P.PROGRAM_ID = T.PROGRAM_ID");
+			sb.append("    AND T.TASK_ID = S.TASK_ID");
+			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
 
 //			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 //

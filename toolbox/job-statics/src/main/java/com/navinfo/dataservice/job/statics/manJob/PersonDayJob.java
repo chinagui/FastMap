@@ -151,6 +151,10 @@ public class PersonDayJob extends AbstractStatJob {
 					cell.put("uploadNum", entry.getValue().get("uploadNum"));
 					cell.put("freshNum", entry.getValue().get("freshNum"));
 					cell.put("finishNum", entry.getValue().get("finishNum"));
+					cell.put("deleteCount", entry.getValue().get("deleteCount"));
+					cell.put("alterCount", entry.getValue().get("alterCount"));
+					cell.put("increaseCount", entry.getValue().get("increaseCount"));
+					
 					subtaskStat.add(cell);
 				}
 				
@@ -182,6 +186,7 @@ public class PersonDayJob extends AbstractStatJob {
 				
 				StringBuilder sb = new StringBuilder();
 				sb.append(" select s.status,                      		");
+				sb.append("        p.u_record,                      	");
 				sb.append("        s.fresh_verified,              		");
 				sb.append("        s.quick_subtask_id,            		");
 				sb.append("        s.medium_subtask_id,           		");
@@ -202,11 +207,12 @@ public class PersonDayJob extends AbstractStatJob {
 						    int quickSubTaskId = rs.getInt("quick_subtask_id");
 						    int status = rs.getInt("status");
 						    int fresh = rs.getInt("fresh_verified");
+						    int record = rs.getInt("u_record");
 						    if(subtaskId != 0){
-						    	statisticsSubTaskData(subtaskStat, subtaskId, status, fresh);
+						    	statisticsSubTaskData(subtaskStat, subtaskId, status, fresh, record);
 						    }
 						    if(quickSubTaskId != 0){
-						    	statisticsSubTaskData(subtaskStat, quickSubTaskId, status, fresh);
+						    	statisticsSubTaskData(subtaskStat, quickSubTaskId, status, fresh, record);
 						    }
 						}
 						result.put("subtaskStat", subtaskStat);
@@ -226,22 +232,29 @@ public class PersonDayJob extends AbstractStatJob {
 		
 		/**
 		 * 处理子任务的统计量方法
-		 * @param Map<Integer,Map<String,Integer>>
-		 * @param int
-		 * @param int
-		 * @param int
+		 * @param Map<Integer,Map<String,Integer>> subtaskStat
+		 * @param int subtaskId
+		 * @param int status
+		 * @param int fresh
+		 * @param int record
 		 * 
 		 * */
-		public void statisticsSubTaskData(Map<Integer,Map<String,Integer>> subtaskStat, int subtaskId, int status, int fresh){
+		public void statisticsSubTaskData(Map<Integer,Map<String,Integer>> subtaskStat, int subtaskId, int status, int fresh, int record){
 			Map<String,Integer> value = new HashMap<String,Integer>();
 	    	int uploadNum = 0 ;
 	    	int freshNum = 0;
 	    	int finishNum = 0;
-	    	if(subtaskId != 0 && subtaskStat.containsKey(subtaskId)){
+	    	int deleteCount = 0;
+	    	int alterCount = 0;
+	    	int increaseCount = 0;
+	    	if(subtaskStat.containsKey(subtaskId)){
 	    		value = subtaskStat.get(subtaskId);
 	    		uploadNum = value.get("uploadNum");
 	    		freshNum = value.get("freshNum");
 	    		finishNum =  value.get("finishNum");
+	    		deleteCount = value.get("deleteCount");
+	    		alterCount = value.get("alterCount");
+	    		increaseCount = value.get("increaseCount");
 	    	}
 	    	finishNum++;
 	    	if(status == 1 || status == 2 || status ==3){
@@ -250,9 +263,22 @@ public class PersonDayJob extends AbstractStatJob {
 	    	if(fresh == 1){
 	    		freshNum++;
 	    	}
+	    	switch(record){
+	    		case 1 :
+	    			increaseCount++;
+	    			break;
+	    		case 2 :
+	    			deleteCount++;
+	    			break;
+	    		case 3 :
+	    			alterCount++;
+	    	}
 	    	value.put("uploadNum", uploadNum);
 	    	value.put("freshNum", freshNum);
 	    	value.put("finishNum", finishNum);
+	    	value.put("increaseCount", increaseCount);
+	    	value.put("alterCount", alterCount);
+	    	value.put("deleteCount", deleteCount);
 	    	subtaskStat.put(subtaskId, value);
 		}
 		

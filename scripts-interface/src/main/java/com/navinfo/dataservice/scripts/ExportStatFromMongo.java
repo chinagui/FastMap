@@ -162,7 +162,7 @@ public class ExportStatFromMongo {
 		initContext();
 		System.out.println("args.length:" + args.length);
 		if (args == null || args.length != 3) {
-			System.out.println("ERROR:need args:路径,时间,表名");
+			System.out.println("ERROR:need args:路径,表名,时间");
 			return;
 		}
 		//0-路径,1-表名,2-时间(没有timestamp的字段赋值"")

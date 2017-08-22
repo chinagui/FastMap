@@ -113,6 +113,46 @@ public class ServiceInvokeUtil
         }
         return json;
     }
+	 
+	 public static String invokeGBK(String service_url,Map<String,String> parMap) throws Exception
+	    {
+	        PostMethod servicePost = null;
+	        String json = null;
+	        try
+	        {
+	            servicePost = new PostMethod(service_url);
+	            servicePost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=GBK");
+	            for(String parName : parMap.keySet())
+	            {
+	                if(parMap.get(parName) != null)
+	                {
+	                    servicePost.addParameter(parName,parMap.get(parName));
+	                }
+	            }
+	            HttpClient client = new HttpClient();
+	            int status = client.executeMethod(servicePost);
+	            if (status == HttpStatus.SC_OK)
+	            {
+	                json = servicePost.getResponseBodyAsString();
+	            }
+	            else
+	            {  
+	            	log.error("url调用失败：status="+status);
+	                json = "{success : false,msg:'调用服务失败！status="+status+"'}";
+	            }
+	        } catch (IOException e)
+	        {
+	            //log.error("调用服务失败",e);
+	            throw new Exception("调用服务失败，服务为" + service_url,e.getCause());
+	        } finally
+	        {
+	            if(servicePost != null)
+	            {
+	                servicePost.releaseConnection();
+	            }
+	        }
+	        return json;
+	    }
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     public static String upload(String service_url,File file,Map<String,String> parMap) throws Exception

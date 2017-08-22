@@ -1730,12 +1730,17 @@ public class SubtaskService {
 		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter="+par.toString().replace("\\", "");
 		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter={\"subTaskId\":66,\"priority\":2,\"geometryJSON\":{\"type\":\"Polygon\",\"coordinates\":[[[116.40625,39.9375],[116.40625,39.95833],[116.4375,39.95833],[116.46875,39.95833],[116.46875,39.9375],[116.4375,39.9375],[116.40625,39.9375]]]}}";
 		log.info(mapspotterUrl);
-		String result = ServiceInvokeUtil.invoke(mapspotterUrl,parMap);
+		String result = ServiceInvokeUtil.invokeGBK(mapspotterUrl,parMap);
 		//String result = ServiceInvokeUtil.invokeByGet(mapspotterUrl,parMap);
 		JSONObject res=new JSONObject();
 		res=JSONObject.fromObject(result);
 		log.info("众包子任务发布，调用mapspoter请求返回值："+subtask.getSubtaskId()+","+result);
-		String success=res.getString("errmsg");
+		String success="";
+		if(res.containsKey("errmsg")){
+			success=res.getString("errmsg");
+		}else{
+			success=res.getString("success");
+		}
 		if(!"sucess".equals(success)){
 			throw new Exception("众包子任务发布，通知mapsppotor失败："+result);
 		}

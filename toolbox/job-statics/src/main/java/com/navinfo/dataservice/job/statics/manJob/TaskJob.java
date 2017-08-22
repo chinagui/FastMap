@@ -46,6 +46,7 @@ public class TaskJob extends AbstractStatJob {
 	private static final String grid_tips = "grid_tips";
 	private static final String task_day_poi = "task_day_poi";
 	private static final String task_grid_tips = "task_grid_tips";
+	private static final String fcc = "fcc";
 	private static final String grid_month_poi = "grid_month_poi";
 	private static final String subtaskId_month_poi = "subtaskId_month_poi";
 	private static final String grid_day_poi = "grid_day_poi";
@@ -125,6 +126,8 @@ public class TaskJob extends AbstractStatJob {
 			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName,0);
 			//查询mongo中task_grid_tips相应的统计数据
 			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
+			//查询mongo中fcc相应的统计数据
+			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
 			//查询mongo中task_day_poi相应的统计数据
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
 			//查询mongo中grid_tips相应的统计数据
@@ -183,6 +186,8 @@ public class TaskJob extends AbstractStatJob {
 				if(taskDayPlanStatData.containsKey(taskId)){
 					dataMap.putAll(taskDayPlanStatData.get(taskId));
 				}
+				Map<String, Object> fccData = taskFccStatData.get(taskId);
+				
 				dataMap.putAll(gridTipsStat);
 				dataMap.putAll(MonthPoiStat);
 				dataMap.putAll(subMonthPoiStat);
@@ -197,7 +202,7 @@ public class TaskJob extends AbstractStatJob {
 					taskManTimeline = manTimeline.get(taskId);
 				}
 				//处理具体数据
-				Map<String, Object> taskMap = getTaskStat(task,taskManTimeline,dataMap,subActualStartTimeList);
+				Map<String, Object> taskMap = getTaskStat(task,taskManTimeline,dataMap,subActualStartTimeList,fccData);
 				
 				taskStatList.add(taskMap);
 			}
@@ -330,6 +335,44 @@ public class TaskJob extends AbstractStatJob {
 				task.put("collectRoadActualTotal", tipsAddLen);
 				task.put("collectTipsCollectUploadNum", tipsUploadNum);
 				task.put("collectLinkAddTotal", tipsAddLen);
+				stat.put(taskId, task);
+			}
+			return stat;
+		} catch (Exception e) {
+			log.error("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage());
+			throw new Exception("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询mongo中fcc相应的统计数据
+	 * @throws ServiceException 
+	 */
+	public Map<Integer,Map<String,Object>> getTaskFccStatData(String timestamp) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(dbName);
+			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
+			FindIterable<Document> findIterable = mongoDao.find(fcc, filter);
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			//处理数据
+			while(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Object> task = new HashMap<String,Object>();
+				int taskId = (int) jso.get("taskId");
+				double linkLen = 0;
+				String linkLenS = (String) jso.get("linkLen");
+				if(StringUtils.isNotEmpty(linkLenS)){
+					linkLen = Double.parseDouble(linkLenS);
+				}
+				double link17Len = 0;
+				String link17LenS = (String) jso.get("link17Len");
+				if(StringUtils.isNotEmpty(link17LenS)){
+					link17Len = Double.parseDouble(link17LenS);
+				}
+				task.put("linkLen", linkLen);
+				task.put("link17Len", link17Len);
 				stat.put(taskId, task);
 			}
 			return stat;
@@ -853,7 +896,7 @@ public class TaskJob extends AbstractStatJob {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String, Object> getTaskStat(Task task, Map<String, Object> taskManTimeline,Map<String, Object> dataMap, List<String> subActualStartTimeList) throws Exception {
+	private Map<String, Object> getTaskStat(Task task, Map<String, Object> taskManTimeline,Map<String, Object> dataMap, List<String> subActualStartTimeList,Map<String, Object> fccData) throws Exception {
 		int taskId = 0;
 		int type = 0;
 		int status = 0;
@@ -973,9 +1016,17 @@ public class TaskJob extends AbstractStatJob {
 			//POI计划产出量
 			poiPlanOut = task.getPoiPlanOut();
 			
-			//统计里程
+			//统计里程,道路实际作业里程
 			if(dataMap.containsKey("collectRoadActualTotal")){
 				collectRoadActualTotal = (double) dataMap.get("collectRoadActualTotal");
+			}
+			/*
+			 * 道路实际作业里程【MT-CR-7】
+			 * 采集上传现场轨迹匹配的link里程+根据采集任务ID，查找所有新增测线tips，统计里程
+			 */
+			if(programType == 1){
+				if(fccData.containsKey("linkLen")){
+					collectRoadActualTotal=collectRoadActualTotal+(double) fccData.get("linkLen");}
 			}
 			//采集上传个数
 			if(dataMap.containsKey("collectTipsCollectUploadNum")){
@@ -1041,9 +1092,15 @@ public class TaskJob extends AbstractStatJob {
 			if(dataMap.containsKey("link27AllLen")){
 				link27AllLen = (double) dataMap.get("link27AllLen");
 			}
-			//道路实际更新里程(暂不统计)
-			//道路实际更新里程（1-7级）(暂不统计)
 			//道路实际更新里程
+			if(fccData.containsKey("linkLen")){
+				collectLinkUpdateTotal = (double) fccData.get("linkLen");
+			}
+			//道路实际更新里程（1-7级）
+			if(fccData.containsKey("link17Len")){
+				collectLink17UpdateTotal = (double) fccData.get("link17Len");
+			}
+			//新增里程
 			if(dataMap.containsKey("collectLinkAddTotal")){
 				collectLinkAddTotal = (double) dataMap.get("collectLinkAddTotal");
 			}

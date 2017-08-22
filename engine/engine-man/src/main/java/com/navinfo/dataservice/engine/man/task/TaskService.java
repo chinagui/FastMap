@@ -741,7 +741,7 @@ public class TaskService {
 						Object[] msgTmp=new Object[4];
 						msgTmp[0]=task.getGroupLeader();//收信人
 						msgTmp[1]=msgTitle;//消息头
-						msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+						msgTmp[2]="修改task:"+task.getName()+",请关注";//消息内容
 						//关联要素
 						JSONObject msgParam = new JSONObject();
 						msgParam.put("relateObject", "TASK");

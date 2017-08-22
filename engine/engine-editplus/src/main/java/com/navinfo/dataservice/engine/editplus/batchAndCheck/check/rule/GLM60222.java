@@ -72,9 +72,16 @@ public class GLM60222 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T2.PID FROM LC_FACE T1, IX_POI T2 WHERE T2." + pidString + " AND T1.MESH_ID = T2.MESH_ID AND " +
-                "T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE(T1.GEOMETRY, SDO_GEOMETRY('POINT ('|| T2.X_GUIDE || ' ' " + "|| " +
-                "T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE' AND T1.KIND IN (1,2,3,4,5,6)";
+        String sql = "SELECT T1.PID" + 
+                "  FROM IX_POI T1, LC_FACE T2" + 
+                " WHERE T1." + pidString +
+                "   AND T2.U_RECORD <> 2" + 
+                "   AND T2.KIND IN (1, 2, 3, 4, 5, 6)" + 
+                "   AND SDO_RELATE(T2.GEOMETRY," + 
+                "                  SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
+                "                               8307)," + 
+                "                  'MASK=ANYINTERACT') = 'TRUE'" + 
+                "   AND T1.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
         ResultSet rs = null;

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,6 +43,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.geom.MyGeometry;
@@ -1420,6 +1422,13 @@ public class SubtaskService {
 			sb.append(" AND T.BLOCK_ID = B.BLOCK_ID");
 			sb.append(" AND B.CITY_ID = C.CITY_ID");
 			sb.append(" AND S.SUBTASK_ID =" + subtaskId);
+			sb.append(" UNION ALL");
+			sb.append(" SELECT TO_NUMBER(I.ADMIN_CODE)");
+			sb.append("   FROM INFOR I, PROGRAM P, TASK T, SUBTASK S");
+			sb.append("  WHERE I.INFOR_ID = P.INFOR_ID");
+			sb.append("    AND P.PROGRAM_ID = T.PROGRAM_ID");
+			sb.append("    AND T.TASK_ID = S.TASK_ID");
+			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
 
 //			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 //
@@ -1876,6 +1885,8 @@ public class SubtaskService {
 			if (json.containsKey("wkt")) {
 				whereSql +=  " AND SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 			}
+			List<HashMap<String,Object>> result = new ArrayList<>();
+			final List<Integer> referIds = new ArrayList<Integer>();			
 			String selectSql = " WITH TMP AS"
 					+ " (SELECT T.ID,"
 					+ "         MAX(CASE S.STATUS"
@@ -1897,31 +1908,101 @@ public class SubtaskService {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
 					while(rs.next()){				
 						HashMap<String,Object> map = new HashMap<String,Object>();
-						map.put("id", rs.getInt("ID"));
-						int status=rs.getInt("status");
-						if(status==3){map.put("status", 1);}
-						else{map.put("status", status);}
+						int id = rs.getInt("ID");
+						map.put("id", id);
+						int status = rs.getInt("status");
+						if(status == 3){
+							map.put("status", 1);
+						}else{
+							map.put("status", status);
+						}
 						try {
 							STRUCT struct=(STRUCT)rs.getObject("geometry");
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
-						}							
+						}
+						referIds.add(id);
 						list.add(map);		
-					}					
+					}
+					
 					return list;
 				}	    		
-	    	}		;
+	    	};
 	    	log.info("queryListReferByWkt sql :" + selectSql);
-	    	if (json.containsKey("wkt")) {
-	    		return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
-	    	}else{return run.query(conn, selectSql, rsHandler);}
+	    	if (json.containsKey("wkt")){
+	    		result = run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+	    	}else{
+	    		result = run.query(conn, selectSql, rsHandler);
+	    	}
+	    	queryNameByReferId(referIds, result);
+	    	return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 根据id求对应的作业员姓名
+	 * @param List<Integer>
+	 * @param List<HashMap<String,Object>>
+	 * @throws Exception 
+	 * 
+	 * */
+	@SuppressWarnings("unchecked")
+	public void queryNameByReferId(List<Integer> referIds, List<HashMap<String,Object>> list) throws Exception{
+		Connection conn = null;
+		try{
+			if(referIds.size() == 0){
+				return;
+			}
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i< referIds.size(); i++){
+				sb.append(referIds.get(i)+",");
+			}
+			String refers = sb.deleteCharAt(sb.length()-1).toString(); 
+		
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<Map<Integer, Object>> rsHandler = new ResultSetHandler<Map<Integer, Object>>(){
+				public Map<Integer, Object> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Object> result = new HashMap<>();
+					while(rs.next()){
+						List<String> names = new ArrayList<>();
+						int referId = rs.getInt("refer_id");
+						String userName = rs.getString("USER_REAL_NAME");
+						if(result.containsKey(referId)){
+							names = (List<String>) result.get(referId);
+							names.add(userName);
+						}else{
+							names.add(userName);
+						}
+						result.put(referId, names);
+					}
+					return result;
+				}	    		
+	    	};
+	    	Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, refers);
+			
+	    	String sql = "select t.refer_id,U.USER_REAL_NAME from SUBTASK t,USER_INFO U WHERE t.is_quality  = 0 and t.refer_id in "
+	    			+ "(select to_number(column_value) from table(clob_to_table(?))) and U.USER_ID = t.exe_user_id";
+	    	Map<Integer, Object> nameMap = run.query(conn, sql, rsHandler, clob);
+	    	
+    		for(HashMap<String, Object> map : list){
+    			int referId = (int) map.get("id");
+    			List<String> names = (List<String>) nameMap.get(referId);
+    			map.put("exeUsers", (names == null) ? new ArrayList<>() : names);
+    		}
+		}catch(Exception e){
+			log.error("根据子任务圈id求对应的作业员姓名异常" + e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

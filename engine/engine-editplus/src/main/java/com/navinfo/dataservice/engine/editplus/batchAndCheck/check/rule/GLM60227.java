@@ -64,21 +64,17 @@ public class GLM60227 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T2.PID" + 
-                "  FROM IX_POI T2" + 
-                " WHERE T2." + pidString +
-                "   AND T2.U_RECORD <> 2" + 
-                "   AND T2.PID IN" + 
-                "       (SELECT T2.PID" + 
-                "          FROM RW_LINK T1" + 
-                "         WHERE SDO_RELATE(T1.GEOMETRY," + 
-                "                          SDO_GEOMETRY('LINESTRING(' ||" + 
-                "                                       T2.GEOMETRY.SDO_POINT.X || ' ' ||" + 
-                "                                       T2.GEOMETRY.SDO_POINT.Y || ' , ' ||" + 
-                "                                       T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')'," + 
-                "                                       8307)," + 
-                "                          'MASK=011001111+001011111+101011111+100011011') = 'TRUE'" +
-                "           AND T1.U_RECORD <> 2)";
+        String sql = "SELECT T2.link_pid" + 
+                "  FROM IX_POI T1, RW_LINK T2" + 
+                " WHERE T1." + pidString +
+                "   AND T1.U_RECORD <> 2" + 
+                "   AND SDO_RELATE(T2.GEOMETRY," + 
+                "                  SDO_GEOMETRY('LINESTRING(' || T1.GEOMETRY.SDO_POINT.X || ' ' ||" + 
+                "                               T1.GEOMETRY.SDO_POINT.Y || ' , ' ||" + 
+                "                               T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
+                "                               8307)," + 
+                "                  'MASK=011001111+001011111+101011111+100011011') = 'TRUE'" + 
+                "   AND T2.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;

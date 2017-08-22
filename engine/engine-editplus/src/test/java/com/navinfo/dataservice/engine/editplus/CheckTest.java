@@ -64,7 +64,7 @@ public class CheckTest extends ClassPathXmlAppContextInit{
         check.setCheckRuleCommand(command);
 
         Set<Long> pids = new HashSet<Long>();
-        String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 2000";
+        String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 20000";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         ResultSet resultSet = pstmt.executeQuery();
         while (resultSet.next()) {

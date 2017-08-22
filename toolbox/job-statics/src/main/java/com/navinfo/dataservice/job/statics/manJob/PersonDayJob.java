@@ -152,8 +152,7 @@ public class PersonDayJob extends AbstractStatJob {
 					cell.put("freshNum", entry.getValue().get("freshNum"));
 					cell.put("finishNum", entry.getValue().get("finishNum"));
 					cell.put("deleteCount", entry.getValue().get("deleteCount"));
-					cell.put("alterCount", entry.getValue().get("alterCount"));
-					cell.put("increaseCount", entry.getValue().get("increaseCount"));
+					cell.put("increaseAndAlterCount", entry.getValue().get("increaseAndAlterCount"));
 					
 					subtaskStat.add(cell);
 				}
@@ -245,16 +244,14 @@ public class PersonDayJob extends AbstractStatJob {
 	    	int freshNum = 0;
 	    	int finishNum = 0;
 	    	int deleteCount = 0;
-	    	int alterCount = 0;
-	    	int increaseCount = 0;
+	    	int increaseAndAlterCount = 0;
 	    	if(subtaskStat.containsKey(subtaskId)){
 	    		value = subtaskStat.get(subtaskId);
 	    		uploadNum = value.get("uploadNum");
 	    		freshNum = value.get("freshNum");
 	    		finishNum =  value.get("finishNum");
 	    		deleteCount = value.get("deleteCount");
-	    		alterCount = value.get("alterCount");
-	    		increaseCount = value.get("increaseCount");
+	    		increaseAndAlterCount = value.get("increaseAndAlterCount");
 	    	}
 	    	finishNum++;
 	    	if(status == 1 || status == 2 || status ==3){
@@ -263,21 +260,15 @@ public class PersonDayJob extends AbstractStatJob {
 	    	if(fresh == 1){
 	    		freshNum++;
 	    	}
-	    	switch(record){
-	    		case 1 :
-	    			increaseCount++;
-	    			break;
-	    		case 2 :
-	    			deleteCount++;
-	    			break;
-	    		case 3 :
-	    			alterCount++;
+	    	if(record == 2){
+	    		deleteCount++;
+	    	}else{
+	    		increaseAndAlterCount++;
 	    	}
 	    	value.put("uploadNum", uploadNum);
 	    	value.put("freshNum", freshNum);
 	    	value.put("finishNum", finishNum);
-	    	value.put("increaseCount", increaseCount);
-	    	value.put("alterCount", alterCount);
+	    	value.put("increaseAndAlterCount", increaseAndAlterCount);
 	    	value.put("deleteCount", deleteCount);
 	    	subtaskStat.put(subtaskId, value);
 		}

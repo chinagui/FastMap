@@ -72,8 +72,7 @@ public class PersonJob extends AbstractStatJob {
 				int poiFreshNum = 0;
 				int poiFinishNum = 0;
 				int deleteCount = 0;
-	    		int alterCount = 0;
-	    		int increaseCount = 0;
+	    		int increaseAndAlterCount = 0;
 	    		
 				String startDate = "";
 				String endDate = "";
@@ -101,8 +100,7 @@ public class PersonJob extends AbstractStatJob {
 						tipsAddLen += (double)subData.get("tipsAddLen");
 						tipsAllLen += (double)subData.get("tipsAllLen");
 						deleteCount += (int)subData.get("deleteCount");
-						alterCount += (int)subData.get("alterCount");
-						increaseCount += (int)subData.get("increaseCount");
+						increaseAndAlterCount += (int)subData.get("increaseAndAlterCount");
 					}
 				}
 				//汇总数据放入map中
@@ -123,8 +121,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("poiFreshNum", poiFreshNum);
 				dataMap.put("poiFinishNum", poiFinishNum);
 				dataMap.put("deleteCount", deleteCount);
-				dataMap.put("alterCount", alterCount);
-				dataMap.put("increaseCount", increaseCount);
+				dataMap.put("increaseAndAlterCount", increaseAndAlterCount);
 				
 				dataMap.put("startDate", startDate);
 				dataMap.put("endDate", endDate);
@@ -169,16 +166,14 @@ public class PersonJob extends AbstractStatJob {
 			double tipsAllLen = (double) subMap.get("tipsAllLen");
 			
     		int deleteCount = 0;
-    		int alterCount = 0;
-    		int increaseCount = 0;
+    		int increaseAndAlterCount = 0;
 			if(personDay.containsKey(subtaskId)){
 				Map<String, Integer> daySubMap = (Map<String, Integer>) personDay.get(subtaskId);
 				poiUploadNum = daySubMap.get("poiUploadNum");
 				poiFreshNum = daySubMap.get("poiFreshNum");
 				poiFinishNum = daySubMap.get("poiFinishNum");
 				deleteCount = daySubMap.get("deleteCount");
-				alterCount = daySubMap.get("alterCount");
-				increaseCount = daySubMap.get("increaseCount");
+				increaseAndAlterCount = daySubMap.get("increaseAndAlterCount");
 			}
 			subMap.put("poiUploadNum", poiUploadNum);
 			subMap.put("poiFreshNum", poiFreshNum);
@@ -186,8 +181,7 @@ public class PersonJob extends AbstractStatJob {
 			subMap.put("tipsAddLen", tipsAddLen);
 			subMap.put("tipsAllLen", tipsAllLen);
 			subMap.put("deleteCount", deleteCount);
-			subMap.put("alterCount", alterCount);
-			subMap.put("increaseCount", increaseCount);
+			subMap.put("increaseAndAlterCount", increaseAndAlterCount);
 			personTips.put(subtaskId, subMap);
 		}
 		return personTips;
@@ -247,15 +241,13 @@ public class PersonJob extends AbstractStatJob {
 			int poiFreshNum = (int) json.get("freshNum");
 			int poiFinishNum = (int) json.get("finishNum");
     		int deleteCount = (int) json.get("deleteCount");
-    		int alterCount = (int) json.get("alterCount");
-    		int increaseCount = (int) json.get("increaseCount");
+    		int increaseAndAlterCount = (int) json.get("increaseAndAlterCount");
 			
 			map.put("poiUploadNum", poiUploadNum);
 			map.put("poiFreshNum", poiFreshNum);
 			map.put("poiFinishNum", poiFinishNum);
 			map.put("deleteCount", deleteCount);
-			map.put("alterCount", alterCount);
-			map.put("increaseCount", increaseCount);
+			map.put("increaseAndAlterCount", increaseAndAlterCount);
 			subtaskData.put(subtaskId, map);
 		}
 		return subtaskData;

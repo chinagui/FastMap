@@ -1,22 +1,23 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.commons.dbutils.DbUtils;
-
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
 
 /**
  * @Title: GLM60226
@@ -61,93 +62,141 @@ public class GLM60226 extends BasicCheckRule {
 
     @Override
     public void runCheck(BasicObj obj) throws Exception {
-        if (obj.objName().equals(ObjectName.IX_POI)) {
-            IxPoiObj poiObj = (IxPoiObj) obj;
-            IxPoi poi = (IxPoi) poiObj.getMainrow();
-
-            String kindCode = poi.getKindCode();
-            if (StringUtils.isEmpty(kindCode)) {
-                return;
-            }
-
-            Connection conn = null;
-            PreparedStatement pstmt = null;
-            ResultSet resultSet = null;
-
-            String sql = "SELECT T1.LINK_PID, T1.KIND, T1.IS_VIADUCT, T1.DEVELOP_STATE FROM RD_LINK T1, IX_POI T2 WHERE T2.PID = :1 "
-            		+ "AND T2.KIND_CODE NOT IN ('230126','230127','230128','230105') AND T1.LINK_PID <>"
-                    + " T2.LINK_PID AND T1.MESH_ID = T2.MESH_ID AND T1.U_RECORD <> 2 AND T2.U_RECORD <> 2 AND SDO_RELATE("
-                    + "T1.GEOMETRY, SDO_GEOMETRY('LINESTRING(' || T2.GEOMETRY.SDO_POINT.X || ' ' || T2.GEOMETRY.SDO_POINT.Y"
-                    + " || ' , ' || T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')', 8307), 'MASK=ANYINTERACT') = 'TRUE'";
-            log.info(sql);
-            try {
-            	conn =  getCheckRuleCommand().getConn(); 
-                pstmt = conn.prepareStatement(sql);
-                pstmt.setLong(1, poi.getPid());
-                resultSet = pstmt.executeQuery();
-                while (resultSet.next()) {
-                    boolean flag = true;
-
-                    int kind = resultSet.getInt("KIND");
-                    if (ALLOW_LINK_KIND.contains(Integer.valueOf(kind))) {
-                        flag = false;
-                    }
-
-                    int isViaduct = resultSet.getInt("IS_VIADUCT");
-                    if (1 == isViaduct) {
-                        flag = false;
-                    }
-
-                    int developState = resultSet.getInt("DEVELOP_STATE");
-                    if (2 == developState) {
-                        flag = false;
-                    }
-
-                    int linkPid = resultSet.getInt("LINK_PID");
-                    List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(linkPid, false);
-
-
-                    if (8 == kind) {
-                        boolean hasRoads = false;
-                        for (IRow row : forms) {
-                            RdLinkForm form = (RdLinkForm) row;
-                            if (34 == form.getFormOfWay()) {
-                                hasRoads = true;
-                            }
-                        }
-
-                        if (!hasRoads) {
-                            flag = false;
-                        }
-                    }
-
-                    for (IRow row : forms) {
-                        RdLinkForm form  = (RdLinkForm) row;
-                        if (ALLOW_LINK_FORM.contains(Integer.valueOf(form.getFormOfWay()))) {
-                            flag = false;
-                        }
-                    }
-
-                    if (ALLOW_PARENT_KINDCODE.contains(kindCode) && poiObj.getIxPoiChildrens().size() > 0) {
-                        flag = false;
-                    }
-
-                    if (flag) {
-                        setCheckResult(poi.getGeometry(), String.format("[IX_POI,%s]", poi.getPid()), poi.getMeshId());
-                    }
-                }
-            }catch(Exception e){
-    			log.error(e.getMessage(),e);
-    			throw e;
-    		}finally {
-    			DbUtils.closeQuietly(resultSet);
-    			DbUtils.closeQuietly(pstmt);
-    		}
-        }
     }
 
     @Override
     public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
+    }
 
+    @Override
+    public void run() throws Exception {
+        Map<Long, IxPoiObj> map = new HashMap<>();
+
+        for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
+            BasicObj basicObj = entry.getValue();
+
+            if (basicObj.objName().equals(ObjectName.IX_POI) && !basicObj.opType().equals(OperationType.DELETE)) {
+                IxPoiObj poiObj = (IxPoiObj) basicObj;
+                IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+                if (StringUtils.isNotEmpty(poi.getKindCode())) {
+                    map.put(basicObj.objPid(), poiObj);
+                }
+            }
+        }
+
+        if (map.isEmpty()) {
+            return;
+        }
+
+        Connection conn = getCheckRuleCommand().getConn();
+
+        List<Clob> values = new ArrayList<>();
+
+        String pidString;
+        if (map.size() > 1000) {
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, StringUtils.join(map.keySet(), ","));
+            pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
+            values.add(clob);
+        } else {
+            pidString = " PID IN (" + StringUtils.join(map.keySet(), ",") + ")";
+        }
+
+        String sql = "SELECT T1.LINK_PID, T1.KIND, T1.IS_VIADUCT, T1.DEVELOP_STATE, T2.KIND_CODE, T2.PID" +
+                "  FROM RD_LINK T1, IX_POI T2" + 
+                " WHERE T2." + pidString +
+                "   AND T2.KIND_CODE NOT IN ('230126', '230127', '230128', '230105')" + 
+                "   AND T1.LINK_PID <> T2.LINK_PID" + "   AND T1.U_RECORD <> 2" + 
+                "   AND SDO_RELATE(T1.GEOMETRY," + 
+                "                  SDO_GEOMETRY('LINESTRING(' || T2.GEOMETRY.SDO_POINT.X || ' ' ||" + 
+                "                               T2.GEOMETRY.SDO_POINT.Y || ' , ' ||" + 
+                "                               T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')'," + 
+                "                               8307)," + 
+                "                  'mask=011001111+001011111+101011111+100011011') = 'TRUE'" + 
+                "   AND T2.U_RECORD <> 2";
+
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            if (CollectionUtils.isNotEmpty(values)) {
+                for (int i = 0; i < values.size(); i++) {
+                    pstmt.setClob(i + 1, values.get(i));
+                }
+            }
+
+            resultSet = pstmt.executeQuery();
+
+            Set<String> filters = new HashSet<>();
+
+            while (resultSet.next()) {
+                boolean flag = true;
+
+                int kind = resultSet.getInt("KIND");
+                if (ALLOW_LINK_KIND.contains(Integer.valueOf(kind))) {
+                    flag = false;
+                }
+
+                int isViaduct = resultSet.getInt("IS_VIADUCT");
+                if (1 == isViaduct) {
+                    flag = false;
+                }
+
+                int developState = resultSet.getInt("DEVELOP_STATE");
+                if (2 == developState) {
+                    flag = false;
+                }
+
+                int linkPid = resultSet.getInt("LINK_PID");
+                List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(linkPid, false);
+
+
+                if (8 == kind) {
+                    boolean hasRoads = false;
+                    for (IRow row : forms) {
+                        RdLinkForm form = (RdLinkForm) row;
+                        if (34 == form.getFormOfWay()) {
+                            hasRoads = true;
+                        }
+                    }
+
+                    if (!hasRoads) {
+                        flag = false;
+                    }
+                }
+
+                for (IRow row : forms) {
+                    RdLinkForm form  = (RdLinkForm) row;
+                    if (ALLOW_LINK_FORM.contains(Integer.valueOf(form.getFormOfWay()))) {
+                        flag = false;
+                    }
+                }
+
+                String kindCode = resultSet.getString("KIND_CODE");
+
+                Long pid = resultSet.getLong("PID");
+
+                if (ALLOW_PARENT_KINDCODE.contains(kindCode)) {
+                    IxPoiObj poiObj = map.get(pid);
+                    if (CollectionUtils.isNotEmpty(poiObj.getIxPoiChildrens())) {
+                        flag = false;
+                    }
+                }
+
+                if (flag) {
+                    String targets = String.format("[IX_POI,%s]", pid);
+                    if (!filters.contains(targets)) {
+                        filters.add(targets);
+                        setCheckResult("", targets, 0);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
     }
 }

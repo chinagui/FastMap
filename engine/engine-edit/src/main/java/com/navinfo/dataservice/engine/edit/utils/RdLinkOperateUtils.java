@@ -1,12 +1,5 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,9 +15,10 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.*;
 
 /**
  * @author zhaokk LINK 公共方法
@@ -259,9 +253,8 @@ public class RdLinkOperateUtils {
                 String meshIdStr = it.next();
                 Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), GeoTranslator.transform
                         (MeshUtils.mesh2Jts(meshIdStr), 1, 5));
-                geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+                geomInter = GeoTranslator.transform(geomInter, 1, Constant.BASE_PRECISION);
                 createRdLinkWithMeshNoResult(geomInter, maps, sourceLink, result, links);
-
             }
         }
         return links;

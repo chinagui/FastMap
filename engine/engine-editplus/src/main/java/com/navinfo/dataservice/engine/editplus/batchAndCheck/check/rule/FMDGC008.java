@@ -29,7 +29,7 @@ import java.util.*;
  * @Description: 检查对象：非删除POI对象
 检查原则：
 1、如果POI的引导坐标（3米范围内）没有关联道路或测线（测线为非删除对象），则报log
-2、如果POI的引导坐标（3米范围内）有关联道路但无测线（测线为非删除对象），且30米范围内有其他测线，则报log
+2、如果POI的显示坐标（3米范围内）有关联道路但无测线（测线为非删除对象），且30米范围内有其他测线，则报log
  * @Author: Crayeres
  * @Date: 8/15/2017
  * @Version: V1.0
@@ -111,7 +111,7 @@ public class FMDGC008 extends BasicCheckRule {
             }
         }
 
-        if (!noAssociationLink.isEmpty()) {
+        if (!map.isEmpty()) {
             Connection tipsConn = null;
             PreparedStatement tipsPstmt = null;
             ResultSet tipsResultSet = null;
@@ -138,7 +138,7 @@ public class FMDGC008 extends BasicCheckRule {
                 }
 
                 label1:
-                for (Map.Entry<Long, IxPoi> entry : noAssociationLink.entrySet()) {
+                for (Map.Entry<Long, IxPoi> entry : map.entrySet()) {
                     Coordinate coordinate = entry.getValue().getGeometry().getCoordinate();
 
                     boolean has30M = false;
@@ -153,10 +153,18 @@ public class FMDGC008 extends BasicCheckRule {
                         }
                     }
 
+                    // 3-30m内包含测线
                     if (has30M) {
-                        setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "请确认POI是否关联测线");
+                        if (noAssociationLink.containsKey(entry.getKey())) {
+                            setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
+                        } else {
+                            setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "请确认POI是否关联测线");
+                        }
+                        // 30m外包含测线
                     } else {
-                        setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
+                        if (noAssociationLink.containsKey(entry.getKey())) {
+                            setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
+                        }
                     }
                 }
             } catch (Exception e) {

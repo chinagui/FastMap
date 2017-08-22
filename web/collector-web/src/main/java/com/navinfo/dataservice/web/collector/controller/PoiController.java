@@ -27,15 +27,15 @@ import net.sf.json.JSONObject;
 public class PoiController extends BaseController {
 	protected Logger log = Logger.getLogger(this.getClass());
 
-	@RequestMapping(value = "/poi/help")
-	public ModelAndView getDb(HttpServletRequest request){
+	@RequestMapping(value = "/hello")
+	public ModelAndView hello(HttpServletRequest request){
 		PoiServiceNew.getInstance().logTest();
 		log.info("Hello,Poi Controller...");
 		return new ModelAndView("jsonView", "data", "Hello,Datahub.你好，数据中心！");
 	}
 	
 	@RequestMapping(value = "/poi/upload")
-	public ModelAndView createDb(HttpServletRequest request){
+	public ModelAndView poiUpload(HttpServletRequest request){
 		try{
 			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (paraJson == null) {

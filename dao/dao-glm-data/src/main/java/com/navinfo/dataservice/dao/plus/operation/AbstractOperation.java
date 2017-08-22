@@ -96,8 +96,8 @@ public abstract class AbstractOperation {
 						log.info("持久化sql参数:" + sql.getArgs());
 						sql.run(conn);
 					}catch(Exception e){
-						log.error(obj.objType()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
-						throw new ObjPersistException(obj.objType()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+						log.error(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+						throw new ObjPersistException(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
 					}
 				}
 			}

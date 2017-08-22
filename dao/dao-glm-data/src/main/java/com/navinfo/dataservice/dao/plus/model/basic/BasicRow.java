@@ -236,9 +236,9 @@ public abstract class BasicRow{
 			return null;
 		}
 		//以下肯定有变化
-		RunnableSQL sql = new RunnableSQL();
-		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
+		RunnableSQL sql = new RunnableSQL(tbName);
+		StringBuilder sb = new StringBuilder();
 		System.out.println("tbName  :"+tbName);
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
 		System.out.println("tbName2 tab :"+tab.getName()+"tab.Columns"+tab.getColumns());

@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.commons.token;
 
+import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import oracle.spatial.geometry.DataException;
@@ -8,6 +12,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.MD5Utils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
+import com.sun.tools.javac.util.List;
 
 public class AccessTokenFactory {
 	public static AccessToken generate(long userId) {
@@ -92,12 +98,52 @@ public class AccessTokenFactory {
 		return token;
 	}
 	public static void main(String[] args) {
+		java.util.List<Integer> users = Arrays.asList(
+				1105);
+		java.util.List<Integer> jobs = Arrays.asList(
+				2755
+
+);
+		java.util.List<Integer> tasks = Arrays.asList(
+				2689
+);
 		try{
-			AccessToken token = generate(1573,31536000);//一年
-			validate(token);
-			System.out.println(token.getTokenString());
+			int i=0;
+			ArrayList<String> msg=new ArrayList<String>();
+			for(Integer userId:users){
+				
+				AccessToken token = generate(userId,31536000);//一年
+				//System.out.println(token.getTokenString());
+				//tokens.add(token.getTokenString());
+				
+				String parameter="{\"jobId\":"+jobs.get(i)+",\"subtaskId\":"+tasks.get(i)+"}";
+				System.out.println("userId:"+userId+",parameter="+parameter);
+				String response = ServiceInvokeUtil.invokeByGet("http://fastmap.navinfo.com/service/collector/poi/upload/?access_token="+token.getTokenString()+"&parameter="+URLEncoder.encode(parameter,"UTF-8"));
+				msg.add(response);
+				i++;
+			}
+			writeStringTxtFile("E:\\app\\E.TXT",msg);
 		}catch(Exception e){
 			e.printStackTrace();
+		}
+	}
+	public static void writeStringTxtFile(String txtPath,java.util.List<String> newListJson) {
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (String seq : newListJson) {
+				pw.println(seq);
+	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				
+			}
 		}
 	}
 }

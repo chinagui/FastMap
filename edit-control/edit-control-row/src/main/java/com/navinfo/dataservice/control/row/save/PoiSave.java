@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiPartSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
 import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
@@ -61,34 +62,39 @@ public class PoiSave {
 			if (json.containsKey("subtaskId")) {
 				subtaskId = json.getInt("subtaskId");
 			}
-			
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Map<String, Integer> taskInfo = apiService.getTaskBySubtaskId(subtaskId);
-			
-			Map<String, Integer> newTaskInfo= changeTaskInfo(subtaskId,taskInfo);
+
+			ManApi apiService = (ManApi) ApplicationContextUtil
+					.getBean("manApi");
+			Map<String, Integer> taskInfo = apiService
+					.getTaskBySubtaskId(subtaskId);
+
+			Map<String, Integer> newTaskInfo = changeTaskInfo(subtaskId,
+					taskInfo);
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			EditApiImpl editApiImpl = new EditApiImpl(conn);
- 
-			String tmpdata = json.get("data") == null ? "" : json.get("data").toString();
+
+			String tmpdata = json.get("data") == null ? "" : json.get("data")
+					.toString();
 			int poiLength = 0;
-			if(tmpdata.indexOf("{") == 0){
+			if (tmpdata.indexOf("{") == 0) {
 				poiLength = json.getJSONObject("data").size();
-			}else if(tmpdata.indexOf("[") == 0){
+			} else if (tmpdata.indexOf("[") == 0) {
 				poiLength = json.getJSONArray("data").size();
 			}
 
 			if (poiLength == 0 && operType == OperType.UPDATE
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
-				upatePoiStatus(json.getString("objId"), conn, newTaskInfo, false);
+				upatePoiStatus(json.getString("objId"), conn, newTaskInfo,
+						false);
 				editApiImpl.updatePoifreshVerified(json.getInt("objId"));
 				JSONArray ret = new JSONArray();
 				result.put("log", ret);
 				result.put("check", ret);
 				return result;
 			}
-			
+
 			editApiImpl.setToken(userId);
 			editApiImpl.setSubtaskId(subtaskId);
 			StringBuffer sb = new StringBuffer();
@@ -142,29 +148,47 @@ public class PoiSave {
 				}
 				// 其他
 			} else {
-				if(OperType.DELETE == operType){
+				result = editApiImpl.runPoi(json);
+				if (OperType.DELETE == operType) {
 					Integer poiPid = json.getInt("objId");
 					IxPoiParentSelector selector = new IxPoiParentSelector(conn);
 					int parentPid = selector.getParentPid(poiPid);
-					if(parentPid!=0){sb.append(",").append(parentPid);}
-					List<Integer> ChildrenPid = selector.getChildrenPids(poiPid);
-					for(int Child:ChildrenPid){
+					if (parentPid != 0) {
+						sb.append(",").append(parentPid);
+					}
+					List<Integer> ChildrenPid = selector
+							.getChildrenPids(poiPid);
+					for (int Child : ChildrenPid) {
 						sb.append(",").append(Child);
-					}	
+					}
+					JSONArray logs = result.getJSONArray("log");
+					for (int i = 0; i < logs.size(); i++) {
+						JSONObject obj = logs.getJSONObject(i);
+						String type = obj.getString("type");
+						if (type.equals(ObjType.IXSAMEPOI.toString())) {
+							int groupId = obj.getInt("pid");
+							IxSamepoiPartSelector samepoiPartSelector = new IxSamepoiPartSelector(
+									conn);
+
+							int samePid = samepoiPartSelector
+									.loadPoiPidByGroupId(groupId, poiPid);
+							sb.append(",").append(samePid);
+							break;
+						}
+					}
 				}
-				result = editApiImpl.runPoi(json);
+
 				if (OperType.CREATE == operType) {
 					pid = result.getInt("pid");
 					sb.append(",").append(String.valueOf(pid));
-				} else if(OperType.BATCHMOVE == operType){
+				} else if (OperType.BATCHMOVE == operType) {
 					JSONArray logs = result.getJSONArray("log");
-					for(int i = 0; i<logs.size();i++){
+					for (int i = 0; i < logs.size(); i++) {
 						JSONObject single = logs.getJSONObject(i);
 						pid = single.getInt("pid");
 						sb.append(",").append(String.valueOf(pid));
 					}
-				}
-				else {
+				} else {
 					pid = json.getInt("objId");
 					sb.append(",").append(String.valueOf(pid));
 				}
@@ -177,8 +201,8 @@ public class PoiSave {
 			// List<String> batchList = batchProcess.getRowRules();
 			// batchProcess.execute(json, conn, editApiImpl, batchList);
 			// }
-			
-			upatePoiStatus(sb.toString(), conn, newTaskInfo,true);
+
+			upatePoiStatus(sb.toString(), conn, newTaskInfo, true);
 
 			if (operType == OperType.UPDATE) {
 				editApiImpl.updatePoifreshVerified(pid);
@@ -197,22 +221,25 @@ public class PoiSave {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	private Map<String, Integer> changeTaskInfo(int subtaskId,Map<String, Integer> taskInfo) throws Exception {
-		Map<String, Integer> newTaskInfo =new HashMap<String, Integer>();
-		if(taskInfo.get("programType")==1){
-			newTaskInfo.put("MEDIUM_SUBTASK_ID",subtaskId);
-			newTaskInfo.put("MEDIUM_TASK_ID",taskInfo.get("taskId"));
-			newTaskInfo.put("QUICK_SUBTASK_ID",0);
-			newTaskInfo.put("QUICK_TASK_ID",0);
-		}else{
-			newTaskInfo.put("MEDIUM_SUBTASK_ID",0);
-			newTaskInfo.put("MEDIUM_TASK_ID",0);
-			newTaskInfo.put("QUICK_SUBTASK_ID",subtaskId);
-			newTaskInfo.put("QUICK_TASK_ID",taskInfo.get("taskId"));
+
+	private Map<String, Integer> changeTaskInfo(int subtaskId,
+			Map<String, Integer> taskInfo) throws Exception {
+		Map<String, Integer> newTaskInfo = new HashMap<String, Integer>();
+		if (taskInfo.get("programType") == 1) {
+			newTaskInfo.put("MEDIUM_SUBTASK_ID", subtaskId);
+			newTaskInfo.put("MEDIUM_TASK_ID", taskInfo.get("taskId"));
+			newTaskInfo.put("QUICK_SUBTASK_ID", 0);
+			newTaskInfo.put("QUICK_TASK_ID", 0);
+		} else {
+			newTaskInfo.put("MEDIUM_SUBTASK_ID", 0);
+			newTaskInfo.put("MEDIUM_TASK_ID", 0);
+			newTaskInfo.put("QUICK_SUBTASK_ID", subtaskId);
+			newTaskInfo.put("QUICK_TASK_ID", taskInfo.get("taskId"));
 		}
-		
+
 		return newTaskInfo;
 	}
+
 	private void generatePoiPid(StringBuffer sb, Integer samePid,
 			Connection conn) throws Exception {
 		IxSamepoiSelector selector = new IxSamepoiSelector(conn);
@@ -245,41 +272,71 @@ public class PoiSave {
 	 * @date 2017年4月18日 下午4:50:56
 	 * @Description:(第八迭代)任务号：4403
 	 */
-	public void upatePoiStatus(String pids, Connection conn,Map<String, Integer> newTaskInfo, boolean flag)
-			throws Exception {
-		int qst=newTaskInfo.get("QUICK_SUBTASK_ID");
-		int qt=newTaskInfo.get("QUICK_TASK_ID");
-		int mst=newTaskInfo.get("MEDIUM_SUBTASK_ID");
-		int mt=newTaskInfo.get("MEDIUM_TASK_ID");
-		
-		String str = qst+","+qt+","+mst+","+mt;
+	public void upatePoiStatus(String pids, Connection conn,
+			Map<String, Integer> newTaskInfo, boolean flag) throws Exception {
+		int qst = newTaskInfo.get("QUICK_SUBTASK_ID");
+		int qt = newTaskInfo.get("QUICK_TASK_ID");
+		int mst = newTaskInfo.get("MEDIUM_SUBTASK_ID");
+		int mt = newTaskInfo.get("MEDIUM_TASK_ID");
+
+		String str = qst + "," + qt + "," + mst + "," + mt;
 		StringBuilder sb = new StringBuilder();
 		if (flag) {
-			//对应需求任务4403，其中涉及任务号的变更，详细见《一体化日编任务作业.vsd》
+			// 对应需求任务4403，其中涉及任务号的变更，详细见《一体化日编任务作业.vsd》
 			sb.append(" MERGE INTO poi_edit_status T1 ");
 			sb.append(" USING (SELECT ");
-			sb.append(" 	(CASE WHEN "+mst+" = 0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID NOT IN (0,"+mst+") THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS=1 AND T.MEDIUM_SUBTASK_ID =0 THEN T.MEDIUM_SUBTASK_ID ELSE "+mst+" END) MST,");
-			sb.append(" 	(CASE WHEN "+mt+" = 0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_TASK_ID NOT IN (0,"+mt+") THEN T.MEDIUM_TASK_ID WHEN T.STATUS=1 AND T.MEDIUM_TASK_ID =0 THEN T.MEDIUM_TASK_ID ELSE "+mt+" END) MT,");
-			sb.append(" 	(CASE WHEN "+qst+" = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"+qst+") THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=1 AND T.QUICK_SUBTASK_ID =0 THEN T.QUICK_SUBTASK_ID ELSE "+qst+" END) QST,");
-			sb.append(" 	(CASE WHEN "+qt+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0,"+qt+") THEN T.QUICK_TASK_ID WHEN T.STATUS=1 AND T.QUICK_TASK_ID =0 THEN T.QUICK_TASK_ID ELSE "+qt+" END) QT,");
-			sb.append(" 	(CASE WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID= 0 THEN 1");
-			//sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
-			sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID <> 0 AND "+mst+" <> T.MEDIUM_SUBTASK_ID THEN T.STATUS");
-			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID= 0 THEN 1");
-			//sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
-			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID <> 0 AND "+qst+" <> T.QUICK_SUBTASK_ID THEN T.STATUS");
+			sb.append(" 	(CASE WHEN "
+					+ mst
+					+ " = 0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID NOT IN (0,"
+					+ mst
+					+ ") THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS=1 AND T.MEDIUM_SUBTASK_ID =0 THEN T.MEDIUM_SUBTASK_ID ELSE "
+					+ mst + " END) MST,");
+			sb.append(" 	(CASE WHEN "
+					+ mt
+					+ " = 0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_TASK_ID NOT IN (0,"
+					+ mt
+					+ ") THEN T.MEDIUM_TASK_ID WHEN T.STATUS=1 AND T.MEDIUM_TASK_ID =0 THEN T.MEDIUM_TASK_ID ELSE "
+					+ mt + " END) MT,");
+			sb.append(" 	(CASE WHEN "
+					+ qst
+					+ " = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"
+					+ qst
+					+ ") THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=1 AND T.QUICK_SUBTASK_ID =0 THEN T.QUICK_SUBTASK_ID ELSE "
+					+ qst + " END) QST,");
+			sb.append(" 	(CASE WHEN "
+					+ qt
+					+ " = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0,"
+					+ qt
+					+ ") THEN T.QUICK_TASK_ID WHEN T.STATUS=1 AND T.QUICK_TASK_ID =0 THEN T.QUICK_TASK_ID ELSE "
+					+ qt + " END) QT,");
+			sb.append(" 	(CASE WHEN " + mst
+					+ " <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID= 0 THEN 1");
+			// sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
+			sb.append(" 		  WHEN "
+					+ mst
+					+ " <> 0 AND T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID <> 0 AND "
+					+ mst + " <> T.MEDIUM_SUBTASK_ID THEN T.STATUS");
+			sb.append(" 		  WHEN " + qst
+					+ " <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID= 0 THEN 1");
+			// sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
+			sb.append(" 		  WHEN "
+					+ qst
+					+ " <> 0 AND T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID <> 0 AND "
+					+ qst + " <> T.QUICK_SUBTASK_ID THEN T.STATUS");
 			sb.append(" 		  ELSE 2 END) B,");
 			sb.append(" 	0 AS C,");
 			sb.append(" 	IX.PID AS D");
-			sb.append(" 	FROM IX_POI IX, POI_EDIT_STATUS T WHERE IX.PID = T.PID(+) AND IX.PID IN ("+ pids + ")) T2 ");
+			sb.append(" 	FROM IX_POI IX, POI_EDIT_STATUS T WHERE IX.PID = T.PID(+) AND IX.PID IN ("
+					+ pids + ")) T2 ");
 			sb.append(" ON ( T1.pid=T2.d) ");
 			sb.append(" WHEN MATCHED THEN ");
 			sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.QUICK_SUBTASK_ID=T2.QST,T1.QUICK_TASK_ID=T2.QT,T1.MEDIUM_SUBTASK_ID=T2.MST,T1.MEDIUM_TASK_ID=T2.MT ");
 			sb.append(" WHEN NOT MATCHED THEN ");
 			// zl 2016.12.08 新增时为 commit_his_status 字段赋默认值 0
-			sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid,T1.commit_his_status,T1.QUICK_SUBTASK_ID,T1.QUICK_TASK_ID,T1.MEDIUM_SUBTASK_ID,T1.MEDIUM_TASK_ID) VALUES(T2.b,T2.c,T2.d,0,"+ str +")");
+			sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid,T1.commit_his_status,T1.QUICK_SUBTASK_ID,T1.QUICK_TASK_ID,T1.MEDIUM_SUBTASK_ID,T1.MEDIUM_TASK_ID) VALUES(T2.b,T2.c,T2.d,0,"
+					+ str + ")");
 		} else {
-			//鲜度验证保存时调用
+			// 鲜度验证保存时调用
 			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
 					+ pids + ")");
 		}

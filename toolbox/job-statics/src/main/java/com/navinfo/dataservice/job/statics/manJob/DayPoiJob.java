@@ -236,15 +236,6 @@ public class DayPoiJob extends AbstractStatJob {
 	    		poiFreshNum = value.get("poiFreshNum");
 	    		poiUnFreshNum = value.get("poiUnFreshNum");
 	    		poiFinishAndPlanNum = value.get("poiFinishAndPlanNum");
-		    	if(fresh == 1){
-		    		poiFreshNum++;
-		    	}
-		    	if(status == 3 && fresh == 0){
-		    		poiUnFreshNum++;
-		    	}
-		    	if(status == 3 && planPid != 0){
-		    		poiFinishAndPlanNum++;
-		    	}
 	    	}
 	    	if(quickTaskId != 0 && taskStat.containsKey(quickTaskId)){
 	    		value = taskStat.get(quickTaskId);
@@ -259,7 +250,16 @@ public class DayPoiJob extends AbstractStatJob {
 	    	if(status == 1 || status == 2){
 	    		poiUnfinishNum++;
 	    	}
-
+	    	if(taskId != 0 && fresh == 1){
+	    		poiFreshNum++;
+	    	}
+	    	if(taskId != 0 && status == 3 && fresh == 0){
+	    		poiUnFreshNum++;
+	    	}
+	    	if(taskId != 0 && status == 3 && planPid != 0){
+	    		poiFinishAndPlanNum++;
+	    	}
+	    	
 	    	value.put("poiUploadNum", poiUploadNum);
 	    	value.put("poiFinishNum", poiFinishNum);
 	    	value.put("poiUnfinishNum", poiUnfinishNum);
@@ -283,17 +283,14 @@ public class DayPoiJob extends AbstractStatJob {
 		 *     每个子任务（log_action.stk_Id）对应的第一条履历的时间
 		 * 
 		 * */
-		public void statisticsSubTaskDataImp(Map<Integer, Map<String, Object>> subtaskStat, int subtaskId, int status, List<Map<Integer, String>> subTaskDate, String collectTime){
+		public void statisticsSubTaskDataImp(Map<Integer, Map<String, Object>> subtaskStat, int subtaskId, int status, Map<Integer, String> subTaskDate, String collectTime){
 
 	    	Map<String, Object> value = new HashMap<String, Object>();
 	    	int poiUploadNum = 0;
 	    	int poiFinishNum = 0;
 	    	String firstEditDate = "";
-	    	for(Map<Integer, String> map : subTaskDate){
-	    		if(map.containsKey(subtaskId)){
-	    			firstEditDate = map.get(subtaskId);
-	    			break;
-	    		}
+	    	if(subTaskDate.containsKey(subtaskId)){
+	    		firstEditDate = subTaskDate.get(subtaskId);
 	    	}
 	    	
 	    	value.put("poiUploadNum", 0);
@@ -331,19 +328,17 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @throws Exception
 		 * 
 		 * */
-		public List<Map<Integer, String>> queryFirstEditDate(Connection conn) throws Exception{
+		public Map<Integer, String> queryFirstEditDate(Connection conn) throws Exception{
 			try{
 				QueryRunner run = new QueryRunner();
 				String sql = "SELECT A.STK_ID,TO_CHAR(MIN(T.OP_DT),'YYYYMMDDHH24MISS') AS FIRSTTIME FROM LOG_OPERATION T, LOG_ACTION A WHERE A.ACT_ID = T.ACT_ID GROUP BY A.STK_ID";
-				ResultSetHandler<List<Map<Integer, String>>> rsHandler = new ResultSetHandler<List<Map<Integer, String>>>() {
-					public List<Map<Integer, String>> handle(ResultSet rs) throws SQLException {
-						List<Map<Integer, String>> result = new ArrayList<Map<Integer, String>>();
+				ResultSetHandler<Map<Integer, String>> rsHandler = new ResultSetHandler<Map<Integer, String>>() {
+					public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+						Map<Integer, String> map = new HashMap<Integer, String>();
 						while(rs.next()){
-							Map<Integer, String> map = new HashMap<Integer, String>();
 							map.put(rs.getInt("STK_ID"), rs.getString("FIRSTTIME"));
-							result.add(map);
 						}
-						return result;
+						return map;
 					}
 				};
 				return run.query(conn, sql, rsHandler);
@@ -362,7 +357,7 @@ public class DayPoiJob extends AbstractStatJob {
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
-				final List<Map<Integer, String>> subTaskDate = queryFirstEditDate(conn);
+				final Map<Integer, String> subTaskDate = queryFirstEditDate(conn);
 				
 				QueryRunner run = new QueryRunner();
 				

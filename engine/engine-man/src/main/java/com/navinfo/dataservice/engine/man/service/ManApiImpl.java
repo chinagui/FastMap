@@ -232,7 +232,7 @@ public class ManApiImpl implements ManApi {
 		return CpRegionProvinceService.getInstance().listDayDbIdsByAdminId();
 	}
 	@Override
-	public Map getCityById(Integer cityId)throws Exception{
+	public Map<String,Object> getCityById(Integer cityId)throws Exception{
 		JSONObject json = new JSONObject().element("cityId", cityId);
 		return CityService.getInstance().query(json );
 	}

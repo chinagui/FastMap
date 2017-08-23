@@ -86,6 +86,7 @@ public class PersonJob extends AbstractStatJob {
 					link27AllLen =  (double) taskMap.get("link27AllLen");
 					poiAllNum = (int) taskMap.get("poiAllNum");
 				}
+
 				if(personFcc.containsKey(taskId)){
 					List<Map<String, Object>> fccs = (List<Map<String, Object>>) personFcc.get(taskId);
 					for(Map<String, Object> fccMap : fccs){
@@ -97,18 +98,15 @@ public class PersonJob extends AbstractStatJob {
 						}
 					}
 				}
-				for(Entry<Integer, Object> entry : personTips.entrySet()){
-					long subtaskId = entry.getKey();
-					if(subtaskSet.contains(subtaskId)){
-						Map<String, Object> subData = (Map<String, Object>) entry.getValue();
+				for(long subtaskId : subtaskSet){
+					int id = (int) subtaskId;
+					if(personTips.containsKey(id)){
+						Map<String, Object> subData = (Map<String, Object>) personTips.get(id);
 						tipsAddLen += (double)subData.get("tipsAddLen");
 						tipsAllLen += (double)subData.get("tipsAllLen");
 					}
-				}
-				for(Entry<Integer, Object> entry : personDay.entrySet()){
-					long subtaskId = entry.getKey();
-					if(subtaskSet.contains(subtaskId)){
-						Map<String, Object> subData = (Map<String, Object>) entry.getValue();
+					if(personDay.containsKey(id)){
+						Map<String, Object> subData = (Map<String, Object>) personDay.get(id);
 						poiUploadNum += (int)subData.get("poiUploadNum");
 						poiFreshNum += (int)subData.get("poiFreshNum");
 						poiFinishNum += (int)subData.get("poiFinishNum");

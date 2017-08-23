@@ -901,12 +901,11 @@ public class TaskJob extends AbstractStatJob {
 		int roadPercent = 0;
 		int percent = 0;
 		int progress = 1;
+		Map<String, Object> taskMap = new HashMap<String, Object>();
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
-			String systemDate = sdf.format(new Date());
-			
-			Map<String, Object> taskMap = new HashMap<String, Object>();
+			String systemDate = sdf.format(new Date());			
 			//任务id
 			taskId = task.getTaskId();
 			//任务类型
@@ -1240,6 +1239,7 @@ public class TaskJob extends AbstractStatJob {
 			
 			return taskMap;
 		} catch (Exception e) {
+			log.error(taskMap);
 			log.error("处理数据出错:" + e.getMessage(), e);
 			throw new Exception("处理数据出错:" + e.getMessage(), e);
 		}

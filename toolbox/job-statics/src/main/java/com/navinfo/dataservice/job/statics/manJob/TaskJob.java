@@ -443,9 +443,9 @@ public class TaskJob extends AbstractStatJob {
 				int noTaskTotal = (int) jso.get("noTaskTotal");
 				task.put("dayEditTipsAllNum", taskEditAllNum);
 				task.put("dayEditTipsFinishNum", taskEditFinishNum);
-				task.put("dayEditTipsUnfinishNum", taskNoEditAllNum);
+				task.put("dayEditTipsNoWorkNum", taskNoEditAllNum);
 				task.put("tipsCreateByEditNum", taskCreateByEditNum);
-				task.put("notaskdata_tips_num", noTaskTotal);
+				task.put("notaskTipsNum", noTaskTotal);
 				tipsStat.put(gridId, task);
 			}
 			return tipsStat;
@@ -468,7 +468,7 @@ public class TaskJob extends AbstractStatJob {
 			int dayEditTipsFinishNum = 0;
 			int dayEditTipsUnfinishNum = 0;
 			int tipsCreateByEditNum = 0;
-			int notaskdata_tips_num = 0;
+			int notaskTipsNum = 0;
 			for (Integer gridId : gridIds) {
 				if(gridTipsStatData.containsKey(gridId)){
 					Map<String, Integer> map = gridTipsStatData.get(gridId);
@@ -476,7 +476,7 @@ public class TaskJob extends AbstractStatJob {
 					dayEditTipsFinishNum += map.get("dayEditTipsFinishNum");
 					dayEditTipsUnfinishNum += map.get("dayEditTipsUnfinishNum");
 					tipsCreateByEditNum += map.get("tipsCreateByEditNum");
-					notaskdata_tips_num += map.get("notaskdata_tips_num");
+					notaskTipsNum += map.get("notaskTipsNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
@@ -484,7 +484,7 @@ public class TaskJob extends AbstractStatJob {
 			taskStat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			taskStat.put("dayEditTipsUnfinishNum", dayEditTipsUnfinishNum);
 			taskStat.put("tipsCreateByEditNum", tipsCreateByEditNum);
-			taskStat.put("notaskdata_tips_num", notaskdata_tips_num);
+			taskStat.put("notaskTipsNum", notaskTipsNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage());
@@ -643,15 +643,15 @@ public class TaskJob extends AbstractStatJob {
 		try {
 			//处理数据
 			Set<Integer> gridIds = task.getGridIds().keySet();
-			int notaskdata_poi_num = 0;
+			int notaskPoiNum = 0;
 			for (Integer gridId : gridIds) {
 				if(gridDayPoiStatData.containsKey(gridId)){
 					Map<String, Integer> map = gridDayPoiStatData.get(gridId);
-					notaskdata_poi_num += map.get("poiNum");
+					notaskPoiNum += map.get("poiNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
-			taskStat.put("notaskdata_poi_num", notaskdata_poi_num);
+			taskStat.put("notaskPoiNum", notaskPoiNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")grid_day_poi统计数据报错,"+e.getMessage());
@@ -920,7 +920,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiActualFinishNum = 0;
 		
 		int dayEditTipsAllNum = 0;
-		int dayEditTipsUnfinishNum = 0;
+		int dayEditTipsNoWorkNum = 0;
 		int dayEditTipsFinishNum = 0;
 		int tipsCreateByEditNum = 0;
 		
@@ -948,8 +948,8 @@ public class TaskJob extends AbstractStatJob {
 		int crowdPoiTotal = 0;
 		int multisourcePoiTotal = 0;
 		
-		int notaskdata_poi_num = 0;
-		int notaskdata_tips_num = 0;
+		int notaskPoiNum = 0;
+		int notaskTipsNum = 0;
 		int programType=0;
 		
 		int poiCollectPercent = 0;
@@ -1051,8 +1051,8 @@ public class TaskJob extends AbstractStatJob {
 				dayEditTipsAllNum = (int) dataMap.get("dayEditTipsAllNum");
 			}
 			//日编不作业tips总量
-			if(dataMap.containsKey("dayEditTipsUnfinishNum")){
-				dayEditTipsUnfinishNum = (int) dataMap.get("dayEditTipsUnfinishNum");
+			if(dataMap.containsKey("dayEditTipsNoWorkNum")){
+				dayEditTipsNoWorkNum = (int) dataMap.get("dayEditTipsNoWorkNum");
 			}
 			//日编tips完成个数
 			if(dataMap.containsKey("dayEditTipsFinishNum")){
@@ -1138,12 +1138,12 @@ public class TaskJob extends AbstractStatJob {
 				multisourcePoiTotal = (int) dataMap.get("multisourcePoiTotal");
 			}
 			//无任务POI数量
-			if(dataMap.containsKey("notaskdata_poi_num")){
-				notaskdata_poi_num = (int) dataMap.get("notaskdata_poi_num");
+			if(dataMap.containsKey("notaskPoiNum")){
+				notaskPoiNum = (int) dataMap.get("notaskPoiNum");
 			}
 			//无任务Tips数量
-			if(dataMap.containsKey("notaskdata_tips_num")){
-				notaskdata_tips_num = (int) dataMap.get("notaskdata_tips_num");
+			if(dataMap.containsKey("notaskTipsNum")){
+				notaskTipsNum = (int) dataMap.get("notaskTipsNum");
 			}
 			//处理完成度
 			//中线
@@ -1261,7 +1261,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);
 			taskMap.put("poiActualFinishNum", poiActualFinishNum);
 			taskMap.put("dayEditTipsAllNum", dayEditTipsAllNum);
-			taskMap.put("dayEditTipsUnfinishNum", dayEditTipsUnfinishNum);
+			taskMap.put("dayEditTipsNoWorkNum", dayEditTipsNoWorkNum);
 			taskMap.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			taskMap.put("tipsCreateByEditNum", tipsCreateByEditNum);
 			taskMap.put("monthPoiLogTotalNum", monthPoiLogTotalNum);
@@ -1285,8 +1285,8 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiFreshNum", poiFreshNum);
 			taskMap.put("crowdPoiTotal", crowdPoiTotal);
 			taskMap.put("multisourcePoiTotal", multisourcePoiTotal);
-			taskMap.put("notaskdata_poi_num", notaskdata_poi_num);
-			taskMap.put("notaskdata_tips_num", notaskdata_tips_num);
+			taskMap.put("notaskPoiNum", notaskPoiNum);
+			taskMap.put("notaskTipsNum", notaskTipsNum);
 			taskMap.put("programType", programType);
 			taskMap.put("poiCollectPercent", poiCollectPercent);
 			taskMap.put("poiDayPercent", poiDayPercent);

@@ -64,7 +64,6 @@ public class TipsJob extends AbstractStatJob {
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e.getMessage(),e);
 		}finally{
 			DbUtils.closeQuietly(conn);

@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -344,7 +345,6 @@ public class DataConfirmService {
 						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success.replace("\"", ""));
 				run.execute(conn, sql);
 			}
-			conn.commit();
 			int generateFail = resultObj.getString("generateFailedList").equals("[]") ? 0
 					: (resultObj.getString("generateFailedList").replace("[", "").replace("]", "")).split(",").length;
 			int insertFail = resultObj.getString("insertFailedList").equals("[]") ? 0
@@ -358,13 +358,11 @@ public class DataConfirmService {
 			data.put("failCount", generateFail + insertFail + sendFail + updateFail);
 
 		} catch (Exception e) {
-			conn.rollback();
+			DbUtils.rollback(conn);
 			log.error(e.getMessage());
 			throw e;
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return data;
 	}
@@ -451,16 +449,13 @@ public class DataConfirmService {
 				
 				run.execute(conn, sql);
 			}
-			conn.commit();
 		} catch (Exception e) {
-			conn.rollback();
+			DbUtils.rollback(conn);
 			log.error(e.getMessage());
 			throw e;
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
-		}//
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 		return filePath;
 	}
 

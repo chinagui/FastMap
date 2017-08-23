@@ -766,7 +766,7 @@ public class EditIxDealershipResult {
 		}catch(Exception e){
 			log.error("根据省份名称查询regionId异常："+e);
 		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 		return null;
 	}

@@ -64,7 +64,7 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -122,10 +122,9 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		} 
 	}
 	
@@ -208,7 +207,7 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -232,11 +231,10 @@ public class DataEditController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -328,7 +326,7 @@ public class DataEditController extends BaseController {
 		    return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("关闭品牌，原因：" + e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);

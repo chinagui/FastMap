@@ -112,7 +112,7 @@ public class LogDetail {
 	public List<RunnableSQL> toSql(){
 		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
 		//log_detail
-		RunnableSQL sql = new RunnableSQL();
+		RunnableSQL sql = new RunnableSQL("LOG_DETAIL");
 		sql.setSql("INSERT INTO LOG_DETAIL (ROW_ID,OP_ID,OB_NM,OB_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?)");
 		List<Object> columnValues = new ArrayList<Object>();
 		columnValues.add(rowId);

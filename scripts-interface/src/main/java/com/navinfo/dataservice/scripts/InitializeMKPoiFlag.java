@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -24,18 +25,21 @@ public class InitializeMKPoiFlag {
 	private static Logger log = LoggerRepos.getLogger(InitializeMKPoiFlag.class);
 	private static QueryRunner run = new QueryRunner();
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {		
+		
 		try {
-			// String path = args[0];
+			String path = args[0];
 
-			String path = "C:/Users/fhx/Desktop/110000_poi_info.txt";
 			JobScriptsInterface.initContext();
 
 			getHBaseDataInfo(path, "not_find_pid.txt");
+			
 		} catch (Exception e) {
 			log.info("Oops,something is wrong....");
 
 			e.printStackTrace();
+		}finally{
+			log.info("Success,import is over...");
 		}
 	}
 

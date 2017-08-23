@@ -40,7 +40,7 @@ import net.sf.json.JSONObject;
  */
 public class SubtaskJob extends AbstractStatJob {
 	private static final String subtask = "subtask";
-	private static final String grid_tips = "grid_tips";
+	private static final String grid_task_tips = "grid_task_tips";
 //	private static final String subtask_tips = "subtask_tips";
 	private static final String subtask_day_poi = "subtask_day_poi";
 	private static final String grid_month_poi = "grid_month_poi";
@@ -265,7 +265,7 @@ public class SubtaskJob extends AbstractStatJob {
 		try {
 			MongoDao mongoDao = new MongoDao(dbName);
 			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(grid_tips, filter);
+			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Integer>> tipsStat = new HashMap<Integer,Map<String,Integer>>();
 			//处理数据
@@ -273,12 +273,12 @@ public class SubtaskJob extends AbstractStatJob {
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				Map<String,Integer> subtask = new HashMap<String,Integer>();
-				int gridId = (int) jso.get("gridId");
+				int taskId = (int) jso.get("taskId");
 				int subtaskEditAllNum = (int) jso.get("subtaskEditAllNum");
 				int subtaskEditFinishNum = (int) jso.get("subtaskEditFinishNum");
 				subtask.put("subtaskEditAllNum", subtaskEditAllNum);
 				subtask.put("subtaskEditFinishNum", subtaskEditFinishNum);
-				tipsStat.put(gridId, subtask);
+				tipsStat.put(taskId, subtask);
 			}
 			return tipsStat;
 		} catch (Exception e) {
@@ -295,15 +295,14 @@ public class SubtaskJob extends AbstractStatJob {
 	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,Map<String,Integer>> tipsStatData) throws Exception{
 		try {
 			//处理子任务与grid的关系
-			List<Integer> gridIds = subtask.getGridIds();
+//			List<Integer> gridIds = subtask.getGridIds();
+			int taskId = subtask.getTaskId();
 			int tipsAllNum = 0;
 			int tipsFinishNum = 0;
-			for (Integer gridId : gridIds) {
-				if(tipsStatData.containsKey(gridId)){
-					Map<String, Integer> map = tipsStatData.get(gridId);
-					tipsAllNum += map.get("subtaskEditAllNum");
-					tipsFinishNum += map.get("subtaskEditFinishNum");
-				}
+			if(tipsStatData.containsKey(taskId)){
+				Map<String, Integer> map = tipsStatData.get(taskId);
+				tipsAllNum += map.get("subtaskEditAllNum");
+				tipsFinishNum += map.get("subtaskEditFinishNum");
 			}
 			Map<String,Integer> subtaskStat = new HashMap<String,Integer>();
 			subtaskStat.put("tipsAllNum", tipsAllNum);

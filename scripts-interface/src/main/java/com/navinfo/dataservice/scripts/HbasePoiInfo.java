@@ -40,7 +40,7 @@ public class HbasePoiInfo {
 
 	private Map<String, List<PoiInfo>> poiCollectionByMesh = new HashMap<>();
 
-	private Set<Integer> notFindPoi = new HashSet<>();
+	public Set<Integer> notFindPoi = new HashSet<>();
 
 	public Map<String, List<PoiInfo>> getPoiCollectionByMesh() {
 		return this.poiCollectionByMesh;
@@ -122,7 +122,7 @@ public class HbasePoiInfo {
 	 * @param poiObj
 	 * @return
 	 */
-	private PoiInfo resolveResultInfo(JSONObject poiObj) {
+	public PoiInfo resolveResultInfo(JSONObject poiObj) {
 		PoiInfo poiInfo = new PoiInfo();
 
 		poiInfo.setPid(poiObj.getInt("pid"));
@@ -140,7 +140,7 @@ public class HbasePoiInfo {
 	 * @param verifyRecord
 	 * @return
 	 */
-	private int GetVerRecord(String verifyRecord) {
+	public int GetVerRecord(String verifyRecord) {
 		int verRecord = 0;
 		switch (verifyRecord) {
 		case "010000020001":
@@ -171,7 +171,7 @@ public class HbasePoiInfo {
 	 * @param sourceRecord
 	 * @return
 	 */
-	private int GetSrcRecord(String sourceRecord) {
+	public int GetSrcRecord(String sourceRecord) {
 		if (sourceRecord == null || sourceRecord.isEmpty()) {
 			return 0;
 		}
@@ -324,7 +324,7 @@ public class HbasePoiInfo {
 		}
 	}// end
 
-	private List<Integer> getFoundPoi(Connection conn, List<Integer> allPoiPid, String pid, String table)
+	public List<Integer> getFoundPoi(Connection conn, List<Integer> allPoiPid, String pid, String table)
 			throws Exception {
 		List<Integer> findPoiPids = new ArrayList<>();
 
@@ -332,9 +332,17 @@ public class HbasePoiInfo {
 
 		clob.setString(1, StringUtils.join(allPoiPid, ","));
 
-		String existPoi = String.format(
-				"SELECT %s FROM %s WHERE %s IN (select to_number(column_value) from table(clob_to_table(?)))", pid,
-				table, pid);
+		String existPoi = "";
+		
+		if (table.equals("IX_POI")) {
+			existPoi = String.format(
+					"SELECT /*index(ix_poi pk_ix_poi)*/ %s FROM %s WHERE %s IN (select to_number(column_value) from table(clob_to_table(?)))",
+					pid, table, pid);
+		} else {
+			existPoi = String.format(
+					"SELECT %s FROM %s WHERE %s IN (select to_number(column_value) from table(clob_to_table(?)))", pid,
+					table, pid);
+		}
 
 		PreparedStatement pstmt = null;
 
@@ -361,7 +369,7 @@ public class HbasePoiInfo {
 		return findPoiPids;
 	}
 
-	private String createTable = "CREATE TABLE IX_POI_FLAG_METHOD(POI_PID NUMBER(10),VER_RECORD NUMBER(1),SRC_RECORD NUMBER(1),SRC_NAME_CH NUMBER(1),"
+	public String createTable = "CREATE TABLE IX_POI_FLAG_METHOD(POI_PID NUMBER(10),VER_RECORD NUMBER(1),SRC_RECORD NUMBER(1),SRC_NAME_CH NUMBER(1),"
 			+ "SRC_ADDRESS NUMBER(1),SRC_TELEPHONE NUMBER(1),SRC_COORDINATE NUMBER(1),SRC_NAME_ENG NUMBER(1),SRC_NAME_POR NUMBER(1),FIELD_VERIFIED NUMBER(1),"
 			+ "REFRESH_CYCLE NUMBER(3),REFRESH_DATE VARCHAR2(14),U_RECORD NUMBER(3),U_FIELDS VARCHAR(200),U_DATA VARCHAR(14),ROW_ID RAW(16))";
 }

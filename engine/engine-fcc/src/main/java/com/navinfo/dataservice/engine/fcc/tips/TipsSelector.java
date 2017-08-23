@@ -610,6 +610,22 @@ public class TipsSelector {
 					obj.put("kind", deep.getInt("kind"));
 					obj.put("cons", deep.getInt("cons"));
 					m.put("e", obj);
+
+                    //20170823 POI关联非删除测线跟屏幕无关，需要服务返回测线上关联的删除形状tips
+                    String querySql = "SELECT COUNT(1) CT\n" +
+                            "  FROM TIPS_INDEX TI, TIPS_INDEX RTI, TIPS_LINKS L\n" +
+                            " WHERE TI.ID = L.ID\n" +
+                            "   AND RTI.ID = L.LINK_ID\n" +
+                            "   AND RTI.S_SOURCETYPE = '2001'\n" +
+                            "   AND TI.S_SOURCETYPE = '2101'\n" +
+                            "   AND RTI.ID = :1";
+                    int relateCount = (int)operator.querCount(querySql, rowkey);
+                    if(relateCount > 0) {
+                        relateCount = 1;
+                    } else {
+                        relateCount = 0;
+                    }
+                    m.put("d", relateCount);
 				}
 				//删除道路标记，要求返回id  type .输入：吴振
 				if(type==2101){

@@ -84,6 +84,8 @@ public class SearchFactory {
                 return new RdElectroniceyeSearch(conn);
             case RDWARNINGINFO:
                 return new RdWarninginfoSearch(conn);
+            case RDLINKWARNING:
+                return new RdLinkWarningSearch(conn);
             case RDSLOPE:
                 return new RdSlopeSearch(conn);
             case RDGATE:

@@ -79,7 +79,7 @@ public class StaticsService {
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt, int stage, int type, String date)
+	/*public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt, int stage, int type, String date)
 			throws JSONException, Exception {
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
@@ -88,9 +88,9 @@ public class StaticsService {
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 
 		return api.getChangeStatByGrids(grids, type, stage, date);
-	}
+	}*/
 	
-	public List<Map<String,Object>> blockExpectStatQuery(String wkt) throws JSONException, Exception{
+	/*public List<Map<String,Object>> blockExpectStatQuery(String wkt) throws JSONException, Exception{
 		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -126,9 +126,9 @@ public class StaticsService {
 		}
 		
 		return data;
-	}
+	}*/
 	
-	public HashMap blockExpectStatQuery(int blockId, int stage) throws JSONException, Exception{
+	/*public HashMap blockExpectStatQuery(int blockId, int stage) throws JSONException, Exception{
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 	
 		HashMap data = new HashMap();
@@ -178,7 +178,7 @@ public class StaticsService {
 		}
 		
 		return data;
-	}
+	}*/
 	
 //	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
 //		
@@ -187,7 +187,7 @@ public class StaticsService {
 //		return api.getStatBySubtask(subtaskId);
 //
 //	}
-	
+	/*
 	public Map<String,Object> subtaskStatQuery(final int subtaskId) throws JSONException, Exception{
 		
 		Connection conn = null;
@@ -243,108 +243,9 @@ public class StaticsService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 
-	}
+	}*/
 	
-//	public JSONObject queryTaskOverView(int taskType) throws JSONException, Exception{		
-//		Connection conn = null;
-//		try {	
-//			conn = DBConnector.getInstance().getManConnection();
-//			JSONObject taskStaticsJson= new JSONObject();
-//			//0关闭 1开启,<100 2未规划+草稿 3已完成=开启，=100
-//			taskStaticsJson.put(0, 0);
-//			taskStaticsJson.put(1, 0);
-//			taskStaticsJson.put(2, 0);
-//			taskStaticsJson.put(3, 0);
-//			
-//			JSONObject cityStaticsJson= new JSONObject();
-//			cityStaticsJson.put(0, 0);
-//			cityStaticsJson.put(1, 0);
-//			cityStaticsJson.put(2, 0);
-//			
-//			String selectTaskSql="";
-//			String selectCitySql="";
-//			if(taskType==1){	
-//				selectTaskSql = "SELECT 2 STATUS, COUNT(1) taskCount"
-//						+ "  FROM CITY"
-//						+ " WHERE CITY_ID NOT IN (100000, 100001, 100002)"
-//						+ "   AND PLAN_STATUS = 0"
-//						+ " UNION ALL"
-//						+ " SELECT STATUS, COUNT(1)"
-//						+ "  FROM TASK"
-//						+ " WHERE LATEST = 1"
-//						+ "   AND TASK_TYPE = 1"
-//						+ " GROUP BY STATUS";
-//				selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM city where CITY_ID NOT IN (100000, 100001, 100002) GROUP BY plan_status";
-//			}else if (taskType==4) {
-//				selectTaskSql = "SELECT 2 STATUS, COUNT(1) taskCount"
-//						+ "  FROM INFOR"
-//						+ " WHERE PLAN_STATUS = 0"
-//						+ " UNION ALL"
-//						+ " SELECT STATUS, COUNT(1)"
-//						+ "  FROM TASK"
-//						+ " WHERE LATEST = 1"
-//						+ "   AND TASK_TYPE = 4"
-//						+ " GROUP BY STATUS"; 
-//				selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM INFOR GROUP BY plan_status";
-//			}
-//			PreparedStatement stmtTask = null;
-//			PreparedStatement stmtCity = null;
-//			try {
-//				stmtTask = conn.prepareStatement(selectTaskSql);
-//				stmtCity = conn.prepareStatement(selectCitySql);
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			ResultSet rsTask = stmtTask.executeQuery();
-//			ResultSet rsCity = stmtCity.executeQuery();
-//		
-//			while (rsTask.next()) {
-//				int status=rsTask.getInt("status");
-//				int num=(int) taskStaticsJson.get(String.valueOf(status));
-//				taskStaticsJson.put(status,num+rsTask.getInt("taskCount"));
-//			}
-//			while (rsCity.next()) {
-//				cityStaticsJson.put(rsCity.getInt("plan_status"),rsCity.getInt("planCount"));
-//			}
-//			//获取任务开启，完成度100%的任务list
-//			List<Integer> taskList=new ArrayList<Integer>();
-//			StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//			taskList=api.getOpen100TaskIdList();
-//			int openTaskNum=0;
-//			if(taskList!=null && taskList.size()>0){
-//				String selectSql="SELECT COUNT(1) NUM"
-//						+ "  FROM TASK"
-//						+ " WHERE LATEST = 1"
-//						+ "   AND TASK_TYPE = 1"
-//						+ "   AND STATUS = 1"
-//						+ "   AND TASK_ID IN ("+taskList.toString().replace("[", "").replace("]", "").replace("\"", "")+")";
-//				PreparedStatement stmtOpenTask100 = null;
-//				stmtOpenTask100 = conn.prepareStatement(selectSql);
-//				ResultSet rsOpenTask100 = stmtOpenTask100.executeQuery();
-//				while (rsOpenTask100.next()) {
-//					openTaskNum=rsOpenTask100.getInt("NUM");
-//					break;
-//				}
-//				if(openTaskNum>0){
-//					int num50=(int) taskStaticsJson.get(1);
-//					taskStaticsJson.put(1,num50-openTaskNum);
-//					taskStaticsJson.put(3,openTaskNum);}
-//			}
-//			JSONObject staticsJson= new JSONObject();
-//			staticsJson.put("task", taskStaticsJson);
-//			staticsJson.put("city", cityStaticsJson);
-//			return staticsJson;
-//			
-//			} catch (Exception e) {
-//				DbUtils.rollbackAndCloseQuietly(conn);
-//				log.error(e.getMessage(), e);
-//			throw new ServiceException("查询失败:" + e.getMessage(), e);
-//		} finally {
-//				DbUtils.commitAndCloseQuietly(conn);
-//			}
-//	}
-
+/*
 	public JSONObject querymonthTaskOverView()throws Exception{
 		Connection conn = null;
 		PreparedStatement stmtGrid = null;
@@ -659,14 +560,14 @@ public class StaticsService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+*/
 	/**
 	 * @param groupId
 	 * @param stage 
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String,Object> queryBlockOverViewByGroup(int groupId, int stage) throws ServiceException {
+	/*public Map<String,Object> queryBlockOverViewByGroup(int groupId, int stage) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
@@ -742,7 +643,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 	
 	/**
 	 * @param groupId
@@ -879,7 +780,7 @@ public class StaticsService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年10月19日 上午10:57:59 
 	 */
-	public Map<String,Object> queryGroupOverView(int groupId, int stage) throws ServiceException {
+	/*public Map<String,Object> queryGroupOverView(int groupId, int stage) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -901,7 +802,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 	
 	/**
 	 * @param taskId
@@ -909,7 +810,7 @@ public class StaticsService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> queryBlockOverViewByTask(int taskId, int type) throws ServiceException {
+	/*public Map<String, Object> queryBlockOverViewByTask(int taskId, int type) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
@@ -973,7 +874,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 	
 	/**
 	 * @param taskId
@@ -1316,187 +1217,6 @@ public class StaticsService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-//	/**
-//	 * @param taskId
-//	 * @param type 
-//	 * @return
-//	 * @throws ServiceException 
-//	 */
-//	public Map<String, Object> queryBlockOverViewByTask(int taskId, int type) throws ServiceException {
-//		// TODO Auto-generated method stub
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			QueryRunner run = new QueryRunner();
-//			
-//			//1常规，2多源，3代理店，4情报
-//			
-//			String selectSql = "";
-//			//BLOCK未规划 unPlanned
-//			String selectSql_unPlanned = "SELECT 'unPlanned' AS TYPE, COUNT(1) AS NUM FROM TASK T ,BLOCK B WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 0 AND T.TASK_ID = " + taskId;
-//			//情报BLOCK未规划 unPlanned_info
-//			String selectSql_unPlanned_info = "SELECT 'unPlanned' AS TYPE, COUNT(1) AS NUM FROM BLOCK_MAN BM WHERE BM.STATUS = 2 AND BM.TASK_ID = " + taskId;
-//			//Block已规划 planned
-//			String selectSql_planned = "SELECT 'planned' AS TYPE, COUNT(1) AS NUM FROM TASK T ,BLOCK B WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND T.TASK_ID = " + taskId;
-//			//block已关闭 planClosed
-//			String selectSql_planClosed = "SELECT 'planClosed' AS TYPE, COUNT(1) AS NUM FROM TASK T ,BLOCK B WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 2 AND T.TASK_ID = " + taskId;
-//			//block_man草稿 draft
-//			String selectSql_draft = "SELECT 'draft' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 2 AND T.TASK_ID = " + taskId;
-//			//block_man已开启 ongoing
-//			String selectSql_ongoing = "SELECT 'ongoing' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND T.TASK_ID = " + taskId;
-//			//block_man已开启未完成 ongoingUnfinished
-//			String selectSql_ongoingUnfinished = "SELECT 'ongoingUnfinished' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND ((EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STATUS IN (1, 2))) OR (NOT EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID))) AND T.TASK_ID = " + taskId;
-//			//block_man已关闭 closed
-//			String selectSql_closed = "SELECT 'closed' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND T.TASK_ID = " + taskId;
-//
-//			//block_man采集作业中正常 ongoingRegularCollect
-//			String selectSql_ongoingRegularCollect = "SELECT 'ongoingRegularCollect' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID AND (FSOB.COLLECT_PROGRESS = 1 OR FSOB.COLLECT_PROGRESS IS NULL) AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 0 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//			//block_man采集作业中异常 ongoingUnexpectedCollect
-//			String selectSql_ongoingUnexpectedCollect ="SELECT 'ongoingUnexpectedCollect' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID AND FSOB.COLLECT_PROGRESS = 2 AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 0 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//			//block_man采集作业中 ongoingCollect
-//			String selectSql_ongoingCollect = "SELECT 'ongoingCollect' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 0 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//			
-//			//block_man日编作业中正常 ongoingRegularDaily
-//			String selectSql_ongoingRegularDaily = "SELECT 'ongoingRegularDaily' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID AND (FSOB.DAILY_PROGRESS = 1 OR FSOB.DAILY_PROGRESS IS NULL) AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 1 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//			//block_man日编作业中异常 ongoingUnexpectedDaily
-//			String selectSql_ongoingUnexpectedDaily = "SELECT 'ongoingUnexpectedDaily' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID AND FSOB.DAILY_PROGRESS = 2 AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 1 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//			//block_man日编作业中 ongoingDaily
-//			String selectSql_ongoingDaily = "SELECT 'ongoingDaily' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 1 AND EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = 1 AND S.STATUS = 1) AND T.TASK_ID = " + taskId;
-//
-//			//block_man关闭正常完成 finishedRegular
-//			String selectSql_finishedRegular = "SELECT 'finishedRegular' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM,FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND FSOB.DIFF_DATE = 0 AND T.TASK_ID = " + taskId;
-//			//block_man关闭逾期完成 finishedOverdue
-//			String selectSql_finishedOverdue = "SELECT 'finishedOverdue' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM,FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND FSOB.DIFF_DATE < 0 AND T.TASK_ID = " + taskId;
-//			//block_man关闭提前完成 finishedAdvanced
-//			String selectSql_finishedAdvanced = "SELECT 'finishedAdvanced' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM,FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND FSOB.DIFF_DATE > 0 AND T.TASK_ID = " + taskId;
-//			//block_man关闭采集逾期 finishedOverdueCollect
-//			String selectSql_finishedOverdueCollect = "SELECT 'finishedOverdueCollect' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM,FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND FSOB.COLLECT_DIFF_DATE < 0 AND T.TASK_ID = " + taskId;
-//			//block_man关闭日编逾期 finishedOverdueDaily
-//			String selectSql_finishedOverdueDaily = "SELECT 'finishedOverdueDaily' AS TYPE, COUNT(1) AS NUM FROM TASK T, BLOCK B, BLOCK_MAN BM,FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE T.CITY_ID = B.CITY_ID AND T.TASK_ID = 2 AND B.PLAN_STATUS = 1 AND BM.BLOCK_ID = B.BLOCK_ID AND BM.LATEST = 1 AND BM.STATUS = 0 AND FSOB.DAILY_DIFF_DATE < 0 AND T.TASK_ID = " + taskId;
-//			
-//			selectSql = selectSql_planned + " UNION ALL " + selectSql_planClosed
-//					+ " UNION ALL " + selectSql_draft + " UNION ALL " + selectSql_ongoing
-//					+ " UNION ALL " + selectSql_ongoingUnfinished + " UNION ALL " + selectSql_closed
-//					+ " UNION ALL " + selectSql_ongoingRegularCollect + " UNION ALL " + selectSql_ongoingUnexpectedCollect
-//					+ " UNION ALL " + selectSql_ongoingCollect + " UNION ALL " + selectSql_ongoingRegularDaily
-//					+ " UNION ALL " + selectSql_ongoingUnexpectedDaily + " UNION ALL " + selectSql_ongoingDaily
-//					+ " UNION ALL " + selectSql_finishedRegular + " UNION ALL " + selectSql_finishedOverdue
-//					+ " UNION ALL " + selectSql_finishedAdvanced + " UNION ALL " + selectSql_finishedOverdueCollect
-//					+ " UNION ALL " + selectSql_finishedOverdueDaily;
-//			
-//			if(2 == type){
-//				selectSql += " UNION ALL " +  selectSql_unPlanned;
-//			}else{
-//				selectSql += " UNION ALL " +  selectSql_unPlanned_info;
-//			}
-//
-//			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
-//				public Map<String,Object> handle(ResultSet rs) throws SQLException {
-//					Map<String,Object> result = new HashMap<String,Object>();
-//					int	unPlanned = 0;
-//					int planned = 0;
-//					int planClosed = 0;
-//					int draft = 0;
-//					int ongoing = 0;
-//					int ongoingUnfinished = 0;
-//					int closed = 0;
-//					int ongoingRegularCollect = 0;
-//					int ongoingUnexpectedCollect = 0;
-//					int ongoingCollect = 0;
-//					int ongoingRegularDaily = 0;
-//					int ongoingUnexpectedDaily = 0;
-//					int ongoingDaily = 0;
-//					int finishedRegular = 0;
-//					int finishedOverdue = 0;
-//					int finishedAdvanced = 0;
-//					int finishedOverdueCollect = 0;
-//					int finishedOverdueDaily = 0;
-//					while (rs.next()) {
-//						if(rs.getString("TYPE").equals("unPlanned")){unPlanned = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("planned")){planned = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("planClosed")){planClosed = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("draft")){draft = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoing")){ongoing = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingUnfinished")){ongoingUnfinished = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("closed")){closed = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingRegularCollect")){ongoingRegularCollect = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingUnexpectedCollect")){ongoingUnexpectedCollect = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingCollect")){ongoingCollect = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingRegularDaily")){ongoingRegularDaily = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingUnexpectedDaily")){ongoingUnexpectedDaily = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("ongoingDaily")){ongoingDaily = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("finishedRegular")){finishedRegular = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("finishedOverdue")){finishedOverdue = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("finishedAdvanced")){finishedAdvanced = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("finishedOverdueCollect")){finishedOverdueCollect = rs.getInt("NUM");}
-//						else if(rs.getString("TYPE").equals("finishedOverdueDaily")){finishedOverdueDaily = rs.getInt("NUM");}
-//					}
-//					
-//					//规划
-//					Map<String,Integer> planningInfo = new HashMap<String,Integer>();
-//					planningInfo.put("unPlanned", unPlanned);
-//					planningInfo.put("planned", planned);
-//					planningInfo.put("planClosed", planClosed);
-//					result.put("planningInfo", planningInfo);
-//					
-//					result.put("totalPlanning", unPlanned + planClosed + planned);
-//					
-//					//作业
-//					Map<String,Integer> workingInfo = new HashMap<String,Integer>();
-//					workingInfo.put("unreleased", unPlanned + draft);
-//					workingInfo.put("ongoing", ongoingUnfinished);
-//					workingInfo.put("finished", ongoing - ongoingUnfinished);
-//					workingInfo.put("closed", closed);
-//					result.put("workingInfo", workingInfo);
-//					
-//					result.put("totalWorking", unPlanned + draft + ongoing + closed);
-//									
-//					Map<String,Integer> ongoingCollectInfo = new HashMap<String,Integer>();
-//					ongoingCollectInfo.put("ongoingRegularCollect", ongoingRegularCollect);
-//					ongoingCollectInfo.put("ongoingUnexpectedCollect", ongoingUnexpectedCollect);
-//					ongoingCollectInfo.put("ongoingFinishedCollect", ongoingCollect -ongoingRegularCollect - ongoingUnexpectedCollect);
-//					ongoingCollectInfo.put("ongoingCollect", ongoingCollect);
-//					result.put("ongoingCollectInfo", ongoingCollectInfo);
-//					
-//					Map<String,Integer> ongoingDailyInfo = new HashMap<String,Integer>();
-//					ongoingDailyInfo.put("ongoingRegularDaily", ongoingRegularDaily);
-//					ongoingDailyInfo.put("ongoingUnexpectedDaily", ongoingUnexpectedDaily);
-//					ongoingDailyInfo.put("ongoingFinishedDaily", ongoingDaily - ongoingRegularDaily - ongoingUnexpectedDaily);
-//					ongoingDailyInfo.put("ongoingDaily", ongoingDaily);
-//					result.put("ongoingDailyInfo", ongoingDailyInfo);
-//					
-//					Map<String,Integer> unreleasedInfo = new HashMap<String,Integer>();
-//					unreleasedInfo.put("draft", draft);
-//					unreleasedInfo.put("unPlanned", unPlanned);
-//					result.put("unreleasedInfo", unreleasedInfo);
-//					
-//					Map<String,Integer> finishedInfo = new HashMap<String,Integer>();
-//					finishedInfo.put("finishedRegular", finishedRegular);
-//					finishedInfo.put("finishedOverdue", finishedOverdue);
-//					finishedInfo.put("finishedAdvanced", finishedAdvanced);
-//					result.put("finishedInfo", finishedInfo);
-//					
-//					Map<String,Integer> overdueInfo = new HashMap<String,Integer>();
-//					overdueInfo.put("finishedOverdueCollect", finishedOverdueCollect);
-//					overdueInfo.put("finishedOverdueDaily", finishedOverdueDaily);
-//					result.put("overdueInfo", overdueInfo);
-//					
-//					return result;
-//				}
-//	
-//			};
-//
-//			return run.query(conn, selectSql,rsHandler);
-//			
-//		} catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
 
 	/**
 	 * @param blockManId
@@ -1855,7 +1575,7 @@ public class StaticsService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> queryCityOverview() throws ServiceException {
+	/*public Map<String, Object> queryCityOverview() throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -1903,7 +1623,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 	
 	/**
 	 * 查询任务统计表
@@ -1960,7 +1680,7 @@ public class StaticsService {
 		}
 	}
 
-	public List<Map<String, Object>> getPoiStatusMap(String wkt, int stage) throws Exception {
+	/*public List<Map<String, Object>> getPoiStatusMap(String wkt, int stage) throws Exception {
 		//通过geo计算所跨图幅
 		Geometry geo = GeometryUtils.getPolygonByWKT(wkt);
 		Coordinate[] coords = geo.getCoordinates();
@@ -2009,8 +1729,8 @@ public class StaticsService {
 			}
 		}
 		return pois;
-	}
-
+	}*/
+/*
 	private List<Map<String, Object>> getPoiStatusMapByDbId(int dbId, String[] meshs, int stage) throws Exception {
 		Connection conn=null;
 		List<Map<String,Object>> pois=new ArrayList<Map<String,Object>>();
@@ -2071,14 +1791,14 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
 	/**
 	 * @return 
 	 * fm_stat_overview
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> overview() throws ServiceException {
+	/*public Map<String, Object> overview() throws ServiceException {
 		Connection conn = null;
 		Map<String,Object> overView = new HashMap<String,Object>();
 		try{
@@ -2255,14 +1975,14 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
 	/**
 	 * @param groupId
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> groupOverview(int groupId) throws ServiceException {
+	/*public Map<String, Object> groupOverview(int groupId) throws ServiceException {
 		Connection conn = null;
 		Map<String,Object> overView = new HashMap<String,Object>();
 		try{
@@ -2349,7 +2069,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
 	/**
 	 * @param programId
@@ -2357,7 +2077,7 @@ public class StaticsService {
 	 * 根据programId获取统计概览
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> programOverViewDetail(int programId) throws ServiceException {
+	/*public Map<String, Object> programOverViewDetail(int programId) throws ServiceException {
 		Connection conn = null;
 		Map<String,Object> overView = new HashMap<String,Object>();
 		try{
@@ -2537,20 +2257,7 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
-	/**
-	 * @param programId
-	 * @param endDate 
-	 * @param startDate 
-	 * @return
-	 */
-	public Map<String, Object> programOverviewExpect(int programId, String startDate, String endDate) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
+	}*/
 
 	/**
 	 * @param taskId
@@ -2669,17 +2376,6 @@ public class StaticsService {
 	}
 	
 	/**
-	 * @param taskId
-	 * @param startDate
-	 * @param endDate
-	 * @return
-	 */
-	public Map<String, Object> taskOverviewExpect(int taskId, String startDate, String endDate) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
 	 * @param subtaskId
 	 * @return
 	 * @throws ServiceException 
@@ -2794,17 +2490,6 @@ public class StaticsService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
-	/**
-	 * @param subtaskId
-	 * @param startDate
-	 * @param endDate
-	 * @return
-	 */
-	public Map<String, Object> subtaskOverviewExpect(int subtaskId, String startDate, String endDate) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public static int daysOfTwo(Date fDate, Date oDate) {

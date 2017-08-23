@@ -1942,7 +1942,7 @@ public class SubtaskService {
 	    	}else{
 	    		result = run.query(conn, selectSql, rsHandler);
 	    	}
-	    	queryNameByReferId(referIds, result);
+	    	queryNameByReferId(conn, referIds, result);
 	    	return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1961,8 +1961,7 @@ public class SubtaskService {
 	 * 
 	 * */
 	@SuppressWarnings("unchecked")
-	public void queryNameByReferId(List<Integer> referIds, List<HashMap<String,Object>> list) throws Exception{
-		Connection conn = null;
+	public void queryNameByReferId(Connection conn, List<Integer> referIds, List<HashMap<String,Object>> list) throws Exception{
 		try{
 			if(referIds.size() == 0){
 				return;
@@ -1974,7 +1973,6 @@ public class SubtaskService {
 			String refers = sb.deleteCharAt(sb.length()-1).toString(); 
 		
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
 			ResultSetHandler<Map<Integer, Object>> rsHandler = new ResultSetHandler<Map<Integer, Object>>(){
 				public Map<Integer, Object> handle(ResultSet rs) throws SQLException {
 					Map<Integer, Object> result = new HashMap<>();
@@ -2007,10 +2005,7 @@ public class SubtaskService {
     		}
 		}catch(Exception e){
 			log.error("根据子任务圈id求对应的作业员姓名异常" + e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

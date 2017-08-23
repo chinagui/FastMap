@@ -65,6 +65,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 	protected CollectorUploadPoiSpRelation sps = new CollectorUploadPoiSpRelation();
 	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
 	protected Set<Long> freshVerPois = new HashSet<Long>();
+	protected Set<Long> freshVerPoisForPhoto = new HashSet<Long>();
 	
 	//****zl 2017.06.06 ***
 	protected Map<Long,String> allPois = new HashMap<Long,String>();
@@ -103,6 +104,10 @@ public class CollectorPoiImportor extends AbstractOperation {
 	
 	public Set<Long> getFreshVerPois(){
 		return freshVerPois;
+	}
+	
+	public Set<Long> getFreshVerPoisForPhoto(){
+		return freshVerPoisForPhoto;
 	}
 	
 	public Set<Long> getNoChangedPois(){
@@ -287,9 +292,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 					if(StringUtils.isEmpty(entry.getValue().getString("rawFields")) 
 							&& poiObj.isFreshFlag()){//鲜度验证
 						freshVerPois.add(poiObj.objPid());
-//							if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
-//								noChangedPois.add(poiObj.objPid());
-//							}
+							if(poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO)||poiObj.isSubrowChanged(IxPoiObj.IX_POI_AUDIO)||poiObj.getMainrow().isChanged(IxPoi.POI_MEMO)){
+								freshVerPoisForPhoto.add(poiObj.objPid());
+							}
 					}
 					//所有的poi
 					allPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));

@@ -1504,6 +1504,7 @@ catch (Exception e) {
 		return true;
 	}
 	
+	
 	public static final String IX_POI = "IX_POI";
 	public static final String IX_POI_NAME = "IX_POI_NAME";
 	public static final String IX_POI_NAME_FLAG = "IX_POI_NAME_FLAG";

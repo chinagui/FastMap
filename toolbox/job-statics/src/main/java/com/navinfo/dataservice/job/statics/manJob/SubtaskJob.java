@@ -28,7 +28,6 @@ import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**

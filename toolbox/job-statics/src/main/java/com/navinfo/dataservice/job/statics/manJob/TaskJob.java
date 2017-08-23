@@ -331,7 +331,7 @@ public class TaskJob extends AbstractStatJob {
 				}
 				int tipsUploadNum = (int) jso.get("tipsUploadNum");
 				task.put("collectRoadActualTotal", tipsAddLen);
-				task.put("collectTipsCollectUploadNum", tipsUploadNum);
+				task.put("collectTipsUploadNum", tipsUploadNum);
 				task.put("collectLinkAddTotal", tipsAddLen);
 				stat.put(taskId, task);
 			}
@@ -912,7 +912,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiPlanOut = 0;
 		
 		double collectRoadActualTotal = 0;
-		int collectTipsCollectUploadNum = 0;
+		int collectTipsUploadNum = 0;
 		
 		int poiUploadNum = 0;
 		int poiFinishNum = 0;
@@ -1027,8 +1027,8 @@ public class TaskJob extends AbstractStatJob {
 					collectRoadActualTotal=collectRoadActualTotal+(double) fccData.get("linkLen");}
 			}
 			//采集上传个数
-			if(dataMap.containsKey("collectTipsCollectUploadNum")){
-				collectTipsCollectUploadNum = (int) dataMap.get("collectTipsCollectUploadNum");
+			if(dataMap.containsKey("collectTipsUploadNum")){
+				collectTipsUploadNum = (int) dataMap.get("collectTipsUploadNum");
 			}
 			//采集上传POI个数
 			if(dataMap.containsKey("poiUploadNum")){
@@ -1255,7 +1255,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiPlanIn", poiPlanIn);
 			taskMap.put("poiPlanOut", poiPlanOut);
 			taskMap.put("collectRoadActualTotal", collectRoadActualTotal);
-			taskMap.put("collectTipsCollectUploadNum", collectTipsCollectUploadNum);
+			taskMap.put("collectTipsUploadNum", collectTipsUploadNum);
 			taskMap.put("poiUploadNum", poiUploadNum);
 			taskMap.put("poiFinishNum", poiFinishNum);
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);

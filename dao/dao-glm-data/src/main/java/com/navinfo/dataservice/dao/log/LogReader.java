@@ -333,7 +333,7 @@ public class LogReader {
 		String fd_lst=null;
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM='IX_POI'";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

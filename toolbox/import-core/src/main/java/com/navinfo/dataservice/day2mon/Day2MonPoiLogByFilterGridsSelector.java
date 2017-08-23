@@ -176,7 +176,7 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 			sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
 		}
 		if(this.taskType==0){
-			sb.append("   and s.quick_task_id=0  \r\n") ;
+			sb.append("   and s.medium_task_id<>0  \r\n") ;
 		}
 				 
 		List<Object> values = new ArrayList<Object> ();

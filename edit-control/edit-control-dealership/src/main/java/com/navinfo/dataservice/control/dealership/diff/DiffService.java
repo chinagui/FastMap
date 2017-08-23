@@ -81,6 +81,7 @@ public class DiffService {
 		if(dealershipSources!=null){
 			for (IxDealershipSource i : dealershipSources) {
 
+
 				//名称、地址、电话、邮编、分类、品牌
 				String shortName = (null == i.getNameShort()? "":i.getNameShort());
 				String postCode = (null == i.getPostCode()? "":i.getPostCode());
@@ -133,7 +134,7 @@ public class DiffService {
 			/**************** 一致,更新,新增  *******************/
 			for (IxDealershipResult i : dealershipResult) {
 				IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
-
+				
 				boolean flag = false;
 				String shortName = (null == i.getNameShort()? "":i.getNameShort());
 				t = hash(i.getName().trim() + i.getAddress().trim()
@@ -450,7 +451,7 @@ public class DiffService {
 			resultDpAttrDiff.setPoiNameShort(i.getPoiNameShort());
 			resultDpAttrDiff.setPoiAddress(i.getPoiAddress());
 			resultDpAttrDiff.setPoiTel(i.getPoiTel());
-			resultDpAttrDiff.setPostCode(i.getPostCode());
+			resultDpAttrDiff.setPoiPostCode(i.getPoiPostCode());
 			resultDpAttrDiff.setPoiXDisplay(i.getPoiXDisplay());
 			resultDpAttrDiff.setPoiYDisplay(i.getPoiYDisplay());
 			resultDpAttrDiff.setPoiXGuide(i.getPoiXGuide());
@@ -480,7 +481,7 @@ public class DiffService {
 	private static boolean checkAddrSim(IxDealershipResult s, IxDealershipSource d) {
 		try {
 			String s_address = s.getAddress();
-			String d_address = d.getAddress();
+			String d_address = d.getPoiAddress();
 			if(s_address.equals(d_address)){
 				return true;
 			}
@@ -503,7 +504,7 @@ public class DiffService {
 	public boolean checkAddrSim(IxDealershipResult s, IxDealershipResult d) {
 		try {
 			String s_address = s.getAddress();
-			String d_address = d.getAddress();
+			String d_address = d.getPoiAddress();
 			if(s_address.equals(d_address)){
 				return true;
 			}

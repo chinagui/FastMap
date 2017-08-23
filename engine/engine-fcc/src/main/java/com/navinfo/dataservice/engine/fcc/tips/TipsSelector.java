@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParamSQL;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.geo.computation.*;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -155,11 +157,36 @@ public class TipsSelector {
             TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
             List<TipsDao> snapshots = null;
             if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
-                OracleWhereClause where = param.getTaskRender(parameter, conn);
-                snapshots = new TipsIndexOracleOperator(conn).query(
-                        "select  /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */ *  from tips_index where " + where.getSql(), where
-                                .getValues().toArray());
-                logger.info("tileInTask: " + where.getSql());
+				int subtaskId = jsonReq.getInt("subtaskId");
+				ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+				Geometry tileGeo = GeometryConvertor.wkt2jts(wkt);
+				Geometry subTaskGeo = GeometryConvertor.wkt2jts(subtask.getGeometry());
+				String renderWkt = GeometryConvertor.jts2wkt(tileGeo.intersection(subTaskGeo));
+
+				OracleWhereClause where = param.getTaskRender(parameter, renderWkt, conn, subtask);
+
+				String renderTaskSql = "WITH TMP AS\n" +
+						" (SELECT /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */\n" +
+						"   ID\n" +
+						"    FROM TIPS_INDEX\n" +
+						"   WHERE SDO_FILTER(WKT,\n" +
+						"                    SDO_GEOMETRY(:1,\n" +
+						"                                 8307)) = 'TRUE'\n" +
+						"  INTERSECT\n" +
+						"  SELECT /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */\n" +
+						"   ID\n" +
+						"    FROM TIPS_INDEX\n" +
+						"   WHERE SDO_FILTER(WKT,\n" +
+						"                    SDO_GEOMETRY(:2,\n" +
+						"                                 8307)) = 'TRUE')\n" +
+						"SELECT /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKTLOCATION) */\n" +
+						" *\n" +
+						"  FROM TIPS_INDEX T, TMP TMP\n" +
+						" WHERE T.ID = TMP.ID";
+				snapshots = new TipsIndexOracleOperator(conn).query(renderTaskSql + where.getSql(), where
+						.getValues().toArray());
+				logger.info("tileInTask: " + where.getSql());
             }else {
                 String sql = param.getByTileWithGap(parameter);
                 snapshots = operator.query(sql, ConnectionUtil.createClob(conn, wkt));

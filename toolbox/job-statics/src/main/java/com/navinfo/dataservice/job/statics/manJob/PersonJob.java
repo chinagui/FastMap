@@ -1,12 +1,16 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
@@ -20,12 +24,12 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PersonJob extends AbstractStatJob {
 	
 	private static final String db_name = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
+	private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
 	
 	public PersonJob(JobInfo jobInfo) {
 		super(jobInfo);
@@ -44,11 +48,11 @@ public class PersonJob extends AbstractStatJob {
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
+			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
 			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
 			
 			Map<String, Object> result = new HashMap<>();
 			List<Map<String, Object>> keyMaps = new ArrayList<>();
-			Map<String, Object> keyMap = new HashMap<>();
 			for(Map<String, Object> map : personList){
 				int taskId =  Integer.parseInt(map.get("taskId").toString());
 				int userId = Integer.parseInt(map.get("userId").toString());
@@ -60,11 +64,16 @@ public class PersonJob extends AbstractStatJob {
 				String leaderName = map.get("leaderName").toString();
 				double linkAllLen = 0d;
 				double link27AllLen = 0d;
+				double tipsAddLen = 0d;
+				double tipsAllLen = 0d;
+				double fccUpdateLen = 0d;
 				int poiAllNum = 0;
 				int poiUploadNum = 0;
 				int poiFreshNum = 0;
 				int poiFinishNum = 0;
-				//这些值需求待定，先赋值为空
+				int deleteCount = 0;
+	    		int increaseAndAlterCount = 0;
+	    		
 				String startDate = "";
 				String endDate = "";
 				String workTime = "";
@@ -74,17 +83,29 @@ public class PersonJob extends AbstractStatJob {
 					link27AllLen =  (double) taskMap.get("link27AllLen");
 					poiAllNum = (int) taskMap.get("poiAllNum");
 				}
+				if(personFcc.containsKey(taskId)){
+					Map<String, Object> fccMap = (Map<String, Object>) personFcc.get(taskId);
+					startDate = fccMap.get("startDate").toString();
+					endDate = fccMap.get("endDate").toString();
+					workTime = fccMap.get("workTime").toString();
+					fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
+				}
 				for(Entry<Integer, Object> entry : subTasks.entrySet()){
 					long subtaskId = entry.getKey();
 					if(subtaskSet.contains(subtaskId)){
-						Map<String, Integer> subData = (Map<String, Integer>) entry.getValue();
-						poiUploadNum += subData.get("poiUploadNum");
-						poiFreshNum += subData.get("poiFreshNum");
-						poiFinishNum += subData.get("poiFinishNum");
+						Map<String, Object> subData = (Map<String, Object>) entry.getValue();
+						poiUploadNum += (int)subData.get("poiUploadNum");
+						poiFreshNum += (int)subData.get("poiFreshNum");
+						poiFinishNum += (int)subData.get("poiFinishNum");
+						tipsAddLen += (double)subData.get("tipsAddLen");
+						tipsAllLen += (double)subData.get("tipsAllLen");
+						deleteCount += (int)subData.get("deleteCount");
+						increaseAndAlterCount += (int)subData.get("increaseAndAlterCount");
 					}
 				}
 				//汇总数据放入map中
 				Map<String, Object> dataMap = new HashMap<>();
+				dataMap.put("key", key);
 				dataMap.put("taskId", taskId);
 				dataMap.put("userId", userId);
 				dataMap.put("cityName", cityName);
@@ -93,19 +114,22 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("leaderName", leaderName);
 				dataMap.put("linkAllLen", linkAllLen);
 				dataMap.put("link27AllLen", link27AllLen);
+				dataMap.put("tipsAddLen", tipsAddLen);
+				dataMap.put("tipsAllLen", tipsAllLen);
 				dataMap.put("poiAllNum", poiAllNum);
 				dataMap.put("poiUploadNum", poiUploadNum);
 				dataMap.put("poiFreshNum", poiFreshNum);
 				dataMap.put("poiFinishNum", poiFinishNum);
+				dataMap.put("deleteCount", deleteCount);
+				dataMap.put("increaseAndAlterCount", increaseAndAlterCount);
 				
 				dataMap.put("startDate", startDate);
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
-				dataMap.put("poiFinishNum", poiFinishNum);
-				dataMap.put("date", timestamp);
+				dataMap.put("fccUpdateLen", fccUpdateLen);
+				dataMap.put("date", timeForOrical);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
-				keyMap.put(key, dataMap);
-				keyMaps.add(keyMap);
+				keyMaps.add(dataMap);
 			}
 			result.put("person", keyMaps);
 			log.info("result:" + result);
@@ -134,19 +158,30 @@ public class PersonJob extends AbstractStatJob {
 		//personTips和personDay的数据放在一个map中
 		for(Entry<Integer, Object> entry : personTips.entrySet()){
 			int subtaskId = entry.getKey();
-			Map<String, Integer> subMap = (Map<String, Integer>) entry.getValue();
+			Map<String, Object> subMap = (Map<String, Object>) entry.getValue();
 			int poiUploadNum = 0;
 			int poiFreshNum = 0;
 			int poiFinishNum = 0;
+			double tipsAddLen = (double) subMap.get("tipsAddLen");
+			double tipsAllLen = (double) subMap.get("tipsAllLen");
+			
+    		int deleteCount = 0;
+    		int increaseAndAlterCount = 0;
 			if(personDay.containsKey(subtaskId)){
 				Map<String, Integer> daySubMap = (Map<String, Integer>) personDay.get(subtaskId);
 				poiUploadNum = daySubMap.get("poiUploadNum");
 				poiFreshNum = daySubMap.get("poiFreshNum");
 				poiFinishNum = daySubMap.get("poiFinishNum");
+				deleteCount = daySubMap.get("deleteCount");
+				increaseAndAlterCount = daySubMap.get("increaseAndAlterCount");
 			}
 			subMap.put("poiUploadNum", poiUploadNum);
 			subMap.put("poiFreshNum", poiFreshNum);
 			subMap.put("poiFinishNum", poiFinishNum);
+			subMap.put("tipsAddLen", tipsAddLen);
+			subMap.put("tipsAllLen", tipsAllLen);
+			subMap.put("deleteCount", deleteCount);
+			subMap.put("increaseAndAlterCount", increaseAndAlterCount);
 			personTips.put(subtaskId, subMap);
 		}
 		return personTips;
@@ -168,20 +203,16 @@ public class PersonJob extends AbstractStatJob {
 		//统计一个任务下所有子任务的personTips
 		while(personTips.hasNext()){
 			JSONObject tipsJson = JSONObject.fromObject(personTips.next());
-			JSONArray tipsContent = tipsJson.getJSONArray("content");
 			double tipsAddLen = 0;
 			double tipsAllLen = 0;
 			int subtaskId = 0;
-			for(int j = 0; j < tipsContent.size(); j++){
- 				Map<String, Object> map = new HashMap<>();
-				Map<String, Object> tipsData = (Map<String, Object>) tipsContent.get(j);
-				subtaskId = Integer.parseInt(tipsData.get("subtaskId").toString());
-				tipsAddLen = Double.valueOf(tipsData.get("tipsAddLen").toString());
-				tipsAllLen = Double.valueOf(tipsData.get("tipsAllLen").toString());
-				map.put("tipsAddLen", String.valueOf(tipsAddLen));
-				map.put("tipsAllLen", String.valueOf(tipsAllLen));
-			    result.put(subtaskId, map);
-			}
+			Map<String, Object> map = new HashMap<>();
+			subtaskId = Integer.parseInt(tipsJson.get("subtaskId").toString());
+			tipsAddLen = Double.valueOf(tipsJson.get("tipsAddLen").toString());
+			tipsAllLen = Double.valueOf(tipsJson.get("tipsAllLen").toString());
+			map.put("tipsAddLen", tipsAddLen);
+			map.put("tipsAllLen", tipsAllLen);
+		    result.put(subtaskId, map);
 		}
 		return result;
 	}
@@ -203,24 +234,21 @@ public class PersonJob extends AbstractStatJob {
 		//统计所有的子任务的数据
 		while(person.hasNext()){
 			JSONObject json = JSONObject.fromObject(person.next());
-			JSONArray content = json.getJSONArray("content");
-			int poiUploadNum = 0;
-			int poiFreshNum = 0;
-			int poiFinishNum = 0;
-			int subtaskId = 0;
-			for(int i = 0; i < content.size(); i++){
-				Map<String, Integer> data = (Map<String, Integer>) content.get(i);
-				Map<String, Integer> map = new HashMap<>();
-				subtaskId = data.get("subtaskId");
-				poiUploadNum = data.get("uploadNum");
-				poiFreshNum = data.get("freshNum");
-				poiFinishNum = data.get("finishNum");
-				
-				map.put("poiUploadNum", poiUploadNum);
-				map.put("poiFreshNum", poiFreshNum);
-				map.put("poiFinishNum", poiFinishNum);
-				subtaskData.put(subtaskId, map);
-			}
+			
+			Map<String, Integer> map = new HashMap<>();
+			int subtaskId = (int) json.get("subtaskId");
+			int poiUploadNum = (int) json.get("uploadNum");
+			int poiFreshNum = (int) json.get("freshNum");
+			int poiFinishNum = (int) json.get("finishNum");
+    		int deleteCount = (int) json.get("deleteCount");
+    		int increaseAndAlterCount = (int) json.get("increaseAndAlterCount");
+			
+			map.put("poiUploadNum", poiUploadNum);
+			map.put("poiFreshNum", poiFreshNum);
+			map.put("poiFinishNum", poiFinishNum);
+			map.put("deleteCount", deleteCount);
+			map.put("increaseAndAlterCount", increaseAndAlterCount);
+			subtaskData.put(subtaskId, map);
 		}
 		return subtaskData;
 	}
@@ -253,6 +281,51 @@ public class PersonJob extends AbstractStatJob {
 			tasks.put(taskId, taskData);
 		}
 		return tasks;
+	}
+	
+	/**
+	 * 查询queryPersonFcc中的数据放入对应map中
+	 * @param String
+	 * @param MongoDao
+	 * @return  Map<Integer, Object>
+	 * 
+	 * */
+	public Map<Integer, Object> queryPersonFcc(String timestamp, MongoDao md){
+		Map<Integer, Object> result = new HashMap<>();
+		String personFccName = "person_fcc";
+		BasicDBObject query = new BasicDBObject();
+		query.put("timestamp", timestamp);		
+		MongoCursor<Document> personFcc = md.find(personFccName, query).iterator();
+		while(personFcc.hasNext()){
+			JSONObject fccJson = JSONObject.fromObject(personFcc.next());
+			String startCollectTime = "";
+			String endCollectTime = "";
+			int taskId = Integer.parseInt(fccJson.get("taskId").toString());
+			double fccUpdateLen = Double.valueOf(fccJson.get("linkLen").toString());
+			Map<String, Object> map = new HashMap<>();
+			startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
+			endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
+			String workTime = "";
+			try {
+				Date begin = df.parse(startCollectTime.replace("/", "-"));
+				Date end = df.parse(endCollectTime.replace("/", "-")); 
+				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
+				int day = (int) (between/(24*3600));   
+				int hour = (int) (between%(24*3600)/3600);   
+				int minute = (int) (between%3600/60);   
+				int second = (int) (between%60);
+				workTime = day+"天"+hour+"小时"+minute+"分"+second+"秒";
+			}catch(ParseException e){
+				e.printStackTrace();
+			}
+			
+			map.put("startDate", startCollectTime);
+			map.put("endDate", endCollectTime);
+			map.put("workTime", workTime);
+			map.put("fccUpdateLen", fccUpdateLen);
+		    result.put(taskId, map);
+		}
+		return result;
 	}
 	
 }

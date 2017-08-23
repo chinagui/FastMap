@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -66,17 +64,17 @@ public class GLM60227 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T2.PID" + 
-                "  FROM RW_LINK T1, IX_POI T2" + 
-                " WHERE T2." + pidString +
-                "   AND T1.MESH_ID = T2.MESH_ID" + 
+        String sql = "SELECT T1.PID" +
+                "  FROM IX_POI T1, RW_LINK T2" + 
+                " WHERE T1." + pidString +
                 "   AND T1.U_RECORD <> 2" + 
-                "   AND T2.U_RECORD <> 2" + 
-                "   AND SDO_RELATE(T1.GEOMETRY," + 
-                "                  SDO_GEOMETRY('LINESTRING(' || T2.GEOMETRY.SDO_POINT.X || ' ' ||" + 
-                "                               T2.GEOMETRY.SDO_POINT.Y || ' , ' ||" + 
-                "                               T2.X_GUIDE || ' ' || T2.Y_GUIDE || ')'," + " 8307)," +
-                "                  'MASK=ANYINTERACT') = 'TRUE'";
+                "   AND SDO_RELATE(T2.GEOMETRY," + 
+                "                  SDO_GEOMETRY('LINESTRING(' || T1.GEOMETRY.SDO_POINT.X || ' ' ||" + 
+                "                               T1.GEOMETRY.SDO_POINT.Y || ' , ' ||" + 
+                "                               T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
+                "                               8307)," + 
+                "                  'MASK=011001111+001011111+101011111+100011011') = 'TRUE'" + 
+                "   AND T2.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;

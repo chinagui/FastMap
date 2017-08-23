@@ -16,15 +16,16 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -43,7 +44,7 @@ public class ExportStatFromMongo {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	public static void execute(String path,String collectionName,String timestamp) throws Exception {
+	public static void execute(String path,String collectionName,String startTime,String endTime) throws Exception {
 		try {
 			String fileName = "统计表_"+collectionName ;
 			
@@ -54,7 +55,7 @@ public class ExportStatFromMongo {
 			fileName = new String(fileName.getBytes("UTF-8"),encoding);
 			System.out.println("fileName: "+fileName);
 			//查询mongo库
-			List<Map<String, Object>> statData = getStatData(timestamp,collectionName);
+			List<Map<String, Object>> statData = getStatData(startTime,endTime,collectionName);
 			//导出统计数据到Excel
 			exportExcelPoi(path,fileName,statData);
 		} catch (Exception e) {
@@ -120,37 +121,73 @@ public class ExportStatFromMongo {
 
 	/**
 	 * 查询mongo中统计数据
+	 * startTime,endTime:只用于person表,其余表导出最新的数据(循环到查到数据)
+	 * startTime:为0,则所有的
+	 * endTime:为0,则当前系统时间
+	 * @param collectionName2 
 	 * @throws ServiceException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<Map<String,Object>> getStatData(String timestamp,String collectionName) throws Exception{
+	public static List<Map<String,Object>> getStatData(String startTime,String endTime,String collectionName) throws Exception{
 		String dbName = "fm_stat";
 		try {
+			//处理时间
+			String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
 			//获取上一次的统计时间
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject();
-			if(StringUtils.isNotEmpty(timestamp)){
-				filter.put("timestamp", timestamp);
-			}
-			FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
-			MongoCursor<Document> iterator = findIterable.iterator();
 			List<Map<String,Object>> stat = new ArrayList<Map<String,Object>>();
-			//处理数据
-			while(iterator.hasNext()){
-				//获取统计数据
-				JSONObject json = JSONObject.fromObject(iterator.next());
-				Map<String,Object> mapData = json;
-				mapData.remove("_id");
-				stat.add(mapData);
-//				if(json.containsKey("content")){
-//					JSONArray content = json.getJSONArray("content");
-//					for(int i=0;i<content.size();i++){
-//						JSONObject jso = content.getJSONObject(i);
-//						Map<String,Object> map = jso;
-//						map.put("timestamp", mapData.get("timestamp"));
-//						stat.add(map);
-//					}
-//				}
+			//查询最新的数据
+			if("0".equals(startTime) && "0".equals(endTime)){
+				String lastTime = timestamp;
+				while(true){
+					BasicDBObject filter = new BasicDBObject();
+					filter.append("timestamp", lastTime);
+					
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
+					MongoCursor<Document> iterator = findIterable.iterator();
+					boolean flag = false;
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject json = JSONObject.fromObject(iterator.next());
+						Map<String,Object> mapData = json;
+						mapData.remove("_id");
+						stat.add(mapData);
+						flag = true;
+					}
+					//是否查到数据
+					if(flag){
+						break;
+					}else{
+						lastTime = DateUtils.addSeconds(lastTime,-60*60);
+					}
+				}
+			}
+			//查询时间段内的数据
+			else{
+				String lastTimestamp = "0";
+				if(StringUtils.isNotEmpty(startTime)){
+					lastTimestamp = startTime;
+				}
+				if(StringUtils.isNotEmpty(endTime) && !"0".equals(endTime)){
+					timestamp = endTime;
+				}
+				BasicDBList valueAnd = new BasicDBList();
+				valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$gte", lastTimestamp)));
+				valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$lte", timestamp)));
+				BasicDBObject filter = new BasicDBObject();
+				filter.put("$and", valueAnd);
+				
+				FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
+				MongoCursor<Document> iterator = findIterable.iterator();
+				//处理数据
+				while(iterator.hasNext()){
+					//获取统计数据
+					JSONObject json = JSONObject.fromObject(iterator.next());
+					Map<String,Object> mapData = json;
+					mapData.remove("_id");
+					stat.add(mapData);
+				}
 			}
 			return stat;
 		} catch (Exception e) {
@@ -162,12 +199,12 @@ public class ExportStatFromMongo {
 		initContext();
 		System.out.println("args.length:" + args.length);
 		if (args == null || args.length != 3) {
-			System.out.println("ERROR:need args:路径,表名,时间");
+			System.out.println("ERROR:need args:路径,表名,开始时间,结束时间");
 			return;
 		}
-		//0-路径,1-表名,2-时间(没有timestamp的字段赋值"")
-		execute(args[0],args[1],args[2]);
-//		execute("D:/temp","task","20170820160000");
+		//0-路径,1-表名,2-开始时间(没有startTime的字段赋值"0"),3-结束时间(没有endTime的字段赋值"0")
+//		execute(args[0],args[1],args[2],args[3]);
+		execute("D:/temp","person","0","0");
 		System.out.println("Over.");
 		System.exit(0);
 	}

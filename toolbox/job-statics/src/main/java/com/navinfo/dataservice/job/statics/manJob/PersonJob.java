@@ -49,7 +49,10 @@ public class PersonJob extends AbstractStatJob {
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
 			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
-			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
+//			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
+			//从mongo库差personTips和personDay和task的数据
+			Map<Integer, Object> personTips = queryPersonTips(timestamp, md);
+			Map<Integer, Object> personDay = queryPersonDay(timestamp, md);
 			
 			Map<String, Object> result = new HashMap<>();
 			List<Map<String, Object>> keyMaps = new ArrayList<>();
@@ -84,21 +87,31 @@ public class PersonJob extends AbstractStatJob {
 					poiAllNum = (int) taskMap.get("poiAllNum");
 				}
 				if(personFcc.containsKey(taskId)){
-					Map<String, Object> fccMap = (Map<String, Object>) personFcc.get(taskId);
-					startDate = fccMap.get("startDate").toString();
-					endDate = fccMap.get("endDate").toString();
-					workTime = fccMap.get("workTime").toString();
-					fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
+					List<Map<String, Object>> fccs = (List<Map<String, Object>>) personFcc.get(taskId);
+					for(Map<String, Object> fccMap : fccs){
+						if(userId == (int) fccMap.get("userId")){
+							startDate = fccMap.get("startDate").toString();
+							endDate = fccMap.get("endDate").toString();
+							workTime = fccMap.get("workTime").toString();
+							fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
+						}
+					}
 				}
-				for(Entry<Integer, Object> entry : subTasks.entrySet()){
+				for(Entry<Integer, Object> entry : personTips.entrySet()){
+					long subtaskId = entry.getKey();
+					if(subtaskSet.contains(subtaskId)){
+						Map<String, Object> subData = (Map<String, Object>) entry.getValue();
+						tipsAddLen += (double)subData.get("tipsAddLen");
+						tipsAllLen += (double)subData.get("tipsAllLen");
+					}
+				}
+				for(Entry<Integer, Object> entry : personDay.entrySet()){
 					long subtaskId = entry.getKey();
 					if(subtaskSet.contains(subtaskId)){
 						Map<String, Object> subData = (Map<String, Object>) entry.getValue();
 						poiUploadNum += (int)subData.get("poiUploadNum");
 						poiFreshNum += (int)subData.get("poiFreshNum");
 						poiFinishNum += (int)subData.get("poiFinishNum");
-						tipsAddLen += (double)subData.get("tipsAddLen");
-						tipsAllLen += (double)subData.get("tipsAllLen");
 						deleteCount += (int)subData.get("deleteCount");
 						increaseAndAlterCount += (int)subData.get("increaseAndAlterCount");
 					}
@@ -142,50 +155,50 @@ public class PersonJob extends AbstractStatJob {
 	}
 	
 
-	/**
-	 * 从mango库中查询统计数据
-	 * @param String
-	 * @param Map<String, Object>
-	 * 
-	 * */
-	@SuppressWarnings("unchecked")
-	public Map<Integer, Object> queryDataFromMongo(MongoDao md, String timestamp){
-		
-		//从mongo库差personTips和personDay和task的数据
-		Map<Integer, Object> personTips = queryPersonTips(timestamp, md);
-		Map<Integer, Object> personDay = queryPersonDay(timestamp, md);
-		
-		//personTips和personDay的数据放在一个map中
-		for(Entry<Integer, Object> entry : personTips.entrySet()){
-			int subtaskId = entry.getKey();
-			Map<String, Object> subMap = (Map<String, Object>) entry.getValue();
-			int poiUploadNum = 0;
-			int poiFreshNum = 0;
-			int poiFinishNum = 0;
-			double tipsAddLen = (double) subMap.get("tipsAddLen");
-			double tipsAllLen = (double) subMap.get("tipsAllLen");
-			
-    		int deleteCount = 0;
-    		int increaseAndAlterCount = 0;
-			if(personDay.containsKey(subtaskId)){
-				Map<String, Integer> daySubMap = (Map<String, Integer>) personDay.get(subtaskId);
-				poiUploadNum = daySubMap.get("poiUploadNum");
-				poiFreshNum = daySubMap.get("poiFreshNum");
-				poiFinishNum = daySubMap.get("poiFinishNum");
-				deleteCount = daySubMap.get("deleteCount");
-				increaseAndAlterCount = daySubMap.get("increaseAndAlterCount");
-			}
-			subMap.put("poiUploadNum", poiUploadNum);
-			subMap.put("poiFreshNum", poiFreshNum);
-			subMap.put("poiFinishNum", poiFinishNum);
-			subMap.put("tipsAddLen", tipsAddLen);
-			subMap.put("tipsAllLen", tipsAllLen);
-			subMap.put("deleteCount", deleteCount);
-			subMap.put("increaseAndAlterCount", increaseAndAlterCount);
-			personTips.put(subtaskId, subMap);
-		}
-		return personTips;
-	}
+//	/**
+//	 * 从mango库中查询统计数据
+//	 * @param String
+//	 * @param Map<String, Object>
+//	 * 
+//	 * */
+//	@SuppressWarnings("unchecked")
+//	public Map<Integer, Object> queryDataFromMongo(MongoDao md, String timestamp){
+//		
+//		//从mongo库差personTips和personDay和task的数据
+//		Map<Integer, Object> personTips = queryPersonTips(timestamp, md);
+//		Map<Integer, Object> personDay = queryPersonDay(timestamp, md);
+//		
+//		//personTips和personDay的数据放在一个map中
+//		for(Entry<Integer, Object> entry : personTips.entrySet()){
+//			int subtaskId = entry.getKey();
+//			Map<String, Object> subMap = (Map<String, Object>) entry.getValue();
+//			int poiUploadNum = 0;
+//			int poiFreshNum = 0;
+//			int poiFinishNum = 0;
+//			double tipsAddLen = (double) subMap.get("tipsAddLen");
+//			double tipsAllLen = (double) subMap.get("tipsAllLen");
+//			
+//    		int deleteCount = 0;
+//    		int increaseAndAlterCount = 0;
+//			if(personDay.containsKey(subtaskId)){
+//				Map<String, Integer> daySubMap = (Map<String, Integer>) personDay.get(subtaskId);
+//				poiUploadNum = daySubMap.get("poiUploadNum");
+//				poiFreshNum = daySubMap.get("poiFreshNum");
+//				poiFinishNum = daySubMap.get("poiFinishNum");
+//				deleteCount = daySubMap.get("deleteCount");
+//				increaseAndAlterCount = daySubMap.get("increaseAndAlterCount");
+//			}
+//			subMap.put("poiUploadNum", poiUploadNum);
+//			subMap.put("poiFreshNum", poiFreshNum);
+//			subMap.put("poiFinishNum", poiFinishNum);
+//			subMap.put("tipsAddLen", tipsAddLen);
+//			subMap.put("tipsAllLen", tipsAllLen);
+//			subMap.put("deleteCount", deleteCount);
+//			subMap.put("increaseAndAlterCount", increaseAndAlterCount);
+//			personTips.put(subtaskId, subMap);
+//		}
+//		return personTips;
+//	}
 	
 	/**
 	 * 查询personTips中的数据放入对应map中
@@ -298,17 +311,18 @@ public class PersonJob extends AbstractStatJob {
 		MongoCursor<Document> personFcc = md.find(personFccName, query).iterator();
 		while(personFcc.hasNext()){
 			JSONObject fccJson = JSONObject.fromObject(personFcc.next());
-			String startCollectTime = "";
-			String endCollectTime = "";
+			Map<String, Object> map = new HashMap<>();
+			List<Map<String, Object>> tasks = new ArrayList<>();
+			int userId = Integer.parseInt(fccJson.get("userId").toString());
 			int taskId = Integer.parseInt(fccJson.get("taskId").toString());
 			double fccUpdateLen = Double.valueOf(fccJson.get("linkLen").toString());
-			Map<String, Object> map = new HashMap<>();
-			startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
-			endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
+			
+			String startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
+			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
 			try {
 				Date begin = df.parse(startCollectTime.replace("/", "-"));
-				Date end = df.parse(endCollectTime.replace("/", "-")); 
+				Date end = df.parse(endCollectTime.replace("/", "-"));
 				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
 				int day = (int) (between/(24*3600));   
 				int hour = (int) (between%(24*3600)/3600);   
@@ -323,7 +337,12 @@ public class PersonJob extends AbstractStatJob {
 			map.put("endDate", endCollectTime);
 			map.put("workTime", workTime);
 			map.put("fccUpdateLen", fccUpdateLen);
-		    result.put(taskId, map);
+			map.put("userId", userId);
+			if(result.containsKey(taskId)){
+				tasks = (List<Map<String, Object>>) result.get(taskId);
+			}
+			tasks.add(map);
+		    result.put(taskId, tasks);
 		}
 		return result;
 	}

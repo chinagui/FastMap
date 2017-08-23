@@ -51,6 +51,7 @@ public class PersonDayJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
+		PersonDayJobRequest statReq = (PersonDayJobRequest)request;
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			List<Region> regionList = manApi.queryRegionList();
@@ -61,11 +62,12 @@ public class PersonDayJob extends AbstractStatJob {
 				}
 			}
 			
+			String timestamp = statReq.getTimestamp().substring(0, 8);
 			Map<Integer, Map<String,List<Map<String, Object>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String, Object>>>>();
 			long time = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			if(dbSize == 1){
-				new PersonDayThread(null, dbIds.iterator().next(), stats).run();
+				new PersonDayThread(null, dbIds.iterator().next(), stats, timestamp).run();
 			}else{
 				if(dbSize > 10){
 					initThreadPool(10);
@@ -76,7 +78,7 @@ public class PersonDayJob extends AbstractStatJob {
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
 				for(int dbId:dbIds){
-					threadPoolExecutor.execute(new PersonDayThread(latch,dbId,stats));
+					threadPoolExecutor.execute(new PersonDayThread(latch, dbId, stats, timestamp));
 				}
 				latch.await();
 				if (threadPoolExecutor.getExceptions().size() > 0) {
@@ -129,18 +131,20 @@ public class PersonDayJob extends AbstractStatJob {
 	class PersonDayThread implements Runnable{
 		CountDownLatch latch = null;
 		int dbId = 0;
+		String timestamp = "";
 		Map<Integer, Map<String,List<Map<String, Object>>>> stats;
-		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat){
+		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat, String timestamp){
 			this.latch = latch;
 			this.dbId = dbId;
 			this.stats = stat;
+			this.timestamp = timestamp;
 		}
 		
 		@Override
 		public void run() {
 			try{
 				//查询并统计所有子任务数据
-				Map<String,Object> result = convertAllTaskData();
+				Map<String,Object> result = convertAllTaskData(timestamp);
 				
 				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 
@@ -176,7 +180,7 @@ public class PersonDayJob extends AbstractStatJob {
 		 * @throws Exception 
 		 * 
 		 * */
-		public Map<String,Object> convertAllTaskData() throws Exception{
+		public Map<String,Object> convertAllTaskData(String timestamp) throws Exception{
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -192,7 +196,7 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("     substr(p.collect_time,0,8) collect_time ");
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
-				sb.append("	  trunc(TO_CHAR(sysdate, 'YYYYMMDD'))       ");
+				sb.append("	 '"+timestamp+"'"                            );
 				sb.append("   and p.pid = s.pid                         ");
 				
 				String selectSql = sb.toString();

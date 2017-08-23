@@ -528,4 +528,12 @@ public class ManApiImpl implements ManApi {
     public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
         TimelineService.saveTimeline(objID, objName, objType, operateDate);
     }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	return SubtaskService.getInstance().allCollectSubtaskId();
+    }
 }

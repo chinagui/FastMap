@@ -46,7 +46,6 @@ public class TaskJob extends AbstractStatJob {
 	private static final String task_grid_tips = "task_grid_tips";
 	private static final String fcc = "fcc";
 	private static final String grid_month_poi = "grid_month_poi";
-	private static final String subtaskId_month_poi = "subtaskId_month_poi";
 	private static final String grid_day_poi = "grid_day_poi";
 	private static final String task_day_plan = "task_day_plan";
 	private static final String subtask_tips = "subtask_tips";
@@ -132,8 +131,6 @@ public class TaskJob extends AbstractStatJob {
 			Map<Integer, Map<String, Integer>> gridTipsStatData = getGridTipsStatData(timestamp);
 			//查询mongo中poi月编相应的统计数据
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			//查询mongo中subtaskId_month_poi相应的统计数据
-			Map<Integer, Map<String, Integer>> subMonthPoiStatData = getSubMonthPoiStatData(timestamp);
 			//查询mongo中grid_day_poi相应的统计数据
 			Map<Integer, Map<String, Integer>> gridDayPoiStatData = getGridDayPoiStatData(timestamp);
 			//查询mongo中task_day_plan相应的统计数据
@@ -160,8 +157,6 @@ public class TaskJob extends AbstractStatJob {
 				Map<String, Integer> gridTipsStat = handleGridTipsStatData(task, gridTipsStatData);
 				//处理poi月编相应的统计数据
 				Map<String, Integer> MonthPoiStat = handleMonthPoiStatData(task, monthPoiStatData);
-				//处理subtaskId_month_poi相应的统计数据
-				Map<String, Integer> subMonthPoiStat = handleSubMonthPoiStatData(task, subMonthPoiStatData, subtaskIds);
 				//处理grid_day_poi相应的统计数据
 				Map<String, Integer> gridDayPoiStat = handleGridDayPoiStatData(task, gridDayPoiStatData);
 				//处理subtask_tips相应的统计数据
@@ -188,7 +183,6 @@ public class TaskJob extends AbstractStatJob {
 				
 				dataMap.putAll(gridTipsStat);
 				dataMap.putAll(MonthPoiStat);
-				dataMap.putAll(subMonthPoiStat);
 				dataMap.putAll(gridDayPoiStat);
 				dataMap.putAll(subTipsStat);
 				dataMap.putAll(subDayPoiStat);
@@ -512,9 +506,11 @@ public class TaskJob extends AbstractStatJob {
 				int logAllNum = (int) jso.get("logAllNum");
 				int logFinishNum = (int) jso.get("logFinishNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
+				int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
 				task.put("logAllNum", logAllNum);
 				task.put("logFinishNum", logFinishNum);
 				task.put("poiFinishNum", poiFinishNum);
+				task.put("day2MonthNum", day2MonthPoiNum);
 				monthPoiStat.put(gridId, task);
 			}
 			return monthPoiStat;
@@ -552,58 +548,6 @@ public class TaskJob extends AbstractStatJob {
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage());
 			throw new Exception("处理taskId("+task.getTaskId()+")月编poi统计数据报错"+e.getMessage(),e);
-		}
-	}
-
-	/**
-	 * 查询mongo中subtaskId_month_poi相应的统计数据
-	 * @throws ServiceException 
-	 */
-	public Map<Integer,Map<String,Integer>> getSubMonthPoiStatData(String timestamp) throws Exception{
-		try {
-			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(subtaskId_month_poi, filter);
-			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<Integer,Map<String,Integer>> monthPoiStat = new HashMap<Integer,Map<String,Integer>>();
-			//处理数据
-			while(iterator.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iterator.next());
-				Map<String,Integer> task = new HashMap<String,Integer>();
-				int subtaskId = (int) jso.get("subtaskId");
-				int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
-				task.put("day2MonthNum", day2MonthPoiNum);
-				monthPoiStat.put(subtaskId, task);
-			}
-			return monthPoiStat;
-		} catch (Exception e) {
-			log.error("查询mongo库中subtaskId_month_poi统计数据报错"+e.getMessage());
-			throw new Exception("查询mongo库中subtaskId_month_poi统计数据报错"+e.getMessage(),e);
-		}
-	}
-	
-
-	/**
-	 * 处理subtaskId_month_poi相应的统计数据
-	 * @throws ServiceException 
-	 */
-	public Map<String,Integer> handleSubMonthPoiStatData(Task task,Map<Integer,Map<String,Integer>> subMonthPoiStatData,Set<Integer> subtaskIds) throws Exception{
-		try {
-			//处理数据
-			int day2MonthNum = 0;
-			for (Integer subtaskId : subtaskIds) {
-				if(subMonthPoiStatData.containsKey(subtaskId)){
-					Map<String, Integer> map = subMonthPoiStatData.get(subtaskId);
-					day2MonthNum += map.get("day2MonthNum");
-				}
-			}
-			Map<String,Integer> taskStat = new HashMap<String,Integer>();
-			taskStat.put("day2MonthNum", day2MonthNum);
-			return taskStat;
-		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")subtaskId_month_poi统计数据报错,"+e.getMessage());
-			throw new Exception("处理taskId("+task.getTaskId()+")subtaskId_month_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
 

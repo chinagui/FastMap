@@ -911,6 +911,12 @@
 				<artifactId>service-monitor</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
 			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>engine-es</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+
 			<!-- dataservice module end -->
 			<!-- navicop -->
 			<dependency>
@@ -970,12 +976,7 @@
 		  		<artifactId>xinge</artifactId>
 		  		<version>1.0</version>
 			</dependency>
-			
-			<dependency>
-			      <groupId>org.elasticsearch</groupId>
-			      <artifactId>elasticsearch</artifactId>
-			      <version>2.4.5</version>
-			</dependency>
+
 			
         </dependencies>
 

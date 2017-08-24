@@ -103,4 +103,15 @@ public class QualityController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/qc/queryQualityRelation")
+	public ModelAndView queryQualityRelation(HttpServletRequest request){
+		try{
+			JSONArray data = QualityService.getInstance().queryQualityRelation();
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取质检关系失败，原因为："+ e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

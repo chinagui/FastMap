@@ -136,48 +136,8 @@ public class ExportStatFromMongo {
 			//获取上一次的统计时间
 			MongoDao mongoDao = new MongoDao(dbName);
 			List<Map<String,Object>> stat = new ArrayList<Map<String,Object>>();
-			//查询最新的数据
-			if("0".equals(startTime) && "0".equals(endTime)){
-				String lastTime = timestamp;
-				while(true){
-					BasicDBObject filter = new BasicDBObject();
-					filter.append("timestamp", lastTime);
-					
-					FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
-					MongoCursor<Document> iterator = findIterable.iterator();
-					boolean flag = false;
-					//处理数据
-					while(iterator.hasNext()){
-						//获取统计数据
-						JSONObject json = JSONObject.fromObject(iterator.next());
-						Map<String,Object> mapData = json;
-						mapData.remove("_id");
-						stat.add(mapData);
-						flag = true;
-					}
-					//是否查到数据
-					if(flag){
-						break;
-					}else{
-						lastTime = DateUtils.addSeconds(lastTime,-60*60);
-					}
-				}
-			}
-			//查询时间段内的数据
-			else{
-				String lastTimestamp = "0";
-				if(StringUtils.isNotEmpty(startTime)){
-					lastTimestamp = startTime;
-				}
-				if(StringUtils.isNotEmpty(endTime) && !"0".equals(endTime)){
-					timestamp = endTime;
-				}
-				BasicDBList valueAnd = new BasicDBList();
-				valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$gte", lastTimestamp)));
-				valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$lte", timestamp)));
+			if("task_day_plan".equals(collectionName)){
 				BasicDBObject filter = new BasicDBObject();
-				filter.put("$and", valueAnd);
-				
 				FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
 				MongoCursor<Document> iterator = findIterable.iterator();
 				//处理数据
@@ -187,6 +147,60 @@ public class ExportStatFromMongo {
 					Map<String,Object> mapData = json;
 					mapData.remove("_id");
 					stat.add(mapData);
+				}
+			}else{
+				//查询最新的数据
+				if("0".equals(startTime) && "0".equals(endTime)){
+					String lastTime = timestamp;
+					while(true){
+						BasicDBObject filter = new BasicDBObject();
+						filter.append("timestamp", lastTime);
+						
+						FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
+						MongoCursor<Document> iterator = findIterable.iterator();
+						boolean flag = false;
+						//处理数据
+						while(iterator.hasNext()){
+							//获取统计数据
+							JSONObject json = JSONObject.fromObject(iterator.next());
+							Map<String,Object> mapData = json;
+							mapData.remove("_id");
+							stat.add(mapData);
+							flag = true;
+						}
+						//是否查到数据
+						if(flag){
+							break;
+						}else{
+							lastTime = DateUtils.addSeconds(lastTime,-60*60);
+						}
+					}
+				}
+				//查询时间段内的数据
+				else{
+					String lastTimestamp = "0";
+					if(StringUtils.isNotEmpty(startTime)){
+						lastTimestamp = startTime;
+					}
+					if(StringUtils.isNotEmpty(endTime) && !"0".equals(endTime)){
+						timestamp = endTime;
+					}
+					BasicDBList valueAnd = new BasicDBList();
+					valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$gte", lastTimestamp)));
+					valueAnd.add(new BasicDBObject("timestamp", new BasicDBObject("$lte", timestamp)));
+					BasicDBObject filter = new BasicDBObject();
+					filter.put("$and", valueAnd);
+					
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
+					MongoCursor<Document> iterator = findIterable.iterator();
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject json = JSONObject.fromObject(iterator.next());
+						Map<String,Object> mapData = json;
+						mapData.remove("_id");
+						stat.add(mapData);
+					}
 				}
 			}
 			return stat;
@@ -204,7 +218,7 @@ public class ExportStatFromMongo {
 		}
 		//0-路径,1-表名,2-开始时间(没有startTime的字段赋值"0"),3-结束时间(没有endTime的字段赋值"0")
 //		execute(args[0],args[1],args[2],args[3]);
-		execute("D:/temp","person","0","0");
+		execute("D:/temp","task_day_plan","0","0");
 		System.out.println("Over.");
 		System.exit(0);
 	}

@@ -158,9 +158,15 @@ public class TaskJob extends AbstractStatJob {
 					subtaskIds.add(subtaskId);
 				}
 				//处理grid_task_tips相应的统计数据 key:统计描述，value：统计值
-				Map<String, Integer> gridTaskTipsStat = handleGridTaskTipsStatData(task, collectTasks,gridTaskTipsStatData);
+				Map<String, Integer> gridTaskTipsStat =new HashMap<>();
+				if(task.getType()==1){
+					gridTaskTipsStat = handleGridTaskTipsStatData(task, collectTasks,gridTaskTipsStatData);
+				}
 				//处理grid_notask_tips相应的统计数据
-				Map<String, Integer> gridNotaskTipsStat = handleGridNotaskTipsStatData(task, gridNotaskTipsStatData);
+				Map<String, Integer> gridNotaskTipsStat=new HashMap<>();
+				if(task.getType()==1){
+					gridNotaskTipsStat= handleGridNotaskTipsStatData(task, gridNotaskTipsStatData);
+				}
 				//处理poi月编相应的统计数据
 				Map<String, Integer> MonthPoiStat = handleMonthPoiStatData(task, monthPoiStatData);
 				//处理grid_day_poi相应的统计数据
@@ -185,7 +191,10 @@ public class TaskJob extends AbstractStatJob {
 				if(taskDayPlanStatData.containsKey(taskId)){
 					dataMap.putAll(taskDayPlanStatData.get(taskId));
 				}
-				Map<String, Object> fccData = taskFccStatData.get(taskId);
+				Map<String, Object> fccData = new HashMap<>();
+				if(taskFccStatData.containsKey(taskId)){
+					fccData=taskFccStatData.get(taskId);
+				}
 				
 				dataMap.putAll(gridTaskTipsStat);
 				dataMap.putAll(gridNotaskTipsStat);
@@ -361,12 +370,12 @@ public class TaskJob extends AbstractStatJob {
 				Map<String,Object> task = new HashMap<String,Object>();
 				int taskId = (int) jso.get("taskId");
 				double linkLen = 0;
-				String linkLenS = (String) jso.get("linkLen");
+				String linkLenS = String.valueOf(jso.get("linkLen"));
 				if(StringUtils.isNotEmpty(linkLenS)){
 					linkLen = Double.parseDouble(linkLenS);
 				}
 				double link17Len = 0;
-				String link17LenS = (String) jso.get("link17Len");
+				String link17LenS = String.valueOf(jso.get("link17Len"));
 				if(StringUtils.isNotEmpty(link17LenS)){
 					link17Len = Double.parseDouble(link17LenS);
 				}
@@ -500,7 +509,6 @@ public class TaskJob extends AbstractStatJob {
 			int dayEditTipsFinishNum = 0;
 			int dayEditTipsUnfinishNum = 0;
 			int tipsCreateByEditNum = 0;
-			int notaskTipsNum = 0;
 			for(Integer ctaskId:collectTasks){
 				if(gridTaskTipsStatData.containsKey(ctaskId)){
 					Map<Integer, Map<String, Integer>> gridTips=gridTaskTipsStatData.get(ctaskId);

@@ -2,9 +2,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -64,14 +62,13 @@ public class GLM60224 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T2.PID, T2.KIND_CODE, T2.LABEL, T1.KIND" + 
-                "  FROM LC_FACE T1, IX_POI T2" + 
-                " WHERE T2." + pidString +
-                "   AND T1.MESH_ID = T2.MESH_ID" + 
-                "   AND T1.KIND IN (1, 2, 3, 4, 5, 6, 12, 13)" + 
+        String sql = "SELECT T1.PID, T1.KIND_CODE, T1.LABEL, T2.KIND" + 
+                "  FROM IX_POI T1, LC_FACE T2" + 
+                " WHERE T1." + pidString +
                 "   AND T1.U_RECORD <> 2" + 
-                "   AND T2.U_RECORD <> 2" + 
-                "   AND SDO_RELATE(T1.GEOMETRY, T2.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'";
+                "   AND SDO_RELATE(T2.GEOMETRY, T1.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'" + 
+                "   AND T2.KIND IN (1, 2, 3, 4, 5, 6, 12, 13)" + 
+                "   AND T2.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
 

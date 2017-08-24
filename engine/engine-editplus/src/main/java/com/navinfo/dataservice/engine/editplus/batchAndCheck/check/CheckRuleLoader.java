@@ -86,7 +86,7 @@ public class CheckRuleLoader {
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			String sql = "SELECT RULE_ID, ACCESSOR, ACCESSOR_TYPE, OBJ_NAME_SET, REFER_SUBTABLE_MAP,LOG,RULE_LEVEL"
 					+ "  FROM CHECK_PLUS"
-					+ "  where RULE_ID in ("+list.toString().replaceAll(" ", "").replaceAll(",", "','").replace("[", "'").replace("]", "'")+") AND STATUS='E'";
+					+ "  where RULE_ID in ("+list.toString().replaceAll(" ", "").replaceAll("\"", "").replaceAll(",", "','").replace("[", "'").replace("]", "'")+") AND STATUS='E'";
 			System.out.println(sql);
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();

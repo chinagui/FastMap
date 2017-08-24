@@ -201,14 +201,13 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             Geometry linkGeometry = shrink(link.getGeometry());
             RdLinkZone linkZone = null;
             // 获取关联face的regionId
-            int faceRegionId = 0;
+            int faceRegionId = face.getRegionId();
             double type = 0;
             try {
-                if (0 != faceRegionId && faceRegionId != face.getRegionId())
+                if (0 != faceRegionId)
                     type = ((AdAdmin) new AdAdminSelector(conn).loadById(faceRegionId, false)).getAdminType();
             } catch (Exception e) {
             }
-            faceRegionId = face.getRegionId();
             // 判断link与zoneFace的关系
             // link在zoneFace内部
             if (isContainOrCover(linkGeometry, geometry)) {
@@ -224,6 +223,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                         linkZone = (RdLinkZone) row;
                         if (faceRegionId != linkZone.getRegionId()) {
                             linkZone.changedFields().put("regionId", faceRegionId);
+                            linkZone.changedFields().put("type", type);
                             modified.add(linkZone);
                         }
                     }

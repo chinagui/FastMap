@@ -408,8 +408,22 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("");
+				log.error("dbId("+dbId+")转入发生错误："+e.getMessage(),e);
+				String errmsg = "dbId("+dbId+")转入发生错误："+e.getMessage();
+				//
+				Map<String,String> allerrs = new HashMap<String,String>();
+				for(String fid:pois.getAddPois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getUpdatePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getDeletePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				errLog.putAll(allerrs);
+//				throw new ThreadExecuteException(e.getMessage(),e);
+
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){

@@ -337,8 +337,9 @@ public class PoiSave {
 					+ str + ")");
 		} else {
 			// 鲜度验证保存时调用
-			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
-					+ pids + ")");
+			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2, T1.QUICK_SUBTASK_ID = "+qst+", T1.QUICK_TASK_ID = "+qt+""
+					+ ", T1.MEDIUM_SUBTASK_ID = "+mst+" , T1.MEDIUM_TASK_ID = "+mt+" WHERE T1.pid in (" + pids + ") "
+							+ " AND T1.QUICK_SUBTASK_ID = 0 AND T1.QUICK_TASK_ID = 0 AND T1.MEDIUM_SUBTASK_ID = 0 AND T1.MEDIUM_TASK_ID = 0");
 			
 			
 			

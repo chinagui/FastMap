@@ -29,7 +29,7 @@ import java.util.*;
  * @Description: 检查对象：非删除POI对象
 检查原则：
 1、如果POI的引导坐标（3米范围内）没有关联道路或测线（测线为非删除对象），则报log
-2、如果POI的引导坐标（3米范围内）有关联道路但无测线（测线为非删除对象），且30米范围内有其他测线，则报log
+2、如果POI的显示坐标（3米范围内）有关联道路但无测线（测线为非删除对象），且30米范围内有其他测线，则报log
  * @Author: Crayeres
  * @Date: 8/15/2017
  * @Version: V1.0
@@ -54,11 +54,12 @@ public class FMDGC008 extends BasicCheckRule {
         Map<Long, IxPoi> map = new HashMap<>();
 
         Map<Long, IxPoi> noAssociationLink = new HashMap<>();
+        Map<Long, IxPoi> hasAssociationLink = new HashMap<>();
 
         for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
             BasicObj basicObj = entry.getValue();
 
-            if (basicObj.objName().equals(ObjectName.IX_POI) && !basicObj.opType().equals(OperationType.DELETE)) {
+            if (basicObj.objName().equals(ObjectName.IX_POI) && !basicObj.opType().equals(OperationType.PRE_DELETED)) {
                 IxPoiObj poiObj = (IxPoiObj) basicObj;
                 IxPoi poi = (IxPoi) poiObj.getMainrow();
                 if (poi.getYGuide() == 0 || poi.getYGuide() == 0) {
@@ -88,7 +89,19 @@ public class FMDGC008 extends BasicCheckRule {
                     pidString = " PID IN (" + StringUtils.join(map.keySet(), ",") + ")";
                 }
 
-                String sql = "SELECT /*+ INDEX(T2 RD_LINK_GEOMETRY) */" + " T1.PID" + "  FROM IX_POI T1, RD_LINK T2" + " WHERE T1.U_RECORD <> 2" + "   AND T1." + pidString + "   AND SDO_NN(T2.GEOMETRY," + "              SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + "                           8307)," + "              'SDO_NUM_RES=10'," + "              1) = 'TRUE'" + "   AND T2.U_RECORD <> 2" + " GROUP BY T1.PID" + " HAVING MIN(SDO_NN_DISTANCE(1)) >= 3";
+                String sql = "SELECT /*+ INDEX(T2 RD_LINK_GEOMETRY) */" +
+                        " DISTINCT T1.PID" +
+                        "  FROM IX_POI T1, RD_LINK T2" +
+                        " WHERE T1.U_RECORD <> 2" +
+                        "   AND T1." + pidString +
+                        "   AND SDO_NN(T2.GEOMETRY," +
+                        "              SDO_GEOMETRY('POINT (' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," +
+                        "                           8307)," +
+                        "              'SDO_NUM_RES=10 DISTANCE=3 UNIT=METER'," +
+                        "              1) = 'TRUE'" +
+                        "   AND T2.U_RECORD <> 2";
+                        //" GROUP BY T1.PID" +
+                        //" HAVING MIN(SDO_NN_DISTANCE(1)) >= 3";
 
 
                 pstmt = conn.prepareStatement(sql);
@@ -101,8 +114,11 @@ public class FMDGC008 extends BasicCheckRule {
 
                 while (resultSet.next()) {
                     Long pid = resultSet.getLong("PID");
-                    noAssociationLink.put(pid, map.get(pid));
+                    hasAssociationLink.put(pid, map.get(pid));
+                    map.remove(pid);
                 }
+
+                noAssociationLink.putAll(map);
             } catch (Exception e) {
                 throw e;
             } finally {
@@ -111,63 +127,95 @@ public class FMDGC008 extends BasicCheckRule {
             }
         }
 
-        if (!noAssociationLink.isEmpty()) {
-            Connection tipsConn = null;
-            PreparedStatement tipsPstmt = null;
-            ResultSet tipsResultSet = null;
-            try {
-                tipsConn = DBConnector.getInstance().getTipsIdxConnection();
+        if (hasAssociationLink.isEmpty() && noAssociationLink.isEmpty()) {
+            return;
+        }
 
-                String tipsSql = "SELECT T.WKTLOCATION" + "  FROM TIPS_INDEX T" + " WHERE T.S_SOURCETYPE = '2001'" + "   AND T.T_LIFECYCLE <> 1";
+        Connection tipsConn = null;
+        PreparedStatement tipsPstmt = null;
+        ResultSet tipsResultSet = null;
+        try {
+            tipsConn = DBConnector.getInstance().getTipsIdxConnection();
 
-                tipsPstmt = tipsConn.prepareStatement(tipsSql);
-                tipsResultSet = tipsPstmt.executeQuery();
+            String tipsSql = "SELECT T.WKTLOCATION" +
+                    "  FROM TIPS_INDEX T" +
+                    " WHERE T.S_SOURCETYPE = '2001'" +
+                    "   AND T.T_LIFECYCLE <> 1";
 
-                List<Geometry> geometries = new ArrayList<>();
+            tipsPstmt = tipsConn.prepareStatement(tipsSql);
+            tipsResultSet = tipsPstmt.executeQuery();
 
-                while (tipsResultSet.next()) {
-                    STRUCT struct = (STRUCT) tipsResultSet.getObject("WKTLOCATION");
-                    geometries.add(GeoTranslator.struct2Jts(struct));
-                }
+            List<Geometry> geometries = new ArrayList<>();
 
-                if (CollectionUtils.isEmpty(geometries)) {
-                    for (Map.Entry<Long, IxPoi> entry : noAssociationLink.entrySet()) {
-                        setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
-                    }
-                    return;
-                }
+            while (tipsResultSet.next()) {
+                STRUCT struct = (STRUCT) tipsResultSet.getObject("WKTLOCATION");
+                geometries.add(GeoTranslator.struct2Jts(struct));
+            }
 
-                label1:
+            if (CollectionUtils.isEmpty(geometries)) {
                 for (Map.Entry<Long, IxPoi> entry : noAssociationLink.entrySet()) {
-                    Coordinate coordinate = entry.getValue().getGeometry().getCoordinate();
+                    setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
+                }
+                return;
+            }
 
-                    boolean has30M = false;
+            label1:
+            for (Map.Entry<Long, IxPoi> entry : hasAssociationLink.entrySet()) {
+                double xGuide = entry.getValue().getXGuide();
+                double yGuide = entry.getValue().getYGuide();
+
+                Coordinate guideCoordinate = new Coordinate(xGuide, yGuide);
+
+                for (Geometry geometry : geometries) {
+                    double length = GeometryUtils.getDistance(guideCoordinate, GeometryUtils.GetNearestPointOnLine(guideCoordinate, geometry));
+                    if (length <= 3d) {
+                        continue label1;
+                    }
+                }
+
+                boolean has30M = false;
+
+                Coordinate showCoordinate = entry.getValue().getGeometry().getCoordinate();
+                for (Geometry geometry : geometries) {
+                    double length = GeometryUtils.getDistance(showCoordinate, GeometryUtils.GetNearestPointOnLine(guideCoordinate, geometry));
+                    if (length <= 30d) {
+                        has30M = true;
+                    }
+                }
+
+                // 显示坐标3-30m内包含测线
+                if (has30M) {
+                    setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "请确认POI是否关联测线");
+                }
+            }
+
+            label2:
+            for (Map.Entry<Long, IxPoi> entry : noAssociationLink.entrySet()) {
+                double xGuide = entry.getValue().getXGuide();
+                double yGuide = entry.getValue().getYGuide();
+
+                if (xGuide != 0 && yGuide != 0) {
+                    Coordinate guideCoordinate = new Coordinate(xGuide, yGuide);
 
                     for (Geometry geometry : geometries) {
-                        double length = GeometryUtils.getDistance(coordinate, GeometryUtils.GetNearestPointOnLine(coordinate, geometry));
+                        double length = GeometryUtils.getDistance(guideCoordinate, GeometryUtils.GetNearestPointOnLine(guideCoordinate, geometry));
                         if (length <= 3d) {
-                            continue label1;
+                            continue label2;
                         }
-                        if (length <= 30d) {
-                            has30M = true;
-                        }
-                    }
-
-                    if (has30M) {
-                        setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "请确认POI是否关联测线");
-                    } else {
-                        setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
                     }
                 }
-            } catch (Exception e) {
-                throw e;
-            } finally {
-                DBUtils.closeResultSet(tipsResultSet);
-                DBUtils.closeStatement(tipsPstmt);
-                DBUtils.closeConnection(tipsConn);
 
-                logger.info("FMDGC008: (SPEND TIME: " + ((System.currentTimeMillis() - startTime) >> 10) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
+                // 3M内不包含测线
+                setCheckResult("", String.format("[IX_POI,%s]", entry.getKey()), 0, "引导坐标没有关联测线或道路");
             }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DBUtils.closeResultSet(tipsResultSet);
+            DBUtils.closeStatement(tipsPstmt);
+            DBUtils.closeConnection(tipsConn);
+
+            logger.info("FMDGC008: (SPEND TIME: " + ((System.currentTimeMillis() - startTime) >> 10) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
         }
     }
 }

@@ -51,6 +51,9 @@ public class GLM60238 extends BasicCheckRule {
 			for(IxSamepoiPart tmp:parts){
 				BasicObj partObj = myReferDataMap.get(ObjectName.IX_POI).get(tmp.getPoiPid());
 				IxPoiObj partPoiObj = (IxPoiObj) partObj;
+				if(partPoiObj == null){
+					return;
+				}
 				IxPoi partPoi = (IxPoi) partPoiObj.getMainrow();
 				String partKind=partPoi.getKindCode();
 				if(first){

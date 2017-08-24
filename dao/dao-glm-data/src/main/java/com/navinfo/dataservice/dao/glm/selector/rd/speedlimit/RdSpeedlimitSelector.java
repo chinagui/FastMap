@@ -151,4 +151,39 @@ public class RdSpeedlimitSelector extends AbstractSelector {
 		return limits;
 	}
 
+	public RdSpeedlimit loadDelSpeedlimit(int pid) throws Exception {
+
+		String sql = "SELECT * FROM RD_SPEEDLIMIT WHERE PID = :1 AND U_RECORD =2";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, pid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				RdSpeedlimit limit = new RdSpeedlimit();
+
+				ReflectionAttrUtils.executeResultSet(limit, resultSet);
+
+				return limit;
+			} else {
+				throw new Exception("删除状态的点限速PID：" + pid + "不存在");
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+
 }

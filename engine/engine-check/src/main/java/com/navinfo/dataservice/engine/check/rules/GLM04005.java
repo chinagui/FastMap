@@ -50,7 +50,7 @@ public class GLM04005 extends baseRule{
 			// 交限RdRestriction
 			if (obj instanceof RdGate) {
 				RdGate rdGate = (RdGate) obj;
-				if(rdGate.status().equals(ObjStatus.INSERT)){
+				if(rdGate.status().equals(ObjStatus.INSERT)||rdGate.status().equals(ObjStatus.UPDATE)){
 					checkRdGate(rdGate);
 				}
 			}
@@ -63,36 +63,44 @@ public class GLM04005 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGate(RdGate rdGate) throws Exception {
+		int inlink = rdGate.getInLinkPid();
+		int outlink = rdGate.getOutLinkPid();
+
+		if (rdGate.changedFields.containsKey("inLinkPid")) {
+			inlink = (Integer) rdGate.changedFields.get("inLinkPid");
+			outlink = (Integer) rdGate.changedFields.get("outLinkPid");
+		}
+		
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(" SELECT 1                                                                      ");
 		sb.append("   FROM RD_DIRECTROUTE D                                                       ");
-		sb.append("  WHERE D.IN_LINK_PID = " + rdGate.getInLinkPid());
-		sb.append("    AND D.OUT_LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("  WHERE D.IN_LINK_PID = " + inlink);
+		sb.append("    AND D.OUT_LINK_PID = " + outlink);
 		sb.append("    AND D.U_RECORD <> 2                                                        ");
 		sb.append(" UNION                                                                         ");
 		sb.append(" SELECT 1                                                                      ");
 		sb.append("   FROM RD_DIRECTROUTE D, RD_DIRECTROUTE_VIA V                                 ");
-		sb.append("  WHERE D.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("  WHERE D.IN_LINK_PID = " + inlink);
 		sb.append("    AND D.PID = V.PID                                                          ");
-		sb.append("    AND V.LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND V.LINK_PID = " + outlink);
 		sb.append("    AND D.U_RECORD <> 2                                                        ");
 		sb.append("    AND V.U_RECORD <> 2                                                        ");
 		sb.append(" UNION                                                                         ");
 		sb.append(" SELECT 1                                                                      ");
 		sb.append("   FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL RD                             ");
-		sb.append("  WHERE R.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("  WHERE R.IN_LINK_PID = " + inlink);
 		sb.append("    AND R.PID = RD.RESTRIC_PID                                                 ");
-		sb.append("    AND RD.OUT_LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND RD.OUT_LINK_PID = " + outlink);
 		sb.append("    AND R.U_RECORD <> 2                                                        ");
 		sb.append("    AND RD.U_RECORD <> 2                                                       ");
 		sb.append("    AND RD.TYPE = 1                                                            ");
 		sb.append(" UNION                                                                         ");
 		sb.append(" SELECT 1                                                                      ");
 		sb.append("   FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL RD, RD_RESTRICTION_VIA RRV     ");
-		sb.append("  WHERE R.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("  WHERE R.IN_LINK_PID = " + inlink);
 		sb.append("    AND R.PID = RD.RESTRIC_PID                                                 ");
-		sb.append("    AND RRV.LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND RRV.LINK_PID = " + outlink);
 		sb.append("    AND R.U_RECORD <> 2                                                        ");
 		sb.append("    AND RD.U_RECORD <> 2                                                       ");
 		sb.append("    AND RD.TYPE = 1                                                            ");

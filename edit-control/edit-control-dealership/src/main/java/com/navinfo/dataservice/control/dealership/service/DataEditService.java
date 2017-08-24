@@ -106,26 +106,19 @@ public class DataEditService {
 		if (count >= 50)
 			return 0;
 
-		try {
-			String queryListSql = String.format(
-					"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-					0, 3, 0, chainCode, 50 - count);
-			List<Object> resultID = ExecuteQuery(queryListSql, conn);
+		String queryListSql = String.format(
+				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
+				0, 3, 0, chainCode, 50 - count);
+		List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
-			if (resultID.size() == 0)
-				return 0;
+		if (resultID.size() == 0)
+			return 0;
 
-			String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
-					+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
-			run.execute(conn, updateSql);
-			conn.commit();
+		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
+				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
+		run.execute(conn, updateSql);
 
-			return resultID.size();
-		} catch (Exception e) {
-			conn.rollback();
-			log.error("申请数据：" + e.toString());
-			throw new Exception(e);
-		}
+		return resultID.size();
 	}
 
 	/**
@@ -187,9 +180,7 @@ public class DataEditService {
 			log.error("开始作业，加载作业数据列表：" + e.toString());
 			throw e;
 		} finally {
-			if (manconn != null) {
-				DBUtils.closeConnection(manconn);
-			}
+			DbUtils.closeQuietly(manconn);
 		}
 		return result;
 	}
@@ -208,9 +199,7 @@ public class DataEditService {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (poiconn != null) {
-				DBUtils.closeConnection(poiconn);
-			}
+			DbUtils.closeQuietly(poiconn);
 		}
 		return checkErrorNum;
 	}
@@ -305,12 +294,8 @@ public class DataEditService {
 			log.error("详细数据：" + e.toString());
 			throw e;
 		} finally {
-			if (connPoi != null) {
-				DBUtils.closeConnection(connPoi);
-			}
-			if (mancon != null) {
-				DBUtils.closeConnection(mancon);
-			}
+			DbUtils.closeQuietly(connPoi);
+			DbUtils.closeQuietly(mancon);
 		}
 	}
 
@@ -536,13 +521,12 @@ public class DataEditService {
 			return "success ";
 		}catch(Exception e){
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(con);
-			DbUtils.rollbackAndCloseQuietly(mancon);
-			DbUtils.rollbackAndCloseQuietly(dailycon);
+			DbUtils.rollback(con);
+			DbUtils.rollback(dailycon);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
-			DbUtils.commitAndCloseQuietly(mancon);
 			DbUtils.commitAndCloseQuietly(dailycon);
+			DbUtils.closeQuietly(mancon);
 		}
 		return null;
 	}
@@ -912,10 +896,9 @@ public class DataEditService {
 			};
 			return run.query(metaConn, sql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(metaConn);
 			throw e;
 		}finally{
-			DbUtils.commitAndCloseQuietly(metaConn);
+			DbUtils.closeQuietly(metaConn);
 		}
 	}
 	
@@ -935,7 +918,7 @@ public class DataEditService {
 			run.execute(Metacon, sql);
 		}catch(Exception e){
 			log.error("POI品牌和分类赋值方法异常:" + e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(Metacon);
+			DbUtils.rollback(Metacon);
 			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(Metacon);
@@ -1188,14 +1171,13 @@ public class DataEditService {
 			clearRelevancePoi(resultId, con);
 			inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(con);
-			DbUtils.rollbackAndCloseQuietly(mancon);
-			DbUtils.rollbackAndCloseQuietly(dailycon);
+			DbUtils.rollback(con);
+			DbUtils.rollback(dailycon);
 			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
-			DbUtils.commitAndCloseQuietly(mancon);
 			DbUtils.commitAndCloseQuietly(dailycon);
+			DbUtils.closeQuietly(mancon);
 		}
 	}
 	
@@ -1332,8 +1314,8 @@ public class DataEditService {
         	}
  
 		}catch(Exception e){
-            DbUtils.rollbackAndCloseQuietly(dealershipConn);
-            DbUtils.rollbackAndCloseQuietly(poiConn);
+            DbUtils.rollback(dealershipConn);
+            DbUtils.rollback(poiConn);
             throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(dealershipConn);
@@ -1488,13 +1470,11 @@ public class DataEditService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollback(conn);
 			for (Connection value : mapConn.values()) {
 				DbUtils.rollback(value);
 			}
 			throw e;
 		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 			for (Connection value : mapConn.values()) {
 				DbUtils.commitAndCloseQuietly(value);
 			}
@@ -1530,7 +1510,7 @@ public class DataEditService {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 			
@@ -1669,7 +1649,7 @@ public class DataEditService {
 	 * @param resultIds
 	 * @throws ServiceException 
 	 */
-	public void passDealership(long userId, JSONArray resultIds) throws ServiceException {
+	public void passDealership(long userId, JSONArray resultIds) throws Exception {
 		Connection conn = null;
 		try{
 			//获取代理店数据库连接
@@ -1682,9 +1662,9 @@ public class DataEditService {
 			}
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -1733,7 +1713,7 @@ public class DataEditService {
 			log.info("end 客户确认导入");
 		}catch(Exception e){
 			log.error("", e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
@@ -1779,9 +1759,7 @@ public class DataEditService {
 			String updateSql = String.format("UPDATE IX_DEALERSHIP_CHAIN SET CHAIN_STATUS = 2 WHERE CHAIN_CODE = '%s'",
 					chainCode);
 			run.execute(conn, updateSql);
-			conn.commit();
 		} catch (Exception e) {
-			conn.rollback();
 			log.error("关闭品牌：" + e.toString());
 			throw e;
 		}
@@ -1801,11 +1779,10 @@ public class DataEditService {
 			return result;
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -1824,9 +1801,8 @@ public class DataEditService {
 			IxDealershipResultSelector.updateResultStatusWhenCloseWork(resultIdList, conn);//当关闭作业时更新result相应的状态
 
 			batchInsertDealershipHistory(3,9,resultIdList,userId);//批量插入履历
-			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
@@ -1868,7 +1844,7 @@ public class DataEditService {
 				log.info("批量插入代理店履历成功！");
 			}
 		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
@@ -1900,11 +1876,10 @@ public class DataEditService {
 			return poiArray;
 			
 		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 
@@ -1988,8 +1963,6 @@ public class DataEditService {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -2188,12 +2161,10 @@ public class DataEditService {
 			});
 			
 		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(metaConn);
-			DbUtils.rollbackAndCloseQuietly(dealershipConn);
 			log.error(e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(metaConn);
-			DbUtils.commitAndCloseQuietly(dealershipConn);
+			DbUtils.closeQuietly(metaConn);
+			DbUtils.closeQuietly(dealershipConn);
 		}
 		
 		for (int i = 0; i < list.size(); i++) {
@@ -2538,7 +2509,7 @@ public class DataEditService {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -2601,7 +2572,7 @@ public class DataEditService {
     	}
     	catch (Exception e) {
     		log.error("执行代理店检查发生错误", e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			throw e;
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);

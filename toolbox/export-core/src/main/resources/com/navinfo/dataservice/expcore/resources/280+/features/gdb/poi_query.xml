@@ -140,6 +140,8 @@ POI导出查询
 			 -->	
 			<!-- 210模型增加 -->
 			<sql><![CDATA[SELECT P.* FROM IX_POI_CARRENTAL P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			<!-- 280模型增加 -->
+			<sql><![CDATA[SELECT P.* FROM IX_POI_FLAG_METHOD P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sq
 			
         </step>
 

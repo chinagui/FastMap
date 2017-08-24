@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -314,7 +313,6 @@ public class IxDealershipResultOperator {
 					   createSql, 
 					   values.toArray() );
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
 		}
@@ -554,7 +552,6 @@ public class IxDealershipResultOperator {
 
 
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
 		}
@@ -954,7 +951,6 @@ public class IxDealershipResultOperator {
 					   createSql, 
 					   values.toArray() );
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
 		}

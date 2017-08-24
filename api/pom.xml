@@ -19,6 +19,7 @@
 		<module>api-metadata</module>
 		<module>api-render</module>
 		<module>api-statics</module>
+        <module>api-es</module>
     </modules>
     <packaging>pom</packaging>
     <name>api</name>

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.*;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -14,10 +15,6 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISearch;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 
 import net.sf.json.JSONArray;
@@ -25,7 +22,7 @@ import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-public class RdSpeedlimitSearch implements ISearch {
+public class RdSpeedlimitSearch implements ISearch,ISearchDelObj {
 
 	private Connection conn;
 
@@ -79,7 +76,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT A.TOLLGATE_FLAG, A.TIME_DOMAIN , A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
+		String sql = "SELECT A.TOLLGATE_FLAG, A.TIME_DOMAIN , A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC,A.U_RECORD FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'  ";
 
 		if (queryType.equals("DEPENDENT")) {
 
@@ -199,6 +196,8 @@ public class RdSpeedlimitSearch implements ISearch {
 				jsonM.put("h", resultSet.getInt("LIMIT_SRC"));
 				jsonM.put("j", timedomain);
 				jsonM.put("k", resultSet.getInt("TOLLGATE_FLAG"));
+				jsonM.put("l", resultSet.getInt("U_RECORD"));
+
 
 				snapshot.setM(jsonM);
 
@@ -299,5 +298,15 @@ public class RdSpeedlimitSearch implements ISearch {
 		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(
 				107951, 49621, 17, 20)));
 
+	}
+
+
+	@Override
+	public IObj searchDelDataByPid(int pid) throws Exception {
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
+
+		IObj obj = (IObj) selector.loadDelSpeedlimit(pid);
+
+		return obj;
 	}
 }

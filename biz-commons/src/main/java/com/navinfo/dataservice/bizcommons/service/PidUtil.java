@@ -429,6 +429,12 @@ public class PidUtil {
     public int applyRdWarninginfoPid() throws Exception {
         return this.applyPid("RD_WARNINGINFO");
     }
+    /**
+     * 申请rd_warninginfo
+     */
+    public int applyRdLinkWarningPid() throws Exception {
+        return this.applyPid("RD_LINK_WARNING");
+    }
 
     /**
      * 申请rd_slope

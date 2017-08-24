@@ -38,7 +38,7 @@ public class Operation implements IOperation {
 
         warning.setMeshId(meshId);
 
-        warning.setPid(PidUtil.getInstance().applyRdWarninginfoPid());
+        warning.setPid(PidUtil.getInstance().applyRdLinkWarningPid());
 
         result.setPrimaryPid(warning.getPid());
 

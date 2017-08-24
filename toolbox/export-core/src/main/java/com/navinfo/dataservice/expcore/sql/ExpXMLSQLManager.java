@@ -182,7 +182,7 @@ public class ExpXMLSQLManager {
                 ExpSQL expSQL = new ExpSQL(id, sql);
                 expSQL.setCondition(condition);
                 expSQL.setSqlType(sqlType);
-                expSQL.setSqlExtendType(sqlExtendType);
+               // expSQL.setSqlExtendType(sqlExtendType);
 //                log.debug(expSQL.getSql());
                 //TODO:正式环境请注释生成临时表脚本的功能
                //getTempTable(expSQL.getSql());

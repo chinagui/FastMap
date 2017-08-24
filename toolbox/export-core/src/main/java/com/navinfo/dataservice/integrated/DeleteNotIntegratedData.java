@@ -59,12 +59,12 @@ public class DeleteNotIntegratedData {
 			ds = schema.getPoolDataSource();
 			log.debug("创建临时表");
 			createOrTruncateTempTable(ds);
-			log.debug("创建RDLINK接边临时表");
+			/*log.debug("创建RDLINK接边临时表");
 			this.createTempRdLinkTable(ds);
 			log.debug("接边数据提取");
 			this.insertTempRdLink(ds);
 			log.debug("接边数据删除");
-			this.deleteRdLinkData(ds);
+			this.deleteRdLinkData(ds);*/
 			Map<Integer, List<TableConfig>> configMap = parseConfigFile(ds);
 			Set<Integer> stepSet = configMap.keySet();
 			createTempTableIndex(ds);
@@ -75,8 +75,8 @@ public class DeleteNotIntegratedData {
 				List<TableConfig> tableConfigs = configMap.get(stepValue);
 				executeSql.execute(ds, tableConfigs);
 			}
-			log.debug("补充接边数据");
-			this.replenishRdLinkData(ds);
+			/*log.debug("补充接边数据");
+			this.replenishRdLinkData(ds);*/
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

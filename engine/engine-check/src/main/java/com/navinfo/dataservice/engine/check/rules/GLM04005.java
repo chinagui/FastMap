@@ -50,7 +50,7 @@ public class GLM04005 extends baseRule{
 			// 交限RdRestriction
 			if (obj instanceof RdGate) {
 				RdGate rdGate = (RdGate) obj;
-				if(rdGate.status().equals(ObjStatus.INSERT)){
+				if(rdGate.status().equals(ObjStatus.INSERT)||rdGate.status().equals(ObjStatus.UPDATE)){
 					checkRdGate(rdGate);
 				}
 			}

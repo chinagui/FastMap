@@ -52,6 +52,7 @@ public class Process extends AbstractProcess<Command> {
 		RdGscOperateUtils.checkIsMoveGscPoint(
 				GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()),
 				this.getConn(), this.getCommand().getLinkPid(), "LC_LINK");
+		check.checkIntersectFace(this.getCommand(), this.getConn());
 		check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.getCommand(), this.getConn());
 		return new Operation(this.getConn(), this.getCommand()).run(this
 				.getResult());

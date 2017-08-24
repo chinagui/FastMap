@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
+import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Command;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -106,6 +110,36 @@ public class Check {
 				throwException("相邻形状点不可过近，不能小于2m");
 			}
 		}
+	}
+	
+	public void checkIntersectFace(Command command, Connection conn) throws Exception {
+		int linkpid = command.getLinkPid();
+		Geometry g = command.getLinkGeom();
+
+		LcFaceSelector selector = new LcFaceSelector(conn);
+		List<LcFace> faces = selector.loadLcFaceByLinkId(linkpid, false);
+
+		if (faces.size() == 0) {
+			return;
+		}
+
+		LcLinkSelector linkselector = new LcLinkSelector(conn);
+
+		for (LcFace face : faces) {
+			List<IRow> topos = face.getTopos();
+			for (IRow row : topos) {
+				LcFaceTopo topo = (LcFaceTopo) row;
+
+				if (topo.getLinkPid() == linkpid) {
+					continue;
+				}
+
+				LcLink link = (LcLink) linkselector.loadById(topo.getLinkPid(), true, false);
+				if (g.crosses(GeoTranslator.transform(link.getGeometry(),0.00001,5))) {
+					throwException("背景面不能自相交");
+				}
+			} // for
+		} // for
 	}
 	
 	// 背景：前检查“不允许对构成面的Link的端点处形状点，进行修形操作”

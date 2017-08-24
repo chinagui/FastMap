@@ -175,6 +175,7 @@ public class MonthPoiJob extends AbstractStatJob {
 							    int logFinishNum = 0;
 							    value.put("logAllNum", 0);
 							    value.put("logFinishNum", 0);
+							    value.put("day2MonthPoiNum", 0);
 							    if(gridStat.containsKey(gridId)){
 							    	value = gridStat.get(gridId);
 							    	logAllNum = value.get("logAllNum");
@@ -239,7 +240,6 @@ public class MonthPoiJob extends AbstractStatJob {
 				Map<Integer, Integer> poiNum = lr.getPoiNumBySubtaskId(ObjectName.IX_POI,subtasks);
 				for(Entry<Integer, Integer> entry : poiNum.entrySet()){
 					int gridId=entry.getKey();
-					result.get(gridId).put("day2MonthPoiNum",0);
 					if(result.containsKey(gridId)){
 						result.get(gridId).put("day2MonthPoiNum", entry.getValue());
 					}else{

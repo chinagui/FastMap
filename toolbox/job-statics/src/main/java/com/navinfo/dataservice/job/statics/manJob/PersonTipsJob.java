@@ -41,6 +41,7 @@ public class PersonTipsJob extends AbstractStatJob {
     @Override
     public String stat() throws JobException {
         try {
+        	log.info("start stat PersonTipsJob");
             //1.获取需要统计的子任务号
             Map<Integer, JSONObject> resultMap = getSubTaskLineStat();
 
@@ -55,6 +56,7 @@ public class PersonTipsJob extends AbstractStatJob {
                 resultMapList.add(subTaskMap);
             }
             result.put("person_tips", resultMapList);
+            log.info("end stat PersonTipsJob");
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {
             throw new JobException("PersonTipsJob执行报错", e);

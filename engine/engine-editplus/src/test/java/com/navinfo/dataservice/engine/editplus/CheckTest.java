@@ -58,13 +58,19 @@ public class CheckTest extends ClassPathXmlAppContextInit{
     @Test
     public void check() throws Exception {
         FMDGC008 check = new FMDGC008();
-        Connection conn = DBConnector.getInstance().getConnectionById(13);
+        Connection conn = DBConnector.getInstance().getConnectionById(69);
         CheckRuleCommand command = new CheckRuleCommand();
         command.setConn(conn);
         check.setCheckRuleCommand(command);
 
         Set<Long> pids = new HashSet<Long>();
-        String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 20000";
+        String sql = "SELECT ip.pid" +
+                "  FROM ix_poi ip, poi_edit_status ps" +
+                " WHERE ip.pid = ps.pid" +
+                "   AND ps.status = 2" +
+                "   AND (ps.QUICK_SUBTASK_ID = 202 OR ps.MEDIUM_SUBTASK_ID = 202)";
+        //String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 20000";
+        //String sql = "SELECT PID FROM IX_POI WHERE PID = 420000011";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         ResultSet resultSet = pstmt.executeQuery();
         while (resultSet.next()) {

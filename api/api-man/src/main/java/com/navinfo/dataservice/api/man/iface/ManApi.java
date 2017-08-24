@@ -345,5 +345,11 @@ public interface ManApi{
      * @throws Exception
      */
     public Set<Integer> allCollectSubtaskId() throws Exception;
+    
+    /**
+     * 根据任务id获取同项目下的所有采集任务的id集合
+     * @throws Exception
+     */
+    public Set<Integer> getCollectTaskIdsByTaskId(int taskId) throws Exception;
 }
 

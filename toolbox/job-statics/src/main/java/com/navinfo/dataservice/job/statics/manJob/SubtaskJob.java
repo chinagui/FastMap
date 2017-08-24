@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
@@ -39,7 +41,8 @@ import net.sf.json.JSONObject;
  */
 public class SubtaskJob extends AbstractStatJob {
 	private static final String subtask = "subtask";
-	private static final String grid_tips = "grid_tips";
+//	private static final String grid_tips = "grid_tips";
+	private static final String grid_task_tips = "grid_task_tips";
 //	private static final String subtask_tips = "subtask_tips";
 	private static final String subtask_day_poi = "subtask_day_poi";
 	private static final String grid_month_poi = "grid_month_poi";
@@ -55,6 +58,7 @@ public class SubtaskJob extends AbstractStatJob {
 	@Override
 	public String stat() throws JobException {
 		try {
+			long t = System.currentTimeMillis();
 			//获取统计时间
 			SubtaskJobRequest statReq = (SubtaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
@@ -87,9 +91,17 @@ public class SubtaskJob extends AbstractStatJob {
 			while(subtaskItr.hasNext()){
 				Subtask subtask = subtaskItr.next();
 				int subtaskId = subtask.getSubtaskId();
-				//获取grid
-				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
-				subtask.setGridIds(gridIds);
+				//日编子任务的gird集合取同项目下所有 采集任务的grid集合
+				if(subtask.getStage() == 1){
+					int taskId = subtask.getTaskId();
+					Set<Integer> collectionTasks = manApi.getCollectTaskIdsByTaskId(taskId);
+					Map<Integer, Integer> collectionGridIds = queryGridIdsByTaskIds(collectionTasks, timestamp);
+					subtask.setGridIds(collectionGridIds);
+				}else{
+					//获取grid
+					Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
+					subtask.setGridIds(gridIds);
+				}
 				//获取相应的统计数据
 				Map<String, Object> subManTimelineStart = null;
 				Map<String, Object> subManTimelineEnd = null;
@@ -108,6 +120,7 @@ public class SubtaskJob extends AbstractStatJob {
 //					subTipsStat = subTipsStatData.get(subtaskId);
 //				}
 				Map<String, Integer> subMonthPoiStat = handleMonthPoiStatData(subtask, monthPoiStatData);
+
 				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData);
 				//处理具体统计数据
 				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
@@ -121,7 +134,7 @@ public class SubtaskJob extends AbstractStatJob {
 			result.put("subtask",subtaskStatList);
 
 			log.info("end stat "+statReq.getJobType());
-			long t = System.currentTimeMillis();
+			
 			log.debug("所有日库子任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();
@@ -129,6 +142,34 @@ public class SubtaskJob extends AbstractStatJob {
 		} catch (Exception e) {
 			log.error("子任务统计:"+e.getMessage(), e);
 			throw new JobException("子任务统计:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 根据任务ID获取对应的grid
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<Integer, Integer> queryGridIdsByTaskIds(Set<Integer> taskIds, String timestamp) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(dbName);
+			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
+			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<Integer, Integer> stat = new HashMap<Integer, Integer>();
+			//处理数据
+			while(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				int taskId = jso.getInt("taskId");
+				if(taskIds.contains(taskId)){
+					stat.put(jso.getInt("gridId"), 0);
+				}
+			}
+			return stat;
+		} catch (Exception e) {
+			log.error("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage());
+			throw new Exception("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage(),e);
 		}
 	}
 	
@@ -264,7 +305,7 @@ public class SubtaskJob extends AbstractStatJob {
 		try {
 			MongoDao mongoDao = new MongoDao(dbName);
 			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(grid_tips, filter);
+			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Integer>> tipsStat = new HashMap<Integer,Map<String,Integer>>();
 			//处理数据

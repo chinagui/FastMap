@@ -56,13 +56,19 @@ public class FMYW20014 extends BasicCheckRule {
 		String newChain=poi.getChain();
 		if(poi.hisOldValueContains(IxPoi.KIND_CODE) ||poi.hisOldValueContains(IxPoi.CHAIN)){
 			if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
-				String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				String oldKindCode="";
+				if (poi.getHisOldValue(IxPoi.KIND_CODE)!=null){
+					oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				}
 				if(!newKindCode.equals(oldKindCode)){
 					return true;
 				}
 			}
 			if(poi.hisOldValueContains(IxPoi.CHAIN)){
-				String oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
+				String oldChain="";
+				if (poi.getHisOldValue(IxPoi.CHAIN)!=null){
+					oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
+				}
 				if(!newChain.equals(oldChain)){
 					return true;
 				}

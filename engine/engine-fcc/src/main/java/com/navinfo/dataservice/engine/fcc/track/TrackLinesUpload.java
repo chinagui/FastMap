@@ -1,8 +1,18 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
 import com.alibaba.fastjson.JSONObject;
+import com.navinfo.dataservice.api.es.model.TrackPoint;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @ClassName: TrackLinesUpload.java
@@ -20,7 +30,14 @@ public class TrackLinesUpload extends TrackUpload{
     }
 
     @Override
-    public Put generatePut(JSONObject json, String rowkey) throws Exception {
+    public Put generatePut(JSONObject json, String rowkey, List trackIdxList) throws Exception {
+        Put put = this.getPut(json, rowkey);
+        TrackPoint point = this.getTrackIdx(json, rowkey);
+        trackIdxList.add(point);
+        return put;
+    }
+
+    private Put getPut(JSONObject json, String rowkey){
         Put put = new Put(rowkey.getBytes());
         put.addColumn("attribute".getBytes(), "a_id".getBytes(),
                 json.getString("id").getBytes());
@@ -53,6 +70,17 @@ public class TrackLinesUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
                 json.getString("geometry").getBytes());
         return put;
+    }
+
+    private TrackPoint getTrackIdx(JSONObject json, String rowkey) throws Exception {
+        TrackPoint point = new TrackPoint();
+        point.setId(rowkey);
+        String wkt = json.getString("geometry");
+        point.setA_geometry(GeoTranslator.jts2Geojson(GeoTranslator.wkt2Geometry(wkt)));
+        point.setA_linkId(json.getInteger("linkId"));
+        point.setA_user(json.getInteger("userId"));
+        point.setA_recordTime(json.getString("recordTime").substring(0,14));
+        return point;
     }
 
     @Override

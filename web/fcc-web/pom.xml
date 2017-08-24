@@ -74,7 +74,10 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-fcc</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-es</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>

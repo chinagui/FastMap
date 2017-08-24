@@ -4,6 +4,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -40,10 +41,15 @@ public class PersonTipsJob extends AbstractStatJob {
 
     @Override
     public String stat() throws JobException {
+    	PersonTipsJobRequest statReq = (PersonTipsJobRequest)request;
         try {
+        	String timestamp = statReq.getTimestamp().substring(0, 8);
+			//计算前一天的统计
+			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
         	log.info("start stat PersonTipsJob");
             //1.获取需要统计的子任务号
-            Map<Integer, JSONObject> resultMap = getSubTaskLineStat();
+            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(timestamp);
 
             Map<String,List<Map<String,Object>>> result = new HashMap<String,List<Map<String,Object>>>();
             List<Map<String,Object>> resultMapList = new ArrayList<>();
@@ -53,6 +59,7 @@ public class PersonTipsJob extends AbstractStatJob {
                 subTaskMap.put("subtaskId", mSubTaskId);
                 subTaskMap.put("tipsAddLen", statObj.getDouble("tipsAddLen"));
                 subTaskMap.put("tipsAllLen", statObj.getDouble("tipsAllLen"));
+                subTaskMap.put("workDate", timestamp);
                 resultMapList.add(subTaskMap);
             }
             result.put("person_tips", resultMapList);
@@ -68,7 +75,7 @@ public class PersonTipsJob extends AbstractStatJob {
      * @return
      * @throws Exception
      */
-    private Map<Integer, JSONObject> getSubTaskLineStat() throws Exception {
+    private Map<Integer, JSONObject> getSubTaskLineStat(final String timestamp) throws Exception {
         java.sql.Connection orclConn = null;
         try {
             String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE\n" +
@@ -90,9 +97,6 @@ public class PersonTipsJob extends AbstractStatJob {
                     try{
                         hbaseConn = HBaseConnector.getInstance().getConnection();
                         htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-                        //当前时间
-                        String systemDate = sdf.format(new Date());
                         while(rs.next()){
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
@@ -128,7 +132,7 @@ public class PersonTipsJob extends AbstractStatJob {
                                                 JSONObject trackInfo = trackInfoArr.getJSONObject(i);
                                                 int stage = trackInfo.getInt("stage");
                                                 String date = trackInfo.getString("date");
-                                                if(stage == 1 && date.startsWith(systemDate)) {//当天外业新增
+                                                if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
                                                     newLength += lineLength;
                                                 }
                                             }

@@ -92,11 +92,9 @@ public class MonthPoiJob extends AbstractStatJob {
 			//处理数据
 			Map<String,List<Map<String,Integer>>> result = new HashMap<String,List<Map<String,Integer>>>();
 			result.put("grid_month_poi", new ArrayList<Map<String,Integer>>());
-			result.put("subtaskId_month_poi", new ArrayList<Map<String,Integer>>());
 
 			for(Entry<Integer, Map<String, List<Map<String, Integer>>>> entry:stats.entrySet()){
 				result.get("grid_month_poi").addAll(entry.getValue().get("grid_month_poi"));
-				result.get("subtaskId_month_poi").addAll(entry.getValue().get("subtaskId_month_poi"));
 			}
 			return JSONObject.fromObject(result).toString();
 			
@@ -148,6 +146,7 @@ public class MonthPoiJob extends AbstractStatJob {
 		public void run() {
 			Connection conn=null;
 			try{
+				
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				QueryRunner run = new QueryRunner();
 				
@@ -161,8 +160,8 @@ public class MonthPoiJob extends AbstractStatJob {
 				ResultSetHandler<Map<Integer, Map<String, Integer>>> rsHandler = new ResultSetHandler<Map<Integer, Map<String, Integer>>>() {
 					public Map<Integer, Map<String, Integer>> handle(ResultSet rs) throws SQLException {
 						Map<Integer,Map<String,Integer>> gridStat = new HashMap<Integer,Map<String,Integer>>();
-						//处理poi的统计
-						Map<Integer,Set<Long>> pids = new HashMap<Integer,Set<Long>>();
+						//处理poi的统计,key:gridId,value:map(key:pid,value:状态)
+						Map<Integer,Map<Long,List<Integer>>> pids = new HashMap<Integer,Map<Long,List<Integer>>>();
 						while (rs.next()) {
 						    int secondWorkStatus = rs.getInt("SECOND_WORK_STATUS");
 						    STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -176,6 +175,7 @@ public class MonthPoiJob extends AbstractStatJob {
 							    int logFinishNum = 0;
 							    value.put("logAllNum", 0);
 							    value.put("logFinishNum", 0);
+							    value.put("day2MonthPoiNum", 0);
 							    if(gridStat.containsKey(gridId)){
 							    	value = gridStat.get(gridId);
 							    	logAllNum = value.get("logAllNum");
@@ -183,20 +183,18 @@ public class MonthPoiJob extends AbstractStatJob {
 							    }
 							    if(secondWorkStatus==1||secondWorkStatus==2||secondWorkStatus==3){
 							    	logAllNum++;
+							    	//记录pid所有状态
+							    	if(!pids.containsKey(gridId)){
+							    		pids.put(gridId, new HashMap<Long,List<Integer>>());
+							    	}
+							    	Map<Long, List<Integer>> map = pids.get(gridId);
+							    	if(!map.containsKey(pid)){
+							    		map.put(pid, new ArrayList<Integer>());
+							    	}
+							    	map.get(pid).add(secondWorkStatus);
 							    }
 							    if(secondWorkStatus==3){
 							    	logFinishNum++;
-							    	//改pid所有的记录都为3,才算完成
-							    	if(!pids.containsKey(gridId)){
-							    		pids.put(gridId, new HashSet<Long>());
-							    	}
-							    	pids.get(gridId).add(pid);
-							    }
-							    //如果该pid有状态为1或2的,则移除
-							    if(secondWorkStatus==1||secondWorkStatus==2){
-							    	if(pids.containsKey(gridId)){
-							    		pids.get(gridId).remove(pid);
-							    	}
 							    }
 							    value.put("logAllNum", logAllNum);
 							    value.put("logFinishNum", logFinishNum);
@@ -207,13 +205,25 @@ public class MonthPoiJob extends AbstractStatJob {
 //								e.printStackTrace();
 							}
 						}
+						
 						//处理poi完成统计
 						for(Map.Entry<Integer,Map<String,Integer>> entry : gridStat.entrySet()){
 							int gridId = entry.getKey();
 							Map<String, Integer> value = entry.getValue();
 							int poiFinishNum = 0;
+							//如果该pid有状态为1或2的,则移除
+							Set<Long> poiFinishSet = new HashSet<Long>();
 							if(pids.containsKey(gridId)){
-								poiFinishNum = pids.get(gridId).size();
+								Map<Long, List<Integer>> map = pids.get(gridId);
+								for(Entry<Long, List<Integer>> en : map.entrySet()){
+									long pid = en.getKey();
+									List<Integer> statusList = en.getValue();
+									if(statusList.contains(1) || statusList.contains(2)){
+										continue;
+									}
+									poiFinishSet.add(pid);
+								}
+								poiFinishNum = poiFinishSet.size();
 							}
 							value.put("poiFinishNum", poiFinishNum);
 						}
@@ -223,6 +233,25 @@ public class MonthPoiJob extends AbstractStatJob {
 				log.info("POI月库作业数据统计sql:" + selectSql);
 				Map<Integer, Map<String, Integer>> result = run.query(conn, selectSql,rsHandler);
 				
+				LogReader lr = new LogReader(conn);
+				//获取所有采集子任务集合
+				ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+				Set<Integer> subtasks = manApi.allCollectSubtaskId();
+				Map<Integer, Integer> poiNum = lr.getPoiNumBySubtaskId(ObjectName.IX_POI,subtasks);
+				for(Entry<Integer, Integer> entry : poiNum.entrySet()){
+					int gridId=entry.getKey();
+					if(result.containsKey(gridId)){
+						result.get(gridId).put("day2MonthPoiNum", entry.getValue());
+					}else{
+						Map<String,Integer> value = new HashMap<String,Integer>();
+					    value.put("logAllNum", 0);
+					    value.put("logFinishNum", 0);
+					    value.put("poiFinishNum", 0);
+					    value.put("day2MonthPoiNum", entry.getValue());
+						result.put(gridId, value);
+					}
+				}
+				
 				List<Map<String,Integer>> grid_month_poi = new ArrayList<Map<String,Integer>>();
 				for(Map.Entry<Integer, Map<String,Integer>> entry:result.entrySet()){
 					Map<String,Integer> cell = new HashMap<String,Integer>();
@@ -230,24 +259,12 @@ public class MonthPoiJob extends AbstractStatJob {
 					cell.put("logAllNum", entry.getValue().get("logAllNum"));
 					cell.put("logFinishNum", entry.getValue().get("logFinishNum"));
 					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
-					
+					cell.put("day2MonthPoiNum", entry.getValue().get("day2MonthPoiNum"));
 					grid_month_poi.add(cell);
 				}
-				//POI日落月数量
-				List<Map<String,Integer>> subtaskId_month_poi = new ArrayList<Map<String,Integer>>();
-				LogReader lr = new LogReader(conn);
-				Map<Integer, Integer> poiNum = lr.getPoiNumBySubtaskId(ObjectName.IX_POI);
-				for(Entry<Integer, Integer> entry : poiNum.entrySet()){
-					Map<String,Integer> cell = new HashMap<String,Integer>();
-					cell.put("subtaskId", entry.getKey());
-					cell.put("day2MonthPoiNum", entry.getValue());
-					
-					subtaskId_month_poi.add(cell);
-				}
-
+				
 				Map<String,List<Map<String,Integer>>> temp = new HashMap<String,List<Map<String,Integer>>>();
 				temp.put("grid_month_poi", grid_month_poi);
-				temp.put("subtaskId_month_poi", subtaskId_month_poi);
 				stats.put(dbId, temp);
 
 			}catch(Exception e){

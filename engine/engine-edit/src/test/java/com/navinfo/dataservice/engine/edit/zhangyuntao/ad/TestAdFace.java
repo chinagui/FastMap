@@ -53,8 +53,10 @@ public class TestAdFace extends InitApplication {
 
     @Test
     public void move() {
-        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":209000065," +
-                "\"data\":{\"longitude\":119.00177121162415,\"latitude\":37.59854112439639},\"type\":\"ADNODE\"}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"ZONELINK\",\"objId\":504000030,\"data\":{\"type\":\"ZONELINK\"," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.80701,39.95251],[116.80712,39.9526],[116.80736,39.95262]," +
+                "[116.80751,39.95252],[116.8075,39.95226],[116.80696,39.95235],[116.80701,39.95251]]},\"catchInfos\":[]},\"dbId\":13," +
+                "\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 }

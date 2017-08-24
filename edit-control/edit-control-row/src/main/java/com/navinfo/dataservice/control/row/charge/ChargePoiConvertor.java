@@ -314,9 +314,9 @@ public class ChargePoiConvertor {
 		chargePoi.put("position", position);
 		//出入口信息,母库未采集该属性，不转换，赋默认值
 		Map<String,Object> entryPointsMap = new HashMap<String,Object>();
-		entryPointsMap.put("type", 0);
-		entryPointsMap.put("longitude", 0);
-		entryPointsMap.put("latitude", 0);
+		entryPointsMap.put("type", 1);
+		entryPointsMap.put("longitude", ixPoi.getXGuide());
+		entryPointsMap.put("latitude", ixPoi.getYGuide());
 		chargePoi.put("entryPoints", entryPointsMap);
 		//是否检查验证过
 		chargePoi.put("validated", 1);

@@ -28,8 +28,21 @@ import oracle.sql.STRUCT;
 */
 public class RunnableSQL {
 	protected Logger log = Logger.getLogger(RunnableSQL.class);
+	private String tableName;
     private String sql;
     private List<Object> args = new ArrayList<Object>();
+    public RunnableSQL(String tableName){
+    	this.tableName=tableName;
+    }
+    
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
 	public String getSql() {
 		return sql;
 	}
@@ -91,7 +104,7 @@ public class RunnableSQL {
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.103:1521/orcl", "fm260_region_16win_d_1", "fm260_region_16win_d_1").getConnection();
-			RunnableSQL sql = new RunnableSQL();
+			RunnableSQL sql = new RunnableSQL("TEMP_XXW_01");
 			sql.setSql("INSERT INTO TEMP_XXW_01 VALUES (TO_DATE(?,'yyyymmdd hh24:mi:ss'),?,SDO_GEOMETRY(?,8307))");
 			sql.addArg("20161111 00:00:00");
 			sql.addArg(null);

@@ -49,7 +49,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -741,7 +740,7 @@ public class TaskService {
 						Object[] msgTmp=new Object[4];
 						msgTmp[0]=task.getGroupLeader();//收信人
 						msgTmp[1]=msgTitle;//消息头
-						msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+						msgTmp[2]="修改task:"+task.getName()+",请关注";//消息内容
 						//关联要素
 						JSONObject msgParam = new JSONObject();
 						msgParam.put("relateObject", "TASK");
@@ -3723,7 +3722,7 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "select st.subtask_id, st.geometry as st_geometry, st.name as st_name, st.stage as st_stage, st.work_kind, b.geometry, "
+			String selectSql = "select st.status as substatus, st.subtask_id, st.geometry as st_geometry, st.name as st_name, st.stage as st_stage, st.work_kind, b.geometry, "
 					+ "p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
 					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
 					+ "from subtask st, task t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id and st.task_id = t.task_id"
@@ -3777,6 +3776,7 @@ public class TaskService {
 						task.put("subtaskName", result.getString("st_name"));
 						task.put("subtaskStage", result.getInt("st_stage"));
 						task.put("subtaskWorkKind", result.getString("work_kind"));
+						task.put("subtaskStatus", result.getInt("substatus"));
 						
 						taskList.add(task);
 					}

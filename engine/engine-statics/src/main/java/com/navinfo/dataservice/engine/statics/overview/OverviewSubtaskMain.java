@@ -363,16 +363,16 @@ public class OverviewSubtaskMain {
 
 			//执行统计
 			List<Subtask> subtaskListNeedStatistics = OracleDao.getSubtaskListNeedStatistics();
-			List<Document> subtaskListWithStatistics = OracleDao.getSubtaskListWithStatistics();
+//			List<Document> subtaskListWithStatistics = OracleDao.getSubtaskListWithStatistics();
 
 			MongoDao md = new MongoDao(db_name);
 			Iterator<Subtask> subtaskItr = subtaskListNeedStatistics.iterator();
 			while(subtaskItr.hasNext()){
 				Document subtask = getSubtaskStat(subtaskItr.next());
-				subtaskListWithStatistics.add(subtask);
+//				subtaskListWithStatistics.add(subtask);
 //				break;
 			}
-			md.insertMany(col_name_subtask, subtaskListWithStatistics);
+//			md.insertMany(col_name_subtask, subtaskListWithStatistics);
 			
 			log.info("-- end stat:" + col_name_subtask);
 			//System.exit(0);

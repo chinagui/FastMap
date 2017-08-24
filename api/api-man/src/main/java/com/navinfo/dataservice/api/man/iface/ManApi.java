@@ -339,5 +339,11 @@ public interface ManApi{
      * @throws Exception
      */
     public void saveTimeline(int objectID, String name, int type, String operateDate) throws Exception;
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception;
 }
 

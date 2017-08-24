@@ -4088,4 +4088,33 @@ public class SubtaskService {
 
         return new ArrayList<>();
     }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            String sql="SELECT s.subtask_id from subtask s where s.stage=0";
+            QueryRunner run=new QueryRunner();
+            return run.query(conn, sql, new ResultSetHandler<Set<Integer>>(){
+
+                @Override
+                public Set<Integer> handle(ResultSet rs) throws SQLException {
+                	Set<Integer> subtaskSet=new HashSet<>();
+                    while(rs.next()){
+                    	subtaskSet.add(rs.getInt("subtask_id"));
+                    }
+                    return subtaskSet;
+                }
+            });
+        }catch(Exception e){
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("allCollectSubtaskId异常:"+e.getMessage(),e);
+        }finally{
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 }

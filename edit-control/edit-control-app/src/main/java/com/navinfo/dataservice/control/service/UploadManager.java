@@ -145,7 +145,8 @@ public class UploadManager {
 				for(Long fpi : freshVerPois){
 					allPois.remove(fpi);
 				}
-				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
+				Set<Long> freshVerPoisForPhoto = imp.getFreshVerPoisForPhoto();
+				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType,freshVerPoisForPhoto);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

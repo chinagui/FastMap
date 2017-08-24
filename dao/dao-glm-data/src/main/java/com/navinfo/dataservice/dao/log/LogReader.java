@@ -333,7 +333,7 @@ public class LogReader {
 		String fd_lst=null;
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM='IX_POI'";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -933,19 +933,21 @@ public class LogReader {
 	
 	
 	/**
-	 * 根据SubtaskId查询相应的poi数量
+	 * 根据采集子任务履历，按照grid返回相应的poi数量,
 	 * @param objName
-	 * @param mainTabName
-	 * @param pid
-	 * @return 
+	 * @param subtasks 采集子任务集合
+	 * @return Map<Integer,Integer> key：gridId，value：poi数量
 	 * @throws Exception
 	 */
-	public Map<Integer,Integer> getPoiNumBySubtaskId(String objName) throws Exception {
+	public Map<Integer,Integer> getPoiNumBySubtaskId(String objName,Set<Integer> subtasks) throws Exception {
 		Map<Integer,Integer> result = new HashMap<Integer,Integer>();
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT LD.GEO_PID,LA.STK_ID FROM LOG_ACTION LA,LOG_OPERATION LO,LOG_DETAIL LD ");
-		sb.append(" WHERE LA.ACT_ID = LO.ACT_ID AND LO.OP_ID = LD.OP_ID ");
-		sb.append(" AND LD.GEO_NM = '"+objName+"'");
+		sb.append(" SELECT DISTINCT LD.GEO_PID, LA.STK_ID,G.GRID_ID"
+				+ "  FROM LOG_ACTION LA, LOG_OPERATION LO, LOG_DETAIL LD,LOG_DETAIL_GRID G"
+				+ " WHERE LA.ACT_ID = LO.ACT_ID"
+				+ "   AND LO.OP_ID = LD.OP_ID"
+				+ "   AND LD.GEO_NM = '"+objName+"'"
+				+ "   AND LD.ROW_ID=G.LOG_ROW_ID ");
 		
 		log.info("根据SubtaskId查询相应的poi数量的sql语句:"+sb.toString());
 		
@@ -958,6 +960,9 @@ public class LogReader {
 			while(resultSet.next()){
 				long pid = resultSet.getLong("GEO_PID");
 				int subtaskId = resultSet.getInt("STK_ID");
+				if(!subtasks.contains(subtaskId)){
+					continue;
+				}
 				if(!map.containsKey(subtaskId)){
 					map.put(subtaskId, new HashSet<Long>());
 				}

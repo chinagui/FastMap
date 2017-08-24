@@ -305,6 +305,11 @@ public class ManApiImpl implements ManApi {
 		return taskIdSet;
 	}
 
+	@Override
+	public Set<Integer> getCollectTaskIdByDayTask(int taskId) throws ServiceException {
+		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDayTask(taskId);
+		return taskIdSet;
+	}
 
 	@Override
 	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {

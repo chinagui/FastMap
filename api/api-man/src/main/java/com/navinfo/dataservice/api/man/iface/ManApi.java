@@ -195,6 +195,7 @@ public interface ManApi{
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
+	public Set<Integer> getCollectTaskIdByDayTask(int taskId) throws Exception;
 	/**
 	 * 获取开启的多源子任务与grid的map
 	 * @param dbId 所在大区库

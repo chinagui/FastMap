@@ -77,7 +77,11 @@ public class CheckController extends BaseController {
 			if (jsonReq.containsKey("subtaskId")) {
 				subtaskId = jsonReq.getInt("subtaskId");
 			}
-
+			String sortby = "";
+			if(jsonReq.containsKey("sortby")){
+				sortby = jsonReq.getString("sortby");
+			}
+			
 			JSONArray gridJas = jsonReq.getJSONArray("grids");
 
 			int pageSize = jsonReq.getInt("pageSize");
@@ -120,7 +124,7 @@ public class CheckController extends BaseController {
 			 * //************************************
 			 */
 			Page page = selector.list(subtaskType, grids, pageSize, pageNum,
-					flag,ruleId,level);
+					flag,ruleId,level,sortby);
 			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));

@@ -248,7 +248,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			if(poiMap.size()==1){
 				Map.Entry<Integer,MultiSrcUploadPois> entry = poiMap.entrySet().iterator().next();
-				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;
+				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();
 			}else{
 				if(dbSize>10){
 					initThreadPool(10);
@@ -378,6 +378,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Connection conn=null;
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
+				log.info("dbId: "+dbId);
 				//导入数据
 				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(dbId,pois);
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);

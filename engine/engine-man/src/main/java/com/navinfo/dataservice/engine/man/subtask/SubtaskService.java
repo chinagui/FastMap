@@ -451,6 +451,8 @@ public class SubtaskService {
 			}				
 			//正常修改子任务
 			Subtask subtask = createSubtaskBean(userId,dataJson);
+			//subtask.setIsQuality(0);
+			
 			//判断是否有质检子任务,已有质检子任务，则从数据库中获取对应的质检id
 			Subtask commonSubtask = SubtaskService.getInstance().queryBySubtaskIdS(conn,subtask.getSubtaskId());
 			if(commonSubtask.getQualitySubtaskId()!=null&&commonSubtask.getQualitySubtaskId()!=0){
@@ -626,12 +628,11 @@ public class SubtaskService {
 			}	
 		}else{
 			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
-			if(newSubtask.getExeUserId()!=0&&newSubtask.getExeUserId()!=oldSubtask.getExeUserId()){
+			if(newSubtask.getExeUserId()!=0){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality().intValue()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
-			}
-			if(newSubtask.getExeGroupId()!=0&&newSubtask.getExeGroupId()!=oldSubtask.getExeGroupId()){
+			}else if(newSubtask.getExeGroupId()!=0){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
 				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
 				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}

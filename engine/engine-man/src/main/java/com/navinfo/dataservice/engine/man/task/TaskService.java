@@ -49,7 +49,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;

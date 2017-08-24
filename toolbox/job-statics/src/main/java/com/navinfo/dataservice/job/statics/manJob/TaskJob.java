@@ -28,8 +28,6 @@ import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.exception.ServiceException;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -43,12 +41,12 @@ public class TaskJob extends AbstractStatJob {
 
 	private static final String task = "task";
 	private static final String subtask = "subtask";
-	private static final String grid_tips = "grid_tips";
+	private static final String grid_task_tips = "grid_task_tips";
+	private static final String grid_notask_tips = "grid_notask_tips";
 	private static final String task_day_poi = "task_day_poi";
 	private static final String task_grid_tips = "task_grid_tips";
 	private static final String fcc = "fcc";
 	private static final String grid_month_poi = "grid_month_poi";
-	private static final String subtaskId_month_poi = "subtaskId_month_poi";
 	private static final String grid_day_poi = "grid_day_poi";
 	private static final String task_day_plan = "task_day_plan";
 	private static final String subtask_tips = "subtask_tips";
@@ -130,12 +128,12 @@ public class TaskJob extends AbstractStatJob {
 			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
 			//查询mongo中task_day_poi相应的统计数据
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
-			//查询mongo中grid_tips相应的统计数据
-			Map<Integer, Map<String, Integer>> gridTipsStatData = getGridTipsStatData(timestamp);
+			//查询mongo中grid_task_tips相应的统计数据
+			Map<Integer, Map<Integer, Map<String, Integer>>> gridTaskTipsStatData = getGridTaskTipsStatData(timestamp);
+			//查询mongo中grid_notask_tips相应的统计数据
+			Map<Integer, Map<String, Integer>> gridNotaskTipsStatData = getGridNotaskTipsStatData(timestamp);
 			//查询mongo中poi月编相应的统计数据
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			//查询mongo中subtaskId_month_poi相应的统计数据
-			Map<Integer, Map<String, Integer>> subMonthPoiStatData = getSubMonthPoiStatData(timestamp);
 			//查询mongo中grid_day_poi相应的统计数据
 			Map<Integer, Map<String, Integer>> gridDayPoiStatData = getGridDayPoiStatData(timestamp);
 			//查询mongo中task_day_plan相应的统计数据
@@ -152,18 +150,19 @@ public class TaskJob extends AbstractStatJob {
 				int taskId = task.getTaskId();
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
+				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {
 					int subtaskId = (int) map.get("subtaskId");
 					subtaskIds.add(subtaskId);
 				}
-				//处理grid_tips相应的统计数据
-				Map<String, Integer> gridTipsStat = handleGridTipsStatData(task, gridTipsStatData);
+				//处理grid_task_tips相应的统计数据 key:统计描述，value：统计值
+				Map<String, Integer> gridTaskTipsStat = handleGridTaskTipsStatData(task, collectTasks,gridTaskTipsStatData);
+				//处理grid_notask_tips相应的统计数据
+				Map<String, Integer> gridNotaskTipsStat = handleGridNotaskTipsStatData(task, gridNotaskTipsStatData);
 				//处理poi月编相应的统计数据
 				Map<String, Integer> MonthPoiStat = handleMonthPoiStatData(task, monthPoiStatData);
-				//处理subtaskId_month_poi相应的统计数据
-				Map<String, Integer> subMonthPoiStat = handleSubMonthPoiStatData(task, subMonthPoiStatData, subtaskIds);
 				//处理grid_day_poi相应的统计数据
 				Map<String, Integer> gridDayPoiStat = handleGridDayPoiStatData(task, gridDayPoiStatData);
 				//处理subtask_tips相应的统计数据
@@ -188,9 +187,9 @@ public class TaskJob extends AbstractStatJob {
 				}
 				Map<String, Object> fccData = taskFccStatData.get(taskId);
 				
-				dataMap.putAll(gridTipsStat);
+				dataMap.putAll(gridTaskTipsStat);
+				dataMap.putAll(gridNotaskTipsStat);
 				dataMap.putAll(MonthPoiStat);
-				dataMap.putAll(subMonthPoiStat);
 				dataMap.putAll(gridDayPoiStat);
 				dataMap.putAll(subTipsStat);
 				dataMap.putAll(subDayPoiStat);
@@ -333,7 +332,7 @@ public class TaskJob extends AbstractStatJob {
 				}
 				int tipsUploadNum = (int) jso.get("tipsUploadNum");
 				task.put("collectRoadActualTotal", tipsAddLen);
-				task.put("collectTipsCollectUploadNum", tipsUploadNum);
+				task.put("collectTipsUploadNum", tipsUploadNum);
 				task.put("collectLinkAddTotal", tipsAddLen);
 				stat.put(taskId, task);
 			}
@@ -425,12 +424,51 @@ public class TaskJob extends AbstractStatJob {
 	 * 查询mongo中grid_tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String,Integer>> getGridTipsStatData(String timestamp) throws Exception{
+	public Map<Integer, Map<Integer, Map<String, Integer>>> getGridTaskTipsStatData(String timestamp) throws Exception{
 		try {
 			MongoDao mongoDao = new MongoDao(dbName);
 			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(grid_tips, filter);
+			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
+			//依次为taskId,gridId,map
+			Map<Integer,Map<Integer,Map<String,Integer>>> tipsStat = new HashMap<Integer,Map<Integer,Map<String,Integer>>>();
+			//处理数据
+			while(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				Map<String,Integer> task = new HashMap<String,Integer>();
+				int gridId = (int) jso.get("gridId");
+				int taskId = (int) jso.get("taskId");
+				int taskEditAllNum = (int) jso.get("taskEditAllNum");
+				int taskEditFinishNum = (int) jso.get("taskEditFinishNum");
+				int taskNoEditAllNum = (int) jso.get("taskNoEditAllNum");
+				int taskCreateByEditNum = (int) jso.get("taskCreateByEditNum");
+				task.put("dayEditTipsAllNum", taskEditAllNum);
+				task.put("dayEditTipsFinishNum", taskEditFinishNum);
+				task.put("dayEditTipsNoWorkNum", taskNoEditAllNum);
+				task.put("tipsCreateByEditNum", taskCreateByEditNum);
+				Map<Integer,Map<String,Integer>> gridStat=new HashMap<>();
+				gridStat.put(gridId, task);
+				tipsStat.put(taskId, gridStat);
+			}
+			return tipsStat;
+		} catch (Exception e) {
+			log.error("查询mongo库中grid_tips统计数据报错"+e.getMessage());
+			throw new Exception("查询mongo库中grid_tips统计数据报错"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询mongo中grid_tips相应的统计数据
+	 * @throws ServiceException 
+	 */
+	public Map<Integer, Map<String, Integer>> getGridNotaskTipsStatData(String timestamp) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(dbName);
+			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
+			FindIterable<Document> findIterable = mongoDao.find(grid_notask_tips, filter);
+			MongoCursor<Document> iterator = findIterable.iterator();
+			//依次为taskId,gridId,map
 			Map<Integer,Map<String,Integer>> tipsStat = new HashMap<Integer,Map<String,Integer>>();
 			//处理数据
 			while(iterator.hasNext()){
@@ -438,16 +476,8 @@ public class TaskJob extends AbstractStatJob {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				Map<String,Integer> task = new HashMap<String,Integer>();
 				int gridId = (int) jso.get("gridId");
-				int taskEditAllNum = (int) jso.get("taskEditAllNum");
-				int taskEditFinishNum = (int) jso.get("taskEditFinishNum");
-				int taskNoEditAllNum = (int) jso.get("taskNoEditAllNum");
-				int taskCreateByEditNum = (int) jso.get("taskCreateByEditNum");
 				int noTaskTotal = (int) jso.get("noTaskTotal");
-				task.put("dayEditTipsAllNum", taskEditAllNum);
-				task.put("dayEditTipsFinishNum", taskEditFinishNum);
-				task.put("dayEditTipsUnfinishNum", taskNoEditAllNum);
-				task.put("tipsCreateByEditNum", taskCreateByEditNum);
-				task.put("notaskdata_tips_num", noTaskTotal);
+				task.put("notaskTipsNum", noTaskTotal);
 				tipsStat.put(gridId, task);
 			}
 			return tipsStat;
@@ -462,7 +492,7 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理grid_tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleGridTipsStatData(Task task,Map<Integer,Map<String,Integer>> gridTipsStatData) throws Exception{
+	public Map<String,Integer> handleGridTaskTipsStatData(Task task,Set<Integer> collectTasks,Map<Integer, Map<Integer, Map<String, Integer>>> gridTaskTipsStatData) throws Exception{
 		try {
 			//处理任务与grid的关系
 			Set<Integer> gridIds = task.getGridIds().keySet();
@@ -470,15 +500,19 @@ public class TaskJob extends AbstractStatJob {
 			int dayEditTipsFinishNum = 0;
 			int dayEditTipsUnfinishNum = 0;
 			int tipsCreateByEditNum = 0;
-			int notaskdata_tips_num = 0;
-			for (Integer gridId : gridIds) {
-				if(gridTipsStatData.containsKey(gridId)){
-					Map<String, Integer> map = gridTipsStatData.get(gridId);
-					dayEditTipsAllNum += map.get("dayEditTipsAllNum");
-					dayEditTipsFinishNum += map.get("dayEditTipsFinishNum");
-					dayEditTipsUnfinishNum += map.get("dayEditTipsUnfinishNum");
-					tipsCreateByEditNum += map.get("tipsCreateByEditNum");
-					notaskdata_tips_num += map.get("notaskdata_tips_num");
+			int notaskTipsNum = 0;
+			for(Integer ctaskId:collectTasks){
+				if(gridTaskTipsStatData.containsKey(ctaskId)){
+					Map<Integer, Map<String, Integer>> gridTips=gridTaskTipsStatData.get(ctaskId);
+					for (Integer gridId : gridIds) {
+						if(gridTaskTipsStatData.containsKey(gridId)){
+							Map<String, Integer> map = gridTips.get(gridId);
+							dayEditTipsAllNum += map.get("dayEditTipsAllNum");
+							dayEditTipsFinishNum += map.get("dayEditTipsFinishNum");
+							dayEditTipsUnfinishNum += map.get("dayEditTipsUnfinishNum");
+							tipsCreateByEditNum += map.get("tipsCreateByEditNum");
+						}
+					}
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
@@ -486,7 +520,30 @@ public class TaskJob extends AbstractStatJob {
 			taskStat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			taskStat.put("dayEditTipsUnfinishNum", dayEditTipsUnfinishNum);
 			taskStat.put("tipsCreateByEditNum", tipsCreateByEditNum);
-			taskStat.put("notaskdata_tips_num", notaskdata_tips_num);
+			return taskStat;
+		} catch (Exception e) {
+			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage());
+			throw new Exception("处理taskId("+task.getTaskId()+")grid_tips统计数据报错"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 处理grid_tips相应的统计数据
+	 * @throws ServiceException 
+	 */
+	public Map<String,Integer> handleGridNotaskTipsStatData(Task task,Map<Integer, Map<String, Integer>> gridNotaskTipsStatData) throws Exception{
+		try {
+			//处理任务与grid的关系
+			Set<Integer> gridIds = task.getGridIds().keySet();
+			int notaskTipsNum = 0;
+			for (Integer gridId : gridIds) {
+				if(gridNotaskTipsStatData.containsKey(gridId)){
+					Map<String, Integer> map = gridNotaskTipsStatData.get(gridId);
+					notaskTipsNum += map.get("notaskTipsNum");
+				}
+			}
+			Map<String,Integer> taskStat = new HashMap<String,Integer>();
+			taskStat.put("notaskTipsNum", notaskTipsNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage());
@@ -514,9 +571,11 @@ public class TaskJob extends AbstractStatJob {
 				int logAllNum = (int) jso.get("logAllNum");
 				int logFinishNum = (int) jso.get("logFinishNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
+				int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
 				task.put("logAllNum", logAllNum);
 				task.put("logFinishNum", logFinishNum);
 				task.put("poiFinishNum", poiFinishNum);
+				task.put("day2MonthNum", day2MonthPoiNum);
 				monthPoiStat.put(gridId, task);
 			}
 			return monthPoiStat;
@@ -558,58 +617,6 @@ public class TaskJob extends AbstractStatJob {
 	}
 
 	/**
-	 * 查询mongo中subtaskId_month_poi相应的统计数据
-	 * @throws ServiceException 
-	 */
-	public Map<Integer,Map<String,Integer>> getSubMonthPoiStatData(String timestamp) throws Exception{
-		try {
-			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(subtaskId_month_poi, filter);
-			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<Integer,Map<String,Integer>> monthPoiStat = new HashMap<Integer,Map<String,Integer>>();
-			//处理数据
-			while(iterator.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iterator.next());
-				Map<String,Integer> task = new HashMap<String,Integer>();
-				int subtaskId = (int) jso.get("subtaskId");
-				int day2MonthPoiNum = (int) jso.get("day2MonthPoiNum");
-				task.put("day2MonthNum", day2MonthPoiNum);
-				monthPoiStat.put(subtaskId, task);
-			}
-			return monthPoiStat;
-		} catch (Exception e) {
-			log.error("查询mongo库中subtaskId_month_poi统计数据报错"+e.getMessage());
-			throw new Exception("查询mongo库中subtaskId_month_poi统计数据报错"+e.getMessage(),e);
-		}
-	}
-	
-
-	/**
-	 * 处理subtaskId_month_poi相应的统计数据
-	 * @throws ServiceException 
-	 */
-	public Map<String,Integer> handleSubMonthPoiStatData(Task task,Map<Integer,Map<String,Integer>> subMonthPoiStatData,Set<Integer> subtaskIds) throws Exception{
-		try {
-			//处理数据
-			int day2MonthNum = 0;
-			for (Integer subtaskId : subtaskIds) {
-				if(subMonthPoiStatData.containsKey(subtaskId)){
-					Map<String, Integer> map = subMonthPoiStatData.get(subtaskId);
-					day2MonthNum += map.get("day2MonthNum");
-				}
-			}
-			Map<String,Integer> taskStat = new HashMap<String,Integer>();
-			taskStat.put("day2MonthNum", day2MonthNum);
-			return taskStat;
-		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")subtaskId_month_poi统计数据报错,"+e.getMessage());
-			throw new Exception("处理taskId("+task.getTaskId()+")subtaskId_month_poi统计数据报错"+e.getMessage(),e);
-		}
-	}
-
-	/**
 	 * 查询mongo中grid_day_poi相应的统计数据
 	 * @throws ServiceException 
 	 */
@@ -645,15 +652,15 @@ public class TaskJob extends AbstractStatJob {
 		try {
 			//处理数据
 			Set<Integer> gridIds = task.getGridIds().keySet();
-			int notaskdata_poi_num = 0;
+			int notaskPoiNum = 0;
 			for (Integer gridId : gridIds) {
 				if(gridDayPoiStatData.containsKey(gridId)){
 					Map<String, Integer> map = gridDayPoiStatData.get(gridId);
-					notaskdata_poi_num += map.get("poiNum");
+					notaskPoiNum += map.get("poiNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
-			taskStat.put("notaskdata_poi_num", notaskdata_poi_num);
+			taskStat.put("notaskPoiNum", notaskPoiNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")grid_day_poi统计数据报错,"+e.getMessage());
@@ -914,7 +921,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiPlanOut = 0;
 		
 		double collectRoadActualTotal = 0;
-		int collectTipsCollectUploadNum = 0;
+		int collectTipsUploadNum = 0;
 		
 		int poiUploadNum = 0;
 		int poiFinishNum = 0;
@@ -922,7 +929,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiActualFinishNum = 0;
 		
 		int dayEditTipsAllNum = 0;
-		int dayEditTipsUnfinishNum = 0;
+		int dayEditTipsNoWorkNum = 0;
 		int dayEditTipsFinishNum = 0;
 		int tipsCreateByEditNum = 0;
 		
@@ -950,8 +957,8 @@ public class TaskJob extends AbstractStatJob {
 		int crowdPoiTotal = 0;
 		int multisourcePoiTotal = 0;
 		
-		int notaskdata_poi_num = 0;
-		int notaskdata_tips_num = 0;
+		int notaskPoiNum = 0;
+		int notaskTipsNum = 0;
 		int programType=0;
 		
 		int poiCollectPercent = 0;
@@ -959,12 +966,11 @@ public class TaskJob extends AbstractStatJob {
 		int roadPercent = 0;
 		int percent = 0;
 		int progress = 1;
+		Map<String, Object> taskMap = new HashMap<String, Object>();
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
-			String systemDate = sdf.format(new Date());
-			
-			Map<String, Object> taskMap = new HashMap<String, Object>();
+			String systemDate = sdf.format(new Date());			
 			//任务id
 			taskId = task.getTaskId();
 			//任务类型
@@ -1029,8 +1035,8 @@ public class TaskJob extends AbstractStatJob {
 					collectRoadActualTotal=collectRoadActualTotal+(double) fccData.get("linkLen");}
 			}
 			//采集上传个数
-			if(dataMap.containsKey("collectTipsCollectUploadNum")){
-				collectTipsCollectUploadNum = (int) dataMap.get("collectTipsCollectUploadNum");
+			if(dataMap.containsKey("collectTipsUploadNum")){
+				collectTipsUploadNum = (int) dataMap.get("collectTipsUploadNum");
 			}
 			//采集上传POI个数
 			if(dataMap.containsKey("poiUploadNum")){
@@ -1053,8 +1059,8 @@ public class TaskJob extends AbstractStatJob {
 				dayEditTipsAllNum = (int) dataMap.get("dayEditTipsAllNum");
 			}
 			//日编不作业tips总量
-			if(dataMap.containsKey("dayEditTipsUnfinishNum")){
-				dayEditTipsUnfinishNum = (int) dataMap.get("dayEditTipsUnfinishNum");
+			if(dataMap.containsKey("dayEditTipsNoWorkNum")){
+				dayEditTipsNoWorkNum = (int) dataMap.get("dayEditTipsNoWorkNum");
 			}
 			//日编tips完成个数
 			if(dataMap.containsKey("dayEditTipsFinishNum")){
@@ -1140,12 +1146,12 @@ public class TaskJob extends AbstractStatJob {
 				multisourcePoiTotal = (int) dataMap.get("multisourcePoiTotal");
 			}
 			//无任务POI数量
-			if(dataMap.containsKey("notaskdata_poi_num")){
-				notaskdata_poi_num = (int) dataMap.get("notaskdata_poi_num");
+			if(dataMap.containsKey("notaskPoiNum")){
+				notaskPoiNum = (int) dataMap.get("notaskPoiNum");
 			}
 			//无任务Tips数量
-			if(dataMap.containsKey("notaskdata_tips_num")){
-				notaskdata_tips_num = (int) dataMap.get("notaskdata_tips_num");
+			if(dataMap.containsKey("notaskTipsNum")){
+				notaskTipsNum = (int) dataMap.get("notaskTipsNum");
 			}
 			//处理完成度
 			//中线
@@ -1257,13 +1263,13 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiPlanIn", poiPlanIn);
 			taskMap.put("poiPlanOut", poiPlanOut);
 			taskMap.put("collectRoadActualTotal", collectRoadActualTotal);
-			taskMap.put("collectTipsCollectUploadNum", collectTipsCollectUploadNum);
+			taskMap.put("collectTipsUploadNum", collectTipsUploadNum);
 			taskMap.put("poiUploadNum", poiUploadNum);
 			taskMap.put("poiFinishNum", poiFinishNum);
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);
 			taskMap.put("poiActualFinishNum", poiActualFinishNum);
 			taskMap.put("dayEditTipsAllNum", dayEditTipsAllNum);
-			taskMap.put("dayEditTipsUnfinishNum", dayEditTipsUnfinishNum);
+			taskMap.put("dayEditTipsNoWorkNum", dayEditTipsNoWorkNum);
 			taskMap.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			taskMap.put("tipsCreateByEditNum", tipsCreateByEditNum);
 			taskMap.put("monthPoiLogTotalNum", monthPoiLogTotalNum);
@@ -1287,8 +1293,8 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiFreshNum", poiFreshNum);
 			taskMap.put("crowdPoiTotal", crowdPoiTotal);
 			taskMap.put("multisourcePoiTotal", multisourcePoiTotal);
-			taskMap.put("notaskdata_poi_num", notaskdata_poi_num);
-			taskMap.put("notaskdata_tips_num", notaskdata_tips_num);
+			taskMap.put("notaskPoiNum", notaskPoiNum);
+			taskMap.put("notaskTipsNum", notaskTipsNum);
 			taskMap.put("programType", programType);
 			taskMap.put("poiCollectPercent", poiCollectPercent);
 			taskMap.put("poiDayPercent", poiDayPercent);
@@ -1298,6 +1304,7 @@ public class TaskJob extends AbstractStatJob {
 			
 			return taskMap;
 		} catch (Exception e) {
+			log.error(taskMap);
 			log.error("处理数据出错:" + e.getMessage(), e);
 			throw new Exception("处理数据出错:" + e.getMessage(), e);
 		}

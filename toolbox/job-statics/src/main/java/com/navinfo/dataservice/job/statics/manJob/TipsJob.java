@@ -22,6 +22,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -34,37 +35,7 @@ import oracle.sql.STRUCT;
 
 /**
  *  
- *  Tips统计job
- *  
- *  Collection:
-	Subtask_tips
-	只查中线子任务
-	字段
-	subtaskId, firstCollectDate,tipsTotal
-	子任务-实际开始日期-tips/day：（需求待确认）(采集子任务)第一条数据采集的日期
-	任务-众包tips作业量【MT-CR-12】-tips：（中线-采集任务）如果采集任务的采集方式包含众包，则查找任务下所有“采集方式=众包”的子任务，根据子任务Id统计tips(同样，任务-情报矢量tips作业量【MT-CR-13】-tips：（中线-采集任务）如果采集任务的采集方式包含情报矢量，则查找任务下“采集方式=情报矢量”的子任务，根据子任务Id统计tips)
-	
-	Collection:
-	Task_grid_tips
-	中线、快线任务均查询
-	字段
-	taskId,tipsAddLen,tipsUploadNum
-	任务-道路实际作业量【QT-CR-2】-tips：（快线-采集任务）采集任务中所有新增测线tips，统计link里程(同样，任务-道路实际作业里程【MT-CR-7】-day：（中线-采集任务）采集上传现场轨迹匹配的link里程+根据采集任务ID，查找所有新增测线tips，统计里程；任务-新增里程【MT-CR-10】-day：（中线-采集任务）根据采集任务ID，查找所有新增测线tips，统计里程)
-	任务-采集上传tips个数【QT-CR-3】-tips：（快线-采集任务）根据采集任务ID直接获取（同样，任务-采集上传tips个数【MT-CR-11】-tips：（中线-采集任务）根据采集任务ID直接获取）
-	
-	
-	Collection:
-	Grid_tips
-	字段
-	gridId, subtaskEditAllNum, subtaskEditFinishNum, taskEditAllNum,taskNoeditAllNum,taskCreateByEditNum, taskEditFinishNum,noTaskTotal
-	子任务-日编tips总量【QS-D-1】-tips：（快线日编grid粗编子任务），快线任务id！=0，t_tipStatus=2(已完成)且t_dEditStatus=2(已完成)
-	子任务-日编tips完成个数【QS-D-2】-tips：（快线日编grid粗编子任务），快线任务id！=0，t_tipStatus=2(已完成)
-	任务-日编tips总量【QT-D-1】-tips：（快线-日编任务），快线任务id！=0，t_tipStatus=2(已完成)且stage=1，2，6，7注：需关联配置表，排除不需要日编grid粗编作业的tips
-	任务-日编不作业tips总量【QT-D-2】-tips：（快线-日编任务），快线任务id！=0，t_tipStatus=2(已完成)且stage=1，2，6，7注：需关联配置表，统计不需要日编作业的tips
-	任务-内业生成tips个数【QT-D-3】-tips：（快线-日编任务），快线任务id！=0，t_tipStatus=2(已完成)且80开头类型的tips
-	任务-日编tips完成个数【QT-D-4】-tips：（快线-日编任务），快线任务id！=0，t_tipStatus=2(已完成)且t_dEditStatus=2(已完成)且stage=1，2，6，7
-	城市-无任务Tips数量-tips：中线快线任务id均为0的，track.t_tipStatus=2(已完成)且tips类型(s_sourceType)不为80开头的数据（同样，区县-无任务Tips数量-tips：track.t_tipStatus=2(已完成)且tips类型(s_sourceType)不为80开头的数据）
-
+ * Tips统计job
  * @author sjw
  *
  */
@@ -72,32 +43,25 @@ public class TipsJob extends AbstractStatJob {
 
 	protected VMThreadPoolExecutor threadPoolExecutor;
 
-	/**
-	 * @param jobInfo
-	 */
 	public TipsJob(JobInfo jobInfo) {
 		super(jobInfo);
-		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.job.statics.AbstractStatJob#stat()
-	 */
 	@Override
 	public String stat() throws JobException {
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getTipsIdxConnection();
 			long t = System.currentTimeMillis();
-			log.debug("所有Tips数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			Map<String,List<Map<String,Object>>> result = new HashMap<String,List<Map<String,Object>>>();
 			result.put("subtask_tips", getSubtaskTips(conn));
 			result.put("task_grid_tips", getTaskGridTips(conn));
-			result.put("grid_tips", getGridTips(conn));
+			result.put("grid_task_tips", getGridTaskTips(conn));
+			result.put("grid_notask_tips", getGridNoTaskTips(conn));
+			log.debug("所有Tips数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 
 			return JSONObject.fromObject(result).toString();
-			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -106,44 +70,40 @@ public class TipsJob extends AbstractStatJob {
 		}
 	}
 	
-	
-	public List<Map<String, Object>> getGridTips(Connection conn) throws Exception {
+	public  List<Map<String, Object>> getGridTaskTips(Connection conn) throws Exception {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Map<String, Object>> gridTipsTaskList = new ArrayList<>();
 		Map<String, Object> tipsTaskMap = new HashMap<>();
-		Map<Integer,Map<String, Object>> gridTipsTaskMap = new HashMap<>();
+		Map<String,Map<String, Object>> gridTipsTaskMap = new HashMap<>();
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
 		try{
-			
-			int gridId = 0;
-
-			String sql = "SELECT wkt,t_dEditStatus,stage,s_sourceType FROM tips_index WHERE s_qtaskid <> 0 AND t_tipStatus = 2 ORDER BY s_qtaskid" ;
+			String sql = "SELECT s_qtaskid,wkt,t_dEditStatus,stage,s_sourceType FROM tips_index WHERE s_qtaskid <> 0 AND t_tipStatus = 2 ORDER BY s_qtaskid" ;
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
+				int gridId = getGrid(rs);
+				int taskId = rs.getInt("s_qtaskid");
+				String key = gridId + "_" + taskId;
 				
-				int grid = getGrid(rs);
-				
-				if(!gridTipsTaskMap.containsKey(grid)) {
+				if(!gridTipsTaskMap.containsKey(key)) {
 					tipsTaskMap = new HashMap<>(); 
-					gridId = grid;
 					tipsTaskMap.put("gridId",gridId);
-					tipsTaskMap.put("noTaskTotal", 0);
+					tipsTaskMap.put("taskId",taskId);
 					gridTipsTaskList.add(tipsTaskMap);
-					gridTipsTaskMap.put(gridId, tipsTaskMap);
+					gridTipsTaskMap.put(key, tipsTaskMap);
 				}
 				
-				tipsTaskMap = gridTipsTaskMap.get(grid);
+				tipsTaskMap = gridTipsTaskMap.get(key);
 				
-				Integer subtaskEditAllNum = tipsTaskMap.containsKey("subtaskEditAllNum")?(Integer) tipsTaskMap.get("subtaskEditAllNum"):0;
-				Integer subtaskEditFinishNum = tipsTaskMap.containsKey("subtaskEditFinishNum")?(Integer)tipsTaskMap.get("subtaskEditFinishNum"):0;
-				Integer taskEditAllNum = tipsTaskMap.containsKey("taskEditAllNum")?(Integer)tipsTaskMap.get("taskEditAllNum"):0;
-				Integer taskNoEditAllNum = tipsTaskMap.containsKey("taskNoEditAllNum")?(Integer)tipsTaskMap.get("taskNoEditAllNum"):0;
-				Integer taskCreateByEditNum = tipsTaskMap.containsKey("taskCreateByEditNum")?(Integer) tipsTaskMap.get("taskCreateByEditNum"):0;
-				Integer taskEditFinishNum = tipsTaskMap.containsKey("taskEditFinishNum")?(Integer)tipsTaskMap.get("taskEditFinishNum"):0;
+				int subtaskEditAllNum = tipsTaskMap.containsKey("subtaskEditAllNum")?(int) tipsTaskMap.get("subtaskEditAllNum"):0;
+				int subtaskEditFinishNum = tipsTaskMap.containsKey("subtaskEditFinishNum")?(int)tipsTaskMap.get("subtaskEditFinishNum"):0;
+				int taskEditAllNum = tipsTaskMap.containsKey("taskEditAllNum")?(int)tipsTaskMap.get("taskEditAllNum"):0;
+				int taskNoEditAllNum = tipsTaskMap.containsKey("taskNoEditAllNum")?(int)tipsTaskMap.get("taskNoEditAllNum"):0;
+				int taskCreateByEditNum = tipsTaskMap.containsKey("taskCreateByEditNum")?(int) tipsTaskMap.get("taskCreateByEditNum"):0;
+				int taskEditFinishNum = tipsTaskMap.containsKey("taskEditFinishNum")?(int)tipsTaskMap.get("taskEditFinishNum"):0;
 				
 				int stage = rs.getInt("stage");
 				if(rs.getInt("t_dEditStatus")==2){
@@ -175,52 +135,57 @@ public class TipsJob extends AbstractStatJob {
 						}
 					}
 				}
-				
-				
 				tipsTaskMap.put("subtaskEditAllNum", subtaskEditAllNum);
 				tipsTaskMap.put("subtaskEditFinishNum", subtaskEditFinishNum);
 				tipsTaskMap.put("taskEditAllNum", taskEditAllNum);
 				tipsTaskMap.put("taskNoEditAllNum", taskNoEditAllNum);
 				tipsTaskMap.put("taskCreateByEditNum", taskCreateByEditNum);
 				tipsTaskMap.put("taskEditFinishNum", taskEditFinishNum);
-				
 			}
-			
-			
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new ThreadExecuteException("Tips数据统计失败");
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
+		}
+		return gridTipsTaskList;
+	}
+	
+	public List<Map<String, Object>> getGridNoTaskTips(Connection conn) throws Exception {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Map<String, Object>> gridTipsTaskList = new ArrayList<>();
+		Map<String, Object> tipsTaskMap = new HashMap<>();
+		Map<Integer,Map<String, Object>> gridTipsTaskMap = new HashMap<>();
+		try{
 			String sql1 = "SELECT wkt FROM tips_index WHERE S_QTASKID = 0 AND S_MTASKID = 0 AND t_tipStatus = 2 AND s_sourceType not like '80%'" ;
 			pstmt = conn.prepareStatement(sql1);
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
+				int gridId = getGrid(rs);
 				
-				int grid = getGrid(rs);
-				
-				if(!gridTipsTaskMap.containsKey(grid)) {
+				if(!gridTipsTaskMap.containsKey(gridId)) {
 					tipsTaskMap = new HashMap<>(); 
-					gridId = grid;
 					tipsTaskMap.put("gridId",gridId);
-					tipsTaskMap.put("subtaskEditAllNum", 0);
-					tipsTaskMap.put("subtaskEditFinishNum", 0);
-					tipsTaskMap.put("taskEditAllNum", 0);
-					tipsTaskMap.put("taskNoEditAllNum", 0);
-					tipsTaskMap.put("taskCreateByEditNum", 0);
-					tipsTaskMap.put("taskEditFinishNum", 0);
 					gridTipsTaskList.add(tipsTaskMap);
 					gridTipsTaskMap.put(gridId, tipsTaskMap);
 				}				
 				
 				tipsTaskMap = gridTipsTaskMap.get(gridId);
 				
-				Integer noTaskTotal = tipsTaskMap.containsKey("noTaskTotal")?(Integer)tipsTaskMap.get("noTaskTotal"):0;
+				int noTaskTotal = tipsTaskMap.containsKey("noTaskTotal")?(int)tipsTaskMap.get("noTaskTotal"):0;
 				noTaskTotal++;
 				
 				tipsTaskMap.put("noTaskTotal",noTaskTotal);
-				
 			}
-	
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new ThreadExecuteException("Tips数据统计失败");
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
 		}
 		return gridTipsTaskList;
 	}
@@ -291,7 +256,6 @@ public class TipsJob extends AbstractStatJob {
 				}
 			}
 			
-			
 			for (Map<String, Object> map : tipsAddLenList) {
 				map.put("tipsUploadNum", 0);
 			}
@@ -310,6 +274,9 @@ public class TipsJob extends AbstractStatJob {
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new ThreadExecuteException("Tips数据统计失败");
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 	
@@ -351,8 +318,6 @@ public class TipsJob extends AbstractStatJob {
 			tipsAddLen+=GeometryUtils.getLinkLength(geometry);//根据geometry求里程
 			DecimalFormat df=new DecimalFormat("0.00");
 			taskGridTipsMap.put("tipsAddLen",df.format(tipsAddLen).toString());
-			
-
 		}
 	}
 
@@ -381,8 +346,6 @@ public class TipsJob extends AbstractStatJob {
 						return subtaskTipsList;
 					}
 				});
-				
-
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				throw new ThreadExecuteException("Tips数据统计失败");

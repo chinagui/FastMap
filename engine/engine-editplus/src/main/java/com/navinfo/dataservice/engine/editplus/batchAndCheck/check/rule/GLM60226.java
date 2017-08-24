@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -37,6 +38,8 @@ import java.util.*;
  * @Version: V1.0
  */
 public class GLM60226 extends BasicCheckRule {
+
+    private static Logger logger = Logger.getLogger(GLM60226.class);
 
     /**
      * 允许作为父关系的POI种别
@@ -70,6 +73,8 @@ public class GLM60226 extends BasicCheckRule {
 
     @Override
     public void run() throws Exception {
+        long startTime = System.currentTimeMillis();
+
         Map<Long, IxPoiObj> map = new HashMap<>();
 
         for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
@@ -197,6 +202,8 @@ public class GLM60226 extends BasicCheckRule {
         } finally {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
+
+            logger.info("GLM60226: (SPEND TIME: " + ((System.currentTimeMillis() - startTime) >> 10) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
         }
     }
 }

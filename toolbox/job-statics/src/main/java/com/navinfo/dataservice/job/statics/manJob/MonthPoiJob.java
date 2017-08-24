@@ -175,6 +175,7 @@ public class MonthPoiJob extends AbstractStatJob {
 							    int logFinishNum = 0;
 							    value.put("logAllNum", 0);
 							    value.put("logFinishNum", 0);
+							    value.put("day2MonthPoiNum", 0);
 							    if(gridStat.containsKey(gridId)){
 							    	value = gridStat.get(gridId);
 							    	logAllNum = value.get("logAllNum");

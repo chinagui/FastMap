@@ -5,9 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
@@ -39,7 +42,8 @@ import net.sf.json.JSONObject;
  */
 public class SubtaskJob extends AbstractStatJob {
 	private static final String subtask = "subtask";
-	private static final String grid_tips = "grid_tips";
+//	private static final String grid_tips = "grid_tips";
+	private static final String grid_task_tips = "grid_task_tips";
 //	private static final String subtask_tips = "subtask_tips";
 	private static final String subtask_day_poi = "subtask_day_poi";
 	private static final String grid_month_poi = "grid_month_poi";
@@ -55,6 +59,7 @@ public class SubtaskJob extends AbstractStatJob {
 	@Override
 	public String stat() throws JobException {
 		try {
+			long t = System.currentTimeMillis();
 			//获取统计时间
 			SubtaskJobRequest statReq = (SubtaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
@@ -80,7 +85,7 @@ public class SubtaskJob extends AbstractStatJob {
 			//查询mongo库处理数据
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			Map<Integer, Map<String, Integer>> tipsStatData = getTipsStatData(timestamp);
+			Map<Integer, List<Map<String, Integer>>> tipsStatData = getTipsStatData(timestamp);
 //			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
 			//统计子任务数据
 			Iterator<Subtask> subtaskItr = subtaskListNeedStat.iterator();
@@ -90,6 +95,11 @@ public class SubtaskJob extends AbstractStatJob {
 				//获取grid
 				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
 				subtask.setGridIds(gridIds);
+				
+				Set<Integer> collectionTasks = new HashSet<>();
+				if(subtask.getStage() == 1){
+					collectionTasks = manApi.getCollectTaskIdByDaySubtask(subtask.getSubtaskId());
+				}
 				//获取相应的统计数据
 				Map<String, Object> subManTimelineStart = null;
 				Map<String, Object> subManTimelineEnd = null;
@@ -108,7 +118,8 @@ public class SubtaskJob extends AbstractStatJob {
 //					subTipsStat = subTipsStatData.get(subtaskId);
 //				}
 				Map<String, Integer> subMonthPoiStat = handleMonthPoiStatData(subtask, monthPoiStatData);
-				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData);
+
+				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData, collectionTasks);
 				//处理具体统计数据
 				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
 				
@@ -121,7 +132,7 @@ public class SubtaskJob extends AbstractStatJob {
 			result.put("subtask",subtaskStatList);
 
 			log.info("end stat "+statReq.getJobType());
-			long t = System.currentTimeMillis();
+			
 			log.debug("所有日库子任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();
@@ -260,24 +271,31 @@ public class SubtaskJob extends AbstractStatJob {
 	 * 查询mongo中tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String,Integer>> getTipsStatData(String timestamp) throws Exception{
+	public Map<Integer,List<Map<String,Integer>>> getTipsStatData(String timestamp) throws Exception{
 		try {
 			MongoDao mongoDao = new MongoDao(dbName);
 			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(grid_tips, filter);
+			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<Integer,Map<String,Integer>> tipsStat = new HashMap<Integer,Map<String,Integer>>();
+			Map<Integer,List<Map<String,Integer>>> tipsStat = new HashMap<Integer,List<Map<String,Integer>>>();
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				List<Map<String,Integer>> data = new ArrayList<>();
 				Map<String,Integer> subtask = new HashMap<String,Integer>();
 				int gridId = (int) jso.get("gridId");
+				if(tipsStat.containsKey(gridId)){
+					data = tipsStat.get(gridId);
+				}
+				int taskId = (int) jso.get("taskId");
 				int subtaskEditAllNum = (int) jso.get("subtaskEditAllNum");
 				int subtaskEditFinishNum = (int) jso.get("subtaskEditFinishNum");
 				subtask.put("subtaskEditAllNum", subtaskEditAllNum);
 				subtask.put("subtaskEditFinishNum", subtaskEditFinishNum);
-				tipsStat.put(gridId, subtask);
+				subtask.put("taskId", taskId);
+				data.add(subtask);
+				tipsStat.put(gridId, data);
 			}
 			return tipsStat;
 		} catch (Exception e) {
@@ -291,17 +309,27 @@ public class SubtaskJob extends AbstractStatJob {
 	 * 处理subtaskId中tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,Map<String,Integer>> tipsStatData) throws Exception{
+	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,List<Map<String,Integer>>> tipsStatData, Set<Integer> collectionTasks) throws Exception{
 		try {
 			//处理子任务与grid的关系
 			List<Integer> gridIds = subtask.getGridIds();
+
 			int tipsAllNum = 0;
 			int tipsFinishNum = 0;
 			for (Integer gridId : gridIds) {
 				if(tipsStatData.containsKey(gridId)){
-					Map<String, Integer> map = tipsStatData.get(gridId);
-					tipsAllNum += map.get("subtaskEditAllNum");
-					tipsFinishNum += map.get("subtaskEditFinishNum");
+					List<Map<String, Integer>> gridDatas = tipsStatData.get(gridId);
+					for(Map<String, Integer> map : gridDatas){
+						//日编子任务
+						if(subtask.getStage() == 1){
+							int taskId = map.get("taskId");
+							if(!collectionTasks.contains(taskId)){
+								continue;
+							}
+							tipsAllNum += map.get("subtaskEditAllNum");
+							tipsFinishNum += map.get("subtaskEditFinishNum");
+						}
+					}
 				}
 			}
 			Map<String,Integer> subtaskStat = new HashMap<String,Integer>();

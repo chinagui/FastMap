@@ -854,7 +854,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 	protected SqlClause getSelectLogSql(Connection conn,List<Integer> taskIds, int taskType) throws Exception{
 		StringBuilder sb = new StringBuilder();
-		sb.append(" select distinct g.GRID_ID\r\n" + 
+		sb.append(" select /*+ leading(P,D,G,S)*/  distinct g.GRID_ID\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 

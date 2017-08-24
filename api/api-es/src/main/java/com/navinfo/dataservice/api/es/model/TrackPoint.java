@@ -2,7 +2,9 @@ package com.navinfo.dataservice.api.es.model;
 
 import net.sf.json.JSONObject;
 
-public class TrackPoint {
+import java.io.Serializable;
+
+public class TrackPoint implements Serializable {
     private String id;
     private String a_recordTime;
     private JSONObject a_geometry;

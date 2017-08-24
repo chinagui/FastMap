@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("editApi")
+@Service("esApi")
 public class EsApiImpl implements EsApi {
     EsController controller = new EsController();
     @Override

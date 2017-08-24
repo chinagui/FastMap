@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+import com.navinfo.navicommons.exception.ObjPersistException;
 
 /** 
  * @ClassName: Operation
@@ -90,9 +91,14 @@ public abstract class AbstractOperation {
 			List<RunnableSQL> sqls = obj.generateSql(physiDelete);
 			if(sqls!=null){
 				for(RunnableSQL sql:sqls){
-					log.info("持久化sql:" + sql.getSql());
-					log.info("持久化sql参数:" + sql.getArgs());
-					sql.run(conn);
+					try{
+						log.info("持久化sql:" + sql.getSql());
+						log.info("持久化sql参数:" + sql.getArgs());
+						sql.run(conn);
+					}catch(Exception e){
+						log.error(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+						throw new ObjPersistException(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+					}
 				}
 			}
 			//持久化把新增后删除的对象移出objs

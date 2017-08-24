@@ -178,6 +178,8 @@ public class PoiDownloadOperation {
 			logger.info("starting convert data...");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");
+			String encoding = System.getProperty("file.encoding");
+			logger.info("系统编码encoding:"+encoding);
 			for (int j = 0; j < ja.size(); j++) {
 				pw.println(ja.getJSONObject(j).toString());
 			}

@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
@@ -18,17 +16,13 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiPartSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
-import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
-import com.navinfo.navicommons.database.sql.DBUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -337,12 +331,11 @@ public class PoiSave {
 					+ str + ")");
 		} else {
 			// 鲜度验证保存时调用
-			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
-					+ pids + ")");
-			
-			
-			
-			
+			String condition = " QUICK_SUBTASK_ID = 0 AND QUICK_TASK_ID = 0 AND MEDIUM_SUBTASK_ID = 0 AND MEDIUM_TASK_ID = 0";
+			sb.append(" UPDATE poi_edit_status SET status = 2 ,QUICK_SUBTASK_ID = CASE WHEN "+ condition +" THEN "+qst+" ELSE QUICK_SUBTASK_ID END,");
+			sb.append(" QUICK_TASK_ID = CASE WHEN"+ condition +" THEN "+qt+" ELSE QUICK_SUBTASK_ID END,");
+			sb.append(" MEDIUM_SUBTASK_ID = CASE WHEN"+ condition +" THEN "+mst+" ELSE MEDIUM_SUBTASK_ID END,");
+			sb.append(" MEDIUM_TASK_ID = CASE WHEN"+ condition +" THEN "+mt+" ELSE MEDIUM_TASK_ID END WHERE pid in ("+pids+")");			
 		}
 
 		PreparedStatement pstmt = null;

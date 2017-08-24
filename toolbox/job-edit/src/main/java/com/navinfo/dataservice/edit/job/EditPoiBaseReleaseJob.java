@@ -233,7 +233,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   AND ps.status =2"
 					//20170713 与凤琴、晓毅，讨论，放进来鲜度验证的数据，有两个批处理需要批鲜度验证的数据
 					//+ "   AND ps.FRESH_VERIFIED=0"
-					//+ "   and ip.u_record!=2"
+					//20170823 删除的数据，由于加载数据时，只能加载到主表，因此删除的数据不做检查与批处理
+					+ "   and ip.u_record!=2"
 					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			QueryRunner run=new QueryRunner();
 			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){

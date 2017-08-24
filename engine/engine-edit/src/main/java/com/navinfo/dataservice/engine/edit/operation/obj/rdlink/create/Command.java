@@ -203,7 +203,6 @@ public class Command extends AbstractCommand {
 			} else if (this.laneNum >= 4) {
 				this.width = 130;
 			}
-			this.width = data.getInt("width");
 		}
 	}
 

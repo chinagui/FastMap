@@ -1,0 +1,9 @@
+﻿1. fm_pid/init_segments_added.sql
+	功能：警示信息(RD_LINK_WARNING)增加pid片段
+	目标库：fm_pid
+	author：鹿尧
+    
+2. fm_sys/glm_table_init.sql
+	功能：计算警示信息(RD_LINK_WARNING)grid
+	目标库：fm_sys
+	author：鹿尧

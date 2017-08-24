@@ -10,6 +10,7 @@ import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.engine.fcc.track.TrackLinesUpload;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -75,6 +76,13 @@ public class TipsSelectorTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
+    @Test
+	public void testTrackPoints() throws Exception{
+        TrackLinesUpload trackUploader = new TrackLinesUpload();
+        trackUploader.run("F:\\FCC\\track_collection.json", HBaseConstant.trackLineTab, 1);
+        System.exit(0);
+    }
 
 	@Test
 	public void testQueryByCodeAndGrid(){

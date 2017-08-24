@@ -48,7 +48,7 @@ public class TrackLineController extends BaseController {
             File fileLine = new File(filePath + "/"+ "track_collection.json");
             if(fileLine.exists()) {
                 TrackLinesUpload trackUploader = new TrackLinesUpload();
-                trackUploader.run(filePath + "/"+ "track_collection.json",HBaseConstant.trackLineTab);
+                trackUploader.run(filePath + "/"+ "track_collection.json", HBaseConstant.trackLineTab, 1);
                 total += trackUploader.getTotal();
                 failed += trackUploader.getFailed();
             }
@@ -57,7 +57,7 @@ public class TrackLineController extends BaseController {
 			File filePoint = new File(filePath + "/"+ "adas_track_collect.json");
 			if(filePoint.exists()) {
                 AdasTrackPointUpload trackPointUploader = new AdasTrackPointUpload();
-                trackPointUploader.run(filePath + "/"+ "adas_track_collect.json", HBaseConstant.adasTrackPointsTab);
+                trackPointUploader.run(filePath + "/"+ "adas_track_collect.json", HBaseConstant.adasTrackPointsTab, 2);
                 total += trackPointUploader.getTotal();
                 failed += trackPointUploader.getFailed();
             }

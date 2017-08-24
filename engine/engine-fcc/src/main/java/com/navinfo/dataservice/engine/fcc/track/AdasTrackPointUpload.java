@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import java.util.List;
+
 /**
  * @ClassName: AdasTrackPointUpload.java
  * @author y
@@ -21,7 +23,7 @@ public class AdasTrackPointUpload extends TrackUpload{
     }
 
     @Override
-    public Put generatePut(JSONObject json, String rowkey) throws Exception {
+    public Put generatePut(JSONObject json, String rowkey, List trackIdxList) throws Exception {
         Put put = new Put(rowkey.getBytes());
         put.addColumn("attribute".getBytes(), "a_id".getBytes(),
                 json.getString("id").getBytes());

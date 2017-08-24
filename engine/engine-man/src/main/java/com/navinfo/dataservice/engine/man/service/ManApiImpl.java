@@ -541,5 +541,4 @@ public class ManApiImpl implements ManApi {
     public Set<Integer> allCollectSubtaskId() throws Exception{
     	return SubtaskService.getInstance().allCollectSubtaskId();
     }
-    
 }

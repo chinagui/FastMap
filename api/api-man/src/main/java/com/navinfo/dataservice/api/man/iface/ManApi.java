@@ -346,6 +346,5 @@ public interface ManApi{
      * @throws Exception
      */
     public Set<Integer> allCollectSubtaskId() throws Exception;
-    
 }
 

@@ -280,8 +280,8 @@ public class PoiSave {
 			sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid,T1.commit_his_status,T1.QUICK_SUBTASK_ID,T1.QUICK_TASK_ID,T1.MEDIUM_SUBTASK_ID,T1.MEDIUM_TASK_ID) VALUES(T2.b,T2.c,T2.d,0,"+ str +")");
 		} else {
 			//鲜度验证保存时调用
-			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
-					+ pids + ")");
+			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2, T1.QUICK_SUBTASK_ID = "+qst+", T1.QUICK_TASK_ID = "+qt+""
+					+ ", T1.MEDIUM_SUBTASK_ID = "+mst+" , T1.MEDIUM_TASK_ID = "+mt+" where T1.pid in (" + pids + ")");
 		}
 
 		PreparedStatement pstmt = null;

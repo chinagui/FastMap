@@ -232,7 +232,7 @@ public class ManApiImpl implements ManApi {
 		return CpRegionProvinceService.getInstance().listDayDbIdsByAdminId();
 	}
 	@Override
-	public Map getCityById(Integer cityId)throws Exception{
+	public Map<String,Object> getCityById(Integer cityId)throws Exception{
 		JSONObject json = new JSONObject().element("cityId", cityId);
 		return CityService.getInstance().query(json );
 	}
@@ -527,5 +527,13 @@ public class ManApiImpl implements ManApi {
      */
     public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
         TimelineService.saveTimeline(objID, objName, objType, operateDate);
+    }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	return SubtaskService.getInstance().allCollectSubtaskId();
     }
 }

@@ -1422,6 +1422,13 @@ public class SubtaskService {
 			sb.append(" AND T.BLOCK_ID = B.BLOCK_ID");
 			sb.append(" AND B.CITY_ID = C.CITY_ID");
 			sb.append(" AND S.SUBTASK_ID =" + subtaskId);
+			sb.append(" UNION ALL");
+			sb.append(" SELECT TO_NUMBER(I.ADMIN_CODE)");
+			sb.append("   FROM INFOR I, PROGRAM P, TASK T, SUBTASK S");
+			sb.append("  WHERE I.INFOR_ID = P.INFOR_ID");
+			sb.append("    AND P.PROGRAM_ID = T.PROGRAM_ID");
+			sb.append("    AND T.TASK_ID = S.TASK_ID");
+			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
 
 //			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 //
@@ -1725,11 +1732,17 @@ public class SubtaskService {
 		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter="+par.toString().replace("\\", "");
 		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter={\"subTaskId\":66,\"priority\":2,\"geometryJSON\":{\"type\":\"Polygon\",\"coordinates\":[[[116.40625,39.9375],[116.40625,39.95833],[116.4375,39.95833],[116.46875,39.95833],[116.46875,39.9375],[116.4375,39.9375],[116.40625,39.9375]]]}}";
 		log.info(mapspotterUrl);
-		String result = ServiceInvokeUtil.invokeByGet(mapspotterUrl,parMap);
+		String result = ServiceInvokeUtil.invokeGBK(mapspotterUrl,parMap);
+		//String result = ServiceInvokeUtil.invokeByGet(mapspotterUrl,parMap);
 		JSONObject res=new JSONObject();
 		res=JSONObject.fromObject(result);
 		log.info("众包子任务发布，调用mapspoter请求返回值："+subtask.getSubtaskId()+","+result);
-		String success=res.getString("errmsg");
+		String success="";
+		if(res.containsKey("errmsg")){
+			success=res.getString("errmsg");
+		}else{
+			success=res.getString("success");
+		}
 		if(!"sucess".equals(success)){
 			throw new Exception("众包子任务发布，通知mapsppotor失败："+result);
 		}
@@ -1929,7 +1942,7 @@ public class SubtaskService {
 	    	}else{
 	    		result = run.query(conn, selectSql, rsHandler);
 	    	}
-	    	queryNameByReferId(referIds, result);
+	    	queryNameByReferId(conn, referIds, result);
 	    	return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1948,8 +1961,7 @@ public class SubtaskService {
 	 * 
 	 * */
 	@SuppressWarnings("unchecked")
-	public void queryNameByReferId(List<Integer> referIds, List<HashMap<String,Object>> list) throws Exception{
-		Connection conn = null;
+	public void queryNameByReferId(Connection conn, List<Integer> referIds, List<HashMap<String,Object>> list) throws Exception{
 		try{
 			if(referIds.size() == 0){
 				return;
@@ -1961,7 +1973,6 @@ public class SubtaskService {
 			String refers = sb.deleteCharAt(sb.length()-1).toString(); 
 		
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
 			ResultSetHandler<Map<Integer, Object>> rsHandler = new ResultSetHandler<Map<Integer, Object>>(){
 				public Map<Integer, Object> handle(ResultSet rs) throws SQLException {
 					Map<Integer, Object> result = new HashMap<>();
@@ -1994,10 +2005,7 @@ public class SubtaskService {
     		}
 		}catch(Exception e){
 			log.error("根据子任务圈id求对应的作业员姓名异常" + e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -4079,5 +4087,34 @@ public class SubtaskService {
         }
 
         return new ArrayList<>();
+    }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            String sql="SELECT s.subtask_id from subtask s where s.stage=0";
+            QueryRunner run=new QueryRunner();
+            return run.query(conn, sql, new ResultSetHandler<Set<Integer>>(){
+
+                @Override
+                public Set<Integer> handle(ResultSet rs) throws SQLException {
+                	Set<Integer> subtaskSet=new HashSet<>();
+                    while(rs.next()){
+                    	subtaskSet.add(rs.getInt("subtask_id"));
+                    }
+                    return subtaskSet;
+                }
+            });
+        }catch(Exception e){
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("allCollectSubtaskId异常:"+e.getMessage(),e);
+        }finally{
+            DbUtils.commitAndCloseQuietly(conn);
+        }
     }
 }

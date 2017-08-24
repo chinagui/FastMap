@@ -339,6 +339,10 @@ public class PoiSave {
 			// 鲜度验证保存时调用
 			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
 					+ pids + ")");
+			
+			
+			
+			
 		}
 
 		PreparedStatement pstmt = null;

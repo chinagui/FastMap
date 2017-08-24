@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -91,16 +92,13 @@ public class SubtaskJob extends AbstractStatJob {
 			while(subtaskItr.hasNext()){
 				Subtask subtask = subtaskItr.next();
 				int subtaskId = subtask.getSubtaskId();
-				//日编子任务的gird集合取同项目下所有 采集任务的grid集合
+				//获取grid
+				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
+				subtask.setGridIds(gridIds);
+				
+				Set<Integer> collectionTasks = new HashSet<>();
 				if(subtask.getStage() == 1){
-					int taskId = subtask.getTaskId();
-					Set<Integer> collectionTasks = manApi.getCollectTaskIdsByTaskId(taskId);
-					Map<Integer, Integer> collectionGridIds = queryGridIdsByTaskIds(collectionTasks, timestamp);
-					subtask.setGridIds(collectionGridIds);
-				}else{
-					//获取grid
-					Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
-					subtask.setGridIds(gridIds);
+					collectionTasks = manApi.getCollectTaskIdByDaySubtask(subtask.getSubtaskId());
 				}
 				//获取相应的统计数据
 				Map<String, Object> subManTimelineStart = null;
@@ -121,7 +119,7 @@ public class SubtaskJob extends AbstractStatJob {
 //				}
 				Map<String, Integer> subMonthPoiStat = handleMonthPoiStatData(subtask, monthPoiStatData);
 
-				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData);
+				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData, collectionTasks);
 				//处理具体统计数据
 				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
 				
@@ -145,33 +143,33 @@ public class SubtaskJob extends AbstractStatJob {
 		}
 	}
 	
-	/**
-	 * 根据任务ID获取对应的grid
-	 * @throws Exception 
-	 * 
-	 * */
-	public Map<Integer, Integer> queryGridIdsByTaskIds(Set<Integer> taskIds, String timestamp) throws Exception{
-		try {
-			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
-			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<Integer, Integer> stat = new HashMap<Integer, Integer>();
-			//处理数据
-			while(iterator.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iterator.next());
-				int taskId = jso.getInt("taskId");
-				if(taskIds.contains(taskId)){
-					stat.put(jso.getInt("gridId"), 0);
-				}
-			}
-			return stat;
-		} catch (Exception e) {
-			log.error("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage());
-			throw new Exception("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage(),e);
-		}
-	}
+//	/**
+//	 * 根据任务ID获取对应的grid
+//	 * @throws Exception 
+//	 * 
+//	 * */
+//	public Map<Integer, Integer> queryGridIdsByTaskIds(Set<Integer> taskIds, String timestamp) throws Exception{
+//		try {
+//			MongoDao mongoDao = new MongoDao(dbName);
+//			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
+//			FindIterable<Document> findIterable = mongoDao.find(grid_task_tips, filter);
+//			MongoCursor<Document> iterator = findIterable.iterator();
+//			Map<Integer, Integer> stat = new HashMap<Integer, Integer>();
+//			//处理数据
+//			while(iterator.hasNext()){
+//				//获取统计数据
+//				JSONObject jso = JSONObject.fromObject(iterator.next());
+//				int taskId = jso.getInt("taskId");
+//				if(taskIds.contains(taskId)){
+//					stat.put(jso.getInt("gridId"), 0);
+//				}
+//			}
+//			return stat;
+//		} catch (Exception e) {
+//			log.error("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage());
+//			throw new Exception("查询mongo中已关闭的子任务的统计数据报错"+e.getMessage(),e);
+//		}
+//	}
 	
 	
 	/**
@@ -314,10 +312,12 @@ public class SubtaskJob extends AbstractStatJob {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				Map<String,Integer> subtask = new HashMap<String,Integer>();
 				int gridId = (int) jso.get("gridId");
+				int taskId = (int) jso.get("taskId");
 				int subtaskEditAllNum = (int) jso.get("subtaskEditAllNum");
 				int subtaskEditFinishNum = (int) jso.get("subtaskEditFinishNum");
 				subtask.put("subtaskEditAllNum", subtaskEditAllNum);
 				subtask.put("subtaskEditFinishNum", subtaskEditFinishNum);
+				subtask.put("taskId", taskId);
 				tipsStat.put(gridId, subtask);
 			}
 			return tipsStat;
@@ -332,15 +332,24 @@ public class SubtaskJob extends AbstractStatJob {
 	 * 处理subtaskId中tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,Map<String,Integer>> tipsStatData) throws Exception{
+	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,Map<String,Integer>> tipsStatData, Set<Integer> collectionTasks) throws Exception{
 		try {
 			//处理子任务与grid的关系
 			List<Integer> gridIds = subtask.getGridIds();
+
 			int tipsAllNum = 0;
 			int tipsFinishNum = 0;
 			for (Integer gridId : gridIds) {
 				if(tipsStatData.containsKey(gridId)){
 					Map<String, Integer> map = tipsStatData.get(gridId);
+					//日编子任务
+					if(subtask.getStage() == 1){
+						int taskId = map.get("taskId");
+						if(!collectionTasks.contains(taskId)){
+							continue;
+						}
+					}
+					
 					tipsAllNum += map.get("subtaskEditAllNum");
 					tipsFinishNum += map.get("subtaskEditFinishNum");
 				}

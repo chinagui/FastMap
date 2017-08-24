@@ -542,11 +542,4 @@ public class ManApiImpl implements ManApi {
     	return SubtaskService.getInstance().allCollectSubtaskId();
     }
     
-    /**
-     * 获取所有采集子任务的集合
-     * @throws Exception
-     */
-    public Set<Integer> getCollectTaskIdsByTaskId(int taskId) throws Exception{
-    	return TaskService.getInstance().getCollectTaskIdsByTaskId(taskId);
-    }
 }

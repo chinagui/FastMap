@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -81,7 +82,7 @@ public class PoiSave {
 					&& objType != ObjType.IXSAMEPOI
 					&& objType != ObjType.IXPOIPARENT) {
 				upatePoiStatus(json.getString("objId"), conn, newTaskInfo,
-						false);
+						false,null);
 				editApiImpl.updatePoifreshVerified(json.getInt("objId"));
 				JSONArray ret = new JSONArray();
 				result.put("log", ret);
@@ -93,6 +94,7 @@ public class PoiSave {
 			editApiImpl.setSubtaskId(subtaskId);
 			StringBuffer sb = new StringBuffer();
 			int pid = 0;
+			String rawFields = null;
 			// POI同一关系
 			if (ObjType.IXSAMEPOI == objType) {
 				if (OperType.CREATE == operType) {
@@ -185,6 +187,10 @@ public class PoiSave {
 				} else {
 					pid = json.getInt("objId");
 					sb.append(",").append(String.valueOf(pid));
+					if (OperType.MOVE == operType) {
+						JSONObject data = json.getJSONObject("data");
+						rawFields = data.getString("rawFields");
+					}
 				}
 				sb.deleteCharAt(0);
 			}
@@ -196,7 +202,7 @@ public class PoiSave {
 			// batchProcess.execute(json, conn, editApiImpl, batchList);
 			// }
 
-			upatePoiStatus(sb.toString(), conn, newTaskInfo, true);
+			upatePoiStatus(sb.toString(), conn, newTaskInfo, true,rawFields);
 
 			if (operType == OperType.UPDATE) {
 				editApiImpl.updatePoifreshVerified(pid);
@@ -267,7 +273,7 @@ public class PoiSave {
 	 * @Description:(第八迭代)任务号：4403
 	 */
 	public void upatePoiStatus(String pids, Connection conn,
-			Map<String, Integer> newTaskInfo, boolean flag) throws Exception {
+			Map<String, Integer> newTaskInfo, boolean flag,String rawFields) throws Exception {
 		int qst = newTaskInfo.get("QUICK_SUBTASK_ID");
 		int qt = newTaskInfo.get("QUICK_TASK_ID");
 		int mst = newTaskInfo.get("MEDIUM_SUBTASK_ID");
@@ -325,6 +331,15 @@ public class PoiSave {
 			sb.append(" ON ( T1.pid=T2.d) ");
 			sb.append(" WHEN MATCHED THEN ");
 			sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.QUICK_SUBTASK_ID=T2.QST,T1.QUICK_TASK_ID=T2.QT,T1.MEDIUM_SUBTASK_ID=T2.MST,T1.MEDIUM_TASK_ID=T2.MT ");
+			if(StringUtils.isNotBlank(rawFields)){
+				String[] rawFieldsArray = rawFields.split("\\|");
+				for (String rawField : rawFieldsArray) {
+					if(Integer.parseInt(rawField)>7){
+						sb.append(", T1.RAW_FIELDS = '"+rawFields+"'");
+						break;
+					}
+				}
+			}
 			sb.append(" WHEN NOT MATCHED THEN ");
 			// zl 2016.12.08 新增时为 commit_his_status 字段赋默认值 0
 			sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid,T1.commit_his_status,T1.QUICK_SUBTASK_ID,T1.QUICK_TASK_ID,T1.MEDIUM_SUBTASK_ID,T1.MEDIUM_TASK_ID) VALUES(T2.b,T2.c,T2.d,0,"

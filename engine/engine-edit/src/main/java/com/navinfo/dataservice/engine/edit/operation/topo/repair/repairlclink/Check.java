@@ -112,12 +112,19 @@ public class Check {
 		}
 	}
 	
+	/**
+	 * LC_LINK修形，背景面不能自相交
+	 * 
+	 * @param command
+	 * @param conn
+	 * @throws Exception
+	 */
 	public void checkIntersectFace(Command command, Connection conn) throws Exception {
 		int linkpid = command.getLinkPid();
+		
 		Geometry g = command.getLinkGeom();
 
-		LcFaceSelector selector = new LcFaceSelector(conn);
-		List<LcFace> faces = selector.loadLcFaceByLinkId(linkpid, false);
+		List<LcFace> faces = command.getFaces();
 
 		if (faces.size() == 0) {
 			return;

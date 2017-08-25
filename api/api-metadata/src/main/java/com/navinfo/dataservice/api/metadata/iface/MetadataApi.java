@@ -454,5 +454,7 @@ public interface MetadataApi {
 	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 	
 	public Map<String,Integer> queryEditMethTipsCode() throws SQLException;
+	
+	public int getTruck(String kind,String chain,String fuelType) throws Exception;
 
 }

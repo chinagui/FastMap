@@ -20,6 +20,8 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
@@ -129,7 +131,7 @@ public class ExportStatFromMongo {
 	 */
 	@SuppressWarnings("unchecked")
 	public static List<Map<String,Object>> getStatData(String startTime,String endTime,String collectionName) throws Exception{
-		String dbName = "fm_stat";
+		String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 		try {
 			//处理时间
 			String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
@@ -152,7 +154,7 @@ public class ExportStatFromMongo {
 				//查询最新的数据
 				if("0".equals(startTime) && "0".equals(endTime)){
 					String lastTime = timestamp;
-					while(true){
+					for(int i=0;i<72;i++){
 						BasicDBObject filter = new BasicDBObject();
 						filter.append("timestamp", lastTime);
 						

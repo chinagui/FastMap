@@ -231,20 +231,6 @@ public class Fm2ChargeAdd {
 				if(updatePidsM != null && updatePidsM.size() > 0){
 					objsM = ObjBatchSelector.selectByPids(connM, ObjectName.IX_POI, selConfigM, false,updatePidsM, true, false);
 				}
-				//添加已删除的充电站数据
-//				List<Long> delPids = IxPoiSelector.getDelPidsByKindCode(conn, kindCode);
-//				Set<Long> pidListDel = new HashSet<Long>();
-//				if(delPids != null && delPids.size() > 0){
-//					for (Long pid : delPids) {
-//						if(pidList.contains(pid)){
-//							pidListDel.add(pid);
-//						}
-//					}
-//				}
-//				Map<Long,BasicObj> objDels = null;
-//				if(pidListDel.size()>0){
-//					objDels = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, null, true,pidListDel, true, false);
-//				}
 				//设置查询子表
 				Set<String> selConfig = new HashSet<String>();
 				selConfig.add("IX_POI_NAME");
@@ -257,10 +243,6 @@ public class Fm2ChargeAdd {
 				//...
 				if(submitPidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,submitPidList, true, false);
-					//添加删除的数据
-//					if(objDels != null && objDels.size() > 0){
-//						objs.putAll(objDels);
-//					}
 					if(objs.size() == 0){
 						throw new Exception("没有要导出的数据");
 					}

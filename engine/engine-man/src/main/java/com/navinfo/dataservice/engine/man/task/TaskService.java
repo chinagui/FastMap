@@ -49,7 +49,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.JdbcSqlUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -741,7 +740,7 @@ public class TaskService {
 						Object[] msgTmp=new Object[4];
 						msgTmp[0]=task.getGroupLeader();//收信人
 						msgTmp[1]=msgTitle;//消息头
-						msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+						msgTmp[2]="修改task:"+task.getName()+",请关注";//消息内容
 						//关联要素
 						JSONObject msgParam = new JSONObject();
 						msgParam.put("relateObject", "TASK");
@@ -2347,8 +2346,8 @@ public class TaskService {
 			map.put("roadPlanOut", task.getRoadPlanOut());
 			map.put("poiPlanIn", task.getPoiPlanIn());
 			map.put("poiPlanOut", task.getPoiPlanOut());
-//			map.put("poiPlanTotal", task.getPoiPlanTotal());
-//			map.put("roadPlanTotal", task.getRoadPlanTotal());
+			map.put("poiPlanTotal", task.getPoiPlanTotal());
+			map.put("roadPlanTotal", task.getRoadPlanTotal());
 			map.put("blockId", task.getBlockId());
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
@@ -3583,11 +3582,13 @@ public class TaskService {
 		String selectPid = "select pes.pid"
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
-				 + " and pes.status ！= 0"
-				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
+				 + " and pes.status != 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id = 0 and pes.quick_task_id = 0 and pes.quick_subtask_id = 0";
 		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
-		return run.update(dailyConn, updateSql);
+		Clob clob = ConnectionUtil.createClob(dailyConn);
+		clob.setString(1, wkt);
+		return run.update(dailyConn, updateSql,clob);
 	}
 	
 	
@@ -3721,10 +3722,11 @@ public class TaskService {
 			con = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
+			String selectSql = "select st.status as substatus, st.subtask_id, st.geometry as st_geometry, st.name as st_name, st.stage as st_stage, st.work_kind, b.geometry, "
+					+ "p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
 					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
-					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
-					+ " and t.type = 0 and t.LATEST = 1";
+					+ "from subtask st, task t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id and st.task_id = t.task_id"
+					+ " and t.type = 0 and t.latest = 1";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
 				@Override
@@ -3732,7 +3734,7 @@ public class TaskService {
 					List<Map<String, Object>> taskList = new ArrayList<>();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(result.next()){
-						Map<String, Object> task = new HashMap<>();
+						Map<String, Object> task = new HashMap<>(32);
 						task.put("programId", result.getInt("program_id"));
 						task.put("programName", result.getString("p_name"));
 						task.put("programType", result.getInt("p_type"));
@@ -3761,6 +3763,20 @@ public class TaskService {
 						} catch (Exception e) {
 							log.error("geometry转JSON失败，原因为:" + e.getMessage());
 						}
+						//modify by song
+						//服务情报对接变更，添加返回子任务信息2017/08/16
+						task.put("subtaskId", result.getInt("subtask_id"));
+						STRUCT stStruct = (STRUCT) result.getObject("st_geometry");
+						try{
+							String clobStr = GeoTranslator.struct2Wkt(stStruct);
+							task.put("subtaskGeometry", Geojson.wkt2Geojson(clobStr));
+						}catch(Exception e){
+							log.error("子任务geometry转JSON失败，原因为:" + e.getMessage());
+						}
+						task.put("subtaskName", result.getString("st_name"));
+						task.put("subtaskStage", result.getInt("st_stage"));
+						task.put("subtaskWorkKind", result.getString("work_kind"));
+						task.put("subtaskStatus", result.getInt("substatus"));
 						
 						taskList.add(task);
 					}
@@ -3848,13 +3864,17 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			StringBuffer sb = new StringBuffer();
 			
-			String programId = json.getString("programId");
+			//String programId = json.getString("programId");
 
-			sb.append("select t.block_id, t.task_id,t.name from TASK t where t.program_id = "+programId);
+			sb.append("select t.block_id, t.task_id,t.name,t.region_id from TASK t where ");//t.program_id = "+programId);
 			//未规划草稿状态
-			sb.append(" and t.data_plan_status = 0 and t.work_kind like '%1|%' ");
+			sb.append(" t.data_plan_status = 0 and t.work_kind like '%1|%' ");
 			//中线采集任务
 			sb.append(" and t.type = 0 ");
+			
+			if(json.containsKey("programId")){
+				sb.append(" and t.program_id = "+json.getString("programId"));
+			}
 			
 			if(json.containsKey("condition")){
 				if(json.getJSONObject("condition").containsKey("name") && json.getJSONObject("condition").getString("name").length() > 0){
@@ -3873,6 +3893,7 @@ public class TaskService {
 					map.put("taskId", rs.getInt("task_id"));
 					map.put("name", rs.getString("name"));
 					map.put("blockId", rs.getInt("block_id"));
+					map.put("regionId", rs.getInt("region_id"));
 					result.add(map);
 				}
 				return result;
@@ -4149,8 +4170,8 @@ public class TaskService {
 			
 			StringBuffer linksb = new StringBuffer();
 			linksb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id) ");
-			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where ");
-			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			linksb.append("select t.link_pid, 2, "+taskId+" from RD_LINK t where  t.u_record != 2 and ");
+			linksb.append("sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String linkSql = linksb.toString();
 			Clob clob = ConnectionUtil.createClob(dailyConn);
 			clob.setString(1, wkt);
@@ -4160,8 +4181,8 @@ public class TaskService {
 			
 			StringBuffer poisb = new StringBuffer();
 			poisb.append("insert into DATA_PLAN d(d.pid, d.data_type, d.task_id, d.is_important) ");
-			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where ");
-			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+			poisb.append("select p.pid, 1, "+taskId+", case when p."+"\""+"LEVEL"+"\""+" = 'A' then 1 else 0 end  from IX_POI p where  p.u_record != 2 and ");
+			poisb.append("sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'");
 			String poiSql = poisb.toString();
 			
 			log.info("poiSql:"+poiSql);
@@ -4364,12 +4385,13 @@ public class TaskService {
 					
 					Map<String, Object> dataPlan = convertDataPlanCondition(dataType, condition);
 					
-					//把不满足条件的数据状态更新为不需要作业
+					log.info("把不满足条件的数据状态更新为不需要作业");
 					updateDataPlanToNoPlan(dailyConn, dataType, taskId);
-					//日库中的dataPlan更新数据
+					log.info("start 日库中的dataPlan更新数据");
 					updateDataPlanStatusByCondition(dailyConn, dataPlan, dataType, taskId);
-					
+					log.info("end 日库中的dataPlan更新数据");
 					if(dataType == 1 || dataType == 3){
+						log.info("更改置信度");
 						int minCount = condition.getInt("poiMultiMinCount");
 						int maxCount = condition.getInt("poiMultiMaxCount");
 						//元数据库中的pid，也需要更新到data_plan表中
@@ -4378,6 +4400,7 @@ public class TaskService {
 						updateDataPlanStatusByReliability(dailyConn, reliabilityPid);
 					}
 					//保存到taskPrograss表
+					log.info("保存条件到taskPrograss表");
 					maintainTaskPrograss(conn, taskPrograss, dataJson, userId);
 				}
 			}catch(Exception e){
@@ -4662,13 +4685,13 @@ public class TaskService {
 				//更新POI,这里把对象的创建放在判断里吧，不符合条件的就不创建对应sql了
 				if(dataType == 1 || dataType == 3){
 					StringBuffer poiSb = new StringBuffer();
-					poiSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					poiSb.append("select d.pid from IX_POI t,DATA_PLAN d where d.pid = t.pid and ");
+					poiSb.append("update DATA_PLAN p set p.is_plan_selected = 1 where exists (");
+					poiSb.append("select 1 from IX_POI t, DATA_PLAN dp where dp.pid = t.pid and dp.pid = p.pid and t.u_record!=2 and ");
 					poiSb.append("(t."+"\""+"LEVEL"+"\""+" in ("+levels+") ");
 					for(String kindCode : kindCodes){
 						poiSb.append(" or t.kind_code like '" + kindCode + "' ");
 					}
-					poiSb.append(")) and d.data_type = 1 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					poiSb.append(")and dp.data_type = 1 and dp.is_plan_selected = 0 and dp.task_id = " + taskId + ")and p.data_type = 1 and p.is_plan_selected = 0 and p.task_id = " + taskId);
 					String poisql = poiSb.toString();
 					log.info("跟据条件保存POI数据sql:"+poisql);
 					run.execute(conn, poisql);
@@ -4677,14 +4700,14 @@ public class TaskService {
 				//更新road
 				if(dataType == 2 || dataType == 3){
 					StringBuffer linkSb = new StringBuffer();
-					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in (");
-					linkSb.append("select r.link_pid from RD_LINK r, DATA_PLAN d where d.pid = r.link_pid and ");
+					linkSb.append("update DATA_PLAN d set d.is_plan_selected = 1 where exists (");
+					linkSb.append("select 1 from RD_LINK r, DATA_PLAN dp where dp.pid = r.link_pid and r.u_record!=2 and d.pid = dp.pid and ");
 					linkSb.append("(r.function_class in ("+roadFCs+") ");
 					if(StringUtils.isNotBlank(roadKinds)){
 						linkSb.append("or ");
 						linkSb.append("r.kind in ("+roadKinds+") ");
 					}
-					linkSb.append(")) and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
+					linkSb.append(")and dp.data_type = 2 and dp.is_plan_selected = 0 and dp.task_id = "+taskId+")and d.data_type = 2 and d.is_plan_selected = 0 and d.task_id = "+taskId);
 					String linksql = linkSb.toString();
 					log.info("跟据条件保存LINK数据sql:"+linksql);
 					run.execute(conn, linksql);
@@ -4710,17 +4733,17 @@ public class TaskService {
 				StringBuffer sb = new StringBuffer();
 				for(int i = 0; i < reliabilityPid.size(); i++){
 					sb.append(reliabilityPid.get(i)+",");
-				}
-				
+				}				
 				String pids = sb.deleteCharAt(sb.length() - 1).toString();
-				String parameter = "d.pid";
-				if(reliabilityPid.size() > 900){
-					pids = JdbcSqlUtil.getInParameter(reliabilityPid, parameter);
-				}
 				
-				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 where d.pid in ("+pids+") and d.data_type = 1";
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, pids);
+				
+				String sql = "update DATA_PLAN d set d.is_plan_selected = 1 "
+						+ "where d.pid in (select to_number(column_value) from table(clob_to_table(?))) "
+						+ "and d.data_type = 1";
 				log.info("从元数据库中查询出的可信度范围的pid保存数据到dataPlan表中sql:"+sql);
-				run.execute(conn, sql);
+				run.update(conn, sql,clob);
 			}catch(Exception e){
 				throw e;
 			}

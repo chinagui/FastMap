@@ -1488,9 +1488,9 @@ public class DataEditService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			for (Connection value : mapConn.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw e;
 		}finally {
@@ -1896,7 +1896,7 @@ public class DataEditService {
 			
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
 			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, null);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, conn);
 			return poiArray;
 			
 		}catch (Exception e) {
@@ -1923,9 +1923,9 @@ public class DataEditService {
 	 */
 	private List<IxPoi> queryPidListByCon(Connection conn,String poiNum, String name, String address, String telephone,
 			String location, String proCode, Integer resultId) throws Exception {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			StringBuilder sb = new StringBuilder();
 			boolean flag = false;
@@ -1989,7 +1989,8 @@ public class DataEditService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(rs);
 		}
 	}
 	

@@ -147,9 +147,10 @@ public class DateUtils {
 		// System.out.println(time);
 		// System.out.println(time1);
 		// System.out.println(date);
-		System.out.println(DateUtils.dateToString(new Date(),
-				DateUtils.DATE_YMD));
-		System.out.println(DateUtils.getCurYyyymm());
+//		System.out.println(DateUtils.dateToString(new Date(),
+//				DateUtils.DATE_YMD));
+//		System.out.println(DateUtils.getCurYyyymm());
+		System.out.println(getCurrentTimestamp());
 	}
 
 	/**

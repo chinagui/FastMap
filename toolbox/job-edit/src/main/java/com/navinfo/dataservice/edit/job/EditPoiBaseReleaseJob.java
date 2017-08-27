@@ -75,8 +75,9 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			Map<String, Set<String>> tabNames=ObjHisLogParser.getChangeTableSet(logs);
 			log.info("EditPoiBaseReleaseJob:加载检查对象");
 			//获取poi对象			
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
-					poiPids, false, false);
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
+					poiPids, true, true);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
 			log.info("EditPoiBaseReleaseJob:加载同一关系检查对象");
@@ -86,7 +87,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//获取log
 			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
 			Map<String, Set<String>> sametabNames=ObjHisLogParser.getChangeTableSet(samelogs);
-			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
+			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, 
+					ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
 					groupIds, false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);
@@ -231,7 +233,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   AND ps.status =2"
 					//20170713 与凤琴、晓毅，讨论，放进来鲜度验证的数据，有两个批处理需要批鲜度验证的数据
 					//+ "   AND ps.FRESH_VERIFIED=0"
-					//+ "   and ip.u_record!=2"
+					//20170823 删除的数据，由于加载数据时，只能加载到主表，因此删除的数据不做检查与批处理
+					+ "   and ip.u_record!=2"
 					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			QueryRunner run=new QueryRunner();
 			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){

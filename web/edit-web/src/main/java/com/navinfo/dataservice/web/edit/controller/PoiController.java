@@ -15,12 +15,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
 import com.navinfo.dataservice.control.service.PoiService;
+import com.navinfo.dataservice.control.service.UploadResult;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -49,6 +54,7 @@ public class PoiController extends BaseController{
 		
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			int subtaskId = 0;
@@ -67,7 +73,7 @@ public class PoiController extends BaseController{
 			}
 			logger.info("开始准备待下载的poi zip文件，grid:"+gridDateList);
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			String url = operation.generateZip(gridDateMap,subtaskId);
+			String url = operation.generateZip(gridDateMap,subtaskId,userId);
 			logger.info("生成poizip包:url"+url);
 			//*********zl 2016.11.29 ***********
 			String poisDownloadDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());//增加抽取时间 poisDownloadDate
@@ -86,6 +92,7 @@ public class PoiController extends BaseController{
 		}
 		
 	}
+	
 	
 	/**
 	 * 安卓上传

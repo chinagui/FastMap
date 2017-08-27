@@ -73,52 +73,50 @@ public class TimelineService {
             DbUtils.commitAndCloseQuietly(conn);
         }
     }
-	
-	/**
-	 * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
-	 * OBJ_TYPE:program,task,subtask,infor
-	 * @return Map<Long,Map<String, Object>> key:objId
-	 * @throws ServiceException 
-	 */
-	public static Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
-                                                                             String objType, int operateType) throws Exception {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner queryRunner = new QueryRunner();
-			//查询数据
-			String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_ID = ? AND OBJ_TYPE = ? AND OPERATE_TYPE = ? " +
+
+    /**
+     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+     * OBJ_TYPE:program,task,subtask,infor
+     * @return Map<Long,Map<String, Object>> key:objId
+     * @throws ServiceException
+     */
+    public static Map<String, Object> queryTimelineByCondition(int objId,
+                                                               String objType, int operateType) throws Exception {
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getManConnection();
+            QueryRunner queryRunner = new QueryRunner();
+            //查询数据
+            String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_ID = ? AND OBJ_TYPE = ? AND OPERATE_TYPE = ? " +
                     " ORDER BY OBJ_ID,OPERATE_DATE";
-			Object[] params = {objId, objType, operateType};
-			//处理结果集
-			ResultSetHandler<Map<Integer,Map<String, Object>>> rsh = new ResultSetHandler<Map<Integer,Map<String, Object>>>() {
-				
-				@Override
-				public Map<Integer,Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					Map<Integer,Map<String, Object>> data = new HashMap<Integer,Map<String, Object>>();
-					//处理数据
-					while(rs.next()){
-						Map<String, Object> map = new HashMap<String, Object>();
-						int objId = rs.getInt("OBJ_ID");
-						map.put("objId", objId);
-						map.put("objType", rs.getString("OBJ_TYPE"));
-						map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
-						data.put(objId, map);
-					}
-					return data;
-				}
-			};
-			Map<Integer,Map<String, Object>> result = queryRunner.query(conn, sql, rsh, params);
-			//返回数据
-			return result;
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询MAN_TIMELINE明细失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+            Object[] params = {objId, objType, operateType};
+            //处理结果集
+            ResultSetHandler<Map<String, Object>> rsh = new ResultSetHandler<Map<String, Object>>() {
+
+                @Override
+                public Map<String, Object> handle(ResultSet rs) throws SQLException {
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    //处理数据
+                    if(rs.next()){
+                        int objId = rs.getInt("OBJ_ID");
+                        map.put("objId", objId);
+                        map.put("objType", rs.getString("OBJ_TYPE"));
+                        map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
+                    }
+                    return map;
+                }
+            };
+            Map<String, Object> result = queryRunner.query(conn, sql, rsh, params);
+            //返回数据
+            return result;
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new ServiceException("查询MAN_TIMELINE明细失败，原因为:" + e.getMessage(), e);
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 
     /**
      * 查询MAN_TIMELINE
@@ -126,14 +124,14 @@ public class TimelineService {
      * @return Map<Long,Map<String, Object>> key:objId
      * @throws ServiceException
      */
-    public static Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception {
+    public static Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getManConnection();
             QueryRunner queryRunner = new QueryRunner();
             //查询数据
-            String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_TYPE = ? ORDER BY OBJ_ID,OPERATE_DATE";
-            Object[] params = {objName};
+            String sql = "SELECT * FROM MAN_TIMELINE WHERE OBJ_TYPE = ? AND OPERATE_TYPE = ? ORDER BY OBJ_ID,OPERATE_DATE ";
+            Object[] params = {objName,operateType};
             //处理结果集
             ResultSetHandler<Map<Integer,Map<String, Object>>> rsh = new ResultSetHandler<Map<Integer,Map<String, Object>>>() {
 
@@ -146,6 +144,7 @@ public class TimelineService {
                         int objId = rs.getInt("OBJ_ID");
                         map.put("objId", objId);
                         map.put("objType", rs.getString("OBJ_TYPE"));
+                        map.put("operateType", rs.getInt("OPERATE_TYPE"));
                         map.put("operateDate", DateUtils.dateToString(rs.getTimestamp("OPERATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
                         data.put(objId, map);
                     }

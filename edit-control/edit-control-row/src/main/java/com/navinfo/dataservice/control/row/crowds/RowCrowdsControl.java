@@ -244,7 +244,7 @@ public class RowCrowdsControl {
 				logger.info("维护状态表:pid" + pid);
 				Map<Long, String> pids = new HashMap<Long, String>();
 				pids.put(pid, null);
-				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType);
+				PoiEditStatus.forCollector(dayConn, pids, null, subTaskId, taskId, subtaskType,null);
 				
 			}else{
 				resJson.put("msg", "FID:" + fid + "数据未获取到大区库信息，不入库！");

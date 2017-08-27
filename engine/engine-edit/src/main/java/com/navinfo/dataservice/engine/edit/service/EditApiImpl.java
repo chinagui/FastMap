@@ -116,37 +116,21 @@ public class EditApiImpl implements EditApi {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年12月8日 下午1:52:16
 	 */
-	public void updatePoifreshVerified(int pid, String platform)
+	public void updatePoifreshVerified(int pid)
 			throws Exception {
 		LogReader lr = new LogReader(conn);
-		int freshVerified = 0;
-		int status = 1;
-		if (!lr.isExistObjHis(pid)) {
-			freshVerified = 1;
-			status = 2;
-		}
-		if (lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)) {
-			freshVerified = 1;
-		}
-		String sql = null;
-		if ("web".endsWith(platform)) {
-			sql = "UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.pid ="
-					+ pid;
-		} else {
-			sql = "UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="
-					+ status + " where T1.pid = " + pid;
-		}
-		PreparedStatement pstmt = null;
-		try {
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, freshVerified);
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			DBUtils.closeStatement(pstmt);
-		}
+		 if(lr.isFreshVerified(pid)){
+			 String sql = "UPDATE poi_edit_status T1 SET T1.fresh_verified = 1,T1.status=2 where T1.pid ="+ pid;
+			 PreparedStatement pstmt = null;
+				try {
+					pstmt = conn.prepareStatement(sql);
+					pstmt.executeUpdate();
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					DBUtils.closeStatement(pstmt);
+				} 
+		 }
 	}
 
 	@Override

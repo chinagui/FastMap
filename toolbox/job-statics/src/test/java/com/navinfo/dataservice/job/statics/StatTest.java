@@ -24,7 +24,7 @@ public class StatTest {
 		
 		ManApi manApi=(ManApi)ApplicationContextUtil.getBean("manApi");
 		String objName = "subtask";
-		Map<Integer, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName);
+		Map<Integer, Map<String, Object>> data = manApi.queryManTimelineByObjName(objName,0);
 		System.out.println(data.toString());
 		
 	}

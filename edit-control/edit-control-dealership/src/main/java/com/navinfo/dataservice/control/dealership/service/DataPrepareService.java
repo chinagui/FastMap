@@ -132,9 +132,8 @@ public class DataPrepareService {
 			
 			return run.query(con, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(con);
 		}finally{
-			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.closeQuietly(con);
 		}
 		return null;
 	}
@@ -238,10 +237,9 @@ public class DataPrepareService {
 			log.info("loadDiffList-->sql:"+sql);
 			return run.query(con, sql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(con);
 			throw e;
 		}finally{
-			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.closeQuietly(con);
 		}
 	}
 
@@ -326,7 +324,7 @@ public class DataPrepareService {
 			log.info("end 文件表表差分导入");
 		}catch(Exception e){
 			log.error("", e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
@@ -656,9 +654,8 @@ public class DataPrepareService {
 			
 			return run.query(conn, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 		return null;
 	}
@@ -753,7 +750,7 @@ public class DataPrepareService {
 
 			}
 		}catch(IllegalArgumentException e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			if(e.getMessage().equals("MALFORMED")){
 				throw new ServiceException("更新失败，原因为:上传文件名有中文");
@@ -761,7 +758,7 @@ public class DataPrepareService {
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}
 		catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
@@ -818,8 +815,6 @@ public class DataPrepareService {
 			});
 			
 		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(metaConn);
-			DbUtils.rollbackAndCloseQuietly(dealershipConn);
 			log.error(e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(metaConn);
@@ -1067,7 +1062,7 @@ public class DataPrepareService {
 			log.error(e);
 			throw e;
 		}finally{
-			DbUtils.commitAndCloseQuietly(con);
+			DbUtils.closeQuietly(con);
 		}
 	}
 	
@@ -1166,7 +1161,7 @@ public class DataPrepareService {
 			run.execute(con, updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(con);
+			DbUtils.rollback(con);
 			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
@@ -1218,9 +1213,9 @@ public class DataPrepareService {
 			return ClientConfirmResultList;
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			for (Connection value : mapConn.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw e;
 		}finally {
@@ -1292,7 +1287,7 @@ public class DataPrepareService {
 			e.printStackTrace();
 			throw e;
 		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	
 	}
@@ -1529,9 +1524,8 @@ public class DataPrepareService {
 			return result;
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 		return null;
 	}
@@ -1769,7 +1763,7 @@ public class DataPrepareService {
 			}
 		} catch (Exception e) {
 			for (Connection value : dbConMap.values()) {
-				DbUtils.rollbackAndCloseQuietly(value);
+				DbUtils.rollback(value);
 			}
 			throw new Exception(e);
 		} finally {
@@ -1916,27 +1910,30 @@ public class DataPrepareService {
 	}
 
 	public Map<Integer, Connection> queryAllRegionConn() throws Exception {
-		Map MapConn = new HashMap();
-		try {
-			String sql = "select t.daily_db_id,region_id from region t";
+		Map<Integer,Connection> MapConn = new HashMap<Integer, Connection>();
+		String sql = "select t.daily_db_id,region_id from region t";
 
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			Connection conn = null;
-			try {
-				conn = DBConnector.getInstance().getManConnection();
-				pstmt = conn.prepareStatement(sql);
-				rs = pstmt.executeQuery();
-				while (rs.next()) {
-					Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
-					MapConn.put(rs.getInt("region_id"), regionConn);
-				}
-				return MapConn;
-			} finally {
-				DbUtils.closeQuietly(conn, pstmt, rs);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Connection regionConn = DBConnector.getInstance().getConnectionById(rs.getInt("daily_db_id"));
+				MapConn.put(rs.getInt("region_id"), regionConn);
 			}
+			return MapConn;
 		} catch (Exception e) {
-			throw new Exception("加载region失败：" + e.getMessage(), e);
+			for (Connection value : MapConn.values()) {
+				DbUtils.rollbackAndCloseQuietly(value);
+			}
+			throw new SQLException("加载region失败：" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	
@@ -2064,7 +2061,7 @@ public class DataPrepareService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> chainUpdate(long userId) throws ServiceException {
+	public Map<String, Object> chainUpdate(long userId) throws Exception {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getDealershipConnection();
@@ -2122,7 +2119,7 @@ public class DataPrepareService {
 			return result;
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
@@ -2262,7 +2259,7 @@ public class DataPrepareService {
 			return map;
 			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollback(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
@@ -2408,10 +2405,9 @@ public class DataPrepareService {
 				}}, chainCode);
 		} catch (Exception e) {
 			log.error("品牌名称失败，原因为："+e.getMessage(),e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("品牌名称失败，原因为："+e.getMessage(),e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

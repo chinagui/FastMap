@@ -37,7 +37,7 @@ public class LogDetailGrid {
 	}
 	
 	public RunnableSQL toSql(){
-		RunnableSQL sql = new RunnableSQL();
+		RunnableSQL sql = new RunnableSQL("LOG_DETAIL_GRID");
 		sql.setSql("INSERT INTO LOG_DETAIL_GRID (GRID_ID,GRID_TYPE,LOG_ROW_ID) VALUES (?,?,?)");
 		List<Object> columnValues = new ArrayList<Object>();
 		columnValues.add(gridId);

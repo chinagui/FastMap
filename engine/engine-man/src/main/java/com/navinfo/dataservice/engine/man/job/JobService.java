@@ -183,6 +183,9 @@ public class JobService {
 		log.info("start runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
 		try {
 			JobRunner runner = jobFactory(jobType);
+			if(runner==null){
+				throw new Exception("执行JOB失败，原因为:没有该类型的job="+jobType);
+			}
             long jobId= runner.run(itemId, itemType, isContinue, operator, parameter);
             log.info("end runCommonJob:jobType="+jobType+",itemType="+itemType+",itemId="+itemId+",isContinue="+isContinue+",parameter="+parameter);
             return jobId;
@@ -201,10 +204,10 @@ public class JobService {
 		JobRunner runner=null;
 		if(jobType==JobType.DAY2MONTH){
 			runner= new Day2MonthJobRunner();
-		}else if(jobType==JobType.NOTASK2MID){
-			runner= new NoTask2MediumJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
+		}else if(jobType==JobType.NOTASK2MID){
+			runner= new NoTask2MediumJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		
  			runner = new TaskMedium2QuickRunner();		
   		}

@@ -54,6 +54,8 @@ public class PropConstant {
 	
 	public static final String uploadPath = "dropbox.upload.path";
 	
+	public static final String uploadPathCustom = "dropbox.upload.path.custom";
+	
 	public static final String downloadFilePathRoot="dropbox.download.filepath.root";
 	
 	public static final String downloadUrlPathRoot="dropbox.download.urlpath.root";
@@ -120,4 +122,12 @@ public class PropConstant {
 	public static final String manPassword="man.password";
 	
 	public static final String gdbSqlitePassword="gdbsqlite.password";
+	
+	public static final String baiduGeocoding="baiduGeocoding";
+
+	//es相关配置
+	public static final String es_master = "es.master";
+	public static final String es_port = "es.port";
+	public static final String es_cluster ="es.cluster";
+	public static final String es_index_trackpoints ="es.index.trackpoints";
 }

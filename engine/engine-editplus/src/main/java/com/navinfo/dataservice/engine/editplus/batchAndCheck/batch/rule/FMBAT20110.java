@@ -901,7 +901,7 @@ public class FMBAT20110 extends BasicBatchRule {
 		Matcher directNumMatch = pattern2.matcher(prefix);
 		if (directNumMatch.find()){
 			String _direct = directNumMatch.group(1);
-			String _tmpStr = String.format("%s%s%s%", prefix, houseNum, type, subNum).substring(_direct.length());
+			String _tmpStr = String.format("%s%s%s%s", prefix, houseNum, type, subNum).substring(_direct.length());
 			prefix = _direct;
 			Matcher numMatcher = pattern1.matcher(_tmpStr);
 			if (numMatcher.find()){

@@ -134,7 +134,7 @@ public class AssembleXmlConfigSql implements AssembleSql {
 			ExpSQL expSQL = sqlList.get(j);
 			ExpSQL newExpSQL = new ExpSQL(expSQL.getSqlId(), expSQL.getSql());
 			newExpSQL.setSqlType(expSQL.getSqlType());
-			newExpSQL.setSqlExtendType(expSQL.getSqlExtendType());
+			//newExpSQL.setSqlExtendType(expSQL.getSqlExtendType());
 			newExpSQL = replacer.replaceByTempTable(newExpSQL, condition);
 			String executableSql = replaceTempTable(newExpSQL.getSql(), tempTableSuffix);
 			newExpSQL.setSql(executableSql);

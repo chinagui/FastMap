@@ -232,7 +232,7 @@ public class ManApiImpl implements ManApi {
 		return CpRegionProvinceService.getInstance().listDayDbIdsByAdminId();
 	}
 	@Override
-	public Map getCityById(Integer cityId)throws Exception{
+	public Map<String,Object> getCityById(Integer cityId)throws Exception{
 		JSONObject json = new JSONObject().element("cityId", cityId);
 		return CityService.getInstance().query(json );
 	}
@@ -305,6 +305,11 @@ public class ManApiImpl implements ManApi {
 		return taskIdSet;
 	}
 
+	@Override
+	public Set<Integer> getCollectTaskIdByDayTask(int taskId) throws ServiceException {
+		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDayTask(taskId);
+		return taskIdSet;
+	}
 
 	@Override
 	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
@@ -455,8 +460,8 @@ public class ManApiImpl implements ManApi {
 	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception{
-		return TimelineService.queryManTimelineByObjName(objName);
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception{
+		return TimelineService.queryManTimelineByObjName(objName,operateType);
 	}
 	
 	/**
@@ -512,7 +517,7 @@ public class ManApiImpl implements ManApi {
      * @return	Map<Long,Map<String, Object>> key:objId
      * @throws ServiceException
      */
-    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
+    public  Map<String, Object> queryTimelineByCondition(int objId,
                                                                      String objType, int operateType) throws Exception{
         return TimelineService.queryTimelineByCondition(objId, objType, operateType);
     }
@@ -527,5 +532,13 @@ public class ManApiImpl implements ManApi {
      */
     public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
         TimelineService.saveTimeline(objID, objName, objType, operateDate);
+    }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	return SubtaskService.getInstance().allCollectSubtaskId();
     }
 }

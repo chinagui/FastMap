@@ -400,12 +400,13 @@ public class NiValExceptionSelector {
 	 * @parm level 0 全部 1 错误 2 警告 3 提示
 	 * @param ruleId
 	 *            规则号
+	 * @param sortby 
 	 * @return
 	 * @throws Exception
 	 */
 	public Page list(int subtaskType, Collection<String> grids,
 			final int pageSize, final int pageNum, int flag, String ruleId,
-			int level) throws Exception {
+			int level, String sortby) throws Exception {
 
 		Clob pidsClob = ConnectionUtil.createClob(conn);
 		pidsClob.setString(1, StringUtils.join(grids, ","));
@@ -489,8 +490,32 @@ public class NiValExceptionSelector {
 						+ " SELECT 1 FROM CK_RESULT_OBJECT O "
 						+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
 						+ "   AND O.MD5_CODE=a.MD5_CODE)");
-
-		resultSql.append(" order by created desc,md5_code desc");
+		String orderSql = "";
+		com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
+		// 添加排序条件
+		if (sortby.length() > 0) {
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				orderSql += " ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby
+						.substring(1));
+				orderSql += "  ";
+				orderSql += sortbyName;
+				orderSql += " DESC";
+			} else {
+				orderSql += " ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby
+						.substring(1));
+				orderSql += "  ";
+				orderSql += sortbyName;
+			}
+		}else{
+			orderSql +=" order by created desc,md5_code desc";
+		}
+		
+		
+//		resultSql.append(" order by created desc,md5_code desc");
+		resultSql.append(orderSql);
 		log.info("resultSql ====" + resultSql.toString());
 		Page page = null;
 		if (flag == 0 || flag == 5 || flag == 6) {
@@ -1139,7 +1164,7 @@ public class NiValExceptionSelector {
 	public JSONArray queryRefFeatures(String pids, int thisPid)
 			throws SQLException {
 		StringBuilder sql = new StringBuilder(
-				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
+				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 2 AND n.lang_code =  'CHI' and n.name_class = 1 and rownum = 1) name "
 						+ "from ix_poi t  where t.pid in ("
 						+ pids
 						+ ")  and t.pid != " + thisPid + " ");

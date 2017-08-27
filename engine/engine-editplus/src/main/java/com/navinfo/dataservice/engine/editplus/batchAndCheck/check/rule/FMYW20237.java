@@ -19,7 +19,7 @@ import java.util.*;
  * @Title: FMYW20237
  * @Package: com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule
  * @Description: 检查条件：非删除POI对象；
- * 检查原则：分类为机场(kindCode=230126)、机场出发到达(230127)、客运火车站(230103)、火车站出发到达(230105)的poi数据的引导坐标不能建立在内部属性道路上(link.formOfway=52)。
+ * 检查原则：分类为机场(kindCode=230126)、机场出发到达(230127)、客运火车站(230103)的poi数据的引导坐标不能建立在内部属性道路上(link.formOfway=52)。
  * 不满足以上检查原则报log：引导坐标不能建立在内部属性道路上，请重新关联道路！
  * @Author: Crayeres
  * @Date: 8/8/2017
@@ -35,7 +35,7 @@ public class FMYW20237 extends BasicCheckRule {
     }
 
     public void run() throws Exception {
-        List<String> kindCodes = Arrays.asList(new String[]{"230126", "230127", "230103", "230105"});
+        List<String> kindCodes = Arrays.asList(new String[]{"230126", "230127", "230103"});
 
         List<Long> pids = new ArrayList<>();
         for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
@@ -73,8 +73,15 @@ public class FMYW20237 extends BasicCheckRule {
                 pidString = " PID IN (" + pidStr + ")";
             }
 
-            String sql = "SELECT IP.PID" + "  FROM IX_POI IP, RD_LINK RL, RD_LINK_FORM RLF" + " WHERE IP." + pidString + "   AND IP" +
-                    ".LINK_PID = RL.LINK_PID" + "   AND RL.LINK_PID = RLF.LINK_PID" + "   AND RLF.FORM_OF_WAY = 52";
+            String sql = "SELECT IP.PID" +
+                    "  FROM IX_POI IP, RD_LINK RL, RD_LINK_FORM RLF" +
+                    " WHERE IP." + pidString +
+                    "   AND IP.LINK_PID = RL.LINK_PID" +
+                    "   AND RL.LINK_PID = RLF.LINK_PID" +
+                    "   AND RLF.FORM_OF_WAY = 52" +
+                    "   AND IP.U_RECORD <> 2" +
+                    "   AND RL.U_RECORD <> 2" +
+                    "   AND RLF.U_RECORD <> 2";
 
             PreparedStatement pstmt = null;
             ResultSet rs = null;

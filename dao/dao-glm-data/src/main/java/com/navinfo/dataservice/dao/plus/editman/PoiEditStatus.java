@@ -2,7 +2,6 @@ package com.navinfo.dataservice.dao.plus.editman;
 
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,16 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.apache.commons.collections.CollectionUtils;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -589,7 +588,7 @@ public class PoiEditStatus {
 	 * @date 2017年6月6日 下午3:15:14 
 	 */
 	public static void forCollector(Connection conn, Map<Long, String> normalPois, Set<Long> freshVerPois,
-			int subtaskId, int taskId, int taskType) throws Exception {
+			int subtaskId, int taskId, int taskType, Set<Long> freshVerPoisForPhoto) throws Exception {
 		PreparedStatement stmt = null;
 		try{
 			
@@ -604,9 +603,30 @@ public class PoiEditStatus {
 				pids.addAll(freshVerPois);
 				Clob fPidsClob = ConnectionUtil.createClob(conn);
 				fPidsClob.setString(1, StringUtils.join(freshVerPois,","));
-				String freshSql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=NULL WHERE PID in (SELECT TO_NUMBER(COLUMN_VALUE) PID  FROM TABLE(CLOB_TO_TABLE(?))) AND STATUS IN (0,3)";
-				run.update(conn, freshSql, fPidsClob);
+				StringBuilder sb = new StringBuilder();
+			
+				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("SET P.FRESH_VERIFIED=1, \n");
+				sb.append("P.RAW_FIELDS=NULL, \n");
+				sb.append("P.STATUS=2 \n");
+				sb.append("   WHERE P.PID IN \n");
+				sb.append("   (SELECT TO_NUMBER(COLUMN_VALUE) PID FROM TABLE(CLOB_TO_TABLE(?))) \n");
+				sb.append("   AND P.STATUS IN (0, 3) \n");
+				run.update(conn, sb.toString(), fPidsClob);
 				
+			}
+			
+			if(freshVerPoisForPhoto!=null && freshVerPoisForPhoto.size()>0){
+				Clob photoPidsClob = ConnectionUtil.createClob(conn);
+				photoPidsClob.setString(1, StringUtils.join(freshVerPoisForPhoto,","));
+				StringBuilder sb = new StringBuilder();
+			
+				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("SET P.STATUS=1 \n");
+				sb.append("   WHERE P.PID IN \n");
+				sb.append("   (SELECT TO_NUMBER(COLUMN_VALUE) PID FROM TABLE(CLOB_TO_TABLE(?))) \n");
+				sb.append("   AND P.STATUS=2 \n");
+				run.update(conn, sb.toString(), photoPidsClob);			
 			}
 			
 			if(normalPois!=null && normalPois.size()>0){

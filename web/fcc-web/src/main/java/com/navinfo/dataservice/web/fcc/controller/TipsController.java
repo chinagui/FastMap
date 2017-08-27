@@ -25,6 +25,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -235,6 +236,8 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("parameter参数不能为空。");
             }
 
+            String beginDate = DateUtils.getSysDateFormat();
+
             JSONObject json = JSONObject.fromObject(parameter);
 
             int jobId = json.getInt("jobId");
@@ -286,7 +289,7 @@ public class TipsController extends BaseController {
 
             //记录上传日志。不抛出异常
             insertStatisticsInfoNoException(jobId, subtaskId, userId,
-                    tipsUploader);
+                    tipsUploader, beginDate);
 
             //20170712 Tips上传增加外业质检问题记录上传
             logger.info("start uplod qc problem,filePath:"+ filePath + "/"+ "rd_qcRecord.txt");
@@ -317,7 +320,7 @@ public class TipsController extends BaseController {
 	 * @time:2017-8-9 上午11:09:43
 	 */
 	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
-			long userId, TipsUpload tipsUploader)  {
+			long userId, TipsUpload tipsUploader, String beginDate)  {
 		try{
 			SysLogStats log = new SysLogStats();
 			log.setLogType(SysLogConstant.TIPS_UPLOAD_TYPE);
@@ -325,7 +328,7 @@ public class TipsController extends BaseController {
 			log.setFailureTotal(tipsUploader.getFailed());
 			log.setSuccessTotal(tipsUploader.getTotal()-tipsUploader.getFailed());  
 			log.setTotal(tipsUploader.getTotal());
-			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setBeginTime(beginDate);
 			log.setEndTime(DateUtils.getSysDateFormat());
 			log.setErrorMsg(tipsUploader.getReasons().toString());
 			log.setUserId(String.valueOf(userId));
@@ -344,6 +347,11 @@ public class TipsController extends BaseController {
 
         logger.info("下载tips,parameter:"+parameter);
 
+        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+        long userId = tokenObj.getUserId();
+        String beginDate = DateUtils.getSysDateFormat();
+        String uuid = UuidUtils.genUuid();
+
         try {
             if (StringUtils.isEmpty(parameter)) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
@@ -352,8 +360,6 @@ public class TipsController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             String day = StringUtils.getCurrentDay();
-
-            String uuid = UuidUtils.genUuid();
 
             String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
                     PropConstant.downloadFilePathTips);
@@ -429,15 +435,46 @@ public class TipsController extends BaseController {
                 logger.info("下载tips完成,没有可下载的数据");
             }
 
+            //Tips下载记录日志 sys库中
+            insertExportLog(beginDate, userId, expCount, uuid, "");
             return new ModelAndView("jsonView", success(result));
 
         } catch (Exception e) {
 
             logger.error("下载tips出错："+e.getMessage(), e);
-
+            //Tips下载记录日志 sys库中
+            String errMsg = "下载tips出错,parameter:" + parameter + "错误信息:" + e.getCause();
+            insertExportLog(beginDate, userId, 0, uuid, errMsg);
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
+
+    /**
+     * Tips下载记录日志
+     * @param beginDate
+     * @param userId
+     * @param expCount
+     * @param uuid
+     * @param errMsg
+     */
+    private void insertExportLog(String beginDate, long userId, int expCount, String uuid, String errMsg) {
+        try{
+            SysLogStats log = new SysLogStats();
+            log.setLogType(SysLogConstant.TIPS_DOWNLOAD_TYPE);
+            log.setLogDesc(SysLogConstant.TIPS_DOWNLOAD_DESC+",uuid :"+uuid);
+            log.setFailureTotal(0);
+            log.setSuccessTotal(expCount);
+            log.setTotal(expCount);
+            log.setBeginTime(beginDate);
+            log.setEndTime(DateUtils.getSysDateFormat());
+            log.setErrorMsg(errMsg);
+            log.setUserId(String.valueOf(userId));
+            SysLogOperator.getInstance().insertSysLog(log);
+        }catch (Exception e) {
+            logger.error("Tips下载记录日志出错："+e.getMessage(), e);
+        }
+    }
+
     @RequestMapping(value = "/tip/getByRowkey")
     public void getByRowkey(HttpServletRequest request,HttpServletResponse response
     ) throws ServletException, IOException {

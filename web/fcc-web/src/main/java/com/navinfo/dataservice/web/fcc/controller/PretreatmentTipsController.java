@@ -9,7 +9,6 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.avro.data.Json;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
-import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
 /**
@@ -128,7 +126,7 @@ public class PretreatmentTipsController extends BaseController {
 			delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
             if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
-            	op2.deleteByRowkey(rowkey, delType);
+            	op2.deleteByRowkey(rowkey, delType, subTaskId);
             }
 
 			return new ModelAndView("jsonView", success());

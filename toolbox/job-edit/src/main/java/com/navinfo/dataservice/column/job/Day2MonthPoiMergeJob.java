@@ -844,16 +844,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		List<Object> values = new ArrayList<Object> ();
 		if(grids!=null&&grids.size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," g.GRID_ID ");
-			if (inClause!=null)
+			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
-			values.addAll(inClause.getValues());
+				values.addAll(inClause.getValues());
+			}
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		return sqlClause;
 	}
 	protected SqlClause getSelectLogSql(Connection conn,List<Integer> taskIds, int taskType) throws Exception{
 		StringBuilder sb = new StringBuilder();
-		sb.append(" select distinct g.GRID_ID\r\n" + 
+		sb.append(" select /*+ leading(P,D,G,S)*/  distinct g.GRID_ID\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 
@@ -865,7 +866,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
 				"    and s.status = 3");
 		if(taskType==0&&(taskIds==null||taskIds.size()==0)){
-			sb.append(" and s.quick_task_id=0 ");
+			sb.append(" and s.medium_task_id<>0 ");
 		}
 				 
 		List<Object> values = new ArrayList<Object> ();
@@ -877,8 +878,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,taskIds,str);
 			if (inClause!=null){
 				sb .append(" AND "+ inClause.getSql());
+				values.addAll(inClause.getValues());
 			}
-			values.addAll(inClause.getValues());
+			
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
 		log.info("查询存在履历的grids:"+sqlClause.getSql());
@@ -899,7 +901,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	
 	private List<Integer> meshs2grids(List<Integer> meshs) throws Exception {
 		List<Integer> grids =new ArrayList<Integer>();
-		for(int m:meshs){
+		for(Object obj:meshs){
+			int m=0;
+			if(obj instanceof Integer){  
+				obj=(int) obj;
+			}else if(obj instanceof String){  
+				obj =Integer.parseInt(String.valueOf(obj));
+            }
 			for(int i=0;i<4;i++){
 				for(int j=0;j<4;j++){
 					grids.add(m*100 + i*10+ j);
@@ -941,18 +949,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			JSONObject jsonReq = JSONObject.fromObject(callDmsGetLockApi(parameter));
 			if(jsonReq.getInt("errcode")==0){
 				if(jsonReq.get("data")!=null){
-					JSONObject json = JSONObject.fromObject(jsonReq.get("data"));
-					for(Object obj:json.keySet()){
-						int key=0;
-						if(obj instanceof Integer){  
-							key=(int) obj;
-						}else if(obj instanceof String){  
-							key =Integer.parseInt(String.valueOf(obj));
-			            }
-						dmsLockMeshes.put(key, (String) json.get(obj));
-					}
+					dmsLockMeshes =(Map<Integer,String>) jsonReq.get("data");
 				}
-				
 			}
 			log.info("DMS被锁图幅:"+dmsLockMeshes);		
 		} catch (Exception e) {

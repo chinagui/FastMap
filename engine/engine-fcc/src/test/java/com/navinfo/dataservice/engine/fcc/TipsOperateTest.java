@@ -255,7 +255,7 @@ public class TipsOperateTest extends InitApplication {
 	 @Test
 		public void testDel() {
 
-		 String parameter = "{\"rowkey\":\"028001a693ba64bd1d455ca809e6486520f221\",\"subTaskId\":57}";
+		 String parameter = "{\"rowkey\":\"111101102446\",\"subTaskId\":57}";
 			try {
 				if (StringUtils.isEmpty(parameter)) {
 					throw new IllegalArgumentException("parameter参数不能为空。");
@@ -273,14 +273,12 @@ public class TipsOperateTest extends InitApplication {
 					throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 				}
 
-				EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
-
 				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
 
 				delType = op2.getDelTypeByRowkeyAndUserId(rowkey, subTaskId);
 
-				if(delType == 0 || delType == 1) {
-					op.deleteByRowkey(rowkey, delType);
+				if(delType != PretreatmentTipsOperator.TIP_NOT_DELETE) {
+					op2.deleteByRowkey(rowkey, delType, subTaskId);
 				}
 
 			} catch (Exception e) {

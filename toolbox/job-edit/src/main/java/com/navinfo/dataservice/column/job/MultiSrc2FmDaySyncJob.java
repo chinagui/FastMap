@@ -13,14 +13,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -40,7 +41,6 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -67,6 +67,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		
 		FmMultiSrcSyncApi syncApi;
 		try{
+			
+			String beginTime = DateUtils.getSysDateFormat();
 			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
 				.getBean("fmMultiSrcSyncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
@@ -77,6 +79,10 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			//执行导入
 			imp(syncApi,localUnzipDir);
 			response("导入完成",null);
+			
+			//增加log 日志
+			insertStatisticsInfoNoException(beginTime);
+			
 			//写导入统计结果并生成zip文件下载url
 			String resFileName = localUnzipDir.substring(localUnzipDir.lastIndexOf(File.separator), localUnzipDir.length())+"_res.txt";
 			String zipFile = writeImpResFile(syncApi,resFileName);
@@ -91,6 +97,40 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		}
 		
 	}
+	
+	/**
+	 * @Title: insertStatisticsInfoNoException
+	 * @Description: 增加统计日志
+	 * @param jobId
+	 * @param subtaskId
+	 * @param userId
+	 * @param result  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月10日 下午12:29:41 
+	 */
+	private void insertStatisticsInfoNoException(String beginTime)  {
+		try{
+			//设置导入成功状态
+			long jobId = jobInfo.getId();
+			
+			SysLogStats log = new SysLogStats();
+			log.setLogType(SysLogConstant.DAY_MULTI_IMPORT);
+			log.setLogDesc(SysLogConstant.DAY_MULTI_IMPORT_DESC+",jobId :"+jobId+"");
+			log.setFailureTotal(errLog.size());
+			log.setSuccessTotal(resJson.getInt("success"));  
+			log.setTotal(errLog.size()+resJson.getInt("success"));
+			log.setBeginTime(beginTime);
+			log.setEndTime(DateUtils.getSysDateFormat());
+			log.setErrorMsg(resJson.getJSONObject("fail").toString());
+			log.setUserId("0");
+			SysLogOperator.getInstance().insertSysLog(log);
+		
+		}catch (Exception e) {
+			log.error("记录多源日志出错："+e.getMessage(), e);
+		}
+	}
+	
 	
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
@@ -208,7 +248,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			if(poiMap.size()==1){
 				Map.Entry<Integer,MultiSrcUploadPois> entry = poiMap.entrySet().iterator().next();
-				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;
+				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();
 			}else{
 				if(dbSize>10){
 					initThreadPool(10);
@@ -338,6 +378,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Connection conn=null;
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
+				log.info("dbId: "+dbId);
 				//导入数据
 				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(dbId,pois);
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
@@ -367,8 +408,22 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("");
+				log.error("dbId("+dbId+")转入发生错误："+e.getMessage(),e);
+				String errmsg = "dbId("+dbId+")转入发生错误："+e.getMessage();
+				//
+				Map<String,String> allerrs = new HashMap<String,String>();
+				for(String fid:pois.getAddPois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getUpdatePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getDeletePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				errLog.putAll(allerrs);
+//				throw new ThreadExecuteException(e.getMessage(),e);
+
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){

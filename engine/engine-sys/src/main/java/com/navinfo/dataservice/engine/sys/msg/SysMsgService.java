@@ -867,7 +867,7 @@ public class SysMsgService {
 			parMap.put("mailList", tos);
 			parMap.put("title", mailTitle);
 			parMap.put("content", mailContext.toString());
-			String result = ServiceInvokeUtil.invokeByGet(url, parMap);
+			String result = ServiceInvokeUtil.invokeByGet(url, parMap,5000);
 			log.info("发送邮件，调用smap请求返回值："+result);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

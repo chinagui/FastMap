@@ -27,15 +27,21 @@ import net.sf.json.JSONObject;
 public class PoiController extends BaseController {
 	protected Logger log = Logger.getLogger(this.getClass());
 
-	@RequestMapping(value = "/poi/help")
-	public ModelAndView getDb(HttpServletRequest request){
+	@RequestMapping(value = "/hello")
+	public ModelAndView hello(HttpServletRequest request){
 		PoiServiceNew.getInstance().logTest();
 		log.info("Hello,Poi Controller...");
 		return new ModelAndView("jsonView", "data", "Hello,Datahub.你好，数据中心！");
 	}
 	
 	@RequestMapping(value = "/poi/upload")
-	public ModelAndView createDb(HttpServletRequest request){
+	public ModelAndView poiUpload(HttpServletRequest request){
+		int jobId = 0;
+		int subtaskId = 0;
+		long userId = 0;
+		String beginTime = DateUtils.getSysDateFormat();
+		UploadResult result = null;
+		
 		try{
 			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (paraJson == null) {
@@ -44,24 +50,28 @@ public class PoiController extends BaseController {
 			if(paraJson.get("jobId")==null){
 				throw new IllegalArgumentException("jobId参数不能为空。");
 			}
-			int jobId = paraJson.getInt("jobId");
+			jobId = paraJson.getInt("jobId");
 
-			int subtaskId = 0;
+			
 			if(paraJson.containsKey("subtaskId")){
 				subtaskId = paraJson.getInt("subtaskId");
 			}
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			UploadResult result = PoiServiceNew.getInstance().upload(jobId, subtaskId, userId);
+			userId = tokenObj.getUserId();
+			
+			result = PoiServiceNew.getInstance().upload(jobId, subtaskId, userId);
 			
 			//记录上传日志。不抛出异常
             insertStatisticsInfoNoException(jobId, subtaskId, userId,
-            		result);
+            		result,beginTime,null);
 			
 			return new ModelAndView("jsonView", success(result));
 		}catch(Exception e){
 			logger.error(e.getMessage(),e);
+			//记录上传日志。不抛出异常
+            insertStatisticsInfoNoException(jobId, subtaskId, userId,
+            		result,beginTime,"poi上传数据失败:"+e.getMessage());
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
@@ -73,23 +83,35 @@ public class PoiController extends BaseController {
 	 * @param subtaskId
 	 * @param userId
 	 * @param result  void
+	 * @param errorMess 
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年8月10日 下午12:29:41 
 	 */
 	private void insertStatisticsInfoNoException(int jobId, int subtaskId,
-			long userId, UploadResult result)  {
+			long userId, UploadResult result,String beginTime, String errorMess)  {
 		try{
+			int total = 0;
+			int successTotal = 0;
+			JSONArray jsonArrFail = null;
+			if(result != null){
+				total=result.getTotal();
+				successTotal=result.getSuccess();
+				jsonArrFail = JSONArray.fromObject(result.getFail());
+			}
 			SysLogStats log = new SysLogStats();
 			log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
 			log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
-			log.setFailureTotal(result.getTotal()-result.getSuccess());
-			log.setSuccessTotal(result.getSuccess());  
-			log.setTotal(result.getTotal());
-			log.setBeginTime(DateUtils.getSysDateFormat());
+			log.setFailureTotal(total-successTotal);
+			log.setSuccessTotal(successTotal);  
+			log.setTotal(total);
+			log.setBeginTime(beginTime);
 			log.setEndTime(DateUtils.getSysDateFormat());
-			JSONArray jsonArrFail = JSONArray.fromObject(result.getFail());
-			log.setErrorMsg(jsonArrFail.toString());
+			if(jsonArrFail != null){
+				log.setErrorMsg(jsonArrFail.toString());
+			}else{
+				log.setErrorMsg(errorMess);
+			}
 			log.setUserId(String.valueOf(userId));
 			SysLogOperator.getInstance().insertSysLog(log);
 		

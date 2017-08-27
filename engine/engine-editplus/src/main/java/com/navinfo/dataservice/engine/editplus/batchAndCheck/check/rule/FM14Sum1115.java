@@ -84,16 +84,21 @@ public class FM14Sum1115 extends BasicCheckRule {
 						+ " SELECT /*+ NO_MERGE(T)*/"
 						+ " P.PID, T.PID2"
 						+ "  FROM T, IX_POI P"
-						+ " WHERE  SDO_NN(p.GEOMETRY, T.G2,'sdo_batch_size=0 DISTANCE=3 UNIT=METER') = 'TRUE'"
+						+ " WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY, T.G2, 'DISTANCE=3 UNIT=METER') = 'TRUE'"
 						+ "   AND P.KIND_CODE IN ('230215', '230216')"
 						+ "   AND P.U_RECORD != 2"
-						+ " MINUS"
-						+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
-						+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T"
-						+ " WHERE P.GROUP_ID = C.GROUP_ID"
-						+ " AND C.U_RECORD!=2"
-						+ " AND P.U_RECORD!=2"
-						+ " AND C.CHILD_POI_PID =T.PID2";
+						+ "   AND NOT EXISTS"
+						+ " (SELECT 1"
+						+ "    FROM IX_POI_CHILDREN C, IX_POI_PARENT PP"
+						+ "   WHERE PP.GROUP_ID = C.GROUP_ID"
+						+ "     AND C.U_RECORD != 2"
+						+ "     AND PP.U_RECORD != 2"
+						+ "     AND C.CHILD_POI_PID = T.PID2"
+				        + "     AND EXISTS"
+				        + "   (SELECT 1"
+				        + "      FROM IX_POI_PARENT IP"
+				        + "     WHERE IP.GROUP_ID = PP.GROUP_ID"
+				        + "       AND IP.PARENT_POI_PID = PP.PARENT_POI_PID))";
 				log.info(sqlStr);
 				pstmt = conn.prepareStatement(sqlStr);
 				if(values!=null&&values.size()>0){

@@ -195,6 +195,7 @@ public interface ManApi{
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
+	public Set<Integer> getCollectTaskIdByDayTask(int taskId) throws Exception;
 	/**
 	 * 获取开启的多源子任务与grid的map
 	 * @param dbId 所在大区库
@@ -281,7 +282,7 @@ public interface ManApi{
 	 * @return	Map<Long,Map<String, Object>> key:objId
 	 * @throws ServiceException 
 	 */
-	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName) throws Exception;
+	public Map<Integer,Map<String, Object>> queryManTimelineByObjName(String objName,int operateType) throws Exception;
 	
 	/**
 	 * timestamp:yyyymmdd
@@ -321,14 +322,14 @@ public interface ManApi{
 	 */
 	public Map<Integer,Integer> queryProgramTypes() throws Exception;
 
-    /**
-     * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
-     * OBJ_TYPE:program,task,subtask,infor
-     * @return	Map<Long,Map<String, Object>> key:objId
-     * @throws ServiceException
-     */
-    public Map<Integer,Map<String, Object>> queryTimelineByCondition(int objId,
-                                                                     String objType, int operateType) throws Exception;
+	/**
+	 * 根据OBJ_ID,OBJ_TYPE,OPERATE_TYPE查询MAN_TIMELINE
+	 * OBJ_TYPE:program,task,subtask,infor
+	 * @return	Map<Long,Map<String, Object>> key:objId
+	 * @throws ServiceException
+	 */
+	public Map<String, Object> queryTimelineByCondition(int objId,
+														String objType, int operateType) throws Exception;
 
     /**
      * 保存timeline
@@ -339,5 +340,11 @@ public interface ManApi{
      * @throws Exception
      */
     public void saveTimeline(int objectID, String name, int type, String operateDate) throws Exception;
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception;
 }
 

@@ -39,10 +39,10 @@ public class CheckTest1 {
 		System.out.println("start check test");
 		CheckTest1 test=new CheckTest1();
 		test.init();
-		Connection conn = DBConnector.getInstance().getConnectionById(12);
+		Connection conn = DBConnector.getInstance().getConnectionById(13);
 		OperationResult operationResult=new OperationResult();
 		
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 30049, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 502000132, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 //		ChangeLog logg=new ChangeLog();
 //		logg.setOpType(OperationType.INSERT);
@@ -54,7 +54,7 @@ public class CheckTest1 {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("GLM60158");
+		ruleIdList.add("GLM60293");
 		
 		checkCommand.setRuleIdList(ruleIdList);
 		

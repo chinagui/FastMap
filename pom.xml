@@ -475,6 +475,11 @@
                 <artifactId>javamelody-core</artifactId>
                 <version>1.60.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>transport</artifactId>
+                <version>5.5.2</version>
+            </dependency>
 			<!-- utils end -->
 			<!-- spring start -->
 			<dependency>
@@ -737,6 +742,11 @@
 				<artifactId>engine-fcc</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
+            <dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>engine-es</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>engine-photo</artifactId>
@@ -817,6 +827,11 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>api-fcc</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-es</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>

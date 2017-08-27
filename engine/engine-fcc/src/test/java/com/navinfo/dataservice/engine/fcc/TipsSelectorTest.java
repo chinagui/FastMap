@@ -10,6 +10,7 @@ import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.engine.fcc.track.TrackLinesUpload;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -75,6 +76,13 @@ public class TipsSelectorTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
+    @Test
+	public void testTrackPoints() throws Exception{
+        TrackLinesUpload trackUploader = new TrackLinesUpload();
+        trackUploader.run("F:\\FCC\\track_collection.json", HBaseConstant.trackLineTab, 1);
+        System.exit(0);
+    }
 
 	@Test
 	public void testQueryByCodeAndGrid(){
@@ -179,6 +187,7 @@ public class TipsSelectorTest extends InitApplication {
                     ",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\"" +
                     ",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"" +
                     ",\"1117\",\"1214\"],\"workStatus\":[0,11],\"subtaskId\":810,\"x\":107926,\"y\":49626,\"z\":17}";
+			parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1510\",\"1508\",\"1803\",\"2101\",\"1202\",\"1706\",\"1301\",\"2001\",\"1514\",\"1501\",\"1302\",\"1507\",\"1702\",\"1207\",\"1604\",\"1101\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1806\",\"1107\",\"1102\",\"1511\",\"1211\",\"1116\",\"1214\",\"1520\"],\"workStatus\":[0,1,2],\"x\":215794,\"y\":99243,\"z\":18}";
 			System.out.println("**********************************************");
             System.out.println("**********************************************");
             System.out.println("**********************************************");

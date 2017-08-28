@@ -122,6 +122,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			int type = day2MonRequest.getType();//快线还是中线:0 中线，1 快线
 			int lot = day2MonRequest.getLot();//中线批次:0,1,2,3(快线输0)
 			phaseId =(long) day2MonRequest.getPhaseId();
+			List<Integer> specRegionId=day2MonRequest.getSpecRegionId();
 			Map<Integer,List<Integer>> subTasks = (Map<Integer,List<Integer>>)day2MonRequest.getTaskInfo();
 			
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
@@ -139,7 +140,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);
 				} 
-			}else{//全部大区定时落
+			}else if(specRegionId!=null||specRegionId.size()>0){//按照指定大区库进行日落月
+				for(int regionId:specRegionId){
+					Region r = manApi.queryByRegionId(regionId);
+					regions.add(r);
+				}
+			}else{
+				//全部大区定时落
 				regions = manApi.queryRegionList();
 			}
 			log.info("确定日落月大区库个数："+regions.size()+"个。");

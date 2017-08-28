@@ -82,8 +82,8 @@ public class Fm2ChargePhotoInitJob extends AbstractJob {
 			}
 			//2.开始执行导出数据
 			//01.生成目录
-//			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
-			String rootDownloadPath = "D:\\temp\\";
+			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+//			String rootDownloadPath = "D:\\temp\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = rootDownloadPath+"chargeHome"+File.separator+curYm+File.separator;

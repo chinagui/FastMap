@@ -66,7 +66,7 @@ public class LogOperation {
 		
 		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
 		//log_detail
-		RunnableSQL sql = new RunnableSQL();
+		RunnableSQL sql = new RunnableSQL("LOG_OPERATION");
 		sql.setSql("INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,?,?)");
 		List<Object> columnValues = new ArrayList<Object>();
 		columnValues.add(opId);

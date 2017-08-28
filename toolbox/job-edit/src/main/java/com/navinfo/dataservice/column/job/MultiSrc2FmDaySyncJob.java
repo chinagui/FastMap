@@ -248,7 +248,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			if(poiMap.size()==1){
 				Map.Entry<Integer,MultiSrcUploadPois> entry = poiMap.entrySet().iterator().next();
-				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;
+				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();
 			}else{
 				if(dbSize>10){
 					initThreadPool(10);
@@ -378,6 +378,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Connection conn=null;
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
+				log.info("dbId: "+dbId);
 				//导入数据
 				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(dbId,pois);
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
@@ -407,8 +408,22 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
-				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("");
+				log.error("dbId("+dbId+")转入发生错误："+e.getMessage(),e);
+				String errmsg = "dbId("+dbId+")转入发生错误："+e.getMessage();
+				//
+				Map<String,String> allerrs = new HashMap<String,String>();
+				for(String fid:pois.getAddPois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getUpdatePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				for(String fid:pois.getDeletePois().keySet()){
+					allerrs.put(fid, errmsg);
+				}
+				errLog.putAll(allerrs);
+//				throw new ThreadExecuteException(e.getMessage(),e);
+
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){

@@ -122,6 +122,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			int type = day2MonRequest.getType();//快线还是中线:0 中线，1 快线
 			int lot = day2MonRequest.getLot();//中线批次:0,1,2,3(快线输0)
 			phaseId =(long) day2MonRequest.getPhaseId();
+			List<Integer> specRegionId=day2MonRequest.getSpecRegionId();
 			Map<Integer,List<Integer>> subTasks = (Map<Integer,List<Integer>>)day2MonRequest.getTaskInfo();
 			
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS.getValue());
@@ -139,7 +140,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);
 				} 
-			}else{//全部大区定时落
+			}else if(specRegionId!=null||specRegionId.size()>0){//按照指定大区库进行日落月
+				for(int regionId:specRegionId){
+					Region r = manApi.queryByRegionId(regionId);
+					regions.add(r);
+				}
+			}else{
+				//全部大区定时落
 				regions = manApi.queryRegionList();
 			}
 			log.info("确定日落月大区库个数："+regions.size()+"个。");
@@ -854,7 +861,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 	protected SqlClause getSelectLogSql(Connection conn,List<Integer> taskIds, int taskType) throws Exception{
 		StringBuilder sb = new StringBuilder();
-		sb.append(" select distinct g.GRID_ID\r\n" + 
+		sb.append(" select /*+ leading(P,D,G,S)*/  distinct g.GRID_ID\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 
@@ -866,7 +873,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
 				"    and s.status = 3");
 		if(taskType==0&&(taskIds==null||taskIds.size()==0)){
-			sb.append(" and s.quick_task_id=0 ");
+			sb.append(" and s.medium_task_id<>0 ");
 		}
 				 
 		List<Object> values = new ArrayList<Object> ();
@@ -904,9 +911,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		for(Object obj:meshs){
 			int m=0;
 			if(obj instanceof Integer){  
-				obj=(int) obj;
+				m=(int) obj;
 			}else if(obj instanceof String){  
-				obj =Integer.parseInt(String.valueOf(obj));
+				m =Integer.parseInt(String.valueOf(obj));
             }
 			for(int i=0;i<4;i++){
 				for(int j=0;j<4;j++){

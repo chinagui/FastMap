@@ -675,8 +675,8 @@ public class QualityService {
 			}
 			return resultJson;
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(checkConn);
-			DbUtils.rollbackAndCloseQuietly(manConn);
+			DbUtils.rollback(checkConn);
+			DbUtils.rollback(manConn);
 			log.error("获取poi质检问题失败，原因为：" + e.getMessage());
 			throw e;
 		} finally {
@@ -686,6 +686,30 @@ public class QualityService {
 			DbUtils.closeQuietly(resultSetCheck);
 			DbUtils.closeQuietly(preparedStatement);
 			DbUtils.closeQuietly(resultSet);
+		}
+	}
+	
+	public JSONArray queryQualityRelation() throws Exception {
+		Connection metaConn = null;
+		try {
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			QueryRunner run = new QueryRunner();
+			String queryStr = "SELECT T.CLASS_TOP, T.CLASS_MEDIUM, T.CLASS, T.TYPE, T.SEVERITY, T.PHENOMENON, T.WEIGHT FROM SC_PROBLEM_TYPE T WHERE T.PROJECT = 1";
+			return run.query(metaConn, queryStr, new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray resultJson = new JSONArray();
+					while (rs.next()) {
+						StringBuilder sb = new StringBuilder().append(rs.getString(1)).append("|").append(rs.getString(2)).append("|").append(rs.getString(3)).append("|").append(rs.getString(4)).append("|").append(rs.getString(5)).append("|").append(rs.getString(6)).append("|").append(rs.getString(7));
+						resultJson.add(sb.toString());
+					}
+					return resultJson;
+				}
+			});
+		} catch (Exception e) {
+			log.error("获取质检关系失败，原因为：" + e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(metaConn);
 		}
 	}
 }

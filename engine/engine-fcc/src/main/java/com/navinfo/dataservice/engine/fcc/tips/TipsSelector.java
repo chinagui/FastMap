@@ -610,6 +610,22 @@ public class TipsSelector {
 					obj.put("kind", deep.getInt("kind"));
 					obj.put("cons", deep.getInt("cons"));
 					m.put("e", obj);
+
+                    //20170823 POI关联非删除测线跟屏幕无关，需要服务返回测线上关联的删除形状tips
+                    String querySql = "SELECT COUNT(1) CT\n" +
+                            "  FROM TIPS_INDEX TI, TIPS_INDEX RTI, TIPS_LINKS L\n" +
+                            " WHERE TI.ID = L.ID\n" +
+                            "   AND RTI.ID = L.LINK_ID\n" +
+                            "   AND RTI.S_SOURCETYPE = '2001'\n" +
+                            "   AND TI.S_SOURCETYPE = '2101'\n" +
+                            "   AND RTI.ID = :1";
+                    int relateCount = (int)operator.querCount(querySql, rowkey);
+                    if(relateCount > 0) {
+                        relateCount = 1;
+                    } else {
+                        relateCount = 0;
+                    }
+                    m.put("d", relateCount);
 				}
 				//删除道路标记，要求返回id  type .输入：吴振
 				if(type==2101){
@@ -1332,7 +1348,7 @@ public class TipsSelector {
 					oracelConn);
             OracleWhereClause whereClause = param.getTipStat(parameter, oracelConn);
 			long total = operator.querCount(
-					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) from tips_index where "
+					"select count(1) from tips_index where "
 							+ whereClause.getSql(), whereClause.getValues()
 							.toArray());
 			Map<Object, Object> dataMap = operator.groupQuery(
@@ -1389,7 +1405,7 @@ public class TipsSelector {
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
 			String query = param.getTipsDayTotal(subtaskId, subTaskType, handler, isQuality, statType);
 			return (int) operator.querCount(
-					" select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ " +
+					" select " +
                             "count(1) from tips_index where " + query, ConnectionUtil.createClob(conn, wkt));
 
 		} catch (Exception e) {
@@ -1921,7 +1937,7 @@ public class TipsSelector {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
 			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
-					"select /*+ index(tips_index,IDX_SDO_TIPS_INDEX_WKT) */ count(1) count from tips_index where " + where
+					"select count(1) count from tips_index where " + where
 					+ " and rownum=1", ConnectionUtil.createClob(oracleConn, wkt));
 
 			return (count > 0 ? 1 : 0);

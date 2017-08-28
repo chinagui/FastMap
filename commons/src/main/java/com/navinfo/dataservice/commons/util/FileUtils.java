@@ -273,7 +273,7 @@ public class FileUtils {
 	public static byte[] rotateOrigin(byte[] bytes) throws IOException, ImageProcessingException {
 		JPEGImageEncoder encoder = null;
 		BufferedImage tagImage = null;
-		Image srcImage = null;
+		BufferedImage srcImage = null;
 		
 		//**********2016.12.09 zl 添加图片自动旋转功能 **************
 		Image newImage = null;
@@ -289,7 +289,7 @@ public class FileUtils {
     		}
     	}
     	if(newImage != null){
-    		srcImage = newImage;
+    		srcImage = (BufferedImage) newImage;
     	}else{
     		ByteInputStream bis =null;
     		try{
@@ -299,13 +299,21 @@ public class FileUtils {
     			closeStream(bis);
     		}
     	}
+    	//*****************************************************
+    	int imgHeight = srcImage.getHeight();//取得图片的长和宽
+        int imgWidth = srcImage.getWidth();
+    	// 生成底图为透明的图片
+		tagImage = new BufferedImage(imgWidth, imgHeight,
+				BufferedImage.TYPE_INT_RGB);
+		tagImage.getGraphics().drawImage(srcImage, 0, 0, imgWidth, imgHeight,
+				null);
 		//*****************************************************
     	ByteOutputStream bos=null;
 		try{
 			bos = new ByteOutputStream();
 	
 			encoder = JPEGCodec.createJPEGEncoder(bos);
-			encoder.encode((BufferedImage) srcImage);
+			encoder.encode(tagImage);
 	
 			return bos.getBytes();
 		}finally{

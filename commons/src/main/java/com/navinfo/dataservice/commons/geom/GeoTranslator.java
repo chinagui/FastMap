@@ -1202,7 +1202,6 @@ public class GeoTranslator {
 		for(Coordinate linePoint:lineCoordinates){
 			//交点与线的端点相同
 			if(coord1.equals(linePoint)||coord2.equals(linePoint)){
-				num++;
 				if(tmpLine.size()!=0){
 					tmpLine.add(linePoint);
 					subLines.add(GeoTranslator.createLineString(tmpLine));

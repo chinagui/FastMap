@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
+import com.navinfo.navicommons.exception.ServiceException;
 
 @Service("staticsApi")
 public class StaticsApiImpl implements StaticsApi {
@@ -82,6 +83,21 @@ public class StaticsApiImpl implements StaticsApi {
 	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
 		// TODO Auto-generated method stub
 		return StaticsService.getInstance().getStatBySubtaskIdList(subtaskIdList);
+	}
+	
+	/**
+	 * 查询当最近一次的mongo中task相应的统计数据
+	 * @param int taskId
+	 * @return Map<Integer, Map<String,Object>>
+	 * @throws ServiceException 
+	 */
+	@Override
+	public Map<String, Object> getTaskProgressFromMongo(int taskId) throws Exception{
+		try{
+			return StaticsService.getInstance().getTaskProgressFromMongo(taskId);
+		}catch(Exception e){
+			throw e;
+		}
 	}
 
 }

@@ -92,7 +92,15 @@
 		<artifactId>edit-control-dealership</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
-     
-     
+
+
+     <dependency>
+     	<groupId>com.navinfo.dataservice</groupId>
+     	<artifactId>job-framework</artifactId>
+     </dependency>
+     <dependency>
+     	<groupId>com.navinfo.dataservice</groupId>
+     	<artifactId>dao-photo</artifactId>
+     </dependency>
   </dependencies>
 </project>

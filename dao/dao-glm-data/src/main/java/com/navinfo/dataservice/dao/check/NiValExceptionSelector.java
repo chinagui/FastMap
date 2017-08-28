@@ -400,12 +400,13 @@ public class NiValExceptionSelector {
 	 * @parm level 0 全部 1 错误 2 警告 3 提示
 	 * @param ruleId
 	 *            规则号
+	 * @param sortby 
 	 * @return
 	 * @throws Exception
 	 */
 	public Page list(int subtaskType, Collection<String> grids,
 			final int pageSize, final int pageNum, int flag, String ruleId,
-			int level) throws Exception {
+			int level, String sortby) throws Exception {
 
 		Clob pidsClob = ConnectionUtil.createClob(conn);
 		pidsClob.setString(1, StringUtils.join(grids, ","));
@@ -489,8 +490,32 @@ public class NiValExceptionSelector {
 						+ " SELECT 1 FROM CK_RESULT_OBJECT O "
 						+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
 						+ "   AND O.MD5_CODE=a.MD5_CODE)");
-
-		resultSql.append(" order by created desc,md5_code desc");
+		String orderSql = "";
+		com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
+		// 添加排序条件
+		if (sortby.length() > 0) {
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				orderSql += " ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby
+						.substring(1));
+				orderSql += "  ";
+				orderSql += sortbyName;
+				orderSql += " DESC";
+			} else {
+				orderSql += " ORDER BY ";
+				String sortbyName = sUtils.toColumnName(sortby
+						.substring(1));
+				orderSql += "  ";
+				orderSql += sortbyName;
+			}
+		}else{
+			orderSql +=" order by created desc,md5_code desc";
+		}
+		
+		
+//		resultSql.append(" order by created desc,md5_code desc");
+		resultSql.append(orderSql);
 		log.info("resultSql ====" + resultSql.toString());
 		Page page = null;
 		if (flag == 0 || flag == 5 || flag == 6) {

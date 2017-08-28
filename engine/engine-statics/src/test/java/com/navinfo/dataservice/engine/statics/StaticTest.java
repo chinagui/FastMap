@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
@@ -83,9 +84,21 @@ public class StaticTest {
 
 	@Test
 	public void test01() {
-		List<Document> list;
+		List<Integer> list;
 		try {
 			list = OracleDao.getSubtaskListWithStatistics();
+			System.out.println(list.toString());
+		} catch (ServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test02() {
+		List<Subtask> list;
+		try {
+			list = OracleDao.getSubtaskListNeedStatistics();
 			System.out.println(list.toString());
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block

@@ -7,6 +7,7 @@
 		<job name="personDayJob"/>
 		<job name="dayPlanStat"/>
 		<job name="personTipsJob"/>
+		<job name="personFccJob"/>
 	</group>
 	<group name="subtaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.SubtaskStatStarter">
 		<job name="monthPoiStat"/>
@@ -14,6 +15,7 @@
 		<job name="tipsStat"/>
 	</group>
 	<group name="taskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
+		<job name="fccJob"/>
 		<job name="subtaskStat"/>
 	</group>
 	

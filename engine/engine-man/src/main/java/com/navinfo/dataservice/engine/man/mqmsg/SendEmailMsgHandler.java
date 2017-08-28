@@ -61,7 +61,7 @@ public class SendEmailMsgHandler implements MsgHandler {
 		
 		log.info(parMap);
 		log.info(smapMailUrl);
-		String result = ServiceInvokeUtil.invokeByGet(smapMailUrl,parMap);
+		String result = ServiceInvokeUtil.invokeByGet(smapMailUrl,parMap,2000);
 		log.info("发送邮件，调用smap请求返回值："+result);
 	}
 

@@ -12,3 +12,6 @@ log
 .idea
 engine/engine-fcc/dubbo-cache
 toolbox/job-man/target
+api/api-es/target
+engine/engine-es/target
+web/es-web/target

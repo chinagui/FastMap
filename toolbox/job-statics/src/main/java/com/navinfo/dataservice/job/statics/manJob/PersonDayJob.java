@@ -201,7 +201,7 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
 				sb.append("	 '"+timestamp+"'"                            );
-				sb.append("   and p.pid = s.pid                         ");
+				sb.append("   and p.pid = s.pid  and s.status!=0                       ");
 				
 				String selectSql = sb.toString();
 

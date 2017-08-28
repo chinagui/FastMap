@@ -38,8 +38,22 @@ public class OpRefRelationObj {
 		return null;
 	}
 
-
 	// 警示信息
+	public String handleWarninginfo(Result result, Command command)
+			throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation warninginfoOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(
+				conn);
+		for (int pid : command.getLinkPids()) {
+
+			warninginfoOperation.deleteByLink(pid, result);
+		}
+
+		return null;
+	}
+
+
+	// 警示信息RD_LINK_WARNING
 	public String handleLinkWarning(Result result, Command command)
 			throws Exception {
 

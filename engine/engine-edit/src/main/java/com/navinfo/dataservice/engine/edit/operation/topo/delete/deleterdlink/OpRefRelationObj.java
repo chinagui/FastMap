@@ -25,6 +25,15 @@ public class OpRefRelationObj {
 
 		return null;
 	}
+	public String handleWarninginfo(Result result, int linkPid) throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation warninginfoOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(
+				conn);
+
+		warninginfoOperation.deleteByLink(linkPid, result);
+
+		return null;
+	}
 
 	public String handleRdLinkWarning(Result result, int linkPid) throws Exception {
 

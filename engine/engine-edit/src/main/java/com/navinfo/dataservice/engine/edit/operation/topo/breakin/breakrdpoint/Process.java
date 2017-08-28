@@ -437,12 +437,16 @@ public class Process extends AbstractProcess<Command> {
         opRefAdAdmin.run(this.getResult());
         long refAdAdminTime = System.currentTimeMillis();
         log.info("立行政区划 USE TIME  " + String.valueOf(refAdAdminTime - refRdGscTime));
-
+        // 警示信息
+        OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
+        opRefRdWarninginfo.run(this.getResult(), oldLinkPid, this.getCommand().getNewLinks());
+        long refRdWarninginfoTime = System.currentTimeMillis();
+        log.info("警示信息 USE TIME  " + String.valueOf(refRdWarninginfoTime - refAdAdminTime));
         // 信号灯
         OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(this.getConn());
         ofOpRefRdTrafficsignal.run(this.getResult(), oldLinkPid, this.getCommand().getNewLinks());
         long refRdTrafficsignalTime = System.currentTimeMillis();
-        log.info("信号灯USE TIME  " + String.valueOf(refRdTrafficsignalTime - refAdAdminTime));
+        log.info("信号灯USE TIME  " + String.valueOf(refRdTrafficsignalTime - refRdWarninginfoTime));
 
         // 电子眼
         OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn());
@@ -475,10 +479,10 @@ public class Process extends AbstractProcess<Command> {
         opRefRelationObj.handleRdDirectroute(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
         long refRdDirectrouteTime = System.currentTimeMillis();
         log.info("顺行USE TIME  " + String.valueOf(refRdDirectrouteTime - refRdSlopeTime));
-        // 警示信息
+        // 警示信息 RD_LINK_WARNING
         opRefRelationObj.handleRdLinkWarning(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
         long refRdLinkWarningTime = System.currentTimeMillis();
-        log.info("顺警示信息USE TIME  " + String.valueOf(refRdLinkWarningTime - refRdDirectrouteTime));
+        log.info("警示信息USE TIME  " + String.valueOf(refRdLinkWarningTime - refRdDirectrouteTime));
         // CRF交叉点
         OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
         opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());

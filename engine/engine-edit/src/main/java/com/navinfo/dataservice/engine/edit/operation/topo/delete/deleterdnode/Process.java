@@ -300,6 +300,9 @@ public class Process extends AbstractProcess<Command> {
         opRefRelationObj.handleDirectroute(this.getResult(), this.getCommand());
 
         // 警示信息
+        opRefRelationObj.handleWarninginfo(this.getResult(), this.getCommand());
+
+        // 警示信息 RD_LINK_WARNING
         opRefRelationObj.handleLinkWarning(this.getResult(), this.getCommand());
 
         // 语音引导

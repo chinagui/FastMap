@@ -326,7 +326,7 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.getConn());
 
 		// 警示信息
-		opRefRelationObj.handleWarninginfo(this.getResult(), this.getCommand()
+		opRefRelationObj.handleRdLinkWarning(this.getResult(), this.getCommand()
 				.getLinkPid());
 
 		// 语音引导

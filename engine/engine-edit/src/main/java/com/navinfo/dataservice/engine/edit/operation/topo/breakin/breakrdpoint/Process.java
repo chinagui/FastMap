@@ -437,16 +437,12 @@ public class Process extends AbstractProcess<Command> {
         opRefAdAdmin.run(this.getResult());
         long refAdAdminTime = System.currentTimeMillis();
         log.info("立行政区划 USE TIME  " + String.valueOf(refAdAdminTime - refRdGscTime));
-        // 警示信息
-        OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
-        opRefRdWarninginfo.run(this.getResult(), oldLinkPid, this.getCommand().getNewLinks());
-        long refRdWarninginfoTime = System.currentTimeMillis();
-        log.info("警示信息 USE TIME  " + String.valueOf(refRdWarninginfoTime - refAdAdminTime));
+
         // 信号灯
         OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(this.getConn());
         ofOpRefRdTrafficsignal.run(this.getResult(), oldLinkPid, this.getCommand().getNewLinks());
         long refRdTrafficsignalTime = System.currentTimeMillis();
-        log.info("信号灯USE TIME  " + String.valueOf(refRdTrafficsignalTime - refRdWarninginfoTime));
+        log.info("信号灯USE TIME  " + String.valueOf(refRdTrafficsignalTime - refAdAdminTime));
 
         // 电子眼
         OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn());
@@ -475,17 +471,19 @@ public class Process extends AbstractProcess<Command> {
         opRefRdSlope.run(this.getResult(), oldLinkPid, this.getCommand().getNewLinks());
         long refRdSlopeTime = System.currentTimeMillis();
         log.info("坡度USE TIME  " + String.valueOf(refRdSlopeTime - refRdSpeedbumTime));
-
         // 顺行
         opRefRelationObj.handleRdDirectroute(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
         long refRdDirectrouteTime = System.currentTimeMillis();
         log.info("顺行USE TIME  " + String.valueOf(refRdDirectrouteTime - refRdSlopeTime));
+        // 警示信息
+        opRefRelationObj.handleRdLinkWarning(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+        long refRdLinkWarningTime = System.currentTimeMillis();
+        log.info("顺警示信息USE TIME  " + String.valueOf(refRdLinkWarningTime - refRdDirectrouteTime));
         // CRF交叉点
         OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
         opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
-
         long refRdInterTime = System.currentTimeMillis();
-        log.info("CRF交叉点USE TIME  " + String.valueOf(refRdInterTime - refRdDirectrouteTime));
+        log.info("CRF交叉点USE TIME  " + String.valueOf(refRdInterTime - refRdLinkWarningTime));
         // CRF道路
         OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
         opRefRdRoad.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());

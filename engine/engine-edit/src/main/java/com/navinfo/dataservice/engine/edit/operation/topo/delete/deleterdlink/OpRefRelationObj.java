@@ -1,11 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 public class OpRefRelationObj {
 	private Connection conn = null;
 
@@ -14,20 +15,6 @@ public class OpRefRelationObj {
 		this.conn = conn;
 
 	}
-
-//	public String handleRoad(Result result, Command command) throws Exception {
-//
-//		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation(
-//				conn);
-//
-//		List<Integer> linkPids = new ArrayList<Integer>();
-//
-//		linkPids.add(command.getLinkPid());
-//
-//		operation.deleteByLinks(linkPids, result);
-//
-//		return null;
-//	}
 
 	public String handleSameLink(Result result, Command command) throws Exception {
 
@@ -39,12 +26,12 @@ public class OpRefRelationObj {
 		return null;
 	}
 
-	public String handleWarninginfo(Result result, int linkPid) throws Exception {
+	public String handleRdLinkWarning(Result result, int linkPid) throws Exception {
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation warninginfoOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
 				conn);
 
-		warninginfoOperation.deleteByLink(linkPid, result);
+		operation.updateByLinks(Arrays.asList(linkPid), result);
 
 		return null;
 	}

@@ -1199,7 +1199,6 @@ public class GeoTranslator {
 		List<Geometry> subLines=new ArrayList<Geometry>(); 
 		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
 		Coordinate coorBefore=null;
-		int num=0;
 		for(Coordinate linePoint:lineCoordinates){
 			//交点与线的端点相同
 			if(coord1.equals(linePoint)||coord2.equals(linePoint)){

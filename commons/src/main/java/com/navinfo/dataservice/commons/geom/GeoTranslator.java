@@ -19,7 +19,6 @@ import org.mapfish.geo.MfGeoFactory;
 import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
-import org.springframework.aop.ThrowsAdvice;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;

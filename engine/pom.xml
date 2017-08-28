@@ -22,6 +22,7 @@
 		<module>engine-statics</module>
 		<module>engine-sys</module>
 		<module>engine-editplus</module>
+        <module>engine-es</module>
     </modules>
     <packaging>pom</packaging>
     <name>engine</name>

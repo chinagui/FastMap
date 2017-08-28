@@ -911,9 +911,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		for(Object obj:meshs){
 			int m=0;
 			if(obj instanceof Integer){  
-				obj=(int) obj;
+				m=(int) obj;
 			}else if(obj instanceof String){  
-				obj =Integer.parseInt(String.valueOf(obj));
+				m =Integer.parseInt(String.valueOf(obj));
             }
 			for(int i=0;i<4;i++){
 				for(int j=0;j<4;j++){

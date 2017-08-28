@@ -2667,12 +2667,9 @@ public class StaticsService {
 	 */
 	public Map<String, Object> getTaskProgressFromMongo(int taskId) throws Exception{
 		try {
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHH");
-			String timestamp = df.format(new Date()) + "0000";
 			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
-			BasicDBObject filter = new BasicDBObject("timestamp", timestamp);
-			filter.append("taskId", taskId);
-			FindIterable<Document> findIterable = mongoDao.find("task", filter);
+			BasicDBObject filter = new BasicDBObject("taskId", taskId);
+			FindIterable<Document> findIterable = mongoDao.find("task", filter).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<String, Object> task = new HashMap<>();
 			//处理数据

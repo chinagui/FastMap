@@ -2881,7 +2881,7 @@ public class TaskService {
 			//modify by songhe
 			//type=1日编任务:采集任务查询条件，program_id,block_id,region_id,lot相同
 			//type=2月编任务:快线采集任务查询条件，program_id,block_id相同,中线采集任务查询条件，program_id,block_id,lot相同
-			Task task = queryByTaskId(taskId);
+			Task task = queryNoGeoByTaskId(conn, taskId);
 			
 			String sql = "SELECT TT.TASK_ID"
 					+ "  FROM TASK T, TASK TT"

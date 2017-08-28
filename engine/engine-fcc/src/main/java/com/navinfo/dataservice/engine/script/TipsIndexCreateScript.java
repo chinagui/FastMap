@@ -112,7 +112,7 @@ public class TipsIndexCreateScript {
 						num++;
 						log.debug("rowkey not exists:"+rowkey);
 						if (num % 1000 == 0) {
-							op.save(tis);
+							op.update(tis);
 							conn.commit();
 							tis.clear();
 							log.info("index:" + index + ",num:" + num);
@@ -122,7 +122,7 @@ public class TipsIndexCreateScript {
 					}
 				}
 
-				op.save(tis);
+				op.update(tis);
 				conn.commit();
 				tis.clear();
 			}

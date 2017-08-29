@@ -1433,9 +1433,51 @@ public class Transaction {
      */
     private Map<Integer, Result> calcDbIdsRefResult(Result result, Integer sourceDbId) throws Exception {
         Map<Integer, Result> resultMap = new HashMap<>();
+        Map<Integer, List<IRow>> additional = new HashMap<>();
+        // 计算修改数据
+        Map<Integer, Map<IRow, ObjStatus>> updateData = calcDbIdRefUpdateList(result.getUpdateObjects(), sourceDbId);
+        for (Map.Entry<Integer, Map<IRow, ObjStatus>> entry : updateData.entrySet()) {
+            if (resultMap.containsKey(entry.getKey())) {
+                for (Map.Entry<IRow, ObjStatus> subEntry: entry.getValue().entrySet()) {
+                    if (subEntry.getValue().equals(ObjStatus.INSERT)) {
+                        resultMap.get(entry.getKey()).getAddObjects().add(subEntry.getKey());
+                        resultMap.get(entry.getKey()).getListAddIRowObPid().add(subEntry.getKey().parentPKValue());
+                        if (additional.containsKey(entry.getKey())) {
+                            additional.get(entry.getKey()).add(subEntry.getKey());
+                        } else {
+                            List<IRow> rows = new ArrayList<>();
+                            rows.add(subEntry.getKey());
+                            additional.put(entry.getKey(), rows);
+                        }
+                    } else {
+                        resultMap.get(entry.getKey()).getUpdateObjects().add(subEntry.getKey());
+                        resultMap.get(entry.getKey()).getListUpdateIRowObPid().add(subEntry.getKey().parentPKValue());
+                    }
+                }
+            } else {
+                Result res = new Result();
+                for (Map.Entry<IRow, ObjStatus> subEntry: entry.getValue().entrySet()) {
+                    if (subEntry.getValue().equals(ObjStatus.INSERT)) {
+                        res.getAddObjects().add(subEntry.getKey());
+                        res.getListAddIRowObPid().add(subEntry.getKey().parentPKValue());
+                        if (additional.containsKey(entry.getKey())) {
+                            additional.get(entry.getKey()).add(subEntry.getKey());
+                        } else {
+                            List<IRow> rows = new ArrayList<>();
+                            rows.add(subEntry.getKey());
+                            additional.put(entry.getKey(), rows);
+                        }
 
+                    } else {
+                        res.getUpdateObjects().add(subEntry.getKey());
+                        res.getListUpdateIRowObPid().add(subEntry.getKey().parentPKValue());
+                    }
+                }
+                resultMap.put(entry.getKey(), res);
+            }
+        }
         // 计算新增数据
-        Map<Integer, List<IRow>> createData = calcDbIdRefResultList(result.getAddObjects(), sourceDbId);
+        Map<Integer, List<IRow>> createData = calcDbIdRefAddOrDelList(result.getAddObjects(), sourceDbId, additional);
         for (Map.Entry<Integer, List<IRow>> entry : createData.entrySet()) {
             if (resultMap.containsKey(entry.getKey())) {
                 for (IRow row : entry.getValue()) {
@@ -1451,25 +1493,8 @@ public class Transaction {
                 resultMap.put(entry.getKey(), res);
             }
         }
-        // 计算修改数据
-        Map<Integer, List<IRow>> updateData = calcDbIdRefResultList(result.getUpdateObjects(), sourceDbId);
-        for (Map.Entry<Integer, List<IRow>> entry : updateData.entrySet()) {
-            if (resultMap.containsKey(entry.getKey())) {
-                for (IRow row : entry.getValue()) {
-                    resultMap.get(entry.getKey()).getUpdateObjects().add(row);
-                    resultMap.get(entry.getKey()).getListUpdateIRowObPid().add(row.parentPKValue());
-                }
-            } else {
-                Result res = new Result();
-                for (IRow row : entry.getValue()) {
-                    res.getUpdateObjects().add(row);
-                    res.getListUpdateIRowObPid().add(row.parentPKValue());
-                }
-                resultMap.put(entry.getKey(), res);
-            }
-        }
         // 计算删除数据
-        Map<Integer, List<IRow>> deleteData = calcDbIdRefResultList(result.getDelObjects(), sourceDbId);
+        Map<Integer, List<IRow>> deleteData = calcDbIdRefAddOrDelList(result.getDelObjects(), sourceDbId, new HashMap<Integer, List<IRow>>());
         for (Map.Entry<Integer, List<IRow>> entry : deleteData.entrySet()) {
             if (resultMap.containsKey(entry.getKey())) {
                 for (IRow row : entry.getValue()) {
@@ -1497,8 +1522,11 @@ public class Transaction {
      * @param rows
      * @param sourceDbId
      */
-    private Map<Integer, List<IRow>> calcDbIdRefResultList(List<IRow> rows,  Integer sourceDbId) {
+    private Map<Integer, List<IRow>> calcDbIdRefAddOrDelList(List<IRow> rows, Integer sourceDbId, Map<Integer, List<IRow>> additional) {
         Map<Integer, List<IRow>> map = new HashMap<>();
+        for (Map.Entry<Integer, List<IRow>> entry : additional.entrySet()) {
+            map.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
 
         // 处理跨大区数据
         ListIterator<IRow> iterator = rows.listIterator();
@@ -1527,7 +1555,6 @@ public class Transaction {
                         map.put(dbId, tempRows);
                     }
                 }
-                iterator.remove();
             }
         }
 
@@ -1538,32 +1565,146 @@ public class Transaction {
             String parentTableName = row.parentTableName();
 
             for (List<IRow> list : map.values()) {
+                List<IRow> tempList = new ArrayList<>();
                 Iterator<IRow> rowIterator = list.iterator();
                 while (rowIterator.hasNext()) {
                     IRow tempRow = rowIterator.next();
 
                     if (!row.equals(tempRow) && parentPid.equals(tempRow.parentPKValue()) && parentTableName.equals(tempRow.tableName())) {
-                        list.add(tempRow);
+                        tempList.add(row);
+                    }
+                }
+                list.addAll(tempList);
+            }
+        }
+
+        Set<Integer> crfDbIds = new HashSet<>();
+        // 计算CRF相关信息
+        for (Geometry geometry : getCRFGeom(process.getConn(), rows)) {
+            crfDbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+        }
+        for (Integer crfDbId : crfDbIds) {
+            if (crfDbId.equals(sourceDbId)) {
+                continue;
+            }
+
+            List<IRow> result;
+            if (map.containsKey(crfDbId)) {
+                result = map.get(crfDbId);
+            } else {
+                result = new ArrayList<>();
+                map.put(crfDbId, result);
+            }
+
+            for (IRow row : rows) {
+                if (row instanceof RdInter || row instanceof RdInterLink || row instanceof RdInterNode || row instanceof RdRoad ||
+                        row instanceof RdRoadLink || row instanceof RdObject || row instanceof RdObjectInter || row instanceof RdObjectRoad
+                        || row instanceof RdObjectNode || row instanceof RdObjectName || row instanceof RdObjectLink) {
+                    result.add(row);
+                }
+            }
+        }
+
+        for (Map.Entry<Integer, List<IRow>> entry : additional.entrySet()) {
+            map.get(entry.getKey()).removeAll(entry.getValue());
+        }
+
+        return map;
+    }
+
+    /**
+     * 计算一组数据对应的大区库
+     *
+     * @param rows
+     * @param sourceDbId
+     */
+    private Map<Integer, Map<IRow, ObjStatus>> calcDbIdRefUpdateList(List<IRow> rows,  Integer sourceDbId) {
+        Map<Integer, Map<IRow, ObjStatus>> map = new HashMap<>();
+        ObjStatus defaultStatus = ObjStatus.UPDATE;
+
+        // 处理跨大区数据
+        ListIterator<IRow> iterator = rows.listIterator();
+        while (iterator.hasNext()) {
+            IRow row = iterator.next();
+            if (row instanceof IObj) {
+                Geometry geometry = GeometryUtils.loadGeometry(row);
+                Map<Integer, ObjStatus> dbMap = new HashMap<>();
+                Set<Integer> row2DbIds = DbMeshInfoUtil.calcDbIds(geometry);
+                for (Integer dbId : row2DbIds) {
+                    dbMap.put(dbId, defaultStatus);
+                }
+
+                if (row.changedFields().containsKey("geometry")) {
+                    try {
+                        geometry = GeoTranslator.geojson2Jts((JSONObject) row.changedFields().get("geometry"));
+                        row2DbIds = DbMeshInfoUtil.calcDbIds(geometry);
+                        for (Integer dbId : row2DbIds) {
+                            if (!dbMap.containsKey(dbId)) {
+                                dbMap.put(dbId, ObjStatus.INSERT);
+                            }
+                        }
+                    } catch (JSONException e) {
+                        logger.error(String.format("获取更新后几何出错[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
+                    }
+                }
+
+                for (Map.Entry<Integer, ObjStatus> entry : dbMap.entrySet()) {
+                    if (entry.getKey() == sourceDbId) {
+                        continue;
+                    }
+                    if (map.containsKey(entry.getKey())) {
+                        map.get(entry.getKey()).put(row, entry.getValue());
+                    } else {
+                        Map<IRow, ObjStatus> tempRows = new HashMap<>();
+                        tempRows.put(row, entry.getValue());
+                        map.put(entry.getKey(), tempRows);
                     }
                 }
             }
         }
 
+        while (iterator.hasPrevious()) {
+            IRow row = iterator.previous();
+
+            Integer parentPid = row.parentPKValue();
+            String parentTableName = row.parentTableName();
+
+            for (Map<IRow, ObjStatus> innerMap : map.values()) {
+                Iterator<Map.Entry<IRow, ObjStatus>> rowIterator = innerMap.entrySet().iterator();
+                while (rowIterator.hasNext()) {
+                    Map.Entry<IRow, ObjStatus> tempRow = rowIterator.next();
+
+                    if (!row.equals(tempRow) && parentPid.equals(tempRow.getKey().parentPKValue())
+                            && parentTableName.equals(tempRow.getKey().tableName())) {
+                        innerMap.put(row, tempRow.getValue());
+                    }
+                }
+            }
+        }
+
+        Set<Integer> crfDbIds = new HashSet<>();
         // 计算CRF相关信息
         for (Geometry geometry : getCRFGeom(process.getConn(), rows)) {
-            Set<Integer> crfDbIds = DbMeshInfoUtil.calcDbIds(geometry);
+            crfDbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+        }
+        for (Integer crfDbId : crfDbIds) {
+            if (crfDbId.equals(sourceDbId)) {
+                continue;
+            }
 
-            for (Map.Entry<Integer, List<IRow>> entry : map.entrySet()) {
-                if (!crfDbIds.contains(entry.getKey())) {
-                    continue;
-                }
+            Map<IRow, ObjStatus> result;
+            if (map.containsKey(crfDbId)) {
+                result = map.get(crfDbId);
+            } else {
+                result = new HashMap<>();
+                map.put(crfDbId, result);
+            }
 
-                for (IRow row : rows) {
-                    if (row instanceof RdInter || row instanceof RdInterLink || row instanceof RdInterNode || row instanceof RdRoad ||
-                            row instanceof RdRoadLink || row instanceof RdObject || row instanceof RdObjectInter || row instanceof RdObjectRoad
-                            || row instanceof RdObjectNode || row instanceof RdObjectName || row instanceof RdObjectLink) {
-                        entry.getValue().add(row);
-                    }
+            for (IRow row : rows) {
+                if (row instanceof RdInter || row instanceof RdInterLink || row instanceof RdInterNode || row instanceof RdRoad ||
+                        row instanceof RdRoadLink || row instanceof RdObject || row instanceof RdObjectInter || row instanceof RdObjectRoad
+                        || row instanceof RdObjectNode || row instanceof RdObjectName || row instanceof RdObjectLink) {
+                    result.put(row, defaultStatus);
                 }
             }
         }
@@ -2187,7 +2328,7 @@ public class Transaction {
             recordData(process, result);
 
             // 跨大区处理6种点要素以及所对应线要素
-            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType)) {
+            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
                 Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响
@@ -2229,6 +2370,10 @@ public class Transaction {
         for (Map.Entry<Integer, Result> entry : map.entrySet()) {
             Result res = entry.getValue();
             List<IRow> updateObjectes = res.getUpdateObjects();
+            if (updateObjectes.isEmpty()) {
+                execEdgeDefault(processes, map);
+                continue;
+            }
             for (IRow updateObject : updateObjectes) {
                 if (Constant.NODE_TYPES.containsKey(updateObject.objType())) {
                     JSONObject jsonObject = new JSONObject();

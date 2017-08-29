@@ -46,10 +46,8 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void testMove(){
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025302,\"data\":{\"longitude\":116.50697350502014,\"latitude\":40.141557623890094},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025378,\"data\":{\"longitude\":116.50605275367737,\"latitude\":40.142110160100965},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304002422,\"data\":{\"longitude\":116.51841849088669,\"latitude\":40.083202084525034},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309002394,\"data\":{\"longitude\":116.5178820490837,\"latitude\":40.08373975500465},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"type\":\"RDNODE\",\"objId\":409000589,\"data\":{\"longitude\":115.50000116229057," +
+                "\"latitude\":36.06310145346231},\"dbId\":13,\"subtaskId\":61}";
 		TestUtil.run(parameter);
 	}
 

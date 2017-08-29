@@ -1104,7 +1104,9 @@ public abstract class MeshUtils {
             String[] meshes = point2Meshes(coordinate.x, coordinate.y);
             for (String mesh : meshes) {
                 Integer count = MapUtils.getInteger(meshCounter, mesh, 0);
-                flag = count > 0;
+                if (!flag) {
+                    flag = count > 0;
+                }
                 meshCounter.put(mesh, count + step);
             }
         }

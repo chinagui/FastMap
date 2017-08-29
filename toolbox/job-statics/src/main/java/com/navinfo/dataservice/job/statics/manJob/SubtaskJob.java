@@ -193,12 +193,14 @@ public class SubtaskJob extends AbstractStatJob {
 				int subtaskId = (int) jso.get("subtaskId");
 				int poiUploadNum = (int) jso.get("poiUploadNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
+				int waitWorkPoi = (int) jso.get("waitWorkPoi");
 				String firstEditDate = (String) jso.get("firstEditDate");
 				String firstCollectDate = (String) jso.get("firstCollectDate");
 				subtask.put("poiCollectUploadNum", poiUploadNum);
 				subtask.put("poiFinishNum", poiFinishNum);
 				subtask.put("firstEditDate", firstEditDate);
 				subtask.put("firstCollectDate", firstCollectDate);
+				subtask.put("waitWorkPoi", waitWorkPoi);
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -419,6 +421,7 @@ public class SubtaskJob extends AbstractStatJob {
 		int progress = 1;
 		int percent = 0;
 		int programType=0;
+		int waitWorkPoi = 0;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
@@ -446,6 +449,8 @@ public class SubtaskJob extends AbstractStatJob {
 				poiCollectUploadNum = (int) subDayPoiStat.get("poiCollectUploadNum");
 				//POI提交个数
 				poiFinishNum = (int) subDayPoiStat.get("poiFinishNum");
+				//待作业的POI个数
+				waitWorkPoi = (int) subDayPoiStat.get("waitWorkPoi");
 			}
 			//计划天数
 			if(subtask.getPlanStartDate() != null && subtask.getPlanEndDate() != null){
@@ -641,6 +646,7 @@ public class SubtaskJob extends AbstractStatJob {
 			subtaskMap.put("progress",progress );
 			subtaskMap.put("percent",percent );
 			subtaskMap.put("programType",programType );
+			subtaskMap.put("waitWorkPoi", waitWorkPoi );
 			
 			return subtaskMap;
 		} catch (Exception e) {

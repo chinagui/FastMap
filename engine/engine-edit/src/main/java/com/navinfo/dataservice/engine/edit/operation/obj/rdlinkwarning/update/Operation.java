@@ -286,4 +286,67 @@ public class Operation implements IOperation {
         result.insertObject(warning, ObjStatus.UPDATE, warning.pid());
     }
 
+    public void depart(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+
+        RdLinkWarningSelector selector = new RdLinkWarningSelector(this.conn);
+        // 获取分离link上挂接的RdLinkWarning
+        List<RdLinkWarning> warnings = selector.loadByLink(oldLink.pid(), true);
+        // 分离后没产生跨图幅打断
+        if (newLinks.size() == 1) {
+            Geometry linkGeo = GeoTranslator.transform(newLinks.get(0).getGeometry(), 0.00001, 5);
+            for (RdLinkWarning warning : warnings) {
+                // 判断点限速所处段几何是否发生变化
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
+                if (GeoTranslator.transform(warning.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
+                    continue;
+
+                // 计算warning几何与移动后link几何最近的点
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(warning.getGeometry
+                        (), 0.00001, 5).getCoordinate(), linkGeo);
+                if (null != coor) {
+                    warning.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor
+                            .x, coor.y)));
+                    result.insertObject(warning, ObjStatus.UPDATE, warning.pid());
+                }
+            }
+        } else if (newLinks.size() > 1) {
+            // 跨图幅打断时计算warning与每条RdLink的距离,取距离最小的link为关联link
+            for (RdLinkWarning warning : warnings) {
+                Coordinate minCoor = null;
+                int minLinkPid = 0;
+                double minLength = 0;
+                Geometry limitGeo = GeoTranslator.transform(warning.getGeometry(), 0.00001, 5);
+                // 判断点限速所处段几何是否发生变化
+                List<Geometry> geometries = new ArrayList<>();
+                for (RdLink link : newLinks) {
+                    geometries.add(link.getGeometry());
+                }
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection
+                        (GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                if (GeoTranslator.transform(warning.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
+                    continue;
+
+                for (RdLink link : newLinks) {
+                    Geometry linkGeo = link.getGeometry();
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), GeoTranslator
+                            .transform(linkGeo, 0.00001, 5));
+                    if (null != tmpCoor) {
+                        double length = GeometryUtils.getDistance(limitGeo.getCoordinate(), tmpCoor);
+                        if (minLength == 0 || length < minLength) {
+                            minLength = length;
+                            minCoor = tmpCoor;
+                            minLinkPid = link.pid();
+                        }
+                    }
+                }
+                if (null != minCoor) {
+                    warning.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (minCoor.x, minCoor.y)));
+                    warning.changedFields().put("linkPid", minLinkPid);
+                    result.insertObject(warning, ObjStatus.UPDATE, warning.pid());
+                }
+            }
+        }
+    }
+
 }

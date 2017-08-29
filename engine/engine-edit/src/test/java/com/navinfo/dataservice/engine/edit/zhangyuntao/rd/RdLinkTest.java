@@ -65,9 +65,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":393,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.85005083680153,39.96127128417874]," +
-                "[116.85031503438948,39.96148303704254]]},\"catchLinks\":[]}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"sNodePid\":0,\"eNodePid\":0," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.06208896636964,36.001896062974595],[115.06171345710753," +
+                "36]]},\"catchLinks\":[]},\"dbId\":13,\"subtaskId\":817}";
         TestUtil.run(parameter);
     }
 
@@ -157,9 +157,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void delete() throws Exception {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"dbId\":18,\"subtaskId\":24,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.99932030154248,40.08102790254993]," +
-                "[119.99975,40.08087]]},\"catchLinks\":[{\"linkPid\":401000001,\"lon\":119.99932030154248,\"lat\":40.08102790254993}]}}";
+        String requester = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"objId\":400000683,\"infect\":0,\"dbId\":13,\"subtaskId\":817}";
         TestUtil.run(requester);
     }
 

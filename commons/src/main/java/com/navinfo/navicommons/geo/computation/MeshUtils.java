@@ -6,13 +6,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -1094,12 +1093,35 @@ public abstract class MeshUtils {
     }
 
     public static String[] geometry2Mesh(Geometry geometry) {
-        Set<String> result = new HashSet<>();
+        Map<String, Integer> meshCounter = new HashMap<>();
+
+        Integer step = 1;
+
+        boolean flag = false;
+
         Coordinate[] coordinates = geometry.getCoordinates();
         for (Coordinate coordinate : coordinates) {
-            result.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+            String[] meshes = point2Meshes(coordinate.x, coordinate.y);
+            for (String mesh : meshes) {
+                Integer count = MapUtils.getInteger(meshCounter, mesh, 0);
+                flag = count > 0;
+                meshCounter.put(mesh, count + step);
+            }
         }
-        return result.toArray(new String[]{});
+
+        if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
+            if (flag) {
+                Iterator<Map.Entry<String, Integer>> iterator = meshCounter.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<String, Integer> entry = iterator.next();
+                    if (entry.getValue() == 1) {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+
+        return meshCounter.keySet().toArray(new String[]{});
     }
 
     public static void main(String[] args) throws Exception {

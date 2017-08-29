@@ -40,7 +40,7 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void testDelete(){
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDNODE\",\"objId\":100025259}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RDNODE\",\"objId\":403000514,\"subtaskId\":817}";
 		TestUtil.run(parameter);
 	}
 	

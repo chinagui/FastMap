@@ -319,8 +319,9 @@ public class PersonJob extends AbstractStatJob {
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
 			try {
-				Date begin = df.parse(startCollectTime.replace("/", "-"));
-				Date end = df.parse(endCollectTime.replace("/", "-"));
+				String reg = "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})";
+				Date begin = df.parse(startCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
+				Date end = df.parse(endCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
 				int day = (int) (between/(24*3600));   
 				int hour = (int) (between%(24*3600)/3600);   

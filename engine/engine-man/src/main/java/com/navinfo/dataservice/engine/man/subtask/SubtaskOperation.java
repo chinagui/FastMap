@@ -732,12 +732,13 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+			sb.append("select sk.total_poi,sk.wait_work_poi,sk.finished_poi,t.lot, st.SUBTASK_ID,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
 					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
-			sb.append(" from subtask st,task t,region r,program p");
+			sb.append(" from subtask st,task t,region r,program p,FM_STAT_OVERVIEW_SUBTASK SK");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
+			sb.append(" and sk.subtask_id(+) = st.subtask_id ");
 			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
 				sb.append(" and t.lot = "+dataJson.getInt("lot"));
 			}
@@ -867,6 +868,18 @@ public class SubtaskOperation {
 								e.printStackTrace();
 							}
 						}
+						//modify by songhe
+						//对于多源类型（work_kind=多源）的子任务返回结果添加统计项
+						if(4 == rs.getInt("WORK_KIND")){
+							int totalPoi = rs.getInt("total_poi");
+							int waitWorkPoi = rs.getInt("wait_work_poi");
+							int finishedPoi = rs.getInt("finished_poi");
+							int workedCount = totalPoi - finishedPoi - waitWorkPoi;
+							subtask.put("totalPoi", totalPoi);
+							subtask.put("waitWorkPoi", waitWorkPoi);
+							subtask.put("finishedPoi", finishedPoi);
+							subtask.put("workedCount", workedCount);
+						}
 						
 						list.add(subtask);
 						log.debug("end subtask");
@@ -908,6 +921,7 @@ public class SubtaskOperation {
 			}
 			
 			sb.append("SELECT ST.SUBTASK_ID");
+			sb.append(" ,ST.WORK_KIND");
 			sb.append(" ,ST.NAME");
 			sb.append(" ,ST.DESCP");
 			sb.append(" ,ST.PLAN_START_DATE");
@@ -919,14 +933,16 @@ public class SubtaskOperation {
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
 			sb.append(" ,ST.EXE_GROUP_ID");
+			sb.append(" ,sk.total_poi,sk.wait_work_poi,sk.finished_poi");
 			sb.append(" ,R.DAILY_DB_ID");
 			sb.append(" ,R.MONTHLY_DB_ID");
 			sb.append(" ,RR.GEOMETRY REFER_GEOMETRY");
-			sb.append(" FROM SUBTASK ST, TASK T, REGION R, SUBTASK_REFER RR");
+			sb.append(" FROM SUBTASK ST, TASK T, REGION R, SUBTASK_REFER RR,  FM_STAT_OVERVIEW_SUBTASK SK ");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
 			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
+			sb.append(" AND sk.subtask_id(+) = st.subtask_id");
 			
 			if (dataJson.containsKey("stage")) {
 				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
@@ -1024,6 +1040,18 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
+						//modify by songhe
+						//对于多源类型（work_kind=多源）的子任务返回结果添加统计项
+						if(4 == rs.getInt("WORK_KIND")){
+							int totalPoi = rs.getInt("total_poi");
+							int waitWorkPoi = rs.getInt("wait_work_poi");
+							int finishedPoi = rs.getInt("finished_poi");
+							int workedCount = totalPoi - finishedPoi - waitWorkPoi;
+							subtask.put("totalPoi", totalPoi);
+							subtask.put("waitWorkPoi", waitWorkPoi);
+							subtask.put("finishedPoi", finishedPoi);
+							subtask.put("workedCount", workedCount);
+						}
 							
 						list.add(subtask);
 					}

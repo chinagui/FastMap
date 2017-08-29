@@ -2517,10 +2517,11 @@ public class SubtaskService {
 				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
 						//modify by songhe 2017/08/29  快线子任务只返回开启状态的数据
-						int taskId = rs.getInt("TASK_ID");
+						int subtaskId = rs.getInt("SUBTASK_ID");
 						try {
-							Task task = TaskService.getInstance().queryByTaskId(taskId);
-							if(4 == task.getProgramType() && 1 != rs.getInt("STATUS")){
+							Map<String, Integer> task = getTaskBySubtaskId(subtaskId);
+							int programType = task.containsKey("programType") ? task.get("programType") : 0;
+							if(4 == programType && 1 != rs.getInt("STATUS")){
 								continue;
 							}
 						}catch(Exception e){

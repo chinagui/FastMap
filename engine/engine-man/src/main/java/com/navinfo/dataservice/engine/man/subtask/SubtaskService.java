@@ -2516,7 +2516,18 @@ public class SubtaskService {
 				    int totalCount = 0;
 				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
+						//modify by songhe 2017/08/29  快线子任务只返回开启状态的数据
+						int taskId = rs.getInt("TASK_ID");
+						try {
+							Task task = TaskService.getInstance().queryByTaskId(taskId);
+							if(4 == task.getProgramType() && 1 != rs.getInt("STATUS")){
+								continue;
+							}
+						}catch(Exception e){
+							e.printStackTrace();
+						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("status", rs.getInt("STATUS"));

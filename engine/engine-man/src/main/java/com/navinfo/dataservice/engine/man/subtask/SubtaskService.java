@@ -2516,19 +2516,7 @@ public class SubtaskService {
 				    int totalCount = 0;
 				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
-						//modify by songhe 2017/08/29  快线子任务只返回开启状态的数据
-						int subtaskId = rs.getInt("SUBTASK_ID");
-						try {
-							Map<String, Integer> task = getTaskBySubtaskId(subtaskId);
-							int programType = task.containsKey("programType") ? task.get("programType") : 0;
-							if(4 == programType && 1 != rs.getInt("STATUS")){
-								continue;
-							}
-						}catch(Exception e){
-							e.printStackTrace();
-						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
-
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("status", rs.getInt("STATUS"));
@@ -2763,7 +2751,7 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
+			String selectSql = "select st.status, p.type, st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
 					+ "where i.INFOR_ID = p.INFOR_ID "
 					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
 					+ "AND ST.STATUS IN (1,2) "
@@ -2780,6 +2768,11 @@ public class SubtaskService {
 				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
 					List<Map<String, Object>> res = new ArrayList<Map<String,Object>>();
 					while(result.next()){
+						//modify by songhe 2017/08/29
+						//快线子任务只返回开启状态的
+						if(4 == result.getInt("type") && 1 != result.getInt("status")){
+							continue;
+						}
 						Map<String, Object> sTaskMap = new HashMap<String, Object>();
 						sTaskMap.put("subtaskId", result.getInt("SUBTASK_ID"));
 						sTaskMap.put("name", result.getObject("NAME"));

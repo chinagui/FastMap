@@ -599,6 +599,15 @@ public class Transaction {
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Command(json, requester);
                 }
+            case RDLINKWARNING:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.create.Command(json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.delete.Command(json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Command(json, requester);
+                }
             case RDSLOPE:
                 switch (operType) {
                     case CREATE:
@@ -1148,6 +1157,15 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Process(command);
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Process(command);
+                }
+            case RDLINKWARNING:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.create.Process(command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.delete.Process(command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Process(command);
                 }
             case RDSLOPE:
                 switch (operType) {

@@ -68,10 +68,6 @@
 		<artifactId>api-statics</artifactId>
 	</dependency>
 	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-statics</artifactId>
-	</dependency>
-	<dependency>
 		<groupId>org.springframework</groupId>
 		<artifactId>spring-websocket</artifactId>
 	</dependency>

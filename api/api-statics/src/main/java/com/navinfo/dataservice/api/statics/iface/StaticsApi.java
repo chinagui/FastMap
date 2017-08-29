@@ -53,4 +53,5 @@ public interface StaticsApi {
 	
 	public Map<Integer,SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList);
 
+	public Map<String, Object> getTaskProgressFromMongo(int taskId) throws Exception;
 }

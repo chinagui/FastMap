@@ -1184,6 +1184,7 @@ public class GeoTranslator {
     
     /**
 	 * 点coord1，coord2必须在geo上，返回被点coord1，coord2切成多段的link列表。
+	 * 点coord1，coord2在调用方法之前已经插入到geo中。相关判断在调用方法之前处理了
 	 * @param geo
 	 * @param coord1
 	 * @param coord2
@@ -1191,9 +1192,10 @@ public class GeoTranslator {
      * @throws Exception 
      * @throws JSONException 
 	 */
-	public static List<Geometry> splitGeoByPoint(Geometry geo,Coordinate coord1,Coordinate coord2) throws JSONException, Exception{
+	public static List<Geometry> splitGeoByPoint(Geometry geo,Coordinate coord1,Coordinate coord2) throws JSONException, Exception{		
 		//点将线切成多段
 		Coordinate[] lineCoordinates = geo.getCoordinates();
+		
 		List<Geometry> subLines=new ArrayList<Geometry>(); 
 		List<Coordinate> tmpLine=new ArrayList<Coordinate>();
 		Coordinate coorBefore=null;
@@ -1211,37 +1213,6 @@ public class GeoTranslator {
 			}
 			//是否第一个点
 			if(coorBefore==null){
-				tmpLine.add(linePoint);
-				coorBefore=linePoint;
-				continue;
-			}
-			//不是第一个点，判断交点是否在两点中间
-			if(isIntersection(coorBefore, linePoint, coord1)&&!isIntersection(coorBefore, coord1, coord2)){
-				tmpLine.add(coord1);
-				subLines.add(GeoTranslator.createLineString(tmpLine));
-				tmpLine=new ArrayList<Coordinate>();
-				tmpLine.add(coord1);
-				if(isIntersection(coord1, linePoint, coord2)){
-					tmpLine.add(coord2);
-					subLines.add(GeoTranslator.createLineString(tmpLine));
-					tmpLine=new ArrayList<Coordinate>();
-					tmpLine.add(coord2);
-				}
-				tmpLine.add(linePoint);
-				coorBefore=linePoint;
-				continue;
-			}
-			if(isIntersection(coorBefore, linePoint, coord2)&&!isIntersection(coorBefore, coord2, coord1)){
-				tmpLine.add(coord2);
-				subLines.add(GeoTranslator.createLineString(tmpLine));
-				tmpLine=new ArrayList<Coordinate>();
-				tmpLine.add(coord2);
-				if(isIntersection(coord2, linePoint, coord1)){
-					tmpLine.add(coord1);
-					subLines.add(GeoTranslator.createLineString(tmpLine));
-					tmpLine=new ArrayList<Coordinate>();
-					tmpLine.add(coord1);
-				}
 				tmpLine.add(linePoint);
 				coorBefore=linePoint;
 				continue;

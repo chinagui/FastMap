@@ -25,6 +25,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -63,6 +64,9 @@ public class PersonDayJob extends AbstractStatJob {
 			}
 			
 			String timestamp = statReq.getTimestamp().substring(0, 8);
+			//计算前一天的统计
+			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
 			Map<Integer, Map<String,List<Map<String, Object>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String, Object>>>>();
 			long time = System.currentTimeMillis();
 			int dbSize = dbIds.size();
@@ -157,7 +161,7 @@ public class PersonDayJob extends AbstractStatJob {
 					cell.put("finishNum", entry.getValue().get("finishNum"));
 					cell.put("deleteCount", entry.getValue().get("deleteCount"));
 					cell.put("increaseAndAlterCount", entry.getValue().get("increaseAndAlterCount"));
-					
+					cell.put("workDate", timestamp);
 					subtaskStat.add(cell);
 				}
 				
@@ -197,7 +201,7 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
 				sb.append("	 '"+timestamp+"'"                            );
-				sb.append("   and p.pid = s.pid                         ");
+				sb.append("   and p.pid = s.pid  and s.status!=0                       ");
 				
 				String selectSql = sb.toString();
 

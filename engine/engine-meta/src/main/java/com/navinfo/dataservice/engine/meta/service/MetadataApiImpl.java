@@ -1047,5 +1047,22 @@ public class MetadataApiImpl implements MetadataApi {
 		}
 	}
 	
+	
+	public int getTruck(String kind,String chain,String fuelType) throws Exception{
+		Connection conn = null;
+		int truck = -1;
+		try{
+			conn = DBConnector.getInstance().getMetaConnection();
+			TruckSelector selector = new TruckSelector(conn);
+			truck = selector.getTruck(kind, chain, fuelType);
+			return truck;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

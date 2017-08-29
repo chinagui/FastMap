@@ -142,4 +142,12 @@
           class="com.navinfo.dataservice.job.statics.manJob.PersonTipsJob"
           request="com.navinfo.dataservice.job.statics.manJob.PersonTipsJobRequest" >
     </type>
+    <type name="fm2ChargePhotoInit"
+          class="com.navinfo.dataservice.charge.job.Fm2ChargePhotoInitJob"
+          request="com.navinfo.dataservice.charge.job.Fm2ChargePhotoInitRequest" >
+    </type>
+    <type name="fm2ChargePhotoAdd"
+          class="com.navinfo.dataservice.charge.job.Fm2ChargePhotoAddJob"
+          request="com.navinfo.dataservice.charge.job.Fm2ChargePhotoAddRequest" >
+    </type>
 	</mapping>

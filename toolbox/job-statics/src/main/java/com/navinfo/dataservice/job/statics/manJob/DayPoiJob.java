@@ -378,7 +378,7 @@ public class DayPoiJob extends AbstractStatJob {
 				sb.append("LEFT JOIN DATA_PLAN D ON D.PID = P.PID ");
 				sb.append("   AND D.DATA_TYPE = 1                 ");
 				sb.append("   AND D.IS_PLAN_SELECTED = 1          ");
-				sb.append("   WHERE P.PID = S.PID                 ");
+				sb.append("   WHERE P.PID = S.PID  and s.status!=0 ");
 				
 				String selectSql = sb.toString();
 

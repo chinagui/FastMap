@@ -9,5 +9,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:service interface="com.navinfo.dataservice.api.fcc.iface.FccApi" ref="fccApi" />
 	<dubbo:reference id="metaApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" />
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
-	
+	<dubbo:reference id="esApi" interface="com.navinfo.dataservice.api.es.iface.EsApi" />
+
 </beans>

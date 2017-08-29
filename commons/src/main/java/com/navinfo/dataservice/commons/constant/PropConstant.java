@@ -124,4 +124,10 @@ public class PropConstant {
 	public static final String gdbSqlitePassword="gdbsqlite.password";
 	
 	public static final String baiduGeocoding="baiduGeocoding";
+
+	//es相关配置
+	public static final String es_master = "es.master";
+	public static final String es_port = "es.port";
+	public static final String es_cluster ="es.cluster";
+	public static final String es_index_trackpoints ="es.index.trackpoints";
 }

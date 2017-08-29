@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -44,6 +45,11 @@ public class PersonJob extends AbstractStatJob {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			String timestamp = statReq.getTimestamp();
 			String timeForOrical = timestamp.substring(0, 8);
+			//计算前一天的统计
+			timeForOrical=DateUtils.dateToString(DateUtils.getDayBefore(
+					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD);
+			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
 			log.info("timestamp:" + timestamp);
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
 			//从mango库中查询数据
@@ -138,7 +144,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
 				dataMap.put("fccUpdateLen", fccUpdateLen);
-				dataMap.put("date", timeForOrical);
+				dataMap.put("workDate", timeForOrical);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 				keyMaps.add(dataMap);
 			}

@@ -876,7 +876,7 @@ public class NiValExceptionOperator {
 		if (tableFlag == 0) {
 			tableName = "ni_val_exception_history";
 		}
-		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1 from "
+		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record, reserved) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1,reserved from "
 				+ tableName + " a where a.MD5_CODE= ?";
 		try {
 			QueryRunner run = new QueryRunner();

@@ -11,19 +11,18 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+import org.springframework.web.servlet.ModelAndView;
 
-import oracle.spatial.geometry.JGeometry;
-
-import com.navinfo.dataservice.bizcommons.glm.Glm;
-import com.navinfo.dataservice.bizcommons.glm.GlmCache;
-import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
-import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -37,11 +36,12 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.spatial.geometry.JGeometry;
 
 public class NiValExceptionOperator {
 
@@ -549,9 +549,11 @@ public class NiValExceptionOperator {
 	 * @param projectId
 	 * @param type
 	 *            0 未修改 1例外，2确认不修改，3确认已修改
+	 * @param isQuality 
+	 * 			  0常规子任务，1质检子任务
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String md5, int oldType, int type)
+	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -594,6 +596,11 @@ public class NiValExceptionOperator {
 					this.delValExceptionGrid(md5);
 
 				}
+				// 质检作业，检查log状态由确认已修改变为其他状态时，需要删除质检库中的问题记录
+				if(isQuality == 1){
+					this.deleteQaProblem(md5);
+				}
+				
 				this.delValExceptionHis(md5);
 				this.delValExceptionGridHis(md5);
 
@@ -612,7 +619,8 @@ public class NiValExceptionOperator {
 					this.delForCkException(md5, 3);
 				}
 			}
-
+			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
+			this.updateWorkerAndDate(md5, type, isQuality, userId);
 			conn.commit();
 		} catch (Exception e) {
 			throw e;
@@ -624,7 +632,66 @@ public class NiValExceptionOperator {
 			}
 		}
 	}
-
+	
+	/**
+	 * 检查log状态由确认已修改变为其他状态时，删除质检库中的问题记录
+	 * @param md5
+	 * @throws Exception
+	 */
+	private void deleteQaProblem(String md5)throws Exception{
+		Connection qualityConn = null;
+		String sql = "delete from check_wrong where log_id=?";
+		try {
+			qualityConn = DBConnector.getInstance().getCheckConnection();
+			QueryRunner run = new QueryRunner();
+			run.update(qualityConn, sql, md5);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
+			throw new Exception("删除质检问题记录出错，" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(qualityConn);
+		}
+	}
+	
+	/**
+	 * 更新检查log时，维护作业员/质检员，更新日期
+	 * @param md5Code
+	 * @param type
+	 * @param isQuality
+	 * @throws Exception 
+	 */
+	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId) throws Exception{
+		String sql = "";
+		if(type == 0){
+			sql = "update ni_val_exception set UPDATED=sysdate";
+		}else if(type == 3){
+			sql = "update ni_val_exception_history set UPDATED=sysdate";
+		}else{
+			sql = "update ck_exception set UPDATE_DATE=sysdate";
+		}
+		String userName = "";
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		UserInfo user = manApi.getUserInfoByUserId(userId);
+		if (user != null && StringUtils.isNotEmpty(user.getUserRealName())){
+			userName = user.getUserRealName();
+		}
+		if(StringUtils.isNotEmpty(userName)){
+			if(isQuality == 0){
+				sql += ",WORKER='" + userName + " " +userId +  "'";
+			}else{
+				sql += ",QA_WORKER='" + userName + " " +userId +  "'";
+			}
+		}
+		sql += " where MD5_CODE=? ";
+		try {
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, md5Code);
+		} catch (Exception e) {
+			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
+		}
+	}
+	
+	
 	/***
 	 * 新增检查结果相关信息
 	 * 
@@ -986,6 +1053,31 @@ public class NiValExceptionOperator {
 		 * this.recordLogForCkException(result,OperType.UPDATE);
 		 */
 
+	}
+	
+	/**
+	 * 更新质检状态
+	 * @param checkStatus
+	 * @param md5Code
+	 * @param qaStatus 
+	 * @throws Exception
+	 */
+	public void updateQaStatus(int checkStatus, String md5Code, int qaStatus) throws Exception {
+		String sql = "";
+		if(checkStatus == 0){
+			sql = "update ni_val_exception set qa_status=? where md5_code=?";
+		}else if(checkStatus == 3){
+			sql = "update ni_val_exception_history set qa_status=? where md5_code=?";
+		}else{
+			sql = "update ck_exception set qa_status=? where md5_code=?";
+		}
+		
+		try {
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, qaStatus, md5Code);
+		} catch (Exception e) {
+			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
+		}
 	}
 
 	/**

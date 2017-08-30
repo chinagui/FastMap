@@ -149,7 +149,7 @@ public class Check {
 	public void hasMakedCRFR(Connection conn) throws Exception {
 		JSONArray linkarray = this.command.getLinkArray();
 		
-		if(linkarray.size() == 0) return;
+		if(linkarray == null || linkarray.size() == 0) return;
 		
 		String linkPidsStr = JsonUtils.getStringValueFromJSONArray(linkarray);
 

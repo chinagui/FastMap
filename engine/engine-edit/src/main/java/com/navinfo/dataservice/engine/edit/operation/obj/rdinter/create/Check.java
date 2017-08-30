@@ -147,7 +147,11 @@ public class Check {
 	 * @throws Exception
 	 */
 	public void hasMakedCRFR(Connection conn) throws Exception {
-		String linkPidsStr = JsonUtils.getStringValueFromJSONArray(this.command.getLinkArray());
+		JSONArray linkarray = this.command.getLinkArray();
+		
+		if(linkarray.size() == 0) return;
+		
+		String linkPidsStr = JsonUtils.getStringValueFromJSONArray(linkarray);
 
 		RdRoadLinkSelector selector = new RdRoadLinkSelector(conn);
 

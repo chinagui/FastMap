@@ -6,11 +6,7 @@ import java.util.List;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.rdlinkwarning.RdLinkWarning;
-import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
-import com.navinfo.dataservice.dao.glm.selector.rd.rdlinkwarning.RdLinkWarningSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -45,6 +41,7 @@ public class GLM09006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdWarningInfo(RdLinkWarning linkwarning) throws Exception {
+		
 		Geometry geo = GeoTranslator.transform(linkwarning.getGeometry(), GeoTranslator.dPrecisionMap, 5);
 		
 		Coordinate coor = geo.getCoordinate();

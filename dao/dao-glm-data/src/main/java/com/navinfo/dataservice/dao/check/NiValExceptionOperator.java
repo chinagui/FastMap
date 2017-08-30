@@ -328,6 +328,85 @@ public class NiValExceptionOperator {
 		return true;
 	}
 
+	public boolean insertCheckLog(String ruleId, String loc, String targets,
+			int meshId, String log, int logLevel, String worker,int taskId)
+			throws Exception {
+		logg.debug("start insert ni_val:1");
+		if (loc == null || loc.isEmpty()) {
+			List<Object> list = calGeoAndMeshWithTarget(targets);
+			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
+			meshId = (int) list.get(1);
+		}
+		logg.debug("start insert ni_val:2");
+		String md5Sql = "with t as(SELECT LOWER(DBMS_CRYPTO.HASH(?||?||?||?,2)) "
+				+ "AS MD5_CODE FROM DUAL) "
+				+ "select md5_code from t minus "
+				+ "(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,t WHERE t.MD5_CODE=N.MD5_CODE "
+				+ "union all SELECT C.MD5_CODE FROM CK_EXCEPTION C,t WHERE t.MD5_CODE=C.MD5_CODE )";
+		// String md5 = this.generateMd5(ruleId, log, targets, null);
+		// String sql =
+		// "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		logg.debug("start insert ni_val:2-1");
+		// String cSql =
+		// "SELECT 1 FROM NI_VAL_EXCEPTION WHERE MD5_CODE=? UNION SELECT 1 FROM CK_EXCEPTION WHERE MD5_CODE=?";
+		
+		String md5 = new QueryRunner().queryForString(conn, md5Sql, ruleId,
+				log, ConnectionUtil.createClob(conn,targets), "null");
+
+		if (StringUtils.isEmpty(md5))
+			return false;
+		logg.debug("start insert ni_val:2-2");
+		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated ,task_id)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate,:10)";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		logg.debug("start insert ni_val:2-3");
+		try {
+			logg.debug("start insert ni_val:2-4");
+			pstmt.setString(1, md5);
+			logg.debug("start insert ni_val:2-5");
+			pstmt.setString(2, ruleId);
+			logg.debug("start insert ni_val:2-6");
+			pstmt.setString(3, log);
+			logg.debug("start insert ni_val:2-7");
+
+			pstmt.setString(4, loc);
+			logg.debug("start insert ni_val:2-8");
+			pstmt.setString(5, targets);
+			logg.debug("start insert ni_val:2-9");
+			pstmt.setInt(6, meshId);
+			logg.debug("start insert ni_val:2-10");
+			pstmt.setString(7, worker);
+			logg.debug("start insert ni_val:2-11");
+			pstmt.setInt(8, logLevel);
+			logg.debug("start insert ni_val:2-12");
+			pstmt.setInt(9, taskId);
+			int res = pstmt.executeUpdate();
+			logg.debug("start insert ni_val:3");
+
+			if (res > 0) {
+
+				CkResultObjectOperator op = new CkResultObjectOperator(conn);
+
+				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
+
+				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+
+		}
+		return true;
+	}
+	
 	public void deleteNiValException(String tableName, int pid)
 			throws Exception {
 

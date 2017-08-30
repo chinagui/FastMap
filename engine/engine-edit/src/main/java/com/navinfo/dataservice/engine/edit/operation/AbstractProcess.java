@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.*;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -79,7 +83,14 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
         this.checkCommand.setObjType(this.command.getObjType());
         this.checkCommand.setOperType(this.command.getOperType());
         // this.checkCommand.setGlmList(this.command.getGlmList());
-        this.checkEngine = new CheckEngine(checkCommand, this.conn);
+        ManApi manApi = (ManApi) ApplicationContextUtil
+				.getBean("manApi");
+        UserInfo userinfo =manApi.getUserInfoByUserId(this.command.getUserId());
+        String worker = "";
+        if(userinfo != null){
+        	worker = userinfo.getUserRealName();
+        }
+        this.checkEngine = new CheckEngine(checkCommand, this.conn ,this.command.getTaskId(),worker);
     }
 
     /*

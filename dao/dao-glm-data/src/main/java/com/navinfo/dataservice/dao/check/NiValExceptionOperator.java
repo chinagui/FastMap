@@ -23,6 +23,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -553,7 +554,7 @@ public class NiValExceptionOperator {
 	 * 			  0常规子任务，1质检子任务
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId)
+	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId, String updateTime)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -620,7 +621,7 @@ public class NiValExceptionOperator {
 				}
 			}
 			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
-			this.updateWorkerAndDate(md5, type, isQuality, userId);
+			this.updateWorkerAndDate(md5, type, isQuality, userId, updateTime);
 			conn.commit();
 		} catch (Exception e) {
 			throw e;
@@ -660,14 +661,14 @@ public class NiValExceptionOperator {
 	 * @param isQuality
 	 * @throws Exception 
 	 */
-	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId) throws Exception{
+	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId, String updateTime) throws Exception{
 		String sql = "";
 		if(type == 0){
-			sql = "update ni_val_exception set UPDATED=sysdate";
+			sql = "update ni_val_exception set UPDATED=?";
 		}else if(type == 3){
-			sql = "update ni_val_exception_history set UPDATED=sysdate";
+			sql = "update ni_val_exception_history set UPDATED=?";
 		}else{
-			sql = "update ck_exception set UPDATE_DATE=sysdate";
+			sql = "update ck_exception set UPDATE_DATE=?";
 		}
 		String userName = "";
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -685,7 +686,8 @@ public class NiValExceptionOperator {
 		sql += " where MD5_CODE=? ";
 		try {
 			QueryRunner run = new QueryRunner();
-			run.update(conn, sql, md5Code);
+			java.sql.Timestamp timeStamp = new java.sql.Timestamp(DateUtils.stringToLong(updateTime, "yyyy-MM-dd HH:mm:ss"));
+			run.update(conn, sql, timeStamp, md5Code);
 		} catch (Exception e) {
 			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
 		}

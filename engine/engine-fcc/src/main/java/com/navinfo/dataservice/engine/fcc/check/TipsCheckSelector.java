@@ -216,21 +216,21 @@ public class TipsCheckSelector {
 	 * @throws Exception 
 	 * @time:2017-5-26 下午6:44:39
 	 */
-	public JSONObject queryWrongByRowkey(int checkTaskId, String rowkey) throws Exception {
+	public JSONObject queryWrongByRowkey(int checkTaskId, String objectId) throws Exception {
 
 		try{
 			
 			CheckWrongSelector wrongSelector=new CheckWrongSelector();
 			
-			CheckWrong wrong=wrongSelector.queryByTipsRowkey(checkTaskId, rowkey);
+			CheckWrong wrong=wrongSelector.queryByTipsRowkey(checkTaskId, objectId);
 			
 			return JSONObject.fromObject(wrong);
 			
 		}catch (Exception e) {
 			
-			logger.error("加载质检问题记录出错,rowkey:"+rowkey+"出错原因："+e.getMessage(),e);
+			logger.error("加载质检问题记录出错,objectId:"+objectId+"出错原因："+e.getMessage(),e);
 			
-			throw new Exception("加载质检问题记录出错,rowkey:"+rowkey+"出错原因："+e.getMessage(),e);
+			throw new Exception("加载质检问题记录出错,objectId:"+objectId+"出错原因："+e.getMessage(),e);
 			
 		}
 	}

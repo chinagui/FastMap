@@ -26,6 +26,8 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  */
 public class FMDGC009 extends BasicCheckRule {
 	
+	private MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	
 	private final static String logBasic = "卡车标识应为";
 	
 	private final static String truckZero = "非卡车";
@@ -43,7 +45,6 @@ public class FMDGC009 extends BasicCheckRule {
 			String kind=poi.getKindCode();
 			int truckFlag = poi.getTruckFlag();
 			if(kind==null||kind.isEmpty()){return;}			
-			MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			if(kind.equals("230215")){
 				 List<IxPoiGasstation> gasstations = poiObj.getIxPoiGasstations();
 	             if (!CollectionUtils.isEmpty(gasstations)) {

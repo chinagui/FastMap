@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.log.LogOpTypeStat;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
@@ -235,9 +236,9 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				pw = new PrintWriter(dir+syncTime+"_day_"+dbId+".txt");
 				//获取有变更的数据pid
-				LogReader lr = new LogReader(conn);
+				LogOpTypeStat stat = new LogOpTypeStat(conn);
 				//key:liftcyle,value:pids
-				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
+				Map<Integer,Collection<Long>> updatePids = stat.getOpType(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), lastSyncTime,syncTime);
 				//查询已提交的数据
 				List<Long> pidList = new ArrayList<Long>();
 				for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){

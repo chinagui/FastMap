@@ -208,7 +208,42 @@ public class PretreatmentTipsController extends BaseController {
 		}
 	}
 
+	/**
+	 * 测线分离
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+     */
+	@RequestMapping(value = "/tip/pretreatmen/lineSplit")
+	public ModelAndView measuringLineSplit(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
 
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONArray pids = jsonReq.getJSONArray("pids");
+            if(pids == null || pids.size() <= 0) {
+                throw new IllegalArgumentException("pids参数不能为空。");
+            }
+
+			double distance = jsonReq.getDouble("dis");
+            if(distance <= 0 ) {
+                throw new IllegalArgumentException("dis参数必须大于0");
+            }
+
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			JSONArray result = op.measuringLineSplit(pids, distance);
+
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 	
 	
 	/**

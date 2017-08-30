@@ -7,7 +7,6 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.rdlinkwarning.RdLinkWarning;
-import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 

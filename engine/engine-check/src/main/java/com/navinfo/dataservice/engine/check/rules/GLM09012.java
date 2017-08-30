@@ -121,7 +121,7 @@ public class GLM09012 extends baseRule {
 				resultList = getObj.exeSelect(this.getConn(), sql);
 
 				if (resultList.size() > 0) {
-					String target = "[RD_WARNINGINFO," + rdWarninginfo.getPid() + "]";
+					String target = "[RD_LINK_WARNING," + rdWarninginfo.getPid() + "]";
 					this.setCheckResult("", target, 0);
 				}
 			}

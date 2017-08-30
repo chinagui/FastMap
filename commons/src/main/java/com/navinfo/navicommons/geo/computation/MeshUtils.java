@@ -1093,62 +1093,25 @@ public abstract class MeshUtils {
     }
 
     public static String[] geometry2Mesh(Geometry geometry) {
-        Map<String, Integer> meshCounter = new HashMap<>();
-
-        Integer step = 1;
-
-        boolean flag = false;
-
         Coordinate[] coordinates = geometry.getCoordinates();
-        for (Coordinate coordinate : coordinates) {
-            String[] meshes = point2Meshes(coordinate.x, coordinate.y);
-            for (String mesh : meshes) {
-                Integer count = MapUtils.getInteger(meshCounter, mesh, 0);
-                if (!flag) {
-                    flag = count > 0;
-                }
-                meshCounter.put(mesh, count + step);
-            }
-        }
 
         if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-            if (flag) {
-                Iterator<Map.Entry<String, Integer>> iterator = meshCounter.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<String, Integer> entry = iterator.next();
-                    if (entry.getValue() == 1) {
-                        iterator.remove();
-                    }
-                }
+            Set<String> meshes = new HashSet<>();
+            for (int index = 0; index < coordinates.length -1; index++) {
+                meshes.addAll(Arrays.asList(
+                        line2Meshes(coordinates[index].x, coordinates[index].y, coordinates[index + 1].x, coordinates[index + 1].y)));
             }
+            return meshes.toArray(new String[]{});
         }
 
-        return meshCounter.keySet().toArray(new String[]{});
+        Set<String> meshes = new HashSet<>();
+        for (Coordinate coordinate : coordinates) {
+            meshes.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+        }
+        return meshes.toArray(new String[]{});
     }
 
     public static void main(String[] args) throws Exception {
-//		Set<Integer> meshes = new HashSet<Integer>();
-//		meshes.add(95277);
-//		meshes.add(595672);
-//		meshes.add(595661);
-//		
-//		double[] xy = meshs2Rect(meshes);
-//		String wkt  = mesh2WKT("95671");
-//		System.out.println(wkt);
-//		
-		String[] ms = point2Meshes(114.074,22.312);
-		for(String s:ms){
-			System.out.println(s);
-		}
-		
-		
-		
-		
-    	/*Integer mesh = 595671;
-    	String meshStr = mesh.toString();
-		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
-		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
-		System.out.println(xStr);
-		System.out.println(yStr);*/
+        System.out.println(Arrays.toString(line2Meshes(115.49989,36.06251,115.49991,36.0624)));
     }
 }

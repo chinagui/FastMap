@@ -568,10 +568,9 @@ public class SearchProcess {
 						if (condition.containsKey("speedDependent")) {
 							speedDependent = condition.getInt("speedDependent");
 						}
+						int speedValue=condition.getInt("speedValue");
 
-						List<Integer> nextLinkPids = searchUtils
-								.getConnectLinks(linkPid, direct,
-										speedDependent);
+						List<Integer> nextLinkPids = searchUtils.getConnectLinks(linkPid, direct, speedDependent, speedValue * 10);
 
 						JSONArray linkPidsArray = new JSONArray();
 
@@ -581,9 +580,7 @@ public class SearchProcess {
 
 						array.add(linkPidsArray);
 
-						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids,
-										speedDependent);
+						JSONArray speedlimitArray = searchUtils.getRdLinkSpeedlimit(nextLinkPids, speedDependent);
 
 						array.add(speedlimitArray);
 					}

@@ -197,5 +197,25 @@ public class OpRefRelationObj {
 
 		return null;
 	}
+	/**
+	 * 警示信息
+	 *
+	 * @param result
+	 * @param oldLink
+	 * @param newLinks
+	 * @return
+	 * @throws Exception
+	 */
+	public String handleRdLinkWarning(Result result, RdLink oldLink,
+									  List<RdLink> newLinks) throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
+				conn);
+
+		operation.breakRdLink(oldLink, newLinks, result);
+
+		return null;
+	}
+
 
 }

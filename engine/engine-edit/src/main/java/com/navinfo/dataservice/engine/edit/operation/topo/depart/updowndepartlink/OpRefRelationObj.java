@@ -185,6 +185,18 @@ public class OpRefRelationObj {
     }
 
     /**
+     * 警示信息RD_LINK_WARNING
+     */
+    public String handlerdRdLinkWarning(Command command, Result result) throws Exception {
+
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation operation = new com.navinfo
+                .dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(conn);
+
+        return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command
+                .getRightLinkMapping(), command.getNoTargetLinks(), result);
+    }
+
+    /**
      * 点限速
      * @param command
      * @param result

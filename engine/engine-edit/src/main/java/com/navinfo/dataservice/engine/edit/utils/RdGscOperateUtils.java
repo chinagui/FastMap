@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.vividsolutions.jts.geom.LineString;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -743,6 +744,33 @@ public class RdGscOperateUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * 点是否在线上
+	 *
+	 * @param linkGeo  扩大100000倍保持精度
+	 * @param pointGeo 扩大100000倍保持精度
+	 */
+	public static boolean pointOnline(Geometry linkGeo, Geometry pointGeo)
+			throws Exception {
+
+		Coordinate newCoordinate = pointGeo.getCoordinate();
+
+		for (int i = 0; i < linkGeo.getCoordinates().length - 1; i++) {
+
+			Coordinate cs = linkGeo.getCoordinates()[i];
+
+			Coordinate ce = linkGeo.getCoordinates()[i + 1];
+
+			// 是否在线段上
+			if (GeoTranslator.isIntersection(cs, ce, newCoordinate)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

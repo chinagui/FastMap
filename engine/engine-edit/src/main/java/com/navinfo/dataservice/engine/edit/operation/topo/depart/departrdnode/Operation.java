@@ -329,7 +329,7 @@ public class Operation implements IOperation {
 		OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.conn);
 		opRefSpeedlimit.updateRelation(command, newLinks, result);
 
-		// 维护点限速
+		// 维护Rdlane
 		OpRefRdlane opRefRdlane = new OpRefRdlane(this.conn);
 		opRefRdlane.updateRelation(command, newLinks, result);
 
@@ -358,6 +358,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handleRdVoiceguide(command, newLinks, result);
 		// 维护警示信息
 		opRefRelationObj.handleRdWarninginfo(command, newLinks, result);
+		// 维护警示信息RD_LINK_WARNING
+		opRefRelationObj.handleRdLinkWarning(command, newLinks, result);
 		// 维护限高限重
 		opRefRelationObj.handleRdHgwgLimit(command, newLinks, result);
 		// 维护里程桩

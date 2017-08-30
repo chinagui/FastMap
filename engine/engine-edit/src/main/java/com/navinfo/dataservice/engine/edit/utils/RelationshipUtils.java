@@ -85,6 +85,8 @@ public class RelationshipUtils {
 
         handleRdWarninginfo();
 
+        handleRdLinkWarning();
+
         handleRdElectroniceye();
 
         handleRdSpeedlimit();
@@ -267,6 +269,18 @@ public class RelationshipUtils {
 
         operation.deleteByLinks(result, delLinkPids);
     }
+    /**
+     * 警示信息 RD_LINK_WARNING
+     *
+     * @throws Exception
+     */
+    private void handleRdLinkWarning() throws Exception {
+
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
+                conn);
+
+        operation.updateByLinks(delLinkPids, result);
+    }
 
     /**
      * 警示信息
@@ -278,7 +292,7 @@ public class RelationshipUtils {
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(
                 conn);
 
-            operation.deleteByLinks(delLinkPids, result);
+        operation.deleteByLinks(delLinkPids, result);
     }
 
     /**

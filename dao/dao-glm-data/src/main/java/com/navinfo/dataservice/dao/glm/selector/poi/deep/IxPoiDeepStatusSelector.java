@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -53,7 +54,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 
 		StringBuilder bufferCondition = new StringBuilder();
 		
-		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name, p.kind_code ");
+		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name, p.kind_code,p.poi_num,p.poi_memo ");
 		bufferCondition.append(" from ix_poi p,poi_column_status s,ix_poi_name ipn,poi_column_workitem_conf c");
 		bufferCondition.append(" where ipn.name_class = 1 and ipn.name_type = 2 and (ipn.lang_code = 'CHI' or ipn.lang_code = 'CHT')");
 		bufferCondition.append(" and p.pid = s.pid and p.pid = ipn.poi_pid");
@@ -85,6 +86,8 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("name", resultSet.getString("name"));
 				json.put("kindCode", resultSet.getString("kind_code"));
+				json.put("fid",  StringUtils.isBlank(resultSet.getString("poi_num"))?"":resultSet.getString("poi_num"));
+				json.put("memo", StringUtils.isBlank(resultSet.getString("poi_memo"))?"":resultSet.getString("poi_memo"));
 				json.put("status", status);
 				int pid = resultSet.getInt("pid");
 				//获取state

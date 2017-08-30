@@ -28,6 +28,7 @@ public class TranslateTest {
     @Test
     public void translateTest() {
         EnglishConvert convert = new EnglishConvert();
+        System.out.println(convert.convert("名￥著的是"));
         System.out.println(convert.convert("ＪＯ（Ｅ郞 ＪＯＥ＇Ｓ　ＳＡＬＯＮ"));
         System.out.println(convert.convert("ＪＯＥ）郞 ＪＯＥ,Ｓ　ＳＡＬＯＮ"));
         System.out.println(convert.convert("ＪＯＥ×郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));

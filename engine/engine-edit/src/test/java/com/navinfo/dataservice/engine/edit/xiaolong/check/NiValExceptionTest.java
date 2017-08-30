@@ -124,7 +124,7 @@ public class NiValExceptionTest extends InitApplication {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, oldType, type, 0, 1736);
+			selector.updateCheckLogStatus(id, oldType, type, 0, 1736,"2017-08-30 12:30:40");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

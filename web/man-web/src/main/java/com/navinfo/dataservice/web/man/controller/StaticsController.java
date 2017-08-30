@@ -33,7 +33,7 @@ public class StaticsController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/statics/change/grid/query")
+	/*@RequestMapping(value = "/statics/change/grid/query")
 	public ModelAndView queryGridChangeStat(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
@@ -56,7 +56,7 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 
 	/**
 	 * 查询block的预期图状态，根据wkt查询wkt范围内的所有block的预期状态
@@ -64,7 +64,7 @@ public class StaticsController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/statics/expect/block/listByWkt")
+	/*@RequestMapping(value = "/statics/expect/block/listByWkt")
 	public ModelAndView listBlockExpectStatByWkt(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
@@ -83,14 +83,14 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 * 获取单个block的预期统计信息
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/statics/expect/block/query")
+	/*@RequestMapping(value = "/statics/expect/block/query")
 	public ModelAndView queryBlockExpectStat(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
@@ -111,9 +111,9 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
-	@RequestMapping(value = "/statics/expect/city/listByWkt")
+	/*@RequestMapping(value = "/statics/expect/city/listByWkt")
 	public ModelAndView listCityExpectStatByWkt(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
@@ -220,7 +220,7 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	/*
 	//根据groupId获取block详情
 	@RequestMapping(value = "/statics/block/overviewByGroup")
@@ -277,7 +277,7 @@ public class StaticsController extends BaseController {
 		 * @author zl zhangli5174@navinfo.com
 		 * @date 2016年10月19日 上午10:54:15 
 		 */
-		@RequestMapping(value = "/statics/groupOverview")
+		/*@RequestMapping(value = "/statics/groupOverview")
 		public ModelAndView queryGroupOverView(HttpServletRequest request) {
 			try {
 				String parameter = request.getParameter("parameter");
@@ -299,10 +299,10 @@ public class StaticsController extends BaseController {
 				return new ModelAndView("jsonView", exception(e));
 			}
 		}
-	
+	*/
 	
 	//根据taskId获取block详情
-	@RequestMapping(value = "/statics/block/overviewByTask")
+	/*@RequestMapping(value = "/statics/block/overviewByTask")
 	public ModelAndView queryBlockOverViewByTask(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
@@ -322,7 +322,7 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	//根据taskId获取block详情
 	@RequestMapping(value = "/statics/task/overviewByProgram")
@@ -430,7 +430,7 @@ public class StaticsController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value="/statics/overview")
+	/*@RequestMapping(value="/statics/overview")
 	public ModelAndView queryCityOverview(HttpServletRequest request){
 		try {
 			//查询数据
@@ -464,13 +464,13 @@ public class StaticsController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage()));
 		} 
-	}
+	}*/
 
 	/*
 	 * 应用场景：管理/监控_生管角色首页
 	 * 实现逻辑:查fm_stat_overview表
 	 */
-	@RequestMapping(value = "/noRealStatics/overview")
+	/*@RequestMapping(value = "/noRealStatics/overview")
 	public ModelAndView overview(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -480,11 +480,11 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	/*
 	 * 管理/监控_采集/日编/月编角色group详情
 	 */
-	@RequestMapping(value = "/noRealStatics/groupOverview")
+	/*@RequestMapping(value = "/noRealStatics/groupOverview")
 	public ModelAndView groupOverview(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -504,11 +504,11 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	/*
 	 * 管理/监控_生管角色常规/情报项目详情_作业中统计详情
 	 */
-	@RequestMapping(value = "/noRealStatics/program/overviewDetail")
+	/*@RequestMapping(value = "/noRealStatics/program/overviewDetail")
 	public ModelAndView programOverviewDetail(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -528,12 +528,12 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/*
 	 * 管理/监控_生管角色常规/情报项目详情_作业中统计详情
 	 */
-	@RequestMapping(value = "/noRealStatics/program/overviewExpect")
+	/*@RequestMapping(value = "/noRealStatics/program/overviewExpect")
 	public ModelAndView programOverviewExpect(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -555,7 +555,7 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/*
 	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
@@ -585,7 +585,7 @@ public class StaticsController extends BaseController {
 	/*
 	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
 	 */
-	@RequestMapping(value = "/noRealStatics/task/overviewExpect")
+	/*@RequestMapping(value = "/noRealStatics/task/overviewExpect")
 	public ModelAndView taskOverviewExpect(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -607,7 +607,7 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/*
 	 * 
@@ -637,7 +637,7 @@ public class StaticsController extends BaseController {
 	/*
 	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
 	 */
-	@RequestMapping(value = "/noRealStatics/subtask/overviewExpect")
+	/*@RequestMapping(value = "/noRealStatics/subtask/overviewExpect")
 	public ModelAndView subtaskOverviewExpect(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -659,7 +659,7 @@ public class StaticsController extends BaseController {
 			log.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/*
 	 * 快线tips日编状态统计接口
@@ -679,6 +679,30 @@ public class StaticsController extends BaseController {
 			//taskId
 			int taskId = dataJson.getInt("taskId");
 			List<Map> data = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 获取非实时任务进展接口
+	 * 
+	 */
+	@RequestMapping(value = "/noRealStatics/taskProgress")
+	public ModelAndView getTaskProgress(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new IllegalArgumentException("tanskId参数不能为空。");
+			}
+			//taskId
+			int taskId = dataJson.getInt("taskId");
+			Map<String, Object> data = StaticsService.getInstance().getTaskProgress(taskId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("查询失败，原因：" + e.getMessage(), e);

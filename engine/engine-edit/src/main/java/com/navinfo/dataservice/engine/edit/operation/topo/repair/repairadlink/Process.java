@@ -58,6 +58,7 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.getCommand(), this.getConn());
 		parameterCheck();
+		check.checkIntersectFace(this.getCommand(), this.getConn());
 		// TODO Auto-generated method stub
 		return new Operation(this.getConn(), this.getCommand()).run(this
 				.getResult());

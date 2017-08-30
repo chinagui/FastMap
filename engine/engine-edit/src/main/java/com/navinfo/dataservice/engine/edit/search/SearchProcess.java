@@ -10,6 +10,7 @@ import java.util.Set;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.*;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,12 +26,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISearch;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
@@ -450,6 +445,37 @@ public class SearchProcess {
 		}
 
 	}
+	/**
+	 * 根据pid查询删除数据
+	 *
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public IObj searchDelDataByPid(ObjType type, int pid) throws Exception {
+
+		try {
+			SearchFactory factory = new SearchFactory(conn);
+
+			ISearch search = factory.createSearch(type);
+
+			if (search instanceof ISearchDelObj) {
+
+				ISearchDelObj searchDelObj = (ISearchDelObj) search;
+
+				return searchDelObj.searchDelDataByPid(pid);
+			}
+			return null;
+
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+	}
 
 	/**
 	 * 根据pids查询
@@ -542,10 +568,9 @@ public class SearchProcess {
 						if (condition.containsKey("speedDependent")) {
 							speedDependent = condition.getInt("speedDependent");
 						}
+						int speedValue=condition.getInt("speedValue");
 
-						List<Integer> nextLinkPids = searchUtils
-								.getConnectLinks(linkPid, direct,
-										speedDependent);
+						List<Integer> nextLinkPids = searchUtils.getConnectLinks(linkPid, direct, speedDependent, speedValue * 10);
 
 						JSONArray linkPidsArray = new JSONArray();
 
@@ -555,9 +580,7 @@ public class SearchProcess {
 
 						array.add(linkPidsArray);
 
-						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids,
-										speedDependent);
+						JSONArray speedlimitArray = searchUtils.getRdLinkSpeedlimit(nextLinkPids, speedDependent);
 
 						array.add(speedlimitArray);
 					}

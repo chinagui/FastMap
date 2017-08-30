@@ -1,17 +1,4 @@
-/**
- * 
- */
 package com.navinfo.dataservice.dao.glm.search;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -23,8 +10,20 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /** 
 * @ClassName: RdInterSearch 
@@ -112,17 +111,26 @@ public class RdInterSearch implements ISearch {
 
 				String []nodeWktSplits = wktPoints.split(",");
 
+				Set<String> nodeForm13 = new HashSet<>();
+
+				if (splits.length > 0) {
+
+					nodeForm13 = loadRdNodeWays(nodePids);
+				}
+
 				for (int i = 0; i < splits.length; i++) {
 					JSONObject gObject = new JSONObject();
 
 					Geometry gNode = wktReader.read(nodeWktSplits[i]);
 
-						gObject.put("g", Geojson.lonlat2Pixel(
-								gNode.getCoordinate().x,
-								gNode.getCoordinate().y, z, px, py));
-						gObject.put("i", splits[i]);
-						
-						gArray.add(gObject);
+					gObject.put("g", Geojson.lonlat2Pixel(
+							gNode.getCoordinate().x,
+							gNode.getCoordinate().y, z, px, py));
+					gObject.put("i", splits[i]);
+
+					gObject.put("crfi", nodeForm13.contains(splits[i]));
+
+					gArray.add(gObject);
 				}
 
 				snapshot.setG(gArray);
@@ -314,4 +322,40 @@ public class RdInterSearch implements ISearch {
 		return list;
 	}
 
+
+	/**
+	 * 查询node形态为3的nodepid
+	 */
+	private Set<String> loadRdNodeWays(String nodePids) throws Exception {
+
+		String sql = "SELECT NODE_PID  FROM RD_NODE_FORM WHERE NODE_PID IN (" + nodePids + ") AND  FORM_OF_WAY=3 AND  U_RECORD != 2 ";
+
+		Set<String> nodeForm13 = new HashSet<>();
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int nodePid = resultSet.getInt("node_pid");
+
+				nodeForm13.add(String.valueOf(nodePid));
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return nodeForm13;
+	}
 }

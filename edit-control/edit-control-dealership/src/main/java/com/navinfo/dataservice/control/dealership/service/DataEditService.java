@@ -61,12 +61,15 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 代理店数据编辑类
@@ -741,6 +744,7 @@ public class DataEditService {
 				//POI状态修改为已提交3
 				log.info(resultId+"resultId对应的POI状态修改为已提交3");
 				updatePoiStatus(pid, dailycon);
+				withoutTaskValuation(pid, dailycon);
 			}
 			//清空关联POI作业属性
 			int matchMethod = getMatchMethodFromResult(resultId, con);
@@ -1455,6 +1459,8 @@ public class DataEditService {
 						updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
 						Integer resultId = result.getResultId();
 						IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+						Integer pid = selectPidByPoiNum(poiNum,regionConn);
+						withoutTaskValuation(pid.toString(), regionConn);
 						Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
 						IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 					}
@@ -1896,7 +1902,7 @@ public class DataEditService {
 			
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
 			List<IxPoi> poiList = queryPidListByCon(conn,poiNum,name,address,telephone,location,proCode,resultId);
-			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, null);
+			JSONArray poiArray = IxDealershipResultOperator.componentPoiData(poiList, conn);
 			return poiArray;
 			
 		}catch (Exception e) {
@@ -1923,9 +1929,9 @@ public class DataEditService {
 	 */
 	private List<IxPoi> queryPidListByCon(Connection conn,String poiNum, String name, String address, String telephone,
 			String location, String proCode, Integer resultId) throws Exception {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 		    IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			StringBuilder sb = new StringBuilder();
 			boolean flag = false;
@@ -1989,7 +1995,8 @@ public class DataEditService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(rs);
 		}
 	}
 	
@@ -2625,5 +2632,87 @@ public class DataEditService {
 			}
 		}
 		return subtables;
+	}
+	
+	/**
+	 * 代理店无任务赋值
+	 * @param pid
+	 * @param dailycon
+	 * @throws Exception
+	 */
+	private void withoutTaskValuation(String pid, Connection dailycon) throws Exception {
+		if(queryMediumTaskTid(pid,dailycon)){
+			Geometry geometry = getGeometryByPid(pid, dailycon);
+			if(geometry != null){
+				Coordinate coordinate = geometry.getCoordinate();
+				String[] grids = CompGridUtil.point2Grids(coordinate.x, coordinate.y);
+				Connection manConn = DBConnector.getInstance().getManConnection();
+				try{
+					QueryRunner run = new QueryRunner();
+					String sql = "SELECT T.TASK_ID FROM TASK T, GRID G, PROGRAM P WHERE G.BLOCK_ID = T.BLOCK_ID AND T.PROGRAM_ID = P.PROGRAM_ID AND T.LATEST = 1 AND P.TYPE = 1 AND T.TYPE = 0 AND g.grid_id = ?";
+					int taskId = run.queryForInt(manConn, sql, grids[0]);
+					if(taskId != 0){
+						updateMediumTaskTid(taskId, pid, dailycon);
+					}
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(manConn);
+				}
+			}
+		}
+	}
+	
+	private boolean queryMediumTaskTid(String pid, Connection dailycon) throws Exception {
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			String sql = "SELECT t.pid,t.medium_task_id FROM poi_edit_status t WHERE t.quick_subtask_id = 0 AND t.quick_task_id = 0 AND t.medium_subtask_id = 0 AND t.medium_task_id = 0 AND t.pid = :1";
+			pstmt = dailycon.prepareStatement(sql);
+			pstmt.setString(1, pid);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private void updateMediumTaskTid(Integer taskId, String pid, Connection dailycon) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "update POI_EDIT_STATUS t set t.medium_task_id = ? where t.pid = ?";
+			run.update(dailycon, sql, taskId, pid);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	public Geometry getGeometryByPid(String pid, Connection dailycon) throws Exception{
+		QueryRunner run = new QueryRunner();
+		StringBuilder getGeometryBuilder = new StringBuilder();
+		getGeometryBuilder.append("SELECT geometry FROM ix_poi WHERE pid = ");
+		getGeometryBuilder.append(pid);
+		return run.query(dailycon, getGeometryBuilder.toString(),
+			new ResultSetHandler<Geometry>() {
+				public Geometry handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						try {
+							STRUCT struct = (STRUCT) rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							return GeoTranslator.wkt2Geometry(clobStr);
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					}
+					return null;
+				}
+			});
 	}
 }

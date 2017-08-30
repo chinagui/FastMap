@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
+import com.vividsolutions.jts.geom.LineString;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -2278,7 +2280,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		List<TipsDao> resultArr=new ArrayList<TipsDao>();
 		
 		Connection hbaseConn;
-		try {
+
+        Table htab = null;
+        try {
 			TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
 			TipsDao solrIndex = operator.getById(rowkey);
 
@@ -2286,7 +2290,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			Table htab = hbaseConn.getTable(TableName
+			htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			Result result = getResultByRowKey(htab, rowkey, null);
@@ -2469,8 +2473,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			htab.put(newPut);
 
-			htab.close();
-
 			resultArr.add(solrIndex);
 			
 			resultArr.add(newSolrIndex);
@@ -2484,8 +2486,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
-		}
-		
+		}finally {
+            DbUtils.commitAndCloseQuietly(tipsConn);
+            if(htab != null) {
+                htab.close();
+            }
+        }
+
 		return resultArr;
 		
 	}
@@ -2667,6 +2674,114 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             logger.error("根据子任务号，获取任务任务号及任务类型出错：" + e.getMessage(), e);
             throw e;
         }
+    }
+
+    public JSONArray measuringLineSplit(JSONArray pids, double distance) throws Exception{
+        Connection hbaseConn = null;
+        Table htab = null;
+        java.sql.Connection tipsConn = null;
+        JSONArray rowkeys = new JSONArray();
+        try{
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            tipsConn = DBConnector.getInstance().getTipsIdxConnection();
+            List<Get> getList = new ArrayList<>();
+            for(int i = 0; i < pids.size(); i++) {
+                Get get = new Get(pids.getString(i).getBytes());
+                getList.add(get);
+            }
+            Result[] results = htab.get(getList);
+            if(results.length <= 0) {
+                throw new Exception("没有查询到测线");
+            }
+            LineString[] lineStrings = new LineString[pids.size()];
+            int index = 0;
+            Point sPoint = null;
+            for (Result result : results) {
+                String geoString = new String(result.getValue("data".getBytes(), "geometry".getBytes()));
+                JSONObject geo = JSONObject.fromObject(geoString);
+                JSONObject gLocation = geo.getJSONObject("g_location");//显示坐标
+                Coordinate[] locationCoords = GeoTranslator.geojson2Jts(gLocation).getCoordinates();
+                if(index == 0) {
+                    sPoint = JtsGeometryFactory.createPoint(locationCoords[0]);
+                }
+                LineString lineString = JtsGeometryFactory.createLineString(locationCoords);
+                lineStrings[index] = lineString;
+                index ++;
+            }
+            LineString[] resultLineStrings = CompPolylineUtil.separate(sPoint, lineStrings, distance);
+
+            TipsIndexOracleOperator operator = new TipsIndexOracleOperator(tipsConn);
+            List<Put> putList = new ArrayList<>();
+            for(int i = 0; i < pids.size(); i++) {
+                //保留一个rowkey,更新显示坐标，引导坐标
+                String rowkey = pids.getString(i);
+                Put put = new Put(rowkey.getBytes());
+                JSONObject geo1 = new JSONObject();
+                LineString lineLoc1 = resultLineStrings[i*2];
+                JSONObject g_location1 = GeoTranslator.jts2Geojson(lineLoc1);
+                geo1.put("g_location", g_location1);
+                int pointSize = lineLoc1.getCoordinates().length;
+                JSONObject g_guide1 = null;
+                if(pointSize > 2){
+                    g_guide1 = getMidPointByGeometry(g_location1);
+                }else{
+                    g_guide1 = getSencondPoint(g_location1);
+                }
+                geo1.put("g_guide", g_guide1);
+                put.addColumn("data".getBytes(), "geometry".getBytes(), geo1.toString().getBytes());
+
+                String trackString = new String(results[i].getValue("data".getBytes(), "track".getBytes()));
+                JSONObject trackObj = JSONObject.fromObject(trackString);
+                trackObj.put("t_date", DateUtils.getCurrentTimestamp());
+                put.addColumn("data".getBytes(), "track".getBytes(), trackObj.toString().getBytes());
+
+                TipsDao solrIndex = operator.getById(rowkey);
+                solrIndex.setWktLocation(GeoTranslator.geojson2Jts(g_location1));
+                solrIndex.setWkt(GeoTranslator.geojson2Jts(g_guide1));
+                solrIndex.setT_date(DateUtils.getCurrentTimestamp());
+
+                //新增一根测线
+                String s_sourceType = solrIndex.getS_sourceType();
+                String newRowkey = TipsUtils.getNewRowkey(s_sourceType);
+                Put newPut = copyNewATips(results[i], newRowkey);
+                JSONObject geo2 = new JSONObject();
+                LineString lineLoc2 = resultLineStrings[i*2+1];
+                JSONObject g_location2 = GeoTranslator.jts2Geojson(lineLoc2);
+                geo2.put("g_location", g_location2);
+                int pointSize2 = lineLoc2.getCoordinates().length;
+                JSONObject g_guide2 = null;
+                if(pointSize2 > 2){
+                    g_guide2 = getMidPointByGeometry(g_location2);
+                }else{
+                    g_guide2 = getSencondPoint(g_location2);
+                }
+                geo2.put("g_guide", g_guide2);
+                newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo2.toString().getBytes());
+                newPut.addColumn("data".getBytes(), "track".getBytes(), trackObj.toString().getBytes());
+                TipsDao newSolrIndex = solrIndex.copy();
+                newSolrIndex.setId(newRowkey);
+                newSolrIndex.setWktLocation(GeoTranslator.geojson2Jts(g_location2));
+                newSolrIndex.setWkt(GeoTranslator.geojson2Jts(g_guide2));
+                newSolrIndex.setT_date(DateUtils.getCurrentTimestamp());
+
+                operator.updateOne(solrIndex);
+                operator.updateOne(newSolrIndex);
+
+                putList.add(put);
+                putList.add(newPut);
+
+                rowkeys.add(rowkey);
+                rowkeys.add(newRowkey);
+            }
+            htab.put(putList);
+        }catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(tipsConn);
+            throw new Exception("测线分离失败", e);
+        }finally {
+            DbUtils.commitAndCloseQuietly(tipsConn);
+        }
+        return rowkeys;
     }
 
     public static void main(String[] args) throws Exception {

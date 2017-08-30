@@ -93,7 +93,6 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 
 		log.info("dealershipTableAndDbDiffJob start...");
 
-		Connection conn = null;
 		Map<Integer, Connection> dbConMap = new HashMap<Integer, Connection>();
 		try {
 			DealershipTableAndDbDiffJobRequest jobRequest = (DealershipTableAndDbDiffJobRequest) this.request;
@@ -266,13 +265,11 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			handler.updateDealershipDb(diffFinishResultList,chainCodeList,dbConMap,log);
 			log.info("dealershipTableAndDbDiffJob end...");
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			for (Connection value : dbConMap.values()) {
 				DbUtils.rollbackAndCloseQuietly(value);
 			}
 			throw new JobException(e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 			for (Connection value : dbConMap.values()) {  
 				DbUtils.commitAndCloseQuietly(value);
 			}  
@@ -378,10 +375,9 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			};
 			return run.query(conn, querySql, rs);
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("加载resultData失败：" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 

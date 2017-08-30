@@ -25,6 +25,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -51,6 +52,7 @@ public class PersonDayJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
+		PersonDayJobRequest statReq = (PersonDayJobRequest)request;
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			List<Region> regionList = manApi.queryRegionList();
@@ -61,11 +63,15 @@ public class PersonDayJob extends AbstractStatJob {
 				}
 			}
 			
+			String timestamp = statReq.getTimestamp().substring(0, 8);
+			//计算前一天的统计
+			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
 			Map<Integer, Map<String,List<Map<String, Object>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String, Object>>>>();
 			long time = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			if(dbSize == 1){
-				new PersonDayThread(null, dbIds.iterator().next(), stats).run();
+				new PersonDayThread(null, dbIds.iterator().next(), stats, timestamp).run();
 			}else{
 				if(dbSize > 10){
 					initThreadPool(10);
@@ -76,7 +82,7 @@ public class PersonDayJob extends AbstractStatJob {
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
 				for(int dbId:dbIds){
-					threadPoolExecutor.execute(new PersonDayThread(latch,dbId,stats));
+					threadPoolExecutor.execute(new PersonDayThread(latch, dbId, stats, timestamp));
 				}
 				latch.await();
 				if (threadPoolExecutor.getExceptions().size() > 0) {
@@ -129,18 +135,20 @@ public class PersonDayJob extends AbstractStatJob {
 	class PersonDayThread implements Runnable{
 		CountDownLatch latch = null;
 		int dbId = 0;
+		String timestamp = "";
 		Map<Integer, Map<String,List<Map<String, Object>>>> stats;
-		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat){
+		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat, String timestamp){
 			this.latch = latch;
 			this.dbId = dbId;
 			this.stats = stat;
+			this.timestamp = timestamp;
 		}
 		
 		@Override
 		public void run() {
 			try{
 				//查询并统计所有子任务数据
-				Map<String,Object> result = convertAllTaskData();
+				Map<String,Object> result = convertAllTaskData(timestamp);
 				
 				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 
@@ -151,6 +159,9 @@ public class PersonDayJob extends AbstractStatJob {
 					cell.put("uploadNum", entry.getValue().get("uploadNum"));
 					cell.put("freshNum", entry.getValue().get("freshNum"));
 					cell.put("finishNum", entry.getValue().get("finishNum"));
+					cell.put("deleteCount", entry.getValue().get("deleteCount"));
+					cell.put("increaseAndAlterCount", entry.getValue().get("increaseAndAlterCount"));
+					cell.put("workDate", timestamp);
 					subtaskStat.add(cell);
 				}
 				
@@ -173,7 +184,7 @@ public class PersonDayJob extends AbstractStatJob {
 		 * @throws Exception 
 		 * 
 		 * */
-		public Map<String,Object> convertAllTaskData() throws Exception{
+		public Map<String,Object> convertAllTaskData(String timestamp) throws Exception{
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -182,13 +193,14 @@ public class PersonDayJob extends AbstractStatJob {
 				
 				StringBuilder sb = new StringBuilder();
 				sb.append(" select s.status,                      		");
+				sb.append("        p.u_record,                      	");
 				sb.append("        s.fresh_verified,              		");
 				sb.append("        s.quick_subtask_id,            		");
 				sb.append("        s.medium_subtask_id,           		");
 				sb.append("     substr(p.collect_time,0,8) collect_time ");
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
-				sb.append("	  trunc(TO_CHAR(sysdate, 'YYYYMMDD'))       ");
+				sb.append("	 '"+timestamp+"'"                            );
 				sb.append("   and p.pid = s.pid                         ");
 				
 				String selectSql = sb.toString();
@@ -202,11 +214,12 @@ public class PersonDayJob extends AbstractStatJob {
 						    int quickSubTaskId = rs.getInt("quick_subtask_id");
 						    int status = rs.getInt("status");
 						    int fresh = rs.getInt("fresh_verified");
+						    int record = rs.getInt("u_record");
 						    if(subtaskId != 0){
-						    	statisticsSubTaskData(subtaskStat, subtaskId, status, fresh);
+						    	statisticsSubTaskData(subtaskStat, subtaskId, status, fresh, record);
 						    }
 						    if(quickSubTaskId != 0){
-						    	statisticsSubTaskData(subtaskStat, quickSubTaskId, status, fresh);
+						    	statisticsSubTaskData(subtaskStat, quickSubTaskId, status, fresh, record);
 						    }
 						}
 						result.put("subtaskStat", subtaskStat);
@@ -226,22 +239,27 @@ public class PersonDayJob extends AbstractStatJob {
 		
 		/**
 		 * 处理子任务的统计量方法
-		 * @param Map<Integer,Map<String,Integer>>
-		 * @param int
-		 * @param int
-		 * @param int
+		 * @param Map<Integer,Map<String,Integer>> subtaskStat
+		 * @param int subtaskId
+		 * @param int status
+		 * @param int fresh
+		 * @param int record
 		 * 
 		 * */
-		public void statisticsSubTaskData(Map<Integer,Map<String,Integer>> subtaskStat, int subtaskId, int status, int fresh){
+		public void statisticsSubTaskData(Map<Integer,Map<String,Integer>> subtaskStat, int subtaskId, int status, int fresh, int record){
 			Map<String,Integer> value = new HashMap<String,Integer>();
 	    	int uploadNum = 0 ;
 	    	int freshNum = 0;
 	    	int finishNum = 0;
-	    	if(subtaskId != 0 && subtaskStat.containsKey(subtaskId)){
+	    	int deleteCount = 0;
+	    	int increaseAndAlterCount = 0;
+	    	if(subtaskStat.containsKey(subtaskId)){
 	    		value = subtaskStat.get(subtaskId);
 	    		uploadNum = value.get("uploadNum");
 	    		freshNum = value.get("freshNum");
 	    		finishNum =  value.get("finishNum");
+	    		deleteCount = value.get("deleteCount");
+	    		increaseAndAlterCount = value.get("increaseAndAlterCount");
 	    	}
 	    	finishNum++;
 	    	if(status == 1 || status == 2 || status ==3){
@@ -250,9 +268,16 @@ public class PersonDayJob extends AbstractStatJob {
 	    	if(fresh == 1){
 	    		freshNum++;
 	    	}
+	    	if(record == 2){
+	    		deleteCount++;
+	    	}else{
+	    		increaseAndAlterCount++;
+	    	}
 	    	value.put("uploadNum", uploadNum);
 	    	value.put("freshNum", freshNum);
 	    	value.put("finishNum", finishNum);
+	    	value.put("increaseAndAlterCount", increaseAndAlterCount);
+	    	value.put("deleteCount", deleteCount);
 	    	subtaskStat.put(subtaskId, value);
 		}
 		

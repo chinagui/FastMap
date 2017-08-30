@@ -144,15 +144,19 @@ public class Command extends AbstractCommand {
 			this.kind = data.getInt("kind");
 		}
 
-		if (data.containsKey("laneNum")) {
-			this.laneNum = data.getInt("laneNum");
-		}
 		if(data.containsKey("width")){
 			this.width = data.getInt("width");
 		}
 		if(data.containsKey("laneClass")){
 			this.laneClass = data.getInt("laneClass");
 		}
+
+		if (data.containsKey("laneNum")) {
+			this.laneNum = data.getInt("laneNum");
+
+			autoSet( data );
+		}
+
 
 		if (data.containsKey("catchLinks")) {
 
@@ -165,6 +169,40 @@ public class Command extends AbstractCommand {
 
 		} else {
 			this.catchLinks = new JSONArray();
+		}
+	}
+
+	/**
+	 * 自动维护道路幅宽、车道等级
+	 */
+	private void autoSet(JSONObject data) {
+
+		if (!data.containsKey("laneClass")) {
+			//创建link时道路方向为双方向，且左右车道数为0
+			int flagValue = this.laneNum % 2 == 0 ? this.laneNum / 2 : (this.laneNum + 1) / 2;
+
+			if (flagValue == 0) {
+				this.laneClass = 0;
+			} else if (flagValue == 1) {
+				this.laneClass = 1;
+			} else if (flagValue == 2 || flagValue == 3) {
+				this.laneClass = 2;
+			} else if (flagValue > 4) {
+				this.laneClass = 3;
+			}
+		}
+
+		if (!data.containsKey("width")) {
+			//创建link时左右车道均为0 只需根据总车道数计算
+			if (this.laneNum == 0) {
+				this.width = 0;
+			} else if (this.laneNum == 1) {
+				this.width = 30;
+			} else if (this.laneNum == 2 || this.laneNum == 3) {
+				this.width = 55;
+			} else if (this.laneNum >= 4) {
+				this.width = 130;
+			}
 		}
 	}
 

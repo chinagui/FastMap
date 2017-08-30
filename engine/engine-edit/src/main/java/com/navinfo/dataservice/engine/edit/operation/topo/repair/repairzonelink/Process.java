@@ -65,6 +65,7 @@ public class Process extends AbstractProcess<Command> {
 
 		parameterCheck();
 		check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.getCommand(), this.getConn());
+		check.checkIntersectFace(this.getCommand(), this.getConn());
 		return new Operation(this.getConn(), this.getCommand()).run(this
 				.getResult());
 	}

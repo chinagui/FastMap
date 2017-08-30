@@ -2878,6 +2878,10 @@ public class TaskService {
 	public Set<Integer> getCollectTaskIdsByTaskId(Connection conn,int taskId) throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
+			//modify by songhe
+			//type=1日编任务:采集任务查询条件，program_id,block_id,region_id,lot相同
+			//type=2月编任务:快线采集任务查询条件，program_id,block_id相同,中线采集任务查询条件，program_id,block_id,lot相同
+			Task task = queryNoGeoByTaskId(conn, taskId);
 			
 			String sql = "SELECT TT.TASK_ID"
 					+ "  FROM TASK T, TASK TT"
@@ -2886,6 +2890,12 @@ public class TaskService {
 					+ "   AND TT.TYPE = 0"
 					+ "   AND T.TASK_ID = " + taskId;
 			
+			if(task.getType() == 1){
+				sql += " AND T.REGION_ID = TT.REGION_ID AND T.LOT = TT.LOT";
+			}
+			if(task.getType() == 2 && task.getProgramType() == 1){
+				sql += " AND T.LOT = TT.LOT ";
+			}
 			log.info("getCollectTaskIdsByTaskId sql :" + sql);
 						
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {

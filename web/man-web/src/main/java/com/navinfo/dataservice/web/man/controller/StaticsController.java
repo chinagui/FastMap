@@ -685,4 +685,28 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/*
+	 * 获取非实时任务进展接口
+	 * 
+	 */
+	@RequestMapping(value = "/noRealStatics/taskProgress")
+	public ModelAndView getTaskProgress(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!dataJson.containsKey("taskId")){
+				throw new IllegalArgumentException("tanskId参数不能为空。");
+			}
+			//taskId
+			int taskId = dataJson.getInt("taskId");
+			Map<String, Object> data = StaticsService.getInstance().getTaskProgress(taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

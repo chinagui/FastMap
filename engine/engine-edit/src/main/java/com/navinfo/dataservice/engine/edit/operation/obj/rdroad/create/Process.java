@@ -9,8 +9,11 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
+	Check check = new Check();
+	
 	@Override
 	public String exeOperation() throws Exception {
+		check.hasMakedCRFI(this.getCommand(), this.getConn());
 		return new Operation(this.getCommand(), this.getConn()).run(this
 				.getResult());
 	}

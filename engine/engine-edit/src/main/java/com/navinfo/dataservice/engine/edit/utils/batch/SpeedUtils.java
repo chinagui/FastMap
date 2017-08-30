@@ -67,11 +67,16 @@ public final class SpeedUtils {
     private SpeedUtils(){
     }
 
+    public static void init(){
+        FROM_SPEED_LIMIT = TO_SPEED_LIMIT = 0;
+    }
     /**
      * 计算道路限速值并更新
      * @param link 道路对象
      */
     public static void updateLinkSpeed(RdLink link){
+        init();
+
         RdLinkSpeedlimit speedlimit = null;
         for (IRow row : link.getSpeedlimits()) {
             RdLinkSpeedlimit it = (RdLinkSpeedlimit) row;
@@ -165,8 +170,6 @@ public final class SpeedUtils {
         if (0 == TO_SPEED_LIMIT) {
             speedlimit.setToLimitSrc(0);
         }
-
-        FROM_SPEED_LIMIT = TO_SPEED_LIMIT = 0;
     }
 
     /**

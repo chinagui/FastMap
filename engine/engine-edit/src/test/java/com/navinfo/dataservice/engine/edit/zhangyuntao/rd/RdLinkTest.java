@@ -49,8 +49,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":400000505,\"data\":{\"kind\":2," +
-                "\"routeAdopt\":5,\"rowId\":\"5DAF09FEDCDE4A569418F7E93FF20D22\",\"pid\":400000505,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDLINK\",\"objId\":403000671,\"data\":{\"kind\":8," +
+                "\"rowId\":\"A8A6F1827CC8444BBA4DEB240B12EEE8\",\"pid\":403000671,\"objStatus\":\"UPDATE\"},\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 

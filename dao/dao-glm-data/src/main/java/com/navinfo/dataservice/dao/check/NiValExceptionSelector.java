@@ -401,7 +401,7 @@ public class NiValExceptionSelector {
 	 * @param ruleId
 	 *            规则号
 	 * @param sortby 
-	 * @param checkType 0全部  1服务后检查   2自定义检查
+	 * @param checkType 0服务后检查   1自定义检查
 	 * @return
 	 * @throws Exception
 	 */
@@ -438,19 +438,10 @@ public class NiValExceptionSelector {
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 
 		StringBuilder sql = null;
-		if(checkType != 0){
-			if(checkType == 1){
-				sql1 = sql1.append(" AND reserved  = '0' ");
-				sql2 = sql2.append(" AND reserved  = '0' ");
-				sql3 = sql3.append(" AND reserved  = '0' ");
-				sql4 = sql4.append(" AND reserved  = '0' ");
-			}else{
-				sql1 = sql1.append(" AND reserved  = '1' ");
-				sql2 = sql2.append(" AND reserved  = '1' ");
-				sql3 = sql3.append(" AND reserved  = '1' ");
-				sql4 = sql4.append(" AND reserved  = '1' ");
-			}
-		}
+		sql1 = sql1.append(" AND reserved  = '" + checkType +"'");
+		sql2 = sql2.append(" AND reserved  = '" + checkType +"'");
+		sql3 = sql3.append(" AND reserved  = '" + checkType +"'");
+		sql4 = sql4.append(" AND reserved  = '" + checkType +"'");
 		if (StringUtils.isNotEmpty(ruleId)) {
 			sql1 = sql1.append(" AND  ruleid  = '" + ruleId + "' ");
 			sql2 = sql2.append(" AND ruleid  = '" + ruleId + "' ");

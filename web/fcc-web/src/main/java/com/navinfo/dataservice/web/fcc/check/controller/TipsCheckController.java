@@ -464,6 +464,7 @@ public class TipsCheckController extends BaseController {
 			logger.debug("parameter:"+parameter);
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
+			
 			int  workStatus=jsonReq.getInt("checkStatus");
 			
 			String objectId = jsonReq.getString("objectId");

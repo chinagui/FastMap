@@ -61,6 +61,7 @@ public class Fm2ChargePhotoInitJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		PrintWriter pw = null;
+		PrintWriter pwLog = null;
 		try {
 			JSONObject result = new JSONObject();
 			//0.处理参数
@@ -141,18 +142,31 @@ public class Fm2ChargePhotoInitJob extends AbstractJob {
 			result.put("total", data.size());
 			result.put("data", data);
 			result.put("log", errorLog);
+			log.info("所有大区库导出json完毕。总记录数："+data.size());
 			log.info("所有大区库导出json完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			//4.写入数据文件
 			String datasFile = mydir+"photo.txt";
 			log.info("写入数据文件:"+datasFile);
 			pw = new PrintWriter(datasFile);
 			pw.println(result.toString());
+			//5.写入log日志
+			String logsFile = mydir+"photoLog.txt";
+			log.info("写入日志数据文件:"+logsFile);
+			pwLog = new PrintWriter(logsFile);
+			if(errorLog != null && errorLog.size() > 0){
+				for (Object object : errorLog) {
+					pwLog.println(object.toString());
+				}
+			}
 		} catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobException(e.getMessage(),e);
 		}finally{
 			if(pw!=null){
 				pw.close();
+			}
+			if(pwLog!=null){
+				pwLog.close();
 			}
 			shutDownPoolExecutor();
 		}
@@ -299,11 +313,21 @@ public class Fm2ChargePhotoInitJob extends AbstractJob {
 						poiLog.add("dbId("+dbId+"),"+str);
 					}
 					stats.put(dbId, objs.size());
+					//清理空文件夹
+					File[] listFiles = file.listFiles();
+					if(listFiles != null && listFiles.length > 0){
+						for (File subFile : listFiles) {
+							if(subFile.isDirectory() && subFile.listFiles().length <= 0){
+								subFile.delete();
+							}
+						}
+					}
 				}else{
 					stats.put(dbId, 0);
 				}
 				log.debug("dbId("+dbId+")转出成功。");
 				poiLog.add("dbId("+dbId+")转出成功。");
+				
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				log.error("dbId("+dbId+")转桩家失败");

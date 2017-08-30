@@ -1065,7 +1065,8 @@ public class TipsUpload {
         if (lastDate == null && hasPreStage(tracks)) {
             return 0;
         } else {
-            if (operateDate.compareTo(lastDate) <= 0) {
+        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
+            if (operateDate.compareTo(lastDate) < 0) {
                 return -2;
             }
         }

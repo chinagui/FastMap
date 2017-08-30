@@ -1,33 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.io.IOException;
-import java.sql.Clob;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
-import com.vividsolutions.jts.geom.LineString;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -46,11 +18,12 @@ import com.navinfo.dataservice.engine.fcc.tips.check.GdbDataQuery;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
@@ -62,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import java.io.IOException;
+import java.sql.Clob;
 import java.util.*;
 
 /**
@@ -1217,9 +1191,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			    }
 			}
 			//测线检查
-			else if("2001".equals(sourceType)&&command == COMMAND_UPADATE){
-	            	
-	            	checkMeasureLine(jsonInfo,tipsConn,oraConn);
+			else if("2001".equals(sourceType)){
+                //20170830点点过近检查 相邻形状点不可过近，不能小于2m
+                JSONObject geoJson = jsonInfo.getJSONObject("geometry");
+                JSONObject locationJson = geoJson.getJSONObject("g_location");
+                TipsUtils.checkShapePointDistance(locationJson);
+                if(command == COMMAND_UPADATE) {
+                    checkMeasureLine(jsonInfo,tipsConn,oraConn);
+                }
 	        }
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oraConn);
@@ -1921,7 +1900,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
-			throw new Exception("测线打断报错", e);
+			throw e;
 		}finally {
 			DbUtils.commitAndCloseQuietly(tipsConn);
 		}
@@ -2319,8 +2298,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject geo2 = new JSONObject();
 
 			JSONObject g_location1 = cutGeoResult.get(0);
+            TipsUtils.checkShapePointDistance(g_location1);
 
 			JSONObject g_location2 = cutGeoResult.get(1);
+            TipsUtils.checkShapePointDistance(g_location2);
 
 			// JSONObject
 			
@@ -2470,7 +2451,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			resultArr.add(newSolrIndex);
 
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(tipsConn);
+			//DbUtils.rollbackAndCloseQuietly(tipsConn);
 
 			e.printStackTrace();
 
@@ -2479,7 +2460,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}finally {
-            DbUtils.commitAndCloseQuietly(tipsConn);
+            //DbUtils.commitAndCloseQuietly(tipsConn);
             if(htab != null) {
                 htab.close();
             }

@@ -41,6 +41,7 @@ public class GLM09006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdWarningInfo(RdLinkWarning linkwarning) throws Exception {
+		
 		Geometry geo = GeoTranslator.transform(linkwarning.getGeometry(), GeoTranslator.dPrecisionMap, 5);
 		
 		Coordinate coor = geo.getCoordinate();

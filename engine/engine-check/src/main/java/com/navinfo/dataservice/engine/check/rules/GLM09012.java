@@ -67,6 +67,7 @@ public class GLM09012 extends baseRule {
 		int formOfWay = rdLinkForm.getFormOfWay();
 
 		if (rdLinkForm.changedFields().containsKey("formOfWay")) {
+			
 			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
 		}
 		
@@ -126,6 +127,5 @@ public class GLM09012 extends baseRule {
 				}
 			}
 		}
-
 	}
 }

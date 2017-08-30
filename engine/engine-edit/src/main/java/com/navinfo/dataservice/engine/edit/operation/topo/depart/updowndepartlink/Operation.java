@@ -302,6 +302,14 @@ public class Operation implements IOperation {
 
         for (RdLink link : links) {
             link.setDirect(direct);
+
+            //新增link总车道数为2，LaneClass只需用direct计算
+            link.setLaneClass(1);
+
+            if (direct == 2 || direct == 3) {
+                link.setLaneClass(2);
+            }
+
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
@@ -1007,6 +1015,8 @@ public class Operation implements IOperation {
         OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
         opRefRelationObj.handlerdWarninginfo(this.command, result);
+
+        opRefRelationObj.handlerdRdLinkWarning(this.command, result);
 
         opRefRelationObj.handleSameLink(this.command, result);
 

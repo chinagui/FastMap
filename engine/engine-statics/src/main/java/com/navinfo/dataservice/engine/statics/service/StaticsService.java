@@ -10,6 +10,8 @@ import net.sf.json.JSONObject;
 
 import org.bson.Document;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
@@ -20,6 +22,8 @@ import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
@@ -37,6 +41,7 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.roadmonthly.RoadMonthlyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.navicommons.exception.ServiceException;
 
 public class StaticsService {
 	private StaticsService() {
@@ -556,6 +561,51 @@ public class StaticsService {
 		return SubtaskStatInfos;
 
 	}
+	
+	/**
+	 * 查询当最近一次的mongo中task相应的统计数据
+	 * @param int taskId
+	 * @return Map<Integer, Map<String,Object>>
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> getTaskProgressFromMongo(int taskId) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
+			BasicDBObject filter = new BasicDBObject("taskId", taskId);
+			FindIterable<Document> findIterable = mongoDao.find("task", filter).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<String, Object> task = new HashMap<>();
+			//处理数据
+			if(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.put("poiUnfinishNum", (int) jso.get("poiUnfinishNum"));
+				task.put("crowdTipsTotal", (int) jso.get("crowdTipsTotal"));
+				task.put("inforTipsTotal", (int) jso.get("inforTipsTotal"));
+				task.put("multisourcePoiTotal", (int) jso.get("multisourcePoiTotal"));
+				task.put("collectTipsUploadNum", (int) jso.get("collectTipsUploadNum"));
+				task.put("poiUploadNum", (int) jso.get("poiUploadNum"));
+				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
+				task.put("poiUnfinishNum", (int) jso.get("poiUnfinishNum"));
+				task.put("dayEditTipsUnFinishNum", (int) jso.get("dayEditTipsNoWorkNum"));
+				task.put("dayEditTipsFinishNum", (int) jso.get("dayEditTipsFinishNum"));
+				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
+				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
+				
+				task.put("day2MonthNum", (int) jso.get("day2MonthNum"));
+				int monthPoiLogTotalNum = (int) jso.get("monthPoiLogTotalNum");
+				int monthPoiLogFinishNum = (int) jso.get("monthPoiLogFinishNum");
+				int monthPoiLogUnFinishNum = monthPoiLogTotalNum - monthPoiLogFinishNum;
+				task.put("monthPoiLogFinishNum", (int) jso.get("monthPoiLogFinishNum"));
+				task.put("monthPoiLogUnFinishNum", monthPoiLogUnFinishNum);
+			}
+			return task;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	
 	
 	
 	public static void main(String[] args) throws Exception {

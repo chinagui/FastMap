@@ -10,8 +10,16 @@ import java.util.Set;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -125,6 +133,42 @@ public class Check {
 				throwException("不允许对构成面的Link的端点处形状点，进行修形操作");
 			}
 		}
+	}
+	
+	/**
+	 * AD_LINK修形，背景面不能自相交
+	 * 
+	 * @param command
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void checkIntersectFace(Command command, Connection conn) throws Exception {
+		int linkpid = command.getLinkPid();
+		Geometry g = command.getLinkGeom();
+		
+		List<AdFace> faces = command.getFaces();
+
+		if (faces.size() == 0) {
+			return;
+		}
+
+		AdLinkSelector linkselector = new AdLinkSelector(conn);
+
+		for (AdFace face : faces) {
+			List<IRow> topos = face.getFaceTopos();
+			for (IRow row : topos) {
+				AdFaceTopo topo = (AdFaceTopo) row;
+
+				if (topo.getLinkPid() == linkpid) {
+					continue;
+				}
+
+				AdLink link = (AdLink) linkselector.loadById(topo.getLinkPid(), true, false);
+				if (g.crosses(GeoTranslator.transform(link.getGeometry(),0.00001,5))) {
+					throwException("背景面不能自相交");
+				}
+			} // for
+		} // for
 	}
 	
 	private void throwException(String msg) throws Exception {

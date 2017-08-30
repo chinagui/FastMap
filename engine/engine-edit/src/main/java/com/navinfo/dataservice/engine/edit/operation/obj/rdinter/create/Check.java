@@ -12,7 +12,9 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdRoadLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
@@ -134,6 +136,33 @@ public class Check {
 		if(CollectionUtils.isNotEmpty(interPidList))
 		{
 			throw new Exception("所选点位已包含crf交叉点");
+		}
+	}
+	
+	/**
+	 * 编辑制作CRFI时，已经参与制作了CRFR的link，实时控制不允许再制作CRFI
+	 * 
+	 * @param command
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void hasMakedCRFR(Connection conn) throws Exception {
+		JSONArray linkarray = this.command.getLinkArray();
+		
+		if(linkarray == null || linkarray.size() == 0) return;
+		
+		String linkPidsStr = JsonUtils.getStringValueFromJSONArray(linkarray);
+
+		RdRoadLinkSelector selector = new RdRoadLinkSelector(conn);
+
+		List<Integer> linkPids = StringUtils.getIntegerListByStr(linkPidsStr);
+
+		for (int linkpid : linkPids) {
+			RdRoad road = selector.loadRdRoadByLinkPid(linkpid, true);
+
+			if (road != null) {
+				throw new Exception("已参与制作CRFR的link:[" + linkpid + "]不允许再制作CRFI");
+			}
 		}
 	}
 }

@@ -6,13 +6,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -1094,37 +1093,25 @@ public abstract class MeshUtils {
     }
 
     public static String[] geometry2Mesh(Geometry geometry) {
-        Set<String> result = new HashSet<>();
         Coordinate[] coordinates = geometry.getCoordinates();
-        for (Coordinate coordinate : coordinates) {
-            result.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+
+        if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
+            Set<String> meshes = new HashSet<>();
+            for (int index = 0; index < coordinates.length -1; index++) {
+                meshes.addAll(Arrays.asList(
+                        line2Meshes(coordinates[index].x, coordinates[index].y, coordinates[index + 1].x, coordinates[index + 1].y)));
+            }
+            return meshes.toArray(new String[]{});
         }
-        return result.toArray(new String[]{});
+
+        Set<String> meshes = new HashSet<>();
+        for (Coordinate coordinate : coordinates) {
+            meshes.addAll(Arrays.asList(point2Meshes(coordinate.x, coordinate.y)));
+        }
+        return meshes.toArray(new String[]{});
     }
 
     public static void main(String[] args) throws Exception {
-//		Set<Integer> meshes = new HashSet<Integer>();
-//		meshes.add(95277);
-//		meshes.add(595672);
-//		meshes.add(595661);
-//		
-//		double[] xy = meshs2Rect(meshes);
-//		String wkt  = mesh2WKT("95671");
-//		System.out.println(wkt);
-//		
-		String[] ms = point2Meshes(114.074,22.312);
-		for(String s:ms){
-			System.out.println(s);
-		}
-		
-		
-		
-		
-    	/*Integer mesh = 595671;
-    	String meshStr = mesh.toString();
-		String xStr = meshStr.substring(0, 2)+meshStr.substring(4, 5);
-		String yStr = meshStr.substring(2, 4)+meshStr.substring(5);
-		System.out.println(xStr);
-		System.out.println(yStr);*/
+        System.out.println(Arrays.toString(line2Meshes(115.49989,36.06251,115.49991,36.0624)));
     }
 }

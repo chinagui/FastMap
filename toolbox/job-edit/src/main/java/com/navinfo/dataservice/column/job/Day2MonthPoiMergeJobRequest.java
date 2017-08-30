@@ -12,7 +12,7 @@ import net.sf.json.JSONObject;
 
 public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 	private String cityId;//需要日落月的城市id，为空表示全部DAY2MONTH_CONFIG中处于打开状态的城市
-	private int specRegionId;//需要日落月的大区id,为空表示全部大区都要落
+	private List<Integer> specRegionId;//需要日落月的大区id,为空表示全部大区都要落
 	private List<Integer> specMeshes;//需要日落月的大区id,为空表示全部大区都要落
 	private int phaseId;
 	private int type;
@@ -51,11 +51,11 @@ public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 		this.cityId = cityId;
 	}
 
-	public int getSpecRegionId() {
+	public List<Integer> getSpecRegionId() {
 		return specRegionId;
 	}
 
-	public void setSpecRegionId(int specRegionId) {
+	public void setSpecRegionId(List<Integer> specRegionId) {
 		this.specRegionId = specRegionId;
 	}
 

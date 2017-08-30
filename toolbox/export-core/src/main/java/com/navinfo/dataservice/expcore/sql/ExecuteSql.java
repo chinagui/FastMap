@@ -180,9 +180,12 @@ public class ExecuteSql {
 				if (expSQL.getSqlType() == null
 						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
 								.getSqlType())
-						|| ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
-								.getSqlExtendType())) {
-					log.debug("非毛边导出,"+expSQL.getSqlType()+"："+expSQL.getSql()+":"+expSQL.getSqlExtendType());
+				/*
+				 * || ExportConfig.DATA_NOT_INTEGRITY.equals(expSQL
+				 * .getSqlExtendType())
+				 */) {
+					log.debug("非毛边导出," + expSQL.getSqlType() + "："
+							+ expSQL.getSql() + ":" + expSQL.getSqlExtendType());
 					filterSqlList.add(expSQL);
 				}
 			}

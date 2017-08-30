@@ -38,6 +38,9 @@ public class TipsUtils {
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
+	
+	static final String [] TIPS_TABLE_COlS={"source","geometry","track","information","deep","recommended","feedback","confirm","diff","tipdiff","old"}; //tip 规格中 tips表的列。以后tips规格变更改这里
+	
 
 
 	/**

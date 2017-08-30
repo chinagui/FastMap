@@ -500,7 +500,7 @@ public class CompGridUtil {
 	}
 	
 	public static void main(String[] args) {
-		String[] grids = point2Grids(116.12186,40.09077);
+		String[] grids = point2Grids(117.87342,31.61484);
 		for(String g:grids){
 			System.out.println(g);
 		}

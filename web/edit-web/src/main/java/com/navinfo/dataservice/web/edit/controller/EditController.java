@@ -216,6 +216,7 @@ public class EditController extends BaseController {
 						false);
 
 				if (row != null) {
+
 					JSONObject obj = row.Serialize(ObjLevel.FULL);
 					if (!obj.containsKey("geometry")) {
 						int pageNum = 1;
@@ -253,21 +254,7 @@ public class EditController extends BaseController {
 				IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
 				if (obj != null) {
-					JSONObject json = obj.Serialize(ObjLevel.FULL);
-					if (!json.containsKey("geometry")) {
-						int pageNum = 1;
-						int pageSize = 1;
-						JSONObject data = new JSONObject();
-						data.put(obj.primaryKey().toLowerCase(), pid);
-						SelectorUtils selectorUtils = new SelectorUtils(conn);
-						JSONObject jsonObject = selectorUtils
-								.loadByElementCondition(data,
-										ObjType.valueOf(objType), pageSize,
-										pageNum, false);
-						json.put("geometry", jsonObject.getJSONArray("rows")
-								.getJSONObject(0).getString("geometry"));
-					}
-					json.put("geoLiveType", objType);
+					JSONObject json = obj2Json( obj,  pid,  objType,  conn);
 					return new ModelAndView("jsonView", success(json));
 
 				} else {
@@ -289,6 +276,81 @@ public class EditController extends BaseController {
 				}
 			}
 		}
+	}
+
+	@RequestMapping(value = "/getDelByPid")
+	public ModelAndView getDelByPid(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			int pid = jsonReq.getInt("pid");
+
+			SearchProcess p = new SearchProcess(conn);
+
+			IObj obj = p.searchDelDataByPid(ObjType.valueOf(objType), pid);
+
+			if (obj != null) {
+				JSONObject json = obj2Json( obj,  pid,  objType,  conn);
+
+				return new ModelAndView("jsonView", success(json));
+
+			} else {
+				return new ModelAndView("jsonView", success());
+			}
+
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private JSONObject obj2Json(IObj obj, int pid, String objType, Connection conn) throws Exception {
+
+		JSONObject json = obj.Serialize(ObjLevel.FULL);
+
+		if (!json.containsKey("geometry")) {
+
+			int pageNum = 1;
+
+			int pageSize = 1;
+
+			JSONObject data = new JSONObject();
+
+			data.put(obj.primaryKey().toLowerCase(), pid);
+
+			SelectorUtils selectorUtils = new SelectorUtils(conn);
+
+			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,
+					ObjType.valueOf(objType), pageSize, pageNum, false);
+
+			json.put("geometry", jsonObject.getJSONArray("rows").getJSONObject(0).getString("geometry"));
+		}
+		json.put("geoLiveType", objType);
+
+		return json;
 	}
 
 	@RequestMapping(value = "/getByPids")

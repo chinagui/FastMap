@@ -6,10 +6,14 @@ import java.util.Map;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -387,6 +391,19 @@ public class TipsUtils {
         JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
         JSONObject json = JSONObject.fromObject(tipsDao, jsonConfig);
         return json;
+    }
+
+    // 相邻形状点不可过近，不能小于2m
+    public static void checkShapePointDistance(JSONObject geom) throws Exception {
+        Geometry g = GeoTranslator.geojson2Jts(geom);
+        Coordinate[] coords = g.getCoordinates();
+        for (int i = 0; i < coords.length - 1; i++) {
+            double distance = GeometryUtils.getDistance(coords[i].y,
+                    coords[i].x, coords[i + 1].y, coords[i + 1].x);
+            if (distance <= 2) {
+                throw new Exception("相邻形状点不可过近，不能小于2m");
+            }
+        }
     }
 
     public static void main(String[] args) throws Exception {

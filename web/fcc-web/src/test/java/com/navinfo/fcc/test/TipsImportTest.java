@@ -58,7 +58,7 @@ public class TipsImportTest{
 
 			TipsUpload tipsUploader = new TipsUpload(0);
 
-			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap, 0);
 
 			CollectorImport.importPhoto(photoMap, filePath);
 
@@ -99,7 +99,7 @@ public class TipsImportTest{
 			System.out.println("t1:" + t1);
 			tipsUploader
 					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",
-							photoMap, audioMap);
+							photoMap, audioMap, 0);
 			long t2 = System.currentTimeMillis();
 			System.out.println("打断前上传完成,h耗时：" + (t2 - t1));
 
@@ -144,7 +144,7 @@ public class TipsImportTest{
 			long t3 = System.currentTimeMillis();
 			tipsUploader2
 					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",
-							photoMap, audioMap);
+							photoMap, audioMap, 0);
 			long t4 = System.currentTimeMillis();
 			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));
 

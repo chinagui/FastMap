@@ -43,46 +43,53 @@ public class AudioImport {
 			return;
 		}
 
-		// readPhotos 读取同照片 这里不用修改
-		Map<String, byte[]> mapAdio = FileUtils.readPhotos(dir);
+        Table audioTab = null;
+        try{
+			// readPhotos 读取同照片 这里不用修改
+			Map<String, byte[]> mapAdio = FileUtils.readPhotos(dir);
 
-		Table audioTab = HBaseConnector.getInstance().getConnection()
-				.getTable(TableName.valueOf(AUDIO_TABLE_NAME));
+			audioTab = HBaseConnector.getInstance().getConnection()
+					.getTable(TableName.valueOf(AUDIO_TABLE_NAME));
 
-		List<Put> puts = new ArrayList<Put>();
+			List<Put> puts = new ArrayList<Put>();
 
-		Set<Entry<String, Audio>> set = map.entrySet();
+			Set<Entry<String, Audio>> set = map.entrySet();
 
-		Iterator<Entry<String, Audio>> it = set.iterator();
+			Iterator<Entry<String, Audio>> it = set.iterator();
 
-		int num = 0;
+			int num = 0;
 
-		while (it.hasNext()) {
-			Entry<String, Audio> entry = it.next();
+			while (it.hasNext()) {
+				Entry<String, Audio> entry = it.next();
 
-			Put put = enclosedPut(entry, mapAdio);
+				Put put = enclosedPut(entry, mapAdio);
 
-			if (put == null) {
-				continue;
+				if (put == null) {
+					continue;
+				}
+
+				puts.add(put);
+
+				num++;
+
+				if (num >= 1000) {
+					audioTab.put(puts);
+
+					puts.clear();
+
+					num = 0;
+				}
 			}
 
-			puts.add(put);
-
-			num++;
-
-			if (num >= 1000) {
-				audioTab.put(puts);
-
-				puts.clear();
-
-				num = 0;
-			}
-		}
-
-		audioTab.put(puts);
-
-		audioTab.close();
-	}
+			audioTab.put(puts);
+		}catch (Exception e) {
+			throw new Exception("音频入库报错", e);
+		}finally {
+            if(audioTab != null){
+                audioTab.close();
+            }
+        }
+    }
 
 	private static Put enclosedPut(Entry<String, Audio> entry,
 			Map<String, byte[]> mapAudio) throws Exception {

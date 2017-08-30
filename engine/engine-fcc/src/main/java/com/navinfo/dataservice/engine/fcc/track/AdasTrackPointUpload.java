@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
 import com.alibaba.fastjson.JSONObject;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,9 +19,11 @@ public class AdasTrackPointUpload extends TrackUpload{
 
     @Override
     public String getSourceRowkey(JSONObject json) {
-        String a_prjName=json.getString("prjName");
-        String a_weekSeconds=json.getString("weekSeconds");
-        return a_prjName + a_weekSeconds;
+//        String a_prjName=json.getString("prjName");
+//        String a_weekSeconds=json.getString("weekSeconds");
+        String timestamp = DateUtils.dateToString(new Date(), "yyyyMMdd");
+        String uuid = json.getString("id");
+        return timestamp + uuid;
     }
 
     @Override

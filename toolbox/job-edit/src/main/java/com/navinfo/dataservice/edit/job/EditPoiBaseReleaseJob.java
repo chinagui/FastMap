@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.edit.job;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,15 +13,18 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.LogDetailRsHandler4ChangeLog;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
@@ -125,7 +129,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			
 			log.info("构造批处理参数");
 			OperationResult batchData=new OperationResult();
-			batchData=queryNoErrorData(operationResult,conn);
+			batchData=queryNoErrorData(operationResult,conn,poiPids);
 			
 			log.info("执行批处理");
 			BatchCommand batchCommand=new BatchCommand();		
@@ -144,7 +148,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("start change poi_edit_status=3 commit");
 //			PoiQuality poiQuality = new PoiQuality();
 //			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
-			int count=commitPoi(conn);
+			int count=commitPoi(conn,poiPids);
 			
 //			log.info("开始执行poi质检提交修改count_table 任务");
 //			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
@@ -259,27 +263,41 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public int commitPoi(Connection conn) throws Exception{
+	public int commitPoi(Connection conn,List<Long> poiPids) throws Exception{
 		//Connection conn = null;
 		try{
 			//String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.GET);
-			String sql="UPDATE POI_EDIT_STATUS E"
-					+ "   SET (E.STATUS, E.SUBMIT_DATE, E.COMMIT_HIS_STATUS, E.RAW_FIELDS)= "
-					+ "   (SELECT 3,SYSDATE,1,CASE WHEN P.RAW_FIELDS IN ('8', '9', '10') THEN P.RAW_FIELDS ELSE '' END RAW_FIELDS "
-					+ "    FROM POI_EDIT_STATUS P "
-					+ "     WHERE P.PID = E.PID) "	       
-					+ "  WHERE E.STATUS = 2"
-					+ "   AND NOT EXISTS (SELECT 1"
-					+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
-					+ "         WHERE R.TABLE_NAME = 'IX_POI' "
-					+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
-					+ "			  AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
-					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_STATUS E SET (E.STATUS, E.SUBMIT_DATE, E.COMMIT_HIS_STATUS, E.RAW_FIELDS)= ");
+			sb.append(" (SELECT 3,SYSDATE,1,CASE WHEN P.RAW_FIELDS IN ('8', '9', '10') THEN P.RAW_FIELDS ELSE '' END RAW_FIELDS ");
+			sb.append(" FROM POI_EDIT_STATUS P WHERE P.PID = E.PID)  WHERE E.STATUS = 2 ");
+			List<Object> values = new ArrayList<Object>();
+			if (poiPids != null && poiPids.size() > 0) {
+				if (poiPids.size() > 1000) {
+					Clob clob = ConnectionUtil.createClob(conn);
+					clob.setString(1, StringUtils.join(poiPids, ","));
+					sb.append(" AND E.PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+					values.add(clob);
+				} else {
+					sb.append(" AND E.PID IN (" + StringUtils.join(poiPids, ",") + ")");
+				}
+			}
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N WHERE R.TABLE_NAME = 'IX_POI' ");
+			sb.append(" AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))");
+			sb.append(" AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ");
 			
 			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
-	    	QueryRunner run = new QueryRunner();		
-	    	return run.update(conn, sql);
+			QueryRunner run = new QueryRunner();		
+	    	if (values != null && values.size() > 0) {
+				Object[] queryValues = new Object[values.size()];
+				for (int i = 0; i < values.size(); i++) {
+					queryValues[i] = values.get(i);
+				}
+				return run.update(conn, sb.toString(),queryValues);
+	    	}else{
+	    		return run.update(conn, sb.toString());
+	    	}
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -368,29 +386,40 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @return
 	 * @throws Exception
 	 */
-	public OperationResult queryNoErrorData(OperationResult opResult,Connection conn) throws Exception{
+	public OperationResult queryNoErrorData(OperationResult opResult,Connection conn,List<Long> poiPids) throws Exception{
 		
-		 Map<Long, BasicObj> objs=opResult.getObjsMapByType(ObjectName.IX_POI);
-			Map<Long, BasicObj> sameObjs=opResult.getObjsMapByType(ObjectName.IX_SAMEPOI);
-			 Map<Long, BasicObj> batchObjs=new HashMap();
-			Map<Long, BasicObj> batchSameObjs=new HashMap();
-			OperationResult operationResult=new OperationResult();
-			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
+		Map<Long, BasicObj> objs=opResult.getObjsMapByType(ObjectName.IX_POI);
+		Map<Long, BasicObj> sameObjs=opResult.getObjsMapByType(ObjectName.IX_SAMEPOI);
+		Map<Long, BasicObj> batchObjs=new HashMap();
+		Map<Long, BasicObj> batchSameObjs=new HashMap();
+		OperationResult operationResult=new OperationResult();
+		Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
+			
+		StringBuilder sb = new StringBuilder();
+		Clob clob = null;
 		
-		String sql="SELECT E.PID FROM POI_EDIT_STATUS E"      
-				+ "  WHERE E.STATUS = 2"
-				+ "   AND EXISTS (SELECT 1"
-				+ "          FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N "
-				+ "         WHERE R.TABLE_NAME = 'IX_POI' "
-				+ "           AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE "
-				+ "			  AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))"
-				+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
+		sb.append("SELECT E.PID FROM POI_EDIT_STATUS E WHERE E.STATUS = 2 ");
+		if (poiPids != null && poiPids.size() > 0) {
+			if (poiPids.size() > 1000) {
+				clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(poiPids, ","));
+				sb.append(" AND E.PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+			} else {
+				sb.append(" AND E.PID IN (" + StringUtils.join(poiPids, ",") + ")");
+			}
+		}
+		sb.append(" AND EXISTS (SELECT 1 FROM CK_RESULT_OBJECT R,NI_VAL_EXCEPTION N WHERE R.TABLE_NAME = 'IX_POI'");
+		sb.append(" AND R.PID = E.PID AND R.MD5_CODE = N.MD5_CODE AND N.RULEID NOT IN ("+DealerShipConstantField.DEALERSHIP_CHECK_RULE+"))");
+		sb.append(" AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+")");
 		PreparedStatement pstmt = null;
 		ResultSet rs=null;
 
 		try {
 			
-			pstmt=conn.prepareStatement(sql);
+			pstmt=conn.prepareStatement(sb.toString());
+			if(poiPids.size()>1000){
+				 pstmt.setClob(1,clob);
+			}
 			rs=pstmt.executeQuery();
 			while(rs.next()){
 				Long pid=rs.getLong("PID");

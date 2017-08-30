@@ -771,7 +771,7 @@ public class DataPrepareService {
 		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String, List<String>> dataMap = metadataApi.scPointAdminareaDataMap();
 		Map<String, Integer> chainStatusMap = null;
-		List<String> districtList = null;
+//		List<String> districtList = null;
 		List<String> kindCodeList = null;
 		Connection metaConn = null;
 		Connection dealershipConn = null;
@@ -780,19 +780,19 @@ public class DataPrepareService {
 			metaConn = DBConnector.getInstance().getMetaConnection();
 			dealershipConn = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
-			String districtSql = "SELECT DISTRICT FROM SC_POINT_ADMINAREA WHERE REMARK = '1'";
+//			String districtSql = "SELECT DISTRICT FROM SC_POINT_ADMINAREA WHERE REMARK = '1'";
 			String kindCodeSql = "SELECT KIND_CODE FROM SC_POINT_POICODE_NEW";
 			String chainStatusSql = "SELECT CHAIN_CODE, CHAIN_STATUS FROM IX_DEALERSHIP_CHAIN";
-			districtList = run.query(metaConn, districtSql, new ResultSetHandler<List<String>>(){
-				@Override
-				public List<String> handle(ResultSet rs) throws SQLException {
-					List<String> list = new ArrayList<>();
-					while(rs.next()){
-						list.add(rs.getString("DISTRICT"));
-					}
-					return list;
-				}
-			});
+//			districtList = run.query(metaConn, districtSql, new ResultSetHandler<List<String>>(){
+//				@Override
+//				public List<String> handle(ResultSet rs) throws SQLException {
+//					List<String> list = new ArrayList<>();
+//					while(rs.next()){
+//						list.add(rs.getString("DISTRICT"));
+//					}
+//					return list;
+//				}
+//			});
 			kindCodeList = run.query(metaConn, kindCodeSql, new ResultSetHandler<List<String>>(){
 				@Override
 				public List<String> handle(ResultSet rs) throws SQLException {
@@ -832,8 +832,8 @@ public class DataPrepareService {
 			if(StringUtils.isEmpty(province) || !dataMap.get("province").contains(province)){
 				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：省份为空或在SC_POINT_ADMINAREA表PROVINCE中不存在");
 			}
-			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || districtList.contains(city)))){
-				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：城市为空或在SC_POINT_ADMINAREA表PROVINCE和字段REMARK为1的DISTRICT中不存在");
+			if(!(!StringUtils.isEmpty(city) && (dataMap.get("city").contains(city) || dataMap.get("district").contains(city)))){
+				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：城市为空或在该值不存在于SC_POINT_ADMINAREA表CITY和DISTRICT字段中");
 			}
 			if(StringUtils.isEmpty(project)){
 				throw new ServiceException(fileName + "文件中：第" + (i+2) + "行中：项目为空");

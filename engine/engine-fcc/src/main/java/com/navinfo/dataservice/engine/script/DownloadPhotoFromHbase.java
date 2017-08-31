@@ -99,7 +99,7 @@ public class DownloadPhotoFromHbase {
 	private static void initContext() {
 		
 		context = new ClassPathXmlApplicationContext(
-				new String[] {"dubbo-app-scripts.xml","dubbo-scripts.xml"});
+				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		

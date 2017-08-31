@@ -145,7 +145,7 @@ public class RdRoadSearch implements ISearch {
 
 				snapshot.setI(pid);
 				RdRoad rdRoad = (RdRoad) this.searchDataByPid(pid);
-				Map<String, JSONObject> linkMap = values.get(pid);
+				Map<String, JSONObject> linkMap = values.get(roadPid);
 				// 处理接边渲染 zhaokk
 				if (this.isCheckLinkArea(rdRoad, linkMap)) {
 					this.addRdRoadForArea(rdRoad, linkMap, wkt);
@@ -170,6 +170,7 @@ public class RdRoadSearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 
 			throw new Exception(e);
 		} finally {

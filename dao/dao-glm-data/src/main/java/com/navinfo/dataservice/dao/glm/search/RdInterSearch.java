@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import net.sf.json.JSONArray;
@@ -137,7 +138,7 @@ public class RdInterSearch implements ISearch {
 				String wktLinks = resultSet.getString("link_wkts");
 				String sNodePids = resultSet.getString("s_node_pids");
 				String eNodePids = resultSet.getString("e_node_pids");
-				//处理RDINTER跨大区 zhaokk
+				// 处理RDINTER跨大区 zhaokk
 				RdInter rdInter = (RdInter) this.searchDataByPid(pid);
 				List<String> nodePidsList = new ArrayList<String>();
 				List<String> wktPointsList = new ArrayList<String>();
@@ -155,7 +156,7 @@ public class RdInterSearch implements ISearch {
 					linkPidsList = Arrays.asList(linkPids.split(","));
 				}
 				if (StringUtils.isNotEmpty(wktLinks)) {
-					wktLinksList = Arrays.asList(wktLinks.split(","));
+					wktLinksList = Arrays.asList(wktLinks.split(";"));
 				}
 				if (StringUtils.isNotEmpty(sNodePids)) {
 					sNodePidsList = Arrays.asList(sNodePids.split(","));
@@ -168,7 +169,7 @@ public class RdInterSearch implements ISearch {
 						nodePidsList);
 				boolean isCheckLinksArea = this.isCheckLinkArea(rdInter,
 						linkPidsList);
-                //跨大区处理
+				// 跨大区处理
 				if (isCheckNodesArea || isCheckLinksArea) {
 					this.addRdInterForArea(rdInter, nodePidsList,
 							wktPointsList, linkPidsList, wktLinksList,
@@ -231,7 +232,7 @@ public class RdInterSearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-
+			logger.error(e.getMessage(), e);
 			throw new SQLException(e);
 		} finally {
 			if (resultSet != null) {
@@ -254,9 +255,9 @@ public class RdInterSearch implements ISearch {
 
 		return list;
 	}
+
 	/***
-	 * @author zhaokk
-	 * 判断RDINTER 的NODE 是否跨大区
+	 * @author zhaokk 判断RDINTER 的NODE 是否跨大区
 	 * @param rdInter
 	 * @param nodePids
 	 * @return
@@ -274,9 +275,9 @@ public class RdInterSearch implements ISearch {
 		return false;
 
 	}
+
 	/***
-	 * @author zhaokk
-	 * 判断RDINTER 的link是否跨大区
+	 * @author zhaokk 判断RDINTER 的link是否跨大区
 	 * @param rdInter
 	 * @param linkPids
 	 * @return
@@ -293,8 +294,10 @@ public class RdInterSearch implements ISearch {
 		}
 		return false;
 	}
+
 	/***
 	 * RDINTER 跨大区渲染
+	 * 
 	 * @param inter
 	 * @param nodePids
 	 * @param wktPoints
@@ -321,7 +324,7 @@ public class RdInterSearch implements ISearch {
 		}
 		List<Integer> nodes = new ArrayList<Integer>();
 		List<Integer> links = new ArrayList<Integer>();
-        // 计算跨大区的node
+		// 计算跨大区的node
 		if (isCheckNodesArea) {
 
 			for (IRow row : inter.getNodes()) {
@@ -334,7 +337,7 @@ public class RdInterSearch implements ISearch {
 
 			}
 		}
-		  // 计算跨大区的link
+		// 计算跨大区的link
 		if (isCheckLinksArea) {
 
 			for (IRow row : inter.getLinks()) {
@@ -355,7 +358,7 @@ public class RdInterSearch implements ISearch {
 				if (this.getDbId() == dbId) {
 					continue;
 				}
-				//补充跨大区的node
+				// 补充跨大区的node
 				if (nodes.size() > 0) {
 					RdNodeSelector nodeSelector = new RdNodeSelector(connection);
 					List<IRow> rows = nodeSelector.loadByIds(nodes, false,
@@ -369,7 +372,7 @@ public class RdInterSearch implements ISearch {
 						}
 					}
 				}
-				//补充跨大区的link
+				// 补充跨大区的link
 				if (links.size() > 0) {
 					RdLinkSelector linkSelector = new RdLinkSelector(connection);
 					List<IRow> rows = linkSelector.loadByIds(links, false,
@@ -568,44 +571,8 @@ public class RdInterSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		/*
-		 * String wkt = MercatorProjection.getWktWithGap(53482, 25461, 16, 10);
-		 * 
-		 * String[] meshIds = MeshUtils.geometry2Mesh(GeoTranslator
-		 * .wkt2Geometry(wkt)); for (String meshId : meshIds) {
-		 * System.out.println(meshId); }
-		 * 
-		 * String linkPids = "111,222"; List<RdInterLink> interLinks = new
-		 * ArrayList<RdInterLink>(); RdInterLink interLink1 = new RdInterLink();
-		 * interLink1.setLinkPid(111); RdInterLink interLink2 = new
-		 * RdInterLink(); interLink2.setLinkPid(222); RdInterLink interLink3 =
-		 * new RdInterLink(); interLink3.setLinkPid(333);
-		 * interLinks.add(interLink1); interLinks.add(interLink2);
-		 * interLinks.add(interLink3); List<Integer> links = new
-		 * ArrayList<Integer>(); for (RdInterLink rdInterLink : interLinks) {
-		 * 
-		 * System.out.println(rdInterLink.getLinkPid());
-		 * 
-		 * System.out.println(Arrays.asList(linkPids));
-		 * 
-		 * if (!(linkPids).contains(String.valueOf(rdInterLink.getLinkPid()))) {
-		 * System.out.println(rdInterLink.getLinkPid());
-		 * links.add(rdInterLink.getLinkPid()); } }
-		 * 
-		 * 
-		 * System.out.println(interLinks.size()); ;
-		 * System.out.println(linkPids.split(",").length); ;
-		 * 
-		 * getStr("aaa");
-		 */
-
-		List<String> list = new ArrayList<String>();
-		/*
-		 * list.add("1111"); list.add("2222"); list.add("3333");
-		 */
-		String str = "";
-		String ids = org.apache.commons.lang.StringUtils.join(list, ",");
-		System.out.println(ids);
+		JSONObject geojson = Geojson.wkt2Geojson("LINESTRING (115.49983 36.05965,  115.4999 36.05972)");
+		System.out.println(geojson);
 
 	}
 }

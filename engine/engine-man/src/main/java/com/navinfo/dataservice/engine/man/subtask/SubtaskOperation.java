@@ -1024,7 +1024,6 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
-							
 						list.add(subtask);
 					}
 					page.setTotalCount(total);

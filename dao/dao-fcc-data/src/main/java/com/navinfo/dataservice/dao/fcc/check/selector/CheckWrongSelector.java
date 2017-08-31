@@ -3,6 +3,8 @@ package com.navinfo.dataservice.dao.fcc.check.selector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -11,6 +13,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.dao.fcc.check.model.rowmapper.CheckWrongRowMapper;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: CheckResultSelector.java
@@ -141,7 +145,58 @@ public class CheckWrongSelector {
 		return count>0;
 	}
 	
-	
+	/**
+	 * 根据logId获取质检问题记录
+	 * @param logId
+	 * @throws Exception
+	 */
+	public static JSONObject getByLogId(String logId) throws Exception {
+		JSONObject obj = new JSONObject();
+		String sql = "select log_id, check_task_id, object_type, object_id, qu_desc, reason, "
+				+ "er_content, qu_rank, work_time, check_time, is_prefer, worker, checker, er_type "
+				+ "from check_wrong where id=:1";
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnector.getInstance().getCheckConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, logId);
+			
+			rs = pstmt.executeQuery();
+			while(rs.next()){
+				obj.put("logId", rs.getString("log_id"));
+				obj.put("checkTaskId", rs.getInt("check_task_id"));
+				obj.put("objectType", rs.getString("object_type")!=null?rs.getString("object_type"):"");
+				obj.put("objectId", rs.getString("object_id")!=null?rs.getString("object_id"):"");
+				obj.put("erType", rs.getInt("er_type"));
+				obj.put("quDesc", rs.getString("qu_desc")!=null?rs.getString("qu_desc"):"");
+				obj.put("reason", rs.getString("reason")!=null?rs.getString("reason"):"");
+				obj.put("erContent", rs.getString("er_content")!=null?rs.getString("er_content"):"");
+				obj.put("quRank", rs.getString("qu_rank")!=null?rs.getString("qu_rank"):"");
+				obj.put("worker", rs.getString("worker")!=null?rs.getString("worker"):"");
+				obj.put("checker", rs.getString("checker")!=null?rs.getString("checker"):"");
+				obj.put("isPrefer", rs.getInt("is_prefer"));
+				Date wTime = rs.getDate("work_time");
+				Date cTime = rs.getDate("check_time");
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String workTime = wTime!=null?formatter.format(wTime):"";
+				String checkTime= cTime!=null?formatter.format(cTime):"";
+				obj.put("workTime", workTime);
+				obj.put("checkTime", checkTime);
+			}
+			
+			
+			return obj;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception(e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	
 

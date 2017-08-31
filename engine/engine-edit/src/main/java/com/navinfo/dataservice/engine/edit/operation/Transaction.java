@@ -1739,6 +1739,11 @@ public class Transaction {
         List<IRow> rowsTmp = null;
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(currObjectPids), true, true);
+            for (IRow row : rows) {
+                if (row instanceof RdObject && row.status().equals(ObjStatus.INSERT)) {
+                    rowsTmp.add(row);
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdObject出错[ids: %s]", Arrays.toString(currObjectPids.toArray())), e);
         }
@@ -1762,6 +1767,11 @@ public class Transaction {
         selector = new AbstractSelector(RdInter.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(inters), true, true);
+            for (IRow row : rows) {
+                if (row instanceof RdInter && row.status().equals(ObjStatus.INSERT)) {
+                    rowsTmp.add(row);
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdInter出错[ids: %s]", Arrays.toString(inters.toArray())), e);
         }
@@ -1779,6 +1789,11 @@ public class Transaction {
         selector = new AbstractSelector(RdRoad.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(roads), true, true);
+            for (IRow row : rows) {
+                if (row instanceof RdRoad && row.status().equals(ObjStatus.INSERT)) {
+                    rowsTmp.add(row);
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdRoad出错[ids: %s]", Arrays.toString(roads.toArray())), e);
         }
@@ -2324,9 +2339,6 @@ public class Transaction {
             // 2017.8.24修改跨大区方案，取消控制
             // assertErrorOperation();
 
-            // 目标库写入数据、履历
-            recordData(process, result);
-
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
                 Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
@@ -2342,6 +2354,9 @@ public class Transaction {
                     }
                 }
             }
+
+            // 目标库写入数据、履历
+            recordData(process, result);
 
             // 执行后检查
             process.postCheck();
@@ -2415,7 +2430,7 @@ public class Transaction {
                 jsonObject.put("command", operType.toString());
                 jsonObject.put("subtaskId", json.getInt("subtaskId"));
 
-                if (Constant.NODE_TYPES.containsKey(deleteRow.objType())) {
+                if (Constant.NODE_TYPES.containsKey(deleteRow.objType()) || Constant.CRF_TYPES.contains(deleteRow.objType())) {
                     jsonObject.put("type", deleteRow.objType());
                     jsonObject.put("objId", ((IObj) deleteRow).pid());
 
@@ -2482,14 +2497,11 @@ public class Transaction {
             // 操作合法性检查
             // assertErrorOperation();
 
-            // 写入数据、履历
-            recordData(process, result);
-
             // 检查操作结果是否产生接边影响
             //calcDbIdsRefResult(commands, processes, result);
 
             // 跨大区处理6种点要素以及所对应线要素
-            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType)) {
+            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
                 Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响
@@ -2504,6 +2516,9 @@ public class Transaction {
                     }
                 }
             }
+
+            // 写入数据、履历
+            recordData(process, result);
 
             // 执行后检查
             if (!hasOverride("innerRun")) {

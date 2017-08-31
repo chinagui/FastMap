@@ -12,4 +12,11 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  */
 public class AbstractCommand {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	protected long userId=0;
+	public long getUserId() {
+		return userId;
+	}
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
 }

@@ -3,7 +3,11 @@ package com.navinfo.dataservice.web.edit.controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,8 +17,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.JsonUtils;
@@ -28,6 +35,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.release.Release;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -223,23 +232,21 @@ public class EditController extends BaseController {
 						int pageSize = 1;
 						JSONObject data = new JSONObject();
 						String primaryKey = "branch_pid";
-						if(row instanceof IObj){
-							IObj iObj = (IObj)row;
+						if (row instanceof IObj) {
+							IObj iObj = (IObj) row;
 							primaryKey = iObj.primaryKey().toLowerCase();
 						}
 						data.put(primaryKey, row.parentPKValue());
 						SelectorUtils selectorUtils = new SelectorUtils(conn);
 						JSONObject jsonObject = selectorUtils
-								.loadByElementCondition(data,
-										row.objType(), pageSize,
-										pageNum, false);
+								.loadByElementCondition(data, row.objType(),
+										pageSize, pageNum, false);
 						obj.put("geometry", jsonObject.getJSONArray("rows")
 								.getJSONObject(0).getString("geometry"));
 					}
-					
+
 					obj.put("geoLiveType", objType);
-					
-					
+
 					return new ModelAndView("jsonView", success(obj));
 
 				} else {
@@ -254,7 +261,7 @@ public class EditController extends BaseController {
 				IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
 				if (obj != null) {
-					JSONObject json = obj2Json( obj,  pid,  objType,  conn);
+					JSONObject json = obj2Json(obj, pid, objType, conn);
 					return new ModelAndView("jsonView", success(json));
 
 				} else {
@@ -302,7 +309,7 @@ public class EditController extends BaseController {
 			IObj obj = p.searchDelDataByPid(ObjType.valueOf(objType), pid);
 
 			if (obj != null) {
-				JSONObject json = obj2Json( obj,  pid,  objType,  conn);
+				JSONObject json = obj2Json(obj, pid, objType, conn);
 
 				return new ModelAndView("jsonView", success(json));
 
@@ -327,7 +334,8 @@ public class EditController extends BaseController {
 		}
 	}
 
-	private JSONObject obj2Json(IObj obj, int pid, String objType, Connection conn) throws Exception {
+	private JSONObject obj2Json(IObj obj, int pid, String objType,
+			Connection conn) throws Exception {
 
 		JSONObject json = obj.Serialize(ObjLevel.FULL);
 
@@ -346,7 +354,10 @@ public class EditController extends BaseController {
 			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,
 					ObjType.valueOf(objType), pageSize, pageNum, false);
 
-			json.put("geometry", jsonObject.getJSONArray("rows").getJSONObject(0).getString("geometry"));
+			json.put(
+					"geometry",
+					jsonObject.getJSONArray("rows").getJSONObject(0)
+							.getString("geometry"));
 		}
 		json.put("geoLiveType", objType);
 
@@ -512,6 +523,48 @@ public class EditController extends BaseController {
 		}
 	}
 
+	@RequestMapping(value = "/getDbIds")
+	public ModelAndView getDbIds(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			if (!jsonReq.containsKey("wkt")) {
+				throw new Exception("not found wkt parameter");
+			}
+
+			String wkt = Geojson.geojson2Wkt(jsonReq.getString("wkt"));
+			String[] meshIds = MeshUtils.geometry2Mesh(GeoTranslator
+					.wkt2Geometry(wkt));
+			Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(new HashSet<>(Arrays
+					.asList(meshIds)));
+			JSONArray array = new JSONArray();
+			for (int dbId : dbIds) {
+				array.add(dbId);
+			}
+
+			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	@RequestMapping(value = "/rdname/search")
 	public ModelAndView searchRdName(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -558,22 +611,22 @@ public class EditController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-		long userId=tokenObj.getUserId();
+		long userId = tokenObj.getUserId();
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
 			Release release = new Release();
-			release.roadRelease(subtaskId,userId);
+			release.roadRelease(subtaskId, userId);
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
-	
+
 	/**
 	 * 查询以渲染格式返回的数据
+	 * 
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -581,8 +634,8 @@ public class EditController extends BaseController {
 	 */
 	@RequestMapping(value = "/getObject")
 	public ModelAndView getObject(HttpServletRequest request)
-			throws ServletException, IOException {	
-		
+			throws ServletException, IOException {
+
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
@@ -591,7 +644,7 @@ public class EditController extends BaseController {
 			JSONObject condition = JSONObject.fromObject(parameter);
 
 			int dbId = condition.getInt("dbId");
-			
+
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
@@ -613,11 +666,12 @@ public class EditController extends BaseController {
 					e.printStackTrace();
 				}
 			}
-		}		
+		}
 	}
-	
+
 	/**
 	 * 根据node查询以渲染格式返回的link
+	 * 
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -625,8 +679,8 @@ public class EditController extends BaseController {
 	 */
 	@RequestMapping(value = "/getLinkByNode")
 	public ModelAndView getLinkByNode(HttpServletRequest request)
-			throws ServletException, IOException {	
-		
+			throws ServletException, IOException {
+
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
@@ -635,7 +689,7 @@ public class EditController extends BaseController {
 			JSONObject condition = JSONObject.fromObject(parameter);
 
 			int dbId = condition.getInt("dbId");
-			
+
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
@@ -662,6 +716,7 @@ public class EditController extends BaseController {
 
 	/**
 	 * 根据node查询以渲染格式返回的link
+	 * 
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -699,4 +754,5 @@ public class EditController extends BaseController {
 			}
 		}
 	}
+	
 }

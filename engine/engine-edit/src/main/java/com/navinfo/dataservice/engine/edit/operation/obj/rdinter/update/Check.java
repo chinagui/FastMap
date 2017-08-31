@@ -51,7 +51,7 @@ public class Check {
 		Map<Integer, String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
 
 		for (Map.Entry<Integer, String> entry : loadRdNodeWays.entrySet()) {
-			int nodePid = entry.getKey();
+			Integer nodePid = entry.getKey();
 
 			String forms = entry.getValue();
 

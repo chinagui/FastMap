@@ -401,12 +401,13 @@ public class NiValExceptionSelector {
 	 * @param ruleId
 	 *            规则号
 	 * @param sortby 
+	 * @param checkType 0服务后检查   1自定义检查
 	 * @return
 	 * @throws Exception
 	 */
 	public Page list(int subtaskType, Collection<String> grids,
 			final int pageSize, final int pageNum, int flag, String ruleId,
-			int level, String sortby) throws Exception {
+			int level, String sortby, int checkType) throws Exception {
 
 		Clob pidsClob = ConnectionUtil.createClob(conn);
 		pidsClob.setString(1, StringUtils.join(grids, ","));
@@ -437,6 +438,10 @@ public class NiValExceptionSelector {
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 
 		StringBuilder sql = null;
+		sql1 = sql1.append(" AND reserved  = '" + checkType +"'");
+		sql2 = sql2.append(" AND reserved  = '" + checkType +"'");
+		sql3 = sql3.append(" AND reserved  = '" + checkType +"'");
+		sql4 = sql4.append(" AND reserved  = '" + checkType +"'");
 		if (StringUtils.isNotEmpty(ruleId)) {
 			sql1 = sql1.append(" AND  ruleid  = '" + ruleId + "' ");
 			sql2 = sql2.append(" AND ruleid  = '" + ruleId + "' ");

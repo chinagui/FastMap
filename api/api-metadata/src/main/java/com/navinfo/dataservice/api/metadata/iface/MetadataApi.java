@@ -5,11 +5,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -454,5 +456,7 @@ public interface MetadataApi {
 	public List<Integer> queryReliabilityPid(int minNumber, int mapNumber) throws SQLException;
 	
 	public Map<String,Integer> queryEditMethTipsCode() throws SQLException;
+	
+	public List<String> scPointSpecKindCodeType16() throws Exception;
 
 }

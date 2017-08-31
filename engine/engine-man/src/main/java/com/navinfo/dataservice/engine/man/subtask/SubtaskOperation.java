@@ -1062,7 +1062,13 @@ public class SubtaskOperation {
 			log.debug("get poi stat");
 			//查询POI总量
 			QueryRunner run = new QueryRunner();
-			String sql = "";
+			String sql = "select pes.status, count(1) finishNum"
+					+ " from ix_poi ip, poi_edit_status pes"
+					+ " where ip.pid = pes.pid"
+					+ " and pes.status ！= 0"
+					+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
+					//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
+					+ "group by pes.status ";
 			//POI待作业
 			stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
 				@Override

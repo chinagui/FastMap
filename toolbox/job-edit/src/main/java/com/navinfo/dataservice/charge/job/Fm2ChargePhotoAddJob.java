@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -68,6 +69,7 @@ public class Fm2ChargePhotoAddJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		PrintWriter pw = null;
+		PrintWriter pwLog = null;
 		try {
 			JSONObject result = new JSONObject();
 			//0.处理参数
@@ -149,18 +151,31 @@ public class Fm2ChargePhotoAddJob extends AbstractJob {
 			result.put("total", data.size());
 			result.put("data", data);
 			result.put("log", errorLog);
+			log.info("所有大区库导出json完毕。总记录数："+data.size());
 			log.info("所有大区库导出json完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			//4.写入数据文件
 			String datasFile = mydir+"photo.txt";
 			log.info("写入数据文件:"+datasFile);
 			pw = new PrintWriter(datasFile);
 			pw.println(result.toString());
+			//5.写入log日志
+			String logsFile = mydir+"photoLog.txt";
+			log.info("写入日志数据文件:"+logsFile);
+			pwLog = new PrintWriter(logsFile);
+			if(errorLog != null && errorLog.size() > 0){
+				for (Object object : errorLog) {
+					pwLog.println(object.toString());
+				}
+			}
 		} catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobException(e.getMessage(),e);
 		}finally{
 			if(pw!=null){
 				pw.close();
+			}
+			if(pwLog!=null){
+				pwLog.close();
 			}
 			shutDownPoolExecutor();
 		}
@@ -221,9 +236,9 @@ public class Fm2ChargePhotoAddJob extends AbstractJob {
 			JSONArray chargePoi = new JSONArray();
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
-				//查询充电站(包括删除)
+				//查询充电站(照片增量按照初始化的过滤条件)
 				String kindCode = "230218";
-				List<Long> stationList = IxPoiSelector.getPidsByKindCode(conn, kindCode,false);
+				List<Long> stationList = IxPoiSelector.getPidsByKindCodeInit(conn, kindCode);
 				//获取有变更的数据pid
 				LogReader lr = new LogReader(conn);
 				//key:liftcyle,value:pids
@@ -263,6 +278,32 @@ public class Fm2ChargePhotoAddJob extends AbstractJob {
 				//...
 				if(submitPidList.size()>0){
 					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,submitPidList, true, false);
+					//根据条件过滤数据
+					Set<Long> rmPids = new HashSet<Long>();
+					for(BasicObj obj:objs.values()){
+						IxPoiObj poiObj = (IxPoiObj) obj;
+						long pid = poiObj.objPid();
+						//当POI的pid为0时，此站或桩不转出（外业作业中的新增POI未经过行编）
+						if(pid == 0){rmPids.add(pid);continue;}
+						//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
+						List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
+						if(rows == null || rows.size() == 0){rmPids.add(pid);continue;}
+						if(rows != null && rows.size() > 0){
+							for (BasicRow row : rows) {
+								IxPoiChargingstation ixPoiChargingstation = (IxPoiChargingstation) row;
+								int type = ixPoiChargingstation.getChargingType();
+								if(type != 2 && type != 4){
+									List<BasicRow> childs = poiObj.getRowsByName("IX_POI_CHILDREN");
+									if(childs == null || childs.size() == 0 ){rmPids.add(pid);continue;}
+								}
+							}
+						}
+					}
+					for (Long pid : rmPids) {
+						objs.remove(pid);
+						pidList.removeAll(rmPids);
+					}
+					System.out.println("====================dbId("+dbId+")=======================,"+pidList.size());
 					if(objs.size() == 0){
 						throw new Exception("没有要导出的数据");
 					}
@@ -314,6 +355,15 @@ public class Fm2ChargePhotoAddJob extends AbstractJob {
 						poiLog.add("dbId("+dbId+"),"+str);
 					}
 					stats.put(dbId, objs.size());
+					//清理空文件夹
+					File[] listFiles = file.listFiles();
+					if(listFiles != null && listFiles.length > 0){
+						for (File subFile : listFiles) {
+							if(subFile.isDirectory() && subFile.listFiles().length <= 0){
+								subFile.delete();
+							}
+						}
+					}
 				}else{
 					stats.put(dbId, 0);
 				}

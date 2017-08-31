@@ -187,7 +187,8 @@ public class TipsSelectorTest extends InitApplication {
                     ",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\"" +
                     ",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\",\"1211\"" +
                     ",\"1117\",\"1214\"],\"workStatus\":[0,11],\"subtaskId\":810,\"x\":107926,\"y\":49626,\"z\":17}";
-			parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1510\",\"1508\",\"1803\",\"2101\",\"1202\",\"1706\",\"1301\",\"2001\",\"1514\",\"1501\",\"1302\",\"1507\",\"1702\",\"1207\",\"1604\",\"1101\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1806\",\"1107\",\"1102\",\"1511\",\"1211\",\"1116\",\"1214\",\"1520\"],\"workStatus\":[0,1,2],\"x\":215794,\"y\":99243,\"z\":18}";
+			parameter = "{\"subtaskId\":573,\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"web\",\"types\":[\"1510\",\"1508\",\"1803\",\"2101\",\"1202\",\"1706\",\"1301\",\"2001\",\"1514\",\"1501\",\"1302\",\"1507\",\"1702\",\"1207\",\"1604\",\"1101\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1806\",\"1107\",\"1102\",\"1511\",\"1211\",\"1116\",\"1214\",\"1520\"],\"workStatus\":[0,1,2,11],\"x\":215794,\"y\":99243,\"z\":18}";
+			//parameter = "{\"pType\":\"ms\",\"mdFlag\":\"f\",\"noQFilter\":[1,2],\"gap\":10,\"types\":[\"8002\",\"1403\",\"1510\",\"1508\",\"1506\",\"1606\",\"1803\",\"1509\",\"2101\",\"1804\",\"1202\",\"1503\",\"8001\",\"1104\",\"1706\",\"1407\",\"1116\",\"1410\",\"1301\",\"1404\",\"2001\",\"1514\",\"1501\",\"1513\",\"1304\",\"1305\",\"1302\",\"1405\",\"1701\",\"1504\",\"1705\",\"1208\",\"1502\",\"1507\",\"1605\",\"1702\",\"1207\",\"1604\",\"1515\",\"1101\",\"1704\",\"1703\",\"1203\",\"1901\",\"1206\",\"1205\",\"1201\",\"1601\",\"1209\",\"1607\",\"1516\",\"1512\",\"1806\",\"1106\",\"1602\",\"1111\",\"1107\",\"1102\",\"1511\",\"1505\",\"1517\",\"1105\",\"1109\",\"1110\",\"1112\",\"1113\",\"1114\",\"1115\",\"1204\",\"1303\",\"1306\",\"1308\",\"1310\",\"1311\",\"1401\",\"1402\",\"1406\",\"1409\",\"1707\",\"2002\",\"1708\",\"1518\",\"1709\",\"2201\",\"2102\"],\"x\":830,\"y\":414,\"z\":10}";
 			System.out.println("**********************************************");
             System.out.println("**********************************************");
             System.out.println("**********************************************");
@@ -195,6 +196,15 @@ public class TipsSelectorTest extends InitApplication {
             System.out.println("reusut:----------------------------------\n"
 			
 					+solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
 			
 			
 
@@ -231,7 +241,7 @@ public class TipsSelectorTest extends InitApplication {
 	//根据网格获取tips统计
 	@Test
 	public void testGetStats() {
-		String parameter = "{\"subtaskId\":720,\"mdFlag\":\"d\",\"workStatus\":0}";
+		String parameter = "{\"subtaskId\":57,\"mdFlag\":\"d\",\"workStatus\":0}";
 
 //		String parameter = "{\"grids\":[59567311,59567312],\"subtaskId\":188,\"workStatus\":9}";
 //
@@ -544,7 +554,7 @@ public class TipsSelectorTest extends InitApplication {
 
 	@Test
 	public void testImport() {
-		String parameter = "{\"jobId\":74,\"subtaskId\":772}";
+		String parameter = "{\"jobId\":74}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -579,7 +589,7 @@ public class TipsSelectorTest extends InitApplication {
 
 			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 
-			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap);
+			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap,userId);
 
 //			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
@@ -598,6 +608,8 @@ public class TipsSelectorTest extends InitApplication {
 			result.put("failed", tipsUploader.getFailed());
 
 			result.put("reasons", tipsUploader.getReasons());
+
+			result.put("regionResults", tipsUploader.getRegionResults());
 
 			result.put("JVImageResult", patternImageResultImpResult);
 

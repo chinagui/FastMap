@@ -131,6 +131,27 @@ public class CompGeometryUtil {
 		return result;
 	}
 
+    public static Set<String> calculateGeometeryMesh(Geometry geometry) {
+        Set<String> meshSet = new HashSet<>();
+        if (geometry.getGeometryType() == GeometryTypeName.MULTILINESTRING
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOLYGON
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOINT) {
+            for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                Geometry subGeo = geometry.getGeometryN(i);
+                String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(subGeo);
+                for (String mesh : meshes) {
+                    meshSet.add(mesh);
+                }
+            }
+        } else {
+            String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(geometry);
+            for (String mesh : meshes) {
+                meshSet.add(mesh);
+            }
+        }
+        return meshSet;
+    }
+
 	/**
 	 * 多边形只能和图廓线相交，不能超越图幅范围
 	 * 

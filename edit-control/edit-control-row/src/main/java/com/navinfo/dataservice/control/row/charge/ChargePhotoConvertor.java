@@ -90,7 +90,7 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 			//获取充电桩数据
 			Map<Long, BasicObj> plotMap = this.getChargePlot(poiObj);
 			//过滤数据
-			boolean filterPoi = this.filterPoiAdd(poiObj);
+			boolean filterPoi = this.filterPoi(poiObj,plotMap);
 			if(!filterPoi){return null;}
 			//处理通用字段
 			JSONArray chargePoi = toJson(poiObj,plotMap);
@@ -153,7 +153,9 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 				String rowkey = ixPoiPhoto.getPid();
 				//生成物理照片
 				String path = photoDir+rowkey+".jpg";
-				handlePhoto(poiObj, rowkey, path);
+				boolean handlePhoto = handlePhoto(poiObj, rowkey, path);
+				//物理照片生成错误,不导出
+				if(!handlePhoto){continue;}
 				
 				String url_base = url+rowkey+".jpg";
 				
@@ -199,7 +201,9 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 						String rowkey = ixPoiPhoto.getPid();
 						//生成物理照片
 						String path = photoDir+rowkey+".jpg";
-						handlePhoto(poiObj, rowkey, path);
+						boolean handlePhoto = handlePhoto(poiObj, rowkey, path);
+						//物理照片生成错误,不导出
+						if(!handlePhoto){continue;}
 						
 						String url_base = url+rowkey+".jpg";
 						
@@ -293,31 +297,6 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 		return true;
 	}
 	
-	/**
-	 * 根据条件过滤数据(增量原则:
-	 * 其父充电站未删除，则只将桩家中对应的充电桩插口记录删除，同时更新父充电站下的详情；
-	 * -----若桩删除后父充电站下已没有非删除的桩，按照原则日库中的站也应为删除状态，
-	 * 如果站此时仍为非删除状态，则建议桩家库中的站暂时保留，防止外业又在站下新增桩记录时无法正常更新
-	 * )
-	 * 增量原则,有站没有充电桩的也要转入,在桩家(新增时)过滤,
-     * 保证原先有站有桩的数据更新为有站无桩时能够保证桩家库数据也更新
-	 * @author Han Shaoming
-	 * @param poiObj
-	 * @return 
-	 */
-	private boolean filterPoiAdd(IxPoiObj poiObj){
-		IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
-		long pid = ixPoi.getPid();
-		//当POI的pid为0时，此站或桩不转出（外业作业中的新增POI未经过行编）
-		if(pid == 0){return false;}
-		//如果站下没有充电桩或站下所有的充电桩均为删除状态，则站及桩均不转出（当IX_POI_CHARGINGSTATION表中的CHARGING_TYPE=2或4时，充电站需要转出）；
-//		List<BasicRow> rows = poiObj.getRowsByName("IX_POI_CHARGINGSTATION");
-//		if(rows == null || rows.size() == 0){return false;}
-		return true;
-	}
-	
-	
-	
 	
 	/**
 	 * 生成照片
@@ -327,7 +306,8 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 	 * @return
 	 * @throws Exception 
 	 */
-	private void handlePhoto(IxPoiObj poiObj,String rowkey,String path) throws Exception{
+	private boolean handlePhoto(IxPoiObj poiObj,String rowkey,String path) throws Exception{
+		boolean flag =true;
 		IxPoi ixPoi =(IxPoi) poiObj.getMainrow();
 		long pid = ixPoi.getPid();
 		ByteArrayInputStream bais = null;
@@ -341,6 +321,7 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
             BufferedImage bi1 = ImageIO.read(bais); 
             ImageIO.write(bi1, "jpg", file);
 		} catch (Exception e) {
+			flag =false;
 			log.error("pid:"+pid+",生成物理照片报错,"+e.getMessage(),e);
 			errorLog.add("pid:"+pid+",生成物理照片报错");
 		} finally {
@@ -348,6 +329,7 @@ protected Logger log = LoggerRepos.getLogger(this.getClass());
 				bais.close();
 			}
 		}
+		return flag;
 	}
 	
 }

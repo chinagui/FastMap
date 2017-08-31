@@ -732,12 +732,13 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+			sb.append("select fs.finished_poi, fs.total_poi, fs.wait_work_poi,t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
 					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
-			sb.append(" from subtask st,task t,region r,program p");
+			sb.append(" from subtask st,task t,region r,program p,FM_STAT_OVERVIEW_SUBTASK fs ");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
+			sb.append(" and st.subtask_id = fs.subtask_id(+)");
 			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
 				sb.append(" and t.lot = "+dataJson.getInt("lot"));
 			}
@@ -829,7 +830,15 @@ public class SubtaskOperation {
 								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
 
 								log.debug("get stat");
-								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
+								Map<String,Integer> subtaskStat = new HashMap<>();
+								if(rs.getInt("work_kind") == 4){
+									int workedPoi = rs.getInt("total_poi") - rs.getInt("finished_poi") - rs.getInt("wait_work_poi");
+									subtaskStat.put("poiCommit", rs.getInt("finished_poi"));
+									subtaskStat.put("poiWorked", workedPoi);
+									subtaskStat.put("poiWaitWork", rs.getInt("wait_work_poi"));
+								}else{
+									subtaskStat = subtaskStatRealtime(subtaskObj);
+								}
 								if(subtaskStat != null){
 //									if(subtaskStat.containsKey("poiCommit")){
 									if(rs.getInt("TYPE") == 0 || rs.getInt("TYPE") == 2){
@@ -1066,7 +1075,7 @@ public class SubtaskOperation {
 			String sql = "select pes.status, count(1) finishNum"
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.pid = pes.pid"
-					+ " and pes.status ！= 0"
+					+ " and pes.status <> 0"
 					+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
 					//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
 					+ "group by pes.status ";

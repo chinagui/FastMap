@@ -831,6 +831,16 @@ public class SubtaskOperation {
 
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = new HashMap<>();
+								
+								//type=3,一体化grid粗编子任务。增加道路数量及完成度
+								log.debug("get tips stat");
+								if(3 == subtaskObj.getType()||4 == subtaskObj.getType()){
+									FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+									JSONObject resultRoad = api.getSubTaskStatsByWkt(subtaskObj.getSubtaskId(), subtaskObj.getGeometry(), subtaskObj.getType(), subtaskObj.getExeUserId(), subtaskObj.getIsQuality());
+									subtaskStat.put("tipsPrepared", resultRoad.getInt("prepared"));
+									subtaskStat.put("tipsTotal", resultRoad.getInt("total"));
+								}
+								
 								if(rs.getInt("work_kind") == 4){
 									int workedPoi = rs.getInt("total_poi") - rs.getInt("finished_poi") - rs.getInt("wait_work_poi");
 									subtaskStat.put("poiCommit", rs.getInt("finished_poi"));
@@ -839,8 +849,7 @@ public class SubtaskOperation {
 								}else{
 									subtaskStat = subtaskStatRealtime(subtaskObj);
 								}
-								if(subtaskStat != null){
-//									if(subtaskStat.containsKey("poiCommit")){
+								if(subtaskStat != null && subtaskStat.size() > 0){
 									if(rs.getInt("TYPE") == 0 || rs.getInt("TYPE") == 2){
 										subtask.put("poiCommit",subtaskStat.get("poiCommit"));
 										subtask.put("poiWorked",subtaskStat.get("poiWorked"));
@@ -1106,23 +1115,6 @@ public class SubtaskOperation {
 				}
 			}
 			);
-			//type=3,一体化grid粗编子任务。增加道路数量及完成度
-			log.debug("get tips stat");
-			if(3 == subtask.getType()||4 == subtask.getType()){
-				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getSubtaskId(), subtask.getGeometry(), subtask.getType(), subtask.getExeUserId(), subtask.getIsQuality());
-//				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
-				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
-				stat.put("tipsTotal", resultRoad.getInt("total"));
-				/*if(0 != tips){
-					percentRoad = resultRoad.getInt("finished")*100/tips;
-				}else{
-					percentRoad = 100;
-				}*/
-			}
-			/*percent = (int) (percentPOI*0.5 + percentRoad*0.5);
-			stat.put("percent", percent);*/
 			return stat;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

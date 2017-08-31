@@ -258,6 +258,7 @@ public class RdObjectSearch implements ISearch {
 					nodeArray.add(nodeJObj);
 				}
 			}
+			//处理rdOBject 跨大区
 			RdObject rdObject = (RdObject) this.searchDataByPid(pid);
 			JSONArray rdInterLinks = new JSONArray();
 			JSONArray rdRodLinks = new JSONArray();
@@ -275,6 +276,7 @@ public class RdObjectSearch implements ISearch {
 					rdObjectLinks.add(obj);
 				}
 			}
+			//判断RdObject是否跨大区
 			boolean isCheckRdInterNodesArea = this.isCheckRdInterNodesArea(
 					rdObject, nodeArray);
 			boolean isCheckRdInterLinksArea = this.isCheckRdInterLinksArea(
@@ -418,144 +420,65 @@ public class RdObjectSearch implements ISearch {
 		return false;
 
 	}
-
+	/***
+	 * @author zhaokk
+	 * 处理rdobect 跨大区渲染
+	 * @param rdObject
+	 * @param rdInterLinks
+	 * @param rdRodLinks
+	 * @param rdObjectLinks
+	 * @param nodeArray
+	 * @param isCheckRdInterNodesArea
+	 * @param isCheckRdInterLinksArea
+	 * @param isCheckRdRoadLinksArea
+	 * @param isCheckRdObjectLinksArea
+	 * @param wkt
+	 * @param px
+	 * @param py
+	 * @param z
+	 * @throws Exception
+	 */
 	private void addRdObjectForArea(RdObject rdObject, JSONArray rdInterLinks,
 			JSONArray rdRodLinks, JSONArray rdObjectLinks, JSONArray nodeArray,
 			boolean isCheckRdInterNodesArea, boolean isCheckRdInterLinksArea,
 			boolean isCheckRdRoadLinksArea, boolean isCheckRdObjectLinksArea,
 			String wkt, double px, double py, int z) throws Exception {
-		Set<Integer> dbIds = null;
-		String[] meshIds = MeshUtils.geometry2Mesh(GeoTranslator
-				.wkt2Geometry(wkt));
-		Set<String> extendMeshes = null;
-		if (meshIds != null && meshIds.length > 0) {
-			extendMeshes = MeshUtils.getNeighborMeshSet(
-					new HashSet<>(Arrays.asList(meshIds)), 3);
+		Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
+
+		if (dbIds == null) {
+			return;
 		}
-		if (extendMeshes != null) {
-			dbIds = DbMeshInfoUtil.calcDbIds(extendMeshes);
+		if (dbIds.size() == 1 && dbIds.contains(this.getDbId())) {
+			return;
 		}
-		/* List<RdNode> nodes = new ArrayList<RdNode>(); */
 		Map<Integer, List<Integer>> mapNodes = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> mapInterLinks = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> mapRoadLinks = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> mapObjectLinks = new HashMap<Integer, List<Integer>>();
-
+        //计算跨大区rdinter的node
 		if (isCheckRdInterNodesArea) {
-			for (IRow row : rdObject.getInters()) {
-				RdInter inter = (RdInter) row;
-				List<Integer> interNodes = new ArrayList<Integer>();
-				List<Integer> interNodesArea = new ArrayList<Integer>();
-				for (IRow iRow : inter.getNodes()) {
-					RdInterNode interNode = (RdInterNode) iRow;
-					interNodes.add(interNode.getNodePid());
-
-				}
-
-				for (int i = 0; i < nodeArray.size(); i++) {
-					JSONObject object = nodeArray.getJSONObject(i);
-					if (object.getInt("p") == inter.getPid()) {
-						interNodesArea.add(object.getInt("i"));
-					}
-				}
-
-				interNodes.removeAll(interNodesArea);
-				if (interNodes.size() > 0) {
-					mapNodes.put(inter.getPid(), interNodes);
-				}
-
-			}
+			mapNodes = this.getAreaNodeMapforRdObject(rdObject, nodeArray);
 		}
-
+		 //计算跨大区rdinter的link
 		if (isCheckRdInterLinksArea) {
-
-			for (IRow row : rdObject.getInters()) {
-				RdInter inter = (RdInter) row;
-				List<Integer> interLinks = new ArrayList<Integer>();
-				List<Integer> interLinksArea = new ArrayList<Integer>();
-				for (IRow iRow : inter.getLinks()) {
-					RdInterLink interLink = (RdInterLink) iRow;
-					interLinks.add(interLink.getLinkPid());
-
-				}
-
-				for (int i = 0; i < rdInterLinks.size(); i++) {
-					JSONObject object = rdInterLinks.getJSONObject(i);
-					if (object.getInt("p") == inter.getPid()) {
-						interLinksArea.add(object.getInt("i"));
-					}
-				}
-
-				interLinks.removeAll(interLinksArea);
-				if (interLinks.size() > 0) {
-					mapInterLinks.put(inter.getPid(), interLinks);
-				}
-
-			}
+			mapInterLinks = this.getAreaInterLinkMapforRdObject(rdObject,
+					rdInterLinks);
 
 		}
-
+		//计算跨大road的link
 		if (isCheckRdRoadLinksArea) {
-			for (IRow row : rdObject.getRoads()) {
-				RdRoad rdRoad = (RdRoad) row;
-				List<Integer> roadLinks = new ArrayList<Integer>();
-				List<Integer> roadLinksArea = new ArrayList<Integer>();
-				for (IRow iRow : rdRoad.getLinks()) {
-					RdRoadLink roadLink = (RdRoadLink) iRow;
-					roadLinks.add(roadLink.getLinkPid());
-
-				}
-
-				for (int i = 0; i < rdRodLinks.size(); i++) {
-					JSONObject object = rdRodLinks.getJSONObject(i);
-					if (object.getInt("p") == rdRoad.getPid()) {
-						roadLinksArea.add(object.getInt("i"));
-					}
-				}
-
-				roadLinks.removeAll(roadLinksArea);
-				if (roadLinks.size() > 0) {
-					mapRoadLinks.put(rdRoad.getPid(), roadLinks);
-				}
-
-			}
-
+			mapRoadLinks = this.getAreaRdRoadMapforRdObject(rdObject,
+					rdRodLinks);
 		}
-
+		//计算跨大RdObjectLink的link
 		if (isCheckRdObjectLinksArea) {
-			List<Integer> objectLinks = new ArrayList<Integer>();
-			List<Integer> objectLinksArea = new ArrayList<Integer>();
-			for (IRow row : rdObject.getLinks()) {
-				RdObjectLink rdObjectLink = (RdObjectLink) row;
-
-				objectLinks.add(rdObjectLink.getLinkPid());
-			}
-			for (int i = 0; i < rdObjectLinks.size(); i++) {
-				JSONObject object = rdObjectLinks.getJSONObject(i);
-				objectLinksArea.add(object.getInt("i"));
-			}
-			objectLinks.removeAll(objectLinksArea);
-			if (objectLinks.size() > 0) {
-				mapObjectLinks.put(rdObject.getPid(), objectLinks);
-			}
-
+			mapObjectLinks = this.getAreaObjectLinkMapforRdObject(rdObject,
+					rdObjectLinks);
 		}
-		List<Integer> areaNodes = new ArrayList<Integer>();
-		List<Integer> areaInterLinks = new ArrayList<Integer>();
-		List<Integer> areaRoadLinks = new ArrayList<Integer>();
-		List<Integer> areaObjectLinks = new ArrayList<Integer>();
-		for (List<Integer> maps : mapNodes.values()) {
-			areaNodes.addAll(maps);
-		}
-		for (List<Integer> maps : mapInterLinks.values()) {
-			areaInterLinks.addAll(maps);
-		}
-		for (List<Integer> maps : mapRoadLinks.values()) {
-			areaRoadLinks.addAll(maps);
-		}
-		for (List<Integer> maps : mapObjectLinks.values()) {
-			areaObjectLinks.addAll(maps);
-		}
+		List<Integer> areaNodes = this.getAreaPids(mapNodes);
+		List<Integer> areaInterLinks = this.getAreaPids(mapInterLinks);
+		List<Integer> areaRoadLinks = this.getAreaPids(mapRoadLinks);
+		List<Integer> areaObjectLinks = this.getAreaPids(mapObjectLinks);
 		for (int dbId : dbIds) {
 			Connection connection = null;
 			try {
@@ -567,144 +490,29 @@ public class RdObjectSearch implements ISearch {
 
 				if (areaNodes.size() > 0) {
 
-					RdNodeSelector nodeSelector = new RdNodeSelector(connection);
-					List<IRow> rows = nodeSelector.loadByIds(areaNodes, false,
-							false);
-					if (rows.size() > 0) {
-						for (IRow row : rows) {
-
-							RdNode node = (RdNode) row;
-							JSONObject geojson = GeoTranslator.jts2Geojson(
-									node.getGeometry(), 0.00001, 5);
-
-							JSONObject nodeJObj = new JSONObject();
-							nodeJObj.put("i", node.getPid());
-
-							for (int cPid : mapNodes.keySet()) {
-								List<Integer> nodes = mapNodes.get(cPid);
-								if (nodes.contains(node.getPid())) {
-									nodeJObj.put("p", cPid);
-									break;
-								}
-							}
-
-							nodeJObj.put("t", 1);
-
-							nodeJObj.put("nodeCor",
-									geojson.getJSONArray("coordinates"));
-
-							Geojson.coord2Pixel(geojson, z, px, py);
-
-							nodeJObj.put("g",
-									geojson.getJSONArray("coordinates"));
-
-							nodeArray.add(nodeJObj);
-						}
-					}
+					this.addAreaNodeForRdObject(connection, areaNodes,
+							mapNodes, nodeArray, px, py, z);
 
 				}
 				if (areaInterLinks.size() > 0) {
-					RdLinkSelector linkSelector = new RdLinkSelector(connection);
-					List<IRow> rows = linkSelector.loadByIds(areaInterLinks,
-							false, false);
-					if (rows.size() > 0) {
-						for (IRow row : rows) {
-							// 线几何对象
-							RdLink link = (RdLink) row;
-							JSONObject geojson = GeoTranslator.jts2Geojson(
-									link.getGeometry(), 0.00001, 5);
-							JSONObject linkJObj = new JSONObject();
 
-							linkJObj.put("i", link.getPid());
-
-							for (int cPid : mapInterLinks.keySet()) {
-								List<Integer> links = mapInterLinks.get(cPid);
-								if (links.contains(link.getPid())) {
-									linkJObj.put("p", cPid);
-									break;
-								}
-							}
-
-							linkJObj.put("linkCor",
-									geojson.getJSONArray("coordinates"));
-
-							Geojson.coord2Pixel(geojson, z, px, py);
-
-							linkJObj.put("g",
-									geojson.getJSONArray("coordinates"));
-
-							linkJObj.put("t", 1);
-
-							rdInterLinks.add(linkJObj);
-						}
-					}
+					this.addAreaLinkForRdObject(connection, rdObject,
+							areaInterLinks, mapInterLinks, rdInterLinks, 1, px,
+							py, z);
 				}
 
 				if (areaRoadLinks.size() > 0) {
-					RdLinkSelector linkSelector = new RdLinkSelector(connection);
-					List<IRow> rows = linkSelector.loadByIds(areaRoadLinks,
-							false, false);
-					if (rows.size() > 0) {
-						for (IRow row : rows) {
-							// 线几何对象
-							RdLink link = (RdLink) row;
-							JSONObject geojson = GeoTranslator.jts2Geojson(
-									link.getGeometry(), 0.00001, 5);
-							JSONObject linkJObj = new JSONObject();
-
-							linkJObj.put("i", link.getPid());
-
-							for (int cPid : mapRoadLinks.keySet()) {
-								List<Integer> links = mapRoadLinks.get(cPid);
-								if (links.contains(link.getPid())) {
-									linkJObj.put("p", cPid);
-									break;
-								}
-							}
-
-							linkJObj.put("linkCor",
-									geojson.getJSONArray("coordinates"));
-
-							Geojson.coord2Pixel(geojson, z, px, py);
-
-							linkJObj.put("g",
-									geojson.getJSONArray("coordinates"));
-
-							linkJObj.put("t", 2);
-
-							rdRodLinks.add(linkJObj);
-						}
-					}
+					this.addAreaLinkForRdObject(connection, rdObject,
+							areaRoadLinks, mapRoadLinks, rdRodLinks, 1, px, py,
+							z);
 				}
 
 				if (areaObjectLinks.size() > 0) {
-					RdLinkSelector linkSelector = new RdLinkSelector(connection);
-					List<IRow> rows = linkSelector.loadByIds(areaObjectLinks,
-							false, false);
-					if (rows.size() > 0) {
-						for (IRow row : rows) {
-							// 线几何对象
-							RdLink link = (RdLink) row;
-							JSONObject geojson = GeoTranslator.jts2Geojson(
-									link.getGeometry(), 0.00001, 5);
-							JSONObject linkJObj = new JSONObject();
 
-							linkJObj.put("i", link.getPid());
+					this.addAreaLinkForRdObject(connection, rdObject,
+							areaObjectLinks, mapObjectLinks, rdObjectLinks, 0,
+							px, py, z);
 
-							linkJObj.put("p", rdObject.getPid());
-							linkJObj.put("linkCor",
-									geojson.getJSONArray("coordinates"));
-
-							Geojson.coord2Pixel(geojson, z, px, py);
-
-							linkJObj.put("g",
-									geojson.getJSONArray("coordinates"));
-
-							linkJObj.put("t", 0);
-
-							rdObjectLinks.add(linkJObj);
-						}
-					}
 				}
 				if (!this.isCheckRdInterLinksArea(rdObject, rdInterLinks)
 						&& !this.isCheckRdInterNodesArea(rdObject, nodeArray)
@@ -724,6 +532,209 @@ public class RdObjectSearch implements ISearch {
 
 		}
 
+	}
+
+	private void addAreaLinkForRdObject(Connection conn, RdObject rdObject,
+			List<Integer> areaLinks, Map<Integer, List<Integer>> mapLinks,
+			JSONArray arrayLinks, int flag, double px, double py, int z)
+			throws Exception {
+
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		List<IRow> rows = linkSelector.loadByIds(areaLinks, false, false);
+		if (rows.size() > 0) {
+			for (IRow row : rows) {
+				// 线几何对象
+				RdLink link = (RdLink) row;
+				JSONObject geojson = GeoTranslator.jts2Geojson(
+						link.getGeometry(), 0.00001, 5);
+				JSONObject linkJObj = new JSONObject();
+
+				linkJObj.put("i", link.getPid());
+
+				linkJObj.put("linkCor", geojson.getJSONArray("coordinates"));
+
+				Geojson.coord2Pixel(geojson, z, px, py);
+
+				linkJObj.put("g", geojson.getJSONArray("coordinates"));
+				if (flag == 0) {
+					linkJObj.put("t", 1);
+					linkJObj.put("p", rdObject.getPid());
+				}
+				if (flag == 1) {
+					linkJObj.put("t", 2);
+					for (int cPid : mapLinks.keySet()) {
+						List<Integer> links = mapLinks.get(cPid);
+						if (links.contains(link.getPid())) {
+							linkJObj.put("p", cPid);
+							break;
+						}
+					}
+
+				}
+
+				arrayLinks.add(linkJObj);
+			}
+		}
+
+	}
+
+	private void addAreaNodeForRdObject(Connection conn,
+			List<Integer> areaNodes, Map<Integer, List<Integer>> mapNodes,
+			JSONArray nodeArray, double px, double py, int z) throws Exception {
+		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
+		List<IRow> rows = nodeSelector.loadByIds(areaNodes, false, false);
+		if (rows.size() > 0) {
+			for (IRow row : rows) {
+
+				RdNode node = (RdNode) row;
+				JSONObject geojson = GeoTranslator.jts2Geojson(
+						node.getGeometry(), 0.00001, 5);
+
+				JSONObject nodeJObj = new JSONObject();
+				nodeJObj.put("i", node.getPid());
+
+				for (int cPid : mapNodes.keySet()) {
+					List<Integer> nodes = mapNodes.get(cPid);
+					if (nodes.contains(node.getPid())) {
+						nodeJObj.put("p", cPid);
+						break;
+					}
+				}
+
+				nodeJObj.put("t", 1);
+
+				nodeJObj.put("nodeCor", geojson.getJSONArray("coordinates"));
+
+				Geojson.coord2Pixel(geojson, z, px, py);
+
+				nodeJObj.put("g", geojson.getJSONArray("coordinates"));
+
+				nodeArray.add(nodeJObj);
+			}
+		}
+
+	}
+
+	private List<Integer> getAreaPids(Map<Integer, List<Integer>> map) {
+		List<Integer> areaPids = new ArrayList<Integer>();
+		for (List<Integer> maps : map.values()) {
+			areaPids.addAll(maps);
+		}
+		return areaPids;
+
+	}
+
+	private Map<Integer, List<Integer>> getAreaNodeMapforRdObject(
+			RdObject rdObject, JSONArray nodeArray) {
+		Map<Integer, List<Integer>> mapNodes = new HashMap<Integer, List<Integer>>();
+
+		for (IRow row : rdObject.getInters()) {
+			RdInter inter = (RdInter) row;
+			List<Integer> interNodes = new ArrayList<Integer>();
+			List<Integer> interNodesArea = new ArrayList<Integer>();
+			for (IRow iRow : inter.getNodes()) {
+				RdInterNode interNode = (RdInterNode) iRow;
+				interNodes.add(interNode.getNodePid());
+
+			}
+
+			for (int i = 0; i < nodeArray.size(); i++) {
+				JSONObject object = nodeArray.getJSONObject(i);
+				if (object.getInt("p") == inter.getPid()) {
+					interNodesArea.add(object.getInt("i"));
+				}
+			}
+
+			interNodes.removeAll(interNodesArea);
+			if (interNodes.size() > 0) {
+				mapNodes.put(inter.getPid(), interNodes);
+			}
+
+		}
+		return mapNodes;
+	}
+
+	private Map<Integer, List<Integer>> getAreaRdRoadMapforRdObject(
+			RdObject rdObject, JSONArray rdRodLinks) {
+		Map<Integer, List<Integer>> mapRoadLinks = new HashMap<Integer, List<Integer>>();
+
+		for (IRow row : rdObject.getRoads()) {
+			RdRoad rdRoad = (RdRoad) row;
+			List<Integer> roadLinks = new ArrayList<Integer>();
+			List<Integer> roadLinksArea = new ArrayList<Integer>();
+			for (IRow iRow : rdRoad.getLinks()) {
+				RdRoadLink roadLink = (RdRoadLink) iRow;
+				roadLinks.add(roadLink.getLinkPid());
+
+			}
+
+			for (int i = 0; i < rdRodLinks.size(); i++) {
+				JSONObject object = rdRodLinks.getJSONObject(i);
+				if (object.getInt("p") == rdRoad.getPid()) {
+					roadLinksArea.add(object.getInt("i"));
+				}
+			}
+
+			roadLinks.removeAll(roadLinksArea);
+			if (roadLinks.size() > 0) {
+				mapRoadLinks.put(rdRoad.getPid(), roadLinks);
+			}
+
+		}
+		return mapRoadLinks;
+
+	}
+
+	private Map<Integer, List<Integer>> getAreaObjectLinkMapforRdObject(
+			RdObject rdObject, JSONArray rdObjectLinks) {
+		Map<Integer, List<Integer>> mapObjectLinks = new HashMap<Integer, List<Integer>>();
+
+		List<Integer> objectLinks = new ArrayList<Integer>();
+		List<Integer> objectLinksArea = new ArrayList<Integer>();
+		for (IRow row : rdObject.getLinks()) {
+			RdObjectLink rdObjectLink = (RdObjectLink) row;
+
+			objectLinks.add(rdObjectLink.getLinkPid());
+		}
+		for (int i = 0; i < rdObjectLinks.size(); i++) {
+			JSONObject object = rdObjectLinks.getJSONObject(i);
+			objectLinksArea.add(object.getInt("i"));
+		}
+		objectLinks.removeAll(objectLinksArea);
+		if (objectLinks.size() > 0) {
+			mapObjectLinks.put(rdObject.getPid(), objectLinks);
+		}
+		return mapObjectLinks;
+	}
+
+	private Map<Integer, List<Integer>> getAreaInterLinkMapforRdObject(
+			RdObject rdObject, JSONArray rdInterLinks) {
+
+		Map<Integer, List<Integer>> mapInterLinks = new HashMap<Integer, List<Integer>>();
+		for (IRow row : rdObject.getInters()) {
+			RdInter inter = (RdInter) row;
+			List<Integer> interLinks = new ArrayList<Integer>();
+			List<Integer> interLinksArea = new ArrayList<Integer>();
+			for (IRow iRow : inter.getLinks()) {
+				RdInterLink interLink = (RdInterLink) iRow;
+				interLinks.add(interLink.getLinkPid());
+
+			}
+
+			for (int i = 0; i < rdInterLinks.size(); i++) {
+				JSONObject object = rdInterLinks.getJSONObject(i);
+				if (object.getInt("p") == inter.getPid()) {
+					interLinksArea.add(object.getInt("i"));
+				}
+			}
+
+			interLinks.removeAll(interLinksArea);
+			if (interLinks.size() > 0) {
+				mapInterLinks.put(inter.getPid(), interLinks);
+			}
+
+		}
+		return mapInterLinks;
 	}
 
 	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray,

@@ -4,9 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +36,6 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class RdRoadSearch implements ISearch {
 	private Logger logger = Logger.getLogger(RdRoadSearch.class);
@@ -149,7 +146,7 @@ public class RdRoadSearch implements ISearch {
 				snapshot.setI(pid);
 				RdRoad rdRoad = (RdRoad) this.searchDataByPid(pid);
 				Map<String, JSONObject> linkMap = values.get(pid);
-
+				// 处理接边渲染 zhaokk
 				if (this.isCheckLinkArea(rdRoad, linkMap)) {
 					this.addRdRoadForArea(rdRoad, linkMap, wkt);
 
@@ -184,6 +181,12 @@ public class RdRoadSearch implements ISearch {
 		return list;
 	}
 
+	/***
+	 * @author zhaokk 判断rdroad是否跨大区
+	 * @param rdRoad
+	 * @param linkMap
+	 * @return
+	 */
 	private boolean isCheckLinkArea(RdRoad rdRoad,
 			Map<String, JSONObject> linkMap) {
 
@@ -195,21 +198,27 @@ public class RdRoadSearch implements ISearch {
 		return false;
 	}
 
+	/***
+	 * 处理rdRoad跨大区渲染
+	 * 
+	 * @author zhaokk
+	 * @param rdRoad
+	 * @param linkMap
+	 * @param wkt
+	 * @throws Exception
+	 */
 	private void addRdRoadForArea(RdRoad rdRoad,
 			Map<String, JSONObject> linkMap, String wkt) throws Exception {
-		Set<Integer> dbIds = null;
-		String[] meshIds = MeshUtils.geometry2Mesh(GeoTranslator
-				.wkt2Geometry(wkt));
-		Set<String> extendMeshes = null;
-		if (meshIds != null && meshIds.length > 0) {
-			extendMeshes = MeshUtils.getNeighborMeshSet(
-					new HashSet<>(Arrays.asList(meshIds)), 3);
-		}
-		if (extendMeshes != null) {
-			dbIds = DbMeshInfoUtil.calcDbIds(extendMeshes);
-		}
+		// 计算跨大区库
+		Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
 		List<Integer> links = new ArrayList<Integer>();
-
+		if (dbIds == null) {
+			return;
+		}
+		if (dbIds.size() == 1 && dbIds.contains(this.getDbId())) {
+			return;
+		}
+		// 计算不在本大区库的RDLINK
 		for (IRow row : rdRoad.getLinks()) {
 			RdRoadLink roadLink = (RdRoadLink) row;
 			if (!linkMap.containsKey(String.valueOf(roadLink.getLinkPid()))) {

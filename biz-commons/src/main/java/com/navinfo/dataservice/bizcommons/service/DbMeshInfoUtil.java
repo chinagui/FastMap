@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class DbMeshInfoUtil {
 	}
 
 	/**
-	 * 根据几何计算是否对应多个大区库
+	 * 根据图幅计算是否对应多个大区库
 	 * 
 	 * @param geometry
 	 * @return
@@ -96,6 +97,29 @@ public class DbMeshInfoUtil {
 					dbIds.add(entry.getValue());
 				}
 			}
+		}
+		return dbIds;
+	}
+
+	/**
+	 * 根据wkt扩圈多个大区库
+	 * 
+	 * @param geometry
+	 * @return
+	 * @throws Exception
+	 */
+	public static Set<Integer> calcDbIds(String wkt, int extendCount)
+			throws Exception {
+		Set<Integer> dbIds = null;
+		String[] meshIds = MeshUtils.geometry2Mesh(GeoTranslator
+				.wkt2Geometry(wkt));
+		Set<String> extendMeshes = null;
+		if (meshIds != null && meshIds.length > 0) {
+			extendMeshes = MeshUtils.getNeighborMeshSet(
+					new HashSet<>(Arrays.asList(meshIds)), extendCount);
+		}
+		if (extendMeshes != null) {
+			dbIds = DbMeshInfoUtil.calcDbIds(extendMeshes);
 		}
 		return dbIds;
 	}

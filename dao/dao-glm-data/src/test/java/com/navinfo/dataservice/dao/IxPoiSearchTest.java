@@ -9,6 +9,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.junit.Test;
+
+import com.navinfo.dataservice.bizcommons.datarow.DataRowTool;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
@@ -29,7 +31,7 @@ import net.sf.json.JSONObject;
 public class IxPoiSearchTest {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	@Test
+//	@Test
 	public void checkResultList(){
 		log.info("start");
 		Connection conn =null;
@@ -49,7 +51,7 @@ public class IxPoiSearchTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void test(){
 		log.info("start");
 		Connection conn =null;
@@ -64,6 +66,26 @@ public class IxPoiSearchTest {
 			System.out.println(list.toString());
 			log.info("end");
 			
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@Test
+	public void getTableColumn(){
+		log.info("start");
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+
+			String str =DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION");
+			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION ";
+			System.out.println("str: "+str);
+			System.out.println("newStr: "+str.replace("\"RESERVED\"", "1 \"RESERVED\""));
+			System.out.println("sql: "+sql);
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{

@@ -732,7 +732,7 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select t.lot, st.SUBTASK_ID , st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+			sb.append("select t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
 					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
 			sb.append(" from subtask st,task t,region r,program p");
 			sb.append(" where st.task_id = t.task_id");

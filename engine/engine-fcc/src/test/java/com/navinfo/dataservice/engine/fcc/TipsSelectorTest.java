@@ -196,6 +196,15 @@ public class TipsSelectorTest extends InitApplication {
             System.out.println("reusut:----------------------------------\n"
 			
 					+solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:----------------------------------\n"
+
+                    +solrSelector.searchDataByTileWithGap(parameter));
 			
 			
 

@@ -605,18 +605,21 @@ public class TaskJob extends AbstractStatJob {
 			int monthPoiLogTotalNum = 0;
 			int monthPoiLogFinishNum = 0;
 			int monthPoiFinishNum = 0;
+			int day2MonthNum=0;
 			for (Integer gridId : gridIds) {
 				if(monthPoiStat.containsKey(gridId)){
 					Map<String, Integer> map = monthPoiStat.get(gridId);
 					monthPoiLogTotalNum += map.get("logAllNum");
 					monthPoiLogFinishNum += map.get("logFinishNum");
 					monthPoiFinishNum += map.get("poiFinishNum");
+					day2MonthNum+=map.get("day2MonthNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("monthPoiLogTotalNum", monthPoiLogTotalNum);
 			taskStat.put("monthPoiLogFinishNum", monthPoiLogFinishNum);
 			taskStat.put("monthPoiFinishNum", monthPoiFinishNum);
+			taskStat.put("day2MonthNum", day2MonthNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage());

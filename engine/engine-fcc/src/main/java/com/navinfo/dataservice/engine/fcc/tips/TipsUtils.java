@@ -1,15 +1,17 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.Map;
-
+import org.apache.commons.lang.StringUtils;
 import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -17,12 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.fcc.model.TipsDao;
-
 import net.sf.json.JsonConfig;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @ClassName: TipsUtils.java
@@ -406,6 +403,20 @@ public class TipsUtils {
         }
     }
 
+    public static String ClobToString(Clob clob) throws SQLException, IOException {
+
+        String reString = "";
+        Reader is = clob.getCharacterStream();// 得到流
+        BufferedReader br = new BufferedReader(is);
+        String s = br.readLine();
+        StringBuffer sb = new StringBuffer();
+        while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING
+            sb.append(s);
+            s = br.readLine();
+        }
+        reString = sb.toString();
+        return reString;
+    }
     public static void main(String[] args) throws Exception {
         String parameter = "{\"subtaskId\":108,\"grids\":[46597623,47590731,47590700,47590730,47591701,46597711,47591700,46597730,46597633,46597720,50600122,46597603,46597613,47591603,47590603],\"mdFlag\":\"d\",\"workStatus\":5}";
         JSONObject jsonObject = TipsUtils.stringToSFJson(parameter);

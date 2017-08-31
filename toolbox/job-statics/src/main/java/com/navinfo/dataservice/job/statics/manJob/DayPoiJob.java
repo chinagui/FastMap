@@ -163,6 +163,7 @@ public class DayPoiJob extends AbstractStatJob {
 					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
 					cell.put("firstEditDate", entry.getValue().get("firstEditDate"));
 					cell.put("firstCollectDate", entry.getValue().get("firstCollectDate"));
+					cell.put("waitWorkPoi", entry.getValue().get("waitWorkPoi"));
 					subtaskStat.add(cell);
 				}
 				
@@ -288,17 +289,19 @@ public class DayPoiJob extends AbstractStatJob {
 	    	Map<String, Object> value = new HashMap<String, Object>();
 	    	int poiUploadNum = 0;
 	    	int poiFinishNum = 0;
+	    	int waitWorkPoi = 0;
 	    	String firstEditDate = "";
 	    	if(subTaskDate.containsKey(subtaskId)){
 	    		firstEditDate = subTaskDate.get(subtaskId);
 	    	}
 	    	
-	    	value.put("poiUploadNum", 0);
-	    	value.put("poiFinishNum", 0);
+//	    	value.put("poiUploadNum", 0);
+//	    	value.put("poiFinishNum", 0);
 	    	if(subtaskStat.containsKey(subtaskId)){
 	    		value = subtaskStat.get(subtaskId);
 	    		poiUploadNum = Integer.parseInt(value.get("poiUploadNum").toString());
 	    		poiFinishNum = Integer.parseInt(value.get("poiFinishNum").toString());
+	    		waitWorkPoi = Integer.parseInt(value.get("waitWorkPoi").toString());
 	    		if(value.containsKey("firstCollectDate") && StringUtils.isNotBlank(value.get("firstCollectDate").toString())){
 	    			if(StringUtils.isBlank(collectTime)){
 	    				collectTime = value.get("firstCollectDate").toString();
@@ -313,10 +316,14 @@ public class DayPoiJob extends AbstractStatJob {
 	    	if(status == 3){
 	    		poiFinishNum++;
 	    	}
+	    	if(status == 2){
+	    		waitWorkPoi++;
+	    	}
 	    	value.put("poiUploadNum", poiUploadNum);
 	    	value.put("poiFinishNum", poiFinishNum);
 	    	value.put("firstEditDate", firstEditDate);
 	    	value.put("firstCollectDate", collectTime);
+	    	value.put("waitWorkPoi", waitWorkPoi);
 	    	
 	    	subtaskStat.put(subtaskId, value);
 	    
@@ -378,7 +385,7 @@ public class DayPoiJob extends AbstractStatJob {
 				sb.append("LEFT JOIN DATA_PLAN D ON D.PID = P.PID ");
 				sb.append("   AND D.DATA_TYPE = 1                 ");
 				sb.append("   AND D.IS_PLAN_SELECTED = 1          ");
-				sb.append("   WHERE P.PID = S.PID                 ");
+				sb.append("   WHERE P.PID = S.PID  and s.status!=0 ");
 				
 				String selectSql = sb.toString();
 

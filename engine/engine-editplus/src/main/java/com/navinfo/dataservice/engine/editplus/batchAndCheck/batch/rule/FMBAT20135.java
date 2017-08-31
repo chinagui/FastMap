@@ -36,7 +36,7 @@ public class FMBAT20135 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		List<IxPoiName> names = poiObj.getIxPoiNames();
-		IxPoiName br=poiObj.getOfficeStandardEngName();
+		IxPoiName br=poiObj.getOfficeOriginEngName();
 		List<IxPoiNameFlag> flags =poiObj.getIxPoiNameFlags();
 		//List<IxPoiFlag> flags = poiObj.getIxPoiFlags();
 		boolean isFlag = false;

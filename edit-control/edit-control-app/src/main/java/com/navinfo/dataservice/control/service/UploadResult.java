@@ -2,6 +2,7 @@ package com.navinfo.dataservice.control.service;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
@@ -23,6 +24,8 @@ public class UploadResult implements Serializable{
 	private List<ErrorLog> warnPc = new ArrayList<ErrorLog>();
 	
 	private List<ErrorLog> warnSp = new ArrayList<ErrorLog>();
+	
+	private List<RegionUploadResult> regionResults = new ArrayList<RegionUploadResult>();
 	
 	public int getTotal() {
 		return total;
@@ -61,5 +64,14 @@ public class UploadResult implements Serializable{
 	}
 	public void addWarnSps(List<ErrorLog> wSps){
 		this.warnSp.addAll(wSps);
+	}
+	public List<RegionUploadResult> getRegionResults() {
+		return regionResults;
+	}
+	public void addRegionResult(RegionUploadResult result) {
+		this.regionResults.add(result);
+	}
+	public void addResultResults(Collection<RegionUploadResult> results){
+		this.regionResults.addAll(results);
 	}
 }

@@ -264,7 +264,7 @@ public class TipsController extends BaseController {
 
             Map<String, Audio> audioMap=new HashMap<String, Audio>();
             
-            tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap);
+            tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap,userId);
 
             //CollectorImport.importPhoto(map, filePath + "/photo");
 
@@ -281,6 +281,8 @@ public class TipsController extends BaseController {
             result.put("failed", tipsUploader.getFailed());
 
             result.put("reasons", tipsUploader.getReasons());
+
+            result.put("regionResults", tipsUploader.getRegionResults());
 
             result.put("JVImageResult", patternImageResultImpResult);
 

@@ -356,8 +356,9 @@ public class NiValExceptionOperator {
 		if (StringUtils.isEmpty(md5))
 			return false;
 		logg.debug("start insert ni_val:2-2");
-		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated ,task_id)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate,:10)";
+		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated ,task_id,reserved)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate,:10,0)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
+		logg.info("insertCheckLog : "+sql);
 		logg.debug("start insert ni_val:2-3");
 		try {
 			logg.debug("start insert ni_val:2-4");

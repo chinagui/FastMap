@@ -51,6 +51,8 @@ public class TipsLineRelateConstant {
 		noneRelate.add("1708");//（ADAS打点）
 		noneRelate.add("2201");//（地下通道/过街天桥）
 		noneRelate.add("1709");//（点位移）
+		noneRelate.add("2202");// 人行过道
+		noneRelate.add("1806");// 草图
 		
 
 		//2. f.id
@@ -85,8 +87,11 @@ public class TipsLineRelateConstant {
 		simpleF.add("1110"); // （卡车限制）
 		simpleF.add("1211"); //  （高速连接路）
 		
-		
-		
+		simpleF.add("1117"); // 车道限高限宽
+		simpleF.add("2203"); // 单线虚拟连接
+		simpleF.add("2204"); // 复合虚拟连接
+		simpleF.add("1212"); // 高速路行人非机动车禁行 
+		simpleF.add("1213"); // 普通新行人非机动车禁行 
 		
 		
 		//3.in.id
@@ -172,6 +177,7 @@ public class TipsLineRelateConstant {
 		f_array_Id.add("1604"); // 23. 区域内道路 [f_array].id
 		
 		f_array_Id.add("1520"); // 24.在建时间变更 [f_array].id
+		f_array_Id.add("1519"); //  休闲路线
 		
 		
 		
@@ -186,6 +192,8 @@ public class TipsLineRelateConstant {
 		//12.[f_array].f.id  (f唯一是对象)
 		f_array_F.add("1102");//（红绿灯）
 		
+		
+		//1519  2202  2203  2204  1212  1213  1117  1214 1520  2101 
 
 	}
 

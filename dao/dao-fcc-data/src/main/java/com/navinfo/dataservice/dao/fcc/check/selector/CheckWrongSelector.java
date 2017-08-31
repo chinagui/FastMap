@@ -42,11 +42,11 @@ public class CheckWrongSelector {
 	 * @throws Exception 
 	 * @time:2017-5-24 下午8:58:36
 	 */
-	public  CheckWrong queryByTipsRowkey(int checkTaskId,String rowkey) throws Exception {
+	public  CheckWrong queryByTipsRowkey(int checkTaskId,String objectId) throws Exception {
 		
 		CheckWrong wrong=null;
 		
-		String sql="SELECT * FROM check_wrong g WHERE g.check_task_id=?  AND g.tips_rowkey= ?";
+		String sql="SELECT * FROM check_wrong g WHERE g.check_task_id=?  AND g.object_id= ?";
 		
 		PreparedStatement pst=null;
 		
@@ -61,7 +61,7 @@ public class CheckWrongSelector {
 			
 			pst.setInt(1, checkTaskId);
 			
-			pst.setString(2, rowkey);
+			pst.setString(2, objectId);
 			
 			rs=pst.executeQuery();
 			
@@ -93,7 +93,7 @@ public class CheckWrongSelector {
 	 * @throws Exception 
 	 * @time:2017-5-25 下午3:43:06
 	 */
-	public  boolean rowkeyHasExtract(int checkTaskId,String rowkey) throws Exception{
+	public  boolean rowkeyHasExtract(int checkTaskId,String objectId) throws Exception{
 		
 		int count=0;
 		Connection conn=null;
@@ -101,7 +101,7 @@ public class CheckWrongSelector {
 			
 			conn=DBConnector.getInstance().getCheckConnection();
 			QueryRunner run = new QueryRunner();
-			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.check_task_id=?  AND g.tips_rowkey= ?",checkTaskId,rowkey);	
+			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.check_task_id=?  AND g.object_id= ?",checkTaskId,objectId);	
 		}catch (Exception e) {
 			throw e;
 		}finally{

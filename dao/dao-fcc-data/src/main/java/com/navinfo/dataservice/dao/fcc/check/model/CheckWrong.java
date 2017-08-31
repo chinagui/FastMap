@@ -14,8 +14,9 @@ public class CheckWrong {
 	
 	private String logId; //问题记录ID 后台生成
 	private int checkTaskId; //质检任务号
-	private String tipsCode; //tips类型
-	private String tipsRowkey; //tips rowkey
+	private String objectType; //tips类型
+	private String objectId; //tips rowkey
+	private int erType; //错误信息类型	
 	private String quDesc; //问题描述
 	private String reason; //问题原因
 	private String erContent;//错误内容
@@ -56,26 +57,32 @@ public class CheckWrong {
 	/**
 	 * @return the tipsCode
 	 */
-	public String getTipsCode() {
-		return tipsCode;
+	public String getObjectType() {
+		return objectType;
 	}
 	/**
 	 * @param tipsCode the tipsCode to set
 	 */
-	public void setTipsCode(String tipsCode) {
-		this.tipsCode = tipsCode;
+	public void setObjectType(String objectType) {
+		this.objectType = objectType;
 	}
 	/**
 	 * @return the tipsRowkey
 	 */
-	public String getTipsRowkey() {
-		return tipsRowkey;
+	public String getObjectId() {
+		return objectId;
 	}
 	/**
 	 * @param tipsRowkey the tipsRowkey to set
 	 */
-	public void setTipsRowkey(String tipsRowkey) {
-		this.tipsRowkey = tipsRowkey;
+	public void setObjectId(String objectId) {
+		this.objectId = objectId;
+	}
+	public int getErType() {
+		return erType;
+	}
+	public void setErType(int erType) {
+		this.erType = erType;
 	}
 	/**
 	 * @return the quDesc

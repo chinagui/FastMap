@@ -17,6 +17,10 @@ import net.sf.json.JSONObject;
  */
 public abstract class UploadPois {
 
+	protected int regionId = 0;
+	protected int regionDayDbId = 0;
+	
+	
 	protected Map<String,JSONObject> addPois = new HashMap<String,JSONObject>();//key:fid
 	protected Map<String,JSONObject> deletePois = new HashMap<String,JSONObject>();//key:fid
 	protected Map<String,JSONObject> updatePois = new HashMap<String,JSONObject>();//key:fid
@@ -69,5 +73,17 @@ public abstract class UploadPois {
 			}
 		}
 		return logs;
+	}
+	public int getRegionId() {
+		return regionId;
+	}
+	public void setRegionId(int regionId) {
+		this.regionId = regionId;
+	}
+	public int getRegionDayDbId() {
+		return regionDayDbId;
+	}
+	public void setRegionDayDbId(int regionDayDbId) {
+		this.regionDayDbId = regionDayDbId;
 	}
 }

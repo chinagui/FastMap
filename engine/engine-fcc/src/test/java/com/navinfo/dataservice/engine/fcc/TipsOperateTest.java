@@ -215,7 +215,7 @@ public class TipsOperateTest extends InitApplication {
 //			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
 //			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
 //			 "1", "d", 1 ,1);
-            String parameter = "{taskId:1717}";
+            String parameter = "{taskId:77}";
 
             java.sql.Connection oracleConn = null;
             try {

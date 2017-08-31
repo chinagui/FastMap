@@ -8,13 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
@@ -68,10 +66,8 @@ import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 import com.navinfo.navicommons.database.QueryRunner;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 /**
  * @author wangshishuai3966
  */
@@ -1054,6 +1050,23 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> scPointSpecKindCodeType16() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType16();
+	}
+	
+	public int getTruck(String kind,String chain,String fuelType) throws Exception{
+		Connection conn = null;
+		int truck = -1;
+		try{
+			conn = DBConnector.getInstance().getMetaConnection();
+			TruckSelector selector = new TruckSelector(conn);
+			truck = selector.getTruck(kind, chain, fuelType);
+			return truck;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 }

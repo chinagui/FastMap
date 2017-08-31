@@ -3,9 +3,10 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.create;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 
-
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -93,6 +94,13 @@ public class Operation implements IOperation {
             ixPoi.setSide(side);
         }
         ixPoi.setPoiNum(this.getFid());//对应fid
+        
+        // zpp 2017.8.24 add truck
+        MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+        int truck = metadataApi.getTruck(command.getKindCode(), "", "");
+        if (truck == -1) truck = 0;
+        ixPoi.setTruckFlag(truck);
+        
         result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 
         generationIxPoiName(ixPoi, result);

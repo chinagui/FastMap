@@ -2525,8 +2525,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         Table htab = null;
         java.sql.Connection tipsConn=null;
         int taskType=0;
-        
-        List<Get> lineGets=new ArrayList<Get>(); //测线
+     
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
@@ -2549,6 +2548,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			else {
 				throw new Exception("不支持的任务类型：" + taskType);
 			}
+			
+			//查询任务范围内的 测线tips
+			List<TipsDao> measureLineIndexList=selector.getTipsByTaskIdAndStatusAndTipsTpye(tipsConn,taskId,
+					taskType,"2001");
+			//20170830 情报预处理提交时，所有测线按照图幅打断~（状态修改后再打断，这时候拿到的habse数据时新的）
+			cutMeasureLineByMesh(measureLineIndexList,taskId);
+			
 
             //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
 			List<TipsDao> sdList = selector.getTipsByTaskIdAndStatus(tipsConn,taskId,
@@ -2585,11 +2591,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 TipsDao solrIndex = operator.getById(rowkey);
                 solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
                 solrIndexList.add(solrIndex);
-                //将修状态后的tips增加到 测线列表中
-                if("2001".equals(solrIndex.getS_sourceType())){
-                	  Get lineGet = new Get(rowkey.getBytes());
-                	  lineGets.add(lineGet);
-                }
+             
 			}
 
 			htab.put(puts);
@@ -2603,8 +2605,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
             DbUtils.commitAndCloseQuietly(tipsConn);
         }
-		//20170830 情报预处理提交时，所有测线按照图幅打断~（状态修改后再打断，这时候拿到的habse数据时新的）
-		cutMeasureLineByMesh(lineGets,taskId);
 
 	}
 
@@ -2616,13 +2616,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception 
 	 * @time:2017-8-30 下午3:45:48
 	 */
-	private void cutMeasureLineByMesh(List<Get> lineGets, int taskId) throws Exception {
+	private void cutMeasureLineByMesh(List<TipsDao> measureLineIndexList, int taskId) throws Exception {
 		
 		Connection hbaseConn = null;
         Table htab = null;
         java.sql.Connection tipsConn=null;
         try{
-        	
+        	   
+            List<Get> lineGets=new ArrayList<Get>(); //测线
+            for (TipsDao solrIndex : measureLineIndexList) {
+            	   //将修状态后的tips增加到 测线列表中
+                	  lineGets.add(new Get(solrIndex.getId().getBytes()));
+			}
         	hbaseConn = HBaseConnector.getInstance().getConnection();
 			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 		    ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -2638,17 +2643,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             for (Result result : results) {
             	JSONObject json=new JSONObject();
             	String []cols=TipsUtils.TIPS_TABLE_COlS;
-            	for (int i = 0; i < cols.length; i++) {
-					String columnName=cols[i];
-					String value=new String(result.getValue("data".getBytes(), columnName.getBytes()));
-					if(StringUtils.isNotEmpty(value)){
-						json.put(columnName,JSONObject.fromObject(value));
-					}else{
-						json.put(columnName,"{}");
-					}
-					
-					cutLineByMeshAndSave(json,tipsConn,htab,dbId);
-				}
+            	if(result!=null){
+            		for (int i = 0; i < cols.length; i++) {
+    					String columnName=cols[i];
+    					if(result.getValue("data".getBytes(), columnName.getBytes())!=null){
+    						String value=new String(result.getValue("data".getBytes(), columnName.getBytes()));
+    						if(StringUtils.isNotEmpty(value)){
+    							json.put(columnName,JSONObject.fromObject(value));
+    						}else{
+    							json.put(columnName,"{}");
+    						}
+    					}
+    				}
+            		
+            		json.put("rowkey", new String(result.getRow()));
+            		
+            		cutLineByMeshAndSave(json,tipsConn,htab,dbId);
+            	}
             }
         	
         } catch (Exception e) {

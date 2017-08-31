@@ -2074,6 +2074,19 @@ public class TipsSelector {
 		List<TipsDao> sdList = conn.queryTipsByTask(tipsConn, taskId, taskType, 1);
 		return sdList;
 	}
+	
+	/**
+	 * 情报矢量化提交任务数据筛选+tips类型（只查索引）
+	 * 
+	 * @param taskId
+	 * @param taskType
+	 * @return
+	 * @throws Exception
+	 */
+	public List<TipsDao> getTipsByTaskIdAndStatusAndTipsTpye(Connection tipsConn, int taskId, int taskType,String typeCode) throws Exception {
+		List<TipsDao> sdList = conn.queryTipsIndexByTask(tipsConn, taskId, taskType, 1,typeCode);
+		return sdList;
+	}
 
 	/**
 	 * 矢量化检查Tips查询

@@ -130,6 +130,28 @@ public class SolrController {
 		//SolrDocumentList sdList = this.queryTipsSolrDocFilter(builder.toString(), fqBuilder.toString());
 		return tipsDao;
 	}
+	
+	
+	/**
+	 * 按照任务和状态筛选Tips  +类型查询，且只查索引
+	 * @param taskId
+	 * @param taskType
+	 * @param tipStatus
+	 * @return
+	 * @throws Exception
+	 */
+	public List<TipsDao> queryTipsIndexByTask(Connection tipsConn,int taskId, int taskType, int tipStatus,String s_sourceType) throws Exception {
+		StringBuilder builder = new StringBuilder("select * from tips_index i where ("); // 默认条件全查，避免后面增加条件，都需要有AND
+		StringBuilder whereBuilder = new StringBuilder();
+        addTaskFilterSql(taskId, taskType, whereBuilder); // 任务号过滤
+        builder.append(whereBuilder);
+		builder.append(")");
+		builder.append(" and i.t_tipStatus=" + tipStatus);
+		builder.append(" and i.s_sourceType=" + s_sourceType);
+		TipsIndexOracleOperator operator=new TipsIndexOracleOperator(tipsConn);
+		List<TipsDao> tipsDao = operator.queryWithOutHbase(builder.toString());
+		return tipsDao;
+	}
 
 	
 

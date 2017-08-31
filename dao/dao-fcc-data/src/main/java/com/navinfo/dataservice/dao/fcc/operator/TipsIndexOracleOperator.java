@@ -150,6 +150,41 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		};
 		return run.query(conn, sql, resultSetHandler, params);
 	}
+	
+	
+	/**
+	 * @Description:查询 tips索引，不查询habse数据
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-31 下午1:38:59
+	 */
+	public List<TipsDao> queryWithOutHbase(String sql, Object... params) throws Exception {
+		List<TipsDao> result=new ArrayList<TipsDao>();
+		try {
+			ResultSetHandler<List<TipsDao> > resultSetHandler = new ResultSetHandler<List<TipsDao> >() {
+				@Override
+				public List<TipsDao>  handle(ResultSet rs)
+						throws SQLException {
+					List<TipsDao>  result1 =new ArrayList<TipsDao>();
+					while (rs.next()) {
+						TipsDao dao = new TipsDao();
+						dao.loadResultSet(rs);
+						result1.add(dao);
+					}
+					return result1;
+				}
+			};
+			result = run.query(conn, sql, resultSetHandler,
+					params);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("查询tips失败，原因为:" + e.getMessage(), e);
+		}
+		return result;
+	}
 	public List<TipsDao> query(String sql, Object... params) throws Exception {
 		List<TipsDao> result;
 		try {

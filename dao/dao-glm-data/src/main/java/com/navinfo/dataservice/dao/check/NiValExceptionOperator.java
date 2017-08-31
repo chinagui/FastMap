@@ -23,6 +23,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -553,7 +554,7 @@ public class NiValExceptionOperator {
 	 * 			  0常规子任务，1质检子任务
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId)
+	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId, String updateTime)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -620,7 +621,7 @@ public class NiValExceptionOperator {
 				}
 			}
 			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
-			this.updateWorkerAndDate(md5, type, isQuality, userId);
+			this.updateWorkerAndDate(md5, type, isQuality, userId, updateTime);
 			conn.commit();
 		} catch (Exception e) {
 			throw e;
@@ -660,14 +661,14 @@ public class NiValExceptionOperator {
 	 * @param isQuality
 	 * @throws Exception 
 	 */
-	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId) throws Exception{
+	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId, String updateTime) throws Exception{
 		String sql = "";
 		if(type == 0){
-			sql = "update ni_val_exception set UPDATED=sysdate";
+			sql = "update ni_val_exception set UPDATED=?";
 		}else if(type == 3){
-			sql = "update ni_val_exception_history set UPDATED=sysdate";
+			sql = "update ni_val_exception_history set UPDATED=?";
 		}else{
-			sql = "update ck_exception set UPDATE_DATE=sysdate";
+			sql = "update ck_exception set UPDATE_DATE=?";
 		}
 		String userName = "";
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -685,7 +686,8 @@ public class NiValExceptionOperator {
 		sql += " where MD5_CODE=? ";
 		try {
 			QueryRunner run = new QueryRunner();
-			run.update(conn, sql, md5Code);
+			java.sql.Timestamp timeStamp = new java.sql.Timestamp(DateUtils.stringToLong(updateTime, "yyyy-MM-dd HH:mm:ss"));
+			run.update(conn, sql, timeStamp, md5Code);
 		} catch (Exception e) {
 			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
 		}
@@ -715,13 +717,13 @@ public class NiValExceptionOperator {
 			this.insertNiValExceptionHistoryGrid(md5, sqlExpGrid);
 		}
 		if (tableFlag == 2) {
-			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=?";
+			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code,reserved) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code,reserved from ck_exception a where a.MD5_CODE=?";
 			this.insertNiValException(md5, sqlExpHis);
 			String sqlExpGridHis = "insert into ni_val_exception_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 		if (tableFlag == 3) {
-			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=:4";
+			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code,reserved) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code,reserved from ck_exception a where a.MD5_CODE=:4";
 			this.insertNiValException(md5, sqlExpHis);
 			String sqlExpGridHis = "insert into ni_val_exception_history_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
@@ -874,7 +876,7 @@ public class NiValExceptionOperator {
 		if (tableFlag == 0) {
 			tableName = "ni_val_exception_history";
 		}
-		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1 from "
+		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record, reserved) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1,reserved from "
 				+ tableName + " a where a.MD5_CODE= ?";
 		try {
 			QueryRunner run = new QueryRunner();

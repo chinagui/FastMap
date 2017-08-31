@@ -470,12 +470,13 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			int isQuality = jsonReq.getInt("isQuality");
+			String updateTime = jsonReq.getString("updateTime");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
-			operator.updateCheckLogStatus(id, oldType, type, isQuality, (int)userId);
+			operator.updateCheckLogStatus(id, oldType, type, isQuality, (int)userId, updateTime);
 
 			return new ModelAndView("jsonView", success());
 

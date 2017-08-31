@@ -43,7 +43,7 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testExtact() {
 
 		JSONArray gridsList = JSONArray
@@ -103,7 +103,7 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testCLoseTask() {
 
 		JSONObject obj = new JSONObject();
@@ -140,7 +140,7 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testGetStats() {
 
 	}
@@ -150,7 +150,7 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testGetSnapot() {
 		
 		JSONObject obj=new JSONObject();
@@ -211,30 +211,13 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testSaveWrong() {
 
-		JSONObject obj = new JSONObject();
 		
-		obj.put("checkTaskId", 283);
-		obj.put("tipsCode", "8002");
-		obj.put("tipsRowkey", "0280020f4d849b6c614766afb99d0dd744bf6c");
-		obj.put("quDesc", "错误描述1201");
-		obj.put("reason", "错误原因1201 ");
-		obj.put("erContent", "错误内容1201");
-		obj.put("quRank", "A"); //错误等级
-		obj.put("isPrefer", "1"); //是否倾向性
-		obj.put("checker", "质检员001"); //是否倾向性
-		
-		JSONObject pa = new JSONObject();
-		
-		pa.put("data", obj);
-		
-		pa=JSONObject.fromObject("{\"data\":{\"checkTaskId\":284,\"quDesc\":\"vbv bnghj\",\"reason\":\"录入错误\",\"erContent\":\"道路种别\",\"quRank\":\"C\",\"isPrefer\":0,\"checker\":\"冯佳2699\",\"tipsCode\":\"1201\",\"tipsRowkey\":\"021201fdff891e87234be387a2ffb39210f352\"}}");
-		
-
+		JSONObject pa = new JSONObject();		
+		pa=JSONObject.fromObject("{\"data\":{\"checkTaskId\":317,\"quDesc\":\"vbv bnghj\",\"reason\":\"录入错误\",\"erContent\":\"道路种别\",\"quRank\":\"C\",\"isPrefer\":0,\"checker\":\"冯佳2699\",\"objectType\":\"1201\",\"objectId\":\"1111016083432\",\"erType\":1}}");
 		String parameter = pa.toString();
-
 		logger.debug("/tip/check/saveWrong:");
 
 		logger.debug("parameter:" + parameter);
@@ -268,13 +251,13 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testUpdateStatus() {
 
 		
 		JSONObject pa = new JSONObject();
-		pa.put("checkStatus", 1);
-		pa.put("rowkey", "11170110935773");
+		pa.put("checkStatus", 0);
+		pa.put("objectId", "021106F24E6B69FE4D4D0B9960D5F3D0A9D1C0");
 
 		String parameter = pa.toString();
 
@@ -287,11 +270,11 @@ public class TipsCheckTest extends InitApplication {
 			
 			int  workStatus=jsonReq.getInt("checkStatus");
 			
-			String rowkey = jsonReq.getString("rowkey");
+			String objectId = jsonReq.getString("objectId");
 
 			TipsCheckOperator op = new TipsCheckOperator();
 			
-			op.updateTipsCheckStatus(rowkey,workStatus);
+			op.updateTipsCheckStatus(objectId,workStatus);
 			
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -303,12 +286,12 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testDelWrong() {
 		
 		JSONObject pa = new JSONObject();
 		
-		pa.put("logId", "41f602a115e94edcabd5443f578e6c11");
+		pa.put("logId", "29d4ba49a21445f7a9e6303c486e0cc3");
 
 		String parameter = pa.toString();
 		
@@ -341,7 +324,7 @@ public class TipsCheckTest extends InitApplication {
 
 	}
 	
-	@Test
+//	@Test
 	public void getCollectIdsBySubTaskId(){
         ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
         try {
@@ -363,14 +346,14 @@ public class TipsCheckTest extends InitApplication {
 	 * @author: y
 	 * @time:2017-5-31 上午11:25:24
 	 */
-	@Test
+//	@Test
 	public void testGetWrongByRowkey() {
 		
 		JSONObject pa = new JSONObject();
 		
-		pa.put("rowkey", "0220019609FB3AFDD047EE9FE53BEF56496AAE");
+		pa.put("objectId", "021106F24E6B69FE4D4D0B9960D5F3D0A9D1C0");
 		
-		pa.put("subTaskId", "188");
+		pa.put("subTaskId", "721");
 
 		String parameter = pa.toString();
 		
@@ -386,9 +369,9 @@ public class TipsCheckTest extends InitApplication {
 			
 			int checkTaskId=jsonReq.getInt("subTaskId"); //质检任务号
 			
-			String rowkey =jsonReq.getString("rowkey");//tips rowkey
+			String objectId =jsonReq.getString("objectId");//tips rowkey
 
-			if (StringUtils.isEmpty(rowkey)) {
+			if (StringUtils.isEmpty(objectId)) {
 				
                 throw new IllegalArgumentException("参数错误:rowkey不能为空。");
             }
@@ -396,7 +379,7 @@ public class TipsCheckTest extends InitApplication {
 			TipsCheckSelector selector=new TipsCheckSelector();
 			
 			////返回当前rowkey下的 错误问题记录（用于界面显示或者修改）
-			JSONObject result=selector.queryWrongByRowkey(checkTaskId,rowkey);
+			JSONObject result=selector.queryWrongByRowkey(checkTaskId,objectId);
 			
 			System.out.println("result:"+result);
 			
@@ -412,7 +395,7 @@ public class TipsCheckTest extends InitApplication {
 	}
 	
 	
-	@Test
+//	@Test
 	public void testFccApi() {
 		
 		FccApiImpl imp=new FccApiImpl();

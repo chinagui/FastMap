@@ -59,7 +59,7 @@ public class TipsCheckOperator {
 		try{
 			CheckWrong wrong=(CheckWrong) JSONObject.toBean(jsonWrong,CheckWrong.class);
 			
-			wrong.setWorkTime(getTipsWorkTime(wrong.getTipsRowkey()));
+			wrong.setWorkTime(getTipsWorkTime(wrong.getObjectId()));
 			
 			
 			// 调用 manapi 获取 任务类型、及任务号
@@ -72,7 +72,7 @@ public class TipsCheckOperator {
 			
 			//1.先判断，该rowkey是否已经存在质检问题记录
 			CheckWrongSelector se=new CheckWrongSelector();
-			if(se.rowkeyHasExtract(wrong.getCheckTaskId(), wrong.getTipsRowkey())){
+			if(se.rowkeyHasExtract(wrong.getCheckTaskId(), wrong.getObjectId())){
 				
 				throw new Exception("该tips已存在问题记录，不能重复增加");
 			}
@@ -102,7 +102,7 @@ public class TipsCheckOperator {
 	 * @throws Exception 
 	 * @time:2017-5-31 下午8:31:05
 	 */
-	private String getTipsWorkTime(String rowkey) throws Exception {
+	private String getTipsWorkTime(String objectId) throws Exception {
 			String workDate="";
 			Connection hbaseConn = null;
 	        Table htab = null;
@@ -114,7 +114,7 @@ public class TipsCheckOperator {
 	                    .valueOf(HBaseConstant.tipTab));
 	            String[] queryColNames={"track"};
 	            
-	            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, queryColNames);
+	            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, objectId, queryColNames);
 	            
 	        	JSONObject track = oldTip.getJSONObject("track");
 	        	
@@ -136,9 +136,9 @@ public class TipsCheckOperator {
 	        	
 	        	return workDate;
 	        }catch (Exception e) {
-	        	logger.error("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+	        	logger.error("查询tips出错,rowkey:"+objectId+e.getMessage(), e);
 				
-				throw new Exception("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+				throw new Exception("查询tips出错,rowkey:"+objectId+e.getMessage(), e);
 			}finally {
 				if(htab!=null){
 					htab.close();
@@ -223,7 +223,7 @@ public class TipsCheckOperator {
 	 * @throws Exception 
 	 * @time:2017-5-27 上午10:57:37
 	 */
-	public void updateTipsCheckStatus(String rowkey, int workStatus) throws Exception {
+	public void updateTipsCheckStatus(String objectId, int workStatus) throws Exception {
 		
 		
 	    Connection hbaseConn = null;
@@ -233,7 +233,7 @@ public class TipsCheckOperator {
     		// 获取solr数据
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
-    		TipsDao tipsDao = operator.getById(rowkey);
+    		TipsDao tipsDao = operator.getById(objectId);
 
     		if(tipsDao==null){
     			throw new Exception("数据不存在");
@@ -245,7 +245,7 @@ public class TipsCheckOperator {
                     .valueOf(HBaseConstant.tipTab));
             String[] queryColNames={"track"};
             
-            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, queryColNames);
+            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, objectId, queryColNames);
             
         	JSONObject track = oldTip.getJSONObject("track");
         	
@@ -301,7 +301,7 @@ public class TipsCheckOperator {
         	track.put("t_dEditMeth", t_dEditMeth);
         	track.put("t_trackInfo", trackInfoArr);
         	
-        	Put put = new Put(rowkey.getBytes());
+        	Put put = new Put(objectId.getBytes());
         	
         	put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 					.getBytes());
@@ -310,8 +310,8 @@ public class TipsCheckOperator {
 
         }catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
-        	logger.error("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
-        	throw new Exception("修改质检状态出错：rowkey:"+rowkey+e.getMessage(), e);
+        	logger.error("修改质检状态出错：objectId:"+objectId+e.getMessage(), e);
+        	throw new Exception("修改质检状态出错：objectId:"+objectId+e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 			if(htab!=null){htab.close();}
@@ -335,7 +335,7 @@ public class TipsCheckOperator {
 			operator.closeTask(checkTaskId);
 		} catch (Exception e) {
 
-        	logger.error("修改任务质检状态出错：rowkey:"+e.getMessage(), e);
+        	logger.error("修改任务质检状态出错：objectId:"+e.getMessage(), e);
         	
         	throw new Exception("修改任务质检状态出错："+e.getMessage(), e);
 		}

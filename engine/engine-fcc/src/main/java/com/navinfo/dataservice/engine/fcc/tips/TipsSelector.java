@@ -159,7 +159,11 @@ public class TipsSelector {
 				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 				Geometry tileGeo = GeometryConvertor.wkt2jts(wkt);
 				Geometry subTaskGeo = GeometryConvertor.wkt2jts(subtask.getGeometry());
+                //求瓦片和任务的交集，如果没有则返回空
 				String renderWkt = GeometryConvertor.jts2wkt(tileGeo.intersection(subTaskGeo));
+                if(StringUtils.isEmpty(renderWkt) || renderWkt.contains("EMPTY")) {
+                    return array;
+                }
 
 				OracleWhereClause where = param.getTaskRender(parameter, renderWkt, operator.getConn(), subtask);
 
@@ -181,7 +185,7 @@ public class TipsSelector {
 						" *\n" +
 						"  FROM TIPS_INDEX T, TMP TMP\n" +
 						" WHERE T.ID = TMP.ID";
-				snapshots = new TipsIndexOracleOperator().queryCloseConn(renderTaskSql + where.getSql(), where
+				snapshots = operator.queryCloseConn(renderTaskSql + where.getSql(), where
 						.getValues().toArray());
 				logger.info("tileInTask: " + where.getSql());
 			}else {

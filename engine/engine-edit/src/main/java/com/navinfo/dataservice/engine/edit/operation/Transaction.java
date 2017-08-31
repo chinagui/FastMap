@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -24,7 +25,6 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
-import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Coordinate;

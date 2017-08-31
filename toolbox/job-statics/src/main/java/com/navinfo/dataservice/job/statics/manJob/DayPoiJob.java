@@ -147,9 +147,11 @@ public class DayPoiJob extends AbstractStatJob {
 		
 		@Override
 		public void run() {
+			Connection metaConn = null;
 			try{
+				metaConn = DBConnector.getInstance().getMetaConnection();
 				//查询并统计所有数据
-				Map<String,Object> result = convertAllTaskData();
+				Map<String,Object> result = convertAllTaskData(metaConn);
 				
 				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 				List<Map<String, Object>> taskStat = new ArrayList<Map<String, Object>>();
@@ -180,11 +182,13 @@ public class DayPoiJob extends AbstractStatJob {
 					taskStat.add(cell);
 				}
 				
-				Map<Integer, Object> notask = (Map<Integer, Object>) result.get("notaskStat");
-				for(Map.Entry<Integer, Object> entry : notask.entrySet()){
+				Map<Integer, Map<String, Object>> notask = (Map<Integer, Map<String, Object>>) result.get("notaskStat");
+				for(Entry<Integer, Map<String, Object>> entry : notask.entrySet()){
 					Map<String, Object> cell = new HashMap<String, Object>();
 					cell.put("gridId", entry.getKey());
-					cell.put("poiNum", entry.getValue());
+					cell.put("poiNum", entry.getValue().get("totalNum"));
+					cell.put("dealershipNum", entry.getValue().get("dealershipNum"));
+					cell.put("noDealershipNum", entry.getValue().get("noDealershipNum"));
 					notaskStat.add(cell);
 				}
 				
@@ -274,7 +278,6 @@ public class DayPoiJob extends AbstractStatJob {
 	    	}else{
 	    		taskStat.put(quickTaskId, value);
 	    	}
-	    	
 		}
 		
 		/**
@@ -295,8 +298,6 @@ public class DayPoiJob extends AbstractStatJob {
 	    		firstEditDate = subTaskDate.get(subtaskId);
 	    	}
 	    	
-//	    	value.put("poiUploadNum", 0);
-//	    	value.put("poiFinishNum", 0);
 	    	if(subtaskStat.containsKey(subtaskId)){
 	    		value = subtaskStat.get(subtaskId);
 	    		poiUploadNum = Integer.parseInt(value.get("poiUploadNum").toString());
@@ -360,7 +361,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @throws Exception 
 		 * 
 		 * */
-		public Map<String,Object> convertAllTaskData() throws Exception{
+		public Map<String,Object> convertAllTaskData(final Connection metaConn) throws Exception{
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -380,6 +381,8 @@ public class DayPoiJob extends AbstractStatJob {
 				sb.append("        P.MESH_ID,                     ");
 				sb.append("        P.GEOMETRY,                    ");
 				sb.append("        P.COLLECT_TIME,                ");
+				sb.append("        P.KIND_CODE,                   ");
+				sb.append("        P.CHAIN,                       ");
 				sb.append("        D.PID  PLAN_PID                ");
 				sb.append("   FROM POI_EDIT_STATUS S, IX_POI P    ");
 				sb.append("LEFT JOIN DATA_PLAN D ON D.PID = P.PID ");
@@ -394,7 +397,7 @@ public class DayPoiJob extends AbstractStatJob {
 						Map<String,Object> result = new HashMap<String,Object>();
 						Map<Integer, Map<String, Object>> subtaskStat = new HashMap<Integer,Map<String,Object>>();
 						Map<Integer, Map<String, Integer>> taskStat = new HashMap<Integer,Map<String,Integer>>();
-						Map<Integer, Integer> notaskStat = new HashMap<Integer,Integer>();
+						Map<Integer, Map<String, Integer>> notaskStat = new HashMap<Integer, Map<String, Integer>>();
 						while (rs.next()) {
 						    int subtaskId = rs.getInt("MEDIUM_SUBTASK_ID");
 						    int taskId = rs.getInt("MEDIUM_TASK_ID");
@@ -417,22 +420,9 @@ public class DayPoiJob extends AbstractStatJob {
 						    }
 						    if(taskId == 0 && quickTaskId == 0){
 						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						    	Point geo;
-								try {
-									geo = (Point)GeoTranslator.struct2Jts(struct);
-									double x = geo.getX();
-									double y = geo.getY();
-									String[] grids = CompGridUtil.point2Grids(x,y);
-//									int gridId = Integer.parseInt(CompGridUtil.point2Grid(geo.getX(), geo.getY(), rs.getString("MESH_ID")));
-									int gridId = Integer.parseInt(grids[0]);
-									int totalNum = 0;
-									if(notaskStat.containsKey(gridId)){
-										totalNum = notaskStat.get(gridId);									
-									}
-									notaskStat.put(gridId, totalNum+1);
-								} catch (Exception e) {
-									log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:" + e.getMessage(), e);
-								}
+						    	String kindCode = rs.getString("KIND_CODE")== null ? "" : rs.getString("KIND_CODE");
+								String chain = rs.getString("CHAIN") == null ? "" : rs.getString("CHAIN");
+						    	statisticsNoTaskDataImp(metaConn, notaskStat, kindCode, chain, struct, status);
 						    }
 						}
 						result.put("subtaskStat", subtaskStat);
@@ -445,13 +435,103 @@ public class DayPoiJob extends AbstractStatJob {
 				return run.query(conn, selectSql,rsHandler);
 			}catch(Exception e){
 				log.error("从大区库查询处理数据异常:" + e.getMessage(), e);
-				DbUtils.closeQuietly(conn);
 				throw e;
 			}finally{
+				DbUtils.closeQuietly(metaConn);
 				DbUtils.closeQuietly(conn);
 			}
 		}
 		
+		/**
+		 * 处理无任务数据
+		 * @param Connection
+		 * @param Map<Integer, Map<String, Integer>>
+		 * @param String
+		 * @param String
+		 * @param STRUCT
+		 * @param int
+		 * 
+		 * */
+		public void statisticsNoTaskDataImp(Connection metaConn, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct, int status){
+			boolean poiType = false;
+			try {
+				Point geo;
+		    	geo = (Point) GeoTranslator.struct2Jts(struct);
+				double x = geo.getX();
+				double y = geo.getY();
+				String[] grids = CompGridUtil.point2Grids(x,y);
+				int gridId = Integer.parseInt(grids[0]);
+				int totalNum = 0;
+				int dealershipNum = 0;
+				int noDealershipNum = 0;
+				if(notaskStat.containsKey(gridId)){
+					totalNum = notaskStat.get(gridId).get("totalNum");
+					dealershipNum = notaskStat.get(gridId).get("dealershipNum");
+					noDealershipNum = notaskStat.get(gridId).get("noDealershipNum");
+				}
+				if(status != 0){
+					poiType = wetherDealership(metaConn, kindCode, chain);
+				}
+				if(poiType){
+					dealershipNum++;
+				}else{
+					noDealershipNum++;
+				}
+				Map<String, Integer> grid = new HashMap<>();
+				grid.put("totalNum", totalNum+1);
+				grid.put("dealershipNum", dealershipNum);
+				grid.put("noDealershipNum", noDealershipNum);
+				notaskStat.put(gridId, grid);
+			} catch (Exception e) {
+				log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:" + e.getMessage(), e);
+			}
+		}
+		
+		/**
+		 * 判断是否是代理店数据
+		 * @param Connection
+		 * @param String
+		 * @param String
+		 * @throws Exception
+		 * 
+		 */
+		public boolean wetherDealership(Connection metaConn, String kindCode, final String chain) {
+			try {
+				QueryRunner run = new QueryRunner();
+
+				StringBuilder sb = new StringBuilder();
+				sb.append(" SELECT P.CHAIN,                       ");
+				sb.append("        P.CATEGORY                     ");
+				sb.append("   FROM SC_POINT_SPEC_KINDCODE_NEW P   ");
+				sb.append("  WHERE P.POI_KIND = '" + kindCode + "'");
+				sb.append("   AND P.TYPE = 7                      ");
+
+				String selectSql = sb.toString();
+
+				ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
+					public Boolean handle(ResultSet rs) throws SQLException {
+						while (rs.next()) {
+							int categeory = rs.getInt("CATEGORY");
+							if (1 == categeory) {
+								return true;
+							}
+							String metaChain = rs.getString("CHAIN");
+							if (chain.equals(metaChain)) {
+								if (3 == categeory || 7 == categeory) {
+									return true;
+								}
+							}
+						}
+						return false;
+					}
+				};
+				log.info("sql:" + selectSql);
+				return run.query(metaConn, selectSql, rsHandler);
+			} catch (Exception e) {
+				log.error("从元数据库查询数据异常:" + e.getMessage(), e);
+				return false;
+			}
+		}
 	}
 
 }

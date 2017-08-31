@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.fcc.check.controller;
 
 import java.io.IOException;
+import java.sql.Connection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
+import com.navinfo.dataservice.dao.fcc.check.selector.CheckWrongSelector;
 import com.navinfo.dataservice.engine.fcc.check.TipsCheckOperator;
 import com.navinfo.dataservice.engine.fcc.check.TipsCheckSelector;
 import com.navinfo.dataservice.engine.fcc.check.TipsExtract;
@@ -483,6 +486,34 @@ public class TipsCheckController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 查询道路质检问题记录
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rd/check/getQualityProblem")
+	public ModelAndView getQualityProblem(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
 
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String id = jsonReq.getString("id");
+			
+			JSONObject data = CheckWrongSelector.getByLogId(id);
+
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

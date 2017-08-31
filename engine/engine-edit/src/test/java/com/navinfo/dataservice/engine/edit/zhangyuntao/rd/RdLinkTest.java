@@ -40,10 +40,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":401000503,\"data\":{\"kind\":9," +
-                "\"routeAdopt\":0,\"speedlimits\":[{\"fromSpeedLimit\":15,\"toSpeedLimit\":15,\"speedClass\":7," +
-                "\"rowId\":\"5F330AFA59CC4088BD524D779563404E\",\"linkPid\":401000503,\"objStatus\":\"UPDATE\"}]," +
-                "\"rowId\":\"1FC94788D96A4DE18083C83D366F94BE\",\"pid\":401000503,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDOBJECT\",\"objId\":404000008,\"infect\":0,\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 

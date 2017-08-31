@@ -55,7 +55,7 @@ public class DownloadPhotoFromHbase {
 		
 		  if (args.length == 0) {
 	            System.out.println("请输入配置文件路径！");
-	            System.exit(0);
+	            System.exit(0); 
 	        }
 	        Properties props = new Properties();
 	        props.load(new FileInputStream(args[0]));

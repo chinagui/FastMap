@@ -827,7 +827,6 @@ public class SubtaskOperation {
 								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
 								subtaskObj.setIsQuality(rs.getInt("IS_QUALITY"));
 								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
-								subtaskObj.setWorkKind(rs.getInt("work_kind"));
 
 								log.debug("get stat");
 								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
@@ -1025,6 +1024,7 @@ public class SubtaskOperation {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
+							
 						list.add(subtask);
 					}
 					page.setTotalCount(total);
@@ -1056,76 +1056,47 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-			
+			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
 			Map<String, Integer> stat = new HashMap<String, Integer>();
 			//Map<String, Integer> taskAndType = SubtaskService.getInstance().getTaskBySubtaskId(subtask.getSubtaskId());
 
 			log.debug("get poi stat");
 			//查询POI总量
 			QueryRunner run = new QueryRunner();
-			//modify by songhe 2017/8/31
-			//多源子任务WorkKind == 4 的从子任务的统计表中取数据
-			String sql = "";
-			if(subtask.getWorkKind() == 4){
-				conn = DBConnector.getInstance().getManConnection();
-				sql = "select t.finished_poi,t.total_poi,t.wait_work_poi from FM_STAT_OVERVIEW_SUBTASK t where t.subtask_id = "+subtask.getSubtaskId();
-				stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
-					@Override
-					public Map<String, Integer> handle(ResultSet rs) throws SQLException {
-						Map<String, Integer> stat = new HashMap<String, Integer>();
-						int poiCommit = 0;
-						int poiWorked = 0;
-						int poiWaitWork = 0;
-						if(rs.next()){
-							int total = rs.getInt("total_poi");
-							poiCommit = rs.getInt("finished_poi");
-							poiWaitWork = rs.getInt("wait_work_poi");
-							poiWorked = total - poiCommit - poiWaitWork;
-						}
-						stat.put("poiCommit", poiCommit);
-						stat.put("poiWorked", poiWorked);
-						stat.put("poiWaitWork", poiWaitWork);
-						return stat;
+			String sql = "select pes.status, count(1) finishNum"
+					+ " from ix_poi ip, poi_edit_status pes"
+					+ " where ip.pid = pes.pid"
+					+ " and pes.status ！= 0"
+					+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
+					//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
+					+ "group by pes.status ";
+			//POI待作业
+			stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> stat = new HashMap<String, Integer>();
+//					int finish = 0;
+//					int total=0;
+					int poiCommit = 0;
+					int poiWorked = 0;
+					int poiWaitWork = 0;
+					while(rs.next()){
+						int status = rs.getInt("status");
+						if(status == 1){poiWaitWork = rs.getInt("finishNum");};
+						if(status == 2){poiWorked = rs.getInt("finishNum");};
+						if(status == 3){poiCommit = rs.getInt("finishNum");};
+//						if(status==3){finish = rs.getInt("finishNum");}
+//						total+=rs.getInt("finishNum");
 					}
-				});
-			}else{
-				conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
-				sql = "select pes.status, count(1) finishNum"
-						+ " from ix_poi ip, poi_edit_status pes"
-						+ " where ip.pid = pes.pid"
-						+ " and pes.status <> 0"
-						+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
-						//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
-						+ "group by pes.status ";
-				//POI待作业
-				stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
-					@Override
-					public Map<String, Integer> handle(ResultSet rs) throws SQLException {
-						Map<String, Integer> stat = new HashMap<String, Integer>();
-//						int finish = 0;
-//						int total=0;
-						int poiCommit = 0;
-						int poiWorked = 0;
-						int poiWaitWork = 0;
-						while(rs.next()){
-							int status = rs.getInt("status");
-							if(status == 1){poiWaitWork = rs.getInt("finishNum");};
-							if(status == 2){poiWorked = rs.getInt("finishNum");};
-							if(status == 3){poiCommit = rs.getInt("finishNum");};
-//							if(status==3){finish = rs.getInt("finishNum");}
-//							total+=rs.getInt("finishNum");
-						}
-//						stat.put("poiFinish", finish);
-//						stat.put("poiTotal", total);
-						stat.put("poiCommit", poiCommit);
-						stat.put("poiWorked", poiWorked);
-						stat.put("poiWaitWork", poiWaitWork);
-						return stat;
-					}
+//					stat.put("poiFinish", finish);
+//					stat.put("poiTotal", total);
+					stat.put("poiCommit", poiCommit);
+					stat.put("poiWorked", poiWorked);
+					stat.put("poiWaitWork", poiWaitWork);
+					return stat;
 				}
-				);
 			}
-			
+			);
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			log.debug("get tips stat");
 			if(3 == subtask.getType()||4 == subtask.getType()){

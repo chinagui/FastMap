@@ -202,6 +202,7 @@ public class SearchProcess {
 					logger.info("dbId========" + dbId);
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 					SearchFactory factory = new SearchFactory(conn);
+					factory.setDbId(dbId);
 					for (ObjType type : types) {
 						if (dbId != this.getDbId()) {
 							if (!this.getBasicObjForRender(type)) {
@@ -348,29 +349,33 @@ public class SearchProcess {
 							}
 						}
 						List<SearchSnapshot> list = null;
-						
-						if(z <= 14){
+
+						if (z <= 14) {
 							if (type == ObjType.IXPOI) {
 								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-								list = ixPoiSearch.searchDataByTileWithGapSnapshot(x, y, z,
-										gap, taskId);
+								list = ixPoiSearch
+										.searchDataByTileWithGapSnapshot(x, y,
+												z, gap, taskId);
 							} else if (type == ObjType.RDLINK) {
-								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-								list = rdLinkSearch.searchDataByTileWithGapSnapshot(x, y,
-										z, gap, taskId);
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(
+										conn);
+								list = rdLinkSearch
+										.searchDataByTileWithGapSnapshot(x, y,
+												z, gap, taskId);
 							}
-						}else{
+						} else {
 							if (type == ObjType.IXPOI) {
 								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-								list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
-										gap, taskId);
+								list = ixPoiSearch.searchDataByTileWithGap(x,
+										y, z, gap, taskId);
 							} else if (type == ObjType.RDLINK) {
-								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-								list = rdLinkSearch.searchDataByTileWithGap(x, y,
-										z, gap, taskId);
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(
+										conn);
+								list = rdLinkSearch.searchDataByTileWithGap(x,
+										y, z, gap, taskId);
 							}
 						}
-						
+
 						for (SearchSnapshot snapshot : list) {
 							snapshot.setDbId(dbId);
 						}
@@ -445,9 +450,10 @@ public class SearchProcess {
 		}
 
 	}
+
 	/**
 	 * 根据pid查询删除数据
-	 *
+	 * 
 	 * @return 查询结果
 	 * @throws Exception
 	 */
@@ -465,7 +471,6 @@ public class SearchProcess {
 				return searchDelObj.searchDelDataByPid(pid);
 			}
 			return null;
-
 
 		} catch (Exception e) {
 
@@ -568,9 +573,11 @@ public class SearchProcess {
 						if (condition.containsKey("speedDependent")) {
 							speedDependent = condition.getInt("speedDependent");
 						}
-						int speedValue=condition.getInt("speedValue");
+						int speedValue = condition.getInt("speedValue");
 
-						List<Integer> nextLinkPids = searchUtils.getConnectLinks(linkPid, direct, speedDependent, speedValue * 10);
+						List<Integer> nextLinkPids = searchUtils
+								.getConnectLinks(linkPid, direct,
+										speedDependent, speedValue * 10);
 
 						JSONArray linkPidsArray = new JSONArray();
 
@@ -580,7 +587,9 @@ public class SearchProcess {
 
 						array.add(linkPidsArray);
 
-						JSONArray speedlimitArray = searchUtils.getRdLinkSpeedlimit(nextLinkPids, speedDependent);
+						JSONArray speedlimitArray = searchUtils
+								.getRdLinkSpeedlimit(nextLinkPids,
+										speedDependent);
 
 						array.add(speedlimitArray);
 					}
@@ -934,7 +943,8 @@ public class SearchProcess {
 
 					RdLink link = (RdLink) row;
 
-					List<Integer> viaList = calLinkOperateUtils.calViaLinks(this.conn, link, outLinkPid);
+					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
+							this.conn, link, outLinkPid);
 
 					for (Integer pid : viaList) {
 						array.add(pid);

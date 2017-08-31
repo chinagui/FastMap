@@ -1,11 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+
+import java.sql.Connection;
 
 public class OpRefRelationObj {
 
@@ -29,23 +27,6 @@ public class OpRefRelationObj {
 		return null;
 	}
 
-//	// CRF道路
-//	public String handleRdroad(Result result, Command command) throws Exception {
-//
-//		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation(
-//				conn);
-//
-//		List<Integer> linkPids = new ArrayList<Integer>();
-//
-//		for (RdLink link : command.getLinks()) {
-//
-//			linkPids.add(link.getPid());
-//		}
-//
-//		operation.deleteByLinks(linkPids, result);
-//
-//		return null;
-//	}
 	
 	//CRF要素 (RdInter、RdRoad、RdObject)
 	public String handleCRF(Result result, Command command) throws Exception {
@@ -68,6 +49,18 @@ public class OpRefRelationObj {
 			warninginfoOperation.deleteByLink(pid, result);
 		}
 
+		return null;
+	}
+
+
+	// 警示信息RD_LINK_WARNING
+	public String handleLinkWarning(Result result, Command command)
+			throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
+				conn);
+
+		operation.updateByLinks(command.getLinkPids(), result);
 		return null;
 	}
 

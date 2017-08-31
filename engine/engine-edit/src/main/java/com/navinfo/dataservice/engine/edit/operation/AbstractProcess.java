@@ -62,7 +62,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
         if (result != null) {
             this.result = result;
         } else {
-            result = new Result();
+            this.result = new Result();
         }
         // 初始化检查参数
         this.initCheckCommand();
@@ -73,6 +73,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
         this.result = new Result();
         if (!command.isHasConn()) {
             this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+            this.conn.setAutoCommit(false);
         }
         // 初始化检查参数
         this.initCheckCommand();

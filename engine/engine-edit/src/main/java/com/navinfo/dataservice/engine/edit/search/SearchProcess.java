@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.*;
@@ -59,7 +60,6 @@ import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
 
 /**
  * 查询进程
@@ -568,10 +568,9 @@ public class SearchProcess {
 						if (condition.containsKey("speedDependent")) {
 							speedDependent = condition.getInt("speedDependent");
 						}
+						int speedValue=condition.getInt("speedValue");
 
-						List<Integer> nextLinkPids = searchUtils
-								.getConnectLinks(linkPid, direct,
-										speedDependent);
+						List<Integer> nextLinkPids = searchUtils.getConnectLinks(linkPid, direct, speedDependent, speedValue * 10);
 
 						JSONArray linkPidsArray = new JSONArray();
 
@@ -581,9 +580,7 @@ public class SearchProcess {
 
 						array.add(linkPidsArray);
 
-						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids,
-										speedDependent);
+						JSONArray speedlimitArray = searchUtils.getRdLinkSpeedlimit(nextLinkPids, speedDependent);
 
 						array.add(speedlimitArray);
 					}

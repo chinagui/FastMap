@@ -312,6 +312,38 @@ public class TipsOperateTest2 extends InitApplication{
 
 		System.out.println("预处理tips打断成功");
 	}
+
+	@Test
+	public void testSplitLine() throws Exception {
+
+		String  parameter=null;
+		parameter="{\"pids\":[\"022001a56dfc2b5a6846028c3522cbf4be3072\"],\"dis\":3}";
+
+        if (StringUtils.isEmpty(parameter)) {
+            throw new IllegalArgumentException("parameter参数不能为空。");
+        }
+
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        JSONArray pids = jsonReq.getJSONArray("pids");
+        if(pids == null || pids.size() <= 0) {
+            throw new IllegalArgumentException("pids参数不能为空。");
+        }
+
+        double distance = jsonReq.getDouble("dis");
+        if(distance <= 0 ) {
+            throw new IllegalArgumentException("dis参数必须大于0");
+        }
+
+        PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+        JSONArray result = op.measuringLineSplit(pids, distance);
+
+        System.out.println("预处理tips打断成功");
+        System.out.println("***********************************");
+        System.out.println("***********************************");
+        System.out.println("***********************************");
+        System.out.println("***********************************");
+        System.out.println(result.toString());
+	}
 	
 	
 	

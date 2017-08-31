@@ -37,7 +37,7 @@ public class PoiRecommender {
 
 	public static Connection conn = null;
 
-	public static List<FastPoi> loadPoi(Geometry geometry,MetadataApi metadataApi) throws Exception {
+	public static List<FastPoi> loadPoi(Geometry geometry,MetadataApi metadataApi,String kindsType16) throws Exception {
 		List<FastPoi> poiList = new ArrayList<FastPoi>();
 
 		PreparedStatement pstmt = null;
@@ -63,7 +63,8 @@ public class PoiRecommender {
 			sb.append("             AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,");
 			sb.append("         A.FULLNAME");
 			sb.append("    FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
-			sb.append("   WHERE sdo_within_distance(I.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
+			sb.append("   WHERE I.KIND_CODE IN "+kindsType16);
+			sb.append("    AND sdo_within_distance(I.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
 			sb.append("     AND I.PID = P1.POI_PID");
 			sb.append("     AND P1.U_RECORD <> 2");
 			sb.append("     AND P1.NAME_CLASS = 1");
@@ -96,7 +97,7 @@ public class PoiRecommender {
 			sb.append(" WHERE A.PID = B.POI_PID");
 
 			pstmt = conn.prepareStatement(sb.toString());
-			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(2000));
+			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(10000));
 
 			String wkt = GeoTranslator.jts2Wkt(buffer);
 			Clob geom = ConnectionUtil.createClob(conn);
@@ -198,10 +199,10 @@ public class PoiRecommender {
 	}
 
 	// 推荐匹配poi
-	public static void recommenderPoi(IxDealershipResult dealResult,MetadataApi metadataApi) throws Exception {
+	public static void recommenderPoi(IxDealershipResult dealResult,MetadataApi metadataApi,String kindsType16) throws Exception {
 		FastResult fr = buildFastResult(dealResult);
 		// 外扩两公里查询poi
-		List<FastPoi> poiList = loadPoi(dealResult.getGeometry(),metadataApi);
+		List<FastPoi> poiList = loadPoi(dealResult.getGeometry(),metadataApi,kindsType16);
 		Map<String, Double> matchPoi = new HashMap<String, Double>();
 		for (FastPoi obj : poiList) {
 			double sim = similarityDealership(fr, obj);

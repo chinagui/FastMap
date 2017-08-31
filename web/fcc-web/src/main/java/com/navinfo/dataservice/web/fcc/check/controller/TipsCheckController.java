@@ -265,17 +265,17 @@ public class TipsCheckController extends BaseController {
 			
 			int checkTaskId=jsonReq.getInt("subTaskId"); //质检任务号
 			
-			String rowkey =jsonReq.getString("rowkey");//tips rowkey
+			String objectId =jsonReq.getString("objectId");//tips rowkey
 
-			if (StringUtils.isEmpty(rowkey)) {
+			if (StringUtils.isEmpty(objectId)) {
 				
-                throw new IllegalArgumentException("参数错误:rowkey不能为空。");
+                throw new IllegalArgumentException("参数错误:objectId不能为空。");
             }
 			
 			TipsCheckSelector selector=new TipsCheckSelector();
 			
 			////返回当前rowkey下的 错误问题记录（用于界面显示或者修改）
-			JSONObject result=selector.queryWrongByRowkey(checkTaskId,rowkey);
+			JSONObject result=selector.queryWrongByRowkey(checkTaskId,objectId);
 			
 			logger.debug("result:"+result);
 			
@@ -463,6 +463,7 @@ public class TipsCheckController extends BaseController {
 			
 			logger.debug("parameter:"+parameter);
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
 			
 			int  workStatus=jsonReq.getInt("checkStatus");
 			

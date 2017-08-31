@@ -273,6 +273,11 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation speedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation(conn);
         speedOperation.moveSpeedlimit(oldLink, newLinks, result);
 
+        // 警示信息RD_LINK_WARNING
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation warningOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
+                this.conn);
+        warningOperation.moveLink( oldLink,  newLinks,  result);
+
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */

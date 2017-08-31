@@ -59,7 +59,7 @@ public class TipsCheckOperator {
 		try{
 			CheckWrong wrong=(CheckWrong) JSONObject.toBean(jsonWrong,CheckWrong.class);
 			
-			wrong.setWorkTime(getTipsWorkTime(wrong.getTipsRowkey()));
+			wrong.setWorkTime(getTipsWorkTime(wrong.getObjectId()));
 			
 			
 			// 调用 manapi 获取 任务类型、及任务号
@@ -72,7 +72,7 @@ public class TipsCheckOperator {
 			
 			//1.先判断，该rowkey是否已经存在质检问题记录
 			CheckWrongSelector se=new CheckWrongSelector();
-			if(se.rowkeyHasExtract(wrong.getCheckTaskId(), wrong.getTipsRowkey())){
+			if(se.rowkeyHasExtract(wrong.getCheckTaskId(), wrong.getObjectId())){
 				
 				throw new Exception("该tips已存在问题记录，不能重复增加");
 			}
@@ -102,7 +102,7 @@ public class TipsCheckOperator {
 	 * @throws Exception 
 	 * @time:2017-5-31 下午8:31:05
 	 */
-	private String getTipsWorkTime(String rowkey) throws Exception {
+	private String getTipsWorkTime(String objectId) throws Exception {
 			String workDate="";
 			Connection hbaseConn = null;
 	        Table htab = null;
@@ -114,7 +114,7 @@ public class TipsCheckOperator {
 	                    .valueOf(HBaseConstant.tipTab));
 	            String[] queryColNames={"track"};
 	            
-	            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, queryColNames);
+	            JSONObject  oldTip=HbaseTipsQuery.getHbaseTipsByRowkey(htab, objectId, queryColNames);
 	            
 	        	JSONObject track = oldTip.getJSONObject("track");
 	        	
@@ -136,9 +136,9 @@ public class TipsCheckOperator {
 	        	
 	        	return workDate;
 	        }catch (Exception e) {
-	        	logger.error("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+	        	logger.error("查询tips出错,rowkey:"+objectId+e.getMessage(), e);
 				
-				throw new Exception("查询tips出错,rowkey:"+rowkey+e.getMessage(), e);
+				throw new Exception("查询tips出错,rowkey:"+objectId+e.getMessage(), e);
 			}finally {
 				if(htab!=null){
 					htab.close();

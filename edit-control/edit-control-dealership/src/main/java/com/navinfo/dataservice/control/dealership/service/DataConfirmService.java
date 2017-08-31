@@ -219,13 +219,16 @@ public class DataConfirmService {
 						throw new Exception("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
 					}
 				}
-				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
-				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
-				if (uniqueKeys.contains(uniqueKey)) {
-					log.error("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
-					throw new Exception("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
-				} else {
-					uniqueKeys.add(uniqueKey);
+				// 若文件中“UUID”有值且必须唯一，否则整个文件不可导入
+//				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
+				String uniqueKey = result.get("resultId").toString();
+				if(uniqueKey != null && StringUtils.isNotEmpty(uniqueKey)){
+					if (uniqueKeys.contains(uniqueKey)) {
+						log.error("文件中“UUID”有值但不唯一，文件不可导入");
+						throw new Exception("文件中“UUID”有值但不唯一，文件不可导入");
+					} else {
+						uniqueKeys.add(uniqueKey);
+					}
 				}
 			}
 			

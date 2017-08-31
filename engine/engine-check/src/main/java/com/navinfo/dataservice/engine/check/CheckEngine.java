@@ -23,8 +23,10 @@ import com.navinfo.dataservice.engine.check.core.RuleExecuter;
 public class CheckEngine {
     private CheckCommand checkCommand = null;
     private Connection conn;
+    private int taskId;
+    private String worker;
     public List<CheckRule> checkRuleList = new ArrayList<CheckRule>();
-
+    
     public Connection getConn() {
         return conn;
     }
@@ -49,6 +51,16 @@ public class CheckEngine {
         //this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
         //this.conn.setAutoCommit(true);
     }
+    
+    public CheckEngine(CheckCommand checkCommand, Connection conn, int taskId, String worker) throws Exception {
+        this.log = LoggerRepos.getLogger(this.log);
+        this.checkCommand = checkCommand;
+        this.conn = conn;
+        this.taskId = taskId;
+        this.worker = worker;
+        //this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+        //this.conn.setAutoCommit(true);
+    }
 
     /*
      * 获取本次要执行的检查规则
@@ -69,9 +81,13 @@ public class CheckEngine {
         }
         NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
         for (int i = 0; i < checkResultList.size(); i++) {
-            check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList
-                            .get(i).getTargets(), checkResultList.get(i).getMeshId(), checkResultList.get(i).getInformation(),
-					"TEST");
+        	/*check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList
+                    .get(i).getTargets(), checkResultList.get(i).getMeshId(), checkResultList.get(i).getInformation(),
+			"TEST");*/
+        	check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(),
+        			checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(), checkResultList.get(i).getInformation(),
+        			1, this.worker, this.taskId);
+        	
         }
         log.debug("end call insert ni_val");
     }

@@ -1016,6 +1016,8 @@ public class Operation implements IOperation {
 
         opRefRelationObj.handlerdWarninginfo(this.command, result);
 
+        opRefRelationObj.handlerdRdLinkWarning(this.command, result);
+
         opRefRelationObj.handleSameLink(this.command, result);
 
         opRefRelationObj.handleSameNode(this.command, result);

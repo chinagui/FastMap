@@ -80,12 +80,17 @@ public class CheckWrongOperator {
 
 			conn = DBConnector.getInstance().getCheckConnection();
 
-			String uuid = UuidUtils.genUuid();
-
-			wrong.setLogId(uuid);
-
-			wrong.setCheckTime(DateUtils.format(new Date(),"yyyyMMddHHmmss"));
+			String uuid = "";
+			if(StringUtils.isEmpty(wrong.getLogId())){
+				uuid = UuidUtils.genUuid();
+				wrong.setLogId(uuid);
+			}else{
+				uuid = wrong.getLogId();
+			}
 			
+			if(StringUtils.isEmpty(wrong.getCheckTime())){
+				wrong.setCheckTime(DateUtils.format(new Date(),"yyyyMMddHHmmss"));
+			}
 			
 
 			pst = conn.prepareStatement(INSERT_SQL);

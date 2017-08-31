@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.check;
 
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,26 +86,29 @@ public class NiValExceptionTest extends InitApplication {
 		// selector.updateCheckLogStatus(id, type);
 	}
 
-//	@Test
+	@Test
 	public void testList() throws Exception {
 		Connection conn = null;
 		try {
 
-			// parameter:{"dbId":19,"pageNum":1,"subtaskType":9,"pageSize":5,"subtaskId":"454","grids":[60564613,60564612,60564603,60564602,60563632]}
 			Set<String> grids = new HashSet<String>();
-			grids.add("60564613,60564612,60564603,60564602,60563632");
-			grids.add("60564612");
-			grids.add("60564603");
-			grids.add("60564602");
-			grids.add("60561210");
-
-			conn = DBConnector.getInstance().getConnectionById(19);
+			grids.add("59565623");
+			grids.add("59565633");
+			grids.add("59565710");
+			grids.add("59565720");
+			grids.add("59565613");
+			grids.add("59565730");
+			///{"dbId":624,"subtaskId":573,"subtaskType":3,
+			//"grids":[59565623,59565633,59565710,59565720,59565613,59565730],
+			//"pageSize":15,"pageNum":1,"level":0,"ruleId":"","flag":1,"sortby":"","checkType":0}
+			
+			//subtaskType, grids,pageSize,pageNum,flag,ruleId,level,sortby,checkType)
+			conn = DBConnector.getInstance().getConnectionById(624);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-
-//			Page page = selector.list(9, grids, 5, 1, 0);
-//			System.out.println(page.getResult()
-//					+ "-----------------------------------------------");
+			
+			Page page = selector.list(3, grids, 15, 1, 0, "", 0, "", 0);
+			System.out.println(page.getResult());
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}

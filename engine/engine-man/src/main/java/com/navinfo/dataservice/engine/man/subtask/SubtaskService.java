@@ -2754,7 +2754,7 @@ public class SubtaskService {
 			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
 					+ "where i.INFOR_ID = p.INFOR_ID "
 					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
-					+ "AND ST.STATUS IN (1,2) "
+					+ "AND ST.STATUS = 1 "
 					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0  AND st.is_quality=0 "
 					+ "AND i.ADMIN_NAME like " +  "\'"+ "%" + cityName + "%" +"\'";
 			

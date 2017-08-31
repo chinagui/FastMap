@@ -467,11 +467,11 @@ public class TipsCheckController extends BaseController {
 			
 			int  workStatus=jsonReq.getInt("checkStatus");
 			
-			String objectId = jsonReq.getString("objectId");
+			String rowkey = jsonReq.getString("rowkey");
 
 			TipsCheckOperator op = new TipsCheckOperator();
 			
-			op.updateTipsCheckStatus(objectId,workStatus);
+			op.updateTipsCheckStatus(rowkey,workStatus);
 			
 			return new ModelAndView("jsonView", success());
 

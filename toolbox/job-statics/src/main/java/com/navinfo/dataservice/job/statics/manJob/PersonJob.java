@@ -48,8 +48,8 @@ public class PersonJob extends AbstractStatJob {
 			//计算前一天的统计
 			timeForOrical=DateUtils.dateToString(DateUtils.getDayBefore(
 					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD);
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
+//			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+//					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
 			log.info("timestamp:" + timestamp);
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
 			//从mango库中查询数据

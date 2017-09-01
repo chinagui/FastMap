@@ -27,7 +27,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
@@ -43,6 +45,7 @@ import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -152,8 +155,9 @@ public class RdObjectSearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 
-			throw new SQLException(e);
+			throw e;
 		} finally {
 			if (resultSet != null) {
 				try {
@@ -258,7 +262,7 @@ public class RdObjectSearch implements ISearch {
 					nodeArray.add(nodeJObj);
 				}
 			}
-			//处理rdOBject 跨大区
+			// 处理rdOBject 跨大区
 			RdObject rdObject = (RdObject) this.searchDataByPid(pid);
 			JSONArray rdInterLinks = new JSONArray();
 			JSONArray rdRodLinks = new JSONArray();
@@ -276,7 +280,7 @@ public class RdObjectSearch implements ISearch {
 					rdObjectLinks.add(obj);
 				}
 			}
-			//判断RdObject是否跨大区
+			// 判断RdObject是否跨大区
 			boolean isCheckRdInterNodesArea = this.isCheckRdInterNodesArea(
 					rdObject, nodeArray);
 			boolean isCheckRdInterLinksArea = this.isCheckRdInterLinksArea(
@@ -346,7 +350,7 @@ public class RdObjectSearch implements ISearch {
 		if (rdObject.getInters() != null && rdObject.getInters().size() > 0) {
 			List<Integer> interNodes = new ArrayList<Integer>();
 			for (IRow row : rdObject.getInters()) {
-				RdInter rdInter = (RdInter) row;
+				RdObjectInter rdInter = (RdObjectInter) row;
 				if (rdInter.getNodes() != null && rdInter.getNodes().size() > 0) {
 					for (IRow InterNode : rdInter.getNodes()) {
 						RdInterNode node = (RdInterNode) InterNode;
@@ -369,7 +373,7 @@ public class RdObjectSearch implements ISearch {
 		if (rdObject.getInters() != null && rdObject.getInters().size() > 0) {
 			List<Integer> interLinks = new ArrayList<Integer>();
 			for (IRow row : rdObject.getInters()) {
-				RdInter rdInter = (RdInter) row;
+				RdObjectInter rdInter = (RdObjectInter) row;
 				if (rdInter.getLinks() != null && rdInter.getLinks().size() > 0) {
 					for (IRow InterLink : rdInter.getLinks()) {
 						RdInterLink link = (RdInterLink) InterLink;
@@ -392,7 +396,7 @@ public class RdObjectSearch implements ISearch {
 		if (rdObject.getRoads() != null && rdObject.getRoads().size() > 0) {
 			List<Integer> roadLinks = new ArrayList<Integer>();
 			for (IRow row : rdObject.getRoads()) {
-				RdRoad rdRoad = (RdRoad) row;
+				RdObjectRoad rdRoad = (RdObjectRoad) row;
 				if (rdRoad.getLinks() != null && rdRoad.getLinks().size() > 0) {
 					for (IRow roadLink : rdRoad.getLinks()) {
 						RdRoadLink link = (RdRoadLink) roadLink;
@@ -420,9 +424,9 @@ public class RdObjectSearch implements ISearch {
 		return false;
 
 	}
+
 	/***
-	 * @author zhaokk
-	 * 处理rdobect 跨大区渲染
+	 * @author zhaokk 处理rdobect 跨大区渲染
 	 * @param rdObject
 	 * @param rdInterLinks
 	 * @param rdRodLinks
@@ -455,22 +459,22 @@ public class RdObjectSearch implements ISearch {
 		Map<Integer, List<Integer>> mapInterLinks = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> mapRoadLinks = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> mapObjectLinks = new HashMap<Integer, List<Integer>>();
-        //计算跨大区rdinter的node
+		// 计算跨大区rdinter的node
 		if (isCheckRdInterNodesArea) {
 			mapNodes = this.getAreaNodeMapforRdObject(rdObject, nodeArray);
 		}
-		 //计算跨大区rdinter的link
+		// 计算跨大区rdinter的link
 		if (isCheckRdInterLinksArea) {
 			mapInterLinks = this.getAreaInterLinkMapforRdObject(rdObject,
 					rdInterLinks);
 
 		}
-		//计算跨大road的link
+		// 计算跨大road的link
 		if (isCheckRdRoadLinksArea) {
 			mapRoadLinks = this.getAreaRdRoadMapforRdObject(rdObject,
 					rdRodLinks);
 		}
-		//计算跨大RdObjectLink的link
+		// 计算跨大RdObjectLink的link
 		if (isCheckRdObjectLinksArea) {
 			mapObjectLinks = this.getAreaObjectLinkMapforRdObject(rdObject,
 					rdObjectLinks);
@@ -534,6 +538,20 @@ public class RdObjectSearch implements ISearch {
 
 	}
 
+	/***
+	 * 补充接边link
+	 * 
+	 * @param conn
+	 * @param rdObject
+	 * @param areaLinks
+	 * @param mapLinks
+	 * @param arrayLinks
+	 * @param flag
+	 * @param px
+	 * @param py
+	 * @param z
+	 * @throws Exception
+	 */
 	private void addAreaLinkForRdObject(Connection conn, RdObject rdObject,
 			List<Integer> areaLinks, Map<Integer, List<Integer>> mapLinks,
 			JSONArray arrayLinks, int flag, double px, double py, int z)
@@ -578,6 +596,18 @@ public class RdObjectSearch implements ISearch {
 
 	}
 
+	/**
+	 * 补充接边的node
+	 * 
+	 * @param conn
+	 * @param areaNodes
+	 * @param mapNodes
+	 * @param nodeArray
+	 * @param px
+	 * @param py
+	 * @param z
+	 * @throws Exception
+	 */
 	private void addAreaNodeForRdObject(Connection conn,
 			List<Integer> areaNodes, Map<Integer, List<Integer>> mapNodes,
 			JSONArray nodeArray, double px, double py, int z) throws Exception {
@@ -615,6 +645,13 @@ public class RdObjectSearch implements ISearch {
 
 	}
 
+	/**
+	 * 计算接边的pid
+	 * 
+	 * @author zhaokk
+	 * @param map
+	 * @return
+	 */
 	private List<Integer> getAreaPids(Map<Integer, List<Integer>> map) {
 		List<Integer> areaPids = new ArrayList<Integer>();
 		for (List<Integer> maps : map.values()) {
@@ -624,12 +661,21 @@ public class RdObjectSearch implements ISearch {
 
 	}
 
+	/***
+	 * 提取接边对应inter 的node
+	 * 
+	 * @author zhaokk
+	 * @param rdObject
+	 * @param nodeArray
+	 * @return
+	 */
 	private Map<Integer, List<Integer>> getAreaNodeMapforRdObject(
 			RdObject rdObject, JSONArray nodeArray) {
 		Map<Integer, List<Integer>> mapNodes = new HashMap<Integer, List<Integer>>();
 
 		for (IRow row : rdObject.getInters()) {
-			RdInter inter = (RdInter) row;
+
+			RdObjectInter inter = (RdObjectInter) row;
 			List<Integer> interNodes = new ArrayList<Integer>();
 			List<Integer> interNodesArea = new ArrayList<Integer>();
 			for (IRow iRow : inter.getNodes()) {
@@ -654,12 +700,18 @@ public class RdObjectSearch implements ISearch {
 		return mapNodes;
 	}
 
+	/***
+	 * @author zhaokk 提取接边对应road 的link
+	 * @param rdObject
+	 * @param rdRodLinks
+	 * @return
+	 */
 	private Map<Integer, List<Integer>> getAreaRdRoadMapforRdObject(
 			RdObject rdObject, JSONArray rdRodLinks) {
 		Map<Integer, List<Integer>> mapRoadLinks = new HashMap<Integer, List<Integer>>();
 
 		for (IRow row : rdObject.getRoads()) {
-			RdRoad rdRoad = (RdRoad) row;
+			RdObjectRoad rdRoad = (RdObjectRoad) row;
 			List<Integer> roadLinks = new ArrayList<Integer>();
 			List<Integer> roadLinksArea = new ArrayList<Integer>();
 			for (IRow iRow : rdRoad.getLinks()) {
@@ -685,6 +737,12 @@ public class RdObjectSearch implements ISearch {
 
 	}
 
+	/***
+	 * @author zhaok 提取接边对应object 的link
+	 * @param rdObject
+	 * @param rdObjectLinks
+	 * @return
+	 */
 	private Map<Integer, List<Integer>> getAreaObjectLinkMapforRdObject(
 			RdObject rdObject, JSONArray rdObjectLinks) {
 		Map<Integer, List<Integer>> mapObjectLinks = new HashMap<Integer, List<Integer>>();
@@ -707,12 +765,18 @@ public class RdObjectSearch implements ISearch {
 		return mapObjectLinks;
 	}
 
+	/**
+	 * @author zhaokk 提取接边对应inter 的link
+	 * @param rdObject
+	 * @param rdInterLinks
+	 * @return
+	 */
 	private Map<Integer, List<Integer>> getAreaInterLinkMapforRdObject(
 			RdObject rdObject, JSONArray rdInterLinks) {
 
 		Map<Integer, List<Integer>> mapInterLinks = new HashMap<Integer, List<Integer>>();
 		for (IRow row : rdObject.getInters()) {
-			RdInter inter = (RdInter) row;
+			RdObjectInter inter = (RdObjectInter) row;
 			List<Integer> interLinks = new ArrayList<Integer>();
 			List<Integer> interLinksArea = new ArrayList<Integer>();
 			for (IRow iRow : inter.getLinks()) {
@@ -790,4 +854,5 @@ public class RdObjectSearch implements ISearch {
 
 		return coordinates;
 	}
+
 }

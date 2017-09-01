@@ -65,12 +65,14 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
+			//查询所有元数据库中的代理店的数据
+			Set<String> dealers = queryDealershipFromMeta();
 			
 			Map<Integer, Map<String,List<Map<String, Object>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String, Object>>>>();
 			long time = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			if(dbSize == 1){
-				new PoiDayStatThread(null, dbIds.iterator().next(), stats).run();
+				new PoiDayStatThread(null, dbIds.iterator().next(), stats, dealers).run();
 			}else{
 				if(dbSize > 10){
 					initThreadPool(10);
@@ -81,7 +83,7 @@ public class DayPoiJob extends AbstractStatJob {
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
 				for(int dbId:dbIds){
-					threadPoolExecutor.execute(new PoiDayStatThread(latch,dbId,stats));
+					threadPoolExecutor.execute(new PoiDayStatThread(latch,dbId,stats,dealers));
 				}
 				latch.await();
 				if (threadPoolExecutor.getExceptions().size() > 0) {
@@ -138,20 +140,20 @@ public class DayPoiJob extends AbstractStatJob {
 	class PoiDayStatThread implements Runnable{
 		CountDownLatch latch = null;
 		int dbId = 0;
+		Set<String> dealers = null;
 		Map<Integer, Map<String,List<Map<String, Object>>>> stats;
-		PoiDayStatThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat){
+		PoiDayStatThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat, Set<String> dealers){
 			this.latch = latch;
 			this.dbId = dbId;
 			this.stats = stat;
+			this.dealers = dealers;
 		}
 		
 		@Override
 		public void run() {
-			Connection metaConn = null;
 			try{
-				metaConn = DBConnector.getInstance().getMetaConnection();
 				//查询并统计所有数据
-				Map<String,Object> result = convertAllTaskData(metaConn);
+				Map<String,Object> result = convertAllTaskData(dealers);
 				
 				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 				List<Map<String, Object>> taskStat = new ArrayList<Map<String, Object>>();
@@ -209,6 +211,7 @@ public class DayPoiJob extends AbstractStatJob {
 				}
 			}
 		}
+		
 		
 		/**
 		 * 处理统计任务的数据
@@ -361,7 +364,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @throws Exception 
 		 * 
 		 * */
-		public Map<String,Object> convertAllTaskData(final Connection metaConn) throws Exception{
+		public Map<String,Object> convertAllTaskData(final Set<String> dealers) throws Exception{
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -422,7 +425,7 @@ public class DayPoiJob extends AbstractStatJob {
 						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						    	String kindCode = rs.getString("KIND_CODE")== null ? "" : rs.getString("KIND_CODE");
 								String chain = rs.getString("CHAIN") == null ? "" : rs.getString("CHAIN");
-						    	statisticsNoTaskDataImp(metaConn, notaskStat, kindCode, chain, struct, status);
+						    	statisticsNoTaskDataImp(dealers, notaskStat, kindCode, chain, struct, status);
 						    }
 						}
 						result.put("subtaskStat", subtaskStat);
@@ -437,7 +440,6 @@ public class DayPoiJob extends AbstractStatJob {
 				log.error("从大区库查询处理数据异常:" + e.getMessage(), e);
 				throw e;
 			}finally{
-				DbUtils.closeQuietly(metaConn);
 				DbUtils.closeQuietly(conn);
 			}
 		}
@@ -452,7 +454,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @param int
 		 * 
 		 * */
-		public void statisticsNoTaskDataImp(Connection metaConn, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct, int status){
+		public void statisticsNoTaskDataImp(Set<String> dealers, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct, int status){
 			boolean poiType = false;
 			try {
 				Point geo;
@@ -470,7 +472,7 @@ public class DayPoiJob extends AbstractStatJob {
 					noDealershipNum = notaskStat.get(gridId).get("noDealershipNum");
 				}
 				if(status != 0){
-					poiType = wetherDealership(metaConn, kindCode, chain);
+					poiType = wetherDealership(dealers, kindCode, chain);
 				}
 				if(poiType){
 					dealershipNum++;
@@ -495,42 +497,54 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @throws Exception
 		 * 
 		 */
-		public boolean wetherDealership(Connection metaConn, String kindCode, final String chain) {
+		public boolean wetherDealership(Set<String> dealers, String kindCode, final String chain) {
 			try {
-				QueryRunner run = new QueryRunner();
-
-				StringBuilder sb = new StringBuilder();
-				sb.append(" SELECT P.CHAIN,                       ");
-				sb.append("        P.CATEGORY                     ");
-				sb.append("   FROM SC_POINT_SPEC_KINDCODE_NEW P   ");
-				sb.append("  WHERE P.POI_KIND = '" + kindCode + "'");
-				sb.append("   AND P.TYPE = 7                      ");
-
-				String selectSql = sb.toString();
-
-				ResultSetHandler<Boolean> rsHandler = new ResultSetHandler<Boolean>() {
-					public Boolean handle(ResultSet rs) throws SQLException {
-						while (rs.next()) {
-							int categeory = rs.getInt("CATEGORY");
-							if (1 == categeory) {
-								return true;
-							}
-							String metaChain = rs.getString("CHAIN");
-							if (chain.equals(metaChain)) {
-								if (3 == categeory || 7 == categeory) {
-									return true;
-								}
-							}
-						}
-						return false;
-					}
-				};
-				log.info("sql:" + selectSql);
-				return run.query(metaConn, selectSql, rsHandler);
+				if(dealers.contains(kindCode)){
+					return true;
+				}
+				if(dealers.contains(kindCode+chain)){
+					return true;
+				}
+				return false;
 			} catch (Exception e) {
 				log.error("从元数据库查询数据异常:" + e.getMessage(), e);
-				return false;
+				throw e;
 			}
+		}
+	}
+	
+	/**
+	 * 从元数据库查询所有的代理店数据集合
+	 * @return Set<String>
+	 * @throws Exception 
+	 * 
+	 * */
+	public Set<String> queryDealershipFromMeta() throws Exception{
+		Connection metaConn = null;
+		try {
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			QueryRunner run = new QueryRunner();
+
+			String selectSql = "select t.poi_kind from SC_POINT_SPEC_KINDCODE_NEW t where t.type = 7 and t.category = 1 "
+					+ "union all select concat(t.poi_kind, t.chain) from SC_POINT_SPEC_KINDCODE_NEW t "
+					+ "where t.type = 7 and (t.category = 3 or t.category = 7)";
+
+			ResultSetHandler<Set<String>> rsHandler = new ResultSetHandler<Set<String>>() {
+				public Set<String> handle(ResultSet rs) throws SQLException {
+					Set<String> result = new HashSet<>(256);
+					while (rs.next()) {
+						result.add(rs.getString("poi_kind"));
+					}
+					return result;
+				}
+			};
+			log.info("sql:" + selectSql);
+			return run.query(metaConn, selectSql, rsHandler);
+		}catch(Exception e){
+			log.error("从元数据库查询数据异常:" + e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(metaConn);
 		}
 	}
 

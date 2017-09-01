@@ -21,7 +21,6 @@
                 <ref bean="personDayStat_Trigger" />
                 <ref bean="tipsStat_Trigger" />
                 <ref bean="personTipsStat_Trigger" />
-                <ref bean="notaskStat_Trigger" />
 <!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
             </list>
         </property>
@@ -126,13 +125,6 @@
         <property name="jobDetail" ref="personTipsStat_detail" />
         <property name="cronExpression" value="0 0 1 * * ?" />
     </bean>
-    
-    <bean id="notaskStat_Trigger"
-          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="notaskStat_detail" />
-        <property name="cronExpression" value="0 0 1 * * ?" />
-    </bean>
-    
 <!--     <bean id="poiQualityInitCountTable_Trigger" -->
 <!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
 <!--         <property name="jobDetail" ref="poiQualityInitCountTable_detail" /> -->
@@ -173,12 +165,6 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
-    
-    <bean id="notaskStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="notaskStat" />
-        <property name="targetMethod" value="start" />
-        <property name="concurrent" value="false" />
-    </bean>
 <!--     <bean id="poiQualityInitCountTable_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> -->
 <!--         <property name="targetObject" ref="poiQualityInitCountTable" /> -->
 <!--         <property name="targetMethod" value="start" /> -->
@@ -195,6 +181,5 @@
 
     <bean id="personTipsStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PersonTipsStatStarter"/>
 <!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
-	<bean id="notaskStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.NoTaskStatStarter"/>
 	
 </beans>

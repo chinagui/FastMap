@@ -7,25 +7,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.log4j.Logger;
-import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
@@ -34,10 +28,8 @@ import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.engine.fcc.photo.HBaseController;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import sun.tools.tree.ThisExpression;
 
 public class DownloadPhotoFromHbase {
 	private static Logger log = LoggerRepos.getLogger(DownloadPhotoFromHbase.class);
@@ -63,7 +55,7 @@ public class DownloadPhotoFromHbase {
 		
 		  if (args.length == 0) {
 	            System.out.println("请输入配置文件路径！");
-	            System.exit(0);
+	            System.exit(0); 
 	        }
 	        Properties props = new Properties();
 	        props.load(new FileInputStream(args[0]));
@@ -107,21 +99,11 @@ public class DownloadPhotoFromHbase {
 	private static void initContext() {
 		
 		context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub-test.xml"});
+				new String[] {"dubbo-app-scripts.xml","dubbo-scripts.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		
-	}
-	
-	
-	@Test
-	public void testDownload() {
-//		String id="54239B07CDFD4587A511E89FBD3D5F54";
-//		log.debug("id is: " + id);
-		downloadPhoto("605603","1401");
-		
-	}
-		
+	}	
 	
 	/**
 	 * 根据输入的图幅号和对应的sourceType类型提取对应照片

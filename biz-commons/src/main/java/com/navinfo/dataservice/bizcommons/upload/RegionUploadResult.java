@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.service;
+package com.navinfo.dataservice.bizcommons.upload;
 
 import java.io.Serializable;
 

@@ -18,5 +18,9 @@
 		<job name="fccJob"/>
 		<job name="subtaskStat"/>
 	</group>
+	<group name="noTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.NoTaskStatStarter">
+		<job name="poiDayStat"/>
+		<job name="tipsStat"/>
+	</group>
 	
 </mapping>

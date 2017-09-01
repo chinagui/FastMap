@@ -1,18 +1,23 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.upload.stat.UploadCrossRegionInfoDao;
+import com.navinfo.dataservice.bizcommons.upload.stat.UploadRegionInfoOperator;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.control.service.RegionUploadResult;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
@@ -24,6 +29,7 @@ import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.StringUtil;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
@@ -31,11 +37,12 @@ import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.PreparedStatement;
+import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -57,6 +64,27 @@ class ErrorType {
 
     static int FreshnessVerificationData = 6; // 鲜度验证tips(不入库)
 
+}
+
+class TipsMeshGrid {
+    private Set<String> meshes;
+    private String gridId;
+
+    public Set<String> getMeshes() {
+        return meshes;
+    }
+
+    public void setMeshes(Set<String> meshes) {
+        this.meshes = meshes;
+    }
+
+    public String getGridId() {
+        return gridId;
+    }
+
+    public void setGridId(String gridId) {
+        this.gridId = gridId;
+    }
 }
 
 public class TipsUpload {
@@ -102,6 +130,7 @@ public class TipsUpload {
     private String qcErrMsg = "";
     private String firstCollectTime = null;
     private boolean isInsertFirstTime = false;
+    private List<RegionUploadResult> regionResults = new ArrayList<RegionUploadResult>();
 
     public String getQcErrMsg() {
         return qcErrMsg;
@@ -125,6 +154,14 @@ public class TipsUpload {
 
     public void setQcReasons(JSONArray qcReasons) {
         this.qcReasons = qcReasons;
+    }
+
+    public List<RegionUploadResult> getRegionResults() {
+        return regionResults;
+    }
+
+    public void setRegionResults(List<RegionUploadResult> regionResults) {
+        this.regionResults = regionResults;
     }
 
     /**
@@ -230,8 +267,11 @@ public class TipsUpload {
      * @param photoMap
      * @throws Exception
      */
-    public void run(String fileName, Map<String, Photo> photoMap, Map<String, Audio> audioMap) throws Exception {
+    public void run(String fileName, Map<String, Photo> photoMap, Map<String, Audio> audioMap,
+                    long userId) throws Exception {
         java.sql.Connection conn = null;
+        Table htab = null;
+        java.sql.Connection sysConn = null;
         try {
             conn = DBConnector.getInstance().getTipsIdxConnection();
             total = 0;
@@ -244,40 +284,181 @@ public class TipsUpload {
 
             Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-            Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-            List<Get> gets = loadFileContent(fileName, photoMap, audioMap);
+            //20170828 跨大区日志统计
+            //Map key = mesh  value = set gridList,tips outnumber
+            //上传数据的所有mesh
+            Map<String, TipsMeshGrid> meshMap = new HashMap<>();
+            List<Get> gets = loadFileContent(fileName, photoMap, audioMap, meshMap);
 
             loadOldTips(htab, gets);
 
             List<Put> puts = new ArrayList<Put>();
             List<TipsDao> solrIndexList = new ArrayList<TipsDao>();
 
+            //根据tips图幅查找大区库信息
+            Set<String> meshes = new HashSet<>();
+            for (String rowkey : meshMap.keySet()) {
+               TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+               meshes.addAll(tipsMeshGrid.getMeshes());
+            }
+            ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+            List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshes);
+            if(regions==null||regions.size()==0){
+                logger.error("根据图幅未查询到所属大区库信息");
+                throw new Exception("根据图幅未查询到所属大区库信息");
+            }
+            meshes.clear();
             // 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
-            doInsert(puts, solrIndexList);
+            Map<String, Integer> gridCountMap = new HashMap<>();
 
-            doUpdate(puts, solrIndexList);
+            doInsert(puts, solrIndexList, regions, meshMap, gridCountMap);
 
-            htab.put(puts);
+            doUpdate(puts, solrIndexList, regions, meshMap, gridCountMap);
+
+
+            //保存oracle索引放在hbase put之前，oracle异常事务回滚，索引库异常hbase不执行入库
+            //保证索引和hbase数据一致
             TipsIndexOracleOperator indexOracleOperator = new TipsIndexOracleOperator(conn);
             indexOracleOperator.update(solrIndexList);
 
-            htab.close();
+            htab.put(puts);
 
             // 道路名入元数据库
             importRoadNameToMeta();
 
             //中线子任务第一采集时间
             if(StringUtils.isNotEmpty(firstCollectTime) && total-failed > 0) {
-                ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
                 manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
             }
+
+            //20170828 跨大区日志统计,记录无任务
+            //被统计为无任务的数据上传
+            sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+            if(gridCountMap.size() > 0) {
+                List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
+                Map<String, Integer> meshRegionMap = new HashMap<>();
+                for(String gridId : gridCountMap.keySet()) {
+                    String meshId = gridId.substring(0, gridId.length()-2);
+                    if(!meshRegionMap.containsKey(meshId)) {
+                        for(RegionMesh regionMesh : regions) {
+                            if(regionMesh.meshContains(meshId)) {
+                                meshRegionMap.put(meshId, regionMesh.getRegionId());
+                                break;
+                            }
+                        }
+                    }
+                    int count = gridCountMap.get(gridId);
+                    UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
+                    info.setUserId(userId);
+                    info.setFromSubtaskId(subTaskId);
+                    info.setUploadType(2);
+                    int regionId = meshRegionMap.get(meshId);
+                    info.setOutRegionId(regionId);
+                    info.setOutGridId(Integer.valueOf(gridId));
+                    info.setOutGridNumber(count);
+                    infos.add(info);
+                }
+                UploadRegionInfoOperator op = new UploadRegionInfoOperator(sysConn);
+                op.save(infos);
+                gridCountMap.clear();
+            }
+            Map<Integer, JSONObject> regionResultMap = new HashMap<>();
+            //失败的记录数
+            if(reasons.size() > 0) {
+                for(int i = 0 ; i < reasons.size(); i++) {
+                    JSONObject reasonObj = reasons.getJSONObject(i);
+                    String rowkey = reasonObj.getString("rowkey");
+                    int type = reasonObj.getInt("type");
+                    TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+                    if(tipsMeshGrid == null) {
+                        continue;
+                    }
+                    String gridId = tipsMeshGrid.getGridId();
+                    int regionId = 0;
+                    for(RegionMesh regionMesh : regions) {
+                        String meshId = gridId.substring(0, gridId.length()-2);
+                        if(regionMesh.meshContains(meshId)) {
+                            regionId = regionMesh.getRegionId();
+                            break;
+                        }
+                    }
+                    if(regionId > 0) {
+                        if(regionResultMap.containsKey(regionId)) {
+                            JSONObject jsonObject = regionResultMap.get(regionId);
+                            if(type == 6) {
+                                int sCount = jsonObject.getInt("sCount") + 1;
+                                jsonObject.put("sCount", sCount);
+                            }else {
+                                int eCount = jsonObject.getInt("eCount") + 1;
+                                jsonObject.put("eCount", eCount);
+                            }
+                        }else{
+                            JSONObject jsonObject = new JSONObject();
+                            if(type == 6) {//type=6不算失败
+                                jsonObject.put("sCount", 1);
+                                jsonObject.put("eCount", 0);
+                            }else{
+                                jsonObject.put("sCount", 0);
+                                jsonObject.put("eCount", 1);
+                            }
+                            regionResultMap.put(regionId, jsonObject);
+                        }
+                    }
+                    meshMap.remove(rowkey);
+                }
+            }
+            //成功的记录数
+            for(String rowkey : meshMap.keySet()) {
+                TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+                String gridId = tipsMeshGrid.getGridId();
+                int regionId = 0;
+                for(RegionMesh regionMesh : regions) {
+                    String meshId = gridId.substring(0, gridId.length()-2);
+                    if(regionMesh.meshContains(meshId)) {
+                        regionId = regionMesh.getRegionId();
+                        break;
+                    }
+                }
+                if(regionId > 0) {
+                    if(regionResultMap.containsKey(regionId)) {
+                        JSONObject jsonObject = regionResultMap.get(regionId);
+                        int sCount = jsonObject.getInt("sCount") + 1;
+                        jsonObject.put("sCount", sCount);
+                    }else{
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("sCount", 1);
+                        jsonObject.put("eCount", 0);
+                        regionResultMap.put(regionId, jsonObject);
+                    }
+                }
+            }
+            meshMap.clear();
+            //返回统计结果
+            for(int regionId : regionResultMap.keySet()) {
+                RegionUploadResult regionResult = new RegionUploadResult(regionId);
+                regionResult.setSubtaskId(subTaskId);
+                JSONObject jsonObject = regionResultMap.get(regionId);
+                regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
+                regionResults.add(regionResult);
+            }
+            regionResultMap.clear();
+
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             DbUtils.rollbackAndCloseQuietly(conn);
             throw new Exception("Tips上传报错", e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
+            DbUtils.commitAndCloseQuietly(sysConn);
+            if(htab != null) {
+                try{
+                    htab.close();
+                }catch (Exception e) {
+
+                }
+            }
         }
 
         // tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
@@ -329,7 +510,8 @@ public class TipsUpload {
      * @return
      * @throws Exception
      */
-    private List<Get> loadFileContent(String fileName, Map<String, Photo> photoInfo, Map<String, Audio> AudioInfo)
+    private List<Get> loadFileContent(String fileName, Map<String, Photo> photoInfo, Map<String, Audio> AudioInfo,
+                                      Map<String, TipsMeshGrid> meshMap)
             throws Exception {
         Scanner scanner = new Scanner(new FileInputStream(fileName));
 
@@ -350,6 +532,18 @@ public class TipsUpload {
                 rowkey = json.getString("rowkey");
 
                 int lifecycle = json.getInt("t_lifecycle");
+
+                //20170828跨大区统计，统计上传Tips的图幅
+                JSONObject gLocation = json.getJSONObject("g_location");
+                try {
+                    Set<String> tipsMeshes = CompGeometryUtil.calculateGeometeryMesh(GeoTranslator.geojson2Jts(gLocation));
+                    TipsMeshGrid tipsMeshGrid = new TipsMeshGrid();
+                    tipsMeshGrid.setMeshes(tipsMeshes);
+                    tipsMeshGrid.setGridId(getTipsWktGird(json));
+                    meshMap.put(rowkey, tipsMeshGrid);
+                }catch (Exception e) {
+                    logger.error(rowkey + "获取显示坐标图幅异常", e);
+                }
 
                 if (lifecycle == 0) {
                     failed += 1;
@@ -429,7 +623,6 @@ public class TipsUpload {
                 json.put("feedback", feedbackObj);
 
                 String sourceType = json.getString("s_sourceType");
-                JSONObject gLocation = json.getJSONObject("g_location");
                 JSONObject deep = json.getJSONObject("deep");
                 if (sourceType.equals("2001")) {
 
@@ -514,6 +707,7 @@ public class TipsUpload {
 
         return gets;
     }
+
 
     /**
      * @Description:获取中线快线任务号
@@ -628,7 +822,8 @@ public class TipsUpload {
      *
      * @param puts
      */
-    private void doInsert(List<Put> puts, List<TipsDao> solrIndexList) throws Exception {
+    private void doInsert(List<Put> puts, List<TipsDao> solrIndexList, List<RegionMesh> regionMeshes,
+                          Map<String, TipsMeshGrid> meshMap, Map<String, Integer> gridCountMap) throws Exception {
         Set<Entry<String, JSONObject>> set = insertTips.entrySet();
 
         Iterator<Entry<String, JSONObject>> it = set.iterator();
@@ -679,10 +874,16 @@ public class TipsUpload {
                     // 修改的需要差分
                     allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
 
+                    //判断数据是否在大区库范围内，如果不在，则强制刷成无任务
+                    updateTipCrossRegion(meshMap, rowkey, regionMeshes, json, gridCountMap);
+
                 } else {
                     put = insertPut(rowkey, json);
                     // 修改的需要差分
                     allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
+
+                    //判断数据是否在大区库范围内，如果不在，则强制刷成无任务
+                    updateTipCrossRegion(meshMap, rowkey, regionMeshes, json, gridCountMap);
                 }
 
                 puts.add(put);
@@ -710,6 +911,68 @@ public class TipsUpload {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 判断Tips是否在任务大区范围内，如果不在数据刷成无任务
+     * @param meshMap
+     * @param rowkey
+     * @param regionMeshes
+     * @param json
+     */
+    private void updateTipCrossRegion(Map<String, TipsMeshGrid> meshMap, String rowkey, List<RegionMesh> regionMeshes,
+                                      JSONObject json, Map<String, Integer> gridCountMap) throws Exception{
+        //无任务上传，Tips数据本身就是无任务
+        //按照任务号上传，则判断是否在任务大区库内，不在则数据强制成无任务
+        boolean isNoTask = true;//默认无任务
+        if(subtask != null && subtask.getSubtaskId() > 0) {
+            Set<String> tipsMeshes = meshMap.get(rowkey).getMeshes();
+            for(RegionMesh regionMesh : regionMeshes) {
+                //日编大区库ID
+                int dailyDbId = regionMesh.getDailyDbId();
+                if(dailyDbId == subtask.getDbId()) {//查找和任务相同的大区库
+                    for(String tipsMesh : tipsMeshes) {//遍历Tips数据的图幅
+                        //判断Tips图幅是否在任务大区库图幅范围内，如果不在，则为无任务
+                        if(regionMesh.meshContains(tipsMesh)){
+                            isNoTask = false;//在任务大区库图幅范围内，则为有任务
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+        if(isNoTask) {//如果数据为无任务
+            json.put("s_qTaskId", 0);
+            json.put("s_qSubTaskId", 0);
+            json.put("s_mTaskId", 0);
+            json.put("s_mSubTaskId", 0);
+
+            //根据统计坐标计算该Tips所在grid
+            String gridId = getTipsWktGird(json);
+            int count = 1;
+            if(gridCountMap.containsKey(gridId)) {
+                count = gridCountMap.get(gridId) + 1;
+                gridCountMap.remove(gridId);
+            }
+            gridCountMap.put(gridId, count);
+        }
+    }
+
+    /**
+     * 根据tipsjson获取统计坐标
+     * @return
+     */
+    private String getTipsWktGird(JSONObject json) throws Exception{
+        String sourceType = json.getString("s_sourceType");
+        JSONObject g_location = json.getJSONObject("g_location");
+        JSONObject deep = json.getJSONObject("deep");
+        String wkt = TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, null);
+        Geometry wktGeo = GeoTranslator.wkt2Geometry(wkt);
+        Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(wktGeo);
+        //任选一个grid作为该Tips的girdId
+        String gridId = grids.iterator().next();
+        return gridId;
     }
 
     /**
@@ -825,7 +1088,8 @@ public class TipsUpload {
      *
      * @param puts
      */
-    private void doUpdate(List<Put> puts, List<TipsDao> solrIndexList) throws Exception {
+    private void doUpdate(List<Put> puts, List<TipsDao> solrIndexList, List<RegionMesh> regionMeshes,
+                          Map<String, TipsMeshGrid> meshMap, Map<String, Integer> gridCountMap) throws Exception {
         Set<Entry<String, JSONObject>> set = updateTips.entrySet();
         Iterator<Entry<String, JSONObject>> it = set.iterator();
 
@@ -871,6 +1135,9 @@ public class TipsUpload {
 
                     continue;
                 }
+
+                //判断数据是否在大区库范围内，如果不在，则强制刷成无任务
+                updateTipCrossRegion(meshMap, rowkey, regionMeshes, json, gridCountMap);
 
                 Put put = updatePut(rowkey, json, oldTip);
                 puts.add(put);
@@ -1065,7 +1332,8 @@ public class TipsUpload {
         if (lastDate == null && hasPreStage(tracks)) {
             return 0;
         } else {
-            if (operateDate.compareTo(lastDate) <= 0) {
+        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
+            if (operateDate.compareTo(lastDate) < 0) {
                 return -2;
             }
         }

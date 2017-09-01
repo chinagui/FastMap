@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.control.row.charge;
 
+import java.io.File;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -7,8 +8,11 @@ import org.springframework.stereotype.Controller;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 
 import net.sf.json.JSONObject;
 
@@ -76,6 +80,10 @@ public class RowChargeService {
 		log.info("开始照片数据转化,获取所有的大区库");
 		String result = null;
 		JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+		//目录
+		String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+		String curYm = DateUtils.getCurYyyymm();
+		String monthDir = rootDownloadPath+"chargeHome"+File.separator+curYm+File.separator;
 		
 		if(type==1){
 			String jobType = "fm2ChargePhotoInit";
@@ -90,7 +98,7 @@ public class RowChargeService {
 			//创建job任务,获取jobId
 			log.info("create job:jobType="+jobType+",request="+job.toString());
 			long jobId = jobApi.createJob(jobType, job, 0, 0,"创建FM大区库导入桩家的照片初始化包");
-			result = "正在导出照片的初始化包,请稍等!jobId("+jobId+")";
+			result = "正在导出照片的初始化包,请稍等!jobId("+jobId+"),目录为("+monthDir+")";
 		}else if(type==2){
 			String jobType = "fm2ChargePhotoAdd";
 			//判断是否有未执行完的导入任务
@@ -106,7 +114,7 @@ public class RowChargeService {
 			//创建job任务,获取jobId
 			log.info("create job:jobType="+jobType+",request="+job.toString());
 			long jobId = jobApi.createJob(jobType, job, 0, 0,"创建FM大区库导入桩家的照片增量包");
-			result = "正在导出照片的增量包,请稍等!jobId("+jobId+")";
+			result = "正在导出照片的增量包,请稍等!jobId("+jobId+"),目录为("+monthDir+")";
 		}
 		log.info("照片数据转化结束");
 		return result;

@@ -21,6 +21,9 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -58,11 +61,11 @@ public class TipsIndexCreateScript {
 
 	private String index;
 	private String tableName;
-	private List<String> hasIndexRowkeyList;
+	private Set<String> hasIndexRowkeyList;
 	private TipsIndexOperator op;
 
 	public TipsIndexCreateScript(String tableName, String index,
-			List<String> hasIndexRowkeyList) {
+			Set<String> hasIndexRowkeyList) {
 		this.tableName = tableName;
 		this.index = index;
 		this.hasIndexRowkeyList = hasIndexRowkeyList;
@@ -79,6 +82,11 @@ public class TipsIndexCreateScript {
 
 			op = new TipsIndexOracleOperator(conn);
 			Scan scan = new Scan();
+			
+			RegexStringComparator comp2 = new RegexStringComparator("\"stage\":1"); 
+			SingleColumnValueFilter filter2 = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.EQUAL, comp2);
+			scan.setFilter(filter2);
+			
 			scan.addFamily("data".getBytes());
 			scan.setCaching(5000);
 			scan.setStartRow(index.getBytes());
@@ -104,7 +112,7 @@ public class TipsIndexCreateScript {
 						num++;
 						log.debug("rowkey not exists:"+rowkey);
 						if (num % 1000 == 0) {
-							op.save(tis);
+							op.update(tis);
 							conn.commit();
 							tis.clear();
 							log.info("index:" + index + ",num:" + num);
@@ -114,7 +122,7 @@ public class TipsIndexCreateScript {
 					}
 				}
 
-				op.save(tis);
+				op.update(tis);
 				conn.commit();
 				tis.clear();
 			}
@@ -306,7 +314,7 @@ public class TipsIndexCreateScript {
 
 		log.debug("start query oracle already exists tips list ");
 
-		final List<String> hasIndexRowkeyList = getExistsRowkey(); // 查询已经有rowkey的数据
+		final Set<String> hasIndexRowkeyList = getExistsRowkey(); // 查询已经有rowkey的数据
 
 		log.debug("oracle already exists count:" + hasIndexRowkeyList.size());
 
@@ -351,14 +359,14 @@ public class TipsIndexCreateScript {
 	 * @throws Exception
 	 * @time:2017-8-28 下午2:54:32
 	 */
-	private static List<String> getExistsRowkey() throws Exception {
+	private static Set<String> getExistsRowkey() throws Exception {
 
 		java.sql.Connection conn = null;
 		PreparedStatement pst = null;
 		java.sql.ResultSet rs = null;
-		List<String> existIndexRowkeyList = new ArrayList<String>();
+		Set<String> existIndexRowkeyList = new HashSet<String>();
 
-		String sql = "SELECT  ID FROM  TIPS_INDEX";
+		String sql = "SELECT  ID FROM  TIPS_INDEX WHERE STAGE<>0";
 
 		try {
 			conn = DBConnector.getInstance().getTipsIdxConnection();
@@ -396,12 +404,13 @@ public class TipsIndexCreateScript {
 			initContext();
 			initPoolExecutor();
 			sync();
-			System.exit(0);
+			log.info("......................all tips create index Over......................");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			shutDownPoolExecutor();
-			log.info("all tips create index Over......................");
+			log.info("......................all tips create index Over......................");
+			System.exit(0);
 		}
 
 	}

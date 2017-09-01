@@ -28,6 +28,8 @@ public class Process extends AbstractProcess<Command> {
 		// 2017.8.30去除图廓点检查，改为前端控制
 		//check.checkNodeDirect(getConn());
 		
+		check.hasMakedCRFR(getConn());
+		
 		return true;
 	}
 

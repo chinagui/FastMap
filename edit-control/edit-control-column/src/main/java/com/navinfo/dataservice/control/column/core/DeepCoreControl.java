@@ -42,6 +42,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.PoiDeepObjImportor;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -302,7 +303,7 @@ public class DeepCoreControl {
             
             json.put("command", "UPDATE");
             
-            DefaultObjImportor importor = new DefaultObjImportor(conn,null);
+            PoiDeepObjImportor importor = new PoiDeepObjImportor(conn,null);
 			EditJson editJson = new EditJson();
 			editJson.addJsonPoi(json);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);

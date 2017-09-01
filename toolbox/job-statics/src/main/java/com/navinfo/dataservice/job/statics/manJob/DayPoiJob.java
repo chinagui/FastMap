@@ -425,7 +425,7 @@ public class DayPoiJob extends AbstractStatJob {
 						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						    	String kindCode = rs.getString("KIND_CODE")== null ? "" : rs.getString("KIND_CODE");
 								String chain = rs.getString("CHAIN") == null ? "" : rs.getString("CHAIN");
-						    	statisticsNoTaskDataImp(dealers, notaskStat, kindCode, chain, struct, status);
+						    	statisticsNoTaskDataImp(dealers, notaskStat, kindCode, chain, struct);
 						    }
 						}
 						result.put("subtaskStat", subtaskStat);
@@ -454,7 +454,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * @param int
 		 * 
 		 * */
-		public void statisticsNoTaskDataImp(Set<String> dealers, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct, int status){
+		public void statisticsNoTaskDataImp(Set<String> dealers, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct){
 			boolean poiType = false;
 			try {
 				Point geo;
@@ -471,9 +471,7 @@ public class DayPoiJob extends AbstractStatJob {
 					dealershipNum = notaskStat.get(gridId).get("dealershipNum");
 					noDealershipNum = notaskStat.get(gridId).get("noDealershipNum");
 				}
-				if(status != 0){
-					poiType = wetherDealership(dealers, kindCode, chain);
-				}
+				poiType = wetherDealership(dealers, kindCode, chain);
 				if(poiType){
 					dealershipNum++;
 				}else{

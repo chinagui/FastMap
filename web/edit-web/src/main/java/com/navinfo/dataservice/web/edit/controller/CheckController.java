@@ -454,6 +454,7 @@ public class CheckController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
+		Connection qualityConn = null;
 
 		try {
 			
@@ -470,31 +471,84 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			int isQuality = jsonReq.getInt("isQuality");
-			String updateTime = jsonReq.getString("updateTime");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			qualityConn = DBConnector.getInstance().getCheckConnection();
 
 			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
-			operator.updateCheckLogStatus(id, oldType, type, isQuality, (int)userId, updateTime);
+			operator.updateCheckLogStatus(id, oldType, type, isQuality, (int)userId, qualityConn);
 
 			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
-
+			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(qualityConn);
 		}
 	}
+	
+	/**
+	 * 质检作业，点击检查log确认已修改，执行：
+	 * 1、更新检查log状态
+	 * 2、质检问题录入质检库check_wrong表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/qaUpdateSaveProblem")
+	public ModelAndView qaUpdateSaveProblem(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+		Connection qualityConn = null;
+
+		try {
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+
+			String id = jsonReq.getString("id");
+			int oldType = jsonReq.getInt("oldType");
+
+			int type = jsonReq.getInt("type");
+			
+			int isQuality = jsonReq.getInt("isQuality");
+			
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			qualityConn = DBConnector.getInstance().getCheckConnection();
+
+			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
+			
+			operator.updateStatusSaveProblem(id, oldType, type, isQuality, (int)userId, qualityConn, data);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(qualityConn);
+		}
+	}
+	
+	
 
 	/**
 	 * @Title: updateCheckRdnResult

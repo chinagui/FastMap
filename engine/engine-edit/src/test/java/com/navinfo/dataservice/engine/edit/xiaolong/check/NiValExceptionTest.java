@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.check;
 
 import java.sql.Connection;
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -128,7 +130,7 @@ public class NiValExceptionTest extends InitApplication {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, oldType, type, 0, 1736,"2017-08-30 12:30:40");
+			selector.updateCheckLogStatus(id, oldType, type, 0, 1736,null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -261,5 +263,27 @@ public class NiValExceptionTest extends InitApplication {
 			newjobj.put("count", jobj.getString("count"));
 		}
 		System.out.println(newjobj);
+	}
+	
+	@Test
+	public void testSaveQaProblem() throws Exception {
+		Connection qualityConn = null;
+		try {
+			String paramter = "{\"logId\":\"5f0fb389510d1ad677aa53c83d607ec6\",\"checkTaskId\":849,\"quDesc\":\"1111111111111111\",\"reason\":\"录入错误\",\"erContent\":\"大门\",\"quRank\":\"B\",\"isPrefer\":1,\"worker\":\"范京伟 1672\",\"objectType\":\"道路\",\"objectId\":\"40923045\",\"erType\":1}";
+			JSONObject data = JSONObject.fromObject(paramter);
+			qualityConn = DBConnector.getInstance().getCheckConnection();
+			
+			Timestamp timeStamp = new Timestamp(new Date().getTime());
+			
+			NiValExceptionOperator op = new NiValExceptionOperator(null);
+			
+			op.saveQaProblem(qualityConn, data, timeStamp);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(qualityConn);
+		}
 	}
 }

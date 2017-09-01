@@ -27,6 +27,8 @@ public class Process extends AbstractProcess<Command> {
 		
 		check.checkNodeDirect(getConn());
 		
+		check.hasMakedCRFR(getConn());
+		
 		return true;
 	}
 

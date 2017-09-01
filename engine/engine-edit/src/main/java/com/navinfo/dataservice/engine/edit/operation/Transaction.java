@@ -1544,7 +1544,7 @@ public class Transaction {
 
                 Set<Integer> row2DbIds = DbMeshInfoUtil.calcDbIds(geometry);
                 for (Integer dbId : row2DbIds) {
-                    if (dbId == sourceDbId) {
+                    if (dbId.equals(sourceDbId)) {
                         continue;
                     }
                     if (map.containsKey(dbId)) {
@@ -1649,7 +1649,7 @@ public class Transaction {
                 }
 
                 for (Map.Entry<Integer, ObjStatus> entry : dbMap.entrySet()) {
-                    if (entry.getKey() == sourceDbId) {
+                    if (entry.getKey().equals(sourceDbId)) {
                         continue;
                     }
                     if (map.containsKey(entry.getKey())) {

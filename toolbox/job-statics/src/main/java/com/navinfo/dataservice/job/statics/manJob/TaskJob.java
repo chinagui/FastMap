@@ -416,7 +416,7 @@ public class TaskJob extends AbstractStatJob {
 				task.put("poiUploadNum", poiUploadNum);
 				task.put("poiFinishNum", poiFinishNum);
 				task.put("poiUnfinishNum", poiUnfinishNum);
-				task.put("poiActualFinishNum", poiUnFreshNum);
+				//task.put("poiActualFinishNum", poiUnFreshNum);
 				task.put("poiUnFreshNum", poiUnFreshNum);
 				task.put("poiFinishAndPlanNum", poiFinishAndPlanNum);
 				task.put("poiFreshNum", poiFreshNum);
@@ -937,7 +937,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiUploadNum = 0;
 		int poiFinishNum = 0;
 		int poiUnfinishNum = 0;
-		int poiActualFinishNum = 0;
+		//int poiActualFinishNum = 0;
 		
 		int dayEditTipsAllNum = 0;
 		int dayEditTipsNoWorkNum = 0;
@@ -1062,9 +1062,9 @@ public class TaskJob extends AbstractStatJob {
 				poiUnfinishNum = (int) dataMap.get("poiUnfinishNum");
 			}
 			//POI实际产出量
-			if(dataMap.containsKey("poiActualFinishNum")){
-				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
-			}
+//			if(dataMap.containsKey("poiActualFinishNum")){
+//				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
+//			}
 			//采集上传个数汇总
 			if(dataMap.containsKey("dayEditTipsAllNum")){
 				dayEditTipsAllNum = (int) dataMap.get("dayEditTipsAllNum");
@@ -1278,7 +1278,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiUploadNum", poiUploadNum);
 			taskMap.put("poiFinishNum", poiFinishNum);
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);
-			taskMap.put("poiActualFinishNum", poiActualFinishNum);
+			//taskMap.put("poiActualFinishNum", poiActualFinishNum);
 			taskMap.put("dayEditTipsAllNum", dayEditTipsAllNum);
 			taskMap.put("dayEditTipsNoWorkNum", dayEditTipsNoWorkNum);
 			taskMap.put("dayEditTipsFinishNum", dayEditTipsFinishNum);

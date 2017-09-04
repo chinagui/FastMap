@@ -48,7 +48,7 @@ public class DownloadPhotoFromHbase {
 	static String input_s_sourcetype;
 	
 	static {
-		//初始化
+		//初始化 
 		initContext();
 	}	
 	

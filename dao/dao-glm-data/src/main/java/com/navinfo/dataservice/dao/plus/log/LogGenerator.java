@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -26,6 +29,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @Description: LogGenerator.java
  */
 public class LogGenerator {
+	private Logger log = LoggerRepos.getLogger(LogGenerator.class);
 	String insertLogActionSql = "INSERT INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD,SRC_DB,STK_ID) VALUES (?,?,?,?,?)";
 	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSTIMESTAMP,LOG_OP_SEQ.NEXTVAL)";
 	String insertLogDayReleaseSql = "INSERT INTO LOG_DAY_RELEASE (OP_ID) VALUES (?)";
@@ -142,6 +146,7 @@ public class LogGenerator {
 
 				//"FEATURE";
 				//"RELATION";
+				log.info("basic_obj:"+basicObj.objPid());
 				if(objType.equals("RELATION")){
 					BasicObjGrid  grid = null;
 					//子表，更新log_detail,log_detail_grid
@@ -207,7 +212,13 @@ public class LogGenerator {
 		try {
 			Geometry geo = null;
 			long poiPid = row.getGeoPid();
+			log.info("poi_pid:"+poiPid);
 			BasicObj ixpoiObj = ObjSelector.selectByPid(conn, ObjectName.IX_POI, null,true, poiPid, true);
+			if(ixpoiObj==null){
+				log.info("obj null");
+			}else{
+				log.info(ixpoiObj.objName());
+			}
 			geo = (Geometry) ixpoiObj.getMainrow().getAttrByColName("GEOMETRY");
 			
 			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
@@ -220,9 +231,9 @@ public class LogGenerator {
 			}
 			grid.setGridListBefore(grids);
 		
-		return grid;
+			return grid;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 			return null;
 		}
 		

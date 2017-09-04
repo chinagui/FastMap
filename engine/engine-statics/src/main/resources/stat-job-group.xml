@@ -22,5 +22,8 @@
 		<job name="poiDayStat"/>
 		<job name="tipsStat"/>
 	</group>
+	<!-- <group name="quickMonitorStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickMonitorStatStarter">
+		<job name="taskJob"/>
+	</group> -->
 	
 </mapping>

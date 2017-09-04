@@ -212,13 +212,7 @@ public class LogGenerator {
 		try {
 			Geometry geo = null;
 			long poiPid = row.getGeoPid();
-			log.info("poi_pid:"+poiPid);
 			BasicObj ixpoiObj = ObjSelector.selectByPid(conn, ObjectName.IX_POI, null,true, poiPid, true);
-			if(ixpoiObj==null){
-				log.info("obj null");
-			}else{
-				log.info(ixpoiObj.objName());
-			}
 			geo = (Geometry) ixpoiObj.getMainrow().getAttrByColName("GEOMETRY");
 			
 			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);

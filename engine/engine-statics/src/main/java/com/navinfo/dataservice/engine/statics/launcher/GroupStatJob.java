@@ -69,6 +69,7 @@ public class GroupStatJob {
 				statFeedbacks.put(timestamp, types);
 			}
 			types.add(jobType);
+			log.info("timestamp:"+timestamp+",groupJobType:"+groupJobType+",ready:"+types.toString()+",all:"+subJobs.toString());
 			//触发starter启动
 			if(types.size()==subJobs.size()&&types.containsAll(subJobs)){
 				//log.info("4");

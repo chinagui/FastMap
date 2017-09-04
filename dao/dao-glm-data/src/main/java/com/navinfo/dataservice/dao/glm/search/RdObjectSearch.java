@@ -22,6 +22,7 @@ import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -224,6 +225,9 @@ public class RdObjectSearch implements ISearch {
 				String lnGeometry = resultSet.getString("geometry");
 
 				// 转换为瓦片的几何
+				if (StringUtils.isEmpty(lnGeometry)) {
+					continue;
+				}
 				JSONObject geojson = Geojson.wkt2Geojson(lnGeometry);
 
 				if (type != 3) {
@@ -338,7 +342,7 @@ public class RdObjectSearch implements ISearch {
 
 			snapshot.setM(jsonM);
 		} catch (Exception e) {
-			logger.error(e.getMessage(),e);
+			logger.error(e.getMessage(), e);
 			throw new Exception(e);
 		} finally {
 			DbUtils.close(pstmt);

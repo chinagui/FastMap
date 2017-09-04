@@ -57,7 +57,7 @@ public class NoTaskJob extends AbstractStatJob {
 				cell.put("cityId", entry.getKey());
 				cell.put("tipsTotal", entry.getValue().get("tipsTotal"));
 				cell.put("poiTotal", entry.getValue().get("poiTotal"));
-				cell.put("dealershipPoiTotal", entry.getValue().get("dealershipPoiTotal"));
+				cell.put("dealershipTotal", entry.getValue().get("dealershipTotal"));
 				cell.put("noDealershipTotal", entry.getValue().get("noDealershipTotal"));
 				cityStat.add(cell);
 			}
@@ -68,7 +68,7 @@ public class NoTaskJob extends AbstractStatJob {
 				cell.put("blockId", entry.getKey());
 				cell.put("tipsTotal", entry.getValue().get("tipsTotal"));
 				cell.put("poiTotal", entry.getValue().get("poiTotal"));
-				cell.put("dealershipPoiTotal", entry.getValue().get("dealershipPoiTotal"));
+				cell.put("dealershipTotal", entry.getValue().get("dealershipTotal"));
 				cell.put("noDealershipTotal", entry.getValue().get("noDealershipTotal"));
 				blockStat.add(cell);
 			}
@@ -141,7 +141,7 @@ public class NoTaskJob extends AbstractStatJob {
 				cityNoDealershipCount += blockNoDealershipCount;
 			}
 			cityData.put("poiTotal", cityPoiCount);
-			cityData.put("dealershipPoiTotal", cityDealershipCount);
+			cityData.put("dealershipTotal", cityDealershipCount);
 			cityData.put("tipsTotal", cityTipCount);
 			cityData.put("noDealershipTotal", cityNoDealershipCount);
 			citys.put(cityId, cityData);

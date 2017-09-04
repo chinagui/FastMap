@@ -215,6 +215,8 @@ public class TaskOperation {
 					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setBlockId(rs.getInt("BLOCK_ID"));
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setProgramId(rs.getInt("PROGRAM_ID"));
 						map.setGroupId(rs.getInt("GROUP_ID"));

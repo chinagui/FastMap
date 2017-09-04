@@ -985,11 +985,20 @@ public class TaskJob extends AbstractStatJob {
 		int roadPercent = 0;
 		int percent = 0;
 		int progress = 1;
+		int blockId = 0;
+		int programId = 0;
+		String createDate = "";
 		Map<String, Object> taskMap = new HashMap<String, Object>();
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
-			String systemDate = sdf.format(new Date());			
+			String systemDate = sdf.format(new Date());		
+			//项目Id
+			programId = task.getProgramId();
+			blockId = task.getBlockId();
+			if(task.getCreateDate() != null){
+				createDate = sdf.format(task.getCreateDate());
+			}
 			//任务id
 			taskId = task.getTaskId();
 			//任务类型
@@ -1337,6 +1346,9 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("roadPercent", roadPercent);
 			taskMap.put("percent", percent);
 			taskMap.put("progress", progress);
+			taskMap.put("programId", programId);
+			taskMap.put("blockId", blockId);
+			taskMap.put("createDate", createDate);
 			
 			return taskMap;
 		} catch (Exception e) {

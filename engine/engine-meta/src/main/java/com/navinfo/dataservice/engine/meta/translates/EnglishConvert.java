@@ -138,6 +138,8 @@ public class EnglishConvert {
 
             result = this.replaceKeyWord(result);
 
+            result = this.reductionWordSymbol(result);
+
             result = ConvertUtil.removeRepeatSpace(result);
 
             result = ConvertUtil.firstCapital(result);
@@ -150,6 +152,10 @@ public class EnglishConvert {
             return result;
         }
         return result;
+    }
+
+    private String reductionWordSymbol(String sourceText) {
+        return sourceText.replaceAll("& nbsp ;", " ");
     }
 
     /**
@@ -204,7 +210,7 @@ public class EnglishConvert {
 
             for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
                 if (org.apache.commons.lang.StringUtils.equals(entry.getKey(), tmpStr)) {
-                    tmpStr = StringUtils.isEmpty(entry.getValue()) ? "" : entry.getValue().trim();
+                    tmpStr = " ".equals(entry.getValue()) ? "&nbsp;" : entry.getValue();
                     break;
                 }
             }

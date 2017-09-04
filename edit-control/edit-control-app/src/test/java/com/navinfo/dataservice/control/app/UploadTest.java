@@ -52,9 +52,9 @@ public class UploadTest {
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			//1.2 解压文件
 			String filePath ="F:/upload";
-			UploadManager upMan = new UploadManager(0,filePath + "/poi.txt");
+			UploadManager upMan = new UploadManager(0,filePath);
 			upMan.setSubtaskId(26);
-			UploadResult result = upMan.upload(photoMap);
+			UploadResult result = upMan.upload();
 			//读取poi文件，导入...
 			long t2 = System.currentTimeMillis();
 			System.out.println("poi import total time:"+(t2-t1)+"ms.");

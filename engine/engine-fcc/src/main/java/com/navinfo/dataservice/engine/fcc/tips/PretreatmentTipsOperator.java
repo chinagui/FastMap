@@ -1,33 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.io.IOException;
-import java.sql.Clob;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
-import com.vividsolutions.jts.geom.LineString;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -46,11 +18,12 @@ import com.navinfo.dataservice.engine.fcc.tips.check.GdbDataQuery;
 import com.navinfo.dataservice.engine.fcc.tips.check.TipsPreCheckUtils;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
+import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
@@ -62,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import java.io.IOException;
+import java.sql.Clob;
 import java.util.*;
 
 /**
@@ -1217,9 +1191,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			    }
 			}
 			//测线检查
-			else if("2001".equals(sourceType)&&command == COMMAND_UPADATE){
-	            	
-	            	checkMeasureLine(jsonInfo,tipsConn,oraConn);
+			else if("2001".equals(sourceType)){
+                //20170830点点过近检查 相邻形状点不可过近，不能小于2m
+                JSONObject geoJson = jsonInfo.getJSONObject("geometry");
+                JSONObject locationJson = geoJson.getJSONObject("g_location");
+                TipsUtils.checkShapePointDistance(locationJson);
+                if(command == COMMAND_UPADATE) {
+                    checkMeasureLine(jsonInfo,tipsConn,oraConn);
+                }
 	        }
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oraConn);
@@ -1921,7 +1900,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		}catch (Exception e) {
 			logger.error("", e);
 			DbUtils.rollbackAndCloseQuietly(tipsConn);
-			throw new Exception("测线打断报错", e);
+			throw e;
 		}finally {
 			DbUtils.commitAndCloseQuietly(tipsConn);
 		}
@@ -2319,8 +2298,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject geo2 = new JSONObject();
 
 			JSONObject g_location1 = cutGeoResult.get(0);
+            TipsUtils.checkShapePointDistance(g_location1);
 
 			JSONObject g_location2 = cutGeoResult.get(1);
+            TipsUtils.checkShapePointDistance(g_location2);
 
 			// JSONObject
 			
@@ -2470,7 +2451,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			resultArr.add(newSolrIndex);
 
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(tipsConn);
+			//DbUtils.rollbackAndCloseQuietly(tipsConn);
 
 			e.printStackTrace();
 
@@ -2479,7 +2460,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}finally {
-            DbUtils.commitAndCloseQuietly(tipsConn);
+            //DbUtils.commitAndCloseQuietly(tipsConn);
             if(htab != null) {
                 htab.close();
             }
@@ -2544,8 +2525,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         Table htab = null;
         java.sql.Connection tipsConn=null;
         int taskType=0;
-        
-        List<Get> lineGets=new ArrayList<Get>(); //测线
+     
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
@@ -2568,6 +2548,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			else {
 				throw new Exception("不支持的任务类型：" + taskType);
 			}
+			
+			//查询任务范围内的 测线tips
+			List<TipsDao> measureLineIndexList=selector.getTipsByTaskIdAndStatusAndTipsTpye(tipsConn,taskId,
+					taskType,"2001");
+			//20170830 情报预处理提交时，所有测线按照图幅打断~（状态修改后再打断，这时候拿到的habse数据时新的）
+			cutMeasureLineByMesh(measureLineIndexList,taskId);
+			
 
             //20170711情报矢量化提交Tips筛选条件按照subtaskid + t_tipstatus
 			List<TipsDao> sdList = selector.getTipsByTaskIdAndStatus(tipsConn,taskId,
@@ -2604,11 +2591,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 TipsDao solrIndex = operator.getById(rowkey);
                 solrIndex = this.tipSubmitTrackOracle(track, solrIndex);
                 solrIndexList.add(solrIndex);
-                //将修状态后的tips增加到 测线列表中
-                if("2001".equals(solrIndex.getS_sourceType())){
-                	  Get lineGet = new Get(rowkey.getBytes());
-                	  lineGets.add(lineGet);
-                }
+             
 			}
 
 			htab.put(puts);
@@ -2622,8 +2605,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             }
             DbUtils.commitAndCloseQuietly(tipsConn);
         }
-		//20170830 情报预处理提交时，所有测线按照图幅打断~（状态修改后再打断，这时候拿到的habse数据时新的）
-		cutMeasureLineByMesh(lineGets,taskId);
 
 	}
 
@@ -2635,13 +2616,18 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception 
 	 * @time:2017-8-30 下午3:45:48
 	 */
-	private void cutMeasureLineByMesh(List<Get> lineGets, int taskId) throws Exception {
+	private void cutMeasureLineByMesh(List<TipsDao> measureLineIndexList, int taskId) throws Exception {
 		
 		Connection hbaseConn = null;
         Table htab = null;
         java.sql.Connection tipsConn=null;
         try{
-        	
+        	   
+            List<Get> lineGets=new ArrayList<Get>(); //测线
+            for (TipsDao solrIndex : measureLineIndexList) {
+            	   //将修状态后的tips增加到 测线列表中
+                	  lineGets.add(new Get(solrIndex.getId().getBytes()));
+			}
         	hbaseConn = HBaseConnector.getInstance().getConnection();
 			tipsConn=DBConnector.getInstance().getTipsIdxConnection();
 		    ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -2657,17 +2643,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             for (Result result : results) {
             	JSONObject json=new JSONObject();
             	String []cols=TipsUtils.TIPS_TABLE_COlS;
-            	for (int i = 0; i < cols.length; i++) {
-					String columnName=cols[i];
-					String value=new String(result.getValue("data".getBytes(), columnName.getBytes()));
-					if(StringUtils.isNotEmpty(value)){
-						json.put(columnName,JSONObject.fromObject(value));
-					}else{
-						json.put(columnName,"{}");
-					}
-					
-					cutLineByMeshAndSave(json,tipsConn,htab,dbId);
-				}
+            	if(result!=null){
+            		for (int i = 0; i < cols.length; i++) {
+    					String columnName=cols[i];
+    					if(result.getValue("data".getBytes(), columnName.getBytes())!=null){
+    						String value=new String(result.getValue("data".getBytes(), columnName.getBytes()));
+    						if(StringUtils.isNotEmpty(value)){
+    							json.put(columnName,JSONObject.fromObject(value));
+    						}else{
+    							json.put(columnName,"{}");
+    						}
+    					}
+    				}
+            		
+            		json.put("rowkey", new String(result.getRow()));
+            		
+            		cutLineByMeshAndSave(json,tipsConn,htab,dbId);
+            	}
             }
         	
         } catch (Exception e) {

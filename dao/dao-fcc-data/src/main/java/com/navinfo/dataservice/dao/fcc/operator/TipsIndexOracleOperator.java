@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import net.sf.json.JSONArray;
 import org.apache.commons.lang.ArrayUtils;
@@ -42,6 +44,21 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
     private static String deleteOneSql = "DELETE FROM TIPS_INDEX WHERE ID = ?";
     private static String deleteOneSqlLinks = "DELETE FROM TIPS_LINKS WHERE ID = ?";
     private static String deleteOneSqlNodes = "DELETE FROM TIPS_NODES WHERE ID = ?";
+
+	public TipsIndexOracleOperator() throws Exception {
+		try {
+			conn = DBConnector.getInstance().getTipsIdxConnection();
+			run = new QueryRunner();
+		} catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
+			throw new DaoOperatorException("创建Tips oracle索引连接失败", e);
+		}
+	}
+
+	public Connection getConn() {
+		return conn;
+	}
 
 	public TipsIndexOracleOperator(Connection conn) {
 		this.conn = conn;
@@ -150,6 +167,41 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		};
 		return run.query(conn, sql, resultSetHandler, params);
 	}
+	
+	
+	/**
+	 * @Description:查询 tips索引，不查询habse数据
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-8-31 下午1:38:59
+	 */
+	public List<TipsDao> queryWithOutHbase(String sql, Object... params) throws Exception {
+		List<TipsDao> result=new ArrayList<TipsDao>();
+		try {
+			ResultSetHandler<List<TipsDao> > resultSetHandler = new ResultSetHandler<List<TipsDao> >() {
+				@Override
+				public List<TipsDao>  handle(ResultSet rs)
+						throws SQLException {
+					List<TipsDao>  result1 =new ArrayList<TipsDao>();
+					while (rs.next()) {
+						TipsDao dao = new TipsDao();
+						dao.loadResultSet(rs);
+						result1.add(dao);
+					}
+					return result1;
+				}
+			};
+			result = run.query(conn, sql, resultSetHandler,
+					params);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("查询tips失败，原因为:" + e.getMessage(), e);
+		}
+		return result;
+	}
 	public List<TipsDao> query(String sql, Object... params) throws Exception {
 		List<TipsDao> result;
 		try {
@@ -177,7 +229,40 @@ public class TipsIndexOracleOperator implements TipsIndexOperator {
 		return result;
 	}
 
-	/**
+    public List<TipsDao> queryCloseConn(String sql, Object... params) throws Exception {
+        List<TipsDao> result = null;
+        Map<String, TipsDao> map = null;
+        try {
+            ResultSetHandler<Map<String, TipsDao>> resultSetHandler = new ResultSetHandler<Map<String, TipsDao>>() {
+                @Override
+                public Map<String, TipsDao> handle(ResultSet rs)
+                        throws SQLException {
+                    Map<String, TipsDao> map = new HashMap<>();
+                    while (rs.next()) {
+                        TipsDao dao = new TipsDao();
+                        dao.loadResultSet(rs);
+                        map.put(dao.getId(), dao);
+                    }
+                    return map;
+                }
+            };
+            log.debug("tips query:"+sql);
+            map = run.query(conn, sql, resultSetHandler, params);
+        } catch (Exception e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            log.error(e.getMessage(), e);
+            throw new Exception("查询tips失败，原因为:" + e.getMessage(), e);
+        }finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+        if(map != null) {
+            result = loadHbaseProperties(map);
+        }
+        return result;
+    }
+
+
+    /**
 	 * @param args
 	 */
 	public static void main(String[] args) {

@@ -58,7 +58,7 @@ public class PersonTipsJob extends AbstractStatJob {
                 Map<String, Object> subTaskMap = new HashMap<>();
                 subTaskMap.put("subtaskId", mSubTaskId);
                 subTaskMap.put("tipsAddLen", statObj.getDouble("tipsAddLen"));
-                subTaskMap.put("tipsAllLen", statObj.getDouble("tipsAllLen"));
+                subTaskMap.put("tipsAllNum", statObj.getDouble("tipsAllNum"));
                 subTaskMap.put("workDate", timestamp);
                 resultMapList.add(subTaskMap);
             }
@@ -101,23 +101,19 @@ public class PersonTipsJob extends AbstractStatJob {
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
                             String rowkey = rs.getString("ID");
-                            double allLength = 0;
+                            long tipsAllNum = 0;
                             double newLength = 0;
                             JSONObject statObj = null;
                             if(subtaskTipsMap.containsKey(s_mSubTaskId)) {//已有
                                 statObj = subtaskTipsMap.get(s_mSubTaskId);
-                                allLength = statObj.getDouble("tipsAllLen");
+                                tipsAllNum = statObj.getLong("tipsAllNum");
                                 newLength = statObj.getDouble("tipsAddLen");
                             }else {
                                 statObj = new JSONObject();
                                 subtaskTipsMap.put(s_mSubTaskId, statObj);
                             }
-                            //测线显示坐标
-                            STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
-                            //测线里程计算
-                            double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
-                            allLength += lineLength;
-                            statObj.put("tipsAllLen", allLength);
+                            tipsAllNum += 1;
+                            statObj.put("tipsAllNum", tipsAllNum);
 
                             //是否当天新增
                             int lifecycle = rs.getInt("T_LIFECYCLE");
@@ -133,6 +129,10 @@ public class PersonTipsJob extends AbstractStatJob {
                                                 int stage = trackInfo.getInt("stage");
                                                 String date = trackInfo.getString("date");
                                                 if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
+                                                	//测线显示坐标
+                                                    STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
+                                                    //测线里程计算
+                                                    double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
                                                     newLength += lineLength;
                                                 }
                                             }

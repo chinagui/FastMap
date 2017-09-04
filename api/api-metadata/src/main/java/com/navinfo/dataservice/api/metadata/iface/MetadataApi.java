@@ -458,5 +458,7 @@ public interface MetadataApi {
 	public Map<String,Integer> queryEditMethTipsCode() throws SQLException;
 	
 	public List<String> scPointSpecKindCodeType16() throws Exception;
+	
+	public int getTruck(String kind,String chain,String fuelType) throws Exception;
 
 }

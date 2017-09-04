@@ -30,6 +30,7 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class FMBAT20115 extends BasicBatchRule {
 	private Map<Long,Long> pidAdminId;
+	private MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
@@ -37,8 +38,9 @@ public class FMBAT20115 extends BasicBatchRule {
 		for(BasicObj obj:batchDataList){
 			pidList.add(obj.objPid());
 		}
+		log.debug("开始查询pidAdminId");
 		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
-
+		log.debug("查询pidAdminId结束");
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public class FMBAT20115 extends BasicBatchRule {
 		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
 			adminCode=pidAdminId.get(poi.getPid()).toString();
 		}
-		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		//MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		boolean isChanged = false;
 		for (IxPoiName name:names) {
 			if(name.getNameClass()==1&&name.getNameType()==2&&(name.getLangCode().equals("CHI")||name.getLangCode().equals("CHT"))){
@@ -92,9 +94,13 @@ public class FMBAT20115 extends BasicBatchRule {
 					engOfficialName.setPoiPid(poi.getPid());
 					engOfficialName.setNameGroupid(standarName.getNameGroupid());
 					engOfficialName.setLangCode("ENG");
+					log.debug("开始convertEng");
 					engOfficialName.setName(metadata.convertEng(standarName.getName(),adminCode));
+					log.debug("结束convertEng");
 				} else {
+					log.debug("开始convertEng");
 					engOfficialName.setName(metadata.convertEng(standarName.getName(),adminCode));
+					log.debug("结束convertEng");
 					if (engStandarName != null) {
 						engStandarName.setName("");
 					}

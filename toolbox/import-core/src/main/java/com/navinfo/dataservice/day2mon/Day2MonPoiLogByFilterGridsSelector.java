@@ -98,41 +98,82 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 	 */
 	private int removeInvalidLogOperation(Connection conn) throws SQLException {
 		StringBuilder sb = new StringBuilder();
+//		sb.append("delete from "+tempTable+" l\r\n" + 
+//				" where exists(with t3 as (select pid\r\n" + 
+//				"                      from poi_edit_status\r\n" + 
+//				"                     where status in (1, 2))\r\n" + 
+//				"   select p.op_id\r\n" + 
+//				"     from log_operation   p,\r\n" + 
+//				"    log_detail      d,\r\n" + 
+//				"    log_detail_grid g,\r\n" + 
+//				"    poi_edit_status s\r\n" + 
+//				"    where p.op_id = d.op_id\r\n" + 
+//				"      and d.op_id = l.op_id\r\n" + 
+//				"      and d.row_id = g.log_row_id\r\n" + 
+//				"      and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n" + 
+//				"      and p.com_sta = 0\r\n" + 
+//				"      and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')\r\n" + 
+//				"      and s.status = 3\r\n" + 
+//				"      and (exists (select 1\r\n" + 
+//				"                     from ix_poi_children t, ix_poi_parent t2, t3\r\n" + 
+//				"                    where t.group_id = t2.group_id\r\n" + 
+//				"                      and t.child_poi_pid = s.pid\r\n" + 
+//				"                      and t2.parent_poi_pid = t3.pid) or exists\r\n" + 
+//				"           (select 1\r\n" + 
+//				"              from ix_poi_children t, ix_poi_parent t2, t3\r\n" + 
+//				"             where t.group_id = t2.group_id\r\n" + 
+//				"               and t2.parent_poi_pid = s.pid\r\n" + 
+//				"               and t.child_poi_pid = t3.pid) or exists\r\n" + 
+//				"           (select 1\r\n" + 
+//				"              from ix_samepoi      s1,\r\n" + 
+//				"                   ix_samepoi_part s2,\r\n" + 
+//				"                   ix_samepoi_part s3,\r\n" + 
+//				"                   t3\r\n" + 
+//				"             where s1.group_id = s2.group_id\r\n" + 
+//				"               and s1.group_id = s3.group_id\r\n" + 
+//				"               and s2.poi_pid = s.pid\r\n" + 
+//				"               and s3.poi_pid = t3.pid))\r\n") ;
+		
 		sb.append("delete from "+tempTable+" l\r\n" + 
-				" where exists(with t3 as (select pid\r\n" + 
-				"                      from poi_edit_status\r\n" + 
-				"                     where status in (1, 2))\r\n" + 
-				"   select p.op_id\r\n" + 
-				"     from log_operation   p,\r\n" + 
-				"    log_detail      d,\r\n" + 
-				"    log_detail_grid g,\r\n" + 
-				"    poi_edit_status s\r\n" + 
-				"    where p.op_id = d.op_id\r\n" + 
-				"      and d.op_id = l.op_id\r\n" + 
-				"      and d.row_id = g.log_row_id\r\n" + 
-				"      and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n" + 
-				"      and p.com_sta = 0\r\n" + 
-				"      and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')\r\n" + 
-				"      and s.status = 3\r\n" + 
-				"      and (exists (select 1\r\n" + 
-				"                     from ix_poi_children t, ix_poi_parent t2, t3\r\n" + 
-				"                    where t.group_id = t2.group_id\r\n" + 
-				"                      and t.child_poi_pid = s.pid\r\n" + 
-				"                      and t2.parent_poi_pid = t3.pid) or exists\r\n" + 
-				"           (select 1\r\n" + 
-				"              from ix_poi_children t, ix_poi_parent t2, t3\r\n" + 
-				"             where t.group_id = t2.group_id\r\n" + 
-				"               and t2.parent_poi_pid = s.pid\r\n" + 
-				"               and t.child_poi_pid = t3.pid) or exists\r\n" + 
-				"           (select 1\r\n" + 
-				"              from ix_samepoi      s1,\r\n" + 
-				"                   ix_samepoi_part s2,\r\n" + 
-				"                   ix_samepoi_part s3,\r\n" + 
-				"                   t3\r\n" + 
-				"             where s1.group_id = s2.group_id\r\n" + 
-				"               and s1.group_id = s3.group_id\r\n" + 
-				"               and s2.poi_pid = s.pid\r\n" + 
-				"               and s3.poi_pid = t3.pid))\r\n") ;
+				" WHERE L.OP_ID IN\r\n" + 
+				"       (WITH T3 AS (SELECT PID FROM POI_EDIT_STATUS WHERE STATUS IN (1, 2)),\r\n" + 
+				"        TN AS (SELECT /*+ no_merge */ PID\r\n" + 
+				"           FROM (SELECT /*+ leading(T3,T2,T)*/ T.CHILD_POI_PID PID\r\n" + 
+				"                   FROM IX_POI_CHILDREN T, IX_POI_PARENT T2, T3\r\n" + 
+				"                  WHERE T.GROUP_ID = T2.GROUP_ID\r\n" + 
+				"                    AND T2.PARENT_POI_PID = T3.PID\r\n" + 
+				"                 UNION ALL\r\n" + 
+				"                 SELECT /*+ leading(T3,T2,T)*/\r\n" + 
+				"                  T.CHILD_POI_PID\r\n" + 
+				"                   FROM IX_POI_CHILDREN T, IX_POI_PARENT T2, T3\r\n" + 
+				"                  WHERE T.GROUP_ID = T2.GROUP_ID\r\n" + 
+				"                    AND T2.PARENT_POI_PID = T3.PID\r\n" + 
+				"                 UNION ALL\r\n" + 
+				"                 SELECT /*+ leading(T3,T,T2)*/\r\n" + 
+				"                  PARENT_POI_PID\r\n" + 
+				"                   FROM IX_POI_CHILDREN T, IX_POI_PARENT T2, T3\r\n" + 
+				"                  WHERE T.GROUP_ID = T2.GROUP_ID\r\n" + 
+				"                    AND T.CHILD_POI_PID = T3.PID\r\n" + 
+				"                 UNION ALL\r\n" + 
+				"                 SELECT /*+ leading(T3,S3,S1,S2)*/\r\n" + 
+				"                  S2.POI_PID\r\n" + 
+				"                   FROM IX_SAMEPOI      S1,\r\n" + 
+				"                        IX_SAMEPOI_PART S2,\r\n" + 
+				"                        IX_SAMEPOI_PART S3,\r\n" + 
+				"                        T3\r\n" + 
+				"                  WHERE S1.GROUP_ID = S2.GROUP_ID\r\n" + 
+				"                    AND S1.GROUP_ID = S3.GROUP_ID\r\n" + 
+				"                    AND S3.POI_PID = T3.PID))  SELECT /*+ORDERED*/ P.OP_ID\r\n" + 
+				"           FROM LOG_OPERATION P,\r\n" + 
+				"        LOG_DETAIL D,\r\n" + 
+				"        LOG_DETAIL_GRID G,\r\n" + 
+				"        POI_EDIT_STATUS S WHERE\r\n" + 
+				"        P.OP_ID = D.OP_ID AND D.ROW_ID = G.LOG_ROW_ID AND\r\n" + 
+				"        (D.OB_PID = S.PID OR D.GEO_PID = S.PID) AND P.COM_STA = 0 AND\r\n" + 
+				"        (D.OB_NM = 'IX_POI' OR D.GEO_NM = 'IX_POI') AND S.STATUS = 3 AND\r\n" + 
+				"        EXISTS (SELECT 1 FROM TN WHERE TN.PID = S.PID)\r\n");	
+		
+		
 				if (this.stopTime!=null){
 					String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
 					sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
@@ -160,7 +201,7 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 	protected SqlClause getPrepareSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into "+tempTable+" \r\n");
-		sb.append(" select distinct p.op_id, p.op_dt,P.OP_SEQ\r\n" + 
+		sb.append(" select /*+ leading(P,D,G,S)*/ distinct p.op_id, p.op_dt,P.OP_SEQ\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 

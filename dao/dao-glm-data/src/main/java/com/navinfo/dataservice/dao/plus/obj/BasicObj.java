@@ -3,10 +3,14 @@ package com.navinfo.dataservice.dao.plus.obj;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.log4j.Logger;
+
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.diff.ObjectDiffConfig;
@@ -30,6 +34,7 @@ import net.sf.json.JSONObject;
  * @Description: BasicObj.java
  */
 public abstract class BasicObj {
+	protected Logger log = Logger.getLogger(this.getClass());
 	protected int lifeCycle=0;
 	protected BasicRow mainrow;
 	//protected Map<Class<? extends BasicObj>, List<BasicObj>> childobjs;//存储对象下面的子对象，不包含子表
@@ -86,7 +91,7 @@ public abstract class BasicObj {
 	}
 	
 	public BasicObjGrid getGrid() throws Exception {
-		if(this.grid==null){
+		if(this.grid==null&&objType().equals(ObjType.FEATURE)){
 			//生成grid信息
 			Geometry geo = (Geometry) mainrow.getAttrByColName("GEOMETRY");
 			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
@@ -168,8 +173,6 @@ public abstract class BasicObj {
 				rows.add(subrow);
 			}
 		}
-		List<BasicRow> rows = subrows.get(tname);
-		rows.add(subrow);
 	}
 	
 	/**
@@ -308,7 +311,7 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)||mainrow.getOpType().equals(OperationType.PRE_DELETED)){
 			return sqlList;
 		}
-		System.out.println(" physiDelete:  "+physiDelete+" mainrow: "+mainrow.getObjPid()+"  mainrow.getOpType():"+mainrow.getOpType());
+		log.info(" physiDelete:  "+physiDelete+" mainrow: "+mainrow.getObjPid()+"  mainrow.getOpType():"+mainrow.getOpType());
 		RunnableSQL mainsql = mainrow.generateSql(physiDelete);
 		if(mainsql!=null){
 			sqlList.add(mainsql);
@@ -317,7 +320,7 @@ public abstract class BasicObj {
 		//先放一级子表sql;再放二级子表sql
 		//一级子表
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
-			System.out.println("entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
+			log.info("entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
 			//****zl 2017.03.04 修改********
 			if(entry.getKey().equals("IX_POI")){
 				continue;
@@ -328,10 +331,10 @@ public abstract class BasicObj {
 			//*****************************
 			for(BasicRow subrow:entry.getValue()){
 				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
-				System.out.println("glmTable: "+ glmTable);
+				log.info("glmTable: "+ glmTable);
 				GlmRef glmRef = glmTable.getObjRef();
-				System.out.println(glmRef);
-				System.out.println(glmRef.isRefMain());
+				log.info(glmRef);
+				log.info(glmRef.isRefMain());
 				
 				if(!glmRef.isRefMain()){
 					continue;
@@ -344,7 +347,7 @@ public abstract class BasicObj {
 		}
 		//二级子表
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
-			System.out.println("二级子表 entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
+			log.info("二级子表 entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
 			//****zl 2017.03.04 修改********
 			if(entry.getKey().equals("IX_POI")){
 				continue;
@@ -378,19 +381,57 @@ public abstract class BasicObj {
 	
 	/**
 	 * 根据传入的diffConfig差分更新对象属性
-	 * 主表不差分pid，所有表不差分rowid
+	 * 所有表不差分rowid
 	 * @param obj：参考的对象
 	 * @return：是否有更新
 	 * @throws Exception
 	 */
 	public void diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
 		//todo
-//		boolean isDefer=false;
 		//根据差分配置
 		if(this.getClass().getName().equals(obj.getClass().getName())){
-			this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
+			//主表差分
+			this.mainrow.diff(obj.mainrow, null);
+			//
+			Map<String,List<BasicRow>> tarSubrows = obj.getSubrows();
+			//构造所有子表名
+			Set<String> subtables = new HashSet<String>();
+			subtables.addAll(subrows.keySet());
+			subtables.addAll(tarSubrows.keySet());
+			//差分子表
+			for(String tab:subtables){
+				List<BasicRow> myRows = subrows.get(tab);
+				List<BasicRow> tarRows = tarSubrows.get(tab);
+				if(tarRows==null||tarRows.size()==0){//目标库子表无，直接删除
+					this.deleteSubrows(tab);
+				}else{
+					if(myRows==null||myRows.size()==0){//本库子表无，直接新增的
+						for(BasicRow r:tarRows){
+							r.setOpType(OperationType.INSERT);
+							this.insertSubrow(r);
+						}
+					}else{//子表都有，再差分
+						//新增和修改的
+						for(BasicRow tr:tarRows){
+							if(!myRows.contains(tr)){
+								tr.setOpType(OperationType.INSERT);
+								this.insertSubrow(tr);
+							}
+						}
+						//删除的
+						for(BasicRow mr:myRows){
+							if(!tarRows.contains(mr)){
+								this.deleteSubrow(mr);
+							}
+						}
+					}
+				}
+			}
+			
+			
+		}else{
+			throw new Exception("不同对象类型，无能差分。");
 		}
-//		return isDefer;
 	}
 
 	public boolean isGeoChanged() {

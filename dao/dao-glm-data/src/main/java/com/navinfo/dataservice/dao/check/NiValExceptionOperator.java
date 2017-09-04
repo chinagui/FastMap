@@ -705,8 +705,10 @@ public class NiValExceptionOperator {
 				}
 			}
 			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
-			Timestamp timeStamp = new Timestamp(new Date().getTime());
-			this.updateWorkerAndDate(md5, type, isQuality, userId, timeStamp);
+			if(isQuality != -1){
+				Timestamp timeStamp = new Timestamp(new Date().getTime());
+				this.updateWorkerAndDate(md5, type, isQuality, userId, timeStamp);
+			}
 		} catch (Exception e) {
 			throw e;
 		}

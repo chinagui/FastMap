@@ -78,6 +78,10 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			
+			//modify by songhe 2017/9/04
+			//查询task对应的tips转aumark数量
+			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
@@ -151,6 +155,13 @@ public class TaskJob extends AbstractStatJob {
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
 				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+
+				//处理对应任务的tis2aumark数量
+				if(tips2MarkMap.containsKey(taskId)){
+					task.setTips2MarkNum(tips2MarkMap.get(taskId));
+				}else{
+					task.setTips2MarkNum(0);
+				}
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {
@@ -416,7 +427,7 @@ public class TaskJob extends AbstractStatJob {
 				task.put("poiUploadNum", poiUploadNum);
 				task.put("poiFinishNum", poiFinishNum);
 				task.put("poiUnfinishNum", poiUnfinishNum);
-				task.put("poiActualFinishNum", poiUnFreshNum);
+				//task.put("poiActualFinishNum", poiUnFreshNum);
 				task.put("poiUnFreshNum", poiUnFreshNum);
 				task.put("poiFinishAndPlanNum", poiFinishAndPlanNum);
 				task.put("poiFreshNum", poiFreshNum);
@@ -605,18 +616,21 @@ public class TaskJob extends AbstractStatJob {
 			int monthPoiLogTotalNum = 0;
 			int monthPoiLogFinishNum = 0;
 			int monthPoiFinishNum = 0;
+			int day2MonthNum=0;
 			for (Integer gridId : gridIds) {
 				if(monthPoiStat.containsKey(gridId)){
 					Map<String, Integer> map = monthPoiStat.get(gridId);
 					monthPoiLogTotalNum += map.get("logAllNum");
 					monthPoiLogFinishNum += map.get("logFinishNum");
 					monthPoiFinishNum += map.get("poiFinishNum");
+					day2MonthNum+=map.get("day2MonthNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("monthPoiLogTotalNum", monthPoiLogTotalNum);
 			taskStat.put("monthPoiLogFinishNum", monthPoiLogFinishNum);
 			taskStat.put("monthPoiFinishNum", monthPoiFinishNum);
+			taskStat.put("day2MonthNum", day2MonthNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage());
@@ -934,7 +948,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiUploadNum = 0;
 		int poiFinishNum = 0;
 		int poiUnfinishNum = 0;
-		int poiActualFinishNum = 0;
+		//int poiActualFinishNum = 0;
 		
 		int dayEditTipsAllNum = 0;
 		int dayEditTipsNoWorkNum = 0;
@@ -1059,9 +1073,9 @@ public class TaskJob extends AbstractStatJob {
 				poiUnfinishNum = (int) dataMap.get("poiUnfinishNum");
 			}
 			//POI实际产出量
-			if(dataMap.containsKey("poiActualFinishNum")){
-				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
-			}
+//			if(dataMap.containsKey("poiActualFinishNum")){
+//				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
+//			}
 			//采集上传个数汇总
 			if(dataMap.containsKey("dayEditTipsAllNum")){
 				dayEditTipsAllNum = (int) dataMap.get("dayEditTipsAllNum");
@@ -1256,6 +1270,23 @@ public class TaskJob extends AbstractStatJob {
 					}
 				}
 			}
+			
+			//modify by songhe 2017/09/01
+			String endTime = "";
+			if(0 == task.getStatus()){
+				endTime = actualEndDate;
+			}else{
+				endTime = sdf.format(new Date());
+			}
+			//生产已执行天数
+			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate(), sdf.parse(endTime));
+			String planStartDate = sdf.format(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate());
+			taskMap.put("planEndDate", planEndDate);
+			taskMap.put("planStartDate", planStartDate);
+			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
+			taskMap.put("workDate", workDate);
+			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			
 			//保存数据
 			taskMap.put("taskId", taskId);
 			taskMap.put("type", type);
@@ -1275,7 +1306,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiUploadNum", poiUploadNum);
 			taskMap.put("poiFinishNum", poiFinishNum);
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);
-			taskMap.put("poiActualFinishNum", poiActualFinishNum);
+			//taskMap.put("poiActualFinishNum", poiActualFinishNum);
 			taskMap.put("dayEditTipsAllNum", dayEditTipsAllNum);
 			taskMap.put("dayEditTipsNoWorkNum", dayEditTipsNoWorkNum);
 			taskMap.put("dayEditTipsFinishNum", dayEditTipsFinishNum);

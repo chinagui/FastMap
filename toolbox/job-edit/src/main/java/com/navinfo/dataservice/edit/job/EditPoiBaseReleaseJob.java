@@ -24,7 +24,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.control.dealership.service.utils.DealerShipConstantField;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
-import com.navinfo.dataservice.dao.plus.log.LogDetailRsHandler4ChangeLog;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
@@ -72,7 +71,9 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//1对grids提取数据执行gdb检查
 			log.info("EditPoiBaseReleaseJob:获取要检查的数据pid");
 			//获取要检查的数据pid
-			List<Long> poiPids = getCheckPidList(conn,myRequest);
+			String sqlCond=" and ip.u_record!=2";
+			List<Long> poiPids = getCheckPidList(conn,myRequest,sqlCond);
+			List<Long> poiPidsContainDel = getCheckPidList(conn,myRequest,null);
 			log.info("EditPoiBaseReleaseJob:获取要检查的数据的履历");
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
@@ -148,7 +149,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("start change poi_edit_status=3 commit");
 //			PoiQuality poiQuality = new PoiQuality();
 //			List<Integer> pidList = poiQuality.getPidListBySubTaskId((int)jobInfo.getTaskId(), conn);
-			int count=commitPoi(conn,poiPids);
+			int count=commitPoi(conn,poiPidsContainDel);
 			
 //			log.info("开始执行poi质检提交修改count_table 任务");
 //			poiQuality.releaseUpdateCountTable(jobInfo, conn,pidList);
@@ -225,23 +226,27 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @throws JobException
 	 */
 	private List<Long> getCheckPidList(Connection conn,
-			EditPoiBaseReleaseJobRequest myRequest) throws JobException {
+			EditPoiBaseReleaseJobRequest myRequest,String sqlCond) throws JobException {
 		try{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
 			//Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
 			//行编提交由针对删除数据的检查，此处要全部加载
-			String sql="SELECT ip.pid"
-					+ "  FROM ix_poi ip, poi_edit_status ps"
-					+ " WHERE ip.pid = ps.pid"
-					+ "   AND ps.status =2"
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT ip.pid");
+			sb.append("  FROM ix_poi ip, poi_edit_status ps");
+			sb.append(" WHERE ip.pid = ps.pid");
+			sb.append("   AND ps.status =2");
 					//20170713 与凤琴、晓毅，讨论，放进来鲜度验证的数据，有两个批处理需要批鲜度验证的数据
 					//+ "   AND ps.FRESH_VERIFIED=0"
 					//20170823 删除的数据，由于加载数据时，只能加载到主表，因此删除的数据不做检查与批处理
-					+ "   and ip.u_record!=2"
-					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
+			if (sqlCond!=null){
+				sb.append(sqlCond);
+			}
+			sb.append(" AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ");	
+	
 			QueryRunner run=new QueryRunner();
-			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){
+			return run.query(conn, sb.toString(),new ResultSetHandler<List<Long>>(){
 
 				@Override
 				public List<Long> handle(ResultSet rs) throws SQLException {

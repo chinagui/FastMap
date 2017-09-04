@@ -113,6 +113,7 @@ public class FMBAT20110 extends BasicBatchRule {
 		if (isChanged){
 			// 开始执行批处理
 			for (IxPoiAddress addressWrap: addresses){
+				log.debug("pid:"+addressWrap.getPoiPid());
 				boolean streetInDb = false; //在库中找到道路名
 				boolean placeInDb = false; //在库中找到place
 				boolean placeWithkey = false; //存在place关键字
@@ -446,29 +447,35 @@ public class FMBAT20110 extends BasicBatchRule {
                 		_steetPost = placeLandMarkJson.getString("streetPost");
                 	} else {
                 		if (kXiangIdx == maxIdx){
-                			town = townXiangPre.substring(0, maxIdx+1);
-                    		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townXiangPost);
-                    		_place = placeLandMarkJson.getString("place");
-                    		_landMark = placeLandMarkJson.getString("landMark");
-                    		_street = placeLandMarkJson.getString("street");
-                    		_steetPost = placeLandMarkJson.getString("streetPost");
+                			if(StringUtils.isNotEmpty(townXiangPre) && townXiangPre.length() >= (maxIdx+1)){
+	                			town = townXiangPre.substring(0, maxIdx+1);
+	                    		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townXiangPost);
+	                    		_place = placeLandMarkJson.getString("place");
+	                    		_landMark = placeLandMarkJson.getString("landMark");
+	                    		_street = placeLandMarkJson.getString("street");
+	                    		_steetPost = placeLandMarkJson.getString("streetPost");
+                    		}
                 		}else{
                 			if (kZhenIdx==maxIdx){
-                				town = townZhenPre.substring(0, maxIdx+1);
-                        		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townZhenPost);
-                        		_place = placeLandMarkJson.getString("place");
-                        		_landMark = placeLandMarkJson.getString("landMark");
-                        		_street = placeLandMarkJson.getString("street");
-                        		_steetPost = placeLandMarkJson.getString("streetPost");
+                				if(StringUtils.isNotEmpty(townZhenPre) && townZhenPre.length() >= (maxIdx+1)){
+	                				town = townZhenPre.substring(0, maxIdx+1);
+	                        		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townZhenPost);
+	                        		_place = placeLandMarkJson.getString("place");
+	                        		_landMark = placeLandMarkJson.getString("landMark");
+	                        		_street = placeLandMarkJson.getString("street");
+	                        		_steetPost = placeLandMarkJson.getString("streetPost");
+                        		}
                 			}else {
                 				if (kJieDaoIdx==maxIdx){
                 					// 因为是“街道”所以+2
-                					town = townJiedaoPre.substring(0, maxIdx+2);
-                            		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townJiedaoPost);
-                            		_place = placeLandMarkJson.getString("place");
-                            		_landMark = placeLandMarkJson.getString("landMark");
-                            		_street = placeLandMarkJson.getString("street");
-                            		_steetPost = placeLandMarkJson.getString("streetPost");
+                					if(StringUtils.isNotEmpty(townJiedaoPre) && townJiedaoPre.length() >= (maxIdx+2)){
+	                					town = townJiedaoPre.substring(0, maxIdx+2);
+	                            		JSONObject placeLandMarkJson = setPlaceAndLandMark(streetInDb, placeInDb, placeWithkey, streetWithkey, townJiedaoPost);
+	                            		_place = placeLandMarkJson.getString("place");
+	                            		_landMark = placeLandMarkJson.getString("landMark");
+	                            		_street = placeLandMarkJson.getString("street");
+	                            		_steetPost = placeLandMarkJson.getString("streetPost");
+                            		}
                 				}
                 			}
                 		}
@@ -805,7 +812,7 @@ public class FMBAT20110 extends BasicBatchRule {
 		return street;
 	}
 
-	public JSONObject parseByKey(String addFull, String key) {
+	public static JSONObject parseByKey(String addFull, String key) {
 		JSONObject res = new JSONObject();
 		String streetPre = "";
 		String streetPost = "";
@@ -1017,7 +1024,15 @@ public class FMBAT20110 extends BasicBatchRule {
 //			int numIdx = test.indexOf(num);
 //			System.out.println(mat.group());
 //		}
-		List<String> test = Arrays.asList("1", "2", "3");
+		//List<String> test = Arrays.asList("1", "2", "3");
+//		JSONObject obj = parseByKey("沙河镇","镇");
+//		System.out.println(obj);
+//		int maxIdx = obj.getInt("keyIdx");
+//		String zhenPre = obj.getString("streetPre");
+		String zhenPre = "AB";
+		System.out.println(zhenPre);
+		if(StringUtils.isNotEmpty(zhenPre) && zhenPre.length() >= (2+1)){
+		System.out.println(zhenPre.substring(0, 2+1));}
 	}
 
 }

@@ -5015,22 +5015,27 @@ public class TaskService {
 	 * @throws Exception
 	 * 
 	 * */
-	public int getTips2MarkNumByTaskId(int taskId) throws Exception{
+	public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select jd.num from task t,JOB_RELATION jr, JOB_DETAIL jd "
-					+ "where t.task_id = jr.item_id and jr.job_id = jd.job_id "
-					+ "and jr.item_type = 2 and jd.type = 1 and t.task_id = "+taskId;
-			ResultSetHandler<Integer> rs = new ResultSetHandler<Integer>() {
+			String selectSql = "select st.task_id, jd.num "
+					+ "from subtask st, JOB_RELATION jr, JOB_DETAIL jd where  jr.job_id = jd.job_id "
+					+ " and jd.type = 1 and ((st.subtask_id = jr.item_id  and jr.item_type = 3) or (st.task_id = jr.item_id and jr.item_type = 2))";
+			ResultSetHandler<Map<Integer, Integer>> rs = new ResultSetHandler<Map<Integer, Integer>>() {
 				@Override
-				public Integer handle(ResultSet rs) throws SQLException {
-					int count = 0;
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> map = new HashMap<>();
 					while(rs.next()){
-						count += rs.getInt("num");
+						int taskId = rs.getInt("task_id");
+						int tips2aumarkCount = rs.getInt("num");
+						if(map.containsKey(taskId)){
+							tips2aumarkCount += map.get(taskId);
+						}
+						map.put(taskId, tips2aumarkCount);
 					}
-					return count;
+					return map;
 				}
 			};
 			return run.query(conn, selectSql, rs);

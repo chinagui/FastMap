@@ -78,6 +78,10 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			
+			//modify by songhe 2017/9/04
+			//查询task对应的tips转aumark数量
+			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
@@ -151,10 +155,13 @@ public class TaskJob extends AbstractStatJob {
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
 				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
-				//modify by songhe 2017/9/04
-				//查询task对应的tips转aumark数量
-				int tips2MarkNum = manApi.getTips2MarkNumByTaskId(taskId);
-				task.setTips2MarkNum(tips2MarkNum);
+
+				//处理对应任务的tis2aumark数量
+				if(tips2MarkMap.containsKey(taskId)){
+					task.setTips2MarkNum(tips2MarkMap.get(taskId));
+				}else{
+					task.setTips2MarkNum(0);
+				}
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {

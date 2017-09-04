@@ -547,7 +547,7 @@ public class ManApiImpl implements ManApi {
      * @throws Exception 
      * 
      * */
-    public int getTips2MarkNumByTaskId(int taskId) throws Exception{
-    	return TaskService.getInstance().getTips2MarkNumByTaskId(taskId);
+    public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
+    	return TaskService.getInstance().getTips2MarkNumByTaskId();
     }
 }

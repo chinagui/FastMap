@@ -350,6 +350,6 @@ public interface ManApi{
      * @throws Exception 
      * 
      * */
-    public int getTips2MarkNumByTaskId(int taskId) throws Exception;
+    public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception;
 }
 

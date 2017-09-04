@@ -35,7 +35,7 @@ public class DownloadPhotoFromHbase {
 	private static Logger log = LoggerRepos.getLogger(DownloadPhotoFromHbase.class);
 	static ClassPathXmlApplicationContext context =null;
 	static String savePath;		
-	static String rootPath="图形提取";
+	static String rootPath="图形提取"; 
 	static String tpPath;
 	static String ptnPath;
 	static String filePath;

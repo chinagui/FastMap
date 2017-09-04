@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -1866,6 +1868,32 @@ public class Transaction {
         selector = new AbstractSelector(RdLink.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(links), true, false);
+            if (rowsTmp.size() != links.size() && rowsTmp.size() > 0) {
+                int minus = links.size() - rowsTmp.size();
+
+                RdLink link = (RdLink) rowsTmp.get(0);
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(link.getGeometry(), Constant.BASE_SHRINK, Constant
+                        .BASE_PRECISION), 3);
+                for (Integer dbId : dbIds) {
+                    if (dbId.equals(process.getCommand().getDbId())) {
+                        continue;
+                    }
+
+                    Connection connection = null;
+                    try {
+                        connection = DBConnector.getInstance().getConnectionById(dbId);
+                        List<RdLink> rdLinks = new RdLinkSelector(connection).loadByPids(new ArrayList<>(links), false);
+                        rowsTmp.addAll(rdLinks);
+                        if (rdLinks.size() == minus) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        DBUtils.closeConnection(connection);
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdLink出错[ids: %s]", Arrays.toString(links.toArray())), e);
         }
@@ -1878,6 +1906,32 @@ public class Transaction {
         selector = new AbstractSelector(RdNode.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(nodes), true, false);
+            if (rowsTmp.size() != nodes.size() && rowsTmp.size() > 0) {
+                int minus = nodes.size() - rowsTmp.size();
+
+                RdNode node = (RdNode) rowsTmp.get(0);
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(node.getGeometry(), Constant.BASE_SHRINK, Constant
+                        .BASE_PRECISION), 3);
+                for (Integer dbId : dbIds) {
+                    if (dbId.equals(process.getCommand().getDbId())) {
+                        continue;
+                    }
+
+                    Connection connection = null;
+                    try {
+                        connection = DBConnector.getInstance().getConnectionById(dbId);
+                        List<IRow> rdNodes = new RdNodeSelector(connection).loadByIds(new ArrayList<>(links), false,false);
+                        rowsTmp.addAll(rdNodes);
+                        if (rdNodes.size() == minus) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        DBUtils.closeConnection(connection);
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdNode出错[ids: %s]", Arrays.toString(nodes.toArray())), e);
         }

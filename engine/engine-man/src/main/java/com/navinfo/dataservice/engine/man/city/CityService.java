@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -354,6 +356,53 @@ public class CityService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询所有city下的所有block对应的meshId集合
+	 * @return Map<Integer,Map<Integer, Set<Integer>>>>
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String queryListAllSql = "select g.grid_id, g.block_id, g.city_id from grid g where g.city_id <> 0 and g.block_id <> 0";
+
+			return run.query(conn, queryListAllSql, new ResultSetHandler<Map<Integer, Map<Integer, Set<Integer>>>>(){
+
+				@Override
+				public Map<Integer, Map<Integer, Set<Integer>>> handle(ResultSet rs)
+						throws SQLException {
+					Map<Integer, Map<Integer, Set<Integer>>> resultMap = new HashMap<>(1024);
+					while(rs.next()){
+						Map<Integer, Set<Integer>> blockMap = new HashMap<>(1024);
+						Set<Integer> grids = new HashSet<>();
+						int cityId = rs.getInt("city_id");
+						int blockId = rs.getInt("block_id");
+						int gridId = rs.getInt("grid_id");
+						if(resultMap.containsKey(cityId)){
+							blockMap = resultMap.get(cityId);
+						}
+						if(blockMap.containsKey(blockId)){
+							grids = blockMap.get(blockId);
+						}
+						grids.add(gridId);
+						blockMap.put(blockId, grids);
+						resultMap.put(cityId, blockMap);
+					}
+					return resultMap;
+				}});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);

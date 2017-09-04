@@ -338,6 +338,7 @@ public class RdObjectSearch implements ISearch {
 
 			snapshot.setM(jsonM);
 		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
 			throw new Exception(e);
 		} finally {
 			DbUtils.close(pstmt);

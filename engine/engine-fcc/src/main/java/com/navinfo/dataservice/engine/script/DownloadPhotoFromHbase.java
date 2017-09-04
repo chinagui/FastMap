@@ -34,6 +34,7 @@ import net.sf.json.JSONObject;
 public class DownloadPhotoFromHbase {
 	private static Logger log = LoggerRepos.getLogger(DownloadPhotoFromHbase.class);
 	static ClassPathXmlApplicationContext context =null;
+	static String savePath;		
 	static String rootPath="图形提取";
 	static String tpPath;
 	static String ptnPath;
@@ -65,7 +66,10 @@ public class DownloadPhotoFromHbase {
 	        
 	        // mesh范围
 	        String meshIds = props.getProperty("meshIds");
-
+	        
+	        //用户指定的照片保存路径
+	        String savePath = props.getProperty("savePath");
+	        
 	        if (StringUtils.isEmpty(input_s_sourcetype)) {
 	            System.out.println("input_s_sourcetype is  null");
 	            log.error("input_s_sourcetype is  null");
@@ -75,6 +79,12 @@ public class DownloadPhotoFromHbase {
 	        if (StringUtils.isEmpty(meshIds)) {
 	            System.out.println("meshIds is null");
 	            log.error("meshIds is null");
+	            return;
+	        }
+	        
+	        if (StringUtils.isEmpty(savePath)) {
+	            System.out.println("savePath is null");
+	            log.error("savePath is null");
 	            return;
 	        }
 	        	        	        
@@ -87,10 +97,11 @@ public class DownloadPhotoFromHbase {
 	        // 从配置信息中获取meshId、input_s_sourcetype,按照图幅范围及type类型提取照片。
 	        for (String mid : meshList) {
 				for (String type : typeList) {
-					downloadPhoto(mid,type);
+					downloadPhoto(mid,type,savePath);
 				}
 								
 			}
+	        log.debug("本次照片下载任务已完成。");
 						
 	}	
 	
@@ -110,7 +121,7 @@ public class DownloadPhotoFromHbase {
 	 * @param meshId
 	 */
 	
-	public static void downloadPhoto(String meshId,String sourceType){
+	public static void downloadPhoto(String meshId,String sourceType,String savePath){
 		
 		String wkt=MeshUtils.mesh2WKT(meshId);		
 		 if (StringUtils.isEmpty(wkt)) {
@@ -187,7 +198,7 @@ public class DownloadPhotoFromHbase {
 
 						log.debug("本次提取的照片名为: " + photoName );
 						
-						filePath = rootPath + "/" + tpPath + "/" + ptnPath;
+						filePath = savePath + "/" + rootPath + "/" + tpPath + "/" + ptnPath;
 						log.debug("照片将提取到: " + filePath + "文件夹下");
 						
 						//每次下载前，使用要下载的图片rowkey到该表查询，看对应的a_uploadDate值和last_a_uploadDate值是否相等

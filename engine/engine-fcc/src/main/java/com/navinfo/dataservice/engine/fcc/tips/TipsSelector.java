@@ -151,7 +151,6 @@ public class TipsSelector {
 			}
 			TipsRequestParamSQL param = new TipsRequestParamSQL();
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-			TipsIndexOracleOperator operator = new TipsIndexOracleOperator();
 			List<TipsDao> snapshots = null;
 			if(isInTask) { //web渲染增加Tips开关，isInTask = true，则只显示任务范围内的Tips
 				int subtaskId = jsonReq.getInt("subtaskId");
@@ -159,8 +158,13 @@ public class TipsSelector {
 				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 				Geometry tileGeo = GeometryConvertor.wkt2jts(wkt);
 				Geometry subTaskGeo = GeometryConvertor.wkt2jts(subtask.getGeometry());
-				String renderWkt = GeometryConvertor.jts2wkt(tileGeo.intersection(subTaskGeo));
+                //求瓦片和任务的交集，如果没有则返回空
+				String renderWkt = subtask.getGeometry();//GeometryConvertor.jts2wkt(tileGeo.intersection(subTaskGeo));
+                if(StringUtils.isEmpty(renderWkt) || renderWkt.contains("EMPTY")) {
+                    return array;
+                }
 
+                TipsIndexOracleOperator operator = new TipsIndexOracleOperator();
 				OracleWhereClause where = param.getTaskRender(parameter, renderWkt, operator.getConn(), subtask);
 
 				String renderTaskSql = "WITH TMP AS\n" +
@@ -181,10 +185,11 @@ public class TipsSelector {
 						" *\n" +
 						"  FROM TIPS_INDEX T, TMP TMP\n" +
 						" WHERE T.ID = TMP.ID";
-				snapshots = new TipsIndexOracleOperator().queryCloseConn(renderTaskSql + where.getSql(), where
+				snapshots = operator.queryCloseConn(renderTaskSql + where.getSql(), where
 						.getValues().toArray());
 				logger.info("tileInTask: " + where.getSql());
 			}else {
+                TipsIndexOracleOperator operator = new TipsIndexOracleOperator();
 				String sql = param.getByTileWithGap(parameter);
 				snapshots = operator.queryCloseConn(sql, ConnectionUtil.createClob(operator.getConn(), wkt));
 			}

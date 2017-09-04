@@ -1269,11 +1269,11 @@ public class TaskJob extends AbstractStatJob {
 				endTime = sdf.format(new Date());
 			}
 			//生产已执行天数
-			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate(), sdf.parse(endTime));
-			String planStartDate = sdf.format(task.getPlanStartDate());
+			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate(), sdf.parse(endTime));
+			String planStartDate = sdf.format(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate());
 			taskMap.put("planEndDate", planEndDate);
 			taskMap.put("planStartDate", planStartDate);
-			taskMap.put("workKind", task.getWorkKind());
+			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
 			taskMap.put("workDate", workDate);
 			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
 			

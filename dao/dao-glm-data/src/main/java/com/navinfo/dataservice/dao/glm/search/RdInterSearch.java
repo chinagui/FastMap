@@ -147,22 +147,28 @@ public class RdInterSearch implements ISearch {
 				List<String> sNodePidsList = new ArrayList<String>();
 				List<String> eNodePidsList = new ArrayList<String>();
 				if (StringUtils.isNotEmpty(nodePids)) {
-					nodePidsList = Arrays.asList(nodePids.split(","));
+					nodePidsList = new ArrayList<String>(Arrays.asList(nodePids
+							.split(",")));
 				}
 				if (StringUtils.isNotEmpty(wktPoints)) {
-					wktPointsList = Arrays.asList(wktPoints.split(","));
+					wktPointsList = new ArrayList<String>(
+							Arrays.asList(wktPoints.split(",")));
 				}
 				if (StringUtils.isNotEmpty(linkPids)) {
-					linkPidsList = Arrays.asList(linkPids.split(","));
+					linkPidsList = new ArrayList<String>(Arrays.asList(linkPids
+							.split(",")));
 				}
 				if (StringUtils.isNotEmpty(wktLinks)) {
-					wktLinksList = Arrays.asList(wktLinks.split(";"));
+					wktLinksList = new ArrayList<String>(Arrays.asList(wktLinks
+							.split(";")));
 				}
 				if (StringUtils.isNotEmpty(sNodePids)) {
-					sNodePidsList = Arrays.asList(sNodePids.split(","));
+					sNodePidsList = new ArrayList<String>(
+							Arrays.asList(sNodePids.split(",")));
 				}
 				if (StringUtils.isNotEmpty(eNodePids)) {
-					eNodePidsList = Arrays.asList(eNodePids.split(","));
+					eNodePidsList = new ArrayList<String>(
+							Arrays.asList(eNodePids.split(",")));
 				}
 
 				boolean isCheckNodesArea = this.isCheckNodeArea(rdInter,
@@ -571,8 +577,9 @@ public class RdInterSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		JSONObject geojson = Geojson.wkt2Geojson("LINESTRING (115.49983 36.05965,  115.4999 36.05972)");
-		System.out.println(geojson);
+		List<String> a = new ArrayList<String>();
+		a.add(String.valueOf(1111));
+		System.out.println(a);
 
 	}
 }

@@ -78,6 +78,10 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			
+			//modify by songhe 2017/9/04
+			//查询task对应的tips转aumark数量
+			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
@@ -151,6 +155,13 @@ public class TaskJob extends AbstractStatJob {
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
 				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+
+				//处理对应任务的tis2aumark数量
+				if(tips2MarkMap.containsKey(taskId)){
+					task.setTips2MarkNum(tips2MarkMap.get(taskId));
+				}else{
+					task.setTips2MarkNum(0);
+				}
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {
@@ -1256,6 +1267,23 @@ public class TaskJob extends AbstractStatJob {
 					}
 				}
 			}
+			
+			//modify by songhe 2017/09/01
+			String endTime = "";
+			if(0 == task.getStatus()){
+				endTime = actualEndDate;
+			}else{
+				endTime = sdf.format(new Date());
+			}
+			//生产已执行天数
+			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate(), sdf.parse(endTime));
+			String planStartDate = sdf.format(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate());
+			taskMap.put("planEndDate", planEndDate);
+			taskMap.put("planStartDate", planStartDate);
+			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
+			taskMap.put("workDate", workDate);
+			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			
 			//保存数据
 			taskMap.put("taskId", taskId);
 			taskMap.put("type", type);

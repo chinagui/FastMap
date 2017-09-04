@@ -221,6 +221,7 @@ public class TaskOperation {
 						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));
 						map.setRoadPlanTotal((rs.getInt("ROAD_PLAN_TOTAL")));
 //						map.setCityId(rs.getInt("CITY_ID"));
+						map.setWorkKind(rs.getString("WORK_KIND"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
 						map.setStatus(rs.getInt("STATUS"));

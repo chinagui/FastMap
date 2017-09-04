@@ -151,6 +151,10 @@ public class TaskJob extends AbstractStatJob {
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
 				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+				//modify by songhe 2017/9/04
+				//查询task对应的tips转aumark数量
+				int tips2MarkNum = manApi.getTips2MarkNumByTaskId(taskId);
+				task.setTips2MarkNum(tips2MarkNum);
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {
@@ -1256,6 +1260,23 @@ public class TaskJob extends AbstractStatJob {
 					}
 				}
 			}
+			
+			//modify by songhe 2017/09/01
+			String endTime = "";
+			if(0 == task.getStatus()){
+				endTime = actualEndDate;
+			}else{
+				endTime = sdf.format(new Date());
+			}
+			//生产已执行天数
+			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate(), sdf.parse(endTime));
+			String planStartDate = sdf.format(task.getPlanStartDate());
+			taskMap.put("planEndDate", planEndDate);
+			taskMap.put("planStartDate", planStartDate);
+			taskMap.put("workKind", task.getWorkKind());
+			taskMap.put("workDate", workDate);
+			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			
 			//保存数据
 			taskMap.put("taskId", taskId);
 			taskMap.put("type", type);

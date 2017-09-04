@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.api.man.iface;
 
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,6 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -346,5 +344,12 @@ public interface ManApi{
      * @throws Exception
      */
     public Set<Integer> allCollectSubtaskId() throws Exception;
+    
+    /**
+     * 根据taskId获取对应任务的tips转aumark数量
+     * @throws Exception 
+     * 
+     * */
+    public int getTips2MarkNumByTaskId(int taskId) throws Exception;
 }
 

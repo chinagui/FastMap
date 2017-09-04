@@ -541,4 +541,13 @@ public class ManApiImpl implements ManApi {
     public Set<Integer> allCollectSubtaskId() throws Exception{
     	return SubtaskService.getInstance().allCollectSubtaskId();
     }
+    
+    /**
+     * 根据taskId获取对应任务的tips转aumark数量
+     * @throws Exception 
+     * 
+     * */
+    public int getTips2MarkNumByTaskId(int taskId) throws Exception{
+    	return TaskService.getInstance().getTips2MarkNumByTaskId(taskId);
+    }
 }

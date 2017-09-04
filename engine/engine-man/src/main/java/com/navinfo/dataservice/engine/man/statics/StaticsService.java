@@ -2658,13 +2658,15 @@ public class StaticsService {
 		resultMap.put("taskId", taskId);
 		resultMap.put("status", oricalTaskData.get("status"));
 		resultMap.put("type", type);
-		resultMap.put("roadPlanTotal", oricalTaskData.get("roadPlanTotal"));
-		resultMap.put("poiPlanTotal", oricalTaskData.get("poiPlanTotal"));
+		resultMap.put("roadPlanTotal", oricalTaskData.get("roadPlanTotal") == null ? 0 : oricalTaskData.get("roadPlanTotal"));
+		resultMap.put("poiPlanTotal", oricalTaskData.get("poiPlanTotal") == null ? 0 : oricalTaskData.get("poiPlanTotal"));
 		if(type == 0){
-			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum"));
-			resultMap.put("crowdTipsTotal", mongoTaskData.get("crowdTipsTotal"));
-			resultMap.put("inforTipsTotal", mongoTaskData.get("inforTipsTotal"));
-			resultMap.put("multisourcePoiTotal", mongoTaskData.get("multisourcePoiTotal"));
+			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum") == null ? 0 : mongoTaskData.get("poiUnfinishNum"));
+			resultMap.put("crowdTipsTotal", mongoTaskData.get("crowdTipsTotal") == null ? 0 : mongoTaskData.get("crowdTipsTotal"));
+			resultMap.put("inforTipsTotal", mongoTaskData.get("inforTipsTotal") == null ? 0 : mongoTaskData.get("inforTipsTotal"));
+			resultMap.put("multisourcePoiTotal", mongoTaskData.get("multisourcePoiTotal") == null ? 0 : mongoTaskData.get("multisourcePoiTotal"));
+			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum") == null ? 0 : mongoTaskData.get("collectTipsUploadNum"));
+			resultMap.put("collectPoiUploadNum", mongoTaskData.get("collectPoiUploadNum") == null ? 0 : mongoTaskData.get("collectPoiUploadNum"));
 		}else{
 			Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(conn, taskId);
 			Map<String, Object> collectData = convertCollectData(conn, collectTaskIdSet);
@@ -2672,18 +2674,18 @@ public class StaticsService {
 			resultMap.put("collectPlanEndDate", collectData.containsKey("collectPlanEndDate") ? collectData.get("collectPlanEndDate") : "");
 			resultMap.put("collectTaskStatus", collectData.containsKey("collectTaskStatus") ? collectData.get("collectTaskStatus") : "");
 			resultMap.put("collectDiffDate", collectData.containsKey("collectDiffDate") ? collectData.get("collectDiffDate") : 0);
-			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum"));
-			resultMap.put("poiUploadNum", mongoTaskData.get("poiUploadNum"));
-			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum"));
-			resultMap.put("tipsCreateByEditNum", mongoTaskData.get("tipsCreateByEditNum"));
+			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum") == null ? mongoTaskData.get("collectTipsUploadNum") : 0);
+			resultMap.put("poiUploadNum", mongoTaskData.get("poiUploadNum") == null ? 0 : mongoTaskData.get("poiUploadNum"));
+			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum") == null ? 0 : mongoTaskData.get("poiUnfinishNum"));
+			resultMap.put("tipsCreateByEditNum", mongoTaskData.get("tipsCreateByEditNum") == null ? 0 : mongoTaskData.get("tipsCreateByEditNum"));
 			if(type == 1){
-				resultMap.put("dayEditTipsUnFinishNum", mongoTaskData.get("dayEditTipsUnFinishNum"));
-				resultMap.put("dayEditTipsFinishNum", mongoTaskData.get("dayEditTipsFinishNum"));
+				resultMap.put("dayEditTipsUnFinishNum", mongoTaskData.get("dayEditTipsUnFinishNum") == null ? 0 : mongoTaskData.get("dayEditTipsUnFinishNum"));
+				resultMap.put("dayEditTipsFinishNum", mongoTaskData.get("dayEditTipsFinishNum") == null ? 0 : mongoTaskData.get("dayEditTipsFinishNum"));
 			}
 			if(type == 2){
-				resultMap.put("day2MonthNum", mongoTaskData.get("day2MonthNum"));
-				resultMap.put("monthPoiLogUnFinishNum", mongoTaskData.get("monthPoiLogUnFinishNum"));
-				resultMap.put("monthPoiLogFinishNum", mongoTaskData.get("monthPoiLogFinishNum"));
+				resultMap.put("day2MonthNum", mongoTaskData.get("day2MonthNum") == null ? 0 : mongoTaskData.get("day2MonthNum"));
+				resultMap.put("monthPoiLogUnFinishNum", mongoTaskData.get("monthPoiLogUnFinishNum") == null ? 0 : mongoTaskData.get("monthPoiLogUnFinishNum"));
+				resultMap.put("monthPoiLogFinishNum", mongoTaskData.get("monthPoiLogFinishNum") == null ? 0 : mongoTaskData.get("monthPoiLogFinishNum"));
 			}
 		}
 		return resultMap;

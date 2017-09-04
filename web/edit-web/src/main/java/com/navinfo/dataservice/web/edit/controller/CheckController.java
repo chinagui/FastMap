@@ -470,7 +470,11 @@ public class CheckController extends BaseController {
 
 			int type = jsonReq.getInt("type");
 			
-			int isQuality = jsonReq.getInt("isQuality");
+			int isQuality = -1;
+			
+			if(jsonReq.containsKey("isQuality")){
+				isQuality = jsonReq.getInt("isQuality");
+			}
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			qualityConn = DBConnector.getInstance().getCheckConnection();

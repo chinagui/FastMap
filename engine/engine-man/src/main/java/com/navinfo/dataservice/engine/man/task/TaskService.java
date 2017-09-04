@@ -5020,9 +5020,10 @@ public class TaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.task_id, jd.num "
-					+ "from subtask st, JOB_RELATION jr, JOB_DETAIL jd where  jr.job_id = jd.job_id "
-					+ " and jd.type = 1 and ((st.subtask_id = jr.item_id  and jr.item_type = 3) or (st.task_id = jr.item_id and jr.item_type = 2))";
+			String selectSql = "select t.task_id,jd.num from task t, JOB_RELATION jr, JOB_DETAIL jd where jr.job_id = jd.job_id"
+					+ " and jd.type = 1 and t.task_id = jr.item_id and jr.item_type = 2 union all "
+					+ "select st.task_id,jd.num from subtask st, JOB_RELATION jr, JOB_DETAIL jd where  jr.job_id = jd.job_id "
+					+ "and jd.type = 1  and st.subtask_id = jr.item_id  and jr.item_type = 3";
 			ResultSetHandler<Map<Integer, Integer>> rs = new ResultSetHandler<Map<Integer, Integer>>() {
 				@Override
 				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {

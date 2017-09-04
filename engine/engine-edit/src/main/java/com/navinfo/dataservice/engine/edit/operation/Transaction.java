@@ -6,7 +6,11 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.*;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -15,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
@@ -1652,6 +1657,8 @@ public class Transaction {
                     if (entry.getKey().equals(sourceDbId)) {
                         continue;
                     }
+                    row = this.cloneNode(row);
+
                     if (map.containsKey(entry.getKey())) {
                         map.get(entry.getKey()).put(row, entry.getValue());
                     } else {
@@ -1674,7 +1681,8 @@ public class Transaction {
                 while (rowIterator.hasNext()) {
                     Map.Entry<IRow, ObjStatus> tempRow = rowIterator.next();
 
-                    if (!row.equals(tempRow) && parentPid.equals(tempRow.getKey().parentPKValue())
+                    if ((!row.equals(tempRow) && !row.objType().equals(tempRow.getKey().objType()))
+                            && parentPid.equals(tempRow.getKey().parentPKValue())
                             && parentTableName.equals(tempRow.getKey().tableName())) {
                         innerMap.put(row, tempRow.getValue());
                     }
@@ -1710,6 +1718,55 @@ public class Transaction {
         }
 
         return map;
+    }
+
+    private IRow cloneNode(IRow row) {
+        if (!(row instanceof IObj)) {
+            return row;
+        }
+
+        IObj obj = (IObj) row;
+
+        IObj result = null;
+        if (row instanceof RdNode) {
+            RdNode node = new RdNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof RwNode) {
+            RwNode node = new RwNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof AdNode) {
+            AdNode node = new AdNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof ZoneNode) {
+            ZoneNode node = new ZoneNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof LcNode) {
+            LcNode node = new LcNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof LuNode) {
+            LuNode node = new LuNode();
+            node.setPid(obj.pid());
+            result = node;
+        }
+
+        if (result == null) {
+            return row;
+        } else {
+            result.copy(row);
+            try {
+                JSONObject json = JSONObject.fromObject(row.changedFields());
+                result.Unserialize(json);
+            } catch (Exception e) {
+                logger.error("拷贝点对象失败.", e);
+            }
+
+            return result;
+        }
     }
 
     private List<Geometry> getCRFGeom(Connection conn, List<IRow> rows) {

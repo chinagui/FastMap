@@ -226,6 +226,8 @@ public class TipsUtils {
         tipsIndexModel.setT_dEditMeth(trackJson.getInt("t_dEditMeth"));
         tipsIndexModel.setT_mEditStatus(trackJson.getInt("t_mEditStatus"));
         tipsIndexModel.setT_mEditMeth(trackJson.getInt("t_mEditMeth"));
+        
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
 
         return tipsIndexModel;
 	}
@@ -290,6 +292,7 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
         //Tips上传赋值为0，无需赋值
 //        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
 //        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));

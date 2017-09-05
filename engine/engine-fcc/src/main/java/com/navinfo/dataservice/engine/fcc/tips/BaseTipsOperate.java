@@ -295,6 +295,8 @@ public class BaseTipsOperate {
         Table htab = null;
         java.sql.Connection oracleConn = null;
         try {
+        	
+        	String currentDate = StringUtils.getCurrentTime();
             //修改hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -316,7 +318,7 @@ public class BaseTipsOperate {
                     "data".getBytes(), "track".getBytes())));
 
             TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
-            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE);
+            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE,currentDate);
             put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track).toString()
                     .getBytes());
 
@@ -389,12 +391,12 @@ public class BaseTipsOperate {
      *不维护t_trackinfo
      * @param track
      * @param lifecycle
+     * @param currentDate 
      * @return
      */
-    public TipsTrack tipSaveUpdateTrack(TipsTrack track, int lifecycle) {
-        String date = DateUtils.dateToString(new Date(),
-                DateUtils.DATE_COMPACTED_FORMAT);
-        track.setT_date(date);
+    public TipsTrack tipSaveUpdateTrack(TipsTrack track, int lifecycle, String currentDate) {
+        track.setT_date(currentDate);
+        track.setT_dataDate(currentDate); //20170905新增
         track.setT_lifecycle(lifecycle);
         track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
         track.setT_dEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);

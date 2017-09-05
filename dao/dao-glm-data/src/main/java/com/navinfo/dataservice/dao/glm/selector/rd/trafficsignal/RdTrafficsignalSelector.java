@@ -149,7 +149,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
         List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
 
         StringBuilder sb = new StringBuilder(
-                "WITH tmp1 AS ( SELECT a.pid FROM rd_cross_node a,RD_TRAFFICSIGNAL b WHERE b.pid = :1 AND a.node_pid = b.node_pid GROUP BY a.pid ), tmp2 AS ( SELECT a.node_pid FROM rd_cross_node a,tmp1 WHERE a.pid = tmp1.pid GROUP BY a.node_pid ) SELECT a.* FROM RD_TRAFFICSIGNAL a,tmp2 WHERE a.node_pid = tmp2.node_pid");
+                "WITH tmp1 AS ( SELECT a.pid FROM rd_cross_node a,RD_TRAFFICSIGNAL b WHERE a.u_record !=2  AND b.u_record != 2 and  b.pid = :1 AND a.node_pid = b.node_pid GROUP BY a.pid ), tmp2 AS ( SELECT a.node_pid FROM rd_cross_node a,tmp1 WHERE a.u_record !=2 and  a.pid = tmp1.pid GROUP BY a.node_pid ) SELECT a.* FROM RD_TRAFFICSIGNAL a,tmp2 WHERE a.u_record !=2 and  a.node_pid = tmp2.node_pid");
 
 //		if (isLock) {
 //			sb.append(" for update nowait");

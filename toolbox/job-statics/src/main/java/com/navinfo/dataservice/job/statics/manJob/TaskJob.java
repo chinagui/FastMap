@@ -68,6 +68,7 @@ public class TaskJob extends AbstractStatJob {
 			TaskJobRequest statReq = (TaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
 			String timestamp = statReq.getTimestamp();
+			long t = System.currentTimeMillis();
 			//任务统计数据
 			List<Map<String, Object>> taskStatList = new ArrayList<Map<String, Object>>();
 			//已关闭任务id(不需要统计)
@@ -230,7 +231,6 @@ public class TaskJob extends AbstractStatJob {
 			result.put("task",taskStatList);
 
 			log.info("end stat "+statReq.getJobType());
-			long t = System.currentTimeMillis();
 			log.debug("所有任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();

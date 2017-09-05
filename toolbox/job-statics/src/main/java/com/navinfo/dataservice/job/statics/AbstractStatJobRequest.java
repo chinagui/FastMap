@@ -11,6 +11,15 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public abstract class AbstractStatJobRequest extends AbstractJobRequest {
 	
 	protected String timestamp;
+	protected String identify;
+
+	public String getIdentify() {
+		return identify;
+	}
+
+	public void setIdentify(String identify) {
+		this.identify = identify;
+	}
 
 	public String getTimestamp() {
 		return timestamp;

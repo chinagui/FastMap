@@ -227,12 +227,46 @@ public class DeepController extends BaseController {
 	}
 	
 	/**
-	 * 质检问题列表
+	 * 深度信息抽取数据
 	 * @param request
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException
 	 */
+	@RequestMapping(value = "/poi/deep/qcExtractData")
+	public ModelAndView qcExtractData(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		logger.debug("深度信息抽取数据");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			int taskId = jsonReq.getInt("subTaskId");
+			
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
+				throw new Exception("firstWorkItem和secondWorkItem不能为空");
+			}
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			//抽取数据，返回本次抽取成功的数据条数
+			int applyNum = deepCore.qcExtractData(taskId, userId, firstWorkItem, secondWorkItem);
+			
+			return new ModelAndView("jsonView", success(applyNum));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
+	
 	@RequestMapping(value = "/poi/deep/qcProblemList")
 	public ModelAndView qcProblemList(HttpServletRequest request) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");

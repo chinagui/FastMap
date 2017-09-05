@@ -19,6 +19,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -520,6 +522,8 @@ public class DeepCoreControl {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
+			int isQuality =subtask.getIsQuality();
+			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
 			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId,0);
@@ -573,6 +577,16 @@ public class DeepCoreControl {
 			batch.operate(batchCommand);
 			batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
+			//常规申请需要打质检标记
+			if(isQuality==0){
+				double sampleLevel =((double )apiService.queryQualityLevel((int) userId, secondWorkItem))/100.0;
+				int ct=(int) Math.round(applyDataPids.size()*sampleLevel);
+				if(ct!=0){
+					applyDataPids = createRandomList(applyDataPids,ct);
+					if(applyDataPids.size()>0){updateQCFlag(applyDataPids,conn,taskId,userId);}
+				}
+			}
+			
 			return applyCount;
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
@@ -583,6 +597,59 @@ public class DeepCoreControl {
 
 	}
 	
+    /**
+     * 从list中随机抽取元素 
+     * @Title: createRandomList  
+     * @param list 
+     * @param n  
+     * @return void   
+     * @throws  
+     */   
+    private static List<Integer> createRandomList(List<Integer> list, int n) {  
+        Map<Integer,String> map = Maps.newHashMap();
+        List<Integer> listNew = Lists.newArrayList();
+        if(list.size()<=n){  
+            return list;  
+        }else{  
+            while(map.size()<n){  
+                int random = (int) (Math.random() * list.size());  
+                if (!map.containsKey(random)) {  
+                    map.put(random, "");  
+                    listNew.add(list.get(random));  
+                }  
+            }  
+            return listNew;  
+        }  
+    }  
+	
+	/**
+	 * 质检提交时调用，更新质检问题表状态
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updateQCFlag(List<Integer> pidList,Connection conn,int taskId,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_column_status SET qc_flag=1 ");
+		sb.append(" WHERE TASK_ID ="+taskId);
+		sb.append(" AND PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append(" AND handler="+userId);
+		sb.append(" AND first_work_status=1");
+		sb.append(" AND second_work_status=1");
+		
+		PreparedStatement pstmt = null;
+		try {
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	
 	/**
 	 * 获取深度信息批处理的规则
@@ -945,6 +1012,59 @@ public class DeepCoreControl {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
+		}
+	}
+
+	/**
+	 * 深度信息抽取数据
+	 * @param taskId
+	 * @param userId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public int qcExtractData(int taskId, long userId, String firstWorkItem, String secondWorkItem) throws Exception {
+		Connection conn = null;
+		
+		// 默认为大陆数据
+		int type = 1;
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			int isQuality =subtask.getIsQuality();
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
+			}
+			
+			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
+			
+			
+			//获取从状态表查询到能够抽取数据的pids
+			List<Integer> pids = poiColumnSelector.getExtractPids(subtask, firstWorkItem, secondWorkItem, type, userId);
+			if (pids.size() == 0){
+				//未查询到可以抽取的数据
+				return 0;
+			}
+			
+			Timestamp timeStamp = new Timestamp(new Date().getTime());
+			poiColumnSelector.updateExtractColumnStatus(pids,userId, taskId, timeStamp);
+			
+			
+			return pids.size();
+		} catch (Exception e) {
+			DbUtils.rollback(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndClose(conn);
 		}
 	}
 	

@@ -28,7 +28,7 @@ public abstract class AbstractStatJob extends AbstractJob{
 		}finally{
 			//send stat result to MQ
 			try{
-				JobMsgPublisher.sendStatJobResult(statReq.getJobType(),statReq.getTimestamp(),result,jobInfo.getId());
+				JobMsgPublisher.sendStatJobResult(statReq.getJobType(),statReq.getIdentify(),result,jobInfo.getId());
 			}catch(Exception e){
 				log.warn("注意，统计结果未成功发送，原因："+e.getMessage());
 				log.error(e.getMessage(),e);;

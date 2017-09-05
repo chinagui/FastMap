@@ -103,7 +103,7 @@ public class DayPoiJob extends AbstractStatJob {
 				result.get("grid_day_poi").addAll(entry.getValue().get("notaskStat"));
 			}
 			
-			log.info("stats:" + JSONObject.fromObject(result).toString());
+			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {

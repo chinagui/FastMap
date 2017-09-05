@@ -273,6 +273,7 @@ public class TaskJob extends AbstractStatJob {
 				int status = (int) jso.get("status");
 				if(status == 0){
 					Map<String,Object> map = jso;
+					map.put("timestamp", timestamp);
 					stat.put(taskId, map);
 				}
 			}

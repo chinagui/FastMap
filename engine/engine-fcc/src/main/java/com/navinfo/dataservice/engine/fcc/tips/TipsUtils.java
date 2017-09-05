@@ -103,6 +103,8 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(json.getInt("t_tipStatus"));
+        
+        tipsIndexModel.setT_dataDate(json.getString("t_dataDate")); //915新增字段
  
 
 		return tipsIndexModel;

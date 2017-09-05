@@ -94,7 +94,7 @@ public class JobMsgPublisher {
 	 * @param jobId
 	 * @throws Exception
 	 */
-	public static void sendStatJobResult(String jobType,String timestamp,String statResult,long jobId)throws Exception{
+	public static void sendStatJobResult(String jobType,String timestamp,String identify,String statResult,long jobId)throws Exception{
 		if(statResult==null){
 			throw new Exception("空statResult不能写入消息队列");
 		}
@@ -103,6 +103,7 @@ public class JobMsgPublisher {
 		jobMsg.put("statResult", statResult);
 		jobMsg.put("jobType", jobType);
 		jobMsg.put("timestamp", timestamp);
+		jobMsg.put("identify", identify);
 		MsgPublisher.publish2WorkQueue("stat_job_result", jobMsg.toString());
 	}
 }

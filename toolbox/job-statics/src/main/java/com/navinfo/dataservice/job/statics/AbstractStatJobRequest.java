@@ -2,6 +2,8 @@ package com.navinfo.dataservice.job.statics;
 
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
+import net.sf.json.JSONObject;
+
 /** 
  * @ClassName: AbstractStatJobRequest
  * @author xiaoxiaowen4127

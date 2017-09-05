@@ -1051,7 +1051,7 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType16();
 	}
-	
+	@Override
 	public int getTruck(String kind,String chain,String fuelType) throws Exception{
 		Connection conn = null;
 		int truck = -1;

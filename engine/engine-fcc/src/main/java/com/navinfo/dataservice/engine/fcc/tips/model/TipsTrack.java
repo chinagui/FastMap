@@ -16,6 +16,7 @@ public class TipsTrack {
     private int t_dEditMeth;
     private int t_mEditStatus;
     private int t_mEditMeth;
+    private String t_dataDate = "";
 
     public int getT_lifecycle() {
         return t_lifecycle;
@@ -88,8 +89,24 @@ public class TipsTrack {
     public void setT_mEditMeth(int t_mEditMeth) {
         this.t_mEditMeth = t_mEditMeth;
     }
+    
+    
 
-    public void addTrackInfo(int stage, String date, int handler) {
+    /**
+	 * @return the t_dataDate
+	 */
+	public String getT_dataDate() {
+		return t_dataDate;
+	}
+
+	/**
+	 * @param t_dataDate the t_dataDate to set
+	 */
+	public void setT_dataDate(String t_dataDate) {
+		this.t_dataDate = t_dataDate;
+	}
+
+	public void addTrackInfo(int stage, String date, int handler) {
         TrackInfo trackInfo = new TrackInfo();
         trackInfo.setStage(stage);
         trackInfo.setDate(date);

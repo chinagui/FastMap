@@ -94,7 +94,10 @@ public class PersonDayJob extends AbstractStatJob {
 			for(Entry<Integer, Map<String, List<Map<String, Object>>>> entry : stats.entrySet()){
 				result.get("person_day").addAll(entry.getValue().get("subtaskStat"));
 			}
-			
+			JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
 			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			

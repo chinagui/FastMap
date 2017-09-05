@@ -35,12 +35,13 @@ public class DefaultWriter {
 	public void write(JSONObject messageJSON) throws Exception{
 		String jobType=messageJSON.getString("jobType");
 		String timestamp=messageJSON.getString("timestamp");
-		log.info("start write:jobType="+jobType+",timestamp="+timestamp);
+		String identify=messageJSON.getString("identify");
+		log.info("start write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 		
 		write2Mongo(timestamp,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
-		pushEndMsg(jobType,timestamp);
-		log.info("end write:jobType="+jobType+",timestamp="+timestamp);
+		pushEndMsg(jobType,timestamp,identify);
+		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法

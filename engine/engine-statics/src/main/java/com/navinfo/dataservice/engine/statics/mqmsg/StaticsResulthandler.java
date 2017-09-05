@@ -32,9 +32,10 @@ public class StaticsResulthandler implements MsgHandler  {
 		JSONObject messageJSON = JSONObject.fromObject(message);
 		String jobType=messageJSON.getString("jobType");
 		String timestamp=messageJSON.getString("timestamp");
-		log.info("start write:jobType="+jobType+",timestamp="+timestamp);
+		String identify=messageJSON.getString("identify");
+		log.info("start write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 		DefaultWriter writer=WriterFactory.createWriter(jobType);
 		writer.write(messageJSON);
-		log.info("end write:jobType="+jobType+",timestamp="+timestamp);
+		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
 }

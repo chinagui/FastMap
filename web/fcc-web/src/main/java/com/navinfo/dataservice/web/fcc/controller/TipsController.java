@@ -280,7 +280,13 @@ public class TipsController extends BaseController {
 
             result.put("failed", tipsUploader.getFailed());
 
-            result.put("reasons", tipsUploader.getReasons());
+            result.put("failedReasons", tipsUploader.getReasons());
+            
+            result.put("conflict", tipsUploader.getConflict());
+            
+            result.put("freshed", tipsUploader.getFreshed());
+            
+            result.put("t_dataDate", tipsUploader.getT_dataDate());
 
             result.put("regionResults", tipsUploader.getRegionResults());
 

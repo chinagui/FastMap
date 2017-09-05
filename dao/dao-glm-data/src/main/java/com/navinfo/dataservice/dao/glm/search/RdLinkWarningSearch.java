@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdlinkwarning.RdLinkWarningSelector;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
@@ -17,7 +18,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class RdLinkWarningSearch implements ISearch {
@@ -87,6 +90,7 @@ public class RdLinkWarningSearch implements ISearch {
 
             double py = MercatorProjection.tileYToPixelY(y);
 
+            Map<String,Integer>sameGeo= new HashMap<>();
             while (resultSet.next()) {
 
                 SearchSnapshot snapshot = new SearchSnapshot();
@@ -105,8 +109,9 @@ public class RdLinkWarningSearch implements ISearch {
 
                 JGeometry geom1= JGeometry.load(struct1);
 
-                snapshot.setG(Geojson.lonlat2Pixel(geom1.getFirstPoint()[0],
-                        geom1.getFirstPoint()[1], z, px, py));
+                JSONArray ja = Geojson.lonlat2Pixel(geom1.getFirstPoint()[0], geom1.getFirstPoint()[1], z, px, py);
+
+                snapshot.setG(ja);
 
                 double angle = calAngle(resultSet);
 
@@ -120,10 +125,21 @@ public class RdLinkWarningSearch implements ISearch {
 
                 jsonM.put("e", typeCode);
 
+                String strGeo = ja.toString();
+
+                if (sameGeo.containsKey(strGeo)) {
+
+                    sameGeo.put(strGeo, sameGeo.get(strGeo) + 1);
+
+                } else {
+                    sameGeo.put(strGeo, 1);
+                }
+
+                jsonM.put("c", sameGeo.get(strGeo));
+
                 snapshot.setM(jsonM);
 
                 list.add(snapshot);
-
             }
         } catch (Exception e) {
 

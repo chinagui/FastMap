@@ -59,6 +59,8 @@ public class TipsController extends BaseController {
 
             //grid和date的对象数组
             JSONArray condition = jsonReq.getJSONArray("condition");
+            
+            int workType=jsonReq.getInt("workType");// 作业类型。1：常规下载2：行人导航下载
 
             if (condition==null||condition.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:condition不能为空");
@@ -90,7 +92,7 @@ public class TipsController extends BaseController {
                 result.put("grid", grid);
 
                 result.put("result", selector.checkUpdate(
-                        grid,date));
+                        grid,date,workType));
 
                 resutArr.add(result);
             }
@@ -387,6 +389,8 @@ public class TipsController extends BaseController {
             }
             //grid和date的对象数组
             JSONArray condition = jsonReq.getJSONArray("condition");
+            
+            int workType=jsonReq.getInt("workType");
 
             if (condition == null || condition.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:condition不能为空");
@@ -396,7 +400,7 @@ public class TipsController extends BaseController {
 
             Map<String, Set<String>> images = new HashMap<>();
             //1.下载tips、照片、语音(照片的语音根据附件的id下载)
-            int expCount = op.export(condition, filePath, "tips.txt", images);
+            int expCount = op.export(condition, workType,filePath, "tips.txt", images);
 
             //2.模式图下载： 1406,1401需要导出模式图,对应元数据库SC_MODEL_MATCH_G
             //1402对应元数据库 sc_vector_match

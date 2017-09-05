@@ -15,6 +15,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrQueryUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
@@ -385,29 +386,54 @@ public class TipsRequestParamSQL {
 	}
 
 	public String getTipsMobileWhere(String date,
-			int[] notExpSourceType) {
+			int workType, int[] notExpSourceType) {
 		String param = " sdo_filter(wktlocation,sdo_geometry(:1,8307)) = 'TRUE' ";
-
+		
+		//20170915修改
 		if (date != null && !date.equals("")) {
-			param += " AND t_date > to_date('" + date + "','yyyyMMddHH24MIss')"
+			param += " AND t_dateDate > to_date('" + date + "','yyyyMMddHH24MIss')"
 					+ " ";
 		}
-
+		
 		// 过滤的类型
 		StringBuilder builder =null;
-		// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
-		if (notExpSourceType != null && notExpSourceType.length != 0) {
-			builder = new StringBuilder(" AND s_sourceType NOT  IN (");
-			for (int i = 0; i < notExpSourceType.length; i++) {
-				String fieldValue = String.valueOf(notExpSourceType[i]);
-				if (i > 0) {
-					builder.append(",");
+		
+		
+		//行人导航下载，只下载指定的tips类型
+		if(workType==2){
+			
+			int [] vecTipsTypeArr=TipsUtils.VecInfoDownloadTips;
+			if (vecTipsTypeArr!= null && vecTipsTypeArr.length != 0) {
+				builder = new StringBuilder(" AND s_sourceType   IN (");
+				for (int i = 0; i < vecTipsTypeArr.length; i++) {
+					String types = String.valueOf(vecTipsTypeArr[i]);
+					if (i > 0) {
+						builder.append(",");
+					}
+					builder.append("'");
+					builder.append(types);
+					builder.append("'");
 				}
-				builder.append("'");
-				builder.append(fieldValue);
-				builder.append("'");
+				builder.append(")");
 			}
-			builder.append(")");
+		}
+		//常规任务下载
+		else{
+			
+			// 1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )
+			if (notExpSourceType != null && notExpSourceType.length != 0) {
+				builder = new StringBuilder(" AND s_sourceType NOT  IN (");
+				for (int i = 0; i < notExpSourceType.length; i++) {
+					String fieldValue = String.valueOf(notExpSourceType[i]);
+					if (i > 0) {
+						builder.append(",");
+					}
+					builder.append("'");
+					builder.append(fieldValue);
+					builder.append("'");
+				}
+				builder.append(")");
+			}
 		}
 		
 		if(builder!=null){

@@ -2690,5 +2690,5 @@ public class StaticsService {
 		}
 		return resultMap;
 	}
-
+	
 }

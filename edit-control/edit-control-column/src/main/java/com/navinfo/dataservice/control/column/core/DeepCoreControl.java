@@ -22,10 +22,12 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -40,7 +42,6 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiDeepObjImportor;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -947,4 +948,201 @@ public class DeepCoreControl {
 		}
 	}
 	
+	/**
+	 * 查询问题页面初始值
+	 * @param pid
+	 * @param qualitySubtaskId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject qcProblemInit(long pid, int qualitySubtaskId, String firstWorkItem, String secondWorkItem) throws Exception{
+		Connection regionConn = null;
+		Connection manConn = null;
+		JSONObject resultJson  = new JSONObject();
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(qualitySubtaskId, "2", 1);
+			int dbId = subtask.getDbId();
+			regionConn = DBConnector.getInstance().getConnectionById(dbId);
+			manConn = DBConnector.getInstance().getManConnection();
+			
+			Integer userId = queryUserId(regionConn, pid, firstWorkItem, secondWorkItem);
+			UserInfo userInfo = apiService.getUserInfoByUserId(userId);
+			String realName = userInfo.getUserRealName();
+			
+			Integer subtaskId = subtask.getSubtaskId();
+			String groupName = getGroupNameBySubtaskId(manConn, subtaskId);
+			
+			long operationTime = queryOperationTime(regionConn, pid, subtaskId, userId);
+			
+			resultJson.put("commonWorker", realName + "-" + groupName);
+			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy.MM.dd"));
+			return resultJson;
+		} catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+		} finally {
+			DbUtils.closeQuietly(manConn);
+			DbUtils.closeQuietly(regionConn);
+		}
+	}
+	
+	private Integer queryUserId(Connection regionConn, long pid,String firstWorkItem, String secondWorkItem) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT COMMON_HANDLER FROM POI_COLUMN_STATUS T1, POI_COLUMN_WORKITEM_CONF T2 WHERE T1.WORK_ITEM_ID = T2.WORK_ITEM_ID ");
+			sb.append("AND T1.PID = ? AND T2.FIRST_WORK_ITEM = ? AND T2.SECOND_WORK_ITEM = ?");
+			pstmt = regionConn.prepareStatement(sb.toString());
+			
+			pstmt.setLong(1, pid);
+			pstmt.setString(2, firstWorkItem);
+			pstmt.setString(3, secondWorkItem);
+			
+			resultSet = pstmt.executeQuery();
+			Integer userId = null;
+			if (resultSet.next()) {
+				userId = resultSet.getInt(1);
+			}
+			return userId;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private String getGroupNameBySubtaskId(Connection manConn, Integer subtaskId) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT T3.GROUP_NAME FROM TASK T1, SUBTASK T2, USER_GROUP T3 WHERE T1.GROUP_ID = T3.GROUP_ID ");
+			sb.append("AND T1.TASK_ID = T2.TASK_ID AND T2.SUBTASK_ID = ?");
+			pstmt = manConn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, subtaskId);
+			
+			resultSet = pstmt.executeQuery();
+			String groupName = null;
+			if (resultSet.next()) {
+				groupName = resultSet.getString(1);
+			}
+			return groupName;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private long queryOperationTime(Connection regionConn, long pid, Integer subtaskId, Integer userId) throws Exception{
+		 
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT OP_DT FROM (SELECT LO.OP_DT FROM LOG_ACTION LA, ");
+			sb.append("LOG_OPERATION LO, LOG_DETAIL LD WHERE LA.ACT_ID = LO.ACT_ID ");
+			sb.append("AND LO.OP_ID = LD.OP_ID AND LD.OB_PID = ? AND LA.STK_ID = ? AND LA.US_ID = ? ");
+			sb.append("AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1");
+			pstmt = regionConn.prepareStatement(sb.toString());
+			
+			pstmt.setLong(1, pid);
+			pstmt.setInt(2, subtaskId);
+			pstmt.setInt(3, userId);
+			
+			resultSet = pstmt.executeQuery();
+			long operationTime = 0L;
+			if (resultSet.next()) {
+				operationTime = resultSet.getTimestamp(1).getTime();
+			}
+			return operationTime;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * 质检问题列表
+	 * @param pid
+	 * @param subtaskId
+	 * @param secondWorkItem
+	 * @param poiProperty
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray qcProblemList(long pid, int subtaskId, String secondWorkItem, String poiProperty) throws Exception{
+		Connection manConn = null;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			manConn = DBConnector.getInstance().getManConnection();
+			List<Object> params = new ArrayList<>();
+			params.add(pid);
+			params.add(subtaskId);
+			params.add(secondWorkItem);
+			
+			StringBuilder builder = new StringBuilder();
+			builder.append("SELECT T.PROBLEM_ID, T.SUBTASK_ID, T.SECOND_WORKITEM, T.PID, T.POI_PROPERTY, T.NEW_VALUE, ");
+			builder.append("T.OLD_VALUE, T.COMMON_WORKER, T.WORK_TIME, T.QC_WORKER, T.QC_TIME, T.PROBLEM_LEVEL, T.PROBLEM_DESC ");
+			builder.append("FROM DEEP_QC_PROBLEM T WHERE T.PID = ? AND T.SUBTASK_ID = ? AND T.SECOND_WORKITEM = ? ");
+			
+			if(poiProperty != null){
+				builder.append("AND T.POI_PROPERTY = ?");
+				params.add(poiProperty);
+			}
+			
+			pstmt = manConn.prepareStatement(builder.toString());
+			for(int i = 0 ; i < params.size(); i ++){
+				pstmt.setObject(i + 1, params.get(i));
+			}
+			resultSet = pstmt.executeQuery();
+			JSONArray resultJson = new JSONArray();
+			while (resultSet.next()) {
+				JSONObject jo = new JSONObject();
+				jo.put("problemId", resultSet.getInt("PROBLEM_ID") != 0 ? resultSet.getInt("PROBLEM_ID") : "");
+				jo.put("subtaskId", resultSet.getInt("SUBTASK_ID") != 0 ? resultSet.getInt("SUBTASK_ID") : "");
+				jo.put("secondWorkItem", resultSet.getString("SECOND_WORKITEM") != null ? resultSet.getString("SECOND_WORKITEM") : "");
+				jo.put("pid", resultSet.getInt("PID") != 0 ? resultSet.getInt("PID") : "");
+				jo.put("poiProperty", resultSet.getString("POI_PROPERTY") != null ? resultSet.getString("POI_PROPERTY") : "");
+				jo.put("newValue", resultSet.getString("NEW_VALUE") != null ? resultSet.getString("NEW_VALUE") : "");
+				jo.put("oldValue", resultSet.getString("OLD_VALUE") != null ? resultSet.getString("OLD_VALUE") : "");
+				jo.put("commonWorker", resultSet.getString("COMMON_WORKER") != null ? resultSet.getString("COMMON_WORKER") : "");
+				
+				Timestamp workTime = resultSet.getTimestamp("WORK_TIME");
+				if(workTime != null){
+					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy.MM.dd"));
+				} else {
+					jo.put("workTime", "");
+				}
+				jo.put("qcWorker", resultSet.getString("QC_WORKER")  != null ? resultSet.getString("QC_WORKER") : "");
+				Timestamp qcTime = resultSet.getTimestamp("QC_TIME");
+				if(qcTime != null){
+					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy.MM.dd"));
+				} else {
+					jo.put("qcTime", "");
+				}
+				jo.put("problemLevel", resultSet.getString("PROBLEM_LEVEL")  != null ? resultSet.getString("PROBLEM_LEVEL") : "");
+				jo.put("problemDesc", resultSet.getString("PROBLEM_DESC")  != null ? resultSet.getString("PROBLEM_DESC") : "");
+				
+				resultJson.add(jo);
+			}
+			return resultJson;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(manConn);
+		}
+	}
 }

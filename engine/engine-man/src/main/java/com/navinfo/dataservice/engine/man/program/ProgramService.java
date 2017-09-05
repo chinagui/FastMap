@@ -2788,5 +2788,77 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询项目下的统计信息
+	 * @throws Exception 
+	 * 
+	 * */
+	public List<Map<String, Object>> queryProgramStat() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("select t.type, t.program_id, t.city_id, t.infor_id, c.plan_status city_plan, i.is_adopted, i.deny_reason,");
+			sb.append(" i.plan_status infor_plan, t.status, i.info_type_name, i.method,p.create_date produce_date, i.admin_name,");
+			sb.append(" p.produce_status, ft.diff_date, t.produce_plan_end_date, ft.type tasktype, tk.overdue_reason, b.plan_status,");
+			sb.append("  i.insert_time, i.expect_date, tk.create_date taskcreatdate, t.create_date programcreatdate, t.name programname");
+			sb.append(" from PROGRAM t, PRODUCE p, FM_STAT_OVERVIEW_TASK ft, INFOR i, CITY c, TASK tk, BLOCK b");
+			sb.append(" where t.program_id = p.program_id(+) and t.program_id = ft.program_id(+)");
+			sb.append(" and t.city_id = c.city_id(+) and t.infor_id = i.infor_id(+) and ft.task_id = tk.task_id(+) and tk.block_id = b.block_id(+)");
+			
+			log.info("queryProgramStat sql :" + sb.toString());
+
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<>();
+					while(rs.next()){
+						Map<String, Object> program = new HashMap<>();
+						program.put("programId", rs.getInt("program_id"));
+						program.put("cityId", rs.getInt("city_id"));
+						program.put("inforId", rs.getInt("infor_id"));
+						program.put("cityPlan", rs.getInt("city_plan"));
+						program.put("inforPlan", rs.getInt("infor_plan"));
+						program.put("status", rs.getInt("status"));
+						program.put("inforTypeName", rs.getString("info_type_name"));
+						program.put("method", rs.getString("method"));
+						program.put("produceStatus", rs.getInt("produce_status"));
+						program.put("diffDate", rs.getInt("diff_date"));
+						program.put("producePlanEndDate", rs.getTimestamp("produce_plan_end_date"));
+						program.put("type", rs.getInt("type"));
+						program.put("produceDate", rs.getTimestamp("produce_date"));
+						program.put("overdue_reason", rs.getString("overdue_reason"));
+						program.put("taskType", rs.getInt("tasktype"));
+						
+						program.put("isAdopted", rs.getInt("is_adopted"));
+						String adminName = rs.getString("admin_name");
+						String inforCity = "";
+						if(adminName != null){
+							inforCity = adminName.substring(adminName.indexOf("|")+1, adminName.length());
+						}
+						program.put("inforCity", inforCity);
+						program.put("denyReason", rs.getString("deny_reason"));
+						program.put("planStatus", rs.getInt("plan_status"));
+						
+						program.put("inforInsertTime", rs.getTimestamp("insert_time"));
+						program.put("inforExpectDate", rs.getTimestamp("expect_date"));
+						program.put("taskCreateDate", rs.getTimestamp("taskcreatdate"));
+						program.put("createDate", rs.getTimestamp("programcreatdate"));
+						program.put("name", rs.getString("programname"));
+						result.add(program);
+					}
+					return result;
+				}
+			};
+			return run.query(conn, sb.toString(), rsHandler);	
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

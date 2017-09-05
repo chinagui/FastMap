@@ -550,4 +550,13 @@ public class ManApiImpl implements ManApi {
     public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
     	return TaskService.getInstance().getTips2MarkNumByTaskId();
     }
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception{
+    	return ProgramService.getInstance().queryProgramStat();
+    }
 }

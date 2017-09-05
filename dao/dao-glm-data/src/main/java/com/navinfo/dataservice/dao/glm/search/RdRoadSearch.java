@@ -148,7 +148,7 @@ public class RdRoadSearch implements ISearch {
 				Map<String, JSONObject> linkMap = values.get(roadPid);
 				// 处理接边渲染 zhaokk
 				if (this.isCheckLinkArea(rdRoad, linkMap)) {
-					this.addRdRoadForArea(rdRoad, linkMap, wkt);
+					this.addRdRoadForArea(rdRoad, linkMap, wkt, z, px, py);
 
 				}
 				JSONArray gArray = new JSONArray();
@@ -206,10 +206,14 @@ public class RdRoadSearch implements ISearch {
 	 * @param rdRoad
 	 * @param linkMap
 	 * @param wkt
+	 * @param py
+	 * @param px
+	 * @param z
 	 * @throws Exception
 	 */
 	private void addRdRoadForArea(RdRoad rdRoad,
-			Map<String, JSONObject> linkMap, String wkt) throws Exception {
+			Map<String, JSONObject> linkMap, String wkt, int z, double px,
+			double py) throws Exception {
 		// 计算跨大区库
 		Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
 		List<Integer> links = new ArrayList<Integer>();
@@ -243,10 +247,10 @@ public class RdRoadSearch implements ISearch {
 					if (rows.size() > 0) {
 						for (IRow row : rows) {
 							RdLink link = (RdLink) row;
-							linkMap.put(
-									String.valueOf(link.getPid()),
-									GeoTranslator.jts2Geojson(
-											link.getGeometry(), 0.00001, 5));
+							JSONObject geojson = GeoTranslator.jts2Geojson(
+									link.getGeometry(), 0.00001, 5);
+							Geojson.coord2Pixel(geojson, z, px, py);
+							linkMap.put(String.valueOf(link.getPid()), geojson);
 
 						}
 					}

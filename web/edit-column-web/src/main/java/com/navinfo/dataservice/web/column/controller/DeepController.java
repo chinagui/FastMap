@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
@@ -232,6 +233,7 @@ public class DeepController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
+
 	@RequestMapping(value = "/poi/deep/qcProblemList")
 	public ModelAndView qcProblemList(HttpServletRequest request) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");

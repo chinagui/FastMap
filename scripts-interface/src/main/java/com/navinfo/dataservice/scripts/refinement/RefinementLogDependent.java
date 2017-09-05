@@ -55,7 +55,11 @@ public class RefinementLogDependent {
 	public void refinementLogDependentMain(int dbId) throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			DbInfo dbInfo = DbService.getInstance().getDbById(dbId);
+
+			OracleSchema schema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+			conn = schema.getPoolDataSource().getConnection();
 			createTable(conn);
 			run(conn);
 		} catch (Exception e) {
@@ -229,7 +233,6 @@ public class RefinementLogDependent {
 
 	
 	public static void main(String[] args) throws Exception{
-		JobScriptsInterface.initContext();
 		RefinementLogDependent RefinementLogDependent = new RefinementLogDependent();
 //		RefinementLogDependent.refinementLogDependentMain(13);
 		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));

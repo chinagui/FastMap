@@ -19,13 +19,17 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -40,7 +44,6 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiDeepObjImportor;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -1065,6 +1068,7 @@ public class DeepCoreControl {
 		}
 	}
 
+
 	/**
 	 * 深度信息质检问题操作（新增，修改，删除）
 	 * @param userId
@@ -1349,6 +1353,7 @@ public class DeepCoreControl {
 		}
 	}
 	
+
 	private long queryOperationTime(Connection regionConn, long pid, Integer subtaskId, Integer userId) throws Exception{
 		 
 		PreparedStatement pstmt = null;

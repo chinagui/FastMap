@@ -1676,6 +1676,102 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		return "";
 	}
 
+	/**
+	 * 获取抽检的pid
+	 * @param subtask
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @param type
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getExtractPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type, long userId) throws Exception {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT s.pid");
+		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
+		sb.append(" WHERE s.work_item_id = w.work_item_id");
+		sb.append(" AND s.pid = p.pid");
+		sb.append(" AND s.first_work_status = 1 AND s.second_work_status = 1 AND s.handler = 0");
+		sb.append(" AND w.type = :1");
+		sb.append(" AND sdo_within_distance(p.geometry, sdo_geometry(:2 , 8307), 'mask=anyinteract') = 'TRUE'");
+		sb.append(" AND s.task_id = :3");
+		sb.append(" AND w.first_work_item = :4");
+		sb.append(" AND w.second_work_item = :5");
+		sb.append(" AND s.qc_flag = 1 ");
+		sb.append(" AND s.common_handler <> :6 ");
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			logger.info("getExtractPids sql:"+sb);
+			logger.info("subtask.getGeometry():"+subtask.getGeometry());
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, type);
+			Clob geom = ConnectionUtil.createClob(conn);
+			geom.setString(1, subtask.getGeometry());
+			pstmt.setClob(2,geom);
+			pstmt.setInt(3,subtask.getSubtaskId());
+			pstmt.setString(4,firstWorkItem);
+			pstmt.setString(5,secondWorkItem);
+			pstmt.setLong(6,userId);
+
+			resultSet = pstmt.executeQuery();
+
+			List<Integer> pids = new ArrayList<Integer>();
+
+			while (resultSet.next()) {
+				int pid = resultSet.getInt("pid");
+				pids.add(pid);
+			}
+
+			
+			return pids;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * 抽取数据是调用，更新ColumnStatus状态
+	 * @param pids
+	 * @param userId
+	 * @param taskId
+	 * @param timeStamp
+	 * @throws Exception
+	 */
+	public void updateExtractColumnStatus(List<Integer> pids, long userId, int taskId, Timestamp timeStamp) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE ");
+		sb.append(" PID IN ("+org.apache.commons.lang.StringUtils.join(pids, ",")+")");
+
+		PreparedStatement pstmt = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setLong(1, userId);
+			pstmt.setInt(2, taskId);
+			pstmt.setTimestamp(3, timeStamp);
+
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+
 	
 	
 }

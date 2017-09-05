@@ -95,7 +95,7 @@ public class PersonDayJob extends AbstractStatJob {
 				result.get("person_day").addAll(entry.getValue().get("subtaskStat"));
 			}
 			
-			log.info("stats:" + JSONObject.fromObject(result).toString());
+			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {

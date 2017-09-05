@@ -143,7 +143,7 @@ public class PersonJob extends AbstractStatJob {
 				keyMaps.add(dataMap);
 			}
 			result.put("person", keyMaps);
-			log.info("result:" + result);
+			//log.info("result:" + result);
 			
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {

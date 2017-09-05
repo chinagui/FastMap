@@ -173,7 +173,6 @@ public class SubtaskJob extends AbstractStatJob {
 				}
 				int subtaskId = (int) jso.get("subtaskId");
 				Map<String,Object> map = jso;
-				map.put("timestamp", timestamp);
 				stat.put(subtaskId, map);
 			}
 			return stat;

@@ -2,10 +2,12 @@ package com.navinfo.dataservice.engine.statics.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.bson.Document;
@@ -44,6 +46,11 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.exception.ServiceException;
 
 public class StaticsService {
+	private static final String QUICK_MONITOR = "quick_monitor";
+	private static final String MEDIUM_MONITOR = "medium_monitor";
+	private static final String PROGRAM = "program";
+	private static final String BLOCK = "block";
+
 	private StaticsService() {
 	}
 
@@ -605,8 +612,180 @@ public class StaticsService {
 		}
 	}
 	
+	/**
+	 * 获取快线统计
+	 * @return Map<String, Object>
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> quickMonitor() throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
+			FindIterable<Document> findIterable = mongoDao.find(QUICK_MONITOR,null).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<String, Object> task = new HashMap<>();
+			//处理数据
+			if(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.putAll(jso);
+				JSONObject collectOverdueReasonNum = JSONObject.fromObject(jso.get("collectOverdueReasonNum"));
+				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+				JSONObject collectReason2=reForm(collectOverdueReasonNum,4);
+				task.put("collectOverdueReasonNum",collectReason2);
+				
+				JSONObject dayOverdueReasonNum  = JSONObject.fromObject(jso.get("dayOverdueReasonNum"));
+				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+				JSONObject dayOverdueReasonNum2=reForm(dayOverdueReasonNum ,4);
+				task.put("dayOverdueReasonNum",dayOverdueReasonNum2);
+				
+				JSONObject denyReasonNum  = JSONObject.fromObject(jso.get("denyReasonNum"));
+				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+				JSONObject denyReasonNum2=reForm(denyReasonNum ,4);
+				task.put("denyReasonNum",denyReasonNum2);
+				
+				JSONObject cityDetail  = JSONObject.fromObject(jso.get("cityDetail"));
+				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+				JSONObject cityDetail2=reForm(cityDetail ,8);
+				task.put("cityDetail",cityDetail2);
+			}
+			return task;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 	
+	/**
+	 * originJson中的key为描述，value为百分比，按照百分比排序，此处将取前top的，其余归为一个百分比
+	 * 例如top=4。返回：{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+	 * @param originJson
+	 * @param top
+	 * @return
+	 */
+	private JSONObject reForm(JSONObject originJson,int top){
+		if(originJson.size()==0){
+			return originJson;
+		}
+		List<Map<String,Object>> keyList=new ArrayList<>();
+		Iterator iter = originJson.keys();
+		while(iter.hasNext()){
+			String key = String.valueOf(iter.next());
+			double value = (double)originJson.get(key);
+			Map<String,Object> tMap=new HashMap<>();
+			tMap.put("name", key);
+			tMap.put("percent", value);
+			keyList.add(tMap);
+		}
+		//冒泡排序
+		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
+            for(int j = 0 ;j < keyList.size() - i - 1; j++){    //对当前无序区间score[0......length-i-1]进行排序(j的范围很关键，这个范围是在逐步缩小的)
+            	Map<String,Object> jMap=keyList.get(j);
+            	String jkey = String.valueOf(jMap.get("name"));
+            	double jValue = (double)jMap.get("percent");
+            	Map<String,Object> j1Map=keyList.get(j + 1);
+            	String j1key = String.valueOf(j1Map.get("name"));
+            	double j1Value = (double)j1Map.get("percent");
+            	if(jValue< j1Value){    //把小的值交换到后面
+            		Map<String,Object> tMap=new HashMap<>();
+            		tMap.put("name", j1key);
+        			tMap.put("percent", j1Value);
+            		keyList.add(j, tMap);
+            		Map<String,Object> t1Map=new HashMap<>();
+            		t1Map.put("name", jkey);
+        			t1Map.put("percent", jValue);
+            		keyList.add(j+1, t1Map);
+               }
+           }
+       }
+		JSONObject orderJson=new JSONObject();
+		double topPercent=0;
+		for(int i=0;i<top;i++){
+			if(i>=keyList.size()){
+				return orderJson;
+			}
+			topPercent=topPercent+(double)keyList.get(i).get("percent");
+			orderJson.put(i+1, keyList.get(i));
+		}
+		Map<String,Object> tMap=new HashMap<>();
+		tMap.put("name", "other");
+		tMap.put("percent", 100-topPercent);
+		orderJson.put(top+1, tMap);
+		return orderJson;
+	}
 	
+	/**
+	 * 获取快线统计
+	 * @return Map<String, Object>
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> mediumMonitor() throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
+			FindIterable<Document> findIterable = mongoDao.find(MEDIUM_MONITOR,null).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<String, Object> task = new HashMap<>();
+			//处理数据
+			if(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.putAll(jso);
+			}
+			return task;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 项目监控接口
+	 * 应用场景：管理平台监控快线监控—〉项目详情
+	 * 管理平台监控中线监控—〉项目详情
+	 * @return Map<String, Object>
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> cityMonitor(int cityId) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
+			BasicDBObject filter = new BasicDBObject("cityId", cityId);
+			FindIterable<Document> findIterable = mongoDao.find(PROGRAM,filter).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<String, Object> task = new HashMap<>();
+			//处理数据
+			if(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.putAll(jso);
+			}
+			return task;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 项目监控接口
+	 * 应用场景：管理平台监控快线监控—〉项目详情
+	 * 管理平台监控中线监控—〉项目详情
+	 * @return Map<String, Object>
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> blockMonitor(int blockId) throws Exception{
+		try {
+			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
+			BasicDBObject filter = new BasicDBObject("blockId", blockId);
+			FindIterable<Document> findIterable = mongoDao.find(BLOCK,filter).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator = findIterable.iterator();
+			Map<String, Object> task = new HashMap<>();
+			//处理数据
+			if(iterator.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.putAll(jso);
+			}
+			return task;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 	
 	public static void main(String[] args) throws Exception {
 		

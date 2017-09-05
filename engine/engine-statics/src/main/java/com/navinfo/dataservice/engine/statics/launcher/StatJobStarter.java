@@ -52,7 +52,7 @@ public abstract class StatJobStarter {
 		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
 		JSONObject request=new JSONObject();
 		request.put("timestamp", timestamp);
-		request.put("identify", timestamp);
+		//request.put("identify", timestamp);
 		RunJobInfo info = new RunJobInfo(jobType(),request);
 		return info;
 	}
@@ -65,7 +65,7 @@ public abstract class StatJobStarter {
 	protected RunJobInfo updateRequestByIdentify(RunJobInfo info,String identify) throws Exception{	
 		JSONObject request = info.getRequest();
 		try{
-			request.put("identify", identify);
+			//request.put("identify", identify);
 			JSONObject identifyJson = JSONObject.fromObject(identify);
 			request.putAll(identifyJson);
 		}catch (Exception e) {

@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -48,8 +47,8 @@ public class PersonJob extends AbstractStatJob {
 			//计算前一天的统计
 			timeForOrical=DateUtils.dateToString(DateUtils.getDayBefore(
 					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD);
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
+//			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
+//					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
 			log.info("timestamp:" + timestamp);
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
 			//从mango库中查询数据
@@ -74,7 +73,7 @@ public class PersonJob extends AbstractStatJob {
 				double linkAllLen = 0d;
 				double link27AllLen = 0d;
 				double tipsAddLen = 0d;
-				double tipsAllLen = 0d;
+				long tipsAllNum = 0;
 				double fccUpdateLen = 0d;
 				int poiAllNum = 0;
 				int poiUploadNum = 0;
@@ -109,7 +108,7 @@ public class PersonJob extends AbstractStatJob {
 					if(personTips.containsKey(id)){
 						Map<String, Object> subData = (Map<String, Object>) personTips.get(id);
 						tipsAddLen += (double)subData.get("tipsAddLen");
-						tipsAllLen += (double)subData.get("tipsAllLen");
+						tipsAllNum += (long)subData.get("tipsAllNum");
 					}
 					if(personDay.containsKey(id)){
 						Map<String, Object> subData = (Map<String, Object>) personDay.get(id);
@@ -132,7 +131,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("linkAllLen", linkAllLen);
 				dataMap.put("link27AllLen", link27AllLen);
 				dataMap.put("tipsAddLen", tipsAddLen);
-				dataMap.put("tipsAllLen", tipsAllLen);
+				dataMap.put("tipsAllNum", tipsAllNum);
 				dataMap.put("poiAllNum", poiAllNum);
 				dataMap.put("poiUploadNum", poiUploadNum);
 				dataMap.put("poiFreshNum", poiFreshNum);
@@ -221,14 +220,14 @@ public class PersonJob extends AbstractStatJob {
 		while(personTips.hasNext()){
 			JSONObject tipsJson = JSONObject.fromObject(personTips.next());
 			double tipsAddLen = 0;
-			double tipsAllLen = 0;
+			long tipsAllNum = 0;
 			int subtaskId = 0;
 			Map<String, Object> map = new HashMap<>();
 			subtaskId = Integer.parseInt(tipsJson.get("subtaskId").toString());
 			tipsAddLen = Double.valueOf(tipsJson.get("tipsAddLen").toString());
-			tipsAllLen = Double.valueOf(tipsJson.get("tipsAllLen").toString());
+			tipsAllNum = Long.valueOf(tipsJson.get("tipsAllNum").toString());
 			map.put("tipsAddLen", tipsAddLen);
-			map.put("tipsAllLen", tipsAllLen);
+			map.put("tipsAllNum", tipsAllNum);
 		    result.put(subtaskId, map);
 		}
 		return result;

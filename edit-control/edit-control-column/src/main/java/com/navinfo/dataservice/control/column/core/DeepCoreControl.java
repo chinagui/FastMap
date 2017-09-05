@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,13 +20,17 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -40,7 +45,6 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiDeepObjImportor;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -519,6 +523,8 @@ public class DeepCoreControl {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
+			int isQuality =subtask.getIsQuality();
+			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
 			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId,0);
@@ -572,6 +578,16 @@ public class DeepCoreControl {
 			batch.operate(batchCommand);
 			batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
+			//常规申请需要打质检标记
+			if(isQuality==0){
+				double sampleLevel =((double )apiService.queryQualityLevel((int) userId, secondWorkItem))/100.0;
+				int ct=(int) Math.round(applyDataPids.size()*sampleLevel);
+				if(ct!=0){
+					applyDataPids = createRandomList(applyDataPids,ct);
+					if(applyDataPids.size()>0){updateQCFlag(applyDataPids,conn,taskId,userId);}
+				}
+			}
+			
 			return applyCount;
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
@@ -582,6 +598,59 @@ public class DeepCoreControl {
 
 	}
 	
+    /**
+     * 从list中随机抽取元素 
+     * @Title: createRandomList  
+     * @param list 
+     * @param n  
+     * @return void   
+     * @throws  
+     */   
+    private static List<Integer> createRandomList(List<Integer> list, int n) {  
+        Map<Integer,String> map = Maps.newHashMap();
+        List<Integer> listNew = Lists.newArrayList();
+        if(list.size()<=n){  
+            return list;  
+        }else{  
+            while(map.size()<n){  
+                int random = (int) (Math.random() * list.size());  
+                if (!map.containsKey(random)) {  
+                    map.put(random, "");  
+                    listNew.add(list.get(random));  
+                }  
+            }  
+            return listNew;  
+        }  
+    }  
+	
+	/**
+	 * 质检提交时调用，更新质检问题表状态
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updateQCFlag(List<Integer> pidList,Connection conn,int taskId,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_column_status SET qc_flag=1 ");
+		sb.append(" WHERE TASK_ID ="+taskId);
+		sb.append(" AND PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append(" AND handler="+userId);
+		sb.append(" AND first_work_status=1");
+		sb.append(" AND second_work_status=1");
+		
+		PreparedStatement pstmt = null;
+		try {
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	
 	/**
 	 * 获取深度信息批处理的规则
@@ -946,5 +1015,448 @@ public class DeepCoreControl {
 			throw e;
 		}
 	}
+
+	/**
+	 * 深度信息抽取数据
+	 * @param taskId
+	 * @param userId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public int qcExtractData(int taskId, long userId, String firstWorkItem, String secondWorkItem) throws Exception {
+		Connection conn = null;
+		
+		// 默认为大陆数据
+		int type = 1;
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			int isQuality =subtask.getIsQuality();
+			if(isQuality==1){
+				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
+			}
+			
+			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
+			
+			
+			//获取从状态表查询到能够抽取数据的pids
+			List<Integer> pids = poiColumnSelector.getExtractPids(subtask, firstWorkItem, secondWorkItem, type, userId);
+			if (pids.size() == 0){
+				//未查询到可以抽取的数据
+				return 0;
+			}
+			
+			Timestamp timeStamp = new Timestamp(new Date().getTime());
+			poiColumnSelector.updateExtractColumnStatus(pids,userId, taskId, timeStamp);
+			
+			
+			return pids.size();
+		} catch (Exception e) {
+			DbUtils.rollback(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndClose(conn);
+		}
+	}
+
+
+	/**
+	 * 深度信息质检问题操作（新增，修改，删除）
+	 * @param userId
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void operateProblem(JSONObject dataJson) throws Exception {
+		Connection conn = null;
+		try {
+			String command = null;
+			conn = DBConnector.getInstance().getManConnection();
+			if (dataJson.containsKey("command")) {
+				command = dataJson.getString("command");
+			} else {
+				throw new Exception("参数异常：没找到command。");
+			}
+			QueryRunner run = new QueryRunner();
+			if ("DELETE".equals(command)) {
+				int problemId = 0;
+				if (dataJson.containsKey("problemId")) {
+					problemId = dataJson.getInt("problemId");
+				} else {
+					throw new Exception("参数异常：没找到problemId");
+				}
+				StringBuilder builder = new StringBuilder();
+				builder.append("DELETE FROM DEEP_QC_PROBLEM WHERE PROBLEM_ID = "+problemId);
+				String deleteSql = builder.toString();
+				logger.info("delete sql :" + deleteSql);
+				run.update(conn, deleteSql);
+
+			} else if ("UPDATE".equals(command)) {
+				JSONObject data = new JSONObject();
+				if (dataJson.containsKey("data")) {
+					data = dataJson.getJSONObject("data");
+				} else {
+					throw new Exception("参数异常：没找到data。");
+				}
+				
+				List<Object> params = new ArrayList<>();
+
+				Integer problemId = data.containsKey("problemId")?data.getInt("problemId"):0;
+				String problemLevel = data.containsKey("problemLevel")?data.getString("problemLevel"):"";
+				String problemDesc = data.containsKey("problemDesc")?data.getString("problemDesc"):"";
+				
+				params.add(problemLevel);
+				params.add(problemDesc);
+				params.add(problemId);
+				
+				StringBuilder builder = new StringBuilder();
+				builder.append("UPDATE DEEP_QC_PROBLEM SET PROBLEM_LEVEL = ?,PROBLEM_DESC = ?  WHERE PROBLEM_ID = ?");
+				if(problemId!=0){
+					run.update(conn, builder.toString(), params.toArray());
+				}
+			} else if ("ADD".equals(command)) {
+				JSONObject data = new JSONObject();
+				if (dataJson.containsKey("data")) {
+					data = dataJson.getJSONObject("data");
+				} else {
+					throw new Exception("参数异常：没找到data");
+				}
+				
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				List<String> conditions = new ArrayList<>();
+				List<Object> params = new ArrayList<>();
+				int subtaskId = 0;
+				String secondWorkItem = "";
+				int pid = 0;
+				String poiProperty = "";
+				String newValue  = "";
+				String oldValue  = "";
+				String commonWorker = "";
+				String workTime = "";
+				String qcWorker = "";
+				String qcTime = "";
+				String problemLevel = "";
+				String problemDesc = "";
+				
+				conditions.add("PROBLEM_ID");
+				
+				if(data.containsKey("subtaskId")){
+					subtaskId = data.getInt("subtaskId");
+				}
+				if(subtaskId != 0){
+					conditions.add("SUBTASK_ID");
+					params.add(subtaskId);
+				}
+				if(data.containsKey("secondWorkItem")){
+					secondWorkItem = data.getString("secondWorkItem");
+				}
+				if(!StringUtils.isEmpty(secondWorkItem)){
+					conditions.add("SECOND_WORKITEM");
+					params.add(secondWorkItem);
+				}
+				if(data.containsKey("pid")){
+					pid = data.getInt("pid");
+				}
+				if(pid != 0){
+					conditions.add("PID");
+					params.add(pid);
+				}
+				if(data.containsKey("poiProperty")){
+					poiProperty = data.getString("poiProperty");
+				}
+				if(!StringUtils.isEmpty(poiProperty)){
+					conditions.add("POI_PROPERTY");
+					params.add(poiProperty);
+				}
+				if(data.containsKey("newValue")){
+					newValue = data.getString("newValue");
+				}
+				if(!StringUtils.isEmpty(newValue)){
+					conditions.add("NEW_VALUE");
+					params.add(newValue);
+				}
+				if(data.containsKey("oldValue")){
+					oldValue = data.getString("oldValue");
+				}
+				if(!StringUtils.isEmpty(oldValue)){
+					conditions.add("OLD_VALUE");
+					params.add(oldValue);
+				}
+				if(data.containsKey("commonWorker")){
+					commonWorker = data.getString("commonWorker");
+				}
+				if(!StringUtils.isEmpty(commonWorker)){
+					conditions.add("COMMON_WORKER");
+					params.add(commonWorker);
+				}
+				if(data.containsKey("workTime")){
+					workTime = data.getString("workTime");
+				}
+				if(!StringUtils.isEmpty(workTime)){
+					conditions.add("WORK_TIME");
+					params.add(new Timestamp(df.parse(workTime).getTime()));
+				}
+				if(data.containsKey("qcWorker")){
+					qcWorker = data.getString("qcWorker");
+				}
+				if(!StringUtils.isEmpty(qcWorker)){
+					conditions.add("QC_WORKER");
+					params.add(qcWorker);
+				}
+				if(data.containsKey("qcTime")){
+					qcTime = data.getString("qcTime");
+				}
+				if(!StringUtils.isEmpty(qcTime)){
+					conditions.add("QC_TIME");
+					params.add(new Timestamp(df.parse(qcTime).getTime()));
+				}
+				if(data.containsKey("problemLevel")){
+					problemLevel = data.getString("problemLevel");
+				}
+				if(!StringUtils.isEmpty(problemLevel)){
+					conditions.add("PROBLEM_LEVEL");
+					params.add(problemLevel);
+				}
+				if(data.containsKey("problemDesc")){
+					problemDesc = data.getString("problemDesc");
+				}
+				if(!StringUtils.isEmpty(problemDesc)){
+					conditions.add("PROBLEM_DESC");
+					params.add(problemDesc);
+				}
+				
+				StringBuilder builder = new StringBuilder();
+				builder.append("INSERT INTO DEEP_QC_PROBLEM (");
+				if(conditions.size() > 0){
+					for (String con : conditions) {
+						builder.append(con).append(" ,");
+					}
+				} else {
+					throw new Exception("数据更新异常：没有可新增的数据。");
+				}
+				
+				builder.deleteCharAt(builder.length() - 1).append(") VALUES (");
+				builder.append("DEEP_QC_PROBLEM_SEQ.NEXTVAL,");
+				for (int i = 0; i < conditions.size()-1; i++) {
+					builder.append(" ? ,");
+				}
+				builder.deleteCharAt(builder.length() - 1).append(")");
+				run.update(conn, builder.toString(), params.toArray());
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error("深度信息质检问题操作失败，原因为：" + e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
+	/**
+	 * 查询问题页面初始值
+	 * @param pid
+	 * @param qualitySubtaskId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject qcProblemInit(long pid, int qualitySubtaskId, String firstWorkItem, String secondWorkItem) throws Exception{
+		Connection regionConn = null;
+		Connection manConn = null;
+		JSONObject resultJson  = new JSONObject();
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(qualitySubtaskId, "2", 1);
+			int dbId = subtask.getDbId();
+			regionConn = DBConnector.getInstance().getConnectionById(dbId);
+			manConn = DBConnector.getInstance().getManConnection();
+			
+			Integer userId = queryUserId(regionConn, pid, firstWorkItem, secondWorkItem);
+			UserInfo userInfo = apiService.getUserInfoByUserId(userId);
+			String realName = userInfo.getUserRealName();
+			
+			Integer subtaskId = subtask.getSubtaskId();
+			String groupName = getGroupNameBySubtaskId(manConn, subtaskId);
+			
+			long operationTime = queryOperationTime(regionConn, pid, subtaskId, userId);
+			
+			resultJson.put("commonWorker", realName + "-" + groupName);
+			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy-MM-dd HH:mm:ss"));
+			return resultJson;
+		} catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+		} finally {
+			DbUtils.closeQuietly(manConn);
+			DbUtils.closeQuietly(regionConn);
+		}
+	}
+	
+	private Integer queryUserId(Connection regionConn, long pid,String firstWorkItem, String secondWorkItem) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT COMMON_HANDLER FROM POI_COLUMN_STATUS T1, POI_COLUMN_WORKITEM_CONF T2 WHERE T1.WORK_ITEM_ID = T2.WORK_ITEM_ID ");
+			sb.append("AND T1.PID = ? AND T2.FIRST_WORK_ITEM = ? AND T2.SECOND_WORK_ITEM = ?");
+			pstmt = regionConn.prepareStatement(sb.toString());
+			
+			pstmt.setLong(1, pid);
+			pstmt.setString(2, firstWorkItem);
+			pstmt.setString(3, secondWorkItem);
+			
+			resultSet = pstmt.executeQuery();
+			Integer userId = null;
+			if (resultSet.next()) {
+				userId = resultSet.getInt(1);
+			}
+			return userId;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private String getGroupNameBySubtaskId(Connection manConn, Integer subtaskId) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT T3.GROUP_NAME FROM TASK T1, SUBTASK T2, USER_GROUP T3 WHERE T1.GROUP_ID = T3.GROUP_ID ");
+			sb.append("AND T1.TASK_ID = T2.TASK_ID AND T2.SUBTASK_ID = ?");
+			pstmt = manConn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, subtaskId);
+			
+			resultSet = pstmt.executeQuery();
+			String groupName = null;
+			if (resultSet.next()) {
+				groupName = resultSet.getString(1);
+			}
+			return groupName;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+
+	private long queryOperationTime(Connection regionConn, long pid, Integer subtaskId, Integer userId) throws Exception{
+		 
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT OP_DT FROM (SELECT LO.OP_DT FROM LOG_ACTION LA, ");
+			sb.append("LOG_OPERATION LO, LOG_DETAIL LD WHERE LA.ACT_ID = LO.ACT_ID ");
+			sb.append("AND LO.OP_ID = LD.OP_ID AND LD.OB_PID = ? AND LA.STK_ID = ? AND LA.US_ID = ? ");
+			sb.append("AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1");
+			pstmt = regionConn.prepareStatement(sb.toString());
+			
+			pstmt.setLong(1, pid);
+			pstmt.setInt(2, subtaskId);
+			pstmt.setInt(3, userId);
+			
+			resultSet = pstmt.executeQuery();
+			long operationTime = 0L;
+			if (resultSet.next()) {
+				operationTime = resultSet.getTimestamp(1).getTime();
+			}
+			return operationTime;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * 质检问题列表
+	 * @param pid
+	 * @param subtaskId
+	 * @param secondWorkItem
+	 * @param poiProperty
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray qcProblemList(long pid, int subtaskId, String secondWorkItem, String poiProperty) throws Exception{
+		Connection manConn = null;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			manConn = DBConnector.getInstance().getManConnection();
+			List<Object> params = new ArrayList<>();
+			params.add(pid);
+			params.add(subtaskId);
+			params.add(secondWorkItem);
+			
+			StringBuilder builder = new StringBuilder();
+			builder.append("SELECT T.PROBLEM_ID, T.SUBTASK_ID, T.SECOND_WORKITEM, T.PID, T.POI_PROPERTY, T.NEW_VALUE, ");
+			builder.append("T.OLD_VALUE, T.COMMON_WORKER, T.WORK_TIME, T.QC_WORKER, T.QC_TIME, T.PROBLEM_LEVEL, T.PROBLEM_DESC ");
+			builder.append("FROM DEEP_QC_PROBLEM T WHERE T.PID = ? AND T.SUBTASK_ID = ? AND T.SECOND_WORKITEM = ? ");
+			
+			if(poiProperty != null){
+				builder.append("AND T.POI_PROPERTY = ?");
+				params.add(poiProperty);
+			}
+			
+			pstmt = manConn.prepareStatement(builder.toString());
+			for(int i = 0 ; i < params.size(); i ++){
+				pstmt.setObject(i + 1, params.get(i));
+			}
+			resultSet = pstmt.executeQuery();
+			JSONArray resultJson = new JSONArray();
+			while (resultSet.next()) {
+				JSONObject jo = new JSONObject();
+				jo.put("problemId", resultSet.getInt("PROBLEM_ID") != 0 ? resultSet.getInt("PROBLEM_ID") : "");
+				jo.put("subtaskId", resultSet.getInt("SUBTASK_ID") != 0 ? resultSet.getInt("SUBTASK_ID") : "");
+				jo.put("secondWorkItem", resultSet.getString("SECOND_WORKITEM") != null ? resultSet.getString("SECOND_WORKITEM") : "");
+				jo.put("pid", resultSet.getInt("PID") != 0 ? resultSet.getInt("PID") : "");
+				jo.put("poiProperty", resultSet.getString("POI_PROPERTY") != null ? resultSet.getString("POI_PROPERTY") : "");
+				jo.put("newValue", resultSet.getString("NEW_VALUE") != null ? resultSet.getString("NEW_VALUE") : "");
+				jo.put("oldValue", resultSet.getString("OLD_VALUE") != null ? resultSet.getString("OLD_VALUE") : "");
+				jo.put("commonWorker", resultSet.getString("COMMON_WORKER") != null ? resultSet.getString("COMMON_WORKER") : "");
+				
+				Timestamp workTime = resultSet.getTimestamp("WORK_TIME");
+				if(workTime != null){
+					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
+				} else {
+					jo.put("workTime", "");
+				}
+				jo.put("qcWorker", resultSet.getString("QC_WORKER")  != null ? resultSet.getString("QC_WORKER") : "");
+				Timestamp qcTime = resultSet.getTimestamp("QC_TIME");
+				if(qcTime != null){
+					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
+				} else {
+					jo.put("qcTime", "");
+				}
+				jo.put("problemLevel", resultSet.getString("PROBLEM_LEVEL")  != null ? resultSet.getString("PROBLEM_LEVEL") : "");
+				jo.put("problemDesc", resultSet.getString("PROBLEM_DESC")  != null ? resultSet.getString("PROBLEM_DESC") : "");
+				
+				resultJson.add(jo);
+			}
+			return resultJson;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(manConn);
+		}
+	}
 }

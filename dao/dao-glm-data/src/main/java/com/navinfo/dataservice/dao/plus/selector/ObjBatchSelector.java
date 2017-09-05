@@ -91,19 +91,25 @@ public class ObjBatchSelector {
 		if(isMainOnly){
 			logger.info("selectByPid不加载子表");
 		}else{
+			Set<String> subTabs = new HashSet<String>();
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = new HashSet<String>();
-//				tabNames = glmObj.getTables().keySet();
 				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
 					if(entry.getKey().equals(mainTable.getName())){
 						continue;
 					}
-					tabNames.add(entry.getKey());
+					subTabs.add(entry.getKey());
+				}
+			}else{
+				for(String tn:tabNames){
+					if(tn.equals(mainTable.getName())){
+						continue;
+					}
+					subTabs.add(tn);
 				}
 			}
 			logger.info("selectByPid开始加载子表");
-			selectChildren(conn,objs.values(),tabNames,pids);
+			selectChildren(conn,objs.values(),subTabs,pids);
 			logger.info("selectByPid加载子表结束");
 		}
 		return objs;

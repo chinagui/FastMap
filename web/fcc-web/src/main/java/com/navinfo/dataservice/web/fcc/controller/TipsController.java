@@ -366,7 +366,7 @@ public class TipsController extends BaseController {
             String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
                     PropConstant.downloadFilePathTips);
 
-            String parentPath = downloadFilePath +File.separator+ day + "/";
+            String parentPath = downloadFilePath +File.separator+ day + "/"+userId+File.separator;
 
             String filePath = parentPath + uuid + "/";
 

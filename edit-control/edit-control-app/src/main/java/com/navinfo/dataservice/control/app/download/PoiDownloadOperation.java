@@ -64,7 +64,7 @@ public class PoiDownloadOperation {
 			String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadFilePathPoi);
 
-			String parentPath = downloadFilePath +File.separator+ day + "/";
+			String parentPath = downloadFilePath +File.separator+ day + "/"+userId+File.separator;
 
 			String filePath = parentPath + uuid + "/";
 
@@ -99,7 +99,7 @@ public class PoiDownloadOperation {
 			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadUrlPathPoi);
 
-			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
+			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"+userId+File.separator
 					+ zipFileName;
 			
 			Date endTime = new Date();

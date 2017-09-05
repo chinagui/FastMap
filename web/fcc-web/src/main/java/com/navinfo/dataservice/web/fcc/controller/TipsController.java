@@ -12,7 +12,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.*;
-import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
@@ -338,7 +337,12 @@ public class TipsController extends BaseController {
 			log.setTotal(tipsUploader.getTotal());
 			log.setBeginTime(beginDate);
 			log.setEndTime(DateUtils.getSysDateFormat());
-			log.setErrorMsg(tipsUploader.getReasons().toString());
+            JSONObject error=new JSONObject();
+            error.put("failedReasons", tipsUploader.getReasons());
+            error.put("conflict", tipsUploader);
+            error.put("freshed", tipsUploader);
+            
+			log.setErrorMsg(error.toString());
 			log.setUserId(String.valueOf(userId));
 			SysLogOperator.getInstance().insertSysLog(log);
 		

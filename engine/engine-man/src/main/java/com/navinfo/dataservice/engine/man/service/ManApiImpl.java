@@ -550,4 +550,14 @@ public class ManApiImpl implements ManApi {
     public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
     	return TaskService.getInstance().getTips2MarkNumByTaskId();
     }
+    
+	/**
+	 * 查询所有city下的所有block对应的grid集合
+	 * @return Map<Integer,Map<Integer, Set<Integer>>>>
+	 * @throws Exception 
+	 * 
+	 * */
+    public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
+    	return CityService.getInstance().queryAllCityGrids();
+    }
 }

@@ -80,5 +80,19 @@ public class MongoDao {
 		}
 		
 	}
+	
+	public long count(String col_name, Bson filter) {
+		try {
+			if (filter == null) {
+				return md.getCollection(col_name).count();
+			} else {
+				return md.getCollection(col_name).count(filter);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
 }

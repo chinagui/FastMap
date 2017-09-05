@@ -43,14 +43,9 @@ public class PersonJob extends AbstractStatJob {
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			String timestamp = statReq.getTimestamp();
-			String timeForOrical = timestamp.substring(0, 8);
-			//计算前一天的统计
-			timeForOrical=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD);
-//			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-//					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
-			log.info("timestamp:" + timestamp);
-			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
+			String workDay = statReq.getWorkDay();
+			log.info("timestamp:" + timestamp+",workDay:"+workDay);
+			List<Map<String, Object>> personList = manApi.staticsPersionJob(workDay);
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
 			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
@@ -143,7 +138,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
 				dataMap.put("fccUpdateLen", fccUpdateLen);
-				dataMap.put("workDate", timeForOrical);
+				dataMap.put("workDay", workDay);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 				keyMaps.add(dataMap);
 			}

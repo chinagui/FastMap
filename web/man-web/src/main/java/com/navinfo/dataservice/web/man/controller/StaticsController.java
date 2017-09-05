@@ -709,4 +709,6 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	
 }

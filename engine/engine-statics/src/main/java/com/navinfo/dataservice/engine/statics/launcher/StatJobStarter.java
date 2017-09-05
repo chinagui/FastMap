@@ -45,8 +45,9 @@ public abstract class StatJobStarter {
 	/**
 	 * 如果不需要启动，RunJobInfo==null，配置job启动参数
 	 * @return
+	 * @throws Exception 
 	 */
-	protected RunJobInfo startRun(){		
+	protected RunJobInfo startRun() throws Exception{		
 		//默认启动参数timestamp，取当前时间的小时的整点
 		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
 		JSONObject request=new JSONObject();

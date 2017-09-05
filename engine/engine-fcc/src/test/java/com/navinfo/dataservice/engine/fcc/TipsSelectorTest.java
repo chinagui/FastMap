@@ -328,7 +328,7 @@ public class TipsSelectorTest extends InitApplication {
 //            System.out.println(solrSelector.statInfoTask(parameter));
 
             solrSelector.checkUpdate(
-                    "59567233" ,"20160101010101");
+                    "59567233" ,"20160101010101",1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

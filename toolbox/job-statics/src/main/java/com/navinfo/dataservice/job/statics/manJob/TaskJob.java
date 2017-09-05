@@ -1295,6 +1295,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
 			taskMap.put("workDate", workDate);
 			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			taskMap.put("lot", task.getLot());
 			
 			//保存数据
 			taskMap.put("taskId", taskId);

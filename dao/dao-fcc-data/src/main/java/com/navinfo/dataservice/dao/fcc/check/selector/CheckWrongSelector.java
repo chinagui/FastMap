@@ -154,7 +154,7 @@ public class CheckWrongSelector {
 		JSONObject obj = new JSONObject();
 		String sql = "select log_id, check_task_id, object_type, object_id, qu_desc, reason, "
 				+ "er_content, qu_rank, work_time, check_time, is_prefer, worker, checker, er_type "
-				+ "from check_wrong where id=:1";
+				+ "from check_wrong where log_id=:1";
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

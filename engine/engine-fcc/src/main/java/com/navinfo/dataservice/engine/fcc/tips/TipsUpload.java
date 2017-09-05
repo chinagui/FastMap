@@ -395,115 +395,7 @@ public class TipsUpload {
 
             //20170828 跨大区日志统计,记录无任务
             //被统计为无任务的数据上传
-            sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-            if(gridCountMap.size() > 0) {
-                List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
-                Map<String, Integer> meshRegionMap = new HashMap<>();
-                for(String gridId : gridCountMap.keySet()) {
-                    String meshId = gridId.substring(0, gridId.length()-2);
-                    if(!meshRegionMap.containsKey(meshId)) {
-                        for(RegionMesh regionMesh : regions) {
-                            if(regionMesh.meshContains(meshId)) {
-                                meshRegionMap.put(meshId, regionMesh.getRegionId());
-                                break;
-                            }
-                        }
-                    }
-                    int count = gridCountMap.get(gridId);
-                    UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
-                    info.setUserId(userId);
-                    info.setFromSubtaskId(subTaskId);
-                    info.setUploadType(2);
-                    int regionId = meshRegionMap.get(meshId);
-                    info.setOutRegionId(regionId);
-                    info.setOutGridId(Integer.valueOf(gridId));
-                    info.setOutGridNumber(count);
-                    infos.add(info);
-                }
-                UploadRegionInfoOperator op = new UploadRegionInfoOperator(sysConn);
-                op.save(infos);
-                gridCountMap.clear();
-            }
-            Map<Integer, JSONObject> regionResultMap = new HashMap<>();
-            //失败的记录数
-            if(reasons.size() > 0) {
-                for(int i = 0 ; i < reasons.size(); i++) {
-                    JSONObject reasonObj = reasons.getJSONObject(i);
-                    String rowkey = reasonObj.getString("rowkey");
-                    int type = reasonObj.getInt("type");
-                    TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
-                    if(tipsMeshGrid == null) {
-                        continue;
-                    }
-                    String gridId = tipsMeshGrid.getGridId();
-                    int regionId = 0;
-                    for(RegionMesh regionMesh : regions) {
-                        String meshId = gridId.substring(0, gridId.length()-2);
-                        if(regionMesh.meshContains(meshId)) {
-                            regionId = regionMesh.getRegionId();
-                            break;
-                        }
-                    }
-                    if(regionId > 0) {
-                        if(regionResultMap.containsKey(regionId)) {
-                            JSONObject jsonObject = regionResultMap.get(regionId);
-                            if(type == 6) {
-                                int sCount = jsonObject.getInt("sCount") + 1;
-                                jsonObject.put("sCount", sCount);
-                            }else {
-                                int eCount = jsonObject.getInt("eCount") + 1;
-                                jsonObject.put("eCount", eCount);
-                            }
-                        }else{
-                            JSONObject jsonObject = new JSONObject();
-                            if(type == 6) {//type=6不算失败
-                                jsonObject.put("sCount", 1);
-                                jsonObject.put("eCount", 0);
-                            }else{
-                                jsonObject.put("sCount", 0);
-                                jsonObject.put("eCount", 1);
-                            }
-                            regionResultMap.put(regionId, jsonObject);
-                        }
-                    }
-                    meshMap.remove(rowkey);
-                }
-            }
-            //成功的记录数
-            for(String rowkey : meshMap.keySet()) {
-                TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
-                String gridId = tipsMeshGrid.getGridId();
-                int regionId = 0;
-                for(RegionMesh regionMesh : regions) {
-                    String meshId = gridId.substring(0, gridId.length()-2);
-                    if(regionMesh.meshContains(meshId)) {
-                        regionId = regionMesh.getRegionId();
-                        break;
-                    }
-                }
-                if(regionId > 0) {
-                    if(regionResultMap.containsKey(regionId)) {
-                        JSONObject jsonObject = regionResultMap.get(regionId);
-                        int sCount = jsonObject.getInt("sCount") + 1;
-                        jsonObject.put("sCount", sCount);
-                    }else{
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("sCount", 1);
-                        jsonObject.put("eCount", 0);
-                        regionResultMap.put(regionId, jsonObject);
-                    }
-                }
-            }
-            meshMap.clear();
-            //返回统计结果
-            for(int regionId : regionResultMap.keySet()) {
-                RegionUploadResult regionResult = new RegionUploadResult(regionId);
-                regionResult.setSubtaskId(subTaskId);
-                JSONObject jsonObject = regionResultMap.get(regionId);
-                regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
-                regionResults.add(regionResult);
-            }
-            regionResultMap.clear();
+            statisticsNoTask(userId, meshMap, regions, gridCountMap);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -511,7 +403,7 @@ public class TipsUpload {
             throw new Exception("Tips上传报错", e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
-            DbUtils.commitAndCloseQuietly(sysConn);
+           
             if(htab != null) {
                 try{
                     htab.close();
@@ -526,6 +418,141 @@ public class TipsUpload {
         // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
     }
+
+	/**
+	 * @Description:无任务统计
+	 * @param userId
+	 * @param meshMap
+	 * @param regions
+	 * @param gridCountMap
+	 * @author: 张俊芳
+	 * @throws Exception 
+	 * @time:2017-9-5 下午7:35:06
+	 */
+	private void statisticsNoTask(long userId,
+			Map<String, TipsMeshGrid> meshMap, List<RegionMesh> regions,
+			Map<String, Integer> gridCountMap) throws Exception {
+		java.sql.Connection sysConn=null;
+		try{
+		sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+		if(gridCountMap.size() > 0) {
+		    List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
+		    Map<String, Integer> meshRegionMap = new HashMap<>();
+		    for(String gridId : gridCountMap.keySet()) {
+		        String meshId = gridId.substring(0, gridId.length()-2);
+		        if(!meshRegionMap.containsKey(meshId)) {
+		            for(RegionMesh regionMesh : regions) {
+		                if(regionMesh.meshContains(meshId)) {
+		                    meshRegionMap.put(meshId, regionMesh.getRegionId());
+		                    break;
+		                }
+		            }
+		        }
+		        int count = gridCountMap.get(gridId);
+		        UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
+		        info.setUserId(userId);
+		        info.setFromSubtaskId(subTaskId);
+		        info.setUploadType(2);
+		        int regionId = meshRegionMap.get(meshId);
+		        info.setOutRegionId(regionId);
+		        info.setOutGridId(Integer.valueOf(gridId));
+		        info.setOutGridNumber(count);
+		        infos.add(info);
+		    }
+		    UploadRegionInfoOperator op = new UploadRegionInfoOperator(sysConn);
+		    op.save(infos);
+		    gridCountMap.clear();
+		}
+		Map<Integer, JSONObject> regionResultMap = new HashMap<>();
+		//失败的记录数
+		if(reasons.size() > 0) {
+		    for(int i = 0 ; i < reasons.size(); i++) {
+		        JSONObject reasonObj = reasons.getJSONObject(i);
+		        String rowkey = reasonObj.getString("rowkey");
+		        int type = reasonObj.getInt("type");
+		        TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+		        if(tipsMeshGrid == null) {
+		            continue;
+		        }
+		        String gridId = tipsMeshGrid.getGridId();
+		        int regionId = 0;
+		        for(RegionMesh regionMesh : regions) {
+		            String meshId = gridId.substring(0, gridId.length()-2);
+		            if(regionMesh.meshContains(meshId)) {
+		                regionId = regionMesh.getRegionId();
+		                break;
+		            }
+		        }
+		        if(regionId > 0) {
+		            if(regionResultMap.containsKey(regionId)) {
+		                JSONObject jsonObject = regionResultMap.get(regionId);
+		                if(type == 6) {
+		                    int sCount = jsonObject.getInt("sCount") + 1;
+		                    jsonObject.put("sCount", sCount);
+		                }else {
+		                    int eCount = jsonObject.getInt("eCount") + 1;
+		                    jsonObject.put("eCount", eCount);
+		                }
+		            }else{
+		                JSONObject jsonObject = new JSONObject();
+		                if(type == 6) {//type=6不算失败
+		                    jsonObject.put("sCount", 1);
+		                    jsonObject.put("eCount", 0);
+		                }else{
+		                    jsonObject.put("sCount", 0);
+		                    jsonObject.put("eCount", 1);
+		                }
+		                regionResultMap.put(regionId, jsonObject);
+		            }
+		        }
+		        meshMap.remove(rowkey);
+		    }
+		}
+		//成功的记录数
+		for(String rowkey : meshMap.keySet()) {
+		    TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+		    String gridId = tipsMeshGrid.getGridId();
+		    int regionId = 0;
+		    for(RegionMesh regionMesh : regions) {
+		        String meshId = gridId.substring(0, gridId.length()-2);
+		        if(regionMesh.meshContains(meshId)) {
+		            regionId = regionMesh.getRegionId();
+		            break;
+		        }
+		    }
+		    if(regionId > 0) {
+		        if(regionResultMap.containsKey(regionId)) {
+		            JSONObject jsonObject = regionResultMap.get(regionId);
+		            int sCount = jsonObject.getInt("sCount") + 1;
+		            jsonObject.put("sCount", sCount);
+		        }else{
+		            JSONObject jsonObject = new JSONObject();
+		            jsonObject.put("sCount", 1);
+		            jsonObject.put("eCount", 0);
+		            regionResultMap.put(regionId, jsonObject);
+		        }
+		    }
+		}
+		meshMap.clear();
+		//返回统计结果
+		for(int regionId : regionResultMap.keySet()) {
+		    RegionUploadResult regionResult = new RegionUploadResult(regionId);
+		    regionResult.setSubtaskId(subTaskId);
+		    JSONObject jsonObject = regionResultMap.get(regionId);
+		    regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
+		    regionResults.add(regionResult);
+		}
+		regionResultMap.clear();
+		
+		}catch (Exception e) {
+			DbUtils.rollback(sysConn);
+			logger.error("无任务统计出错:"+e.getMessage(), e);
+			throw new Exception("无任务统计出错:"+e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+		
+	}
 
     /**
      * 道路名入元数据库

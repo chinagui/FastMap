@@ -585,8 +585,8 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			String taskName = null;
-			if (jsonReq.containsKey("taskName") || jsonReq.getString("taskName") == null
-					|| StringUtils.isEmpty(jsonReq.getString("taskName"))) {
+			if (jsonReq.containsKey("taskName") && jsonReq.getString("taskName") == null
+					&& StringUtils.isEmpty(jsonReq.getString("taskName"))) {
 				taskName = jsonReq.getString("taskName");
 			}else{
 				JobApi jobApiService = (JobApi) ApplicationContextUtil

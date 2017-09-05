@@ -36,6 +36,9 @@ public abstract class AbstractOperation {
 	protected int subtaskId=0;
 	protected boolean physiDelete=false; 
 	
+	protected boolean writeData = true;
+	protected boolean writeLog = true;
+	
 	public int getSubtaskId() {
 		return subtaskId;
 	}
@@ -47,6 +50,18 @@ public abstract class AbstractOperation {
 	}
 	public void setPhysiDelete(boolean physiDelete) {
 		this.physiDelete = physiDelete;
+	}
+	public boolean isWriteData() {
+		return writeData;
+	}
+	public void setWriteData(boolean writeData) {
+		this.writeData = writeData;
+	}
+	public boolean isWriteLog() {
+		return writeLog;
+	}
+	public void setWriteLog(boolean writeLog) {
+		this.writeLog = writeLog;
 	}
 	public AbstractOperation(Connection conn,OperationResult preResult){
 		this.conn=conn;
@@ -84,22 +99,30 @@ public abstract class AbstractOperation {
 		deleteObjHandler();
 
 		//持久化履历
-		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
+		if(writeLog){
+			new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
+		}else{
+			log.info("不持久化履历。");
+		}
 		//持久化数据
 		for(Iterator<BasicObj> it=result.getAllObjs().iterator(); it.hasNext();){
 			BasicObj obj = it.next();
-			List<RunnableSQL> sqls = obj.generateSql(physiDelete);
-			if(sqls!=null){
-				for(RunnableSQL sql:sqls){
-					try{
-						log.info("持久化sql:" + sql.getSql());
-						log.info("持久化sql参数:" + sql.getArgs());
-						sql.run(conn);
-					}catch(Exception e){
-						log.error(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
-						throw new ObjPersistException(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+			if(writeData){
+				List<RunnableSQL> sqls = obj.generateSql(physiDelete);
+				if(sqls!=null){
+					for(RunnableSQL sql:sqls){
+						try{
+							log.info("持久化sql:" + sql.getSql());
+							log.info("持久化sql参数:" + sql.getArgs());
+							sql.run(conn);
+						}catch(Exception e){
+							log.error(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+							throw new ObjPersistException(obj.objName()+"(pid:"+obj.objPid()+")的"+sql.getTableName()+"表保存出错："+e.getMessage(),e);
+						}
 					}
 				}
+			}else{
+				log.info("不持久化数据。");
 			}
 			//持久化把新增后删除的对象移出objs
 			if(obj.getMainrow().getOpType().equals(OperationType.INSERT_DELETE)){

@@ -131,6 +131,9 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			String plusFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/table_create_plus.sql";
 			sqlExec.execute(plusFile);
+			//common
+			String common1 = "/com/navinfo/dataservice/datahub/resources/common/create_type_function.sql";
+			packageExec.execute(common1);
 		}catch(Exception e){
 			log.error("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);
 			throw new DataHubException("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);

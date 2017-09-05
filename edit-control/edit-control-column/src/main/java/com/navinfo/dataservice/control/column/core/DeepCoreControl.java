@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -1130,7 +1131,7 @@ public class DeepCoreControl {
 					throw new Exception("参数异常：没找到data");
 				}
 				
-				SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				List<String> conditions = new ArrayList<>();
 				List<Object> params = new ArrayList<>();
 				int subtaskId = 0;
@@ -1290,7 +1291,7 @@ public class DeepCoreControl {
 			long operationTime = queryOperationTime(regionConn, pid, subtaskId, userId);
 			
 			resultJson.put("commonWorker", realName + "-" + groupName);
-			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy.MM.dd"));
+			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy-MM-dd HH:mm:ss"));
 			return resultJson;
 		} catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -1433,14 +1434,14 @@ public class DeepCoreControl {
 				
 				Timestamp workTime = resultSet.getTimestamp("WORK_TIME");
 				if(workTime != null){
-					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy.MM.dd"));
+					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
 				} else {
 					jo.put("workTime", "");
 				}
 				jo.put("qcWorker", resultSet.getString("QC_WORKER")  != null ? resultSet.getString("QC_WORKER") : "");
 				Timestamp qcTime = resultSet.getTimestamp("QC_TIME");
 				if(qcTime != null){
-					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy.MM.dd"));
+					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
 				} else {
 					jo.put("qcTime", "");
 				}

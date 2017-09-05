@@ -93,14 +93,14 @@ public class BaseTipsOperate {
 
 			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String currentDate = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
 			// 新增一个trackInfo
 			JSONObject jsonTrackInfo = new JSONObject();
 
 			jsonTrackInfo.put("stage", stage);
 
-			jsonTrackInfo.put("date", date);
+			jsonTrackInfo.put("date", currentDate);
 
 			jsonTrackInfo.put("handler", user);
 
@@ -109,6 +109,8 @@ public class BaseTipsOperate {
 			track.put("t_trackInfo", trackInfoArr);
 
 			track.put("t_lifecycle", 2);
+			
+			track.put("t_dataDate", currentDate); //2017-9-5修改
 
 			// 2.更新feedback
 
@@ -137,7 +139,7 @@ public class BaseTipsOperate {
 			int type = 3; // 文字
 
 			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					date);
+					currentDate);
 
 			f_array.add(newFeedback);
 
@@ -154,7 +156,8 @@ public class BaseTipsOperate {
 
 			// 同步更新solr
             tipsDao.setStage(stage);
-            tipsDao.setT_date(date);
+            tipsDao.setT_date(currentDate);
+            tipsDao.setT_dataDate(currentDate);//2017-9-5修改
             tipsDao.setT_lifecycle(TIP_LIFECYCLE_UPDATE);
             tipsDao.setHandler(user);
 

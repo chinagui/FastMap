@@ -541,4 +541,23 @@ public class ManApiImpl implements ManApi {
     public Set<Integer> allCollectSubtaskId() throws Exception{
     	return SubtaskService.getInstance().allCollectSubtaskId();
     }
+    
+    /**
+     * 根据taskId获取对应任务的tips转aumark数量
+     * @throws Exception 
+     * 
+     * */
+    public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
+    	return TaskService.getInstance().getTips2MarkNumByTaskId();
+    }
+    
+	/**
+	 * 查询所有city下的所有block对应的grid集合
+	 * @return Map<Integer,Map<Integer, Set<Integer>>>>
+	 * @throws Exception 
+	 * 
+	 * */
+    public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
+    	return CityService.getInstance().queryAllCityGrids();
+    }
 }

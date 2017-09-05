@@ -470,7 +470,11 @@ public class CheckController extends BaseController {
 
 			int type = jsonReq.getInt("type");
 			
-			int isQuality = jsonReq.getInt("isQuality");
+			int isQuality = -1;
+			
+			if(jsonReq.containsKey("isQuality")){
+				isQuality = jsonReq.getInt("isQuality");
+			}
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			qualityConn = DBConnector.getInstance().getCheckConnection();
@@ -581,8 +585,8 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			String taskName = null;
-			if (jsonReq.containsKey("taskName") || jsonReq.getString("taskName") == null
-					|| StringUtils.isEmpty(jsonReq.getString("taskName"))) {
+			if (jsonReq.containsKey("taskName") && jsonReq.getString("taskName") == null
+					&& StringUtils.isEmpty(jsonReq.getString("taskName"))) {
 				taskName = jsonReq.getString("taskName");
 			}else{
 				JobApi jobApiService = (JobApi) ApplicationContextUtil

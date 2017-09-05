@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.search;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +62,7 @@ import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 查询进程
@@ -228,6 +231,13 @@ public class SearchProcess {
 							for (SearchSnapshot snapshot : list) {
 								if (!snapshots.contains(snapshot)) {
 									snapshots.add(snapshot);
+									continue;
+								}
+								if (snapshots.contains(snapshot)
+										&& snapshot.getDbId() == this.getDbId()) {
+									snapshots.remove(snapshot);
+									snapshots.add(snapshot);
+									continue;
 								}
 
 							}
@@ -1094,83 +1104,6 @@ public class SearchProcess {
 		return json;
 	}
 
-	public static void main(String[] args) throws Exception {
-		SearchProcess p = new SearchProcess();
-		p.setArray(null);
-		p.setDbId(13);
-		int x = 442895;
-		int y = 212474;
-		int z = 19;
-		List<ObjType> types = new ArrayList<ObjType>();
-		types.add(ObjType.RDLINK);
-		types.add(ObjType.RDNODE);
-		types.add(ObjType.IXPOI);
-		types.add(ObjType.ZONELINK);
-		types.add(ObjType.LULINK);
-		types.add(ObjType.ZONENODE);
-		types.add(ObjType.ADADMIN);
-		int gap = 10;
-
-		JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
-		System.out.println(data);
-
-		// parameter={"dbId":13,"gap":10,"types":["RDLINK","RDNODE","IXPOI","ADLINK","ZONELINK","LULINK","ZONENODE","ADADMIN"],"x":442895,"y":212474,"z":19}
-
-		/*
-		 * JSONObject json = new JSONObject();
-		 * 
-		 * String str1 =
-		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
-		 * ; JSONObject obj1 = JSONObject.fromObject(str1); String str2 =
-		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
-		 * ; JSONObject obj2 = JSONObject.fromObject(str2);
-		 * System.out.println(obj2); System.out.println(obj1);
-		 * obj1.accumulateAll(obj2); System.out.println(obj1);
-		 * 
-		 * Map<String, List<SearchSnapshot>> map = new HashMap<String,
-		 * List<SearchSnapshot>>();
-		 * 
-		 * List<SearchSnapshot> list1 = new ArrayList<SearchSnapshot>();
-		 * List<SearchSnapshot> list2 = new ArrayList<SearchSnapshot>();
-		 * SearchSnapshot snapshot11 = new SearchSnapshot();
-		 * snapshot11.setI(1101); SearchSnapshot snapshot12 = new
-		 * SearchSnapshot(); snapshot12.setI(1102); // list1.add(snapshot11); //
-		 * list1.add(snapshot12);
-		 * 
-		 * SearchSnapshot snapshot21 = new SearchSnapshot();
-		 * snapshot21.setI(2101); SearchSnapshot snapshot22 = new
-		 * SearchSnapshot(); snapshot22.setI(1102); // list2.add(snapshot21); //
-		 * list2.add(snapshot22);
-		 * 
-		 * List<List<SearchSnapshot>> lists = new
-		 * ArrayList<List<SearchSnapshot>>();
-		 * 
-		 * lists.add(list1); lists.add(list2);
-		 * 
-		 * List<ObjType> types = new ArrayList<ObjType>();
-		 * types.add(ObjType.ADLINK); types.add(ObjType.ADLINK); for (int i = 0;
-		 * i < lists.size(); i++) { for (ObjType type : types) { if
-		 * (map.containsKey(type.toString())) { List<SearchSnapshot> snapshots =
-		 * map.get(type.toString());
-		 * 
-		 * for (SearchSnapshot snapshot : lists.get(i)) { if
-		 * (!snapshots.contains(snapshot)) { snapshots.add(snapshot); }
-		 * 
-		 * } } else { map.put(type.toString(), lists.get(i)); } } } for
-		 * (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
-		 * JSONArray array = new JSONArray();
-		 * 
-		 * for (SearchSnapshot snap : entry.getValue()) {
-		 * 
-		 * try { array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig()); }
-		 * catch (Exception e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); } }
-		 * 
-		 * json.accumulate(entry.getKey(), array, getJsonConfig());
-		 * 
-		 * } System.out.println(json);
-		 */}
-
 	public int getZ() {
 		return z;
 	}
@@ -1185,5 +1118,27 @@ public class SearchProcess {
 
 	public void setTaskId(int taskId) {
 		this.taskId = taskId;
+	}
+
+	public static void main(String[] args) {
+		List<SearchSnapshot> snapshots = new ArrayList<SearchSnapshot>();
+		SearchSnapshot snapshot = new SearchSnapshot();
+		snapshot.setI(1101);
+		snapshot.setDbId(13);
+		snapshots.add(snapshot);
+		System.out.println(snapshot);
+		SearchSnapshot snapshot1 = new SearchSnapshot();
+		snapshot1.setI(1101);
+		snapshot1.setDbId(14);
+		System.out.println(snapshot1);
+		if (snapshots.contains(snapshot1)) {
+			System.out.println("222");
+			System.out.println(snapshots);
+
+			snapshots.add(snapshots.indexOf(snapshot1), snapshot1);
+
+		}
+		System.out.println(snapshots.toString());
+
 	}
 }

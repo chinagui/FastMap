@@ -150,4 +150,8 @@
           class="com.navinfo.dataservice.charge.job.Fm2ChargePhotoAddJob"
           request="com.navinfo.dataservice.charge.job.Fm2ChargePhotoAddRequest" >
     </type>
+    <type name="noTaskJob"
+          class="com.navinfo.dataservice.job.statics.manJob.NoTaskJob"
+          request="com.navinfo.dataservice.job.statics.manJob.NoTaskJobRequest" >
+    </type>
 	</mapping>

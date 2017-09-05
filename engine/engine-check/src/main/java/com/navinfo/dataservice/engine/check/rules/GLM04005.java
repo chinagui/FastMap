@@ -65,10 +65,10 @@ public class GLM04005 extends baseRule{
 	private void checkRdGate(RdGate rdGate) throws Exception {
 		int inlink = rdGate.getInLinkPid();
 		int outlink = rdGate.getOutLinkPid();
+		int dir = rdGate.getDir();
 
-		if (rdGate.changedFields.containsKey("inLinkPid")) {
-			inlink = (Integer) rdGate.changedFields.get("inLinkPid");
-			outlink = (Integer) rdGate.changedFields.get("outLinkPid");
+		if (rdGate.changedFields.containsKey("dir")) {
+			dir = Integer.valueOf((String) rdGate.changedFields.get("dir"));
 		}
 		
 		StringBuilder sb = new StringBuilder();
@@ -106,6 +106,20 @@ public class GLM04005 extends baseRule{
 		sb.append("    AND RD.TYPE = 1                                                            ");
 		sb.append("    AND RRV.DETAIL_ID = RD.DETAIL_ID                                           ");
 		sb.append("    AND RRV.U_RECORD <> 2                                                      ");
+		
+		if (dir == 2) {
+			sb.append(" UNION SELECT 1 FROM RD_RESTRICTION R,RD_RESTRICTION_DETAIL RD       ");
+			sb.append(" WHERE R.IN_LINK_PID = " + outlink);
+			sb.append(" AND R.PID = RD.RESTRIC_PID                                                    ");
+			sb.append(" AND RD.OUT_LINK_PID = " + inlink + " AND R.U_RECORD <> 2 AND RD.U_RECORD <> 2 ");
+			sb.append(" AND RD.TYPE = 1                                                               ");
+			sb.append(
+					" UNION SELECT 1 FROM RD_RESTRICTION R,RD_RESTRICTION_DETAIL RD,RD_RESTRICTION_VIA RRV");
+			sb.append(" WHERE R.IN_LINK_PID = " + outlink + " AND R.PID = RD.RESTRIC_PID              ");
+			sb.append(" AND RRV.LINK_PID = " + inlink + " AND R.U_RECORD <> 2 AND RD.U_RECORD <> 2    ");
+			sb.append(" AND RD.TYPE = 1 AND RRV.DETAIL_ID = RD.DETAIL_ID                              ");
+			sb.append(" AND RRV.U_RECORD <> 2                                                         ");
+		}
 		
 		String sql = sb.toString();
 		log.info("RdGate GLM04005 sql:" + sql);

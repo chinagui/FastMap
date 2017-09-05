@@ -52,6 +52,10 @@ public class FMBAT20187 extends BasicBatchRule {
 		Set<String> referSubrow =  new HashSet<String>();
 		referSubrow.add("IX_POI_CHARGINGPLOT");
 		//要修改子信息，所以此处isLock=true
+		//由于提交已加锁，若批处理锁的childPids,和提交pidList有交集，就会发生死锁，jch update by 20170904
+		Set<Long> submitPids=pidList;
+		submitPids.retainAll(childPids);
+//		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(submitPids, ObjectName.IX_POI, referSubrow, false);
 		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(childPids, ObjectName.IX_POI, referSubrow, true);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}

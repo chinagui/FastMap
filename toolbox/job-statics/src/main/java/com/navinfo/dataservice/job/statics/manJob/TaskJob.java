@@ -250,16 +250,25 @@ public class TaskJob extends AbstractStatJob {
 	public Map<Integer,Map<String,Object>> getTaskStatData(String timestamp) throws Exception{
 		try {
 			//获取上一次的统计时间
-			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
+			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(task, filter);
+			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
+			FindIterable<Document> findIterable = mongoDao.find(task, null).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			String timestampLast="";
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				String timestampOrigin=String.valueOf(jso.get("timestamp"));
+				if(StringUtils.isEmpty(timestampLast)){
+					timestampLast=timestampOrigin;
+					log.info("最近一次的统计日期为："+timestampLast);
+				}
+				if(!timestampLast.equals(timestampOrigin)){
+					break;
+				}
 				int taskId = (int) jso.get("taskId");
 				int status = (int) jso.get("status");
 				if(status == 0){

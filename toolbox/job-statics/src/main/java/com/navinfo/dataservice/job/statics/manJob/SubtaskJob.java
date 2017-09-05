@@ -154,14 +154,23 @@ public class SubtaskJob extends AbstractStatJob {
 			//获取上一次的统计时间
 			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(subtask, filter);
+			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
+			FindIterable<Document> findIterable = mongoDao.find(subtask, null).sort(new BasicDBObject("timestamp",-1));;
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			String timestampLast="";
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				String timestampOrigin=String.valueOf(jso.get("timestamp"));
+				if(StringUtils.isEmpty(timestampLast)){
+					timestampLast=timestampOrigin;
+					log.info("最近一次的统计日期为："+timestampLast);
+				}
+				if(!timestampLast.equals(timestampOrigin)){
+					break;
+				}
 				int subtaskId = (int) jso.get("subtaskId");
 				Map<String,Object> map = jso;
 				stat.put(subtaskId, map);

@@ -281,7 +281,6 @@ public class DeepCoreControl {
 	public JSONObject save(String parameter, long userId) throws Exception {
 
         Connection conn = null;
-        Connection manConn = null;
         JSONObject result = null;
         
         List<Integer> pids = new ArrayList<Integer>();
@@ -292,16 +291,10 @@ public class DeepCoreControl {
 
             int dbId = json.getInt("dbId");
             int objId = json.getInt("objId");
-            int qualitySubtaskId = json.getInt("subtaskId");
+            int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
-            manConn = DBConnector.getInstance().getManConnection();
-
-            QueryRunner run = new QueryRunner();
-            String sql = "SELECT T.SUBTASK_ID FROM SUBTASK T WHERE T.QUALITY_SUBTASK_ID = ?";
-            int subtaskId = run.queryForInt(manConn, sql, qualitySubtaskId);
-            
             JSONObject poiData = json.getJSONObject("data");
             
             pids.add(objId);
@@ -354,7 +347,6 @@ public class DeepCoreControl {
             logger.error(e.getMessage(), e);
             throw e;
         } finally {
-            DbUtils.closeQuietly(manConn);
             DbUtils.commitAndCloseQuietly(conn);
         }
     }

@@ -418,7 +418,7 @@ public class TipsController extends BaseController {
             String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
                     PropConstant.downloadUrlPathTips);
             //4.返回的url
-            String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
+            String url = serverUrl + downloadUrlPath +File.separator+ day + "/"+userId+File.separator
                     + zipFileName;
 
             logger.info("url:"+url);

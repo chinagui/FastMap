@@ -2802,7 +2802,7 @@ public class ProgramService {
 			
 			StringBuffer sb = new StringBuffer();
 			sb.append("select t.type, t.program_id, t.city_id, t.infor_id, c.plan_status city_plan, i.is_adopted, i.deny_reason,");
-			sb.append(" i.plan_status infor_plan, t.status, i.info_type_name, i.method,p.create_date produce_date, i.admin_name, tk.lot,");
+			sb.append(" i.plan_status infor_plan, t.status, i.info_type_name, i.method,p.create_date produce_date, i.admin_name,");
 			sb.append(" p.produce_status, ft.diff_date, t.produce_plan_end_date, ft.type tasktype, tk.overdue_reason, b.plan_status,");
 			sb.append("  i.insert_time, i.expect_date, tk.create_date taskcreatdate, t.create_date programcreatdate, t.name programname");
 			sb.append(" from PROGRAM t, PRODUCE p, FM_STAT_OVERVIEW_TASK ft, INFOR i, CITY c, TASK tk, BLOCK b");
@@ -2847,7 +2847,6 @@ public class ProgramService {
 						program.put("taskCreateDate", rs.getTimestamp("taskcreatdate"));
 						program.put("createDate", rs.getTimestamp("programcreatdate"));
 						program.put("name", rs.getString("programname"));
-						program.put("lot", rs.getInt("lot"));
 						result.add(program);
 					}
 					return result;

@@ -84,7 +84,9 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		long phaseId = 0;
 		try {
 			Day2MonthPoiMerge915TmpJobRequest day2MonRequest = (Day2MonthPoiMerge915TmpJobRequest) request;
-			String tmpOpTable = day2MonRequest.getTmpOpTable();// 临时表
+			String tmpOpTable = day2MonRequest.getTmpOpTable();// 日库临时表
+			String tempFailLogTable = day2MonRequest.getTempFailLogTable();// 日库失败履历临时表
+			int onlyFlushLog = day2MonRequest.getOnlyFlushLog();// 日库失败履历临时表
 			phaseId = (long) day2MonRequest.getPhaseId();
 			Integer specRegionId = day2MonRequest.getSpecRegionId();
 
@@ -109,9 +111,9 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					 * ④将所有的grids转换成对应的meshes； ⑤拿所有的meshes申请DMS锁；
 					 * ⑥若存在申请不到DMS锁的图幅，则报出具体图幅被锁信息，申请到锁的图幅执行日落月
 					 */
-					if (!tmpOpTable.isEmpty()) {
+					if (!tmpOpTable.isEmpty()&&!tempFailLogTable.isEmpty()) {
 						doMediumSync(region, null, null, null, datahubApi,
-								d2mSyncApi, manApi, tmpOpTable);
+								d2mSyncApi, manApi, tmpOpTable,tempFailLogTable,0);
 					} else {
 						List<Integer> filterGrids = new ArrayList<Integer>();
 						List<Integer> logGrids = selectLogGridsByTaskId(null,
@@ -136,7 +138,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 								+ dmsLockMeshes.toString());
 
 						doMediumSync(region, filterGrids, null, null,
-								datahubApi, d2mSyncApi, manApi, null);
+								datahubApi, d2mSyncApi, manApi, null,null,onlyFlushLog);
 					}
 				}
 
@@ -212,7 +214,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 	private void doMediumSync(Region region, List<Integer> filterGrids,
 			List<Integer> grids, List<Integer> taskIds, DatahubApi datahubApi,
-			Day2MonthSyncApi d2mSyncApi, ManApi manApi, String tmpOpTable)
+			Day2MonthSyncApi d2mSyncApi, ManApi manApi, String tmpOpTable,String tempFailLogTable,int onlyFlushLog)
 			throws Exception {
 
 		// 1. 获取最新的成功同步信息，并记录本次同步信息
@@ -261,18 +263,20 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 						.combineFlushResults(
 								multiFlusher.getExtResult()
 										.getaddFlushResults());
+				if(onlyFlushLog==1){return;}
 				if (0 == flushResult.getTotal()) {
 					log.info("没有符合条件的履历，不执行日落月，返回");
 				} else {
 					log.info("开始将履历搬到月库：logtotal:" + flushResult.getTotal());
+					log.info("日库临时表:" + tempOpTable);
+					log.info("日库失败履历临时表："+ flushResult.getTempFailLogTable());
 					// 快线搬移履历是传进去的日大区库连接（刷库用的连接），如果出现异常，回滚日大区库连接即可；
 					LogMover logMover = new Day2MonMover(dailyDbSchema,
 							monthDbSchema, tempOpTable,
 							flushResult.getTempFailLogTable());
 					logMovers.add(logMover);
 					LogMoveResult logMoveResult = logMover.move();
-					log.info("月库临时表："
-							+ logMoveResult.getLogOperationTempTable());
+					log.info("月库临时表："+ logMoveResult.getLogOperationTempTable());
 					log.info("开始进行履历分析");
 					result = parseLog(monthConn,
 							logMoveResult.getLogOperationTempTable());
@@ -295,8 +299,15 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					updateLogCommitStatus(dailyConn, tempOpTable);
 				}
 			} else {
+				LogMover logMover = new Day2MonMover(dailyDbSchema,
+						monthDbSchema, tmpOpTable,
+						tempFailLogTable);
+				logMovers.add(logMover);
+				LogMoveResult logMoveResult = logMover.move();
+				log.info("月库临时表："
+						+ logMoveResult.getLogOperationTempTable());
 				log.info("开始进行履历分析");
-				result = parseLog(monthConn, tmpOpTable);
+				result = parseLog(monthConn, logMoveResult.getLogOperationTempTable());
 				if (result.getAllObjs().size() > 0) {
 					log.info("开始进行深度信息打标记");
 					new DeepInfoMarker(result, monthConn).execute();

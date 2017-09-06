@@ -387,7 +387,7 @@ public class RdInterSearch implements ISearch {
 						for (IRow row : rows) {
 							RdLink link = (RdLink) row;
 							linkPids.add(String.valueOf(link.getPid()));
-							wktPoints.add(GeoTranslator.jts2Wkt(
+							wktLinks.add(GeoTranslator.jts2Wkt(
 									link.getGeometry(), 0.00001, 5));
 							sNodePids.add(String.valueOf(link.getsNodePid()));
 							eNodePids.add(String.valueOf(link.geteNodePid()));

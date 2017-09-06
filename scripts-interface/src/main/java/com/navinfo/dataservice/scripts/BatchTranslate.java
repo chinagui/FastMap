@@ -3,6 +3,9 @@ package com.navinfo.dataservice.scripts;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -73,7 +76,7 @@ public class BatchTranslate {
         }
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(20), new ThreadPoolExecutor.DiscardOldestPolicy());
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
             Task task = new Task(entry.getKey(), entry.getValue());
@@ -99,6 +102,7 @@ public class BatchTranslate {
 
         try {
             conn = DBConnector.getInstance().getMkConnection();
+            //conn = DBConnector.getInstance().getConnectionById(13);
 
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT *");
@@ -118,6 +122,8 @@ public class BatchTranslate {
             Set<String> tabNames = new HashSet<>();
             tabNames.add("IX_POI_NAME");
             Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames,false, pids, true, true);
+            Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, pids);
+            ObjHisLogParser.parse(objs, logs);
 
             IxPoi ixPoi;
             Integer meshId;
@@ -147,6 +153,7 @@ public class BatchTranslate {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getMkConnection();
+            //conn = DBConnector.getInstance().getConnectionById(13);
 
             OperationResult operationResult=new OperationResult();
             operationResult.putAll(list);
@@ -156,7 +163,7 @@ public class BatchTranslate {
             batchCommand.setRuleId("FM-BAT-20-115");
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
-            persistBatch(batch);
+            //persistBatch(batch);
         } catch (Exception e) {
             logger.error("执行FM-BAT-20-115批处理出错...", e.fillInStackTrace());
             throw e;
@@ -199,7 +206,6 @@ public class BatchTranslate {
             BatchTranslate translate = BatchTranslate.getInstance();
             try {
                 translate.batchTranslate(list);
-                Thread.currentThread().sleep(4000);
             } catch (Exception e) {
                 failureMesh.add(meshId);
                 e.fillInStackTrace();

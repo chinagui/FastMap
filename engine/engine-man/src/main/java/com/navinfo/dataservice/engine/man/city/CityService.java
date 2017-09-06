@@ -336,7 +336,7 @@ public class CityService {
 				}
 			}
 			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
-					+ "  FROM CITY T, FM_STAT_OVERVIEW_PROGRAM P"
+					+ "  FROM CITY T, FM_STAT_OVERVIEW_city P"
 					+ " WHERE T.CITY_ID = P.CITY_ID(+)"
 					+ extentSql ;
 			log.info(querySql);

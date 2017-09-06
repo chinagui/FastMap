@@ -40,8 +40,8 @@ public class ImportGeo {
 		log.info("start");
 		try{
 			JobScriptsInterface.initContext();
-			//String filepath = String.valueOf(args[0]);
-			String filepath ="D:\\temp\\1779.txt";
+			String filepath = String.valueOf(args[0]);
+			//String filepath ="D:\\temp\\1779.txt";
 			Connection conn=DBConnector.getInstance().getManConnection();
 			log.info("read txt start");
 			List<String> contents=TxtReader.readTxtFile(filepath);
@@ -56,7 +56,7 @@ public class ImportGeo {
 				sources.add(map);
 			}
 			log.info("read txt end");
-			String sql="insert into geo_tmp(id,geo) values(?,sdo_geometry(?,32774))";
+			String sql="insert into geo_tmp(id,geo) values(?,sdo_geometry(?,8307))";
 			QueryRunner run=new QueryRunner();
 			Object[][] params=new Object[sources.size()][2];
 			for(int i=0;i<sources.size();i++){

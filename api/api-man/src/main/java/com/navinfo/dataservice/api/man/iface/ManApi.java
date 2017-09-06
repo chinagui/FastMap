@@ -359,5 +359,12 @@ public interface ManApi{
 	 * 
 	 * */
     public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception;
+    
+    /**
+	 * 区县统计api，主要是为区县统计脚本提供初始查询结果，blockJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> blockStatic()throws Exception;
 }
 

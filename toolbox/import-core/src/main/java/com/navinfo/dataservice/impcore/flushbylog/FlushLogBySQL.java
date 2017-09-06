@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.commons.thread.ThreadSharedObjectExt;
 import com.navinfo.navicommons.database.TransactionalDataSource;
 
 public class FlushLogBySQL extends AbstractFlushLog {
@@ -16,7 +15,6 @@ public class FlushLogBySQL extends AbstractFlushLog {
 	protected int innerCount = 0;
 	protected boolean isThreads = false;
 	protected int dataCount = 0;
-	
 
 	public FlushLogBySQL(DataSource sourceDataSource,
 			DataSource targetDataSource, String tempTable, String type,
@@ -35,7 +33,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 		}
 		this.tempTable = tempTable;
 		this.type = type;
-		threadSharedObj = new ThreadSharedObjectExt(0);
+		threadSharedObj = new ThreadSharedObjectExtResult(0);
 	}
 
 	protected void setThreads(boolean isThreads) {
@@ -74,7 +72,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 		LogReader logReader = new LogReader(sourceDataSource.getConnection(),
 				this.getLogQuerySql(this.dataCount, tempTable));
 		LogWriterDay2Month logWriter = new LogWriterDay2Month(targetDataSource,
-				true,type);
+				true, type);
 		boolean ignoreSQLExeEffectException = false;
 		FlushLogToDBThread flushLogToDBThread = new FlushLogToDBThread(
 				threadSharedObj, logReader, logWriter,
@@ -108,8 +106,8 @@ public class FlushLogBySQL extends AbstractFlushLog {
 		} else {
 
 			LogReader logReader = new LogReader(
-					sourceDataSource.getConnection(), this.getLogQuerySql(0,
-							tempTable));
+					sourceDataSource.getConnection(), this.getLogQuerySql(
+							dataCount, tempTable));
 			LogWriterDay2Month logWriter = new LogWriterDay2Month(
 					targetDataSource, true, type);
 			flushLogToDBThread = new FlushLogToDBThread(threadSharedObj,
@@ -165,7 +163,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 	}
 
 	public void initThreadSharedObject() throws Exception {
-		threadSharedObj = new ThreadSharedObjectExt(concurrentSize);
+		threadSharedObj = new ThreadSharedObjectExtResult(concurrentSize);
 		log.debug(innerCount + tableNameList.size());
 		threadPoolExecutor = new ThreadPoolExecutor(concurrentSize,
 				concurrentSize, 3, TimeUnit.SECONDS,

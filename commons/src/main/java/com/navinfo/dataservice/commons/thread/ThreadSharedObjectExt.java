@@ -7,7 +7,6 @@ public class ThreadSharedObjectExt extends ThreadSharedObject {
 
 	public ThreadSharedObjectExt(int totalTaskNum) {
 		super(totalTaskNum);
-		// TODO Auto-generated constructor stub
 	}
 
 	public synchronized void addWarn(Exception e) {

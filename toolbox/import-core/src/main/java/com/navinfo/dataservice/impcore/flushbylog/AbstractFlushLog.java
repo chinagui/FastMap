@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.thread.ThreadSharedObject;
-import com.navinfo.dataservice.commons.thread.ThreadSharedObjectExt;
 import com.navinfo.navicommons.database.TransactionalDataSource;
 
 public abstract class AbstractFlushLog implements Runnable {
@@ -23,7 +22,7 @@ public abstract class AbstractFlushLog implements Runnable {
 	protected ThreadPoolExecutor threadPoolExecutor = null;
 
 	protected List<String> tableNameList;
-	protected ThreadSharedObjectExt threadSharedObj;
+	protected ThreadSharedObjectExtResult threadSharedObj;
 	protected boolean controlTransaction = true;
 	protected String type;
 
@@ -311,10 +310,14 @@ public abstract class AbstractFlushLog implements Runnable {
 
 	public void initThreadSharedObject() throws Exception {
 		log.debug("任务个数：" + tableNameList.size());
-		threadSharedObj = new ThreadSharedObjectExt(tableNameList.size());
+		threadSharedObj = new ThreadSharedObjectExtResult(tableNameList.size());
 		threadPoolExecutor = new ThreadPoolExecutor(concurrentSize,
 				concurrentSize, 3, TimeUnit.SECONDS, new LinkedBlockingQueue(),
 				new ThreadPoolExecutor.CallerRunsPolicy());
+	}
+
+	public ThreadSharedObjectExtResult getExtResult() {
+		return threadSharedObj;
 	}
 
 	/**

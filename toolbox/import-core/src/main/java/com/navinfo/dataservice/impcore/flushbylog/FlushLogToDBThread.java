@@ -2,24 +2,21 @@ package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.sql.ResultSet;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.thread.ThreadSharedObjectExt;
 import com.navinfo.navicommons.database.TransactionalDataSource;
 
 /**
  * 刷履历线程
  * 
- * @author zhangjianjun
+ * @author zhaokk
  * 
  */
 public class FlushLogToDBThread extends Thread {
 	protected Logger log = Logger.getLogger(FlushLogToDBThread.class);
-	protected ThreadSharedObjectExt threadSharedObject;
+	protected ThreadSharedObjectExtResult threadSharedObject;
 	protected ThreadPoolExecutor threadPoolExecutor = null;
 	protected LogReader logReader;
 	protected LogWriterDay2Month logWriter;
@@ -37,21 +34,13 @@ public class FlushLogToDBThread extends Thread {
 
 	private String type;
 
-	public FlushLogToDBThread(ThreadSharedObjectExt threadSharedObject,
+	public FlushLogToDBThread(ThreadSharedObjectExtResult threadSharedObject,
 			LogReader logReader, LogWriterDay2Month logWriter,
 			boolean ignoreSQLExeEffectException) throws Exception {
 		this.threadSharedObject = threadSharedObject;
 		this.logReader = logReader;
 		this.logWriter = logWriter;
 		this.ignoreSQLExeEffectException = ignoreSQLExeEffectException;
-	}
-
-	@SuppressWarnings("unchecked")
-	public void initThreadSharedObject() throws Exception {
-		threadSharedObject = new ThreadSharedObjectExt(10);
-		threadPoolExecutor = new ThreadPoolExecutor(10, 10, 3,
-				TimeUnit.SECONDS, new LinkedBlockingQueue(),
-				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
 	public void init() throws Exception {
@@ -108,6 +97,7 @@ public class FlushLogToDBThread extends Thread {
 			}
 
 			totalCountPlus(index % 10000);
+			threadSharedObject.setFlushResult(flushResult);
 			endTime = System.currentTimeMillis();
 			log.debug("线程任务：" + Thread.currentThread().getName() + "," + index
 					+ ","
@@ -136,6 +126,7 @@ public class FlushLogToDBThread extends Thread {
 
 	public void doFinish() {
 		threadSharedObject.executeSuccess();
+
 	}
 
 	public void doFinally() {

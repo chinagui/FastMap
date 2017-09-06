@@ -220,7 +220,13 @@ public class TipsExporter {
 				// track.t_trackInfo中最后一条date赋值
 				json.put("t_operateDate", lastDate);
 				
-				json.put("t_dataDate", trackjson.getString("t_dataDate"));
+				if(trackjson.containsKey("t_dataDate")){
+					json.put("t_dataDate", trackjson.getString("t_dataDate"));
+				}
+				else{
+					json.put("t_dataDate", "");
+				}
+				
 
 				json.put("t_handler", 0);
 				/*

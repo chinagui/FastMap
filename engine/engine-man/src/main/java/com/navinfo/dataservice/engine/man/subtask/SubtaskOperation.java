@@ -847,8 +847,7 @@ public class SubtaskOperation {
 									subtaskStat.put("poiWorked", workedPoi);
 									subtaskStat.put("poiWaitWork", rs.getInt("wait_work_poi"));
 								}else{
-//									subtaskStat.putAll(subtaskStatRealtime(subtaskObj));
-									subtaskStat = subtaskStatRealtime(subtaskObj);
+									subtaskStat.putAll(subtaskStatRealtime(subtaskObj));
 								}
 								if(subtaskStat != null && subtaskStat.size() > 0){
 									if(rs.getInt("TYPE") == 0 || rs.getInt("TYPE") == 2){

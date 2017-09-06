@@ -15,6 +15,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -46,6 +48,53 @@ public class CityService {
 		return SingletonHolder.INSTANCE;
 	}
 
+	
+	/**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception{
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="SELECT C.CITY_ID,"
+					+ "       C.PLAN_STATUS,"
+					+ "       nvl(P.PROGRAM_ID,0) program_id,"
+					+ "       (SELECT COUNT(1)"
+					+ "          FROM BLOCK B"
+					+ "         WHERE B.CITY_ID = C.CITY_ID"
+					+ "           AND B.PLAN_STATUS = 0) UNPLAN_BLOCK_NUM"
+					+ "  FROM CITY C, PROGRAM P"
+					+ " WHERE C.CITY_ID = P.CITY_ID(+)";
+			return run.query(conn, sql, new ResultSetHandler<Map<Integer,Map<String, Object>>>(){
+
+				@Override
+				public Map<Integer,Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Map<String, Object>> result=new HashMap<>();
+					while (rs.next()) {
+						int cityId=rs.getInt("CITY_ID");
+						Map<String, Object> cityTmp=new HashMap<>();
+						cityTmp.put("cityId",cityId);
+						cityTmp.put("planStatus",rs.getInt("PLAN_STATUS"));
+						cityTmp.put("programId",rs.getInt("program_id"));
+						cityTmp.put("unPlanBlockNum",rs.getInt("UNPLAN_BLOCK_NUM"));
+						result.put(cityId, cityTmp);
+					}
+					return result;
+				}
+				
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+    
 	public List<HashMap<String,Object>> queryListByWkt(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
@@ -287,7 +336,7 @@ public class CityService {
 				}
 			}
 			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
-					+ "  FROM CITY T, FM_STAT_OVERVIEW_PROGRAM P"
+					+ "  FROM CITY T, FM_STAT_OVERVIEW_city P"
 					+ " WHERE T.CITY_ID = P.CITY_ID(+)"
 					+ extentSql ;
 			log.info(querySql);

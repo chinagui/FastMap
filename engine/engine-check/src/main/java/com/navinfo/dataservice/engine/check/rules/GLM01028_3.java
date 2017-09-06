@@ -10,6 +10,9 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -68,7 +71,10 @@ public class GLM01028_3 extends baseRule {
 	 * @param checkCommand
 	 */
 	private void preparedData(CheckCommand checkCommand) {
+		List<Integer> deleteVia = getDeleteViaLink(checkCommand);
+		
 		for (IRow row : checkCommand.getGlmList()) {
+			row.status();
 			if (row.status() != ObjStatus.DELETE) {
 				if (row instanceof RdLink) {
 					RdLink link = (RdLink) row;
@@ -85,8 +91,7 @@ public class GLM01028_3 extends baseRule {
 					RdLinkForm form = (RdLinkForm) row;
 
 					int formOfWay = form.getFormOfWay();
-					if(form.status() != ObjStatus.DELETE)
-					{
+					if (form.status() != ObjStatus.DELETE) {
 						if (form.changedFields().containsKey("formOfWay")) {
 							formOfWay = (int) form.changedFields().get("formOfWay");
 						}
@@ -94,9 +99,74 @@ public class GLM01028_3 extends baseRule {
 							linkPidSet.add(form.getLinkPid());
 						}
 					}
+				} else if (row instanceof RdBranch) {
+					RdBranch branch = (RdBranch) row;
+
+					int inlink = branch.getInLinkPid();
+					int outlink = branch.getOutLinkPid();
+					List<IRow> vias = branch.getVias();
+
+					if (branch.changedFields().containsKey("inLinkPid")) {
+						inlink = (int) branch.changedFields().get("inLinkPid");
+					}
+					if (branch.changedFields().containsKey("outLinkPid")) {
+						outlink = (int) branch.changedFields().get("outLinkPid");
+					}
+
+					linkPidSet.add(inlink);
+					linkPidSet.add(outlink);
+					
+					for (IRow viarow : vias) {
+						RdBranchVia via = (RdBranchVia) viarow;
+						if (!deleteVia.contains(via.getLinkPid())) {
+							linkPidSet.add(via.getLinkPid());
+						}
+					}
+
+				} else if (row instanceof RdBranchVia) {
+					RdBranchVia branchvia = (RdBranchVia) row;
+					int linkpid = branchvia.getLinkPid();
+
+					if (branchvia.changedFields().containsKey("linkPid")) {
+						linkpid = (int) branchvia.changedFields().get("linkpid");
+					}
+
+					if (!deleteVia.contains(linkpid)) {
+						linkPidSet.add(linkpid);
+					}
+				}
+			} // if(status)
+		} // for
+	}
+	
+	private List<Integer> getDeleteViaLink(CheckCommand checkCommand){
+		List<Integer> deleteVia = new ArrayList<>();
+		List<Integer> allVia = new ArrayList<>();
+		
+		for(IRow row: checkCommand.getGlmList()){
+			if(row.status()==ObjStatus.UPDATE && row.objType() == ObjType.RDBRANCH){
+				RdBranch branch = (RdBranch)row;
+				
+				for(IRow viarow:branch.getVias()){
+					RdBranchVia via = (RdBranchVia) viarow;
+					allVia.add(via.getLinkPid());
 				}
 			}
 		}
+		
+		for(IRow row: checkCommand.getGlmList()){
+			if(row.objType() != ObjType.RDBRANCHVIA ){
+				continue;
+			}
+			
+			RdBranchVia via = (RdBranchVia)row;
+			
+			if(allVia.contains(via.getLinkPid())){
+				deleteVia.add(via.getLinkPid());
+			}
+		}
+		
+		return deleteVia; 
 	}
 
 }

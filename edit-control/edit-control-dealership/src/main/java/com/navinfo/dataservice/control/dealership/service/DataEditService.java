@@ -484,7 +484,7 @@ public class DataEditService {
 			//代理店数据库
 			con = DBConnector.getInstance().getDealershipConnection();
 	
-			//品牌表赋值为3
+			//代理店品牌表IX_DEALERSHIP_CHAIN.WORK_STATUS赋值3（1:完成表差分；2：完成库差分；3：完成启动录入作业）
 			log.info("chainCode:"+chainCode+"对应的数据开始品牌表赋值为3");
 			editChainStatus(chainCode, con);
 
@@ -493,10 +493,13 @@ public class DataEditService {
 				int workflow_status = getWorkflowStatus(resultId, con);
 				
 				if(1 == workflow_status){
+					//差分一致，无需处理
 					try{
 						//调用差分一致业务逻辑
 						log.info(resultId+"开始执行差分一致业务逻辑");
+						//则将IX_DEALERSHIP_RESULT.DEAL_STATUS赋值3，且IX_DEALERSHIP_RESULT. WORKFLOW_STATUS赋值9
 						editResultCaseStatusSame(resultId, con);
+						//生成代理店履历
 						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
@@ -508,6 +511,7 @@ public class DataEditService {
 						continue;
 					}
 				}else if(2 == workflow_status){
+					//需删除
 					int regionId = 0;
 					int dailyDbId = 0;
 					try{
@@ -521,6 +525,7 @@ public class DataEditService {
 						insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
+						//IX_DEALERSHIP_RESULT.CFM_POI_NUM清空且RESULT.cfm_is_adopted=0
 						clearRelevancePoi(resultId, con);
 						//workflow_status=2需删除状态时，workflow_status赋值为9，deal_status赋值为3，change by jch 20170717
 						updateWorkFlowStatus(resultId, con);
@@ -1017,9 +1022,10 @@ public class DataEditService {
 			if(sourceId != 0){
 				int dealSrcDiff = Integer.parseInt(String.valueOf(dataMap.get("dealSrcDiff")));
 				updateSource(con, resultId, sourceId, dealSrcDiff);
-			}else{
-				insertSource(con, resultId);
 			}
+			/*else{
+				insertSource(con, resultId);
+			}*/
 		}catch(Exception e){
 			throw e;
 		}
@@ -1186,7 +1192,7 @@ public class DataEditService {
 			//表内批表外
 			insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 			//根据result维护source表
-			resultMaintainSource(resultId, con);
+//			resultMaintainSource(resultId, con);
 			//清空关联POI作业属性
 			int workflow_status = getWorkflowStatus(resultId, con);
 			clearRelevancePoi(resultId, con);

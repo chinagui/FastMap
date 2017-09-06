@@ -573,6 +573,16 @@ public class ManApiImpl implements ManApi {
 	}
     
     /**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+    @Override
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception{
+		return CityService.getInstance().cityStatic();
+	}
+    
+    /**
      * 查询所有项目统计相关信息
      * @throws Exception 
      * 

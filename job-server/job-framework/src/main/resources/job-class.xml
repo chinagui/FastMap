@@ -158,6 +158,10 @@
           class="com.navinfo.dataservice.job.statics.manJob.BlockJob"
           request="com.navinfo.dataservice.job.statics.manJob.BlockJobRequest" >
     </type>
+    <type name="cityJob"
+          class="com.navinfo.dataservice.job.statics.manJob.CityJob"
+          request="com.navinfo.dataservice.job.statics.manJob.CityJobRequest" >
+    </type>
     <type name="programStat"
           class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"
           request="com.navinfo.dataservice.job.statics.manJob.ProgramJobRequest" >

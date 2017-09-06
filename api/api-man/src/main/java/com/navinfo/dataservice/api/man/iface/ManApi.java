@@ -373,5 +373,12 @@ public interface ManApi{
      * 
      * */
     public List<Map<String, Object>> queryProgramStat() throws Exception;
+    
+    /**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception;
 }
 

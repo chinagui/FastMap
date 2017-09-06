@@ -4,7 +4,7 @@ import com.navinfo.dataservice.job.statics.AbstractStatJobRequest;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
-public class BlockJobRequest extends AbstractStatJobRequest {
+public class CityJobRequest extends AbstractStatJobRequest {
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -15,13 +15,13 @@ public class BlockJobRequest extends AbstractStatJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "blockJob";
+		return "cityJob";
 	}
 
 	@Override
 	public String getJobTypeName() {
 		// TODO Auto-generated method stub
-		return "区县统计";
+		return "城市统计";
 	}
 
 	@Override

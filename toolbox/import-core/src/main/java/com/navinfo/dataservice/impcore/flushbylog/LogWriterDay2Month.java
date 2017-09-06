@@ -15,50 +15,45 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.navicommons.database.TransactionalDataSource;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 /*
  * @author MaYunFei
  * 2016年6月16日
  * 描述：import-coreLogWriter.java
  */
-public class LogWriter {
+public class LogWriterDay2Month extends LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
 	private Connection targetDbConn;
 	private boolean ignoreError;
+	private TransactionalDataSource targetDataSource;
 	private String type;// 日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
 
-	/**
-	 * @param conn
-	 *            目标库的连接
-	 * @param ignoreError
-	 *            是否忽略履历刷新时的错误
-	 */
-	public LogWriter(Connection conn, boolean ignoreError, String type) {
-		this.targetDbConn = conn;
+	public LogWriterDay2Month(TransactionalDataSource targetDataSource,
+			boolean ignoreError, String type) throws SQLException {
+		super();
 		this.ignoreError = ignoreError;
 		this.type = type;
 
 	}
 
-	public LogWriter() {
+	public void open() throws SQLException {
+		targetDbConn = targetDataSource.getConnection();
+		targetDbConn.setAutoCommit(false);
+
 	}
 
-	/**
-	 * @param conn
-	 *            目标库的连接 默认情况下，出现履历执行的错误，不抛异常
-	 */
-	public LogWriter(Connection conn) {
-		this(conn, false, "default");
+	public void close() {
+		targetDataSource.giveBackConnection(targetDbConn);
+
 	}
 
 	public void write(EditLog editLog, ILogWriteListener listener)
@@ -538,11 +533,4 @@ public class LogWriter {
 
 	}
 
-	public static void main(String[] args) {
-		JSONObject json = JSONObject.fromObject("{\"key1\":null}");
-		for (Object key : json.keySet()) {
-			System.out.println("key:" + key + ",class:"
-					+ json.get(key).getClass().getName());
-		}
-	}
 }

@@ -316,52 +316,6 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		}
 		
 	}
-	
-	private OperationResult logFlushAndBatchData(OracleSchema monthDbSchema,Connection monthConn,OracleSchema dailyDbSchema,Connection dailyConn,String tempOpTable)
-			throws Exception{
-		
-		OperationResult result=new OperationResult();
-		try{
-			
-			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
-			if(0==flushResult.getTotal()){
-				log.info("没有符合条件的履历，不执行日落月，返回");
-			}else{
-				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
-				//快线搬移履历是传进去的日大区库连接（刷库用的连接），如果出现异常，回滚日大区库连接即可；
-				LogMover logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
-				logMovers.add(logMover);
-				LogMoveResult logMoveResult = logMover.move();
-				log.info("开始进行履历分析");
-				result = parseLog(logMoveResult, monthConn);
-				if(result.getAllObjs().size()>0){
-					log.info("开始进行深度信息打标记");
-					new DeepInfoMarker(result,monthConn).execute();
-					log.info("开始执行前批");
-					new PreBatch(result, monthConn).execute();
-					log.info("开始执行检查");
-					Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-					new Classifier(checkResult,monthConn).execute();
-					log.info("开始执行后批处理");
-					new PostBatch(result,monthConn).execute();
-					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
-					updateField(result, monthConn);
-
-					batchPoi( result,  monthConn);
-				}
-				updateLogCommitStatus(dailyConn,tempOpTable);
-			}
-
-			return result;
-		}catch(Exception e){
-			throw e;
-		}finally{
-
-		}
-		
-	}
-
-	
 
 	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
 		Connection conn = monthDbSchema.getPoolDataSource().getConnection();

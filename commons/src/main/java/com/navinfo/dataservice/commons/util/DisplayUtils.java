@@ -1421,6 +1421,10 @@ public class DisplayUtils {
 			offset = 3; break;
 		case 20:
 			offset = 1; break;
+		case 21:
+			offset = 0.5; break;
+		case 22:
+			offset = 0.25; break;
 		}
 		return offset;
 	}

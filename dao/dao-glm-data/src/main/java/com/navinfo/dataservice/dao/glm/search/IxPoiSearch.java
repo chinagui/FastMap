@@ -1170,7 +1170,7 @@ public class IxPoiSearch implements ISearch {
 			String secondWorkItem, List<Integer> pids, long userId, int status,
 			JSONObject classifyRules, JSONObject ckRules,
 			Map<Integer, JSONObject> isProblems) throws Exception {
-
+		log.info("start searchColumnPoiByPid");
 		JSONArray dataList = new JSONArray();
 
 		JSONObject poiObj = new JSONObject();
@@ -1178,7 +1178,7 @@ public class IxPoiSearch implements ISearch {
 		boolean isLock = false;
 
 		try {
-
+			log.info("load metaData");
 			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
 					.getBean("metadataApi");
 
@@ -1201,6 +1201,7 @@ public class IxPoiSearch implements ISearch {
 			this.CHISHORT = metaData.getChishort();
 
 			this.ALIASNAME = metaData.getAliasName();
+			log.info("循环查询精编作业字段");
 			for (int pid : pids) {
 
 				IxPoiSelector poiSelector = new IxPoiSelector(conn);
@@ -1210,18 +1211,23 @@ public class IxPoiSearch implements ISearch {
 				// List<IRow> nameList =
 				// nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				// poi.setNames(nameList);
+				log.info("查询Names");
 				poi.setNames(new AbstractSelector(IxPoiName.class, conn)
 						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Photos");
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
 						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Parents");
 				poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
 						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Children");
 				poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
 						.loadRowsByParentId(poi.getPid(), isLock));
-
+				log.info("获取各专项共用字段");
 				// 获取各专项共用字段
 				poiObj = getCommenfields(pid, poi);
 				poiObj.put("userId", userId);
+				log.info("classifyRules赋值");
 				// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
 				String classifyRule = "";
 				Object cf = classifyRules.get(Integer.toString(pid));
@@ -1229,6 +1235,7 @@ public class IxPoiSearch implements ISearch {
 					classifyRule = cf.toString();
 				}
 				poiObj.put("classifyRules", classifyRule);
+				log.info("ckRules赋值，获取检查错误");
 				// ckRules赋值，获取检查错误
 				List<JSONObject> ckRule = (List<JSONObject>) ckRules
 						.get(Integer.toString(pid));
@@ -1237,6 +1244,7 @@ public class IxPoiSearch implements ISearch {
 					List<JSONObject> value = new ArrayList<JSONObject>();
 					poiObj.put("ckRules", value);
 				}
+				log.info("isProblem赋值");
 				// isProblem赋值
 				if (isProblems != null && isProblems.containsKey(pid)) {
 					JSONObject isProblem = (JSONObject) isProblems.get(pid);
@@ -1245,11 +1253,13 @@ public class IxPoiSearch implements ISearch {
 
 				// 大陆作业无值，港澳后续补充
 				poiObj.put("namerefMsg", "");
+				log.info("获取特殊字段");
 				// 获取特殊字段
 				poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
 						poi, poiObj);
 				dataList.add(poiObj);
 			}
+			log.info("end searchColumnPoiByPid");
 
 			return dataList;
 		} catch (Exception e) {
@@ -1351,15 +1361,18 @@ public class IxPoiSearch implements ISearch {
 			String secondWorkItem, int pid, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		try {
-
+			log.info("取该poi的父名称");
 			// parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
 			dataObj = getParentName(secondWorkItem, poi, dataObj);
+			log.info("取名称相关字段");
 			// 名称相关字段
 			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem,
 					poi, dataObj);
+			log.info("取名称相关字段");
 			// 地址相关字段
 			dataObj = getAddressesAddressList(firstWordItem, secondWorkItem,
 					poi, dataObj);
+			log.info("取英文名称批处理前后值");
 			// oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
 			dataObj = getEngNameBeforBatch(firstWordItem, secondWorkItem, poi,
 					dataObj);

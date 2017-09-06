@@ -31,7 +31,7 @@ public class CityJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
-		PersonJobRequest statReq = (PersonJobRequest)request;
+		CityJobRequest statReq = (CityJobRequest)request;
 		MongoDao md = new MongoDao(db_name);
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
@@ -52,14 +52,26 @@ public class CityJob extends AbstractStatJob {
 					cityTmp.put("poiTotal",notaskMap.get(cityId).get("poiTotal"));
 					cityTmp.put("dealershipTotal",notaskMap.get(cityId).get("dealershipTotal"));
 					cityTmp.put("noDealershipTotal",notaskMap.get(cityId).get("noDealershipTotal"));
+				}else{
+					cityTmp.put("tipsTotal",0);
+					cityTmp.put("poiTotal",0);
+					cityTmp.put("dealershipTotal",0);
+					cityTmp.put("noDealershipTotal",0);
 				}
 				if(programMap.containsKey(cityId)){
-					cityTmp.put("lot1Poi",notaskMap.get(cityId).get("lot1Poi"));
-					cityTmp.put("lot2Poi",notaskMap.get(cityId).get("lot2Poi"));
-					cityTmp.put("lot3Poi",notaskMap.get(cityId).get("lot3Poi"));
-					cityTmp.put("lot1Tips",notaskMap.get(cityId).get("lot1Tips"));
-					cityTmp.put("lot2Tips",notaskMap.get(cityId).get("lot2Tips"));
-					cityTmp.put("lot3Tips",notaskMap.get(cityId).get("lot3Tips"));
+					cityTmp.put("lot1Poi",programMap.get(cityId).get("lot1Poi"));
+					cityTmp.put("lot2Poi",programMap.get(cityId).get("lot2Poi"));
+					cityTmp.put("lot3Poi",programMap.get(cityId).get("lot3Poi"));
+					cityTmp.put("lot1Tips",programMap.get(cityId).get("lot1Tips"));
+					cityTmp.put("lot2Tips",programMap.get(cityId).get("lot2Tips"));
+					cityTmp.put("lot3Tips",programMap.get(cityId).get("lot3Tips"));
+				}else{
+					cityTmp.put("lot1Poi",new JSONObject());
+					cityTmp.put("lot2Poi",new JSONObject());
+					cityTmp.put("lot3Poi",new JSONObject());
+					cityTmp.put("lot1Tips",new JSONObject());
+					cityTmp.put("lot2Tips",new JSONObject());
+					cityTmp.put("lot3Tips",new JSONObject());
 				}
 				keyMaps.add(cityTmp);
 			}			

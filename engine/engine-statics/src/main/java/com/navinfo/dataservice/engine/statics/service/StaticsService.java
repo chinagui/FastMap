@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
@@ -49,6 +50,7 @@ public class StaticsService {
 	private static final String QUICK_MONITOR = "quick_monitor";
 	private static final String MEDIUM_MONITOR = "medium_monitor";
 	private static final String PROGRAM = "program";
+	private static final String CITY = "city";
 	private static final String BLOCK = "block";
 
 	private StaticsService() {
@@ -630,22 +632,22 @@ public class StaticsService {
 				task.putAll(jso);
 				JSONObject collectOverdueReasonNum = JSONObject.fromObject(jso.get("collectOverdueReasonNum"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
-				JSONObject collectReason2=reForm(collectOverdueReasonNum,4);
+				JSONArray collectReason2=reForm(collectOverdueReasonNum,4,true);
 				task.put("collectOverdueReasonNum",collectReason2);
 				
 				JSONObject dayOverdueReasonNum  = JSONObject.fromObject(jso.get("dayOverdueReasonNum"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
-				JSONObject dayOverdueReasonNum2=reForm(dayOverdueReasonNum ,4);
+				JSONArray dayOverdueReasonNum2=reForm(dayOverdueReasonNum ,4,true);
 				task.put("dayOverdueReasonNum",dayOverdueReasonNum2);
 				
 				JSONObject denyReasonNum  = JSONObject.fromObject(jso.get("denyReasonNum"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
-				JSONObject denyReasonNum2=reForm(denyReasonNum ,4);
+				JSONArray denyReasonNum2=reForm(denyReasonNum ,4,true);
 				task.put("denyReasonNum",denyReasonNum2);
 				
 				JSONObject cityDetail  = JSONObject.fromObject(jso.get("cityDetail"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
-				JSONObject cityDetail2=reForm(cityDetail ,8);
+				JSONArray cityDetail2=reForm(cityDetail ,8,false);
 				task.put("cityDetail",cityDetail2);
 			}
 			return task;
@@ -661,9 +663,9 @@ public class StaticsService {
 	 * @param top
 	 * @return
 	 */
-	private JSONObject reForm(JSONObject originJson,int top){
+	private JSONArray reForm(JSONObject originJson,int top,boolean getOther){
 		if(originJson.size()==0){
-			return originJson;
+			return new JSONArray();
 		}
 		List<Map<String,Object>> keyList=new ArrayList<>();
 		Iterator iter = originJson.keys();
@@ -696,19 +698,21 @@ public class StaticsService {
                }
            }
        }
-		JSONObject orderJson=new JSONObject();
+		JSONArray orderJson=new JSONArray();
 		double topPercent=0;
 		for(int i=0;i<top;i++){
 			if(i>=keyList.size()){
 				return orderJson;
 			}
 			topPercent=topPercent+(double)keyList.get(i).get("percent");
-			orderJson.put(i+1, keyList.get(i));
+			orderJson.add(keyList.get(i));
 		}
-		Map<String,Object> tMap=new HashMap<>();
-		tMap.put("name", "other");
-		tMap.put("percent", 100-topPercent);
-		orderJson.put(top+1, tMap);
+		if(getOther){
+			Map<String,Object> tMap=new HashMap<>();
+			tMap.put("name", "other");
+			tMap.put("percent", 100-topPercent);
+			orderJson.add(tMap);
+		}
 		return orderJson;
 	}
 	
@@ -753,6 +757,15 @@ public class StaticsService {
 			if(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				task.putAll(jso);
+			}
+			
+			FindIterable<Document> findIterable2 = mongoDao.find(CITY,filter).sort(new BasicDBObject("timestamp",-1));
+			MongoCursor<Document> iterator2 = findIterable2.iterator();
+			//处理数据
+			if(iterator2.hasNext()){
+				//获取统计数据
+				JSONObject jso = JSONObject.fromObject(iterator2.next());
 				task.putAll(jso);
 			}
 			return task;

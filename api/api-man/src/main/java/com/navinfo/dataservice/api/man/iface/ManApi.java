@@ -359,5 +359,12 @@ public interface ManApi{
 	 * 
 	 * */
     public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception;
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception;
 }
 

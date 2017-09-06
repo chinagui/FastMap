@@ -560,4 +560,13 @@ public class ManApiImpl implements ManApi {
     public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
     	return CityService.getInstance().queryAllCityGrids();
     }
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception{
+    	return ProgramService.getInstance().queryProgramStat();
+    }
 }

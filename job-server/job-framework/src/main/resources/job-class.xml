@@ -65,6 +65,9 @@
 	<type name="day2MonSync"
 		class="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob"
 		request="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJobRequest" />
+	<type name="day2MonTempSync"
+		class="com.navinfo.dataservice.column.job.Day2MonthPoiMerge915TmpJob"
+		request="com.navinfo.dataservice.column.job.Day2MonthPoiMerge915TmpJobRequest" />
 	<type name="fmPoiRoadDailyRelease"
 		class="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJob"
 		request="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJobRequest" />

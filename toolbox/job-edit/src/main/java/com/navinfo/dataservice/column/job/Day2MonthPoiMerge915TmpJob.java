@@ -88,7 +88,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 			String tempFailLogTable = day2MonRequest.getTempFailLogTable();// 日库失败履历临时表
 			int onlyFlushLog = day2MonRequest.getOnlyFlushLog();// 日库失败履历临时表
 			phaseId = (long) day2MonRequest.getPhaseId();
-			Integer specRegionId = day2MonRequest.getSpecRegionId();
+			int specRegionId = day2MonRequest.getSpecRegionId();
 
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS
 					.getValue());
@@ -111,7 +111,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					 * ④将所有的grids转换成对应的meshes； ⑤拿所有的meshes申请DMS锁；
 					 * ⑥若存在申请不到DMS锁的图幅，则报出具体图幅被锁信息，申请到锁的图幅执行日落月
 					 */
-					if (!tmpOpTable.isEmpty()&&!tempFailLogTable.isEmpty()) {
+					if (StringUtils.isNotEmpty(tmpOpTable)&&StringUtils.isNotEmpty(tempFailLogTable)) {
 						doMediumSync(region, null, null, null, datahubApi,
 								d2mSyncApi, manApi, tmpOpTable,tempFailLogTable,0);
 					} else {
@@ -238,7 +238,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		OperationResult result = new OperationResult();
 		try {
 			String tempOpTable = "";
-			if (tmpOpTable.isEmpty()) {
+			if (StringUtils.isEmpty(tmpOpTable)&&StringUtils.isEmpty(tempFailLogTable)) {
 				log.info("开始获取日编库履历");
 				if (grids != null && grids.size() > 0) {
 					logSelector = new Day2MonPoiLogByTaskIdSelector(

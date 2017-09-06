@@ -324,11 +324,10 @@ public class RdLinkSearchUtils {
 
 		for (RdSpeedlimit limit : limits) {
 
-			if (limit.getSpeedFlag() == 0 && limit.getDirect() != direct) {
+			if (limit.getDirect() != direct) {
 				continue;
 			}
-			if (limit.getSpeedFlag() == 1
-					&& (limit.getDirect() == direct || limit.getSpeedValue() != speedValue)) {
+			if (limit.getSpeedFlag() == 1 && limit.getSpeedValue() != speedValue) {
 				continue;
 			}
 			if (speedDependent < 0 && limit.getSpeedType() != 0) {

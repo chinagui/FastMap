@@ -60,9 +60,9 @@ public class GLM01187 extends baseRule {
 
     private static Map<Integer, List<Integer>> CHECK_RULE = new HashMap() {{
         put(10, Arrays.asList(1, 2, 11));
-        put(11, Arrays.asList(37));
+        put(11, Arrays.asList(37, 38));
         put(12, Arrays.asList(1, 2));
-        put(13, Arrays.asList(1));
+        put(13, Arrays.asList(1, 2));
         put(14, Arrays.asList(1, 2, 37, 50));
         put(15, Arrays.asList(1, 2, 34, 36));
         put(20, Arrays.asList(1));

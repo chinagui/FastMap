@@ -215,6 +215,8 @@ public class TaskOperation {
 					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setBlockId(rs.getInt("BLOCK_ID"));
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setProgramId(rs.getInt("PROGRAM_ID"));
 						map.setGroupId(rs.getInt("GROUP_ID"));
@@ -427,7 +429,7 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
-			if (changeFields.containsKey("OVERDUE_OTHER")){
+			if (changeFields.containsKey("OVERDUE_REASON")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_reason='" + bean.getOverdueReason() + "'";
 			};

@@ -20,8 +20,12 @@ public class StatJobEndHandler implements MsgHandler {
 		try{
 			log.info("stat_job_end:"+message);
 			JSONObject msgObj = JSONObject.fromObject(message);
+			String identify=msgObj.getString("timestamp");
+			if(msgObj.containsKey("identify")){
+				identify=msgObj.getString("identify");
+			}
 			
-			GroupStatJobLauncher.getInstance().exchange(msgObj.getString("timestamp"),msgObj.getString("jobType"));
+			GroupStatJobLauncher.getInstance().exchange(identify,msgObj.getString("jobType"));
 		}catch(Exception e){
 			log.warn("接收到Statics_Job_End消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

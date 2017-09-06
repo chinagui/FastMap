@@ -280,9 +280,15 @@ public class CityService {
 				extentSql="   AND T.PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
 						.replace("[", "(").replace("]", ")");
 			}
+			if(dataJson.containsKey("notask")){
+				int notask=(int)dataJson.get("notask");
+				if(notask==1){
+					extentSql=extentSql+"   AND (P.NOTASK_POI_TOTAL>0 or P.NOTASK_TIPS_TOTAL>0) ";
+				}
+			}
 			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
-					+ "  FROM CITY T"
-					+ " WHERE 1 = 1"
+					+ "  FROM CITY T, FM_STAT_OVERVIEW_PROGRAM P"
+					+ " WHERE T.CITY_ID = P.CITY_ID(+)"
 					+ extentSql ;
 			log.info(querySql);
 			List<Map<String, Object>> result= run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){

@@ -1981,16 +1981,17 @@ public class TipsSelector {
 	 * 
 	 * @param grid
 	 * @param date
+	 * @param workType :作业类型。1：常规下载2：行人导航下载
 	 * @return
 	 * @throws Exception
 	 */
-	public int checkUpdate(String grid, String date) throws Exception {
+	public int checkUpdate(String grid, String date, int workType) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
 		Connection oracleConn = null;
 		try {
 			oracleConn = DBConnector.getInstance().getTipsIdxConnection();
-			String where = new TipsRequestParamSQL().getTipsMobileWhere(date, TipsUtils.notExpSourceType);
+			String where = new TipsRequestParamSQL().getTipsMobileWhere(date,workType, TipsUtils.notExpSourceType);
 			long count = new TipsIndexOracleOperator(oracleConn).querCount(
 					"select count(1) count from tips_index where " + where
 					+ " and rownum=1", ConnectionUtil.createClob(oracleConn, wkt));

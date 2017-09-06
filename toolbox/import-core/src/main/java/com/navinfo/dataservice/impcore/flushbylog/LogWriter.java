@@ -50,6 +50,9 @@ public class LogWriter {
 
 	}
 
+	public LogWriter() {
+	}
+
 	/**
 	 * @param conn
 	 *            目标库的连接 默认情况下，出现履历执行的错误，不抛异常

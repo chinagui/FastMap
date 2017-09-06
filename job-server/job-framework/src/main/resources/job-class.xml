@@ -65,6 +65,9 @@
 	<type name="day2MonSync"
 		class="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob"
 		request="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJobRequest" />
+	<type name="day2MonTempSync"
+		class="com.navinfo.dataservice.column.job.Day2MonthPoiMerge915TmpJob"
+		request="com.navinfo.dataservice.column.job.Day2MonthPoiMerge915TmpJobRequest" />
 	<type name="fmPoiRoadDailyRelease"
 		class="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJob"
 		request="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJobRequest" />
@@ -153,6 +156,14 @@
     <type name="noTaskJob"
           class="com.navinfo.dataservice.job.statics.manJob.NoTaskJob"
           request="com.navinfo.dataservice.job.statics.manJob.NoTaskJobRequest" >
+    </type>
+    <type name="blockJob"
+          class="com.navinfo.dataservice.job.statics.manJob.BlockJob"
+          request="com.navinfo.dataservice.job.statics.manJob.BlockJobRequest" >
+    </type>
+    <type name="cityJob"
+          class="com.navinfo.dataservice.job.statics.manJob.CityJob"
+          request="com.navinfo.dataservice.job.statics.manJob.CityJobRequest" >
     </type>
     <type name="programStat"
           class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"

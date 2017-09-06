@@ -237,6 +237,7 @@ public class TaskOperation {
 //						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
 //						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
 						map.setType(rs.getInt("TYPE"));
+						map.setLot(rs.getInt("LOT"));
 						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						//map.setCityName(rs.getString("CITY_NAME"));
 						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));

@@ -2800,6 +2800,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
         java.sql.Connection tipsConn = null;
         JSONArray rowkeys = new JSONArray();
         try{
+        	String currentDate=DateUtils.getCurrentTimestamp();
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
             tipsConn = DBConnector.getInstance().getTipsIdxConnection();
@@ -2815,6 +2816,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             LineString[] lineStrings = new LineString[pids.size()];
             int index = 0;
             Point sPoint = null;
+            //拿到旧的每条数据信息
             for (Result result : results) {
                 String geoString = new String(result.getValue("data".getBytes(), "geometry".getBytes()));
                 JSONObject geo = JSONObject.fromObject(geoString);
@@ -2825,8 +2827,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 }
                 LineString lineString = JtsGeometryFactory.createLineString(locationCoords);
                 lineStrings[index] = lineString;
-                index ++;
+                
             }
+            //几何分离
             LineString[] resultLineStrings = CompPolylineUtil.separate(sPoint, lineStrings, distance);
 
             TipsIndexOracleOperator operator = new TipsIndexOracleOperator(tipsConn);
@@ -2838,6 +2841,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 JSONObject geo1 = new JSONObject();
                 LineString lineLoc1 = resultLineStrings[i*2];
                 JSONObject g_location1 = GeoTranslator.jts2Geojson(lineLoc1);
+                //1.更新g_loction
                 geo1.put("g_location", g_location1);
                 int pointSize = lineLoc1.getCoordinates().length;
                 JSONObject g_guide1 = null;
@@ -2846,18 +2850,33 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 }else{
                     g_guide1 = getSencondPoint(g_location1);
                 }
+                //2.更新g_guide
                 geo1.put("g_guide", g_guide1);
+                
                 put.addColumn("data".getBytes(), "geometry".getBytes(), geo1.toString().getBytes());
-
+                
+                //3.更新track
                 String trackString = new String(results[i].getValue("data".getBytes(), "track".getBytes()));
                 JSONObject trackObj = JSONObject.fromObject(trackString);
-                trackObj.put("t_date", DateUtils.getCurrentTimestamp());
+                trackObj.put("t_date", currentDate);
                 put.addColumn("data".getBytes(), "track".getBytes(), trackObj.toString().getBytes());
-
+                
+                //4.更新deep
+                String deepString = new String(results[i].getValue("data".getBytes(), "deep".getBytes()));
+                JSONObject  deep=JSONObject.fromObject(deepString);
+                //4.1 更新geo
+                deep.put("geo", g_guide1);
+                //4.2 更新len
+                double len1 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location1));
+                deep.put("len", len1);
+                put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString().getBytes());
+                
+               //更新索引
                 TipsDao solrIndex = operator.getById(rowkey);
                 solrIndex.setWktLocation(GeoTranslator.geojson2Jts(g_location1));
                 solrIndex.setWkt(GeoTranslator.geojson2Jts(g_guide1));
-                solrIndex.setT_date(DateUtils.getCurrentTimestamp());
+                solrIndex.setT_date(currentDate);
+                solrIndex.setT_dataDate(currentDate);
 
                 //新增一根测线
                 String s_sourceType = solrIndex.getS_sourceType();
@@ -2877,11 +2896,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                 geo2.put("g_guide", g_guide2);
                 newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo2.toString().getBytes());
                 newPut.addColumn("data".getBytes(), "track".getBytes(), trackObj.toString().getBytes());
+                
+                //4.更新deep
+                JSONObject  deep2=JSONObject.fromObject(deepString);
+                //4.1 更新geo
+                deep2.put("geo", g_guide2);
+                //4.2 更新len
+                double len2 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location2));
+                deep2.put("len", len2);
+                newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString().getBytes());
+                
+                //更新索引
                 TipsDao newSolrIndex = solrIndex.copy();
                 newSolrIndex.setId(newRowkey);
                 newSolrIndex.setWktLocation(GeoTranslator.geojson2Jts(g_location2));
                 newSolrIndex.setWkt(GeoTranslator.geojson2Jts(g_guide2));
-                newSolrIndex.setT_date(DateUtils.getCurrentTimestamp());
+                newSolrIndex.setT_date(currentDate);
+                newSolrIndex.setT_dataDate(currentDate);
 
                 operator.updateOne(solrIndex);
                 operator.updateOne(newSolrIndex);
@@ -2898,6 +2929,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             throw new Exception("测线分离失败", e);
         }finally {
             DbUtils.commitAndCloseQuietly(tipsConn);
+            if(htab != null) {
+				htab.close();
+			}
         }
         return rowkeys;
     }

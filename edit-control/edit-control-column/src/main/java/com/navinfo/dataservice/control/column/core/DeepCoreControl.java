@@ -280,6 +280,8 @@ public class DeepCoreControl {
      */
 	public JSONObject save(String parameter, long userId) throws Exception {
 
+		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+		
         Connection conn = null;
         JSONObject result = null;
         
@@ -293,6 +295,11 @@ public class DeepCoreControl {
             int objId = json.getInt("objId");
             int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
+            
+        	int isQuality=0;
+
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			isQuality=subtask.getIsQuality();
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
             JSONObject poiData = json.getJSONObject("data");
@@ -301,7 +308,7 @@ public class DeepCoreControl {
             //rowIdList = getRowIdsByPids(conn,pids);
             
             if (poiData.size() == 0) {
-            	updateDeepStatus(pids, conn, 0,secondWorkItem);
+            	updateDeepStatus(pids, conn, 0,secondWorkItem,isQuality);
                 return result;
             }
             
@@ -322,7 +329,7 @@ public class DeepCoreControl {
 			OperationResult operationResult=importor.getResult();
 
             //更新数据状态
-            updateDeepStatus(pids, conn, 0,secondWorkItem);
+            updateDeepStatus(pids, conn, 0,secondWorkItem,isQuality);
            
             // 深度信息保存时去掉检查 zpp 2017.03.02
     		//获取后检查需要执行规则列表
@@ -361,10 +368,14 @@ public class DeepCoreControl {
 	@SuppressWarnings("static-access")
 	public JSONObject release(String parameter, long userId) throws Exception {
 		
+		
 		List<Integer> pidList = new ArrayList<Integer>();
         Connection conn = null;
         JSONObject result = new JSONObject();
         int sucReleaseTotal = 0;
+        
+        ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+        
         try {
 
             JSONObject json = JSONObject.fromObject(parameter);
@@ -373,7 +384,12 @@ public class DeepCoreControl {
             int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
-            //Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            
+        	int isQuality=0;
+
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			isQuality=subtask.getIsQuality();
+			
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
     		//获取后检查需要执行规则列表
@@ -435,7 +451,7 @@ public class DeepCoreControl {
 			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 1,secondWorkItem);
+			updateDeepStatus(pidList, conn, 1,secondWorkItem,isQuality);
 			
 			result.put("sucReleaseTotal", sucReleaseTotal);
             return result;
@@ -457,35 +473,51 @@ public class DeepCoreControl {
     /**
      * 深度信息更新配置表状态 
      * @param pids conn flag(0:保存 1:提交)
+     * @param isQuality 区分是否质检 
      * @throws Exception
      */
-	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag,String secondWorkItem) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag,String secondWorkItem,int isQuality) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		
+		StringBuilder condition  = new StringBuilder();
         if (pidList.isEmpty()){
         	return;
         }
         if (flag==0) {
-        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE  T1.work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+secondWorkItem+"') AND T1.pid in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE ");
         } else {
-        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE  T1.work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+secondWorkItem+"') AND T1.pid in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE T1.QC_FLAG = 0 AND ");
         }
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
+			condition.append(" T1.work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+secondWorkItem+"') AND T1.pid in (");
 			String temp="";
 			for (int pid:pidList) {
-				sb.append(temp);
-				sb.append("'"+pid+"'");
+				condition.append(temp);
+				condition.append("'"+pid+"'");
 				temp = ",";
 			}
-			sb.append(")");
+			condition.append(")");
+			
+			sb.append(condition);
 			
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.executeUpdate();
+			
+			if(flag==1){
+				sb = new StringBuilder();
+				if(isQuality==0){//常规
+					sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 1,T1.HANDLER=0  WHERE T1.QC_FLAG = 1 AND ");
+				}else if(isQuality==1){//质检
+					sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE T1.QC_FLAG = 1 AND ");
+				}
+				sb.append(condition);
+				pstmt = conn.prepareStatement(sb.toString());
+				pstmt.executeUpdate();
+			}
 			
 		} catch (Exception e) {
 			throw e;
@@ -1246,7 +1278,7 @@ public class DeepCoreControl {
 				}
 				
 				builder.deleteCharAt(builder.length() - 1).append(") VALUES (");
-				builder.append("DEEP_QC_PROBLEM_SEQ.NEXTVAL,");
+				builder.append("DEEP_QC_SEQ.NEXTVAL,");
 				for (int i = 0; i < conditions.size()-1; i++) {
 					builder.append(" ? ,");
 				}

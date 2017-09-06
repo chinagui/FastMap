@@ -571,4 +571,13 @@ public class ManApiImpl implements ManApi {
 	public Map<Integer,Map<String, Object>> blockStatic()throws Exception{
 		return BlockService.getInstance().blockStatic();
 	}
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception{
+    	return ProgramService.getInstance().queryProgramStat();
+    }
 }

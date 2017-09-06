@@ -29,6 +29,9 @@
 		<job name="noTaskStat"/>
 		<job name="programStat"/>
 	</group>
+	<group name="programStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.ProgramStatStarter">
+		<job name="taskStat"/>
+	</group>
 	<!-- <group name="quickMonitorStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickMonitorStatStarter">
 		<job name="taskJob"/>
 	</group> -->

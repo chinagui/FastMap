@@ -158,4 +158,8 @@
           class="com.navinfo.dataservice.job.statics.manJob.BlockJob"
           request="com.navinfo.dataservice.job.statics.manJob.BlockJobRequest" >
     </type>
+    <type name="programStat"
+          class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"
+          request="com.navinfo.dataservice.job.statics.manJob.ProgramJobRequest" >
+    </type>
 	</mapping>

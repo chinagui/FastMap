@@ -366,5 +366,12 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Map<Integer,Map<String, Object>> blockStatic()throws Exception;
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception;
 }
 

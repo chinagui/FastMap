@@ -31,7 +31,7 @@ public class BlockJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
-		PersonJobRequest statReq = (PersonJobRequest)request;
+		BlockJobRequest statReq = (BlockJobRequest)request;
 		MongoDao md = new MongoDao(db_name);
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");

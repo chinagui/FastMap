@@ -113,7 +113,7 @@ public class BlockService {
 					+ "       T.BLOCK_ID,"
 					+ "       T.TYPE,"
 					+ "       T.TASK_ID,t.name,"
-					+ "       T.WORK_KIND,"
+					+ "       NVL(T.WORK_KIND,'0|0|0|0') WORK_KIND,"
 					+ "       T.STATUS,"
 					+ "       T.PROGRESS"
 					+ "  FROM BLOCK B, TDF T"

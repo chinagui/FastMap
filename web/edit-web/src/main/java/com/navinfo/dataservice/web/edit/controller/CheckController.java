@@ -8,14 +8,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -37,6 +40,7 @@ import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
 import com.navinfo.navicommons.database.Page;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -92,6 +96,8 @@ public class CheckController extends BaseController {
 			String ruleId = jsonReq.getString("ruleId");
 
 			int level = jsonReq.getInt("level");
+			
+			int checkType = jsonReq.getInt("checkType");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
@@ -124,7 +130,7 @@ public class CheckController extends BaseController {
 			 * //************************************
 			 */
 			Page page = selector.list(subtaskType, grids, pageSize, pageNum,
-					flag,ruleId,level,sortby);
+					flag,ruleId,level,sortby, checkType);
 			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));
@@ -448,8 +454,12 @@ public class CheckController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
+		Connection qualityConn = null;
 
 		try {
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -459,30 +469,90 @@ public class CheckController extends BaseController {
 			int oldType = jsonReq.getInt("oldType");
 
 			int type = jsonReq.getInt("type");
+			
+			int isQuality = -1;
+			
+			if(jsonReq.containsKey("isQuality")){
+				isQuality = jsonReq.getInt("isQuality");
+			}
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			qualityConn = DBConnector.getInstance().getCheckConnection();
 
-			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, oldType, type);
+			operator.updateCheckLogStatus(id, oldType, type, isQuality, (int)userId, qualityConn);
 
 			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
-
+			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(qualityConn);
 		}
 	}
+	
+	/**
+	 * 质检作业，点击检查log确认已修改，执行：
+	 * 1、更新检查log状态
+	 * 2、质检问题录入质检库check_wrong表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/qaUpdateSaveProblem")
+	public ModelAndView qaUpdateSaveProblem(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+		Connection qualityConn = null;
+
+		try {
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+
+			String id = jsonReq.getString("id");
+			int oldType = jsonReq.getInt("oldType");
+
+			int type = jsonReq.getInt("type");
+			
+			int isQuality = jsonReq.getInt("isQuality");
+			
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			qualityConn = DBConnector.getInstance().getCheckConnection();
+
+			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
+			
+			operator.updateStatusSaveProblem(id, oldType, type, isQuality, (int)userId, qualityConn, data);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(qualityConn);
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(qualityConn);
+		}
+	}
+	
+	
 
 	/**
 	 * @Title: updateCheckRdnResult
@@ -515,8 +585,8 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			String taskName = null;
-			if (jsonReq.containsKey("taskName") || jsonReq.getString("taskName") == null
-					|| StringUtils.isEmpty(jsonReq.getString("taskName"))) {
+			if (jsonReq.containsKey("taskName") && jsonReq.getString("taskName") == null
+					&& StringUtils.isEmpty(jsonReq.getString("taskName"))) {
 				taskName = jsonReq.getString("taskName");
 			}else{
 				JobApi jobApiService = (JobApi) ApplicationContextUtil
@@ -1285,4 +1355,43 @@ public class CheckController extends BaseController {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 更新检查结果的质检状态
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/updateQaStatus")
+	public ModelAndView updateQaStatus(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int dbId = jsonReq.getInt("dbId");
+			int checkStatus = jsonReq.getInt("checkStatus");
+			String md5Code = jsonReq.getString("md5Code");
+			int qaStatus = jsonReq.getInt("qaStatus");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			NiValExceptionOperator operator = new NiValExceptionOperator(conn);
+			
+			operator.updateQaStatus(checkStatus, md5Code, qaStatus);
+
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+
 }

@@ -61,12 +61,15 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 代理店数据编辑类
@@ -481,7 +484,7 @@ public class DataEditService {
 			//代理店数据库
 			con = DBConnector.getInstance().getDealershipConnection();
 	
-			//品牌表赋值为3
+			//代理店品牌表IX_DEALERSHIP_CHAIN.WORK_STATUS赋值3（1:完成表差分；2：完成库差分；3：完成启动录入作业）
 			log.info("chainCode:"+chainCode+"对应的数据开始品牌表赋值为3");
 			editChainStatus(chainCode, con);
 
@@ -490,10 +493,13 @@ public class DataEditService {
 				int workflow_status = getWorkflowStatus(resultId, con);
 				
 				if(1 == workflow_status){
+					//差分一致，无需处理
 					try{
 						//调用差分一致业务逻辑
 						log.info(resultId+"开始执行差分一致业务逻辑");
+						//则将IX_DEALERSHIP_RESULT.DEAL_STATUS赋值3，且IX_DEALERSHIP_RESULT. WORKFLOW_STATUS赋值9
 						editResultCaseStatusSame(resultId, con);
+						//生成代理店履历
 						inserDealershipHistory(con,3,resultId,workflow_status,9,userId);
 						//根据RESULT表维护SOURCE表
 						log.info(resultId+"开始根据RESULT表维护SOURCE表");
@@ -505,6 +511,7 @@ public class DataEditService {
 						continue;
 					}
 				}else if(2 == workflow_status){
+					//需删除
 					int regionId = 0;
 					int dailyDbId = 0;
 					try{
@@ -518,6 +525,7 @@ public class DataEditService {
 						insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 						//清空关联POI作业属性
 						log.info(resultId+"开始清空关联POI");
+						//IX_DEALERSHIP_RESULT.CFM_POI_NUM清空且RESULT.cfm_is_adopted=0
 						clearRelevancePoi(resultId, con);
 						//workflow_status=2需删除状态时，workflow_status赋值为9，deal_status赋值为3，change by jch 20170717
 						updateWorkFlowStatus(resultId, con);
@@ -741,6 +749,7 @@ public class DataEditService {
 				//POI状态修改为已提交3
 				log.info(resultId+"resultId对应的POI状态修改为已提交3");
 				updatePoiStatus(pid, dailycon);
+				withoutTaskValuation(pid, dailycon);
 			}
 			//清空关联POI作业属性
 			int matchMethod = getMatchMethodFromResult(resultId, con);
@@ -1013,9 +1022,10 @@ public class DataEditService {
 			if(sourceId != 0){
 				int dealSrcDiff = Integer.parseInt(String.valueOf(dataMap.get("dealSrcDiff")));
 				updateSource(con, resultId, sourceId, dealSrcDiff);
-			}else{
-				insertSource(con, resultId);
 			}
+			/*else{
+				insertSource(con, resultId);
+			}*/
 		}catch(Exception e){
 			throw e;
 		}
@@ -1182,7 +1192,7 @@ public class DataEditService {
 			//表内批表外
 			insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
 			//根据result维护source表
-			resultMaintainSource(resultId, con);
+//			resultMaintainSource(resultId, con);
 			//清空关联POI作业属性
 			int workflow_status = getWorkflowStatus(resultId, con);
 			clearRelevancePoi(resultId, con);
@@ -1455,6 +1465,8 @@ public class DataEditService {
 						updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
 						Integer resultId = result.getResultId();
 						IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+						Integer pid = selectPidByPoiNum(poiNum,regionConn);
+						withoutTaskValuation(pid.toString(), regionConn);
 						Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
 						IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 					}
@@ -2626,5 +2638,87 @@ public class DataEditService {
 			}
 		}
 		return subtables;
+	}
+	
+	/**
+	 * 代理店无任务赋值
+	 * @param pid
+	 * @param dailycon
+	 * @throws Exception
+	 */
+	private void withoutTaskValuation(String pid, Connection dailycon) throws Exception {
+		if(queryMediumTaskTid(pid,dailycon)){
+			Geometry geometry = getGeometryByPid(pid, dailycon);
+			if(geometry != null){
+				Coordinate coordinate = geometry.getCoordinate();
+				String[] grids = CompGridUtil.point2Grids(coordinate.x, coordinate.y);
+				Connection manConn = DBConnector.getInstance().getManConnection();
+				try{
+					QueryRunner run = new QueryRunner();
+					String sql = "SELECT T.TASK_ID FROM TASK T, GRID G, PROGRAM P WHERE G.BLOCK_ID = T.BLOCK_ID AND T.PROGRAM_ID = P.PROGRAM_ID AND T.LATEST = 1 AND P.TYPE = 1 AND T.TYPE = 0 AND g.grid_id = ?";
+					int taskId = run.queryForInt(manConn, sql, grids[0]);
+					if(taskId != 0){
+						updateMediumTaskTid(taskId, pid, dailycon);
+					}
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(manConn);
+				}
+			}
+		}
+	}
+	
+	private boolean queryMediumTaskTid(String pid, Connection dailycon) throws Exception {
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			String sql = "SELECT t.pid,t.medium_task_id FROM poi_edit_status t WHERE t.quick_subtask_id = 0 AND t.quick_task_id = 0 AND t.medium_subtask_id = 0 AND t.medium_task_id = 0 AND t.pid = :1";
+			pstmt = dailycon.prepareStatement(sql);
+			pstmt.setString(1, pid);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private void updateMediumTaskTid(Integer taskId, String pid, Connection dailycon) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "update POI_EDIT_STATUS t set t.medium_task_id = ? where t.pid = ?";
+			run.update(dailycon, sql, taskId, pid);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	public Geometry getGeometryByPid(String pid, Connection dailycon) throws Exception{
+		QueryRunner run = new QueryRunner();
+		StringBuilder getGeometryBuilder = new StringBuilder();
+		getGeometryBuilder.append("SELECT geometry FROM ix_poi WHERE pid = ");
+		getGeometryBuilder.append(pid);
+		return run.query(dailycon, getGeometryBuilder.toString(),
+			new ResultSetHandler<Geometry>() {
+				public Geometry handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						try {
+							STRUCT struct = (STRUCT) rs.getObject("geometry");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							return GeoTranslator.wkt2Geometry(clobStr);
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					}
+					return null;
+				}
+			});
 	}
 }

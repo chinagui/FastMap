@@ -63,15 +63,12 @@ public class PersonDayJob extends AbstractStatJob {
 				}
 			}
 			
-			String timestamp = statReq.getTimestamp().substring(0, 8);
-			//计算前一天的统计
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
+			String workDay = statReq.getWorkDay();
 			Map<Integer, Map<String,List<Map<String, Object>>>> stats = new ConcurrentHashMap<Integer,Map<String,List<Map<String, Object>>>>();
 			long time = System.currentTimeMillis();
 			int dbSize = dbIds.size();
 			if(dbSize == 1){
-				new PersonDayThread(null, dbIds.iterator().next(), stats, timestamp).run();
+				new PersonDayThread(null, dbIds.iterator().next(), stats, workDay).run();
 			}else{
 				if(dbSize > 10){
 					initThreadPool(10);
@@ -82,7 +79,7 @@ public class PersonDayJob extends AbstractStatJob {
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
 				for(int dbId:dbIds){
-					threadPoolExecutor.execute(new PersonDayThread(latch, dbId, stats, timestamp));
+					threadPoolExecutor.execute(new PersonDayThread(latch, dbId, stats, workDay));
 				}
 				latch.await();
 				if (threadPoolExecutor.getExceptions().size() > 0) {
@@ -97,8 +94,11 @@ public class PersonDayJob extends AbstractStatJob {
 			for(Entry<Integer, Map<String, List<Map<String, Object>>>> entry : stats.entrySet()){
 				result.get("person_day").addAll(entry.getValue().get("subtaskStat"));
 			}
-			
-			log.info("stats:" + JSONObject.fromObject(result).toString());
+			JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
+			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
@@ -135,20 +135,20 @@ public class PersonDayJob extends AbstractStatJob {
 	class PersonDayThread implements Runnable{
 		CountDownLatch latch = null;
 		int dbId = 0;
-		String timestamp = "";
+		String workDay = "";
 		Map<Integer, Map<String,List<Map<String, Object>>>> stats;
-		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat, String timestamp){
+		PersonDayThread(CountDownLatch latch,int dbId,Map<Integer, Map<String,List<Map<String, Object>>>> stat, String workDay){
 			this.latch = latch;
 			this.dbId = dbId;
 			this.stats = stat;
-			this.timestamp = timestamp;
+			this.workDay = workDay;
 		}
 		
 		@Override
 		public void run() {
 			try{
 				//查询并统计所有子任务数据
-				Map<String,Object> result = convertAllTaskData(timestamp);
+				Map<String,Object> result = convertAllTaskData(workDay);
 				
 				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 
@@ -161,7 +161,7 @@ public class PersonDayJob extends AbstractStatJob {
 					cell.put("finishNum", entry.getValue().get("finishNum"));
 					cell.put("deleteCount", entry.getValue().get("deleteCount"));
 					cell.put("increaseAndAlterCount", entry.getValue().get("increaseAndAlterCount"));
-					cell.put("workDate", timestamp);
+					cell.put("workDay", workDay);
 					subtaskStat.add(cell);
 				}
 				
@@ -201,7 +201,7 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("   from poi_edit_status s, ix_poi p          ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
 				sb.append("	 '"+timestamp+"'"                            );
-				sb.append("   and p.pid = s.pid                         ");
+				sb.append("   and p.pid = s.pid  and s.status!=0                       ");
 				
 				String selectSql = sb.toString();
 

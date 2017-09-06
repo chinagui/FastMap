@@ -193,9 +193,9 @@ public class ExportTipsFromHadoop {
             Future<Result[]> result = pool.submit(hbaseDataGetter);
             
             results.add(result);
-        }	
-
-        JSONObject jsonObj = new JSONObject();
+        }
+        
+        pool.shutdown();
         
         for(Future<Result[]> item : results){
     		for (Result result : item.get()) {
@@ -203,6 +203,8 @@ public class ExportTipsFromHadoop {
     			if (result.isEmpty()) {
     				continue;
     			}
+    			
+    			JSONObject jsonObj = new JSONObject();
 
     			jsonObj.put("rowkey", new String(result.getRow()));
 

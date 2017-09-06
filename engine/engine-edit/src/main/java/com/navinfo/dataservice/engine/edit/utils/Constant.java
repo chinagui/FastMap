@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
@@ -88,9 +89,10 @@ public class Constant {
     /**
      * RDLINK相关关系要素
      */
-    public static List<ObjType> RDLINK_REF_OBJECT = new ArrayList() {{
-        add(ObjType.RDWARNINGINFO);
-        add(ObjType.RDTRAFFICSIGNAL);
+    public static List<ObjType> CRF_TYPES = new ArrayList() {{
+        add(ObjType.RDINTER);
+        add(ObjType.RDROAD);
+        add(ObjType.RDOBJECT);
     }};
 
     public final static Map<ObjType, Class> OBJ_TYPE_CLASS_MAP = new HashMap() {{

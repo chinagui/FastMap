@@ -101,6 +101,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			track.setT_date(currentDate);
 			track.setT_tipStatus(t_tipStatus);
 			track.addTrackInfo(stage, currentDate, user);
+			track.setT_dataDate(currentDate);
 			JSONObject trackJson = JSONObject.fromObject(track);
 
 

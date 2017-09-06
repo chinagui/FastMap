@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,14 +43,9 @@ public class PersonJob extends AbstractStatJob {
 		try {
 			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			String timestamp = statReq.getTimestamp();
-			String timeForOrical = timestamp.substring(0, 8);
-			//计算前一天的统计
-			timeForOrical=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD);
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_COMPACTED_FORMAT);
-			log.info("timestamp:" + timestamp);
-			List<Map<String, Object>> personList = manApi.staticsPersionJob(timeForOrical);
+			String workDay = statReq.getWorkDay();
+			log.info("timestamp:" + timestamp+",workDay:"+workDay);
+			List<Map<String, Object>> personList = manApi.staticsPersionJob(workDay);
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
 			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
@@ -74,7 +68,7 @@ public class PersonJob extends AbstractStatJob {
 				double linkAllLen = 0d;
 				double link27AllLen = 0d;
 				double tipsAddLen = 0d;
-				double tipsAllLen = 0d;
+				long tipsAllNum = 0;
 				double fccUpdateLen = 0d;
 				int poiAllNum = 0;
 				int poiUploadNum = 0;
@@ -109,7 +103,7 @@ public class PersonJob extends AbstractStatJob {
 					if(personTips.containsKey(id)){
 						Map<String, Object> subData = (Map<String, Object>) personTips.get(id);
 						tipsAddLen += (double)subData.get("tipsAddLen");
-						tipsAllLen += (double)subData.get("tipsAllLen");
+						tipsAllNum += (long)subData.get("tipsAllNum");
 					}
 					if(personDay.containsKey(id)){
 						Map<String, Object> subData = (Map<String, Object>) personDay.get(id);
@@ -132,7 +126,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("linkAllLen", linkAllLen);
 				dataMap.put("link27AllLen", link27AllLen);
 				dataMap.put("tipsAddLen", tipsAddLen);
-				dataMap.put("tipsAllLen", tipsAllLen);
+				dataMap.put("tipsAllNum", tipsAllNum);
 				dataMap.put("poiAllNum", poiAllNum);
 				dataMap.put("poiUploadNum", poiUploadNum);
 				dataMap.put("poiFreshNum", poiFreshNum);
@@ -144,13 +138,16 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
 				dataMap.put("fccUpdateLen", fccUpdateLen);
-				dataMap.put("workDate", timeForOrical);
+				dataMap.put("workDay", workDay);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 				keyMaps.add(dataMap);
 			}
 			result.put("person", keyMaps);
-			log.info("result:" + result);
-			
+			//log.info("result:" + result);
+			JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -221,14 +218,14 @@ public class PersonJob extends AbstractStatJob {
 		while(personTips.hasNext()){
 			JSONObject tipsJson = JSONObject.fromObject(personTips.next());
 			double tipsAddLen = 0;
-			double tipsAllLen = 0;
+			long tipsAllNum = 0;
 			int subtaskId = 0;
 			Map<String, Object> map = new HashMap<>();
 			subtaskId = Integer.parseInt(tipsJson.get("subtaskId").toString());
 			tipsAddLen = Double.valueOf(tipsJson.get("tipsAddLen").toString());
-			tipsAllLen = Double.valueOf(tipsJson.get("tipsAllLen").toString());
+			tipsAllNum = Long.valueOf(tipsJson.get("tipsAllNum").toString());
 			map.put("tipsAddLen", tipsAddLen);
-			map.put("tipsAllLen", tipsAllLen);
+			map.put("tipsAllNum", tipsAllNum);
 		    result.put(subtaskId, map);
 		}
 		return result;
@@ -325,8 +322,9 @@ public class PersonJob extends AbstractStatJob {
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
 			try {
-				Date begin = df.parse(startCollectTime.replace("/", "-"));
-				Date end = df.parse(endCollectTime.replace("/", "-"));
+				String reg = "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})";
+				Date begin = df.parse(startCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
+				Date end = df.parse(endCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
 				int day = (int) (between/(24*3600));   
 				int hour = (int) (between%(24*3600)/3600);   

@@ -4,26 +4,29 @@ import java.security.MessageDigest;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+import org.springframework.web.servlet.ModelAndView;
 
-import oracle.spatial.geometry.JGeometry;
-
-import com.navinfo.dataservice.bizcommons.glm.Glm;
-import com.navinfo.dataservice.bizcommons.glm.GlmCache;
-import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
-import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -37,11 +40,13 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
 
 public class NiValExceptionOperator {
 
@@ -328,6 +333,86 @@ public class NiValExceptionOperator {
 		return true;
 	}
 
+	public boolean insertCheckLog(String ruleId, String loc, String targets,
+			int meshId, String log, int logLevel, String worker,int taskId)
+			throws Exception {
+		logg.debug("start insert ni_val:1");
+		if (loc == null || loc.isEmpty()) {
+			List<Object> list = calGeoAndMeshWithTarget(targets);
+			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
+			meshId = (int) list.get(1);
+		}
+		logg.debug("start insert ni_val:2");
+		String md5Sql = "with t as(SELECT LOWER(DBMS_CRYPTO.HASH(?||?||?||?,2)) "
+				+ "AS MD5_CODE FROM DUAL) "
+				+ "select md5_code from t minus "
+				+ "(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,t WHERE t.MD5_CODE=N.MD5_CODE "
+				+ "union all SELECT C.MD5_CODE FROM CK_EXCEPTION C,t WHERE t.MD5_CODE=C.MD5_CODE )";
+		// String md5 = this.generateMd5(ruleId, log, targets, null);
+		// String sql =
+		// "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		logg.debug("start insert ni_val:2-1");
+		// String cSql =
+		// "SELECT 1 FROM NI_VAL_EXCEPTION WHERE MD5_CODE=? UNION SELECT 1 FROM CK_EXCEPTION WHERE MD5_CODE=?";
+		
+		String md5 = new QueryRunner().queryForString(conn, md5Sql, ruleId,
+				log, ConnectionUtil.createClob(conn,targets), "null");
+
+		if (StringUtils.isEmpty(md5))
+			return false;
+		logg.debug("start insert ni_val:2-2");
+		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated ,task_id,reserved)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate,:10,0)";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		logg.info("insertCheckLog : "+sql);
+		logg.debug("start insert ni_val:2-3");
+		try {
+			logg.debug("start insert ni_val:2-4");
+			pstmt.setString(1, md5);
+			logg.debug("start insert ni_val:2-5");
+			pstmt.setString(2, ruleId);
+			logg.debug("start insert ni_val:2-6");
+			pstmt.setString(3, log);
+			logg.debug("start insert ni_val:2-7");
+
+			pstmt.setString(4, loc);
+			logg.debug("start insert ni_val:2-8");
+			pstmt.setString(5, targets);
+			logg.debug("start insert ni_val:2-9");
+			pstmt.setInt(6, meshId);
+			logg.debug("start insert ni_val:2-10");
+			pstmt.setString(7, worker);
+			logg.debug("start insert ni_val:2-11");
+			pstmt.setInt(8, logLevel);
+			logg.debug("start insert ni_val:2-12");
+			pstmt.setInt(9, taskId);
+			int res = pstmt.executeUpdate();
+			logg.debug("start insert ni_val:3");
+
+			if (res > 0) {
+
+				CkResultObjectOperator op = new CkResultObjectOperator(conn);
+
+				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
+
+				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+
+		}
+		return true;
+	}
+	
 	public void deleteNiValException(String tableName, int pid)
 			throws Exception {
 
@@ -549,9 +634,11 @@ public class NiValExceptionOperator {
 	 * @param projectId
 	 * @param type
 	 *            0 未修改 1例外，2确认不修改，3确认已修改
+	 * @param isQuality 
+	 * 			  0常规子任务，1质检子任务
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String md5, int oldType, int type)
+	public void updateCheckLogStatus(String md5, int oldType, int type, int isQuality, int userId, Connection qualityConn)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -594,6 +681,11 @@ public class NiValExceptionOperator {
 					this.delValExceptionGrid(md5);
 
 				}
+				// 质检作业，检查log状态由确认已修改变为其他状态时，需要删除质检库中的问题记录
+				if(isQuality == 1){
+					this.deleteQaProblem(qualityConn, md5);
+				}
+				
 				this.delValExceptionHis(md5);
 				this.delValExceptionGridHis(md5);
 
@@ -612,19 +704,156 @@ public class NiValExceptionOperator {
 					this.delForCkException(md5, 3);
 				}
 			}
-
-			conn.commit();
+			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
+			if(isQuality != -1){
+				Timestamp timeStamp = new Timestamp(new Date().getTime());
+				this.updateWorkerAndDate(md5, type, isQuality, userId, timeStamp);
+			}
 		} catch (Exception e) {
 			throw e;
-		} finally {
-			try {
-
-			} catch (Exception e) {
-
-			}
 		}
 	}
+	
+	/**
+	 * 质检作业，点击检查log确认已修改，执行：
+	 * 1、更新检查log状态
+	 * 2、质检问题录入质检库check_wrong表
+	 * @param md5
+	 * @param oldType
+	 * @param type
+	 * @param isQuality
+	 * @param userId
+	 * @param qualityConn
+	 * @param data
+	 * @throws Exception
+	 */
+	public void updateStatusSaveProblem(String md5, int oldType, int type, int isQuality, int userId, Connection qualityConn, JSONObject data)
+			throws Exception {
 
+		conn.setAutoCommit(false);
+		NiValExceptionHistorySelector selectorHis = new NiValExceptionHistorySelector(
+				conn);
+		try {
+			if (oldType == 0) {
+				if (type == 3) {
+					// 新增his历史信息 确认已修改
+					if (StringUtils.isEmpty(selectorHis.loadById(md5, false)
+							.getMd5Code())) {
+						this.insertForException(md5, 1);
+					}
+				}
+				// 删除结果信息
+				this.delValException(md5);
+				this.delCkResultObj(md5);
+				this.delValExceptionGrid(md5);
+			} else if(oldType == 1 || oldType == 2){
+				if (type == 3) {
+					// 删除例外信息 1处理his 信息
+					this.delForCkException(md5, 3);
+				}
+			}
+			// 作业员/质检员标识检查log状态时，记录更新作业员（worker）/质检员（QA_WORKER）、更新日期（UPDATE_DATE）信息
+			Timestamp timeStamp = new Timestamp(new Date().getTime());
+			this.updateWorkerAndDate(md5, type, isQuality, userId, timeStamp);
+			this.saveQaProblem(qualityConn, data, timeStamp);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 保存质检问题记录表
+	 * @param qualityConn
+	 * @param data
+	 * @param date
+	 * @throws Exception
+	 */
+	public void saveQaProblem(Connection qualityConn, JSONObject data, Timestamp timeStamp)throws Exception{
+		String insertSql = "INSERT INTO CHECK_WRONG("
+				+ "log_id, check_task_id, object_type, object_id, "
+				+ "qu_desc, reason, er_content, qu_rank, work_time, "
+				+ "check_time, is_prefer, worker, checker, er_type) "
+				+ "VALUES(?,?,?,?,?,?,?,?,?,NULL,?,?,NULL,?)";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			pstmt = qualityConn.prepareStatement(insertSql);
+			pstmt.setString(1, data.getString("logId"));
+			pstmt.setInt(2, data.getInt("checkTaskId"));
+			pstmt.setString(3, data.getString("objectType"));
+			pstmt.setString(4, data.getString("objectId"));
+			pstmt.setString(5, data.getString("quDesc"));
+			pstmt.setString(6, data.getString("reason"));
+			pstmt.setString(7, data.getString("erContent"));
+			pstmt.setString(8, data.getString("quRank"));
+			pstmt.setTimestamp(9, timeStamp);
+			pstmt.setInt(10, data.getInt("isPrefer"));
+			pstmt.setString(11, data.getString("worker"));
+			pstmt.setInt(12, data.getInt("erType"));
+			pstmt.execute();
+		}catch (Exception e){
+			throw new Exception("保存质检问题出错，" + e.getMessage(), e);
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
+	/**
+	 * 检查log状态由确认已修改变为其他状态时，删除质检库中的问题记录
+	 * @param md5
+	 * @throws Exception
+	 */
+	public void deleteQaProblem(Connection qualityConn, String md5)throws Exception{
+		String sql = "delete from check_wrong where log_id=?";
+		try {
+			QueryRunner run = new QueryRunner();
+			run.update(qualityConn, sql, md5);
+		} catch (Exception e) {
+			throw new Exception("删除质检问题记录出错，" + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 更新检查log时，维护作业员/质检员，更新日期
+	 * @param md5Code
+	 * @param type
+	 * @param isQuality
+	 * @throws Exception 
+	 */
+	private void updateWorkerAndDate(String md5Code, int type, int isQuality, int userId, Timestamp timeStamp) throws Exception{
+		String sql = "";
+		try {
+			if(type == 0){
+				sql = "update ni_val_exception set UPDATED=?";
+			}else if(type == 3){
+				sql = "update ni_val_exception_history set UPDATED=?";
+			}else{
+				sql = "update ck_exception set UPDATE_DATE=?";
+			}
+			String userName = "";
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+			UserInfo user = manApi.getUserInfoByUserId(userId);
+			if (user != null && StringUtils.isNotEmpty(user.getUserRealName())){
+				userName = user.getUserRealName();
+			}
+			if(StringUtils.isNotEmpty(userName)){
+				if(isQuality == 0){
+					sql += ",WORKER='" + userName + " " +userId +  "'";
+				}else{
+					sql += ",QA_WORKER='" + userName + " " +userId +  "'";
+				}
+			}
+			sql += " where MD5_CODE=? ";
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, timeStamp, md5Code);
+		} catch (Exception e) {
+			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
+		}
+	}
+	
+	
 	/***
 	 * 新增检查结果相关信息
 	 * 
@@ -648,13 +877,13 @@ public class NiValExceptionOperator {
 			this.insertNiValExceptionHistoryGrid(md5, sqlExpGrid);
 		}
 		if (tableFlag == 2) {
-			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=?";
+			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code,reserved) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code,reserved from ck_exception a where a.MD5_CODE=?";
 			this.insertNiValException(md5, sqlExpHis);
 			String sqlExpGridHis = "insert into ni_val_exception_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 		if (tableFlag == 3) {
-			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=:4";
+			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code,reserved) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code,reserved from ck_exception a where a.MD5_CODE=:4";
 			this.insertNiValException(md5, sqlExpHis);
 			String sqlExpGridHis = "insert into ni_val_exception_history_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
@@ -807,7 +1036,7 @@ public class NiValExceptionOperator {
 		if (tableFlag == 0) {
 			tableName = "ni_val_exception_history";
 		}
-		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1 from "
+		String sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record, reserved) select ?,ruleid, task_name,?,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,?,1,reserved from "
 				+ tableName + " a where a.MD5_CODE= ?";
 		try {
 			QueryRunner run = new QueryRunner();
@@ -986,6 +1215,31 @@ public class NiValExceptionOperator {
 		 * this.recordLogForCkException(result,OperType.UPDATE);
 		 */
 
+	}
+	
+	/**
+	 * 更新质检状态
+	 * @param checkStatus
+	 * @param md5Code
+	 * @param qaStatus 
+	 * @throws Exception
+	 */
+	public void updateQaStatus(int checkStatus, String md5Code, int qaStatus) throws Exception {
+		String sql = "";
+		if(checkStatus == 0){
+			sql = "update ni_val_exception set qa_status=? where md5_code=?";
+		}else if(checkStatus == 3){
+			sql = "update ni_val_exception_history set qa_status=? where md5_code=?";
+		}else{
+			sql = "update ck_exception set qa_status=? where md5_code=?";
+		}
+		
+		try {
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, qaStatus, md5Code);
+		} catch (Exception e) {
+			throw new Exception("更新质检状态出错，" + e.getMessage(), e);
+		}
 	}
 
 	/**

@@ -56,7 +56,16 @@ public class Task implements Serializable{
 	private String workKind;
 	private String overdueReason;
 	private String overdueOtherReason;
+	private int tips2MarkNum;
 	
+	public int getTips2MarkNum() {
+		return tips2MarkNum;
+	}
+
+	public void setTips2MarkNum(int tips2MarkNum) {
+		this.tips2MarkNum = tips2MarkNum;
+	}
+
 	private Map<String, Object> changeFields=new HashMap<String, Object>();
 	
 	public Map<String, Object> getChangeFields() {

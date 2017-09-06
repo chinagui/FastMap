@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,8 +17,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +27,6 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Block;
-import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
@@ -50,13 +46,12 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
-import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
@@ -69,10 +64,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -1677,41 +1669,41 @@ public class TaskService {
 			log.info("更新"+taskId+"任务对应的block状态，如果所有task都已关闭，则block状态置3关闭");
 			TaskOperation.closeBlock(conn,task.getBlockId());
 			//快线采集任务关闭，需批中线采集任务id
-			if(task.getType()==0&&task.getBlockId()==0){
-				log.info(taskId+"任务为快线采集任务，关闭时需同步批poi，tips的对应的中线任务号");
-				Set<Integer> collectTask = batchMidTask(conn,userId,task);
-				if(collectTask!=null&&collectTask.size()>0){
-					try {
-						log.info(taskId+"任务为快线采集任务，快转中消息推送start");
-						List<Object[]> msgContentList=new ArrayList<Object[]>();
-						String msgTitle="快线转中线";
-						JSONArray taskIds=new JSONArray();
-						taskIds.addAll(collectTask);
-						List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
-						for(Task t:pushtask){
-							if(t.getGroupLeader()!=0){
-								Object[] msgTmp=new Object[4];
-								msgTmp[0]=t.getGroupLeader();//收信人
-								msgTmp[1]=msgTitle;//消息头
-								msgTmp[2]="快线"+task.getName()+"采集任务的数据，已落入中线"+t.getName()+"采集任务,请关注";//消息内容
-								//关联要素
-								JSONObject msgParam = new JSONObject();
-								msgParam.put("relateObject", "TASK");
-								msgParam.put("relateObjectId", t.getTaskId());
-								msgTmp[3]=msgParam.toString();//消息对象
-								msgContentList.add(msgTmp);
-							}
-						}
-						if(msgContentList.size()>0){
-							taskPushMsgByMsg(conn,msgContentList,userId);	
-							log.info(taskId+"任务为快线采集任务，快转中消息推送end");
-						}						
-					} catch (Exception e) {
-						e.printStackTrace();
-						log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
-					}
-				}
-			}
+//			if(task.getType()==0&&task.getBlockId()==0){
+//				log.info(taskId+"任务为快线采集任务，关闭时需同步批poi，tips的对应的中线任务号");
+//				Set<Integer> collectTask = batchMidTask(conn,userId,task);
+//				if(collectTask!=null&&collectTask.size()>0){
+//					try {
+//						log.info(taskId+"任务为快线采集任务，快转中消息推送start");
+//						List<Object[]> msgContentList=new ArrayList<Object[]>();
+//						String msgTitle="快线转中线";
+//						JSONArray taskIds=new JSONArray();
+//						taskIds.addAll(collectTask);
+//						List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
+//						for(Task t:pushtask){
+//							if(t.getGroupLeader()!=0){
+//								Object[] msgTmp=new Object[4];
+//								msgTmp[0]=t.getGroupLeader();//收信人
+//								msgTmp[1]=msgTitle;//消息头
+//								msgTmp[2]="快线"+task.getName()+"采集任务的数据，已落入中线"+t.getName()+"采集任务,请关注";//消息内容
+//								//关联要素
+//								JSONObject msgParam = new JSONObject();
+//								msgParam.put("relateObject", "TASK");
+//								msgParam.put("relateObjectId", t.getTaskId());
+//								msgTmp[3]=msgParam.toString();//消息对象
+//								msgContentList.add(msgTmp);
+//							}
+//						}
+//						if(msgContentList.size()>0){
+//							taskPushMsgByMsg(conn,msgContentList,userId);	
+//							log.info(taskId+"任务为快线采集任务，快转中消息推送end");
+//						}						
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//						log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
+//					}
+//				}
+//			}
 			//记录关闭时间
 			TimelineService.recordTimeline(taskId, "task",0, conn);
 			
@@ -1806,323 +1798,323 @@ public class TaskService {
 	 * @param conn 
 	 * @param task
 	 */
-	private Set<Integer> batchMidTask(Connection conn, Long userId,Task task) throws Exception{
-		Connection dailyConn=null;
-		try{
-			Region region=RegionService.getInstance().query(conn,task.getRegionId());
-			dailyConn=DBConnector.getInstance().getConnectionById(region.getDailyDbId());
-			//获取快线采集任务对应的poi/tips的grid集合
-			log.info(task.getTaskId()+"任务为快线采集任务，获取其poi与grid的对照关系");
-			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
-			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
-			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			Set<Integer> tipsGrids=api.getTipsGridsBySqTaskId(task.getTaskId());
-			Set<Integer> allGrids=new HashSet<Integer>();
-			if(tipsGrids!=null&&tipsGrids.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，tips对应grid范围"+tipsGrids.toString());
-				allGrids.addAll(tipsGrids);
-			}
-			if(poiGridMap!=null&&poiGridMap.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，poi对应grid范围"+poiGridMap.toString());
-				allGrids.addAll(poiGridMap.values());
-			}
-			//判断grid所在项目，区县，返回grid所在中线采集任务id
-			if(allGrids==null||allGrids.size()==0){
-				log.info(task.getTaskId()+"任务为快线采集任务，poi，tips无数据");
-				return null;}
-			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
-			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
-			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
-			//判断是否所有grid均获取到中线任务
-			if(gridMap.size()!=allGrids.size()){
-				allGrids.removeAll(gridMap.keySet());
-				throw new Exception("存在grid未获取中线任务号，请查看："+allGrids.toString());
-			}
-			//任务号批数据			
-			//poi批中线任务号	
-			if(poiGridMap!=null&&poiGridMap.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，批poi中线采集任务号");
-				Map<Long, Integer> poiTaskMap=new HashMap<Long, Integer>();
-				for(Long pid:poiGridMap.keySet()){
-					poiTaskMap.put(pid, gridMap.get(poiGridMap.get(pid)));
-				}
-				batchPoiMidTask(dailyConn,poiTaskMap);
-			}			
-			
-			//tip批中线任务号
-			if(tipsGrids!=null&&tipsGrids.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
-			}
-			Set<Integer> taskIdSet=new HashSet<Integer>();
-			taskIdSet.addAll(gridMap.values());
-			return taskIdSet;
-		}catch(Exception e){
-			log.error("", e);
-			DbUtils.rollbackAndCloseQuietly(dailyConn);
-			DbUtils.rollbackAndCloseQuietly(conn);
-			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(dailyConn);
-		}	
-	}
+//	private Set<Integer> batchMidTask(Connection conn, Long userId,Task task) throws Exception{
+//		Connection dailyConn=null;
+//		try{
+//			Region region=RegionService.getInstance().query(conn,task.getRegionId());
+//			dailyConn=DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+//			//获取快线采集任务对应的poi/tips的grid集合
+//			log.info(task.getTaskId()+"任务为快线采集任务，获取其poi与grid的对照关系");
+//			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
+//			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
+//			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//			Set<Integer> tipsGrids=api.getTipsGridsBySqTaskId(task.getTaskId());
+//			Set<Integer> allGrids=new HashSet<Integer>();
+//			if(tipsGrids!=null&&tipsGrids.size()>0){
+//				log.info(task.getTaskId()+"任务为快线采集任务，tips对应grid范围"+tipsGrids.toString());
+//				allGrids.addAll(tipsGrids);
+//			}
+//			if(poiGridMap!=null&&poiGridMap.size()>0){
+//				log.info(task.getTaskId()+"任务为快线采集任务，poi对应grid范围"+poiGridMap.toString());
+//				allGrids.addAll(poiGridMap.values());
+//			}
+//			//判断grid所在项目，区县，返回grid所在中线采集任务id
+//			if(allGrids==null||allGrids.size()==0){
+//				log.info(task.getTaskId()+"任务为快线采集任务，poi，tips无数据");
+//				return null;}
+//			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
+//			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
+//			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
+//			//判断是否所有grid均获取到中线任务
+//			if(gridMap.size()!=allGrids.size()){
+//				allGrids.removeAll(gridMap.keySet());
+//				throw new Exception("存在grid未获取中线任务号，请查看："+allGrids.toString());
+//			}
+//			//任务号批数据			
+//			//poi批中线任务号	
+//			if(poiGridMap!=null&&poiGridMap.size()>0){
+//				log.info(task.getTaskId()+"任务为快线采集任务，批poi中线采集任务号");
+//				Map<Long, Integer> poiTaskMap=new HashMap<Long, Integer>();
+//				for(Long pid:poiGridMap.keySet()){
+//					poiTaskMap.put(pid, gridMap.get(poiGridMap.get(pid)));
+//				}
+//				batchPoiMidTask(dailyConn,poiTaskMap);
+//			}			
+//			
+//			//tip批中线任务号
+//			if(tipsGrids!=null&&tipsGrids.size()>0){
+//				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
+//				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
+//			}
+//			Set<Integer> taskIdSet=new HashSet<Integer>();
+//			taskIdSet.addAll(gridMap.values());
+//			return taskIdSet;
+//		}catch(Exception e){
+//			log.error("", e);
+//			DbUtils.rollbackAndCloseQuietly(dailyConn);
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			throw e;
+//		}finally{
+//			DbUtils.commitAndCloseQuietly(dailyConn);
+//		}	
+//	}
 	/**
 	 * poi批中线任务号
 	 * @param dailyConn
 	 * @param poiTaskMap
 	 * @throws SQLException 
 	 */
-	private void batchPoiMidTask(Connection dailyConn,
-			Map<Long, Integer> poiTaskMap) throws SQLException {
-		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
-		QueryRunner run=new QueryRunner();
-		Object[][] params=new Object[poiTaskMap.keySet().size()][2] ;
-		int i=0;
-		for(Long pid:poiTaskMap.keySet()){
-			Object[] pidMap=new Object[2];
-			pidMap[0]=poiTaskMap.get(pid);
-			pidMap[1]=pid;
-			params[i]=pidMap;
-			i++;
-		}
-		run.batch(dailyConn, updateSql, params);
-	}
+//	private void batchPoiMidTask(Connection dailyConn,
+//			Map<Long, Integer> poiTaskMap) throws SQLException {
+//		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
+//		QueryRunner run=new QueryRunner();
+//		Object[][] params=new Object[poiTaskMap.keySet().size()][2] ;
+//		int i=0;
+//		for(Long pid:poiTaskMap.keySet()){
+//			Object[] pidMap=new Object[2];
+//			pidMap[0]=poiTaskMap.get(pid);
+//			pidMap[1]=pid;
+//			params[i]=pidMap;
+//			i++;
+//		}
+//		run.batch(dailyConn, updateSql, params);
+//	}
 
-	private Map<Integer, Integer> getMidTaskIdByGrid(Connection conn,final Long userId,Set<Integer> gridSet,final Task quickTask) throws Exception{
-		if(gridSet==null||gridSet.size()==0){return null;}
-		List<Clob> values=new ArrayList<Clob>();
-		String gridString="";
-		String grids=gridSet.toString().replace("[", "").replace("]", "");
-		if(gridSet.size()>1000){
-			Clob clob=ConnectionUtil.createClob(conn);
-			clob.setString(1, grids);
-			gridString=" GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
-			values.add(clob);
-			values.add(clob);
-		}else{
-			gridString=" GRID_ID IN ("+grids+")";
-		}
-		String sql="SELECT G.GRID_ID,"
-				+ "       C.CITY_ID,"
-				+ "       C.CITY_NAME,"
-				+ "       C.REGION_ID,"
-				+ "       C.PLAN_STATUS CITY_STATUS,"
-				+ "       0             PROGRAM_ID,"
-				+ "       B.BLOCK_ID,"
-				+ "       B.BLOCK_NAME,"				
-				+ "       B.PLAN_STATUS BLOCK_STATUS,"
-				+ "       0             TASK_ID"
-				+ "  FROM GRID G, CITY C, BLOCK B"
-				+ " WHERE G.CITY_ID = C.CITY_ID"
-				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
-				+ "   AND B.PLAN_STATUS IN (0, 2)"
-				+ "   AND C.PLAN_STATUS IN (0, 2)"
-				+ "   AND G."+gridString
-				+ " UNION ALL"
-				+ " SELECT G.GRID_ID,"
-				+ "       C.CITY_ID,"
-				+ "       C.CITY_NAME,"
-				+ "       C.REGION_ID,"
-				+ "       C.PLAN_STATUS CITY_STATUS,"
-				+ "       P.PROGRAM_ID,"
-				+ "       B.BLOCK_ID,"
-				+ "       B.BLOCK_NAME,"
-				+ "       B.PLAN_STATUS BLOCK_STATUS,"
-				+ "       0             TASK_ID"
-				+ "  FROM GRID G, CITY C, BLOCK B, PROGRAM P"
-				+ " WHERE G.CITY_ID = C.CITY_ID"
-				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
-				+ "   AND C.CITY_ID = P.CITY_ID"
-				+ "   AND P.LATEST = 1"
-				+ "   AND B.PLAN_STATUS IN (0, 2)"
-				+ "   AND C.PLAN_STATUS IN (1, 3)"
-				+ "   AND G."+gridString
-				+ " UNION ALL"
-				+ " SELECT G.GRID_ID,"
-				+ "       C.CITY_ID,"
-				+ "       C.CITY_NAME,"
-				+ "       C.REGION_ID,"
-				+ "       C.PLAN_STATUS CITY_STATUS,"
-				+ "       0             PROGRAM_ID,"
-				+ "       B.BLOCK_ID,"
-				+ "       B.BLOCK_NAME,"
-				+ "       B.PLAN_STATUS BLOCK_STATUS,"
-				+ "       T.TASK_ID"
-				+ "  FROM GRID G, CITY C, BLOCK B, TASK T"
-				+ " WHERE G.CITY_ID = C.CITY_ID"
-				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
-				+ "   AND B.PLAN_STATUS IN (1, 3)"
-				+ "   AND B.BLOCK_ID = T.BLOCK_ID"
-				+ "   AND T.LATEST = 1"
-				+ "   AND T.TYPE = 0"
-				+ "   AND G."+gridString;
-		QueryRunner run=new QueryRunner();
-		return run.query(conn, sql, new ResultSetHandler<Map<Integer, Integer>>(){
-
-			@Override
-			public Map<Integer, Integer> handle(ResultSet rs)
-					throws SQLException {
-				Map<Integer, Integer> gridMap=new HashMap<Integer, Integer>();
-				Map<Integer, Integer> blockMap=new HashMap<Integer, Integer>();
-				String time = new SimpleDateFormat("yyyyMMdd").format(new Date());
-				Connection conn=null;
-				try{
-					conn = DBConnector.getInstance().getManConnection();
-					while(rs.next()){
-						int blockStatus=rs.getInt("BLOCK_STATUS");
-						int gridId=rs.getInt("GRID_ID");
-						if(blockStatus==1||blockStatus==3){
-							gridMap.put(gridId, rs.getInt("TASK_ID"));
-							continue;
-						}
-						int cityStatus=rs.getInt("CITY_STATUS");
-						if(blockStatus==0||blockStatus==2){							
-							int blockId=rs.getInt("BLOCK_ID");
-							if(blockMap.containsKey(blockId)){
-								gridMap.put(gridId, blockMap.get(blockId));
-								continue;
-							}
-							
-							JSONObject condition=new JSONObject();
-							JSONArray programIds=new JSONArray();
-							programIds.add(quickTask.getProgramId());
-							condition.put("programIds",programIds);
-							List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
-							Program quickProgram = programList.get(0);
-							
-							int programId=rs.getInt("PROGRAM_ID");
-							Program myProgram=null;
-							if(cityStatus==0||cityStatus==2){//需创建项目
-								log.info(gridId+"无对应中线项目，新建项目");								
-								Program program=new Program();
-								program.setName(rs.getString("CITY_NAME")+"_"+time);
-								program.setCityId(rs.getInt("CITY_ID"));
-								program.setType(1);
-								program.setDescp("快线项目："+quickProgram.getName()+"转中线");
-								program.setCollectPlanStartDate(quickProgram.getCollectPlanStartDate());
-								program.setCollectPlanEndDate(quickProgram.getCollectPlanEndDate());
-								program.setMonthEditPlanStartDate(TimestampUtils.addDays(quickProgram.getProducePlanEndDate(),1));
-								program.setMonthEditPlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanStartDate(),1));
-								program.setProducePlanStartDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),1));
-								program.setProducePlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),10));
-								program.setPlanStartDate(quickProgram.getCollectPlanStartDate());
-								program.setPlanEndDate(program.getProducePlanEndDate());
-								program.setCreateUserId(0);
-								programId=ProgramService.getInstance().create(conn,program);
-								JSONArray openProgramIds=new JSONArray();
-								openProgramIds.add(programId);
-								//condition.put("programIds",programIds);
-								ProgramService.getInstance().openStatus(conn, openProgramIds);
-								myProgram=program;
-								log.info(gridId+"无对应中线项目，新建项目："+programId);
-							}
-							//创建block项目
-							List<Integer> gridList = GridService.getInstance().getGridListByBlockId(conn,blockId);
-							Map<Integer, Integer> gridIds = new HashMap<Integer, Integer>();
-							for(Integer gridtmp:gridList){
-								gridIds.put(gridtmp, 1);
-							}
-							
-							if(cityStatus==1||cityStatus==3){
-								if(cityStatus==1){
-									log.info(gridId+"有对应"+programId+"项目，但项目处于草稿状态，需先进行开启");
-									//JSONObject condition=new JSONObject();
-									JSONArray openProgramIds=new JSONArray();
-									openProgramIds.add(programId);
-									//condition.put("programIds",openProgramIds);
-									ProgramService.getInstance().openStatus(conn, openProgramIds);
-								}
-								JSONObject condition1=new JSONObject();
-								JSONArray programIds1=new JSONArray();
-								programIds1.add(programId);
-								condition.put("programIds",programIds1);
-								List<Program> programList1 = ProgramService.getInstance().queryProgramTable(conn, condition1);
-								myProgram=programList1.get(0);
-							}
-							int regionId=rs.getInt("REGION_ID");
-							log.info(gridId+"无对应中线block任务，新建任务start");
-							//创建采集任务
-							Task collectTask=new Task();
-							collectTask.setProgramId(programId);
-							collectTask.setRegionId(regionId);
-							collectTask.setBlockId(blockId);
-							collectTask.setGridIds(gridIds);
-							collectTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							collectTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
-							collectTask.setCreateUserId(0);
-							collectTask.setType(0);
-							collectTask.setGroupId(quickTask.getGroupId());
-							collectTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
-							collectTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
-							collectTask.setWorkKind(quickTask.getWorkKind());
-							if(myProgram!=null){
-								collectTask.setPlanStartDate(myProgram.getCollectPlanStartDate());
-								collectTask.setPlanEndDate(myProgram.getCollectPlanEndDate());
-								collectTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
-								collectTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
-							}
-							int collectTaskId=createWithBean(conn, collectTask);
-							TaskOperation.updateStatus(conn, collectTaskId, 0);
-							gridMap.put(gridId, collectTaskId);
-							blockMap.put(blockId, collectTaskId);
-
-							//创建月编，二代编辑任务							
-							Task monthTask=new Task();
-							monthTask.setProgramId(programId);
-							monthTask.setRegionId(regionId);
-							monthTask.setBlockId(blockId);
-							monthTask.setGridIds(gridIds);
-							monthTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							monthTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
-							monthTask.setCreateUserId(0);
-							monthTask.setType(2);
-							monthTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
-							monthTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
-							if(myProgram!=null){
-								monthTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
-								monthTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
-								monthTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
-								monthTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
-							}
-							createWithBean(conn, monthTask);
-							
-							Task cmsTask=new Task();
-							cmsTask.setProgramId(programId);
-							cmsTask.setRegionId(regionId);
-							cmsTask.setBlockId(blockId);
-							cmsTask.setGridIds(gridIds);
-							cmsTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							cmsTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
-							cmsTask.setCreateUserId(0);
-							cmsTask.setType(3);
-							cmsTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
-							cmsTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
-							
-							if(myProgram!=null){
-								cmsTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
-								cmsTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
-								cmsTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
-								cmsTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
-							}
-							createWithBean(conn, cmsTask);
-							List<Integer> blockIds=new ArrayList<Integer>();
-							blockIds.add(blockId);
-							BlockService.getInstance().updateStatus(conn, blockIds,3);
-							log.info(gridId+"无对应中线block任务，新建任务：end");
-						}						
-					}
-					return gridMap;
-				}catch (Exception e){
-					DbUtils.rollbackAndCloseQuietly(conn);
-					log.error("", e);
-				}finally{
-					DbUtils.commitAndCloseQuietly(conn);
-				}
-				return gridMap;
-			}
-			
-		});
-	}
+//	private Map<Integer, Integer> getMidTaskIdByGrid(Connection conn,final Long userId,Set<Integer> gridSet,final Task quickTask) throws Exception{
+//		if(gridSet==null||gridSet.size()==0){return null;}
+//		List<Clob> values=new ArrayList<Clob>();
+//		String gridString="";
+//		String grids=gridSet.toString().replace("[", "").replace("]", "");
+//		if(gridSet.size()>1000){
+//			Clob clob=ConnectionUtil.createClob(conn);
+//			clob.setString(1, grids);
+//			gridString=" GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
+//			values.add(clob);
+//			values.add(clob);
+//		}else{
+//			gridString=" GRID_ID IN ("+grids+")";
+//		}
+//		String sql="SELECT G.GRID_ID,"
+//				+ "       C.CITY_ID,"
+//				+ "       C.CITY_NAME,"
+//				+ "       C.REGION_ID,"
+//				+ "       C.PLAN_STATUS CITY_STATUS,"
+//				+ "       0             PROGRAM_ID,"
+//				+ "       B.BLOCK_ID,"
+//				+ "       B.BLOCK_NAME,"				
+//				+ "       B.PLAN_STATUS BLOCK_STATUS,"
+//				+ "       0             TASK_ID"
+//				+ "  FROM GRID G, CITY C, BLOCK B"
+//				+ " WHERE G.CITY_ID = C.CITY_ID"
+//				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
+//				+ "   AND B.PLAN_STATUS IN (0, 2)"
+//				+ "   AND C.PLAN_STATUS IN (0, 2)"
+//				+ "   AND G."+gridString
+//				+ " UNION ALL"
+//				+ " SELECT G.GRID_ID,"
+//				+ "       C.CITY_ID,"
+//				+ "       C.CITY_NAME,"
+//				+ "       C.REGION_ID,"
+//				+ "       C.PLAN_STATUS CITY_STATUS,"
+//				+ "       P.PROGRAM_ID,"
+//				+ "       B.BLOCK_ID,"
+//				+ "       B.BLOCK_NAME,"
+//				+ "       B.PLAN_STATUS BLOCK_STATUS,"
+//				+ "       0             TASK_ID"
+//				+ "  FROM GRID G, CITY C, BLOCK B, PROGRAM P"
+//				+ " WHERE G.CITY_ID = C.CITY_ID"
+//				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
+//				+ "   AND C.CITY_ID = P.CITY_ID"
+//				+ "   AND P.LATEST = 1"
+//				+ "   AND B.PLAN_STATUS IN (0, 2)"
+//				+ "   AND C.PLAN_STATUS IN (1, 3)"
+//				+ "   AND G."+gridString
+//				+ " UNION ALL"
+//				+ " SELECT G.GRID_ID,"
+//				+ "       C.CITY_ID,"
+//				+ "       C.CITY_NAME,"
+//				+ "       C.REGION_ID,"
+//				+ "       C.PLAN_STATUS CITY_STATUS,"
+//				+ "       0             PROGRAM_ID,"
+//				+ "       B.BLOCK_ID,"
+//				+ "       B.BLOCK_NAME,"
+//				+ "       B.PLAN_STATUS BLOCK_STATUS,"
+//				+ "       T.TASK_ID"
+//				+ "  FROM GRID G, CITY C, BLOCK B, TASK T"
+//				+ " WHERE G.CITY_ID = C.CITY_ID"
+//				+ "   AND G.BLOCK_ID = B.BLOCK_ID"
+//				+ "   AND B.PLAN_STATUS IN (1, 3)"
+//				+ "   AND B.BLOCK_ID = T.BLOCK_ID"
+//				+ "   AND T.LATEST = 1"
+//				+ "   AND T.TYPE = 0"
+//				+ "   AND G."+gridString;
+//		QueryRunner run=new QueryRunner();
+//		return run.query(conn, sql, new ResultSetHandler<Map<Integer, Integer>>(){
+//
+//			@Override
+//			public Map<Integer, Integer> handle(ResultSet rs)
+//					throws SQLException {
+//				Map<Integer, Integer> gridMap=new HashMap<Integer, Integer>();
+//				Map<Integer, Integer> blockMap=new HashMap<Integer, Integer>();
+//				String time = new SimpleDateFormat("yyyyMMdd").format(new Date());
+//				Connection conn=null;
+//				try{
+//					conn = DBConnector.getInstance().getManConnection();
+//					while(rs.next()){
+//						int blockStatus=rs.getInt("BLOCK_STATUS");
+//						int gridId=rs.getInt("GRID_ID");
+//						if(blockStatus==1||blockStatus==3){
+//							gridMap.put(gridId, rs.getInt("TASK_ID"));
+//							continue;
+//						}
+//						int cityStatus=rs.getInt("CITY_STATUS");
+//						if(blockStatus==0||blockStatus==2){							
+//							int blockId=rs.getInt("BLOCK_ID");
+//							if(blockMap.containsKey(blockId)){
+//								gridMap.put(gridId, blockMap.get(blockId));
+//								continue;
+//							}
+//							
+//							JSONObject condition=new JSONObject();
+//							JSONArray programIds=new JSONArray();
+//							programIds.add(quickTask.getProgramId());
+//							condition.put("programIds",programIds);
+//							List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
+//							Program quickProgram = programList.get(0);
+//							
+//							int programId=rs.getInt("PROGRAM_ID");
+//							Program myProgram=null;
+//							if(cityStatus==0||cityStatus==2){//需创建项目
+//								log.info(gridId+"无对应中线项目，新建项目");								
+//								Program program=new Program();
+//								program.setName(rs.getString("CITY_NAME")+"_"+time);
+//								program.setCityId(rs.getInt("CITY_ID"));
+//								program.setType(1);
+//								program.setDescp("快线项目："+quickProgram.getName()+"转中线");
+//								program.setCollectPlanStartDate(quickProgram.getCollectPlanStartDate());
+//								program.setCollectPlanEndDate(quickProgram.getCollectPlanEndDate());
+//								program.setMonthEditPlanStartDate(TimestampUtils.addDays(quickProgram.getProducePlanEndDate(),1));
+//								program.setMonthEditPlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanStartDate(),1));
+//								program.setProducePlanStartDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),1));
+//								program.setProducePlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),10));
+//								program.setPlanStartDate(quickProgram.getCollectPlanStartDate());
+//								program.setPlanEndDate(program.getProducePlanEndDate());
+//								program.setCreateUserId(0);
+//								programId=ProgramService.getInstance().create(conn,program);
+//								JSONArray openProgramIds=new JSONArray();
+//								openProgramIds.add(programId);
+//								//condition.put("programIds",programIds);
+//								ProgramService.getInstance().openStatus(conn, openProgramIds);
+//								myProgram=program;
+//								log.info(gridId+"无对应中线项目，新建项目："+programId);
+//							}
+//							//创建block项目
+//							List<Integer> gridList = GridService.getInstance().getGridListByBlockId(conn,blockId);
+//							Map<Integer, Integer> gridIds = new HashMap<Integer, Integer>();
+//							for(Integer gridtmp:gridList){
+//								gridIds.put(gridtmp, 1);
+//							}
+//							
+//							if(cityStatus==1||cityStatus==3){
+//								if(cityStatus==1){
+//									log.info(gridId+"有对应"+programId+"项目，但项目处于草稿状态，需先进行开启");
+//									//JSONObject condition=new JSONObject();
+//									JSONArray openProgramIds=new JSONArray();
+//									openProgramIds.add(programId);
+//									//condition.put("programIds",openProgramIds);
+//									ProgramService.getInstance().openStatus(conn, openProgramIds);
+//								}
+//								JSONObject condition1=new JSONObject();
+//								JSONArray programIds1=new JSONArray();
+//								programIds1.add(programId);
+//								condition.put("programIds",programIds1);
+//								List<Program> programList1 = ProgramService.getInstance().queryProgramTable(conn, condition1);
+//								myProgram=programList1.get(0);
+//							}
+//							int regionId=rs.getInt("REGION_ID");
+//							log.info(gridId+"无对应中线block任务，新建任务start");
+//							//创建采集任务
+//							Task collectTask=new Task();
+//							collectTask.setProgramId(programId);
+//							collectTask.setRegionId(regionId);
+//							collectTask.setBlockId(blockId);
+//							collectTask.setGridIds(gridIds);
+//							collectTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+//							collectTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
+//							collectTask.setCreateUserId(0);
+//							collectTask.setType(0);
+//							collectTask.setGroupId(quickTask.getGroupId());
+//							collectTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+//							collectTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
+//							collectTask.setWorkKind(quickTask.getWorkKind());
+//							if(myProgram!=null){
+//								collectTask.setPlanStartDate(myProgram.getCollectPlanStartDate());
+//								collectTask.setPlanEndDate(myProgram.getCollectPlanEndDate());
+//								collectTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
+//								collectTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
+//							}
+//							int collectTaskId=createWithBean(conn, collectTask);
+//							TaskOperation.updateStatus(conn, collectTaskId, 0);
+//							gridMap.put(gridId, collectTaskId);
+//							blockMap.put(blockId, collectTaskId);
+//
+//							//创建月编，二代编辑任务							
+//							Task monthTask=new Task();
+//							monthTask.setProgramId(programId);
+//							monthTask.setRegionId(regionId);
+//							monthTask.setBlockId(blockId);
+//							monthTask.setGridIds(gridIds);
+//							monthTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+//							monthTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
+//							monthTask.setCreateUserId(0);
+//							monthTask.setType(2);
+//							monthTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+//							monthTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
+//							if(myProgram!=null){
+//								monthTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
+//								monthTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
+//								monthTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
+//								monthTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
+//							}
+//							createWithBean(conn, monthTask);
+//							
+//							Task cmsTask=new Task();
+//							cmsTask.setProgramId(programId);
+//							cmsTask.setRegionId(regionId);
+//							cmsTask.setBlockId(blockId);
+//							cmsTask.setGridIds(gridIds);
+//							cmsTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+//							cmsTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
+//							cmsTask.setCreateUserId(0);
+//							cmsTask.setType(3);
+//							cmsTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+//							cmsTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
+//							
+//							if(myProgram!=null){
+//								cmsTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
+//								cmsTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
+//								cmsTask.setProducePlanStartDate(myProgram.getProducePlanStartDate());
+//								cmsTask.setProducePlanEndDate(myProgram.getProducePlanEndDate());
+//							}
+//							createWithBean(conn, cmsTask);
+//							List<Integer> blockIds=new ArrayList<Integer>();
+//							blockIds.add(blockId);
+//							BlockService.getInstance().updateStatus(conn, blockIds,3);
+//							log.info(gridId+"无对应中线block任务，新建任务：end");
+//						}						
+//					}
+//					return gridMap;
+//				}catch (Exception e){
+//					DbUtils.rollbackAndCloseQuietly(conn);
+//					log.error("", e);
+//				}finally{
+//					DbUtils.commitAndCloseQuietly(conn);
+//				}
+//				return gridMap;
+//			}
+//			
+//		});
+//	}
 	/**
 	 * 查询采集任务taskId对应的poi及grid的map
 	 * @param dailyConn
@@ -2130,38 +2122,38 @@ public class TaskService {
 	 * @return Map<Long, Integer> key：pid value：gridId
 	 * @throws Exception
 	 */
-	private Map<Long, Integer> getPoiGridByQuickTask(Connection dailyConn,int taskId) throws Exception {
-		try{
-			String sql="SELECT S.PID, P.GEOMETRY"
-					+ "  FROM POI_EDIT_STATUS S, IX_POI P"
-					+ " WHERE S.QUICK_TASK_ID = "+taskId
-					+ "   AND S.PID = P.PID";
-			QueryRunner run=new QueryRunner();
-			return run.query(dailyConn, sql, new ResultSetHandler<Map<Long,Integer>>(){
-
-				@Override
-				public Map<Long, Integer> handle(ResultSet rs)
-						throws SQLException {
-					Map<Long,Integer> poiGrids=new HashMap<Long, Integer>();
-					while(rs.next()){						
-						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
-						try {
-							Geometry geo = GeoTranslator.struct2Jts(struct);
-							//通过 geo 获取 grid 
-							Coordinate[] coordinate = geo.getCoordinates();	
-							Integer gridId = Integer.valueOf(CompGridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0]);
-							poiGrids.put(rs.getLong("PID"), gridId);
-						} catch (Exception e1) {
-							log.error(e1.getMessage(),e1);
-						}
-					}
-					return poiGrids;
-				}});
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(dailyConn);
-			throw e;
-		}
-	}
+//	private Map<Long, Integer> getPoiGridByQuickTask(Connection dailyConn,int taskId) throws Exception {
+//		try{
+//			String sql="SELECT S.PID, P.GEOMETRY"
+//					+ "  FROM POI_EDIT_STATUS S, IX_POI P"
+//					+ " WHERE S.QUICK_TASK_ID = "+taskId
+//					+ "   AND S.PID = P.PID";
+//			QueryRunner run=new QueryRunner();
+//			return run.query(dailyConn, sql, new ResultSetHandler<Map<Long,Integer>>(){
+//
+//				@Override
+//				public Map<Long, Integer> handle(ResultSet rs)
+//						throws SQLException {
+//					Map<Long,Integer> poiGrids=new HashMap<Long, Integer>();
+//					while(rs.next()){						
+//						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+//						try {
+//							Geometry geo = GeoTranslator.struct2Jts(struct);
+//							//通过 geo 获取 grid 
+//							Coordinate[] coordinate = geo.getCoordinates();	
+//							Integer gridId = Integer.valueOf(CompGridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0]);
+//							poiGrids.put(rs.getLong("PID"), gridId);
+//						} catch (Exception e1) {
+//							log.error(e1.getMessage(),e1);
+//						}
+//					}
+//					return poiGrids;
+//				}});
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(dailyConn);
+//			throw e;
+//		}
+//	}
 	
 	/*
 	 * 返回task详细信息
@@ -5012,6 +5004,45 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据taskId获取tisp转aumark的数量
+	 * @param int taskId
+	 * @throws Exception
+	 * 
+	 * */
+	public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select t.task_id,jd.num from task t, JOB_RELATION jr, JOB_DETAIL jd where jr.job_id = jd.job_id"
+					+ " and jd.type = 1 and t.task_id = jr.item_id and jr.item_type = 2 union all "
+					+ "select st.task_id,jd.num from subtask st, JOB_RELATION jr, JOB_DETAIL jd where  jr.job_id = jd.job_id "
+					+ "and jd.type = 1  and st.subtask_id = jr.item_id  and jr.item_type = 3";
+			ResultSetHandler<Map<Integer, Integer>> rs = new ResultSetHandler<Map<Integer, Integer>>() {
+				@Override
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> map = new HashMap<>();
+					while(rs.next()){
+						int taskId = rs.getInt("task_id");
+						int tips2aumarkCount = rs.getInt("num");
+						if(map.containsKey(taskId)){
+							tips2aumarkCount += map.get(taskId);
+						}
+						map.put(taskId, tips2aumarkCount);
+					}
+					return map;
+				}
+			};
+			return run.query(conn, selectSql, rs);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task的tips转auMark失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

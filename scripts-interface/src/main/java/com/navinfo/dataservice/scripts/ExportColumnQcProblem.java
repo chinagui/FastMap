@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -70,7 +71,14 @@ public class ExportColumnQcProblem {
 			try {
 				String path = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.downloadFilePathPoi)+"/poiQuality/columnQcProblem";
-				OutputStream out = new FileOutputStream(path+"/" + excelName + ".xls");
+				File file = new File(path+"/" + excelName + ".xls");
+				if(!file.getParentFile().isDirectory()){
+					file.getParentFile().mkdirs();
+				}
+				if(!file.exists()){
+					file.createNewFile();
+				}
+				OutputStream out = new FileOutputStream(file);
 				ex.exportExcel("质检问题记录表",headers, columnQcProblemList, out, "yyyy-MM-dd HH:mm:ss");
 				out.close();
 

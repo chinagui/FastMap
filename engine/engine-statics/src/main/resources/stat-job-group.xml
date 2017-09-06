@@ -18,5 +18,22 @@
 		<job name="fccJob"/>
 		<job name="subtaskStat"/>
 	</group>
+	<group name="noTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.NoTaskStatStarter">
+		<job name="poiDayStat"/>
+		<job name="tipsStat"/>
+	</group>
+	<group name="blockJob" starter="com.navinfo.dataservice.engine.statics.launcher.starter.BlockStatStarter">
+		<job name="noTaskJob"/>
+	</group>
+	<group name="cityJob" starter="com.navinfo.dataservice.engine.statics.launcher.starter.CityStatStarter">
+		<job name="noTaskJob"/>
+		<job name="programStat"/>
+	</group>
+	<group name="programStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.ProgramStatStarter">
+		<job name="taskStat"/>
+	</group>
+	<!-- <group name="quickMonitorStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickMonitorStatStarter">
+		<job name="taskJob"/>
+	</group> -->
 	
 </mapping>

@@ -43,13 +43,10 @@ public class PersonTipsJob extends AbstractStatJob {
     public String stat() throws JobException {
     	PersonTipsJobRequest statReq = (PersonTipsJobRequest)request;
         try {
-        	String timestamp = statReq.getTimestamp().substring(0, 8);
-			//计算前一天的统计
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
+        	String workDay = statReq.getWorkDay();
         	log.info("start stat PersonTipsJob");
             //1.获取需要统计的子任务号
-            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(timestamp);
+            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(workDay);
 
             Map<String,List<Map<String,Object>>> result = new HashMap<String,List<Map<String,Object>>>();
             List<Map<String,Object>> resultMapList = new ArrayList<>();
@@ -58,11 +55,15 @@ public class PersonTipsJob extends AbstractStatJob {
                 Map<String, Object> subTaskMap = new HashMap<>();
                 subTaskMap.put("subtaskId", mSubTaskId);
                 subTaskMap.put("tipsAddLen", statObj.getDouble("tipsAddLen"));
-                subTaskMap.put("tipsAllLen", statObj.getDouble("tipsAllLen"));
-                subTaskMap.put("workDate", timestamp);
+                subTaskMap.put("tipsAllNum", statObj.getDouble("tipsAllNum"));
+                subTaskMap.put("workDay", workDay);
                 resultMapList.add(subTaskMap);
             }
             result.put("person_tips", resultMapList);
+            JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
             log.info("end stat PersonTipsJob");
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {
@@ -101,23 +102,19 @@ public class PersonTipsJob extends AbstractStatJob {
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
                             String rowkey = rs.getString("ID");
-                            double allLength = 0;
+                            long tipsAllNum = 0;
                             double newLength = 0;
                             JSONObject statObj = null;
                             if(subtaskTipsMap.containsKey(s_mSubTaskId)) {//已有
                                 statObj = subtaskTipsMap.get(s_mSubTaskId);
-                                allLength = statObj.getDouble("tipsAllLen");
+                                tipsAllNum = statObj.getLong("tipsAllNum");
                                 newLength = statObj.getDouble("tipsAddLen");
                             }else {
                                 statObj = new JSONObject();
                                 subtaskTipsMap.put(s_mSubTaskId, statObj);
                             }
-                            //测线显示坐标
-                            STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
-                            //测线里程计算
-                            double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
-                            allLength += lineLength;
-                            statObj.put("tipsAllLen", allLength);
+                            tipsAllNum += 1;
+                            statObj.put("tipsAllNum", tipsAllNum);
 
                             //是否当天新增
                             int lifecycle = rs.getInt("T_LIFECYCLE");
@@ -133,6 +130,10 @@ public class PersonTipsJob extends AbstractStatJob {
                                                 int stage = trackInfo.getInt("stage");
                                                 String date = trackInfo.getString("date");
                                                 if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
+                                                	//测线显示坐标
+                                                    STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
+                                                    //测线里程计算
+                                                    double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
                                                     newLength += lineLength;
                                                 }
                                             }

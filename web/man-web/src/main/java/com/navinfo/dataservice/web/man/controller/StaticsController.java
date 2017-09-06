@@ -698,7 +698,7 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			if(!dataJson.containsKey("taskId")){
-				throw new IllegalArgumentException("tanskId参数不能为空。");
+				throw new IllegalArgumentException("taskId参数不能为空。");
 			}
 			//taskId
 			int taskId = dataJson.getInt("taskId");
@@ -709,4 +709,6 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	
 }

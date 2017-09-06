@@ -456,12 +456,15 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com
                 .navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);
         maileageOperation.moveMileagepile(oldLink, newLinks, result);
-
         // 警示信息
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com
                 .navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(this.conn);
         warninginOperation.breakRdLink(command.getCatchInfos(), command.getNodeLinkRelation(), oldLink.getPid(), newLinks, result);
 
+        // 警示信息RD_LINK_WARNING
+        com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation warningOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlinkwarning.update.Operation(
+                this.conn);
+        warningOperation.moveLink( oldLink,  newLinks,  result);
         // 维护信号灯
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new
                 com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(this.conn);

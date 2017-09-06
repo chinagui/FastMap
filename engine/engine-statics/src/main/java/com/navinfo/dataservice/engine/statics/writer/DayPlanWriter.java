@@ -18,11 +18,11 @@ public class DayPlanWriter extends DefaultWriter{
 	 * 统计信息写入mongo库
 	 * @param messageJSON
 	 */
-	public void write2Mongo(String timestamp,JSONObject messageJSON){
+	public void write2Mongo(String timestamp,String identify,JSONObject messageJSON){
 		for(Object collectionNameTmp:messageJSON.keySet()){
 			String collectionName=String.valueOf(collectionNameTmp);
 			//初始化统计collection
-			initMongoDb(collectionName,timestamp);
+			initMongoDb(collectionName,identify,timestamp);
 			
 			List<Map<String,Double>> list = (List<Map<String, Double>>) messageJSON.get(collectionName);
 			

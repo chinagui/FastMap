@@ -15,6 +15,7 @@ import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
@@ -35,12 +36,13 @@ public class DefaultWriter {
 	public void write(JSONObject messageJSON) throws Exception{
 		String jobType=messageJSON.getString("jobType");
 		String timestamp=messageJSON.getString("timestamp");
-		log.info("start write:jobType="+jobType+",timestamp="+timestamp);
+		String identify=messageJSON.getString("identify");
+		log.info("start write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 		
-		write2Mongo(timestamp,messageJSON.getJSONObject("statResult"));	
+		write2Mongo(timestamp,identify,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
-		pushEndMsg(jobType,timestamp);
-		log.info("end write:jobType="+jobType+",timestamp="+timestamp);
+		pushEndMsg(jobType,timestamp,identify);
+		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法
@@ -53,12 +55,12 @@ public class DefaultWriter {
 	 * 统计信息写入mongo库
 	 * @param messageJSON
 	 */
-	public void write2Mongo(String timestamp,JSONObject messageJSON){
+	public void write2Mongo(String timestamp,String identify,JSONObject messageJSON){
 		log.info("start write2Mongo");
 		for(Object collectionNameTmp:messageJSON.keySet()){
 			String collectionName=String.valueOf(collectionNameTmp);
 			//初始化统计collection
-			initMongoDb(collectionName,timestamp);
+			initMongoDb(collectionName,timestamp,identify);
 			//统计信息入库
 			MongoDao md = new MongoDao(dbName);
 			List<Document> docs=new ArrayList<>();
@@ -79,7 +81,7 @@ public class DefaultWriter {
 	 * 2.删除时间点相同的重复统计数据
 	 * @param collectionName
 	 */
-	public void initMongoDb(String collectionName,String timestamp) {
+	public void initMongoDb(String collectionName,String timestamp,String identify) {
 		log.info("init mongo "+collectionName);
 		MongoDao mdao = new MongoDao(dbName);
 		MongoDatabase md = mdao.getDatabase();
@@ -106,6 +108,15 @@ public class DefaultWriter {
 		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",timestamp="+timestamp);
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);
+		//若存在identify，需要增加删除条件，identify转成json，按照其进行删除库中数据
+		if(StringUtils.isEmpty(identify)){
+			try{
+				JSONObject identifyJson = JSONObject.fromObject(identify);
+				query.putAll(identifyJson);
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
 		mdao.deleteMany(collectionName, query);
 	}
 	
@@ -126,6 +137,22 @@ public class DefaultWriter {
 		JSONObject msg=new JSONObject();
 		msg.put("jobType", jobType);
 		msg.put("timestamp", timestamp);
+		MsgPublisher.publish2WorkQueue("stat_job_end", msg.toString());
+	}
+	
+	/**
+	 * 发送任务结束消息
+	 * {'jobType':'','timestamp':'20170523190000','identify':'{'timestamp':'20170523190000','workDay':'20170523'}'}
+	 * 有些job的启动要通过identify来确认是否启动，并将identify中的参数传给job
+	 * @param jobName
+	 * @throws Exception 
+	 */
+	public void pushEndMsg(String jobType,String timestamp,String identify) throws Exception{
+		log.info(jobType+" end(execute+write)");
+		JSONObject msg=new JSONObject();
+		msg.put("jobType", jobType);
+		msg.put("timestamp", timestamp);
+		msg.put("identify", identify);
 		MsgPublisher.publish2WorkQueue("stat_job_end", msg.toString());
 	}
 }

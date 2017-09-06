@@ -68,6 +68,7 @@ public class TaskJob extends AbstractStatJob {
 			TaskJobRequest statReq = (TaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
 			String timestamp = statReq.getTimestamp();
+			long t = System.currentTimeMillis();
 			//任务统计数据
 			List<Map<String, Object>> taskStatList = new ArrayList<Map<String, Object>>();
 			//已关闭任务id(不需要统计)
@@ -78,6 +79,10 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			
+			//modify by songhe 2017/9/04
+			//查询task对应的tips转aumark数量
+			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
@@ -151,6 +156,13 @@ public class TaskJob extends AbstractStatJob {
 				//查询子任务id
 				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
 				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+
+				//处理对应任务的tis2aumark数量
+				if(tips2MarkMap.containsKey(taskId)){
+					task.setTips2MarkNum(tips2MarkMap.get(taskId));
+				}else{
+					task.setTips2MarkNum(0);
+				}
 				//获取子任务id
 				Set<Integer> subtaskIds = new HashSet<Integer>();
 				for (Map<String, Object> map : subtaskList) {
@@ -219,7 +231,6 @@ public class TaskJob extends AbstractStatJob {
 			result.put("task",taskStatList);
 
 			log.info("end stat "+statReq.getJobType());
-			long t = System.currentTimeMillis();
 			log.debug("所有任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();
@@ -239,16 +250,25 @@ public class TaskJob extends AbstractStatJob {
 	public Map<Integer,Map<String,Object>> getTaskStatData(String timestamp) throws Exception{
 		try {
 			//获取上一次的统计时间
-			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
+			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(task, filter);
+			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
+			FindIterable<Document> findIterable = mongoDao.find(task, null).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			String timestampLast="";
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				String timestampOrigin=String.valueOf(jso.get("timestamp"));
+				if(StringUtils.isEmpty(timestampLast)){
+					timestampLast=timestampOrigin;
+					log.info("最近一次的统计日期为："+timestampLast);
+				}
+				if(!timestampLast.equals(timestampOrigin)){
+					break;
+				}
 				int taskId = (int) jso.get("taskId");
 				int status = (int) jso.get("status");
 				if(status == 0){
@@ -416,7 +436,7 @@ public class TaskJob extends AbstractStatJob {
 				task.put("poiUploadNum", poiUploadNum);
 				task.put("poiFinishNum", poiFinishNum);
 				task.put("poiUnfinishNum", poiUnfinishNum);
-				task.put("poiActualFinishNum", poiUnFreshNum);
+				//task.put("poiActualFinishNum", poiUnFreshNum);
 				task.put("poiUnFreshNum", poiUnFreshNum);
 				task.put("poiFinishAndPlanNum", poiFinishAndPlanNum);
 				task.put("poiFreshNum", poiFreshNum);
@@ -605,18 +625,21 @@ public class TaskJob extends AbstractStatJob {
 			int monthPoiLogTotalNum = 0;
 			int monthPoiLogFinishNum = 0;
 			int monthPoiFinishNum = 0;
+			int day2MonthNum=0;
 			for (Integer gridId : gridIds) {
 				if(monthPoiStat.containsKey(gridId)){
 					Map<String, Integer> map = monthPoiStat.get(gridId);
 					monthPoiLogTotalNum += map.get("logAllNum");
 					monthPoiLogFinishNum += map.get("logFinishNum");
 					monthPoiFinishNum += map.get("poiFinishNum");
+					day2MonthNum+=map.get("day2MonthNum");
 				}
 			}
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("monthPoiLogTotalNum", monthPoiLogTotalNum);
 			taskStat.put("monthPoiLogFinishNum", monthPoiLogFinishNum);
 			taskStat.put("monthPoiFinishNum", monthPoiFinishNum);
+			taskStat.put("day2MonthNum", day2MonthNum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage());
@@ -934,7 +957,7 @@ public class TaskJob extends AbstractStatJob {
 		int poiUploadNum = 0;
 		int poiFinishNum = 0;
 		int poiUnfinishNum = 0;
-		int poiActualFinishNum = 0;
+		//int poiActualFinishNum = 0;
 		
 		int dayEditTipsAllNum = 0;
 		int dayEditTipsNoWorkNum = 0;
@@ -974,11 +997,20 @@ public class TaskJob extends AbstractStatJob {
 		int roadPercent = 0;
 		int percent = 0;
 		int progress = 1;
+		int blockId = 0;
+		int programId = 0;
+		String createDate = "";
 		Map<String, Object> taskMap = new HashMap<String, Object>();
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
-			String systemDate = sdf.format(new Date());			
+			String systemDate = sdf.format(new Date());		
+			//项目Id
+			programId = task.getProgramId();
+			blockId = task.getBlockId();
+			if(task.getCreateDate() != null){
+				createDate = sdf.format(task.getCreateDate());
+			}
 			//任务id
 			taskId = task.getTaskId();
 			//任务类型
@@ -1059,9 +1091,9 @@ public class TaskJob extends AbstractStatJob {
 				poiUnfinishNum = (int) dataMap.get("poiUnfinishNum");
 			}
 			//POI实际产出量
-			if(dataMap.containsKey("poiActualFinishNum")){
-				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
-			}
+//			if(dataMap.containsKey("poiActualFinishNum")){
+//				poiActualFinishNum = (int) dataMap.get("poiActualFinishNum");
+//			}
 			//采集上传个数汇总
 			if(dataMap.containsKey("dayEditTipsAllNum")){
 				dayEditTipsAllNum = (int) dataMap.get("dayEditTipsAllNum");
@@ -1256,6 +1288,24 @@ public class TaskJob extends AbstractStatJob {
 					}
 				}
 			}
+			
+			//modify by songhe 2017/09/01
+			String endTime = "";
+			if(0 == task.getStatus()){
+				endTime = actualEndDate;
+			}else{
+				endTime = sdf.format(new Date());
+			}
+			//生产已执行天数
+			int workDate = StatUtil.daysOfTwo(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate(), sdf.parse(endTime));
+			String planStartDate = sdf.format(task.getPlanStartDate() == null ? new Date() : task.getPlanStartDate());
+			taskMap.put("planEndDate", planEndDate);
+			taskMap.put("planStartDate", planStartDate);
+			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
+			taskMap.put("workDate", workDate);
+			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			taskMap.put("lot", task.getLot());
+			
 			//保存数据
 			taskMap.put("taskId", taskId);
 			taskMap.put("type", type);
@@ -1275,7 +1325,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("poiUploadNum", poiUploadNum);
 			taskMap.put("poiFinishNum", poiFinishNum);
 			taskMap.put("poiUnfinishNum", poiUnfinishNum);
-			taskMap.put("poiActualFinishNum", poiActualFinishNum);
+			//taskMap.put("poiActualFinishNum", poiActualFinishNum);
 			taskMap.put("dayEditTipsAllNum", dayEditTipsAllNum);
 			taskMap.put("dayEditTipsNoWorkNum", dayEditTipsNoWorkNum);
 			taskMap.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
@@ -1309,6 +1359,9 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("roadPercent", roadPercent);
 			taskMap.put("percent", percent);
 			taskMap.put("progress", progress);
+			taskMap.put("programId", programId);
+			taskMap.put("blockId", blockId);
+			taskMap.put("createDate", createDate);
 			
 			return taskMap;
 		} catch (Exception e) {

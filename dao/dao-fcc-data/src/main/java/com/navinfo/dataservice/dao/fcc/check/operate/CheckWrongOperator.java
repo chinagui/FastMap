@@ -30,8 +30,9 @@ public class CheckWrongOperator {
 	private static String INSERT_SQL = "INSERT INTO CHECK_WRONG						\n"
 			+ "  (LOG_ID,                                     \n"
 			+ "   CHECK_TASK_ID,                              \n"
-			+ "   TIPS_CODE,                                  \n"
-			+ "   TIPS_ROWKEY,                                \n"
+			+ "   OBJECT_TYPE,                                  \n"
+			+ "   OBJECT_ID,                                \n"
+			+ "   ER_TYPE,                                  \n"
 			+ "   QU_DESC,                                    \n"
 			+ "   REASON,                                     \n"
 			+ "   ER_CONTENT,                                 \n"
@@ -44,8 +45,9 @@ public class CheckWrongOperator {
 			+ "VALUES                                         \n"
 			+ "  (?,                                 			\n" + // logId
 			"   ?,                                          \n" + // checkTaskId
-			"   ?,                                          \n" + // tipsCode
-			"   ?,                                          \n" + // tipsRowkey
+			"   ?,                                          \n" + // object_Type
+			"   ?,                                          \n" + // object_Id
+			"   ?,                                          \n" + // er_Type
 			"   ?,                                       	\n" + // quDesc
 			"   ?,                                          \n" + // reason
 			"   ?,                                      	 \n" + // content
@@ -78,29 +80,35 @@ public class CheckWrongOperator {
 
 			conn = DBConnector.getInstance().getCheckConnection();
 
-			String uuid = UuidUtils.genUuid();
-
-			wrong.setLogId(uuid);
-
-			wrong.setCheckTime(DateUtils.format(new Date(),"yyyyMMddHHmmss"));
+			String uuid = "";
+			if(StringUtils.isEmpty(wrong.getLogId())){
+				uuid = UuidUtils.genUuid();
+				wrong.setLogId(uuid);
+			}else{
+				uuid = wrong.getLogId();
+			}
 			
+			if(StringUtils.isEmpty(wrong.getCheckTime())){
+				wrong.setCheckTime(DateUtils.format(new Date(),"yyyyMMddHHmmss"));
+			}
 			
 
 			pst = conn.prepareStatement(INSERT_SQL);
 
 			pst.setString(1, uuid);
 			pst.setInt(2, wrong.getCheckTaskId());
-			pst.setString(3, wrong.getTipsCode());
-			pst.setString(4, wrong.getTipsRowkey());
-			pst.setString(5, wrong.getQuDesc());
-			pst.setString(6, wrong.getReason());
-			pst.setString(7, wrong.getErContent());
-			pst.setString(8, wrong.getQuRank());
-			pst.setString(9, wrong.getWorker());
-			pst.setString(10, wrong.getChecker());
-			pst.setTimestamp(11, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getWorkTime(), "yyyyMMddHHmmss") ));
-			pst.setTimestamp(12, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getCheckTime(), "yyyyMMddHHmmss")));
-			pst.setInt(13, wrong.getIsPrefer());
+			pst.setString(3, wrong.getObjectType());
+			pst.setString(4, wrong.getObjectId());
+			pst.setInt(5, wrong.getErType());
+			pst.setString(6, wrong.getQuDesc());
+			pst.setString(7, wrong.getReason());
+			pst.setString(8, wrong.getErContent());
+			pst.setString(9, wrong.getQuRank());
+			pst.setString(10, wrong.getWorker());
+			pst.setString(11, wrong.getChecker());
+			pst.setTimestamp(12, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getWorkTime(), "yyyyMMddHHmmss") ));
+			pst.setTimestamp(13, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getCheckTime(), "yyyyMMddHHmmss")));
+			pst.setInt(14, wrong.getIsPrefer());
 
 			pst.execute();
 

@@ -12,7 +12,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.*;
-import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
@@ -60,6 +59,8 @@ public class TipsController extends BaseController {
 
             //grid和date的对象数组
             JSONArray condition = jsonReq.getJSONArray("condition");
+            
+            int workType=jsonReq.getInt("workType");// 作业类型。1：常规下载2：行人导航下载
 
             if (condition==null||condition.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:condition不能为空");
@@ -91,7 +92,7 @@ public class TipsController extends BaseController {
                 result.put("grid", grid);
 
                 result.put("result", selector.checkUpdate(
-                        grid,date));
+                        grid,date,workType));
 
                 resutArr.add(result);
             }
@@ -264,7 +265,7 @@ public class TipsController extends BaseController {
 
             Map<String, Audio> audioMap=new HashMap<String, Audio>();
             
-            tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap);
+            tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap,userId);
 
             //CollectorImport.importPhoto(map, filePath + "/photo");
 
@@ -280,7 +281,15 @@ public class TipsController extends BaseController {
 
             result.put("failed", tipsUploader.getFailed());
 
-            result.put("reasons", tipsUploader.getReasons());
+            result.put("failedReasons", tipsUploader.getReasons());
+            
+            result.put("conflict", tipsUploader.getConflict());
+            
+            result.put("freshed", tipsUploader.getFreshed());
+            
+            result.put("t_dataDate", tipsUploader.getT_dataDate());
+
+            result.put("regionResults", tipsUploader.getRegionResults());
 
             result.put("JVImageResult", patternImageResultImpResult);
 
@@ -330,7 +339,12 @@ public class TipsController extends BaseController {
 			log.setTotal(tipsUploader.getTotal());
 			log.setBeginTime(beginDate);
 			log.setEndTime(DateUtils.getSysDateFormat());
-			log.setErrorMsg(tipsUploader.getReasons().toString());
+            JSONObject error=new JSONObject();
+            error.put("failedReasons", tipsUploader.getReasons());
+            error.put("conflict", tipsUploader);
+            error.put("freshed", tipsUploader);
+            
+			log.setErrorMsg(error.toString());
 			log.setUserId(String.valueOf(userId));
 			SysLogOperator.getInstance().insertSysLog(log);
 		
@@ -375,6 +389,8 @@ public class TipsController extends BaseController {
             }
             //grid和date的对象数组
             JSONArray condition = jsonReq.getJSONArray("condition");
+            
+            int workType=jsonReq.getInt("workType");
 
             if (condition == null || condition.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:condition不能为空");
@@ -384,7 +400,7 @@ public class TipsController extends BaseController {
 
             Map<String, Set<String>> images = new HashMap<>();
             //1.下载tips、照片、语音(照片的语音根据附件的id下载)
-            int expCount = op.export(condition, filePath, "tips.txt", images);
+            int expCount = op.export(condition, workType,filePath, "tips.txt", images);
 
             //2.模式图下载： 1406,1401需要导出模式图,对应元数据库SC_MODEL_MATCH_G
             //1402对应元数据库 sc_vector_match

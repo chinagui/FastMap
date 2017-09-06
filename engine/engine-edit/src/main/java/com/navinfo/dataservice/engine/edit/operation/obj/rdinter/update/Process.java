@@ -24,8 +24,11 @@ public class Process extends AbstractProcess<Command> {
 		RdInter inter = (RdInter) new RdInterSelector(getConn()).loadById(this.getCommand().getPid(), true);
 		
 		this.getCommand().setRdInter(inter);
-		
+
+		// 2017.8.30去除图廓点检查，改为前端控制
 		check.checkNodeDirect(getConn());
+		
+		check.hasMakedCRFR(getConn());
 		
 		return true;
 	}

@@ -152,16 +152,25 @@ public class SubtaskJob extends AbstractStatJob {
 	public Map<Integer,Map<String,Object>> getSubtaskStatData(String timestamp) throws Exception{
 		try {
 			//获取上一次的统计时间
-			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
+			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(subtask, filter);
+			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
+			FindIterable<Document> findIterable = mongoDao.find(subtask, null).sort(new BasicDBObject("timestamp",-1));;
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			String timestampLast="";
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				String timestampOrigin=String.valueOf(jso.get("timestamp"));
+				if(StringUtils.isEmpty(timestampLast)){
+					timestampLast=timestampOrigin;
+					log.info("最近一次的统计日期为："+timestampLast);
+				}
+				if(!timestampLast.equals(timestampOrigin)){
+					break;
+				}
 				int subtaskId = (int) jso.get("subtaskId");
 				Map<String,Object> map = jso;
 				stat.put(subtaskId, map);
@@ -193,12 +202,14 @@ public class SubtaskJob extends AbstractStatJob {
 				int subtaskId = (int) jso.get("subtaskId");
 				int poiUploadNum = (int) jso.get("poiUploadNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
+				int waitWorkPoi = (int) jso.get("waitWorkPoi");
 				String firstEditDate = (String) jso.get("firstEditDate");
 				String firstCollectDate = (String) jso.get("firstCollectDate");
 				subtask.put("poiCollectUploadNum", poiUploadNum);
 				subtask.put("poiFinishNum", poiFinishNum);
 				subtask.put("firstEditDate", firstEditDate);
 				subtask.put("firstCollectDate", firstCollectDate);
+				subtask.put("waitWorkPoi", waitWorkPoi);
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -419,6 +430,7 @@ public class SubtaskJob extends AbstractStatJob {
 		int progress = 1;
 		int percent = 0;
 		int programType=0;
+		int waitWorkPoi = 0;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
@@ -446,6 +458,8 @@ public class SubtaskJob extends AbstractStatJob {
 				poiCollectUploadNum = (int) subDayPoiStat.get("poiCollectUploadNum");
 				//POI提交个数
 				poiFinishNum = (int) subDayPoiStat.get("poiFinishNum");
+				//待作业的POI个数
+				waitWorkPoi = (int) subDayPoiStat.get("waitWorkPoi");
 			}
 			//计划天数
 			if(subtask.getPlanStartDate() != null && subtask.getPlanEndDate() != null){
@@ -641,6 +655,7 @@ public class SubtaskJob extends AbstractStatJob {
 			subtaskMap.put("progress",progress );
 			subtaskMap.put("percent",percent );
 			subtaskMap.put("programType",programType );
+			subtaskMap.put("waitWorkPoi", waitWorkPoi );
 			
 			return subtaskMap;
 		} catch (Exception e) {

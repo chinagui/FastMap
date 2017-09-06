@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.man.statics;
 
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -11,50 +9,24 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bson.Document;
-import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
-import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.man.block.BlockService;
-import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
-import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 @Service
 public class StaticsService {
@@ -2667,36 +2639,8 @@ public class StaticsService {
 	 */
 	public Map<String, Object> getTaskProgressFromMongo(int taskId) throws Exception{
 		try {
-			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
-			BasicDBObject filter = new BasicDBObject("taskId", taskId);
-			FindIterable<Document> findIterable = mongoDao.find("task", filter).sort(new BasicDBObject("timestamp",-1));
-			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<String, Object> task = new HashMap<>();
-			//处理数据
-			if(iterator.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iterator.next());
-				task.put("poiUnfinishNum", (int) jso.get("poiUnfinishNum"));
-				task.put("crowdTipsTotal", (int) jso.get("crowdTipsTotal"));
-				task.put("inforTipsTotal", (int) jso.get("inforTipsTotal"));
-				task.put("multisourcePoiTotal", (int) jso.get("multisourcePoiTotal"));
-				task.put("collectTipsUploadNum", (int) jso.get("collectTipsUploadNum"));
-				task.put("poiUploadNum", (int) jso.get("poiUploadNum"));
-				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
-				task.put("poiUnfinishNum", (int) jso.get("poiUnfinishNum"));
-				task.put("dayEditTipsUnFinishNum", (int) jso.get("dayEditTipsNoWorkNum"));
-				task.put("dayEditTipsFinishNum", (int) jso.get("dayEditTipsFinishNum"));
-				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
-				task.put("tipsCreateByEditNum", (int) jso.get("tipsCreateByEditNum"));
-				
-				task.put("day2MonthNum", (int) jso.get("day2MonthNum"));
-				int monthPoiLogTotalNum = (int) jso.get("monthPoiLogTotalNum");
-				int monthPoiLogFinishNum = (int) jso.get("monthPoiLogFinishNum");
-				int monthPoiLogUnFinishNum = monthPoiLogTotalNum - monthPoiLogFinishNum;
-				task.put("monthPoiLogFinishNum", (int) jso.get("monthPoiLogFinishNum"));
-				task.put("monthPoiLogUnFinishNum", monthPoiLogUnFinishNum);
-			}
-			return task;
+			StaticsApi api = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+			return api.getTaskProgressFromMongo(taskId);
 		} catch (Exception e) {
 			log.error("查询mongo中task相应的统计数据报错" + e.getMessage(), e);
 			throw e;
@@ -2714,13 +2658,15 @@ public class StaticsService {
 		resultMap.put("taskId", taskId);
 		resultMap.put("status", oricalTaskData.get("status"));
 		resultMap.put("type", type);
-		resultMap.put("roadPlanTotal", oricalTaskData.get("roadPlanTotal"));
-		resultMap.put("poiPlanTotal", oricalTaskData.get("poiPlanTotal"));
+		resultMap.put("roadPlanTotal", oricalTaskData.get("roadPlanTotal") == null ? 0 : oricalTaskData.get("roadPlanTotal"));
+		resultMap.put("poiPlanTotal", oricalTaskData.get("poiPlanTotal") == null ? 0 : oricalTaskData.get("poiPlanTotal"));
 		if(type == 0){
-			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum"));
-			resultMap.put("crowdTipsTotal", mongoTaskData.get("crowdTipsTotal"));
-			resultMap.put("inforTipsTotal", mongoTaskData.get("inforTipsTotal"));
-			resultMap.put("multisourcePoiTotal", mongoTaskData.get("multisourcePoiTotal"));
+			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum") == null ? 0 : mongoTaskData.get("poiUnfinishNum"));
+			resultMap.put("crowdTipsTotal", mongoTaskData.get("crowdTipsTotal") == null ? 0 : mongoTaskData.get("crowdTipsTotal"));
+			resultMap.put("inforTipsTotal", mongoTaskData.get("inforTipsTotal") == null ? 0 : mongoTaskData.get("inforTipsTotal"));
+			resultMap.put("multisourcePoiTotal", mongoTaskData.get("multisourcePoiTotal") == null ? 0 : mongoTaskData.get("multisourcePoiTotal"));
+			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum") == null ? 0 : mongoTaskData.get("collectTipsUploadNum"));
+			resultMap.put("collectPoiUploadNum", mongoTaskData.get("collectPoiUploadNum") == null ? 0 : mongoTaskData.get("collectPoiUploadNum"));
 		}else{
 			Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(conn, taskId);
 			Map<String, Object> collectData = convertCollectData(conn, collectTaskIdSet);
@@ -2728,21 +2674,21 @@ public class StaticsService {
 			resultMap.put("collectPlanEndDate", collectData.containsKey("collectPlanEndDate") ? collectData.get("collectPlanEndDate") : "");
 			resultMap.put("collectTaskStatus", collectData.containsKey("collectTaskStatus") ? collectData.get("collectTaskStatus") : "");
 			resultMap.put("collectDiffDate", collectData.containsKey("collectDiffDate") ? collectData.get("collectDiffDate") : 0);
-			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum"));
-			resultMap.put("poiUploadNum", mongoTaskData.get("poiUploadNum"));
-			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum"));
-			resultMap.put("tipsCreateByEditNum", mongoTaskData.get("tipsCreateByEditNum"));
+			resultMap.put("collectTipsUploadNum", mongoTaskData.get("collectTipsUploadNum") == null ? mongoTaskData.get("collectTipsUploadNum") : 0);
+			resultMap.put("poiUploadNum", mongoTaskData.get("poiUploadNum") == null ? 0 : mongoTaskData.get("poiUploadNum"));
+			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum") == null ? 0 : mongoTaskData.get("poiUnfinishNum"));
+			resultMap.put("tipsCreateByEditNum", mongoTaskData.get("tipsCreateByEditNum") == null ? 0 : mongoTaskData.get("tipsCreateByEditNum"));
 			if(type == 1){
-				resultMap.put("dayEditTipsUnFinishNum", mongoTaskData.get("dayEditTipsUnFinishNum"));
-				resultMap.put("dayEditTipsFinishNum", mongoTaskData.get("dayEditTipsFinishNum"));
+				resultMap.put("dayEditTipsUnFinishNum", mongoTaskData.get("dayEditTipsUnFinishNum") == null ? 0 : mongoTaskData.get("dayEditTipsUnFinishNum"));
+				resultMap.put("dayEditTipsFinishNum", mongoTaskData.get("dayEditTipsFinishNum") == null ? 0 : mongoTaskData.get("dayEditTipsFinishNum"));
 			}
 			if(type == 2){
-				resultMap.put("day2MonthNum", mongoTaskData.get("day2MonthNum"));
-				resultMap.put("monthPoiLogUnFinishNum", mongoTaskData.get("monthPoiLogUnFinishNum"));
-				resultMap.put("monthPoiLogFinishNum", mongoTaskData.get("monthPoiLogFinishNum"));
+				resultMap.put("day2MonthNum", mongoTaskData.get("day2MonthNum") == null ? 0 : mongoTaskData.get("day2MonthNum"));
+				resultMap.put("monthPoiLogUnFinishNum", mongoTaskData.get("monthPoiLogUnFinishNum") == null ? 0 : mongoTaskData.get("monthPoiLogUnFinishNum"));
+				resultMap.put("monthPoiLogFinishNum", mongoTaskData.get("monthPoiLogFinishNum") == null ? 0 : mongoTaskData.get("monthPoiLogFinishNum"));
 			}
 		}
 		return resultMap;
 	}
-
+	
 }

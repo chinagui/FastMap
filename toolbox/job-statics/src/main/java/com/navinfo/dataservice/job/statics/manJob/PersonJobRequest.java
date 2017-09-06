@@ -5,6 +5,7 @@ import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
 public class PersonJobRequest extends AbstractStatJobRequest {
+	private String workDay;
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -34,6 +35,13 @@ public class PersonJobRequest extends AbstractStatJobRequest {
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 
+	}
+	public String getWorkDay() {
+		return workDay;
+	}
+
+	public void setWorkDay(String workDay) {
+		this.workDay = workDay;
 	}
 
 }

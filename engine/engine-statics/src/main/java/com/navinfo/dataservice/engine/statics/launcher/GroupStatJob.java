@@ -55,7 +55,7 @@ public class GroupStatJob {
 		return false;
 	}
 	
-	public void trigger(String timestamp,String jobType)throws Exception{
+	public void trigger(String identify,String jobType)throws Exception{
 		//log.info("2");
 		if(!subJobs.contains(jobType)){
 			//log.info("3");
@@ -63,19 +63,20 @@ public class GroupStatJob {
 		}
 		synchronized(this){
 			//统计结果加入
-			Set<String> types = statFeedbacks.get(timestamp);
+			Set<String> types = statFeedbacks.get(identify);
 			if(types==null){
 				types = new HashSet<String>();
-				statFeedbacks.put(timestamp, types);
+				statFeedbacks.put(identify, types);
 			}
 			types.add(jobType);
+			log.info("identify:"+identify+",groupJobType:"+groupJobType+",ready:"+types.toString()+",all:"+subJobs.toString());
 			//触发starter启动
 			if(types.size()==subJobs.size()&&types.containsAll(subJobs)){
 				//log.info("4");
 				StatJobStarter starter =  (StatJobStarter)Class.forName(groupJobStarter).getConstructor().newInstance();
-				starter.start(timestamp);
+				starter.start(identify);
 				//remove started timestamp
-				statFeedbacks.remove(timestamp);
+				statFeedbacks.remove(identify);
 			}
 		}
 	}

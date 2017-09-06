@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.api.man.iface;
 
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,6 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -346,5 +344,41 @@ public interface ManApi{
      * @throws Exception
      */
     public Set<Integer> allCollectSubtaskId() throws Exception;
+    
+    /**
+     * 根据taskId获取对应任务的tips转aumark数量
+     * @throws Exception 
+     * 
+     * */
+    public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception;
+    
+	/**
+	 * 查询所有city下的所有block对应的grid集合
+	 * @return Map<Integer,Map<Integer, Set<Integer>>>>
+	 * @throws Exception 
+	 * 
+	 * */
+    public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception;
+    
+    /**
+	 * 区县统计api，主要是为区县统计脚本提供初始查询结果，blockJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> blockStatic()throws Exception;
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception;
+    
+    /**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception;
 }
 

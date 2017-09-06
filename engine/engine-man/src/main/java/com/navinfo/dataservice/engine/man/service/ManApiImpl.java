@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
@@ -559,5 +560,34 @@ public class ManApiImpl implements ManApi {
 	 * */
     public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
     	return CityService.getInstance().queryAllCityGrids();
+    }
+    
+    /**
+	 * 区县统计api，主要是为区县统计脚本提供初始查询结果，blockJob用
+	 * @return
+	 * @throws Exception
+	 */
+    @Override
+	public Map<Integer,Map<String, Object>> blockStatic()throws Exception{
+		return BlockService.getInstance().blockStatic();
+	}
+    
+    /**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+    @Override
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception{
+		return CityService.getInstance().cityStatic();
+	}
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception{
+    	return ProgramService.getInstance().queryProgramStat();
     }
 }

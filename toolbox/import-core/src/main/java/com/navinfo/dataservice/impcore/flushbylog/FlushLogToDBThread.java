@@ -97,7 +97,7 @@ public class FlushLogToDBThread extends Thread {
 			}
 
 			totalCountPlus(index % 10000);
-			threadSharedObject.setFlushResult(flushResult);
+			threadSharedObject.addFlushResult(flushResult);
 			endTime = System.currentTimeMillis();
 			log.debug("线程任务：" + Thread.currentThread().getName() + "," + index
 					+ ","

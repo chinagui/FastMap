@@ -121,7 +121,7 @@ public class NoTaskJob extends AbstractStatJob {
 						Map<String, Integer> poiData = (Map<String, Integer>) gridEntry.getValue();
 						blockPoiCount += poiData.get("poiCount");
 						blockDealershipCount += poiData.get("dealershipCount");
-						blockNoDealershipCount += poiData.get("dealershipCount");
+						blockNoDealershipCount += poiData.get("noDealershipCount");
 					}
 				}
 				for(Entry<Integer, Object> tipsEntry : tipsMap.entrySet()){

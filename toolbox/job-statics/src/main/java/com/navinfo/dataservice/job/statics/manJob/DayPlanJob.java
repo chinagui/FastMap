@@ -57,7 +57,7 @@ public class DayPlanJob extends AbstractStatJob {
 			Map<String,List<Map<String,String>>> result = new HashMap<String,List<Map<String,String>>>();
 			result.put("task_day_plan", getStats());
 
-			log.debug("task_day_plan---"+JSONObject.fromObject(result).toString());
+			//log.debug("task_day_plan---"+JSONObject.fromObject(result).toString());
 			
 			return JSONObject.fromObject(result).toString();
 			
@@ -93,9 +93,9 @@ public class DayPlanJob extends AbstractStatJob {
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				QueryRunner run = new QueryRunner();
-				
-				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND r.u_record <> 2 AND d.data_type = 2 AND d.task_id = ";
-				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND p.u_record <> 2 AND d.data_type = 1 AND d.task_id = ";
+				//此处不排除删除的link，poi，随规划时的状态处理
+				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
+				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
 				String planSuffix = " AND d.is_plan_selected=1 ";
 				
 					

@@ -53,6 +53,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.net.aso.k;
 import oracle.sql.CLOB;
@@ -67,7 +68,6 @@ import oracle.sql.STRUCT;
 
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	private List blockIdList;
 
 	private BlockService() {
 	}
@@ -78,6 +78,122 @@ public class BlockService {
 
 	public static BlockService getInstance() {
 		return SingletonHolder.INSTANCE;
+	}
+	
+	/**
+	 * 区县统计api，主要是为区县统计脚本提供初始查询结果，blockJob用
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Object>> blockStatic()throws Exception{
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String sql="WITH TD AS"
+					+ " (SELECT T.LOT, T.BLOCK_ID, T.TYPE, MAX(T.TASK_ID) TASK_ID"
+					+ "    FROM TASK T"
+					+ "   WHERE T.BLOCK_ID != 0"
+					+ "   GROUP BY T.BLOCK_ID, T.LOT, T.TYPE),"
+					+ " TDF AS"
+					+ " (SELECT TD.LOT,"
+					+ "         TD.BLOCK_ID,"
+					+ "         TD.TYPE,"
+					+ "         TD.TASK_ID,t.name,"
+					+ "         T.WORK_KIND,"
+					+ "         T.STATUS,"
+					+ "         NVL(S.PROGRESS, 1) PROGRESS"
+					+ "    FROM TD, TASK T, FM_STAT_OVERVIEW_TASK S"
+					+ "   WHERE TD.TASK_ID = T.TASK_ID"
+					+ "     AND T.TASK_ID = S.TASK_ID(+))"
+					+ " SELECT B.BLOCK_ID,"
+					+ "       B.BLOCK_NAME,"
+					+ "       B.PLAN_STATUS,"
+					+ "       T.LOT,"
+					+ "       T.BLOCK_ID,"
+					+ "       T.TYPE,"
+					+ "       T.TASK_ID,t.name,"
+					+ "       T.WORK_KIND,"
+					+ "       T.STATUS,"
+					+ "       T.PROGRESS"
+					+ "  FROM BLOCK B, TDF T"
+					+ " WHERE B.BLOCK_ID = T.BLOCK_ID(+)"
+					+ " ORDER BY B.BLOCK_ID";
+			return run.query(conn, sql, new ResultSetHandler<Map<Integer,Map<String, Object>>>(){
+
+				@Override
+				public Map<Integer,Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Map<String, Object>> result=new HashMap<>();
+					while (rs.next()) {
+						int blockId=rs.getInt("BLOCK_ID");
+						if(!result.containsKey(blockId)){
+							Map<String, Object> blockTmp=new HashMap<>();
+							blockTmp.put("blockId",blockId);
+							blockTmp.put("blockName",rs.getString("BLOCK_NAME"));
+							blockTmp.put("planStatus",rs.getInt("PLAN_STATUS"));
+							blockTmp.put("lot1CollectTaskName",JSONNull.getInstance());
+							blockTmp.put("lot1CollectTaskId",0);
+							blockTmp.put("lot1WorkKind",JSONNull.getInstance());
+							blockTmp.put("lot1CollectStatus",0);
+							blockTmp.put("lot1CollectProgress",1);
+							blockTmp.put("lot1MonthTaskId",0);
+							blockTmp.put("lot1MonthStatus",0);
+							blockTmp.put("lot1MonthProgress",1);
+							blockTmp.put("lot2CollectTaskName",JSONNull.getInstance());
+							blockTmp.put("lot2CollectTaskId",0);
+							blockTmp.put("lot2WorkKind",JSONNull.getInstance());
+							blockTmp.put("lot2CollectStatus",0);
+							blockTmp.put("lot2CollectProgress",1);
+							blockTmp.put("lot2MonthTaskId",0);
+							blockTmp.put("lot2MonthStatus",0);
+							blockTmp.put("lot2MonthProgress",1);
+							blockTmp.put("lot3CollectTaskName",JSONNull.getInstance());
+							blockTmp.put("lot3CollectTaskId",0);
+							blockTmp.put("lot3WorkKind",JSONNull.getInstance());
+							blockTmp.put("lot3CollectStatus",0);
+							blockTmp.put("lot3CollectProgress",1);
+							blockTmp.put("lot3MonthTaskId",0);
+							blockTmp.put("lot3MonthStatus",0);
+							blockTmp.put("lot3MonthProgress",1);
+							blockTmp.put("tipsTotal",0);
+							blockTmp.put("dealershipTotal",0);
+							blockTmp.put("noDealershipTotal",0);
+							result.put(blockId, blockTmp);
+						}
+						Map<String, Object> blockCur=result.get(blockId);
+						Task task=new Task();
+						task.setLot(rs.getInt("LOT"));
+						task.setType(rs.getInt("TYPE"));
+						task.setName(rs.getString("NAME"));
+						task.setTaskId(rs.getInt("TASK_ID"));
+						task.setWorkKind(rs.getString("WORK_KIND"));
+						task.setStatus(rs.getInt("STATUS"));
+						int progress=rs.getInt("PROGRESS");
+						
+						if(task.getType()==0){
+							blockCur.put("lot"+task.getLot()+"CollectTaskName",task.getName());
+							blockCur.put("lot"+task.getLot()+"CollectTaskId",task.getTaskId());							
+							blockCur.put("lot"+task.getLot()+"WorkKind",task.getWorkKindList());
+							blockCur.put("lot"+task.getLot()+"CollectStatus",task.getStatus());
+							blockCur.put("lot"+task.getLot()+"CollectProgress",progress);
+						}
+						if(task.getType()==2){
+							blockCur.put("lot"+task.getLot()+"MonthTaskId",task.getTaskId());
+							blockCur.put("lot"+task.getLot()+"MonthStatus",task.getStatus());
+							blockCur.put("lot"+task.getLot()+"MonthProgress",progress);
+						}
+					}
+					return result;
+				}
+				
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 	public int batchOpen(long userId, JSONObject json) throws ServiceException {

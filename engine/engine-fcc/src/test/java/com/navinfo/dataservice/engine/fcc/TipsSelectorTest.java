@@ -328,7 +328,7 @@ public class TipsSelectorTest extends InitApplication {
 //            System.out.println(solrSelector.statInfoTask(parameter));
 
             solrSelector.checkUpdate(
-                    "59567233" ,"20160101010101");
+                    "59567233" ,"20160101010101",1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -582,7 +582,7 @@ public class TipsSelectorTest extends InitApplication {
 			//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 
 			// String
-			filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\74";
+			filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\道路名乱码";
 
 			Map<String, Photo> photoMap = new HashMap<String, Photo>();
 
@@ -590,9 +590,9 @@ public class TipsSelectorTest extends InitApplication {
 
 			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 
-			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap,userId);
+		//	tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap,userId);
 
-//			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap,userId);
 
 			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
@@ -608,11 +608,17 @@ public class TipsSelectorTest extends InitApplication {
 
 			result.put("failed", tipsUploader.getFailed());
 
-			result.put("reasons", tipsUploader.getReasons());
+			result.put("failedReasons", tipsUploader.getReasons());
+            
+            result.put("conflict", tipsUploader.getConflict());
+            
+            result.put("freshed", tipsUploader.getFreshed());
+            
+            result.put("t_dataDate", tipsUploader.getT_dataDate());
 
-//			result.put("regionResults", tipsUploader.getRegionResults());
+            result.put("regionResults", tipsUploader.getRegionResults());
 
-			result.put("JVImageResult", patternImageResultImpResult);
+            result.put("JVImageResult", patternImageResultImpResult);
 
 			 //记录上传日志。不抛出异常
 			insertStatisticsInfoNoException(jobId, subtaskId, userId,

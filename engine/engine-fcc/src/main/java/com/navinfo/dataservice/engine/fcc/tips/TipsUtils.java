@@ -35,6 +35,53 @@ public class TipsUtils {
 
 	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211,1520 }; // 不下载的tips
 	
+	public static int[]   VecInfoDownloadTips={2201,2202,2203,2204,1519,1213,1212,1104,1510,1518,1511,1702,1116,1901,1201,1803,2001,1806,2102,2101,1701}; //行人导航下载的tips类型
+	
+	
+	/*	过街天桥/地下通道 2201
+	 
+	人行过道 2202
+	 
+	单线虚拟连接 2203
+	 
+	复合虚拟连接 2204
+	 
+	休闲路线 1519
+	 
+	普通路行人非机动车禁行 1213
+	 
+	高速路行人非机动车通行 1212
+	 
+	大门 1104
+	 
+	桥 1510
+	 
+	阶梯 1518
+	 
+	隧道 1511
+	 
+	铁路道口 1702
+	 
+	立交 1116
+	 
+	道路名 1901
+	 
+	种别 1201
+	 
+	挂接 1803
+	 
+	测线 2001
+	 
+	草图 1806
+	 
+	万能标记 2102
+	 
+	形状删除 2101
+	 
+	障碍物 1701*/
+	 
+
+	
 	//关于空值得定义：对象NULL,数据[]，字符串""
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
@@ -179,6 +226,8 @@ public class TipsUtils {
         tipsIndexModel.setT_dEditMeth(trackJson.getInt("t_dEditMeth"));
         tipsIndexModel.setT_mEditStatus(trackJson.getInt("t_mEditStatus"));
         tipsIndexModel.setT_mEditMeth(trackJson.getInt("t_mEditMeth"));
+        
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
 
         return tipsIndexModel;
 	}
@@ -243,6 +292,7 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
         //Tips上传赋值为0，无需赋值
 //        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
 //        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));

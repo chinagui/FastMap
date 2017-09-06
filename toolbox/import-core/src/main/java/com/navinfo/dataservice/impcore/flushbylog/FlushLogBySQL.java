@@ -160,11 +160,13 @@ public class FlushLogBySQL extends AbstractFlushLog {
 			tableDatacount = dataCount / concurrentSize;
 		}
 
+		innerCount += (int) Math.ceil((double) dataCount / tableDatacount);
+
 	}
 
 	public void initThreadSharedObject() throws Exception {
-		threadSharedObj = new ThreadSharedObjectExtResult(concurrentSize);
-		log.debug(innerCount + tableNameList.size());
+		threadSharedObj = new ThreadSharedObjectExtResult(innerCount);
+		log.debug("innerCount=====" + innerCount);
 		threadPoolExecutor = new ThreadPoolExecutor(concurrentSize,
 				concurrentSize, 3, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(),
@@ -196,4 +198,5 @@ public class FlushLogBySQL extends AbstractFlushLog {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

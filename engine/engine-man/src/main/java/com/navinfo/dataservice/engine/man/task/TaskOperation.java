@@ -426,7 +426,7 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
-			if (changeFields.containsKey("OVERDUE_OTHER")){
+			if (changeFields.containsKey("OVERDUE_REASON")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_reason='" + bean.getOverdueReason() + "'";
 			};

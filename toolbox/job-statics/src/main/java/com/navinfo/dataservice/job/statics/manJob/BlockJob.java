@@ -38,6 +38,7 @@ public class BlockJob extends AbstractStatJob {
 			String timestamp = statReq.getTimestamp();
 			log.info("获取全部区县信息");
 			Map<Integer, Map<String, Object>> blockMap = manApi.blockStatic();
+			log.info(blockMap);
 			//从mango库中查询数据
 			log.info("获取无数据区县信息");
 			Map<Integer, Map<String, Object>> notaskMap = queryBlockNotaskData(timestamp, md);
@@ -55,6 +56,8 @@ public class BlockJob extends AbstractStatJob {
 			}			
 			Map<String, Object> result = new HashMap<>();
 			result.put("block", keyMaps);
+			log.info("end blockJob");
+			log.info(JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

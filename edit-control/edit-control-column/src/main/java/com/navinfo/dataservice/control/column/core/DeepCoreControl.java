@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -290,10 +291,10 @@ public class DeepCoreControl {
 
             int dbId = json.getInt("dbId");
             int objId = json.getInt("objId");
+            int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
-
             JSONObject poiData = json.getJSONObject("data");
             
             pids.add(objId);
@@ -311,6 +312,7 @@ public class DeepCoreControl {
 			editJson.addJsonPoi(json);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 			importor.operate(command);
+			importor.setSubtaskId(subtaskId);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 
 //            EditApiImpl editApiImpl = new EditApiImpl(conn);
@@ -345,7 +347,7 @@ public class DeepCoreControl {
             logger.error(e.getMessage(), e);
             throw e;
         } finally {
-            DbUtils.commitAndClose(conn);
+            DbUtils.commitAndCloseQuietly(conn);
         }
     }
     
@@ -1067,6 +1069,198 @@ public class DeepCoreControl {
 			DbUtils.commitAndClose(conn);
 		}
 	}
+
+
+	/**
+	 * 深度信息质检问题操作（新增，修改，删除）
+	 * @param userId
+	 * @param dataJson
+	 * @throws Exception
+	 */
+	public void operateProblem(JSONObject dataJson) throws Exception {
+		Connection conn = null;
+		try {
+			String command = null;
+			conn = DBConnector.getInstance().getManConnection();
+			if (dataJson.containsKey("command")) {
+				command = dataJson.getString("command");
+			} else {
+				throw new Exception("参数异常：没找到command。");
+			}
+			QueryRunner run = new QueryRunner();
+			if ("DELETE".equals(command)) {
+				int problemId = 0;
+				if (dataJson.containsKey("problemId")) {
+					problemId = dataJson.getInt("problemId");
+				} else {
+					throw new Exception("参数异常：没找到problemId");
+				}
+				StringBuilder builder = new StringBuilder();
+				builder.append("DELETE FROM DEEP_QC_PROBLEM WHERE PROBLEM_ID = "+problemId);
+				String deleteSql = builder.toString();
+				logger.info("delete sql :" + deleteSql);
+				run.update(conn, deleteSql);
+
+			} else if ("UPDATE".equals(command)) {
+				JSONObject data = new JSONObject();
+				if (dataJson.containsKey("data")) {
+					data = dataJson.getJSONObject("data");
+				} else {
+					throw new Exception("参数异常：没找到data。");
+				}
+				
+				List<Object> params = new ArrayList<>();
+
+				Integer problemId = data.containsKey("problemId")?data.getInt("problemId"):0;
+				String problemLevel = data.containsKey("problemLevel")?data.getString("problemLevel"):"";
+				String problemDesc = data.containsKey("problemDesc")?data.getString("problemDesc"):"";
+				
+				params.add(problemLevel);
+				params.add(problemDesc);
+				params.add(problemId);
+				
+				StringBuilder builder = new StringBuilder();
+				builder.append("UPDATE DEEP_QC_PROBLEM SET PROBLEM_LEVEL = ?,PROBLEM_DESC = ?  WHERE PROBLEM_ID = ?");
+				if(problemId!=0){
+					run.update(conn, builder.toString(), params.toArray());
+				}
+			} else if ("ADD".equals(command)) {
+				JSONObject data = new JSONObject();
+				if (dataJson.containsKey("data")) {
+					data = dataJson.getJSONObject("data");
+				} else {
+					throw new Exception("参数异常：没找到data");
+				}
+				
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				List<String> conditions = new ArrayList<>();
+				List<Object> params = new ArrayList<>();
+				int subtaskId = 0;
+				String secondWorkItem = "";
+				int pid = 0;
+				String poiProperty = "";
+				String newValue  = "";
+				String oldValue  = "";
+				String commonWorker = "";
+				String workTime = "";
+				String qcWorker = "";
+				String qcTime = "";
+				String problemLevel = "";
+				String problemDesc = "";
+				
+				conditions.add("PROBLEM_ID");
+				
+				if(data.containsKey("subtaskId")){
+					subtaskId = data.getInt("subtaskId");
+				}
+				if(subtaskId != 0){
+					conditions.add("SUBTASK_ID");
+					params.add(subtaskId);
+				}
+				if(data.containsKey("secondWorkItem")){
+					secondWorkItem = data.getString("secondWorkItem");
+				}
+				if(!StringUtils.isEmpty(secondWorkItem)){
+					conditions.add("SECOND_WORKITEM");
+					params.add(secondWorkItem);
+				}
+				if(data.containsKey("pid")){
+					pid = data.getInt("pid");
+				}
+				if(pid != 0){
+					conditions.add("PID");
+					params.add(pid);
+				}
+				if(data.containsKey("poiProperty")){
+					poiProperty = data.getString("poiProperty");
+				}
+				if(!StringUtils.isEmpty(poiProperty)){
+					conditions.add("POI_PROPERTY");
+					params.add(poiProperty);
+				}
+				if(data.containsKey("newValue")){
+					newValue = data.getString("newValue");
+				}
+				if(!StringUtils.isEmpty(newValue)){
+					conditions.add("NEW_VALUE");
+					params.add(newValue);
+				}
+				if(data.containsKey("oldValue")){
+					oldValue = data.getString("oldValue");
+				}
+				if(!StringUtils.isEmpty(oldValue)){
+					conditions.add("OLD_VALUE");
+					params.add(oldValue);
+				}
+				if(data.containsKey("commonWorker")){
+					commonWorker = data.getString("commonWorker");
+				}
+				if(!StringUtils.isEmpty(commonWorker)){
+					conditions.add("COMMON_WORKER");
+					params.add(commonWorker);
+				}
+				if(data.containsKey("workTime")){
+					workTime = data.getString("workTime");
+				}
+				if(!StringUtils.isEmpty(workTime)){
+					conditions.add("WORK_TIME");
+					params.add(new Timestamp(df.parse(workTime).getTime()));
+				}
+				if(data.containsKey("qcWorker")){
+					qcWorker = data.getString("qcWorker");
+				}
+				if(!StringUtils.isEmpty(qcWorker)){
+					conditions.add("QC_WORKER");
+					params.add(qcWorker);
+				}
+				if(data.containsKey("qcTime")){
+					qcTime = data.getString("qcTime");
+				}
+				if(!StringUtils.isEmpty(qcTime)){
+					conditions.add("QC_TIME");
+					params.add(new Timestamp(df.parse(qcTime).getTime()));
+				}
+				if(data.containsKey("problemLevel")){
+					problemLevel = data.getString("problemLevel");
+				}
+				if(!StringUtils.isEmpty(problemLevel)){
+					conditions.add("PROBLEM_LEVEL");
+					params.add(problemLevel);
+				}
+				if(data.containsKey("problemDesc")){
+					problemDesc = data.getString("problemDesc");
+				}
+				if(!StringUtils.isEmpty(problemDesc)){
+					conditions.add("PROBLEM_DESC");
+					params.add(problemDesc);
+				}
+				
+				StringBuilder builder = new StringBuilder();
+				builder.append("INSERT INTO DEEP_QC_PROBLEM (");
+				if(conditions.size() > 0){
+					for (String con : conditions) {
+						builder.append(con).append(" ,");
+					}
+				} else {
+					throw new Exception("数据更新异常：没有可新增的数据。");
+				}
+				
+				builder.deleteCharAt(builder.length() - 1).append(") VALUES (");
+				builder.append("DEEP_QC_PROBLEM_SEQ.NEXTVAL,");
+				for (int i = 0; i < conditions.size()-1; i++) {
+					builder.append(" ? ,");
+				}
+				builder.deleteCharAt(builder.length() - 1).append(")");
+				run.update(conn, builder.toString(), params.toArray());
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error("深度信息质检问题操作失败，原因为：" + e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/**
 	 * 查询问题页面初始值
@@ -1098,7 +1292,7 @@ public class DeepCoreControl {
 			long operationTime = queryOperationTime(regionConn, pid, subtaskId, userId);
 			
 			resultJson.put("commonWorker", realName + "-" + groupName);
-			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy.MM.dd"));
+			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy-MM-dd HH:mm:ss"));
 			return resultJson;
 		} catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -1161,6 +1355,7 @@ public class DeepCoreControl {
 		}
 	}
 	
+
 	private long queryOperationTime(Connection regionConn, long pid, Integer subtaskId, Integer userId) throws Exception{
 		 
 		PreparedStatement pstmt = null;
@@ -1240,14 +1435,14 @@ public class DeepCoreControl {
 				
 				Timestamp workTime = resultSet.getTimestamp("WORK_TIME");
 				if(workTime != null){
-					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy.MM.dd"));
+					jo.put("workTime", DateUtils.longToString(workTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
 				} else {
 					jo.put("workTime", "");
 				}
 				jo.put("qcWorker", resultSet.getString("QC_WORKER")  != null ? resultSet.getString("QC_WORKER") : "");
 				Timestamp qcTime = resultSet.getTimestamp("QC_TIME");
 				if(qcTime != null){
-					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy.MM.dd"));
+					jo.put("qcTime", DateUtils.longToString(qcTime.getTime(), "yyyy-MM-dd HH:mm:ss"));
 				} else {
 					jo.put("qcTime", "");
 				}

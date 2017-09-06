@@ -28,7 +28,6 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.tips.model.FieldRoadQCRecord;
 import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.database.sql.StringUtil;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -62,6 +61,9 @@ class ErrorType {
     static int InvalidData = 5;
 
     static int FreshnessVerificationData = 6; // 鲜度验证tips(不入库)
+    
+    static int deleteNoteExists = 8;
+
 
 }
 
@@ -108,12 +110,19 @@ public class TipsUpload {
     private static final Logger logger = Logger.getLogger(TipsUpload.class);
 
     private String currentDate;
+    
+    private String t_dataDate; //入库时间
+    
 
     private int total;
 
     private int failed; // 记录导入错误的条数
 
-    private JSONArray reasons;
+    private JSONArray reasons; //失败的
+    
+    private JSONArray conflict; //时间冲突的
+    
+    private JSONArray freshed; //鲜度验证的
 
     private SolrController solr;
 
@@ -162,8 +171,24 @@ public class TipsUpload {
     public void setRegionResults(List<RegionUploadResult> regionResults) {
         this.regionResults = regionResults;
     }
+    
+    
 
     /**
+	 * @return the t_dataDate
+	 */
+	public String getT_dataDate() {
+		return t_dataDate;
+	}
+
+	/**
+	 * @param t_dataDate the t_dataDate to set
+	 */
+	public void setT_dataDate(String t_dataDate) {
+		this.t_dataDate = t_dataDate;
+	}
+
+	/**
      * @param subtaskid
      * @throws Exception
      */
@@ -241,8 +266,38 @@ public class TipsUpload {
     public void setReasons(JSONArray reasons) {
         this.reasons = reasons;
     }
+    
+    
 
-    public int getTotal() {
+    /**
+	 * @return the conflict
+	 */
+	public JSONArray getConflict() {
+		return conflict;
+	}
+
+	/**
+	 * @param conflict the conflict to set
+	 */
+	public void setConflict(JSONArray conflict) {
+		this.conflict = conflict;
+	}
+
+	/**
+	 * @return the freshed
+	 */
+	public JSONArray getFreshed() {
+		return freshed;
+	}
+
+	/**
+	 * @param freshed the freshed to set
+	 */
+	public void setFreshed(JSONArray freshed) {
+		this.freshed = freshed;
+	}
+
+	public int getTotal() {
         return total;
     }
 
@@ -278,8 +333,14 @@ public class TipsUpload {
             failed = 0;
 
             reasons = new JSONArray();
+            
+            conflict = new JSONArray(); //时间冲突的
+            
+            freshed = new JSONArray(); //鲜度验证的
 
             currentDate = StringUtils.getCurrentTime();
+            
+            t_dataDate=currentDate; 
 
             Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -334,115 +395,7 @@ public class TipsUpload {
 
             //20170828 跨大区日志统计,记录无任务
             //被统计为无任务的数据上传
-            sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-            if(gridCountMap.size() > 0) {
-                List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
-                Map<String, Integer> meshRegionMap = new HashMap<>();
-                for(String gridId : gridCountMap.keySet()) {
-                    String meshId = gridId.substring(0, gridId.length()-2);
-                    if(!meshRegionMap.containsKey(meshId)) {
-                        for(RegionMesh regionMesh : regions) {
-                            if(regionMesh.meshContains(meshId)) {
-                                meshRegionMap.put(meshId, regionMesh.getRegionId());
-                                break;
-                            }
-                        }
-                    }
-                    int count = gridCountMap.get(gridId);
-                    UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
-                    info.setUserId(userId);
-                    info.setFromSubtaskId(subTaskId);
-                    info.setUploadType(2);
-                    int regionId = meshRegionMap.get(meshId);
-                    info.setOutRegionId(regionId);
-                    info.setOutGridId(Integer.valueOf(gridId));
-                    info.setOutGridNumber(count);
-                    infos.add(info);
-                }
-                UploadRegionInfoOperator op = new UploadRegionInfoOperator(sysConn);
-                op.save(infos);
-                gridCountMap.clear();
-            }
-            Map<Integer, JSONObject> regionResultMap = new HashMap<>();
-            //失败的记录数
-            if(reasons.size() > 0) {
-                for(int i = 0 ; i < reasons.size(); i++) {
-                    JSONObject reasonObj = reasons.getJSONObject(i);
-                    String rowkey = reasonObj.getString("rowkey");
-                    int type = reasonObj.getInt("type");
-                    TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
-                    if(tipsMeshGrid == null) {
-                        continue;
-                    }
-                    String gridId = tipsMeshGrid.getGridId();
-                    int regionId = 0;
-                    for(RegionMesh regionMesh : regions) {
-                        String meshId = gridId.substring(0, gridId.length()-2);
-                        if(regionMesh.meshContains(meshId)) {
-                            regionId = regionMesh.getRegionId();
-                            break;
-                        }
-                    }
-                    if(regionId > 0) {
-                        if(regionResultMap.containsKey(regionId)) {
-                            JSONObject jsonObject = regionResultMap.get(regionId);
-                            if(type == 6) {
-                                int sCount = jsonObject.getInt("sCount") + 1;
-                                jsonObject.put("sCount", sCount);
-                            }else {
-                                int eCount = jsonObject.getInt("eCount") + 1;
-                                jsonObject.put("eCount", eCount);
-                            }
-                        }else{
-                            JSONObject jsonObject = new JSONObject();
-                            if(type == 6) {//type=6不算失败
-                                jsonObject.put("sCount", 1);
-                                jsonObject.put("eCount", 0);
-                            }else{
-                                jsonObject.put("sCount", 0);
-                                jsonObject.put("eCount", 1);
-                            }
-                            regionResultMap.put(regionId, jsonObject);
-                        }
-                    }
-                    meshMap.remove(rowkey);
-                }
-            }
-            //成功的记录数
-            for(String rowkey : meshMap.keySet()) {
-                TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
-                String gridId = tipsMeshGrid.getGridId();
-                int regionId = 0;
-                for(RegionMesh regionMesh : regions) {
-                    String meshId = gridId.substring(0, gridId.length()-2);
-                    if(regionMesh.meshContains(meshId)) {
-                        regionId = regionMesh.getRegionId();
-                        break;
-                    }
-                }
-                if(regionId > 0) {
-                    if(regionResultMap.containsKey(regionId)) {
-                        JSONObject jsonObject = regionResultMap.get(regionId);
-                        int sCount = jsonObject.getInt("sCount") + 1;
-                        jsonObject.put("sCount", sCount);
-                    }else{
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("sCount", 1);
-                        jsonObject.put("eCount", 0);
-                        regionResultMap.put(regionId, jsonObject);
-                    }
-                }
-            }
-            meshMap.clear();
-            //返回统计结果
-            for(int regionId : regionResultMap.keySet()) {
-                RegionUploadResult regionResult = new RegionUploadResult(regionId);
-                regionResult.setSubtaskId(subTaskId);
-                JSONObject jsonObject = regionResultMap.get(regionId);
-                regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
-                regionResults.add(regionResult);
-            }
-            regionResultMap.clear();
+            statisticsNoTask(userId, meshMap, regions, gridCountMap);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -450,7 +403,7 @@ public class TipsUpload {
             throw new Exception("Tips上传报错", e);
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
-            DbUtils.commitAndCloseQuietly(sysConn);
+           
             if(htab != null) {
                 try{
                     htab.close();
@@ -465,6 +418,141 @@ public class TipsUpload {
         // TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
     }
+
+	/**
+	 * @Description:无任务统计
+	 * @param userId
+	 * @param meshMap
+	 * @param regions
+	 * @param gridCountMap
+	 * @author: 张俊芳
+	 * @throws Exception 
+	 * @time:2017-9-5 下午7:35:06
+	 */
+	private void statisticsNoTask(long userId,
+			Map<String, TipsMeshGrid> meshMap, List<RegionMesh> regions,
+			Map<String, Integer> gridCountMap) throws Exception {
+		java.sql.Connection sysConn=null;
+		try{
+		sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+		if(gridCountMap.size() > 0) {
+		    List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
+		    Map<String, Integer> meshRegionMap = new HashMap<>();
+		    for(String gridId : gridCountMap.keySet()) {
+		        String meshId = gridId.substring(0, gridId.length()-2);
+		        if(!meshRegionMap.containsKey(meshId)) {
+		            for(RegionMesh regionMesh : regions) {
+		                if(regionMesh.meshContains(meshId)) {
+		                    meshRegionMap.put(meshId, regionMesh.getRegionId());
+		                    break;
+		                }
+		            }
+		        }
+		        int count = gridCountMap.get(gridId);
+		        UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
+		        info.setUserId(userId);
+		        info.setFromSubtaskId(subTaskId);
+		        info.setUploadType(2);
+		        int regionId = meshRegionMap.get(meshId);
+		        info.setOutRegionId(regionId);
+		        info.setOutGridId(Integer.valueOf(gridId));
+		        info.setOutGridNumber(count);
+		        infos.add(info);
+		    }
+		    UploadRegionInfoOperator op = new UploadRegionInfoOperator(sysConn);
+		    op.save(infos);
+		    gridCountMap.clear();
+		}
+		Map<Integer, JSONObject> regionResultMap = new HashMap<>();
+		//失败的记录数
+		if(reasons.size() > 0) {
+		    for(int i = 0 ; i < reasons.size(); i++) {
+		        JSONObject reasonObj = reasons.getJSONObject(i);
+		        String rowkey = reasonObj.getString("rowkey");
+		        int type = reasonObj.getInt("type");
+		        TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+		        if(tipsMeshGrid == null) {
+		            continue;
+		        }
+		        String gridId = tipsMeshGrid.getGridId();
+		        int regionId = 0;
+		        for(RegionMesh regionMesh : regions) {
+		            String meshId = gridId.substring(0, gridId.length()-2);
+		            if(regionMesh.meshContains(meshId)) {
+		                regionId = regionMesh.getRegionId();
+		                break;
+		            }
+		        }
+		        if(regionId > 0) {
+		            if(regionResultMap.containsKey(regionId)) {
+		                JSONObject jsonObject = regionResultMap.get(regionId);
+		                if(type == 6) {
+		                    int sCount = jsonObject.getInt("sCount") + 1;
+		                    jsonObject.put("sCount", sCount);
+		                }else {
+		                    int eCount = jsonObject.getInt("eCount") + 1;
+		                    jsonObject.put("eCount", eCount);
+		                }
+		            }else{
+		                JSONObject jsonObject = new JSONObject();
+		                if(type == 6) {//type=6不算失败
+		                    jsonObject.put("sCount", 1);
+		                    jsonObject.put("eCount", 0);
+		                }else{
+		                    jsonObject.put("sCount", 0);
+		                    jsonObject.put("eCount", 1);
+		                }
+		                regionResultMap.put(regionId, jsonObject);
+		            }
+		        }
+		        meshMap.remove(rowkey);
+		    }
+		}
+		//成功的记录数
+		for(String rowkey : meshMap.keySet()) {
+		    TipsMeshGrid tipsMeshGrid = meshMap.get(rowkey);
+		    String gridId = tipsMeshGrid.getGridId();
+		    int regionId = 0;
+		    for(RegionMesh regionMesh : regions) {
+		        String meshId = gridId.substring(0, gridId.length()-2);
+		        if(regionMesh.meshContains(meshId)) {
+		            regionId = regionMesh.getRegionId();
+		            break;
+		        }
+		    }
+		    if(regionId > 0) {
+		        if(regionResultMap.containsKey(regionId)) {
+		            JSONObject jsonObject = regionResultMap.get(regionId);
+		            int sCount = jsonObject.getInt("sCount") + 1;
+		            jsonObject.put("sCount", sCount);
+		        }else{
+		            JSONObject jsonObject = new JSONObject();
+		            jsonObject.put("sCount", 1);
+		            jsonObject.put("eCount", 0);
+		            regionResultMap.put(regionId, jsonObject);
+		        }
+		    }
+		}
+		meshMap.clear();
+		//返回统计结果
+		for(int regionId : regionResultMap.keySet()) {
+		    RegionUploadResult regionResult = new RegionUploadResult(regionId);
+		    regionResult.setSubtaskId(subTaskId);
+		    JSONObject jsonObject = regionResultMap.get(regionId);
+		    regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
+		    regionResults.add(regionResult);
+		}
+		regionResultMap.clear();
+		
+		}catch (Exception e) {
+			DbUtils.rollback(sysConn);
+			logger.error("无任务统计出错:"+e.getMessage(), e);
+			throw new Exception("无任务统计出错:"+e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+		
+	}
 
     /**
      * 道路名入元数据库
@@ -527,7 +615,7 @@ public class TipsUpload {
                 String line = scanner.nextLine();
 
                 JSONObject json = TipsUtils.stringToSFJson(line);
-
+                
                 rowkey = json.getString("rowkey");
 
                 int lifecycle = json.getInt("t_lifecycle");
@@ -848,13 +936,13 @@ public class TipsUpload {
                     // 差分判断是不是tips无变更(鲜度验证的tips)，是则不更新
                     if (isFreshnessVerification(oldTip, json)) {
 
-                        reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
-
+                       // reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
+                    	freshed.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
                         continue;
                     }
 
                     // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
-                    int res = canUpdate(oldTip, json.getString("t_operateDate"));
+                    int res = canUpdate(oldTip, json.getString("t_dataDate"));
                     if (res < 0) {
                         failed += 1;
                         // -1表示old已删除
@@ -863,7 +951,8 @@ public class TipsUpload {
                         }
                         // else =-2表示当前采集时间较旧
                         else {
-                            reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
+                          //  reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
+                        	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                         }
                         continue;
                     }
@@ -886,7 +975,8 @@ public class TipsUpload {
                 }
 
                 puts.add(put);
-
+                
+                json.put("t_dataDate", t_dataDate); //重新赋值 ，必须放在 时间判断后，确定入库后修改这个时间。
                 TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
                 solrIndexList.add(tipsIndexModel);
 
@@ -1037,6 +1127,7 @@ public class TipsUpload {
         TipsTrack track = new TipsTrack();
         track.setT_lifecycle(t_lifecycle);
         track.setT_date(currentDate);
+        track.setT_dataDate(t_dataDate); //915新增字段，需要重新赋值为系统当前时间 
         track.setT_command(json.getInt("t_command"));
         track.setT_tipStatus(json.getInt("t_tipStatus"));
         track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
@@ -1099,11 +1190,22 @@ public class TipsUpload {
                 Entry<String, JSONObject> en = it.next();
 
                 rowkey = en.getKey();
-
-                if (!oldTips.containsKey(rowkey)) {
+                
+                int lifeCycle=en.getValue().getInt("t_lifecycle");
+                
+                //修改不存在
+                if (!oldTips.containsKey(rowkey)&&lifeCycle==2) {
                     failed += 1;
 
                     reasons.add(newReasonObject(rowkey, ErrorType.Notexist));
+
+                    continue;
+                }
+                //删除不存在
+                else if(!oldTips.containsKey(rowkey)&&lifeCycle==1){
+                	failed += 1;
+
+                    reasons.add(newReasonObject(rowkey, ErrorType.deleteNoteExists));
 
                     continue;
                 }
@@ -1116,20 +1218,23 @@ public class TipsUpload {
                 // 是否是鲜度验证的tips lifecycle==1删除的，不进行鲜度验证
                 if (lifecycle != 1 && isFreshnessVerification(oldTip, json)) {
 
-                    reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
+                  //  reasons.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
+                    
+                    freshed.add(newReasonObject(rowkey, ErrorType.FreshnessVerificationData));
 
                     continue;
                 }
 
                 // 时间判断
-                int res = canUpdate(oldTip, json.getString("t_operateDate"));
+                int res = canUpdate(oldTip, json.getString("t_dataDate"));
                 if (res < 0) {
                     failed += 1;
 
                     if (res == -1) {
                         reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
                     } else {
-                        reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
+                        //reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
+                    	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     }
 
                     continue;
@@ -1140,7 +1245,8 @@ public class TipsUpload {
 
                 Put put = updatePut(rowkey, json, oldTip);
                 puts.add(put);
-
+                
+                json.put("t_dataDate", t_dataDate); //重新赋值 ，必须放在 时间判断后，确定入库后修改这个时间。
                 TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
                 solrIndexList.add(tipsIndexModel);
 
@@ -1183,6 +1289,7 @@ public class TipsUpload {
         TipsTrack track = (TipsTrack) JSONObject.toBean(oldTrack, TipsTrack.class);
         track.setT_lifecycle(t_lifecycle);
         track.setT_date(currentDate);
+        track.setT_dataDate(t_dataDate); //915新增字段，需要重新赋值为系统当前时间 
         track.setT_tipStatus(json.getInt("t_tipStatus"));
         track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
@@ -1279,7 +1386,7 @@ public class TipsUpload {
         return photo;
     }
 
-    private int canUpdate(JSONObject oldTips, String operateDate) {
+    private int canUpdate(JSONObject oldTips, String collectior_tDataDate) {
         JSONObject oldTrack = oldTips.getJSONObject("track");
 
         int lifecycle = oldTrack.getInt("t_lifecycle");
@@ -1292,8 +1399,8 @@ public class TipsUpload {
         }
         String lastDate = null;
 
-        // 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
-        for (int i = tracks.size(); i > 0; i--) {
+        // 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据(取消)
+     /*   for (int i = tracks.size(); i > 0; i--) {
 
             JSONObject info = tracks.getJSONObject(i - 1);
 
@@ -1303,7 +1410,10 @@ public class TipsUpload {
 
                 break;
             }
-        }
+        }*/
+        
+        //入库和t_dataDate时间做对比
+        lastDate=oldTrack.getString("t_dataDate");
 
         JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 
@@ -1332,7 +1442,7 @@ public class TipsUpload {
             return 0;
         } else {
         	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
-            if (operateDate.compareTo(lastDate) < 0) {
+            if (collectior_tDataDate.compareTo(lastDate) <0) {
                 return -2;
             }
         }

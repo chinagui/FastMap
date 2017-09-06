@@ -57,7 +57,7 @@ public class DayPlanJob extends AbstractStatJob {
 			Map<String,List<Map<String,String>>> result = new HashMap<String,List<Map<String,String>>>();
 			result.put("task_day_plan", getStats());
 
-			log.debug("task_day_plan---"+JSONObject.fromObject(result).toString());
+			//log.debug("task_day_plan---"+JSONObject.fromObject(result).toString());
 			
 			return JSONObject.fromObject(result).toString();
 			

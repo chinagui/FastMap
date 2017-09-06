@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,9 @@ public class DeepInfoMarker {
 			stmt = conn.createStatement();
 
 			Map<Long, BasicObj> objMap = opResult.getObjsMapByType(ObjectName.IX_POI);
+			
+			LogReader logRead = new LogReader(conn);
+			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
 
 			for (Map.Entry<Long, BasicObj> entry : objMap.entrySet()) {
 				IxPoiObj poiObj = (IxPoiObj) entry.getValue();
@@ -103,7 +107,7 @@ public class DeepInfoMarker {
 				// 通用
 				if (detailKindCode.contains(kindCode)) {
 					// 是否符合通用抓取原则
-					if (isDetailPoi(poiObj)) {
+					if (isDetailPoi(poiObj,poiStates)) {
 //						String sql = "insert into POI_COLUMN_STATUS s (s.PID,s.WORK_ITEM_ID,s.HANDLER,s.TASK_ID) values("
 //								+ pid + ",'FM-DETAIL',0,0)";
 						String sql = updateColumnStatus(pid,"FM-DETAIL",0);
@@ -202,7 +206,7 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean isDetailPoi(IxPoiObj poiObj) throws Exception {
+	private boolean isDetailPoi(IxPoiObj poiObj,Map<Long,Integer> poiStates) throws Exception {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 
 		try {
@@ -234,8 +238,9 @@ public class DeepInfoMarker {
 				return true;
 			}
 
-			LogReader logRead = new LogReader(conn);
-			int poiState = logRead.getObjectState((int) poi.getPid(), "IX_POI");
+//			LogReader logRead = new LogReader(conn);
+//			int poiState = logRead.getObjectState((int) poi.getPid(), "IX_POI");
+			int poiState = poiStates.get(poi.getPid());
 
 			// 非新增（IX_POI.STATE=3）且种别为医院（170101、170102）的不提取
 			if (hospitalKindCode.contains(kindCode)) {

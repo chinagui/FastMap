@@ -353,4 +353,38 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+
+	
+	@Test
+	public void testOperateProblem() throws Exception{
+		
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("command", "ADD");
+		
+		JSONObject data = new JSONObject();
+		data.put("problemLevel", "D");
+		data.put("problemDesc", "test333");
+		data.put("subtaskId", 257);
+		data.put("secondWorkItem", "deepDetail");
+		data.put("pid", 4894);
+		data.put("poiProperty", "tollStd");
+		data.put("newValue", "AAA");
+		data.put("oldValue", "BBB");
+		data.put("commonWorker", "sunjiawei");
+		data.put("workTime", "2017.9.4");
+		data.put("qcWorker", "zhanggenqiang");
+		data.put("qcTime", "2017.9.6");
+		
+		
+		jsonReq.put("data", data);
+		try {
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			deepCore.operateProblem(jsonReq);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+
 }

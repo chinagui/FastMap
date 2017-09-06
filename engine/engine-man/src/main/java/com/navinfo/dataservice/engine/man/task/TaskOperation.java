@@ -215,6 +215,8 @@ public class TaskOperation {
 					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setBlockId(rs.getInt("BLOCK_ID"));
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setProgramId(rs.getInt("PROGRAM_ID"));
 						map.setGroupId(rs.getInt("GROUP_ID"));
@@ -235,6 +237,7 @@ public class TaskOperation {
 //						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
 //						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
 						map.setType(rs.getInt("TYPE"));
+						map.setLot(rs.getInt("LOT"));
 						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						//map.setCityName(rs.getString("CITY_NAME"));
 						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));
@@ -427,7 +430,7 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
-			if (changeFields.containsKey("OVERDUE_OTHER")){
+			if (changeFields.containsKey("OVERDUE_REASON")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" overdue_reason='" + bean.getOverdueReason() + "'";
 			};

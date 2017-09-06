@@ -207,10 +207,12 @@ public class PostBatch {
 		operationResult.putAll(opResult.getAllObjs());
 
 		// 执行批处理FM-BAT-20-115
-		BatchCommand batchCommand = new BatchCommand();
-		batchCommand.setRuleId("FM-BAT-20-115");
+
+		BatchCommand batchCommand=new BatchCommand();
 		batchCommand.setRuleId("FM-BAT-M01-08");
-		Batch batch = new Batch(conn, operationResult);
+		batchCommand.setRuleId("FM-BAT-20-115");
+		Batch batch=new Batch(conn,operationResult);
+
 		batch.operate(batchCommand);
 		persistBatch(batch);
 	}

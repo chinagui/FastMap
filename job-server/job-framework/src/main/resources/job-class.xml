@@ -154,4 +154,8 @@
           class="com.navinfo.dataservice.job.statics.manJob.NoTaskJob"
           request="com.navinfo.dataservice.job.statics.manJob.NoTaskJobRequest" >
     </type>
+    <type name="programStat"
+          class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"
+          request="com.navinfo.dataservice.job.statics.manJob.ProgramJobRequest" >
+    </type>
 	</mapping>

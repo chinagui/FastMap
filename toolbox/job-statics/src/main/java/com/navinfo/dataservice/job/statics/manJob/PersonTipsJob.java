@@ -43,13 +43,10 @@ public class PersonTipsJob extends AbstractStatJob {
     public String stat() throws JobException {
     	PersonTipsJobRequest statReq = (PersonTipsJobRequest)request;
         try {
-        	String timestamp = statReq.getTimestamp().substring(0, 8);
-			//计算前一天的统计
-			timestamp=DateUtils.dateToString(DateUtils.getDayBefore(
-					DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD);
+        	String workDay = statReq.getWorkDay();
         	log.info("start stat PersonTipsJob");
             //1.获取需要统计的子任务号
-            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(timestamp);
+            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(workDay);
 
             Map<String,List<Map<String,Object>>> result = new HashMap<String,List<Map<String,Object>>>();
             List<Map<String,Object>> resultMapList = new ArrayList<>();
@@ -59,10 +56,14 @@ public class PersonTipsJob extends AbstractStatJob {
                 subTaskMap.put("subtaskId", mSubTaskId);
                 subTaskMap.put("tipsAddLen", statObj.getDouble("tipsAddLen"));
                 subTaskMap.put("tipsAllNum", statObj.getDouble("tipsAllNum"));
-                subTaskMap.put("workDate", timestamp);
+                subTaskMap.put("workDay", workDay);
                 resultMapList.add(subTaskMap);
             }
             result.put("person_tips", resultMapList);
+            JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
             log.info("end stat PersonTipsJob");
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {

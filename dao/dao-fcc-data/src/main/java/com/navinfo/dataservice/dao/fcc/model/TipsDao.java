@@ -50,6 +50,7 @@ public class TipsDao {
 	protected int t_mEditMeth;
 	protected String relate_links;
 	protected String relate_nodes;
+	protected String t_dataDate;
 	
 	public String getId() {
 		return id;
@@ -225,8 +226,22 @@ public class TipsDao {
 	public void setRelate_nodes(String relate_nodes) {
 		this.relate_nodes = relate_nodes;
 	}
+	
+	
+	/**
+	 * @return the t_dataDate
+	 */
+	public String getT_dataDate() {
+		return t_dataDate;
+	}
+	/**
+	 * @param t_dataDate the t_dataDate to set
+	 */
+	public void setT_dataDate(String t_dataDate) {
+		this.t_dataDate = t_dataDate;
+	}
 	public Object[] toIndexMainArr(){
-		Object[] cols = new Object[19];
+		Object[] cols = new Object[20];
 		cols[0] = id;
 		cols[1] = stage;
 		cols[2] = t_date;
@@ -246,6 +261,7 @@ public class TipsDao {
 		cols[16] = s_project;
 		cols[17] = t_dEditMeth;
 		cols[18] = t_mEditMeth;
+		cols[19] = t_dataDate;
 		return cols;
 	}
 	public String[][] toIndexLinkArr(){
@@ -306,7 +322,7 @@ public class TipsDao {
 		this.setT_tipStatus(rs.getInt("t_tipStatus"));
 		this.setS_project(rs.getString("s_project"));
 		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
-		this.setT_dEditMeth(rs.getInt("t_dEditMeth"));
+		this.setT_dataDate(rs.getString("t_dataDate"));
 		try {
 			STRUCT wkt = (STRUCT) rs.getObject("wkt");
 			this.setWkt(GeoTranslator.struct2Jts(wkt));
@@ -363,6 +379,7 @@ public class TipsDao {
 		tipsDao.setFeedback(this.getFeedback());
 		tipsDao.setRelate_links(this.getRelate_links());
 		tipsDao.setRelate_nodes(this.getRelate_nodes());
+		tipsDao.setT_dataDate(this.getT_dataDate());
 		return tipsDao;
 	}
 }

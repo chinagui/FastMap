@@ -254,8 +254,8 @@ public class BatchTranslate {
             }
             JSONObject request=null;
             JSONObject response = null;
-            //String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-            String dir = "D:/";
+            String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+            //String dir = "D:/";
             //初始化context
             JobScriptsInterface.initContext();
             //

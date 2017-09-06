@@ -88,7 +88,7 @@ public class TipsExportTest extends InitApplication{
 
             Map<String, Set<String>> images = new HashMap<>();
 
-            int expCount = op.export(condition, filePath, "tips.txt", images);
+            int expCount = op.export(condition,1, filePath, "tips.txt", images);
 
 
             //2.模式图下载： 1406和1401需要导出模式图

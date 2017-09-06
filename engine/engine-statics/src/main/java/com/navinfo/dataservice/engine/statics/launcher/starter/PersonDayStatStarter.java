@@ -33,8 +33,8 @@ public class PersonDayStatStarter extends StatJobStarter {
 		JSONObject request=new JSONObject();
 		request.put("timestamp", timestamp);
 		request.put("workDay", DateUtils.dateToString(DateUtils.getDayBefore(
-				DateUtils.stringToDate(timestamp, DateUtils.DATE_YMD)),DateUtils.DATE_YMD));
-		request.put("identify", request.toString());
+				DateUtils.stringToDate(timestamp, DateUtils.DATE_COMPACTED_FORMAT)),DateUtils.DATE_YMD));
+		//request.put("identify", "\""+request.toString()+"\"");
 		RunJobInfo info = new RunJobInfo(jobType(),request);
 		return info;
 	}

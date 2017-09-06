@@ -44,8 +44,8 @@ public class TaskWriter extends DefaultWriter {
 					int diffDate = (int) jso.get("diffDate");
 					int roadPlanTotal = (int) jso.get("roadPlanTotal");
 					int poiPlanTotal = (int) jso.get("poiPlanTotal");
-					int notaskdata_poi_num = (int) jso.get("notaskdata_poi_num");
-					int notaskdata_tips_num = (int) jso.get("notaskdata_tips_num");
+					int notaskdata_poi_num = (int) jso.get("notaskPoiNum");
+					int notaskdata_tips_num = (int) jso.get("notaskTipsNum");
 					int percent = (int) jso.get("percent");
 					int progress = (int) jso.get("progress");
 					int programId = (int) jso.get("programId");

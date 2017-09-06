@@ -43,7 +43,7 @@ public class ProgramWriter extends DefaultWriter {
 					int type = (int) jso.get("type");
 					int status = (int) jso.get("status");
 					String actualEndDate = (String) jso.get("actualEndDate");
-					int roadPlanTotal = (int) jso.get("roadPlanTotal");
+					double roadPlanTotal = Double.valueOf(String.valueOf(jso.get("roadPlanTotal")));
 					int poiPlanTotal = (int) jso.get("poiPlanTotal");
 					int programId = (int) jso.get("programId");
 					int prograss = (int) jso.get("isOverDue");

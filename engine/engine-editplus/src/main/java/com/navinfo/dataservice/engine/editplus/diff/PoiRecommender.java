@@ -14,17 +14,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.engine.editplus.utils.AdFaceSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -34,121 +37,14 @@ import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class PoiRecommender {
+	Logger log = LoggerRepos.getLogger(this.getClass());
+	private Connection conn;
 
-	public static Connection conn = null;
-
-	public static List<FastPoi> loadPoi(Geometry geometry,MetadataApi metadataApi,String kindsType16) throws Exception {
-		List<FastPoi> poiList = new ArrayList<FastPoi>();
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("WITH A AS ");
-			sb.append(" (SELECT I.POI_NUM,");
-			sb.append("         I.PID,");
-			sb.append("         I.KIND_CODE,");
-			sb.append("         I.CHAIN,");
-			sb.append("         I.POST_CODE,");
-			sb.append("         I.X_GUIDE,");
-			sb.append("         I.Y_GUIDE,");
-			sb.append("         I.GEOMETRY,");
-			sb.append("         P1.NAME OFFICENAME,");
-			sb.append("        (SELECT NAME");
-			sb.append("            FROM IX_POI_NAME");
-			sb.append("           WHERE POI_PID = I.PID");
-			sb.append("             AND NAME_CLASS = 3");
-			sb.append("             AND NAME_TYPE = 1");
-			sb.append("             AND U_RECORD <> 2");
-			sb.append("             AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,");
-			sb.append("         A.FULLNAME");
-			sb.append("    FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
-			sb.append("   WHERE I.KIND_CODE IN "+kindsType16);
-			sb.append("    AND sdo_within_distance(I.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
-			sb.append("     AND I.PID = P1.POI_PID");
-			sb.append("     AND P1.U_RECORD <> 2");
-			sb.append("     AND P1.NAME_CLASS = 1");
-			sb.append("     AND P1.NAME_TYPE = 1");
-			sb.append("    AND P1.LANG_CODE IN ('CHI', 'CHT')");
-			sb.append("     AND I.PID = A.POI_PID");
-			sb.append("     AND A.U_RECORD <> 2");
-			sb.append("    AND A.LANG_CODE IN ('CHI', 'CHT')),");
-			sb.append(" B AS");
-			sb.append(" (SELECT C.POI_PID,");
-			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
-			sb.append("    FROM IX_POI_CONTACT C,A ");
-			sb.append("   WHERE  C.POI_PID = A.PID ");
-			sb.append("     AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
-			sb.append("     AND C.U_RECORD <> 2");
-			sb.append("   GROUP BY C.POI_PID)");
-			sb.append(" SELECT POI_NUM,");
-			sb.append("       PID,");
-			sb.append("       KIND_CODE,");
-			sb.append("       CHAIN,");
-			sb.append("       POST_CODE,");
-			sb.append("       X_GUIDE,");
-			sb.append("       Y_GUIDE,");
-			sb.append("       GEOMETRY,");
-			sb.append("       OFFICENAME,");
-			sb.append("       SHORT_NAME,");
-			sb.append("       FULLNAME,");
-			sb.append("       TEL");
-			sb.append("  FROM A, B");
-			sb.append(" WHERE A.PID = B.POI_PID");
-
-			pstmt = conn.prepareStatement(sb.toString());
-			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(10000));
-
-			String wkt = GeoTranslator.jts2Wkt(buffer);
-			Clob geom = ConnectionUtil.createClob(conn);
-			geom.setString(1, wkt);
-			pstmt.setClob(1, geom);
-
-			resultSet = pstmt.executeQuery();
-			while (resultSet.next()) {
-				FastPoi fastPoi = new FastPoi();
-				fastPoi.setAddr(resultSet.getString("FULLNAME") != null ? resultSet.getString("FULLNAME") : "");
-				fastPoi.setChain(resultSet.getString("CHAIN") != null ? resultSet.getString("CHAIN") : "");
-				
-				fastPoi.setKindCode(resultSet.getString("KIND_CODE") != null ? resultSet.getString("KIND_CODE") : "");
-				fastPoi.setName(resultSet.getString("OFFICENAME") != null ? resultSet.getString("OFFICENAME") : "");
-				fastPoi.setPid(resultSet.getInt("PID"));
-				fastPoi.setPoiNum(resultSet.getString("POI_NUM"));
-				fastPoi.setPostCode(resultSet.getString("POST_CODE") != null ? resultSet.getString("POST_CODE") : "");
-				fastPoi.setShortName(
-						resultSet.getString("SHORT_NAME") != null ? resultSet.getString("SHORT_NAME") : "");
-				String tel=resultSet.getString("TEL") != null ? resultSet.getString("TEL") : "";
-				tel=StringUtil.sortPhone(StringUtil.contactFormat(tel));
-				fastPoi.setTel(tel);
-				fastPoi.setxGuide(resultSet.getDouble("X_GUIDE"));
-				fastPoi.setyGuide(resultSet.getDouble("Y_GUIDE"));
-				
-				Geometry geometryPoi=GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("GEOMETRY"));
-				JSONArray array = GeoTranslator.jts2JSONArray(geometryPoi);
-				fastPoi.setX(array.getDouble(0));
-				fastPoi.setY(array.getDouble(1));
-				
-				int adminCode = new AdFaceSelector(conn).getAminIdByGeometry(geometryPoi);
-				String adminCodeStr = String.valueOf(adminCode);
-				//省份、城市的json
-				JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
-				if(resultJson!=null){
-					fastPoi.setProvnm(resultJson.getString("province"));
-				}else
-				{
-					fastPoi.setProvnm(null);
-				}
-				
-				poiList.add(fastPoi);
-			}
-		} catch (Exception e) {
-			throw new Exception(e.getMessage(), e);
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-		return poiList;
+	public PoiRecommender(Connection conn) {
+		super();
+		this.conn = conn;
 	}
+
 
 	public static FastPoi buildFastPoi(BasicObj obj) {
 
@@ -199,7 +95,7 @@ public class PoiRecommender {
 	}
 
 	// 推荐匹配poi
-	public static void recommenderPoi(IxDealershipResult dealResult,MetadataApi metadataApi,String kindsType16) throws Exception {
+	public void recommenderPoi(IxDealershipResult dealResult,MetadataApi metadataApi,String kindsType16) throws Exception {
 		FastResult fr = buildFastResult(dealResult);
 		// 外扩两公里查询poi
 		List<FastPoi> poiList = loadPoi(dealResult.getGeometry(),metadataApi,kindsType16);
@@ -411,6 +307,121 @@ public class PoiRecommender {
 		if (q != 0 && q > 0.3)
 			sim2 /= q;
 		return (sim1 + sim2) / 2;
+	}
+	
+	public List<FastPoi> loadPoi(Geometry geometry,MetadataApi metadataApi,String kindsType16) throws Exception {
+		List<FastPoi> poiList = new ArrayList<FastPoi>();
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("WITH A AS ");
+			sb.append(" (SELECT I.POI_NUM,");
+			sb.append("         I.PID,");
+			sb.append("         I.KIND_CODE,");
+			sb.append("         I.CHAIN,");
+			sb.append("         I.POST_CODE,");
+			sb.append("         I.X_GUIDE,");
+			sb.append("         I.Y_GUIDE,");
+			sb.append("         I.GEOMETRY,");
+			sb.append("         P1.NAME OFFICENAME,");
+			sb.append("        (SELECT NAME");
+			sb.append("            FROM IX_POI_NAME");
+			sb.append("           WHERE POI_PID = I.PID");
+			sb.append("             AND NAME_CLASS = 3");
+			sb.append("             AND NAME_TYPE = 1");
+			sb.append("             AND U_RECORD <> 2");
+			sb.append("             AND LANG_CODE IN ('CHI', 'CHT')) SHORT_NAME,");
+			sb.append("         A.FULLNAME");
+			sb.append("    FROM IX_POI I, IX_POI_NAME P1, IX_POI_ADDRESS A");
+			sb.append("   WHERE I.KIND_CODE IN "+kindsType16);
+			sb.append("    AND sdo_within_distance(I.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
+			sb.append("     AND I.PID = P1.POI_PID");
+			sb.append("     AND P1.U_RECORD <> 2");
+			sb.append("     AND P1.NAME_CLASS = 1");
+			sb.append("     AND P1.NAME_TYPE = 1");
+			sb.append("    AND P1.LANG_CODE IN ('CHI', 'CHT')");
+			sb.append("     AND I.PID = A.POI_PID");
+			sb.append("     AND A.U_RECORD <> 2");
+			sb.append("    AND A.LANG_CODE IN ('CHI', 'CHT')),");
+			sb.append(" B AS");
+			sb.append(" (SELECT C.POI_PID,");
+			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
+			sb.append("    FROM IX_POI_CONTACT C,A ");
+			sb.append("   WHERE  C.POI_PID = A.PID ");
+			sb.append("     AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
+			sb.append("     AND C.U_RECORD <> 2");
+			sb.append("   GROUP BY C.POI_PID)");
+			sb.append(" SELECT POI_NUM,");
+			sb.append("       PID,");
+			sb.append("       KIND_CODE,");
+			sb.append("       CHAIN,");
+			sb.append("       POST_CODE,");
+			sb.append("       X_GUIDE,");
+			sb.append("       Y_GUIDE,");
+			sb.append("       GEOMETRY,");
+			sb.append("       OFFICENAME,");
+			sb.append("       SHORT_NAME,");
+			sb.append("       FULLNAME,");
+			sb.append("       TEL");
+			sb.append("  FROM A, B");
+			sb.append(" WHERE A.PID = B.POI_PID");
+			
+			log.info(sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			Geometry buffer = geometry.buffer(GeometryUtils.convert2Degree(10000));
+
+			String wkt = GeoTranslator.jts2Wkt(buffer);
+			Clob geom = ConnectionUtil.createClob(conn);
+			geom.setString(1, wkt);
+			pstmt.setClob(1, geom);
+
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				FastPoi fastPoi = new FastPoi();
+				fastPoi.setAddr(resultSet.getString("FULLNAME") != null ? resultSet.getString("FULLNAME") : "");
+				fastPoi.setChain(resultSet.getString("CHAIN") != null ? resultSet.getString("CHAIN") : "");
+				
+				fastPoi.setKindCode(resultSet.getString("KIND_CODE") != null ? resultSet.getString("KIND_CODE") : "");
+				fastPoi.setName(resultSet.getString("OFFICENAME") != null ? resultSet.getString("OFFICENAME") : "");
+				fastPoi.setPid(resultSet.getInt("PID"));
+				fastPoi.setPoiNum(resultSet.getString("POI_NUM"));
+				fastPoi.setPostCode(resultSet.getString("POST_CODE") != null ? resultSet.getString("POST_CODE") : "");
+				fastPoi.setShortName(
+						resultSet.getString("SHORT_NAME") != null ? resultSet.getString("SHORT_NAME") : "");
+				String tel=resultSet.getString("TEL") != null ? resultSet.getString("TEL") : "";
+				tel=StringUtil.sortPhone(StringUtil.contactFormat(tel));
+				fastPoi.setTel(tel);
+				fastPoi.setxGuide(resultSet.getDouble("X_GUIDE"));
+				fastPoi.setyGuide(resultSet.getDouble("Y_GUIDE"));
+				
+				Geometry geometryPoi=GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("GEOMETRY"));
+				JSONArray array = GeoTranslator.jts2JSONArray(geometryPoi);
+				fastPoi.setX(array.getDouble(0));
+				fastPoi.setY(array.getDouble(1));
+				log.info("pid:"+resultSet.getInt("PID"));
+				int adminCode = new AdFaceSelector(conn).getAminIdByGeometry(geometryPoi);
+				String adminCodeStr = String.valueOf(adminCode);
+				log.info("adminCodeStr:"+adminCodeStr);
+				//省份、城市的json
+				JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
+				if(resultJson!=null){
+					fastPoi.setProvnm(resultJson.getString("province"));
+				}else
+				{
+					fastPoi.setProvnm(null);
+				}
+				
+				poiList.add(fastPoi);
+			}
+		} catch (Exception e) {
+			throw new Exception(e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return poiList;
 	}
 
 }

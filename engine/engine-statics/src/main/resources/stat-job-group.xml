@@ -23,10 +23,10 @@
 		<job name="tipsStat"/>
 	</group>
 	<group name="blockJob" starter="com.navinfo.dataservice.engine.statics.launcher.starter.BlockStatStarter">
-		<job name="noTaskStat"/>
+		<job name="noTaskJob"/>
 	</group>
 	<group name="cityJob" starter="com.navinfo.dataservice.engine.statics.launcher.starter.CityStatStarter">
-		<job name="noTaskStat"/>
+		<job name="noTaskJob"/>
 		<job name="programStat"/>
 	</group>
 	<group name="programStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.ProgramStatStarter">

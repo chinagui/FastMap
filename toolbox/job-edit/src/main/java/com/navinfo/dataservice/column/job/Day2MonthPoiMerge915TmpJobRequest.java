@@ -12,7 +12,9 @@ import net.sf.json.JSONObject;
 
 public class Day2MonthPoiMerge915TmpJobRequest extends AbstractJobRequest {
 	private String tmpOpTable;//刷履历的临时表
-	private Integer specRegionId;//需要日落月的大区id,为空表示全部大区都要落
+	private String tempFailLogTable;//刷履历报错临时表 
+	private int onlyFlushLog; 
+	private int specRegionId;//需要日落月的大区id,为空表示全部大区都要落
 	private List<Integer> specMeshes;//需要日落月的大区id,为空表示全部大区都要落
 	private int phaseId;
 	private int type;
@@ -51,11 +53,27 @@ public class Day2MonthPoiMerge915TmpJobRequest extends AbstractJobRequest {
 		this.tmpOpTable = tmpOpTable;
 	}
 
-	public Integer getSpecRegionId() {
+	public String getTempFailLogTable() {
+		return tempFailLogTable;
+	}
+
+	public void setTempFailLogTable(String tempFailLogTable) {
+		this.tempFailLogTable = tempFailLogTable;
+	}
+
+	public int getOnlyFlushLog() {
+		return onlyFlushLog;
+	}
+
+	public void setOnlyFlushLog(int onlyFlushLog) {
+		this.onlyFlushLog = onlyFlushLog;
+	}
+
+	public int getSpecRegionId() {
 		return specRegionId;
 	}
 
-	public void setSpecRegionId(Integer specRegionId) {
+	public void setSpecRegionId(int specRegionId) {
 		this.specRegionId = specRegionId;
 	}
 

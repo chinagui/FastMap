@@ -1659,7 +1659,9 @@ public class Transaction {
                     if (entry.getKey().equals(sourceDbId)) {
                         continue;
                     }
-                    row = this.cloneNode(row);
+                    if (ObjStatus.INSERT.equals(entry.getValue())) {
+                        row = this.cloneNode(row);
+                    }
 
                     if (map.containsKey(entry.getKey())) {
                         map.get(entry.getKey()).put(row, entry.getValue());

@@ -2034,9 +2034,38 @@ public class Transaction {
         }
     }
 
-    /**
-     * 检查操作合法性
-     */
+    private void checkErrorOperation() throws Exception {
+        JSONObject json = JSONObject.fromObject(requester);
+        try {
+            if (OperType.REPAIR.equals(operType)) {
+                for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
+                    if (!entry.getKey().equals(objType)) {
+                        continue;
+                    }
+                    if (!json.containsKey("data") || json.getJSONObject("data").containsKey("catchInfos")) {
+                        return;
+                    }
+
+                    Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
+                    while (iterator.hasNext()) {
+                        JSONObject obj = iterator.next();
+                        if (obj.containsKey("nodePid")) {
+                            IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
+                            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
+                            if (dbIds.size() > 1) {
+                                throw new Exception("不允分离大区库接边Node.");
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
+        /**
+         * 检查操作合法性
+         */
     private void assertErrorOperation() throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
 
@@ -2449,6 +2478,9 @@ public class Transaction {
             // 操作合法性检查
             // 2017.8.24修改跨大区方案，取消控制
             // assertErrorOperation();
+
+            // 检查接边点不允许分离
+            checkErrorOperation();
 
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {

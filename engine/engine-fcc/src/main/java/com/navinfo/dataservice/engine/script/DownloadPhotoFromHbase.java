@@ -17,7 +17,6 @@ import java.util.Properties;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.log4j.Logger;
-import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;

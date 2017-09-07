@@ -53,9 +53,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void repair() {
-        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":509000679,\"data\":{\"type\":\"RDLINK\"," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.07374048233032,36],[115.07451,36.00035]]}," +
-                "\"catchInfos\":[{\"nodePid\":509000537,\"longitude\":115.07374048233032,\"latitude\":36}]},\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":17908374,\"data\":{\"type\":\"RDLINK\"," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.49924612045288,36.08966735778462],[115.49817,36.09029]]}," +
+                "\"catchInfos\":[{\"nodePid\":14026462,\"longitude\":115.49924612045288,\"latitude\":36.08966735778462}]},\"dbId\":13," +
+                "\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 

@@ -1495,6 +1495,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 						if(objStatInfos != null && objStatInfos.size() > 0){
 							for (FlushObjStatInfo objStatInfo : objStatInfos) {
 								String objName = objStatInfo.getObjName();
+								//同一关系的过滤
+								if("IX_SAMEPOI".equals(objName)){continue;}
 								int totalObj = objStatInfo.getTotal();
 								int successObj = objStatInfo.getSuccess();
 								logDesc.append(" ,"+objName+":"+successObj+"/"+totalObj);

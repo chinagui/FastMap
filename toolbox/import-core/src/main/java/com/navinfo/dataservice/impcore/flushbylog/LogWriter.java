@@ -278,15 +278,9 @@ public class LogWriter {
 				}
 
 			}
-			int count = this.getDataByRowId(editLog);
-			if (count == 0) {
-				int result = pstmt.executeUpdate();
-				data.put("result", result);
-				data.put("log", "");
-			} else {
-				data.put("result", -1);
-				data.put("log", "新增已存在-接边履历重复");
-			}
+			int result = pstmt.executeUpdate();
+			data.put("result", result);
+			data.put("log", "");
 			return data;
 		} catch (Exception e) {
 

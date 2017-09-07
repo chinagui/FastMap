@@ -114,7 +114,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);
 				} 
-			}else if(specRegionId!=null||specRegionId.size()>0){//按照指定大区库进行日落月
+			}else if(specRegionId!=null&&specRegionId.size()>0){//按照指定大区库进行日落月
 				for(int regionId:specRegionId){
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);

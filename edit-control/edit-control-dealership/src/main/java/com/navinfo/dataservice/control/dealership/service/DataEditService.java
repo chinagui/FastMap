@@ -2657,7 +2657,7 @@ public class DataEditService {
 					QueryRunner run = new QueryRunner();
 					String sql = "SELECT T.TASK_ID FROM TASK T, GRID G, PROGRAM P WHERE G.BLOCK_ID = T.BLOCK_ID AND T.PROGRAM_ID = P.PROGRAM_ID AND T.LATEST = 1 AND P.TYPE = 1 AND T.TYPE = 0 AND g.grid_id = ?";
 					int taskId = run.queryForInt(manConn, sql, grids[0]);
-					if(taskId != 0){
+					if(taskId != -1){
 						updateMediumTaskTid(taskId, pid, dailycon);
 					}
 				} catch (Exception e) {

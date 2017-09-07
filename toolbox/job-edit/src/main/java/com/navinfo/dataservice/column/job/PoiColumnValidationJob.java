@@ -144,7 +144,9 @@ public class PoiColumnValidationJob extends AbstractJob {
 			Subtask subtask = apiService.queryBySubtaskId(Integer.parseInt(String.valueOf(jobInfo.getTaskId())));
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
-				subtask = apiService.queryBySubTaskIdAndIsQuality(Integer.parseInt(String.valueOf(jobInfo.getTaskId())), "2", isQuality);
+				if(!myRequest.getFirstWorkItem().equals("poi_deep")){//深度信息质检还用质检任务号
+					subtask = apiService.queryBySubTaskIdAndIsQuality(Integer.parseInt(String.valueOf(jobInfo.getTaskId())), "2", isQuality);
+				}
 			}
 			
 			String sql="SELECT DISTINCT P.PID"

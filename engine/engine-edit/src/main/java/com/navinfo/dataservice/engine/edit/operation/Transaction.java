@@ -1,12 +1,17 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import com.google.common.base.CaseFormat;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.*;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -15,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
@@ -22,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -1544,7 +1551,7 @@ public class Transaction {
 
                 Set<Integer> row2DbIds = DbMeshInfoUtil.calcDbIds(geometry);
                 for (Integer dbId : row2DbIds) {
-                    if (dbId == sourceDbId) {
+                    if (dbId.equals(sourceDbId)) {
                         continue;
                     }
                     if (map.containsKey(dbId)) {
@@ -1649,9 +1656,13 @@ public class Transaction {
                 }
 
                 for (Map.Entry<Integer, ObjStatus> entry : dbMap.entrySet()) {
-                    if (entry.getKey() == sourceDbId) {
+                    if (entry.getKey().equals(sourceDbId)) {
                         continue;
                     }
+                    if (ObjStatus.INSERT.equals(entry.getValue())) {
+                        row = this.cloneNode(row);
+                    }
+
                     if (map.containsKey(entry.getKey())) {
                         map.get(entry.getKey()).put(row, entry.getValue());
                     } else {
@@ -1674,7 +1685,8 @@ public class Transaction {
                 while (rowIterator.hasNext()) {
                     Map.Entry<IRow, ObjStatus> tempRow = rowIterator.next();
 
-                    if (!row.equals(tempRow) && parentPid.equals(tempRow.getKey().parentPKValue())
+                    if ((!row.equals(tempRow) && !row.objType().equals(tempRow.getKey().objType()))
+                            && parentPid.equals(tempRow.getKey().parentPKValue())
                             && parentTableName.equals(tempRow.getKey().tableName())) {
                         innerMap.put(row, tempRow.getValue());
                     }
@@ -1710,6 +1722,55 @@ public class Transaction {
         }
 
         return map;
+    }
+
+    private IRow cloneNode(IRow row) {
+        if (!(row instanceof IObj)) {
+            return row;
+        }
+
+        IObj obj = (IObj) row;
+
+        IObj result = null;
+        if (row instanceof RdNode) {
+            RdNode node = new RdNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof RwNode) {
+            RwNode node = new RwNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof AdNode) {
+            AdNode node = new AdNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof ZoneNode) {
+            ZoneNode node = new ZoneNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof LcNode) {
+            LcNode node = new LcNode();
+            node.setPid(obj.pid());
+            result = node;
+        } else if (row instanceof LuNode) {
+            LuNode node = new LuNode();
+            node.setPid(obj.pid());
+            result = node;
+        }
+
+        if (result == null) {
+            return row;
+        } else {
+            result.copy(row);
+            try {
+                JSONObject json = JSONObject.fromObject(row.changedFields());
+                result.Unserialize(json);
+            } catch (Exception e) {
+                logger.error("拷贝点对象失败.", e);
+            }
+
+            return result;
+        }
     }
 
     private List<Geometry> getCRFGeom(Connection conn, List<IRow> rows) {
@@ -1809,6 +1870,32 @@ public class Transaction {
         selector = new AbstractSelector(RdLink.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(links), true, false);
+            if (rowsTmp.size() != links.size() && rowsTmp.size() > 0) {
+                int minus = links.size() - rowsTmp.size();
+
+                RdLink link = (RdLink) rowsTmp.get(0);
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(link.getGeometry(), Constant.BASE_SHRINK, Constant
+                        .BASE_PRECISION), 3);
+                for (Integer dbId : dbIds) {
+                    if (dbId.equals(process.getCommand().getDbId())) {
+                        continue;
+                    }
+
+                    Connection connection = null;
+                    try {
+                        connection = DBConnector.getInstance().getConnectionById(dbId);
+                        List<RdLink> rdLinks = new RdLinkSelector(connection).loadByPids(new ArrayList<>(links), false);
+                        rowsTmp.addAll(rdLinks);
+                        if (rdLinks.size() == minus) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        DBUtils.closeConnection(connection);
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdLink出错[ids: %s]", Arrays.toString(links.toArray())), e);
         }
@@ -1821,6 +1908,32 @@ public class Transaction {
         selector = new AbstractSelector(RdNode.class, conn);
         try {
             rowsTmp = selector.loadByIds(new ArrayList<>(nodes), true, false);
+            if (rowsTmp.size() != nodes.size() && rowsTmp.size() > 0) {
+                int minus = nodes.size() - rowsTmp.size();
+
+                RdNode node = (RdNode) rowsTmp.get(0);
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(node.getGeometry(), Constant.BASE_SHRINK, Constant
+                        .BASE_PRECISION), 3);
+                for (Integer dbId : dbIds) {
+                    if (dbId.equals(process.getCommand().getDbId())) {
+                        continue;
+                    }
+
+                    Connection connection = null;
+                    try {
+                        connection = DBConnector.getInstance().getConnectionById(dbId);
+                        List<IRow> rdNodes = new RdNodeSelector(connection).loadByIds(new ArrayList<>(links), false,false);
+                        rowsTmp.addAll(rdNodes);
+                        if (rdNodes.size() == minus) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        DBUtils.closeConnection(connection);
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error(String.format("获取RdNode出错[ids: %s]", Arrays.toString(nodes.toArray())), e);
         }
@@ -1923,9 +2036,38 @@ public class Transaction {
         }
     }
 
-    /**
-     * 检查操作合法性
-     */
+    private void checkErrorOperation() throws Exception {
+        JSONObject json = JSONObject.fromObject(requester);
+        try {
+            if (OperType.REPAIR.equals(operType)) {
+                for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
+                    if (!entry.getKey().equals(objType)) {
+                        continue;
+                    }
+                    if (!json.containsKey("data") || json.getJSONObject("data").containsKey("catchInfos")) {
+                        return;
+                    }
+
+                    Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
+                    while (iterator.hasNext()) {
+                        JSONObject obj = iterator.next();
+                        if (obj.containsKey("nodePid")) {
+                            IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
+                            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
+                            if (dbIds.size() > 1) {
+                                throw new Exception("不允分离大区库接边Node.");
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
+        /**
+         * 检查操作合法性
+         */
     private void assertErrorOperation() throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
 
@@ -2338,6 +2480,9 @@ public class Transaction {
             // 操作合法性检查
             // 2017.8.24修改跨大区方案，取消控制
             // assertErrorOperation();
+
+            // 检查接边点不允许分离
+            checkErrorOperation();
 
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {

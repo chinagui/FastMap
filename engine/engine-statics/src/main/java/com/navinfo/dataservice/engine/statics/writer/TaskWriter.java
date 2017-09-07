@@ -44,12 +44,13 @@ public class TaskWriter extends DefaultWriter {
 					int diffDate = (int) jso.get("diffDate");
 					int roadPlanTotal = (int) jso.get("roadPlanTotal");
 					int poiPlanTotal = (int) jso.get("poiPlanTotal");
-					int notaskdata_poi_num = (int) jso.get("notaskdata_poi_num");
-					int notaskdata_tips_num = (int) jso.get("notaskdata_tips_num");
+					int notaskdata_poi_num = (int) jso.get("notaskPoiNum");
+					int notaskdata_tips_num = (int) jso.get("notaskTipsNum");
 					int percent = (int) jso.get("percent");
 					int progress = (int) jso.get("progress");
+					int programId = (int) jso.get("programId");
 					//保存数据
-					Object[] value=new Object[15];
+					Object[] value=new Object[16];
 					value[0] = taskId;
 					value[1] = progress;
 					value[2] = percent;
@@ -66,6 +67,7 @@ public class TaskWriter extends DefaultWriter {
 					value[12] = notaskdata_tips_num;
 					value[13] = statDate;
 					value[14] = statDate;
+					value[15] = programId;
 					
 					valueList[i] = value;
 				}
@@ -75,7 +77,7 @@ public class TaskWriter extends DefaultWriter {
 						+ "DIFF_DATE,POI_PLAN_TOTAL,ROAD_PLAN_TOTAL,TYPE,PLAN_DATE,"
 						+ "ACTUAL_START_DATE,ACTUAL_END_DATE,NOTASKDATA_POI_NUM,NOTASKDATA_TIPS_NUM,"
 						+ "STAT_DATE,STAT_TIME,CONVERT_FLAG,PROGRAM_ID,GROUP_ID) "
-						+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0)";
+						+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,0)";
 				QueryRunner run=new QueryRunner();
 				run.execute(conn, dropSql);
 				run.batch(conn, insertSql,valueList);

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.dao.plus.innermodel.CiParaAdAdmin;
@@ -60,6 +63,9 @@ public class FMBAT20110 extends BasicBatchRule {
 	private List<String> type11Key = new ArrayList<String>();
 	private List<String> type12Key = new ArrayList<String>();
 	
+	// Map<regionId, adminCode>
+	private Map<Long, Long> regionAdminMap = new HashMap<Long, Long>();
+	
 	public FMBAT20110() throws Exception {
 		
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -90,6 +96,12 @@ public class FMBAT20110 extends BasicBatchRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
+		Set<Long> regions = new HashSet<Long>();
+		for (BasicObj obj: batchDataList){
+			IxPoi poi = (IxPoi) obj.getMainrow();
+			regions.add(poi.getRegionId());
+		}
+		regionAdminMap = getAdminCode(super.getBatchRuleCommand().getConn(), regions);
 	}
 
 	@Override
@@ -98,11 +110,17 @@ public class FMBAT20110 extends BasicBatchRule {
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		List<IxPoiAddress> addresses = poiObj.getIxPoiAddresses();
 		if (addresses == null || addresses.size() == 0) {return;}
-		long adminCode = getAdminCode(super.getBatchRuleCommand().getConn(), poi.getRegionId());
+		long pid = poi.getPid();
+		log.debug("pid="+pid);
+		long regionId = poi.getRegionId();
+		log.debug("regionId="+regionId);
+		long adminCode = 0;
+		if(regionAdminMap.containsKey(regionId)){
+			adminCode = regionAdminMap.get(regionId);
+		}
 		log.debug("adminCode=" + adminCode);
 		if (adminCode == 0) {return;}
 		boolean isChanged = false;
-//		boolean isChanged = true;
 		// 存在IX_POI_ADDRESS新增或者修改履历
 		for (IxPoiAddress addr: addresses) {
 			if (addr.getHisOpType().equals(OperationType.INSERT) || addr.getHisOpType().equals(OperationType.UPDATE)){
@@ -113,7 +131,6 @@ public class FMBAT20110 extends BasicBatchRule {
 		if (isChanged){
 			// 开始执行批处理
 			for (IxPoiAddress addressWrap: addresses){
-				log.debug("pid:"+addressWrap.getPoiPid());
 				boolean streetInDb = false; //在库中找到道路名
 				boolean placeInDb = false; //在库中找到place
 				boolean placeWithkey = false; //存在place关键字
@@ -683,62 +700,71 @@ public class FMBAT20110 extends BasicBatchRule {
 	            addOns = specialJson.getString("addOns");
 	            
 	            // 将拆分出的18个字段依次set到address子表
+	            
 	            MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	            String allAddress = province + "|" + city + "|" + county + "|" + town + "|" + place + "|" + street + "|" 
+	            					+ landMark + "|" + prefix + "|" + houseNum + "|" + type + "|" + subNum + "|" + surfix + "|"
+	            					+ estab + "|" + building + "|" + floor + "|" + unit + "|" + roomNum + "|" + addOns;
+	            log.debug("allAddress="+allAddress);
+	            String allAddressPy = metadataApi.pyConvert(allAddress,String.valueOf(adminCode),null);
+	            log.debug("allAddressPy="+allAddressPy);
+	            String[] addressPyArray = allAddressPy.split("\\|");
 	            // province
 	            addressWrap.setProvince(province);
-	            addressWrap.setProvPhonetic(metadataApi.pyConvert(province,String.valueOf(adminCode),null));
+	            addressWrap.setProvPhonetic(addressPyArray[0].trim());
 	            // city
 	            addressWrap.setCity(city);
-	            addressWrap.setCityPhonetic(metadataApi.pyConvert(city,String.valueOf(adminCode),null));
+	            addressWrap.setCityPhonetic(addressPyArray[1].trim());
 	            // county
 	            addressWrap.setCounty(county);
-	            addressWrap.setCountyPhonetic(metadataApi.pyConvert(county,String.valueOf(adminCode),null));
+	            addressWrap.setCountyPhonetic(addressPyArray[2].trim());
 	            // town
 	            addressWrap.setTown(town);
-	            addressWrap.setTownPhonetic(metadataApi.pyConvert(town,String.valueOf(adminCode),null));
+	            addressWrap.setTownPhonetic(addressPyArray[3].trim());
 	            // place
 	            addressWrap.setPlace(place);
-	            addressWrap.setPlacePhonetic(metadataApi.pyConvert(place,String.valueOf(adminCode),null));
+	            addressWrap.setPlacePhonetic(addressPyArray[4].trim());
 	            // street
 	            addressWrap.setStreet(street);
-	            addressWrap.setStreetPhonetic(metadataApi.pyConvert(street,String.valueOf(adminCode),null));
+	            addressWrap.setStreetPhonetic(addressPyArray[5].trim());
 	            // landMark
 	            addressWrap.setLandmark(landMark);
-	            addressWrap.setLandmarkPhonetic(metadataApi.pyConvert(landMark,String.valueOf(adminCode),null));
+	            addressWrap.setLandmarkPhonetic(addressPyArray[6].trim());
 	            // prefix
 	            addressWrap.setPrefix(prefix);
-	            addressWrap.setPrefixPhonetic(metadataApi.pyConvert(prefix,String.valueOf(adminCode),null));
+	            addressWrap.setPrefixPhonetic(addressPyArray[7].trim());
 	            // houseNum
 	            addressWrap.setHousenum(houseNum);
-	            addressWrap.setHousenumPhonetic(metadataApi.pyConvert(houseNum,String.valueOf(adminCode),null));
+	            addressWrap.setHousenumPhonetic(addressPyArray[8].trim());
 	            // type
 	            addressWrap.setType(type);
-	            addressWrap.setTypePhonetic(metadataApi.pyConvert(type,String.valueOf(adminCode),null));
+	            addressWrap.setTypePhonetic(addressPyArray[9].trim());
 	            // subNum
 	            addressWrap.setSubnum(subNum);
-	            addressWrap.setSubnumPhonetic(metadataApi.pyConvert(subNum,String.valueOf(adminCode),null));
+	            addressWrap.setSubnumPhonetic(addressPyArray[10].trim());
 	            // surfix
 	            addressWrap.setSurfix(surfix);
-	            addressWrap.setSurfixPhonetic(metadataApi.pyConvert(surfix,String.valueOf(adminCode),null));
+	            addressWrap.setSurfixPhonetic(addressPyArray[11].trim());
 	            // estab
 	            addressWrap.setEstab(estab);
-	            addressWrap.setEstabPhonetic(metadataApi.pyConvert(estab,String.valueOf(adminCode),null));
+	            addressWrap.setEstabPhonetic(addressPyArray[12].trim());
 	            // building
 	            addressWrap.setBuilding(building);
-	            addressWrap.setBuildingPhonetic(metadataApi.pyConvert(building,String.valueOf(adminCode),null));
+	            addressWrap.setBuildingPhonetic(addressPyArray[13].trim());
 	            // floor
 	            addressWrap.setFloor(floor);
-	            addressWrap.setFloorPhonetic(metadataApi.pyConvert(floor,String.valueOf(adminCode),null));
+	            addressWrap.setFloorPhonetic(addressPyArray[14].trim());
 	            // unit
 	            addressWrap.setUnit(unit);
-	            addressWrap.setUnitPhonetic(metadataApi.pyConvert(unit,String.valueOf(adminCode),null));
+	            addressWrap.setUnitPhonetic(addressPyArray[15].trim());
 	            // roomNum
 	            addressWrap.setRoom(roomNum);
-	            addressWrap.setRoomPhonetic(metadataApi.pyConvert(roomNum,String.valueOf(adminCode),null));
+	            addressWrap.setRoomPhonetic(addressPyArray[16].trim());
 	            // addOns
 	            addressWrap.setAddons(addOns);
-	            addressWrap.setAddonsPhonetic(metadataApi.pyConvert(addOns,String.valueOf(adminCode),null));
-	            
+	            if(addressPyArray.length == 18){
+	            	addressWrap.setAddonsPhonetic(addressPyArray[17].trim());
+	            }
 			}
 		}
 	}
@@ -775,6 +801,44 @@ public class FMBAT20110 extends BasicBatchRule {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	public Map<Long, Long> getAdminCode(Connection conn, Set<Long> regionIds) throws Exception{
+		Map<Long, Long> regionAdminMap = new HashMap<Long, Long>();
+		String sql = "select admin_id,region_id from ad_admin where 1=1 ";
+		String regionIdString = StringUtils.join(regionIds, ",");
+		boolean clobFlag = false;
+        if (regionIds.size() > 1000) {
+            sql += " and region_id IN (select to_number(column_value) from table(clob_to_table(?)))";
+            clobFlag = true;
+        } else {
+        	sql += " and region_id IN (" + regionIdString + ")";
+        }
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			if(clobFlag){
+	            Clob clob = ConnectionUtil.createClob(conn);
+	            clob.setString(1, regionIdString);
+				pstmt.setClob(1, clob);
+			}
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				regionAdminMap.put(resultSet.getLong("region_id"), resultSet.getLong("admin_id"));
+			}
+			
+			return regionAdminMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
 
 	public JSONObject findMaxIdx(String estabPost, List<String> buildingKeys) {
 		JSONObject res = new JSONObject();
@@ -1029,10 +1093,16 @@ public class FMBAT20110 extends BasicBatchRule {
 //		System.out.println(obj);
 //		int maxIdx = obj.getInt("keyIdx");
 //		String zhenPre = obj.getString("streetPre");
-		String zhenPre = "AB";
-		System.out.println(zhenPre);
-		if(StringUtils.isNotEmpty(zhenPre) && zhenPre.length() >= (2+1)){
-		System.out.println(zhenPre.substring(0, 2+1));}
+//		String zhenPre = "AB";
+//		System.out.println(zhenPre);
+//		if(StringUtils.isNotEmpty(zhenPre) && zhenPre.length() >= (2+1)){
+//		System.out.println(zhenPre.substring(0, 2+1));}
+		String addressPy = "| | 1 Lou | ";
+		String[] addressPyArray = addressPy.split("\\|");
+		System.out.println(addressPyArray.length);
+		System.out.println(addressPyArray[0]);
+		System.out.println(addressPyArray[1]);
+		System.out.println(addressPyArray[2]);
 	}
 
 }

@@ -68,6 +68,7 @@ public class TaskJob extends AbstractStatJob {
 			TaskJobRequest statReq = (TaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
 			String timestamp = statReq.getTimestamp();
+			long t = System.currentTimeMillis();
 			//任务统计数据
 			List<Map<String, Object>> taskStatList = new ArrayList<Map<String, Object>>();
 			//已关闭任务id(不需要统计)
@@ -78,6 +79,8 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			//所有已经分配子任务的任务id集合
+			Set<Integer> taskIdsHasSubtask = manApi.queryTasksHasSubtask();
 			
 			//modify by songhe 2017/9/04
 			//查询task对应的tips转aumark数量
@@ -94,6 +97,7 @@ public class TaskJob extends AbstractStatJob {
 			for (Task task : taskAll) {
 				int status = task.getStatus();
 				int taskId = task.getTaskId();
+
 				//任务开启
 				if(status == 1){
 					//查询grids
@@ -168,6 +172,10 @@ public class TaskJob extends AbstractStatJob {
 					int subtaskId = (int) map.get("subtaskId");
 					subtaskIds.add(subtaskId);
 				}
+				//判断是否包含子任务
+				if(taskIdsHasSubtask.contains(taskId)){
+					task.setIsAssign(1);
+				}
 				//处理grid_task_tips相应的统计数据 key:统计描述，value：统计值
 				Map<String, Integer> gridTaskTipsStat =new HashMap<>();
 				if(task.getType()==1){
@@ -230,7 +238,6 @@ public class TaskJob extends AbstractStatJob {
 			result.put("task",taskStatList);
 
 			log.info("end stat "+statReq.getJobType());
-			long t = System.currentTimeMillis();
 			log.debug("所有任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();
@@ -250,16 +257,25 @@ public class TaskJob extends AbstractStatJob {
 	public Map<Integer,Map<String,Object>> getTaskStatData(String timestamp) throws Exception{
 		try {
 			//获取上一次的统计时间
-			String lastTime = DateUtils.addSeconds(timestamp,-60*60);
+			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(task, filter);
+			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
+			FindIterable<Document> findIterable = mongoDao.find(task, null).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
+			String timestampLast="";
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				String timestampOrigin=String.valueOf(jso.get("timestamp"));
+				if(StringUtils.isEmpty(timestampLast)){
+					timestampLast=timestampOrigin;
+					log.info("最近一次的统计日期为："+timestampLast);
+				}
+				if(!timestampLast.equals(timestampOrigin)){
+					break;
+				}
 				int taskId = (int) jso.get("taskId");
 				int status = (int) jso.get("status");
 				if(status == 0){
@@ -988,11 +1004,20 @@ public class TaskJob extends AbstractStatJob {
 		int roadPercent = 0;
 		int percent = 0;
 		int progress = 1;
+		int blockId = 0;
+		int programId = 0;
+		String createDate = "";
 		Map<String, Object> taskMap = new HashMap<String, Object>();
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
-			String systemDate = sdf.format(new Date());			
+			String systemDate = sdf.format(new Date());		
+			//项目Id
+			programId = task.getProgramId();
+			blockId = task.getBlockId();
+			if(task.getCreateDate() != null){
+				createDate = sdf.format(task.getCreateDate());
+			}
 			//任务id
 			taskId = task.getTaskId();
 			//任务类型
@@ -1286,6 +1311,8 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("workKind", task.getWorkKind() == null ? "" : task.getWorkKind());
 			taskMap.put("workDate", workDate);
 			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
+			taskMap.put("lot", task.getLot());
+			taskMap.put("isAssign", task.getIsAssign());
 			
 			//保存数据
 			taskMap.put("taskId", taskId);
@@ -1340,6 +1367,9 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("roadPercent", roadPercent);
 			taskMap.put("percent", percent);
 			taskMap.put("progress", progress);
+			taskMap.put("programId", programId);
+			taskMap.put("blockId", blockId);
+			taskMap.put("createDate", createDate);
 			
 			return taskMap;
 		} catch (Exception e) {

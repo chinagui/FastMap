@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.txt.TxtReader;
@@ -36,34 +38,45 @@ public class ImportGeo {
 	 */
 	public static void main(String[] args) throws Exception {
 		log.info("start");
-		JobScriptsInterface.initContext();
-		String filepath = String.valueOf(args[0]);
-		//String filepath ="D:\\temp\\test.txt";
-		Connection conn=DBConnector.getInstance().getManConnection();
-		List<String> contents=TxtReader.readTxtFile(filepath);
-		List<Map<String,String>> sources=new ArrayList<>();
-		for(String line:contents){
-			Map<String,String> map=new HashMap<>();
-			String[] lineList = line.split(" ");
-			String id=lineList[0];
-			String wkt=line.replace(id+" ", "");
-			map.put("id", id);
-			map.put("geo", wkt);
-			sources.add(map);
+		try{
+			JobScriptsInterface.initContext();
+			String filepath = String.valueOf(args[0]);
+			//String filepath ="D:\\temp\\1779.txt";
+			Connection conn=DBConnector.getInstance().getManConnection();
+			log.info("read txt start");
+			List<String> contents=TxtReader.readTxtFile(filepath);
+			List<Map<String,String>> sources=new ArrayList<>();
+			for(String line:contents){
+				Map<String,String> map=new HashMap<>();
+				String[] lineList = line.split(" ");
+				String id=lineList[0];
+				String wkt=line.substring(id.length()+1);//.replace(id+" ", "");
+				map.put("id", id);
+				map.put("geo", wkt);
+				sources.add(map);
+			}
+			log.info("read txt end");
+			String sql="insert into geo_tmp(id,geo) values(?,sdo_geometry(?,8307))";
+			QueryRunner run=new QueryRunner();
+			Object[][] params=new Object[sources.size()][2];
+			for(int i=0;i<sources.size();i++){
+				params[i][0]=String.valueOf(sources.get(i).get("id"));
+				String geoWkt=(String) sources.get(i).get("geo");
+				//log.info(geoWkt);
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, geoWkt);
+				//STRUCT struct = GeoTranslator.wkt2Struct(conn, geoWkt);
+				//log.info( GeoTranslator.struct2Wkt(struct));
+				//params[i][1]=struct;
+				params[i][1]=clob;
+			}
+			run.batch(conn, sql, params);
+			log.info("insert txt end");
+			DbUtils.commitAndCloseQuietly(conn);
+			log.info("end");
+		}catch (Exception e) {
+			log.error("", e);
 		}
-		
-		String sql="insert into geo_tmp(id,geo) values(?,?)";
-		QueryRunner run=new QueryRunner();
-		Object[][] params=new Object[sources.size()][2];
-		for(int i=0;i<sources.size();i++){
-			params[i][0]=String.valueOf(sources.get(i).get("id"));
-			String geoWkt=(String) sources.get(i).get("geo");
-			STRUCT struct = GeoTranslator.wkt2Struct(conn, geoWkt);
-			params[i][1]=struct;
-		}
-		run.batch(conn, sql, params);
-		DbUtils.commitAndCloseQuietly(conn);
-		log.info("end");
 		System.exit(0);
 	}
 }

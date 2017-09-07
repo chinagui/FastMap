@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
@@ -187,5 +188,153 @@ public class DeepController extends BaseController {
 			return new ModelAndView("jsonView",fail(e.getMessage()));
 		}
 	}
+
+	/**
+	 * 查询问题页面初始值
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/qcProblemInit")
+	public ModelAndView qcProblemInit(HttpServletRequest request) throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		logger.debug("查询问题页面初始值start......");
+		try {
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter=" + jsonReq);
+			if(jsonReq == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			long pid = jsonReq.getLong("pid");
+			int qualitySubtaskId = jsonReq.getInt("subtaskId");
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			JSONObject result = deepCore.qcProblemInit(pid, qualitySubtaskId, firstWorkItem, secondWorkItem);
+			logger.debug("查询问题页面初始值end......");
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 	
+	/**
+	 * 质检问题列表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+
+	@RequestMapping(value = "/poi/deep/qcProblemList")
+	public ModelAndView qcProblemList(HttpServletRequest request) throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		logger.debug("获取质检问题列表start......");
+		try {
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter=" + jsonReq);
+			if(jsonReq == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			long pid = jsonReq.getLong("pid");
+			int subtaskId = jsonReq.getInt("subtaskId");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			JSONArray result = new JSONArray();
+			if(jsonReq.containsKey("poiProperty")){
+				String poiProperty = jsonReq.getString("poiProperty");
+				result = deepCore.qcProblemList(pid, subtaskId, secondWorkItem, poiProperty);
+			} else {
+				result = deepCore.qcProblemList(pid, subtaskId, secondWorkItem, null);
+			}
+			logger.debug("获取质检问题列表end......");
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 深度信息抽取数据
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/qcExtractData")
+	public ModelAndView qcExtractData(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		logger.debug("深度信息抽取数据");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			int taskId = jsonReq.getInt("subTaskId");
+			
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
+				throw new Exception("firstWorkItem和secondWorkItem不能为空");
+			}
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			//抽取数据，返回本次抽取成功的数据条数
+			int applyNum = deepCore.qcExtractData(taskId, userId, firstWorkItem, secondWorkItem);
+			
+			return new ModelAndView("jsonView", success(applyNum));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 深度信息质检问题操作（新增、修改、删除）
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/poi/deep/operateProblem")
+	public ModelAndView operateProblem(HttpServletRequest request){
+		try{
+			String parameter = request.getParameter("parameter");
+			
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			deepCore.operateProblem(dataJson);
+			
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			logger.error("质检问题新增、删除、修改失败，原因："+ e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

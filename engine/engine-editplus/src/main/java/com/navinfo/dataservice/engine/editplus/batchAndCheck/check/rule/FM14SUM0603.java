@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 public class FM14SUM0603 extends BasicCheckRule {
 	private Map<Long,Long> pidAdminId;
 	private Map<String, Map<String, String>> d6Map;
+	MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -29,8 +30,7 @@ public class FM14SUM0603 extends BasicCheckRule {
 		if (addresses.size()==0) {
 			return;
 		}
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		d6Map = metaApi.scPointNameckTypeD6();
+		
 		List<String> errMsgList = new ArrayList<String>();
 		for (IxPoiAddress addr:addresses) {
 			if (!addr.getLangCode().equals("CHI") && !addr.getLangCode().equals("CHT")) {
@@ -64,22 +64,24 @@ public class FM14SUM0603 extends BasicCheckRule {
 	}
 	
 	private void ckAddress(String word,IxPoi poi,List<String> errMsgList) throws Exception {
-		if (d6Map.containsKey(word)) {
-			Map<String, String> resultAdmin = d6Map.get(word);
-			if (resultAdmin.get("adminArea") != null && !resultAdmin.get("adminArea").isEmpty()) {
-				String adminId = resultAdmin.get("adminArea");
-				if (adminId.startsWith("11") || adminId.startsWith("12") || adminId.startsWith("31") || adminId.startsWith("50")) {
-					if (adminId.substring(0, 2).equals(pidAdminId.get(poi.getPid()).toString().substring(0, 2))) {
-						errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
+		if(StringUtils.isNotBlank(word)){
+			if (d6Map.containsKey(word)) {
+				Map<String, String> resultAdmin = d6Map.get(word);
+				if (resultAdmin.get("adminArea") != null && !resultAdmin.get("adminArea").isEmpty()) {
+					String adminId = resultAdmin.get("adminArea");
+					if (adminId.startsWith("11") || adminId.startsWith("12") || adminId.startsWith("31") || adminId.startsWith("50")) {
+						if (adminId.substring(0, 2).equals(pidAdminId.get(poi.getPid()).toString().substring(0, 2))) {
+							errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
+						}
+					} else {
+						if (adminId.substring(0, 4).equals(pidAdminId.get(poi.getPid()).toString().substring(0, 4))) {
+							errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
+						}
 					}
 				} else {
-					if (adminId.substring(0, 4).equals(pidAdminId.get(poi.getPid()).toString().substring(0, 4))) {
-						errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
-					}
+					errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
 				}
-			} else {
-				errMsgList.add("“" + word + "”是错别字，确认是否修改为“" + resultAdmin.get("resultKey") + "”");
-			}
+			}		
 		}
 	}
 
@@ -90,6 +92,7 @@ public class FM14SUM0603 extends BasicCheckRule {
 			pidList.add(obj.objPid());
 		}
 		pidAdminId = IxPoiSelector.getAdminIdByPids(getCheckRuleCommand().getConn(), pidList);
+		d6Map = metaApi.scPointNameckTypeD6();
 	}
 
 }

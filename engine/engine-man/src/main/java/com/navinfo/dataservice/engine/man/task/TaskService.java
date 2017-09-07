@@ -5048,5 +5048,34 @@ public class TaskService {
 		}
 	}
 	
+    /**
+     * 查询已经分配子任务的任务集合
+     * @throws Exception 
+     * 
+     * */
+    public Set<Integer> queryTasksHasSubtask() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select t.task_id from SUBTASK t group by t.task_id";
+			ResultSetHandler<Set<Integer>> rs = new ResultSetHandler<Set<Integer>>() {
+				@Override
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> result = new HashSet<>();
+					while(rs.next()){
+						result.add(rs.getInt("task_id"));
+					}
+					return result;
+				}
+			};
+			return run.query(conn, selectSql, rs);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询已经分配子任务的任务失败，原因为:" + e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 }

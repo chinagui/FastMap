@@ -45,20 +45,42 @@ public abstract class StatJobStarter {
 	/**
 	 * 如果不需要启动，RunJobInfo==null，配置job启动参数
 	 * @return
+	 * @throws Exception 
 	 */
-	protected RunJobInfo startRun(){		
+	protected RunJobInfo startRun() throws Exception{		
 		//默认启动参数timestamp，取当前时间的小时的整点
 		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
 		JSONObject request=new JSONObject();
 		request.put("timestamp", timestamp);
+		//request.put("identify", timestamp);
 		RunJobInfo info = new RunJobInfo(jobType(),request);
+		return info;
+	}
+	
+	/**
+	 * 如果不需要启动，RunJobInfo==null，配置job启动参数
+	 * @return
+	 * @throws Exception 
+	 */
+	protected RunJobInfo updateRequestByIdentify(RunJobInfo info,String identify) throws Exception{	
+		JSONObject request = info.getRequest();
+		try{
+			//request.put("identify", identify);
+			JSONObject identifyJson = JSONObject.fromObject(identify);
+			request.putAll(identifyJson);
+		}catch (Exception e) {
+			log.warn("identify不是json:"+identify);
+			//不是json，则默认传的为时间格式
+			request.put("timestamp", identify);
+		}
+		info.setRequest(request);
 		return info;
 	}
 	
 	public void start(){
 		start(null);
 	}
-	public boolean start(String timestamp){
+	public boolean start(String identify){
 		RunJobInfo info = null;
 		try{
 			//根据配置，是否可以重复启动相同的统计job
@@ -72,10 +94,10 @@ public abstract class StatJobStarter {
 			if(info==null){
 				return false;
 			}
-			if(StringUtils.isNotEmpty(timestamp)){
-				info.getRequest().put("timestamp", timestamp);
+			if(StringUtils.isNotEmpty(identify)){
+				info=updateRequestByIdentify(info,identify);
 			}
-			log.info("create job:jobType="+jobType()+",timestamp="+info.getRequest().getString("timestamp"));
+			log.info("create job:jobType="+jobType()+",request="+info.getRequest());
 			JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");
 			jobApi.createJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
 			return true;

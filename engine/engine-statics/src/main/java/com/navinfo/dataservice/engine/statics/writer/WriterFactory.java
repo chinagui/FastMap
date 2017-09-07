@@ -12,6 +12,10 @@ public class WriterFactory {
 	private static final String day_plan_job = "dayPlanStat";
 	//任务统计job
 	private static final String task_job = "taskStat";
+	//项目统计job
+	private static final String program_job = "programStat";	
+	//城市统计job
+	private static final String city_job = "cityJob";
 	
 	public static DefaultWriter createWriter(String jobType){
 		if(subtask_job.equals(jobType)){
@@ -20,6 +24,10 @@ public class WriterFactory {
 			return new DayPlanWriter();
 		}else if(task_job.equals(jobType)){
 			return new TaskWriter();
+		}else if(program_job.equals(jobType)){
+			return new ProgramWriter();
+		}else if(city_job.equals(jobType)){
+			return new CityWriter();
 		}else{
 			return new DefaultWriter();		
 		}

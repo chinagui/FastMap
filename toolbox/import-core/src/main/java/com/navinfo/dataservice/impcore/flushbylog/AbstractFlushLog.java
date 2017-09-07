@@ -97,7 +97,7 @@ public abstract class AbstractFlushLog implements Runnable {
 			log.debug("并发数为1，不采用多线程刷履历");
 		}
 
-		LogReader logReader = new LogReader(sourceDataSource.getConnection(),
+		LogReaderDay2Month logReader = new LogReaderDay2Month(sourceDataSource,
 				type);
 		LogWriterDay2Month logWriter = new LogWriterDay2Month(targetDataSource,
 				true, type);

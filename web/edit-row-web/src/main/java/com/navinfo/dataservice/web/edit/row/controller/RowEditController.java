@@ -123,6 +123,21 @@ public class RowEditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	@RequestMapping(value = "/poi/base/day2mon915Temp/")
+	public ModelAndView day2mon915Temp(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			Day2Mon day2Mon = new Day2Mon();
+			long jobId = day2Mon.day2month915TempSync(parameter, tokenObj.getUserId());
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 	@RequestMapping(value = "/poi/base/dailyRelease/")
 	public ModelAndView dailyRelease(HttpServletRequest request)
 			throws ServletException, IOException {

@@ -15,86 +15,112 @@ import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrap
 import com.navinfo.dataservice.commons.database.oracle.MyPoolableConnection;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.database.TransactionalConnection;
 import com.vividsolutions.jts.geom.util.GeometryTransformer;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
-/** 
-* @ClassName: ConnectionUtil 
-* @author Xiao Xiaowen 
-* @date 2016年9月7日 上午11:18:25 
-* @Description: TODO
-*/
+/**
+ * @ClassName: ConnectionUtil
+ * @author Xiao Xiaowen
+ * @date 2016年9月7日 上午11:18:25
+ * @Description: TODO
+ */
 public class ConnectionUtil {
 	protected static Logger log = LoggerRepos.getLogger(ConnectionUtil.class);
-	public static Clob createClob(Connection conn)throws SQLException{
-		if(conn==null)return null;
-		if(conn instanceof DruidPooledConnection){
-			ClobProxyImpl impl = (ClobProxyImpl)conn.createClob();
+
+	public static Clob createClob(Connection conn) throws SQLException {
+		if (conn == null)
+			return null;
+		if (conn instanceof DruidPooledConnection) {
+			ClobProxyImpl impl = (ClobProxyImpl) conn.createClob();
 			return impl.getRawClob();
-		}else{
+		} else {
 			return conn.createClob();
 		}
 	}
 
-	public static Clob createClob(Connection conn,String param)throws SQLException{
-		if(conn==null)return null;
+	public static Clob createClob(Connection conn, String param)
+			throws SQLException {
+		if (conn == null)
+			return null;
 		Clob c = null;
-		if(conn instanceof DruidPooledConnection){
-			ClobProxyImpl impl = (ClobProxyImpl)conn.createClob();
+		if (conn instanceof DruidPooledConnection) {
+			ClobProxyImpl impl = (ClobProxyImpl) conn.createClob();
 			c = impl.getRawClob();
-		}else{
+		} else {
 			c = conn.createClob();
 		}
 		c.setString(1, param);
 		return c;
-		
+
 	}
-	public static STRUCT createSTRUCTFromJGeometry(JGeometry jGeometry,Connection conn)throws SQLException{
+
+	public static STRUCT createSTRUCTFromJGeometry(JGeometry jGeometry,
+			Connection conn) throws SQLException {
 		Object[] oracleDescriptors = null;
 		Connection delegateConn = null;
 		if (conn instanceof MyDriverManagerConnectionWrapper) {
-			delegateConn = ((MyDriverManagerConnectionWrapper) conn).getDelegate();
+			delegateConn = ((MyDriverManagerConnectionWrapper) conn)
+					.getDelegate();
 			oracleDescriptors = JGeometry.getOracleDescriptors(delegateConn);
 		} else if (conn instanceof MyPoolGuardConnectionWrapper) {
 			delegateConn = ((MyPoolGuardConnectionWrapper) conn).getDelegate();
 			if (delegateConn instanceof MyPoolableConnection) {
-				delegateConn = ((MyPoolableConnection) delegateConn).getDelegate();
+				delegateConn = ((MyPoolableConnection) delegateConn)
+						.getDelegate();
 			}
 			oracleDescriptors = JGeometry.getOracleDescriptors(delegateConn);
+		} else if (conn instanceof TransactionalConnection) {
+
+			delegateConn =  ((TransactionalConnection) conn)
+					.getDelegate();
+			if (delegateConn instanceof MyPoolGuardConnectionWrapper) {
+				delegateConn = ((MyPoolGuardConnectionWrapper) delegateConn)
+						.getDelegate();
+				if (delegateConn instanceof MyPoolableConnection) {
+					delegateConn = ((MyPoolableConnection) delegateConn)
+							.getDelegate();
+				}
+				oracleDescriptors = JGeometry
+						.getOracleDescriptors(delegateConn);
+			}
 		}
+
 		return JGeometry.store(jGeometry, delegateConn, oracleDescriptors);
 	}
-	
-	public static CLOB getClob(Connection conn,ResultSet rs,String columnName)throws SQLException{
+
+	public static CLOB getClob(Connection conn, ResultSet rs, String columnName)
+			throws SQLException {
 		CLOB inforGeo;
-		if(conn instanceof DruidPooledConnection){
-			ClobProxyImpl clobProxyImpl = (ClobProxyImpl) rs.getClob(columnName);
-			inforGeo = (CLOB)clobProxyImpl.getRawClob();
-		}else{
+		if (conn instanceof DruidPooledConnection) {
+			ClobProxyImpl clobProxyImpl = (ClobProxyImpl) rs
+					.getClob(columnName);
+			inforGeo = (CLOB) clobProxyImpl.getRawClob();
+		} else {
 			inforGeo = (CLOB) rs.getClob(columnName);
 		}
 		return inforGeo;
 	}
-	
-	public static Connection getObject(Connection conn)throws SQLException{
-		if(conn instanceof DruidPooledConnection){
-			ConnectionProxyImpl impl = (ConnectionProxyImpl) ((DruidPooledConnection) conn).getConnection();
+
+	public static Connection getObject(Connection conn) throws SQLException {
+		if (conn instanceof DruidPooledConnection) {
+			ConnectionProxyImpl impl = (ConnectionProxyImpl) ((DruidPooledConnection) conn)
+					.getConnection();
 			return impl.getRawObject();
-		}else if (conn instanceof MyDriverManagerConnectionWrapper) {
-			return ((MyDriverManagerConnectionWrapper) conn)
-					.getDelegate();
+		} else if (conn instanceof MyDriverManagerConnectionWrapper) {
+			return ((MyDriverManagerConnectionWrapper) conn).getDelegate();
 		} else if (conn instanceof MyPoolGuardConnectionWrapper) {
 			Connection originConn = ((MyPoolGuardConnectionWrapper) conn)
 					.getDelegate();
 			if (originConn instanceof MyPoolableConnection) {
-				originConn = ((MyPoolableConnection) originConn)
-						.getDelegate();
+				originConn = ((MyPoolableConnection) originConn).getDelegate();
 			}
 			return originConn;
 		}
 		return conn;
 	}
+
 }

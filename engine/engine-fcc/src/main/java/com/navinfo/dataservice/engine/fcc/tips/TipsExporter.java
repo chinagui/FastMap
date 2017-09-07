@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -45,6 +46,7 @@ public class TipsExporter {
 
 	private static final Logger logger = Logger.getLogger(TipsExporter.class);
 	private String folderName;
+	private String currentDate=DateUtils.getCurrentTimestamp();
 
 	public TipsExporter() {
 	}
@@ -224,7 +226,7 @@ public class TipsExporter {
 					json.put("t_dataDate", trackjson.getString("t_dataDate"));
 				}
 				else{
-					json.put("t_dataDate", "");
+					json.put("t_dataDate", currentDate);
 				}
 				
 

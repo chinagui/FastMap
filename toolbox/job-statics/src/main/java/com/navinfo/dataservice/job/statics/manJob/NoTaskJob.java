@@ -76,7 +76,7 @@ public class NoTaskJob extends AbstractStatJob {
 			Map<String, Object> notaskData = new HashMap<>();
 			notaskData.put("block_notask ", blockStat);
 			notaskData.put("city_notask", cityStat);
-			log.info("result:" + notaskData);
+			//log.info("result:" + notaskData);
 			
 			return JSONObject.fromObject(notaskData).toString();
 		} catch (Exception e) {
@@ -121,7 +121,7 @@ public class NoTaskJob extends AbstractStatJob {
 						Map<String, Integer> poiData = (Map<String, Integer>) gridEntry.getValue();
 						blockPoiCount += poiData.get("poiCount");
 						blockDealershipCount += poiData.get("dealershipCount");
-						blockNoDealershipCount += poiData.get("dealershipCount");
+						blockNoDealershipCount += poiData.get("noDealershipCount");
 					}
 				}
 				for(Entry<Integer, Object> tipsEntry : tipsMap.entrySet()){

@@ -264,9 +264,16 @@ public class FccApiImpl implements FccApi{
                 count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo,taskType);
 
                 if(count!=0){
-                    apiService.updateJobProgress(phaseId,2,"转mark执行成功");
-                    logger.debug("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功)");
-                    logger.info("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功)");
+                	
+                	////返回 格式 : {detail:{ tipsNum:12}}
+                	JSONObject  result=new JSONObject();
+                	JSONObject  detail =new JSONObject();
+                	detail.put("tipsNum", count);
+                	result.put("detail", detail);
+                	
+                    apiService.updateJobProgress(phaseId,2,result.toString());
+                    logger.debug("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功:共：)"+count+"条");
+                    logger.info("回调用manApi:updateJobProgress（"+phaseId+","+2+",转mark执行成功:共：)"+count+"条");
 
                 }else{
                     apiService.updateJobProgress(phaseId,4,"转mark执行成功,转出0条");

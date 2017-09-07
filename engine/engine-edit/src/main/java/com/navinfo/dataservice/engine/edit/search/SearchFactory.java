@@ -44,7 +44,9 @@ public class SearchFactory {
 		case RDCROSS:
 			return new RdCrossSearch(conn);
 		case RDNODE:
-			return new RdNodeSearch(conn);
+			RdNodeSearch rdNodeSearch = new RdNodeSearch(conn);
+			rdNodeSearch.setDbId(this.getDbId());
+			return rdNodeSearch;
 		case RDLANECONNEXITY:
 			return new RdLaneConnexitySearch(conn);
 		case RDSPEEDLIMIT:

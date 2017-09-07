@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -18,9 +16,6 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  */
 public class GLM60186 extends BasicCheckRule {
 
-	private List<String> streetList = new ArrayList<String>();
-
-
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
@@ -29,17 +24,11 @@ public class GLM60186 extends BasicCheckRule {
 		if (address == null) {
 			return;
 		}
-
-		if(address.getLandmark()!=null||address.getLandmark().length()>0){
+		if(address.getLandmark() != null && address.getLandmark().length() > 0){
 			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"标志物逻辑检查：标志物有内容应该为空");
 		}
 	}
-	
 
 	@Override
-	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
+	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {}
 }

@@ -93,14 +93,14 @@ public class BaseTipsOperate {
 
 			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			String currentDate = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
 			// 新增一个trackInfo
 			JSONObject jsonTrackInfo = new JSONObject();
 
 			jsonTrackInfo.put("stage", stage);
 
-			jsonTrackInfo.put("date", date);
+			jsonTrackInfo.put("date", currentDate);
 
 			jsonTrackInfo.put("handler", user);
 
@@ -109,6 +109,8 @@ public class BaseTipsOperate {
 			track.put("t_trackInfo", trackInfoArr);
 
 			track.put("t_lifecycle", 2);
+			
+			track.put("t_dataDate", currentDate); //2017-9-5修改
 
 			// 2.更新feedback
 
@@ -137,7 +139,7 @@ public class BaseTipsOperate {
 			int type = 3; // 文字
 
 			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					date);
+					currentDate);
 
 			f_array.add(newFeedback);
 
@@ -154,7 +156,8 @@ public class BaseTipsOperate {
 
 			// 同步更新solr
             tipsDao.setStage(stage);
-            tipsDao.setT_date(date);
+            tipsDao.setT_date(currentDate);
+            tipsDao.setT_dataDate(currentDate);//2017-9-5修改
             tipsDao.setT_lifecycle(TIP_LIFECYCLE_UPDATE);
             tipsDao.setHandler(user);
 
@@ -295,6 +298,8 @@ public class BaseTipsOperate {
         Table htab = null;
         java.sql.Connection oracleConn = null;
         try {
+        	
+        	String currentDate = StringUtils.getCurrentTime();
             //修改hbase
             hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -316,7 +321,7 @@ public class BaseTipsOperate {
                     "data".getBytes(), "track".getBytes())));
 
             TipsTrack track = (TipsTrack)JSONObject.toBean(trackJson, TipsTrack.class);
-            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE);
+            track = this.tipSaveUpdateTrack(track, BaseTipsOperate.TIP_LIFECYCLE_DELETE,currentDate);
             put.addColumn("data".getBytes(), "track".getBytes(), JSONObject.fromObject(track).toString()
                     .getBytes());
 
@@ -389,12 +394,12 @@ public class BaseTipsOperate {
      *不维护t_trackinfo
      * @param track
      * @param lifecycle
+     * @param currentDate 
      * @return
      */
-    public TipsTrack tipSaveUpdateTrack(TipsTrack track, int lifecycle) {
-        String date = DateUtils.dateToString(new Date(),
-                DateUtils.DATE_COMPACTED_FORMAT);
-        track.setT_date(date);
+    public TipsTrack tipSaveUpdateTrack(TipsTrack track, int lifecycle, String currentDate) {
+        track.setT_date(currentDate);
+        track.setT_dataDate(currentDate); //20170905新增
         track.setT_lifecycle(lifecycle);
         track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
         track.setT_dEditStatus(PretreatmentTipsOperator.TIP_STATUS_INIT);
@@ -442,6 +447,7 @@ public class BaseTipsOperate {
      */
     public TipsDao tipSaveUpdateTrackSolr(TipsTrack track, TipsDao tipsIndex) {
         tipsIndex.setT_date(track.getT_date());
+        tipsIndex.setT_dataDate(track.getT_dataDate());
         tipsIndex.setT_lifecycle(track.getT_lifecycle());
         tipsIndex.setT_tipStatus(track.getT_tipStatus());
         tipsIndex.setT_dEditStatus(track.getT_dEditStatus());
@@ -463,6 +469,7 @@ public class BaseTipsOperate {
      * @return
      */
     public TipsDao tipSubmitTrackOracle(TipsTrack track, TipsDao tipsDao) {
+    	tipsDao.setT_dataDate(track.getT_dataDate());
         tipsDao.setT_date(track.getT_date());
         tipsDao.setT_tipStatus(track.getT_tipStatus());
         tipsDao.setT_dEditStatus(track.getT_dEditStatus());

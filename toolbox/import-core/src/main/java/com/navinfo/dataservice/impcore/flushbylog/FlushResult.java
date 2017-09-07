@@ -2,15 +2,18 @@ package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.util.NaviListUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class FlushResult {
-	
+
 	private String resultMsg;
-	
+
 	private int total;
 
 	private int updateTotal;
@@ -19,7 +22,7 @@ public class FlushResult {
 
 	private int insertTotal;
 
-	private int failedTotal=0;
+	private int failedTotal = 0;
 
 	private int updateFailed;
 
@@ -30,7 +33,7 @@ public class FlushResult {
 	private int logOpMoved;
 	private int logDetailMoved;
 	private int logDetailGridMoved;
-	private List<List> failedLog=new ArrayList<List>();
+	private List<List> failedLog = new ArrayList<List>();
 
 	private List<String> insertFailedList = new ArrayList<String>();
 
@@ -39,17 +42,21 @@ public class FlushResult {
 	private List<String> deleteFailedList = new ArrayList<String>();
 
 	private String tempFailLogTable;
+	
+	protected Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
 
-	public void insertFailedLog(String opId,String rowId,String log){
+	public void insertFailedLog(String opId, String rowId, String log) {
 		List<String> row = new ArrayList<String>();
 		row.add(opId);
 		row.add(rowId);
 		row.add(log);
 		failedLog.add(row);
 	}
+
 	public List<List> getFailedLog() {
 		return failedLog;
 	}
+
 	public String getResultMsg() {
 		return resultMsg;
 	}
@@ -95,12 +102,13 @@ public class FlushResult {
 	}
 
 	public int getFailedTotal() {
-		return this.getDeleteFailed()+this.getInsertFailed()+this.getUpdateFailed();
+		return this.getDeleteFailed() + this.getInsertFailed()
+				+ this.getUpdateFailed();
 	}
 
-//	public void setFailedTotal(int failedTotal) {
-//		this.failedTotal = failedTotal;
-//	}
+	public void setFailedTotal(int failedTotal) {
+		this.failedTotal = failedTotal;
+	}
 
 	public List<String> getInsertFailedList() {
 		return insertFailedList;
@@ -124,6 +132,10 @@ public class FlushResult {
 
 	public void setDeleteFailedList(List<String> deleteFailedList) {
 		this.deleteFailedList = deleteFailedList;
+	}
+
+	public void setFailedLog(List<List> failedLog) {
+		this.failedLog = failedLog;
 	}
 
 	public void addTotal() {
@@ -209,13 +221,13 @@ public class FlushResult {
 	public void setInsertFailed(int insertFailed) {
 		this.insertFailed = insertFailed;
 	}
-	
+
 	public boolean isSuccess() {
-		return getFailedTotal()==0;
+		return getFailedTotal() == 0;
 	}
-	
+
 	public void print() {
-		System.out.println("Flush Status:"+this.getResultMsg());
+		System.out.println("Flush Status:" + this.getResultMsg());
 		System.out.println("Total:" + this.getTotal());
 
 		System.out.println("Insert total:" + this.getInsertTotal());
@@ -246,20 +258,34 @@ public class FlushResult {
 
 		System.out.println("Log op moved:" + this.getLogOpMoved());
 		System.out.println("Log detail moved:" + this.getLogDetailMoved());
-		System.out.println("Log detail grid moved:" + this.getLogDetailGridMoved());
+		System.out.println("Log detail grid moved:"
+				+ this.getLogDetailGridMoved());
 	}
-	
+
 	public String getTempFailLogTable() {
 		return tempFailLogTable;
 	}
+
 	public void setTempFailLogTable(String tempFailLogTable) {
 		this.tempFailLogTable = tempFailLogTable;
 	}
-	public void recordFailLog2Temptable(Connection conn) throws Exception{
-		if (this.isSuccess()) return ;
+
+	public void recordFailLog2Temptable(Connection conn) throws Exception {
+		if (this.isSuccess())
+			return;
 		QueryRunner run = new QueryRunner();
-		String sql = "insert into "+tempFailLogTable+" values(?,?,?)";
-		Object[][] batchParams = NaviListUtils.toArrayMatrix(this.getFailedLog());
+		String sql = "insert into " + tempFailLogTable + " values(?,?,?)";
+		Object[][] batchParams = NaviListUtils.toArrayMatrix(this
+				.getFailedLog());
 		run.batch(conn, sql, batchParams);
+	}
+	public void addObjStatInfo(FlushObjStatInfo info){
+		objStatInfo.add(info);
+	}
+	public void addObjStatInfos(Collection<FlushObjStatInfo> infos){
+		objStatInfo.addAll(infos);
+	}
+	public boolean removeObjStatInfo(FlushObjStatInfo info){
+		return objStatInfo.remove(info);
 	}
 }

@@ -124,24 +124,24 @@ public class PersonTipsJob extends AbstractStatJob {
                                             int stage = trackInfo.getInt("stage");
                                             String date = trackInfo.getString("date");
                                             if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
-                                            	tipsAllNum += 1;
-                                                statObj.put("tipsAllNum", tipsAllNum);
-                                              //是否当天新增
+                                            	tipsAllNum += 1;                                                
+                                            	//是否当天新增
                                                 int lifecycle = rs.getInt("T_LIFECYCLE");
                                                 if(lifecycle == 3) {//Tips状态是新增
                                                 	//测线显示坐标
                                                     STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
                                                     //测线里程计算
                                                     double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
-                                                    newLength += lineLength;
-                                                    statObj.put("tipsAddLen", newLength);
+                                                    newLength += lineLength;                                                    
                                                 } 
                                                 break;
                                             }
                                         }
                                     }
                                 }
-                            }                            
+                            }    
+                            statObj.put("tipsAllNum", tipsAllNum);
+                            statObj.put("tipsAddLen", newLength);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

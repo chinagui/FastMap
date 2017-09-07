@@ -19,6 +19,7 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class BlockJob extends AbstractStatJob {

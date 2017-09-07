@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,34 +28,17 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ArrayUtil;
-import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.dataservice.engine.man.message.MessageOperation;
-import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
-import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.GeoUtils;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import oracle.net.aso.k;
-import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
 /**
@@ -113,7 +94,7 @@ public class BlockService {
 					+ "       T.LOT,"
 					+ "       T.BLOCK_ID,"
 					+ "       T.TYPE,"
-					+ "       T.TASK_ID,t.name,"
+					+ "       T.TASK_ID,nvl(t.name,'') name,"
 					+ "       NVL(T.WORK_KIND,'0|0|0|0') WORK_KIND,"
 					+ "       T.STATUS,"
 					+ "       T.PROGRESS"
@@ -170,7 +151,7 @@ public class BlockService {
 						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setStatus(rs.getInt("STATUS"));
 						int progress=rs.getInt("PROGRESS");
-						
+						if(task.getLot()==0){continue;}						
 						if(task.getType()==0){
 							blockCur.put("lot"+task.getLot()+"CollectTaskName",task.getName());
 							blockCur.put("lot"+task.getLot()+"CollectTaskId",task.getTaskId());							

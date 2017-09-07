@@ -69,7 +69,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 	}
 
 	public void flush() throws Exception {
-		LogReader logReader = new LogReader(sourceDataSource.getConnection(),
+		LogReaderDay2Month logReader = new LogReaderDay2Month(sourceDataSource,
 				this.getLogQuerySql(this.dataCount, tempTable));
 		LogWriterDay2Month logWriter = new LogWriterDay2Month(targetDataSource,
 				true, type);
@@ -88,9 +88,8 @@ public class FlushLogBySQL extends AbstractFlushLog {
 
 		if (dataCount >= tableDatacount) {
 			for (int j = 0; j < dataCount; j += tableDatacount) {
-				LogReader logReader = new LogReader(
-						sourceDataSource.getConnection(), this.getLogQuerySql(
-								j, tempTable));
+				LogReaderDay2Month logReader = new LogReaderDay2Month(
+						sourceDataSource, this.getLogQuerySql(j, tempTable));
 				LogWriterDay2Month logWriter = new LogWriterDay2Month(
 						targetDataSource, true, type);
 				flushLogToDBThreadInner = new FlushLogToDBThread(
@@ -105,9 +104,8 @@ public class FlushLogBySQL extends AbstractFlushLog {
 			}
 		} else {
 
-			LogReader logReader = new LogReader(
-					sourceDataSource.getConnection(), this.getLogQuerySql(
-							dataCount, tempTable));
+			LogReaderDay2Month logReader = new LogReaderDay2Month(
+					sourceDataSource, this.getLogQuerySql(dataCount, tempTable));
 			LogWriterDay2Month logWriter = new LogWriterDay2Month(
 					targetDataSource, true, type);
 			flushLogToDBThread = new FlushLogToDBThread(threadSharedObj,
@@ -141,7 +139,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 	@Override
 	protected void calcConcurrentSize() throws Exception {
 
-		this.dataCount = this.getLogCount();
+		this.dataCount = this.getLogCount(this.tempTable);
 
 		if (dataCount == 1) {
 			concurrentSize = 1;
@@ -173,7 +171,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
-	protected int getLogCount() throws Exception {
+	protected int getLogCount(String tempTable) throws Exception {
 		return 0;
 	}
 

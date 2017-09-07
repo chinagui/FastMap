@@ -728,7 +728,7 @@ public class StaticsService {
 		Iterator iter = originJson.keys();
 		while(iter.hasNext()){
 			String key = String.valueOf(iter.next());
-			double value = (double)originJson.get(key);
+			int value = (int)originJson.get(key);
 			Map<String,Object> tMap=new HashMap<>();
 			tMap.put("name", key);
 			tMap.put("percent", value);
@@ -739,10 +739,10 @@ public class StaticsService {
             for(int j = 0 ;j < keyList.size() - i - 1; j++){    //对当前无序区间score[0......length-i-1]进行排序(j的范围很关键，这个范围是在逐步缩小的)
             	Map<String,Object> jMap=keyList.get(j);
             	String jkey = String.valueOf(jMap.get("name"));
-            	double jValue = (double)jMap.get("percent");
+            	int jValue = (int)jMap.get("percent");
             	Map<String,Object> j1Map=keyList.get(j + 1);
             	String j1key = String.valueOf(j1Map.get("name"));
-            	double j1Value = (double)j1Map.get("percent");
+            	int j1Value = (int)j1Map.get("percent");
             	if(jValue< j1Value){    //把小的值交换到后面
             		Map<String,Object> tMap=new HashMap<>();
             		tMap.put("name", j1key);
@@ -756,12 +756,12 @@ public class StaticsService {
            }
        }
 		JSONArray orderJson=new JSONArray();
-		double topPercent=0;
+		int topPercent=0;
 		for(int i=0;i<top;i++){
 			if(i>=keyList.size()){
 				return orderJson;
 			}
-			topPercent=topPercent+(double)keyList.get(i).get("percent");
+			topPercent=topPercent+(int)keyList.get(i).get("percent");
 			orderJson.add(keyList.get(i));
 		}
 		if(getOther){

@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
@@ -17,6 +18,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
 /**
@@ -42,7 +44,15 @@ public class DefaultWriter {
 		write2Mongo(timestamp,identify,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
 		pushEndMsg(jobType,timestamp,identify);
+		String staticMessage=getLatestStatic();
+		if(!StringUtils.isEmpty(staticMessage)){
+			pushWebSocket(staticMessage,jobType);
+		}
 		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
+	}
+	public String getLatestStatic() throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法
@@ -154,5 +164,13 @@ public class DefaultWriter {
 		msg.put("timestamp", timestamp);
 		msg.put("identify", identify);
 		MsgPublisher.publish2WorkQueue("stat_job_end", msg.toString());
+	}
+	
+	public void pushWebSocket(String staticMessage,String staticType) {
+		try {
+            SysMsgPublisher.publishManStaticMsg(staticMessage,staticType);
+        } catch (Exception ex) {
+            log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
+        }
 	}
 }

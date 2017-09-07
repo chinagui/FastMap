@@ -34,7 +34,7 @@ public class CityWriter extends DefaultWriter {
 				Timestamp statDate = DateUtils.stringToTimestamp(timestamp, "yyyyMMddHHmmss");
 				//处理数据
 				JSONArray content = messageJSON.getJSONArray(collectionName);
-				Object[][] valueList = new Object[content.size()][16];
+				Object[][] valueList = new Object[content.size()][4];
 				for(int i = 0; i < content.size(); i++){
 					JSONObject jso = content.getJSONObject(i);
 					int cityId = (int) jso.get("cityId");
@@ -42,7 +42,7 @@ public class CityWriter extends DefaultWriter {
 					int poiTotal = (int) jso.get("poiTotal");
 					
 					//保存数据
-					Object[] value = new Object[16];
+					Object[] value = new Object[4];
 					value[0] = cityId;
 					value[1] = tipsTotal;
 					value[2] = poiTotal;

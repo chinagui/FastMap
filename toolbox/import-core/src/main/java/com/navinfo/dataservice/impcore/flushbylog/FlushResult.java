@@ -2,7 +2,10 @@ package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.util.NaviListUtils;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -39,6 +42,8 @@ public class FlushResult {
 	private List<String> deleteFailedList = new ArrayList<String>();
 
 	private String tempFailLogTable;
+	
+	protected Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
 
 	public void insertFailedLog(String opId,String rowId,String log){
 		List<String> row = new ArrayList<String>();
@@ -261,5 +266,14 @@ public class FlushResult {
 		String sql = "insert into "+tempFailLogTable+" values(?,?,?)";
 		Object[][] batchParams = NaviListUtils.toArrayMatrix(this.getFailedLog());
 		run.batch(conn, sql, batchParams);
+	}
+	public void addObjStatInfo(FlushObjStatInfo info){
+		objStatInfo.add(info);
+	}
+	public void addObjStatInfos(Collection<FlushObjStatInfo> infos){
+		objStatInfo.addAll(infos);
+	}
+	public boolean removeObjStatInfo(FlushObjStatInfo info){
+		return objStatInfo.remove(info);
 	}
 }

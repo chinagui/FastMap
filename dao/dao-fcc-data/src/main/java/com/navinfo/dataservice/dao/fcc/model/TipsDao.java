@@ -322,7 +322,7 @@ public class TipsDao {
 		this.setT_tipStatus(rs.getInt("t_tipStatus"));
 		this.setS_project(rs.getString("s_project"));
 		this.setT_mEditMeth(rs.getInt("t_mEditMeth"));
-		this.setT_dataDate(rs.getString("t_dataDate"));
+		this.setT_dataDate(DateUtils.dateToString(rs.getTimestamp("t_dataDate"),DateUtils.DATE_COMPACTED_FORMAT));
 		try {
 			STRUCT wkt = (STRUCT) rs.getObject("wkt");
 			this.setWkt(GeoTranslator.struct2Jts(wkt));

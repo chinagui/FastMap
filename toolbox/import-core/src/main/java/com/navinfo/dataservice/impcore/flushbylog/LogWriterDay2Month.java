@@ -13,14 +13,14 @@ import com.navinfo.navicommons.database.TransactionalDataSource;
  */
 public class LogWriterDay2Month extends LogWriter {
 
-	private Connection targetDbConn;
-
 	private TransactionalDataSource targetDataSource;
 
 	public LogWriterDay2Month(TransactionalDataSource targetDataSource,
 			boolean ignoreError, String type) throws SQLException {
-		super(targetDataSource.getConnection(), ignoreError, type);
+
 		this.targetDataSource = targetDataSource;
+		this.type = type;
+		this.ignoreError = ignoreError;
 
 	}
 

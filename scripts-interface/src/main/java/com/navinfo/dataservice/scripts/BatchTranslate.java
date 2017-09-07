@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -45,9 +46,11 @@ public class BatchTranslate {
 
     private static ThreadLocal<BatchTranslate> threadLocal = new ThreadLocal<>();
 
-    private volatile List<Integer> successMesh;
+    private volatile Map<String, Integer> successMesh;
 
-    private volatile List<Integer> failureMesh;
+    private volatile Map<String, Integer> failureMesh;
+
+    private volatile Map<String, Integer> runningMesh;
 
     public static BatchTranslate getInstance() {
         BatchTranslate translate = threadLocal.get();
@@ -58,40 +61,50 @@ public class BatchTranslate {
         return translate;
     }
 
-    private void init() {
-        successMesh = new ArrayList<>();
-        failureMesh = new ArrayList<>();
+    private Integer dbId;
+
+    private void init(JSONObject request) {
+        successMesh = new HashMap<>();
+        failureMesh = new HashMap<>();
+        runningMesh = new HashMap<>();
+        dbId = request.optInt("dbId", Integer.MIN_VALUE);
     }
 
     public JSONObject execute(JSONObject request) throws InterruptedException {
+        logger.info("batch translate start...");
         Long time = System.currentTimeMillis();
 
         JSONObject response = new JSONObject();
 
-        init();
+        init(request);
 
         Map<Integer, List<BasicObj>> map = loadData(request);
         if (map.isEmpty()) {
             return response;
         }
+        logger.info(String.format("translate meshes with [%s]", Arrays.toString(map.keySet().toArray(new Integer[]{}))));
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(map.size() + 1), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
             Task task = new Task(entry.getKey(), entry.getValue());
             executor.execute(task);
-
-            System.out.println("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+
-                    executor.getQueue().size()+"，已执行完别的任务数目："+executor.getCompletedTaskCount());
         }
+
         executor.shutdown();
 
-        while (!executor.awaitTermination(10, TimeUnit.SECONDS));
+        while (!executor.awaitTermination(15, TimeUnit.SECONDS)) {
+            logger.info(String.format("running mesh is [%s]", JSONObject.fromObject(runningMesh).toString()));
+            logger.info(String.format("executor.getPoolSize()：%d，executor.getQueue().size()：%d，executor.getCompletedTaskCo" +
+                            "unt()：%d", executor.getPoolSize(), executor.getQueue().size(), executor.getCompletedTaskCount()));
+        }
 
-        response.put("successMesh", Arrays.toString(successMesh.toArray()));
-        response.put("failureMesh", Arrays.toString(failureMesh.toArray()));
-        response.put("time", (System.currentTimeMillis() - time) >> 10);
+        response.put("successMesh", JSONObject.fromObject(successMesh).toString());
+        response.put("failureMesh", JSONObject.fromObject(failureMesh).toString());
+        response.put("speedTime", (System.currentTimeMillis() - time) >> 10);
+
+        logger.info("batch translate end...");
 
         return response;
     }
@@ -101,8 +114,11 @@ public class BatchTranslate {
         Connection conn = null;
 
         try {
-            conn = DBConnector.getInstance().getMkConnection();
-            //conn = DBConnector.getInstance().getConnectionById(13);
+            if (dbId != Integer.MIN_VALUE) {
+                conn = DBConnector.getInstance().getConnectionById(dbId);
+            } else {
+                conn = DBConnector.getInstance().getMkConnection();
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT *");
@@ -118,6 +134,8 @@ public class BatchTranslate {
                 sb.append(")");
             }
             List<Long> pids = new QueryRunner().query(conn, sb.toString(), new TranslateHandler());
+
+            logger.info(String.format("load data number is %d", pids.size()));
 
             Set<String> tabNames = new HashSet<>();
             tabNames.add("IX_POI_NAME");
@@ -149,11 +167,15 @@ public class BatchTranslate {
     }
 
 
-    private void batchTranslate(List<BasicObj> list) throws Exception{
+    private void batchTranslate(Integer dbId, List<BasicObj> list) throws Exception{
         Connection conn = null;
         try {
-            conn = DBConnector.getInstance().getMkConnection();
-            //conn = DBConnector.getInstance().getConnectionById(13);
+            if (dbId != Integer.MIN_VALUE) {
+                conn = DBConnector.getInstance().getConnectionById(dbId);
+            } else {
+                conn = DBConnector.getInstance().getMkConnection();
+            }
+            conn.setAutoCommit(false);
 
             OperationResult operationResult=new OperationResult();
             operationResult.putAll(list);
@@ -163,9 +185,11 @@ public class BatchTranslate {
             batchCommand.setRuleId("FM-BAT-20-115");
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
-            //persistBatch(batch);
+            persistBatch(batch);
+            conn.commit();
         } catch (Exception e) {
-            logger.error("执行FM-BAT-20-115批处理出错...", e.fillInStackTrace());
+            DbUtils.rollback(conn);
+            logger.error("run fm-bat-20-115 is error...", e.fillInStackTrace());
             throw e;
         } finally {
             DbUtils.closeQuietly(conn);
@@ -204,15 +228,21 @@ public class BatchTranslate {
         @Override
         public void run() {
             BatchTranslate translate = BatchTranslate.getInstance();
+            String key = String.valueOf(meshId);
             try {
-                translate.batchTranslate(list);
+
+                runningMesh.put(key, list.size());
+                translate.batchTranslate(dbId, list);
+                runningMesh.remove(key);
+
+                successMesh.put(key, list.size());
             } catch (Exception e) {
-                failureMesh.add(meshId);
+                logger.error(String.format("mesh %d translate error..", meshId));
+                failureMesh.put(key, list.size());
                 e.fillInStackTrace();
             }
-            successMesh.add(meshId);
 
-            System.out.println("已批图幅号" + meshId);
+            logger.info(String.format("mesh %d translate is over..", meshId));
         }
 
     }
@@ -234,8 +264,8 @@ public class BatchTranslate {
             }
             JSONObject request=null;
             JSONObject response = null;
-            //String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-            String dir = "D:/";
+            String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+            //String dir = "D:/";
             //初始化context
             JobScriptsInterface.initContext();
             //
@@ -244,9 +274,9 @@ public class BatchTranslate {
             BatchTranslate translate = new BatchTranslate();
             response = translate.execute(request);
 
-            //ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+irequest);
-            System.out.println(response);
-            System.out.println("Over.");
+            ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+irequest);
+            logger.debug(response);
+            logger.debug("Over.");
             System.exit(0);
         }catch(Exception e){
             System.out.println("Oops, something wrong...");

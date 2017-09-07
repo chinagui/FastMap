@@ -447,6 +447,7 @@ public class BaseTipsOperate {
      */
     public TipsDao tipSaveUpdateTrackSolr(TipsTrack track, TipsDao tipsIndex) {
         tipsIndex.setT_date(track.getT_date());
+        tipsIndex.setT_dataDate(track.getT_dataDate());
         tipsIndex.setT_lifecycle(track.getT_lifecycle());
         tipsIndex.setT_tipStatus(track.getT_tipStatus());
         tipsIndex.setT_dEditStatus(track.getT_dEditStatus());
@@ -468,6 +469,7 @@ public class BaseTipsOperate {
      * @return
      */
     public TipsDao tipSubmitTrackOracle(TipsTrack track, TipsDao tipsDao) {
+    	tipsDao.setT_dataDate(track.getT_dataDate());
         tipsDao.setT_date(track.getT_date());
         tipsDao.setT_tipStatus(track.getT_tipStatus());
         tipsDao.setT_dEditStatus(track.getT_dEditStatus());

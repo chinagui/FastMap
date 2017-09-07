@@ -43,6 +43,26 @@ public class Day2Mon {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	public long day2month915TempSync(String parameter, long userId) throws Exception {
+
+		Connection conn = null;
+		long jobId = 0;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JobApi apiService = (JobApi) ApplicationContextUtil
+					.getBean("jobApi");
+			jobId = apiService.createJob("day2MonTempSync", jsonReq, userId,0,
+					"日落月915Temp");
+			return jobId;
+		}catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
 	/**
 	 * 日出品job创建
 	 * @param parameter {"cityId":"2"} cityId为空，则全部city都要落

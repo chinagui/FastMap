@@ -26,8 +26,8 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void create(){
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDNODE\",\"dbId\":13,\"subtaskId\":394,\"objId\":520000455," +
-                "\"data\":{\"longitude\":116.83157949657176,\"latitude\":39.9471097788328}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDINTER\",\"data\":{\"links\":[],\"nodes\":[51316756]}," +
+                "\"dbId\":13,\"subtaskId\":61}";
 		TestUtil.run(parameter);
 	}
 
@@ -40,7 +40,7 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void testDelete(){
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RDNODE\",\"objId\":403000514,\"subtaskId\":817}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"objId\":504000013,\"dbId\":13,\"subtaskId\":61}";
 		TestUtil.run(parameter);
 	}
 	
@@ -53,8 +53,7 @@ public class RdNodeTest extends InitApplication {
 
 	@Test
 	public void update(){
-	    String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDNODE\",\"objId\":404000382,\"data\":{\"srcFlag\":3," +
-                "\"rowId\":\"CD6B9C33DD974D88870DDF828217262D\",\"pid\":404000382,\"objStatus\":\"UPDATE\"}}";
+	    String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDNODE\",\"objId\":409000605,\"data\":{\"srcFlag\":2,\"rowId\":\"54B4774360F545458B7B23E0788B414F\",\"pid\":409000605,\"objStatus\":\"UPDATE\"},\"dbId\":13,\"subtaskId\":61}";
 	    TestUtil.run(parameter);
     }
 }

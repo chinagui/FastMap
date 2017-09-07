@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -24,41 +25,77 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  */
 public class FMA0907 extends BasicCheckRule {
 
+//	@Override
+//	public void runCheck(BasicObj obj) throws Exception {
+//		IxPoiObj poiObj=(IxPoiObj) obj;
+//		IxPoi poi=(IxPoi) poiObj.getMainrow();
+//		//存在IxPoiAddress新增或者修改履历
+//		IxPoiAddress address=poiObj.getCHAddress();
+//		if (address == null) {
+//			return;
+//		}
+//		if(!address.getHisOpType().equals(OperationType.INSERT)&&!address.getHisOpType().equals(OperationType.UPDATE)){
+//			return;
+//		}
+//		if (address.getFullname() == null || address.getFullname().isEmpty()) {
+//			return;
+//		}
+//		String type = address.getType();
+//		if (type == null || type.isEmpty()) {
+//			return;
+//		}
+//		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+//		List<String> addrck = metaApi.getAddrck(1, "D");
+//		String error = "";
+//		if (!addrck.contains(type)) {
+//			error = type;
+//		}
+//		if (!error.isEmpty()) {
+//			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"类型不在对应的配置表里，确认是否正确");
+//		}
+//
+//	}
+	
+	private MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	
+	public void run() throws Exception {
+		List<String> addrck = metaApi.getAddrck(1, "D");
+		for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
+			BasicObj basicObj = entry.getValue();
+
+			IxPoiObj poiObj = (IxPoiObj) basicObj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+			//存在IxPoiAddress新增或者修改履历
+			IxPoiAddress address = poiObj.getCHAddress();
+			if (address == null) {
+				continue;
+			}
+			if(!address.getHisOpType().equals(OperationType.INSERT) && !address.getHisOpType().equals(OperationType.UPDATE)){
+				continue;
+			}
+			if (address.getFullname() == null || address.getFullname().isEmpty()) {
+				continue;
+			}
+			String type = address.getType();
+			if (type == null || type.isEmpty()) {
+				continue;
+			}
+			String error = "";
+			if (!addrck.contains(type)) {
+				error = type;
+			}
+			if (!error.isEmpty()) {
+				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"类型不在对应的配置表里，确认是否正确");
+			}
+		}
+	}
+
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		IxPoiObj poiObj=(IxPoiObj) obj;
-		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		//存在IxPoiAddress新增或者修改履历
-		IxPoiAddress address=poiObj.getCHAddress();
-		if (address == null) {
-			return;
-		}
-		if(!address.getHisOpType().equals(OperationType.INSERT)&&!address.getHisOpType().equals(OperationType.UPDATE)){
-			return;
-		}
-		if (address.getFullname() == null || address.getFullname().isEmpty()) {
-			return;
-		}
-		String type = address.getType();
-		if (type == null || type.isEmpty()) {
-			return;
-		}
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<String> addrck = metaApi.getAddrck(1, "D");
-		String error = "";
-		if (!addrck.contains(type)) {
-			error = type;
-		}
-		if (!error.isEmpty()) {
-			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"类型不在对应的配置表里，确认是否正确");
-		}
-
 	}
-
+	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
-
 	}
-
 }

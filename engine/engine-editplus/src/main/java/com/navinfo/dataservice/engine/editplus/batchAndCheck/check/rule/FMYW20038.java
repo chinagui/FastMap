@@ -1,10 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -27,7 +27,7 @@ import net.sf.json.JSONObject;
  */
 public class FMYW20038 extends BasicCheckRule {
 	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-	Map<String, JSONObject> ft = Maps.newHashMap();
+	Map<String, JSONObject> ft = new HashMap<>();
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){

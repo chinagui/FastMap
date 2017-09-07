@@ -5,11 +5,11 @@ import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
 /**
- * QuickMonitorJobRequest
+ * MediumMonitorJobRequest
  * @author zl
  *
  */
-public class QuickMonitorJobRequest extends AbstractStatJobRequest {
+public class MediumMonitorJobRequest extends AbstractStatJobRequest {
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#defineSubJobRequests()
@@ -26,7 +26,7 @@ public class QuickMonitorJobRequest extends AbstractStatJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "quickMonitorStat";
+		return "mediumMonitorStat";
 	}
 
 	/* (non-Javadoc)

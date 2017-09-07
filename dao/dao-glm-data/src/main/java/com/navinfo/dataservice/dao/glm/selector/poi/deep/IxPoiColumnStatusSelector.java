@@ -448,26 +448,26 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	P.GROUP_ID AS PGROUP_ID,");
 		sb.append("	C.GROUP_ID AS CGROUP_ID");
 		sb.append("	FROM IX_POI IX, IX_POI_PARENT P, IX_POI_CHILDREN C");
-		sb.append("	WHERE IX.PID = P.PARENT_POI_PID(+)");
-		sb.append("	AND IX.PID = C.CHILD_POI_PID(+)");
-		sb.append("	AND IX.PID IN");
+		sb.append("	WHERE IX.PID IN");
 		sb.append("	(SELECT DISTINCT S.PID");
 		sb.append("	FROM POI_COLUMN_STATUS S,");
 		sb.append("	POI_COLUMN_WORKITEM_CONF W");
-		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
-		sb.append("	AND S.HANDLER =:1");
-		sb.append("	AND W.SECOND_WORK_ITEM =:2");
-		sb.append("	AND S.SECOND_WORK_STATUS =:3");
-		sb.append("	AND S.TASK_ID = :4");
+		sb.append("	WHERE S.HANDLER =:1 ");
+		sb.append("	AND S.SECOND_WORK_STATUS =:2");
+		sb.append("	AND S.TASK_ID = :3");
 		if(isQuality==0){//常规任务
-			sb.append("	AND S.COMMON_HANDLER = "+userId+")");
+			sb.append("	AND S.COMMON_HANDLER = "+userId);
 		}else if(isQuality==1){//质检任务
 			sb.append("	AND S.COMMON_HANDLER <> "+userId);
-			sb.append("	AND S.QC_FLAG = 1)");
+			sb.append("	AND S.QC_FLAG = 1");
 		}
+		sb.append("	AND S.WORK_ITEM_ID = W.WORK_ITEM_ID");
+		sb.append("	AND W.SECOND_WORK_ITEM =:4)");
 		
+		sb.append("	AND IX.PID = P.PARENT_POI_PID(+)");
+		sb.append("	AND IX.PID = C.CHILD_POI_PID(+)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
-		
+		logger.info(sb.toString());
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		JSONObject data = new JSONObject();
@@ -475,9 +475,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setLong(1, userId);
-			pstmt.setString(2, secondWorkItem);
-			pstmt.setInt(3, status);
-			pstmt.setInt(4, taskId);
+			pstmt.setInt(2, status);
+			pstmt.setInt(3, taskId);
+			pstmt.setString(4, secondWorkItem);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();

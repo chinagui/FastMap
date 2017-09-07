@@ -121,9 +121,8 @@ public class MediumMonitorJob extends AbstractStatJob {
 			queryProgram5.put("type", 1);
 			double link17AllLen = queryDatasSumInMongo(md, "program", queryProgram5,"link17AllLen");
 			mediumMonitorMap.put("link17AllLen", link17AllLen);
-			
-			double roadActualPercent = collectLink17UpdateTotal/link17AllLen;
-			mediumMonitorMap.put("roadActualPercent", roadActualPercent );
+			Double roadActualCoverPercent = Math.floor((collectLink17UpdateTotal/link17AllLen)*100);
+			mediumMonitorMap.put("roadActualCoverPercent", roadActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram6 = new BasicDBObject();
 			queryProgram6.put("type", 0);
@@ -141,8 +140,8 @@ public class MediumMonitorJob extends AbstractStatJob {
 			double poiAllNum = queryDatasSumInMongo(md, "task", queryProgram8,"poiAllNum");
 			mediumMonitorMap.put("poiAllNum", poiAllNum);
 			
-			double poiActualPercent = poiActualTotal/poiAllNum;
-			mediumMonitorMap.put("poiActualPercent", poiActualPercent);
+			Double poiActualCoverPercent = Math.floor((poiActualTotal/poiAllNum)*100);
+			mediumMonitorMap.put("poiActualPercent", poiActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
 			queryProgram9.put("type", 0);
@@ -179,8 +178,8 @@ public class MediumMonitorJob extends AbstractStatJob {
 			double closeCollectLinkUpdateTotal = queryDatasSumInMongo(md, "task", queryProgram14,"collectLinkUpdateTotal");
 			mediumMonitorMap.put("closeCollectLinkUpdateTotal", closeCollectLinkUpdateTotal);
 			
-			
-			mediumMonitorMap.put("roadActualPercent",collectLinkUpdateTotal/unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal );
+			Double roadActualPercent = collectLinkUpdateTotal/unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal;
+			mediumMonitorMap.put("roadActualPercent", roadActualPercent);
 			
 			BasicDBObject queryProgram16 = new BasicDBObject();
 			queryProgram16.put("type", 0);
@@ -197,11 +196,11 @@ public class MediumMonitorJob extends AbstractStatJob {
 			queryProgram18.put("type", 0);
 			double closePoiFinishNum = queryDatasSumInMongo(md, "task", queryProgram18,"poiFinishNum");
 			mediumMonitorMap.put("closePoiFinishNum", closePoiFinishNum);
-			
-			mediumMonitorMap.put("poiActualPercent", poiActualTotal/unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum);
+			Double poiActualPercent = poiActualTotal*100/unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum;
+			mediumMonitorMap.put("poiActualPercent", poiActualPercent);
 			
 			mediumMonitorMap.put("collectPlanPercent", planPercent);
-			mediumMonitorMap.put("collectActualPercent", roadActualPercent*0.33+poiActualPercent*0.67);
+			mediumMonitorMap.put("collectActualPercent", (roadActualPercent*0.33+poiActualPercent*0.67)*100);
 			
 			BasicDBObject queryProgram19 = new BasicDBObject();
 			queryProgram19.put("type", 2);
@@ -221,23 +220,25 @@ public class MediumMonitorJob extends AbstractStatJob {
 			String monthPlanEndDate = getStartOrEndDate("task","plan_end_date",2," desc");
 			mediumMonitorMap.put("monthPlanEndDate", monthPlanEndDate);
 			
-			mediumMonitorMap.put("monthPlanDate", StatUtil.daysOfTwo(monthPlanStartDate, monthPlanEndDate));
+			int monthPlanDate = StatUtil.daysOfTwo(monthPlanStartDate, monthPlanEndDate);
+			mediumMonitorMap.put("monthPlanDate", monthPlanDate);
 			
 			String curDate = DateUtils.getCurYmd();
 			int monthWorkDate = StatUtil.daysOfTwo(monthPlanStartDate, curDate);
 			mediumMonitorMap.put("monthWorkDate", monthWorkDate);
 			
-			/*mediumMonitorMap.put("monthPlanPercent", monthPoiPlanOut/monthPlanEndDate*monthWorkDate/poiPlanTotal*1.1);
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );
-			mediumMonitorMap.put("", );*/
+			Double a = Math.floor((monthPoiPlanOut/monthPlanDate*monthWorkDate/poiPlanTotal*1.1)*100);
+			mediumMonitorMap.put("monthPlanPercent", a.intValue());
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
+//			mediumMonitorMap.put("", );
 			
 			
 			
@@ -363,7 +364,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 				
 			}
 			if(count > 0){
-				dataAvg = total/count;
+				dataAvg = Math.floor((double)total/count);
 			}
 			
 			return dataAvg;
@@ -1096,5 +1097,14 @@ public class MediumMonitorJob extends AbstractStatJob {
 			log.error("查询mongo "+collName+" 中各城市统计数据报错"+e.getMessage());
 			throw new Exception("查询mongo "+collName+" 中城市统计数据报错"+e.getMessage(),e);
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println((float)4/3);
+		System.out.println((float)5/6);
+		System.out.println((float)4/3*5/6);
+		System.out.println((float)4/3*5/6*1.1);
+		Double a = Math.floor(((double)4/3*(double)5/6*1.1)*100);
+		System.out.println(a.intValue());
 	}
 }

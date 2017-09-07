@@ -54,11 +54,10 @@ public class QuickMonitorJob extends AbstractStatJob {
 		try {
 			long t = System.currentTimeMillis();
 			
-//			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
-//			result.put("quick_monitor", getStats());
-
+			Map<String,Object> statsMap = getStats();
 			JSONArray stats = new JSONArray();
-			stats.add(getStats());
+//			JSONObject statsjson = JSONObject.fromObject(statsMap);
+			stats.add(statsMap);
 			
 			JSONObject result = new JSONObject();
 			
@@ -169,7 +168,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("collectOverdueNum", queryCountInMongo(md, "program", queryProgram8));
 			
 			//采集逾期原因统计
-			quickMonitorMap.put("collectOverdueReasonNum ", getOverdueResonMap(0));
+			quickMonitorMap.put("collectOverdueReasonNum", getOverdueResonMap(0));
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
 			queryProgram9.put("dayOverdue", 1);
@@ -248,22 +247,22 @@ public class QuickMonitorJob extends AbstractStatJob {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		log.debug(JSONArray.fromObject(quickMonitorMap));
+//		log.debug(JSONArray.fromObject(quickMonitorMap));
 		
 		return quickMonitorMap;
 			
 	 }
 	
 
-	private Map<String,Double> getOverdueResonMap(int taskType) throws SQLException {
+	private Map<String,Integer> getOverdueResonMap(int taskType) throws SQLException {
 		//select t.overdue_reason,count(t.overdue_reason) from task t,program p where t.program_id = p.program_id  and t.type = 0 and p.type = 4 group by t.overdue_reason;
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		Map<String,Double> overdueResonMap = null;
+		Map<String,Integer> overdueResonMap = null;
 		try {
-			overdueResonMap = new HashMap<String,Double>();
+			overdueResonMap = new HashMap<String,Integer>();
 			conn = DBConnector.getInstance().getManConnection();
 			String sql  = "select t.overdue_reason ,count(t.overdue_reason) num from task t,program p where t.program_id = p.program_id  and t.type = "+taskType+" and p.type = 4 group by t.overdue_reason";
 			pstmt = conn.prepareStatement(sql);
@@ -279,7 +278,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 				for(Entry<String, Integer> entry : resonMap.entrySet()){
 					String key = entry.getKey();
 					Integer value = entry.getValue();
-					overdueResonMap.put(key, (double) (value/total));
+					if(key != null && StringUtils.isNotEmpty(key)){
+						overdueResonMap.put(key, (value*100/total));
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -746,7 +747,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		}
 	}
 	
-	private int getDateAvgInMongo(MongoDao md, String collName, BasicDBObject filter, String startDate, String endDate) throws Exception {
+	private double getDateAvgInMongo(MongoDao md, String collName, BasicDBObject filter, String startDate, String endDate) throws Exception {
 		try {
 			if(filter == null ){
 //				filter = new BasicDBObject("timestamp", null);
@@ -755,7 +756,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<String,Integer> stat = new HashMap<String,Integer>();
 			
-			int dateAvg = 0;
+			double dateAvg = 0;
 			
 			int count = 0;
 			int total = 0;
@@ -777,7 +778,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			}
 
 			if(count > 0){
-				dateAvg = (int) Math.floor((total/count+1)) ;
+				dateAvg = Math.floor((double)total/count);
 			}
 			
 			return dateAvg;
@@ -787,12 +788,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 		}
 	}
 	
-	private double getFastPercent() {
+	private int getFastPercent() {
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		double fastPercent= 0;
+		int fastPercent= 0;
 		int isAdopted1 = 0;//未采纳
 		int isAdopted2 = 0;//采纳
 		int isAdopted3 = 0;//部分采纳
@@ -814,7 +815,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 //			System.out.println(sql);
 //			System.out.println((isAdopted1+isAdopted2+isAdopted3));
 			if((isAdopted1+isAdopted2+isAdopted3) > 0){
-				fastPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+				fastPercent = ((isAdopted2+isAdopted3)*100/(isAdopted1+isAdopted2+isAdopted3));
 			}
 			
 		} catch (Exception e) {
@@ -825,12 +826,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 		return fastPercent;
 	}
 
-	private double getCommonPercent() {
+	private int getCommonPercent() {
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		double commonPercent= 0;
+		int commonPercent= 0;
 		int isAdopted1 = 0;//未采纳
 		int isAdopted2 = 0;//采纳
 		int isAdopted3 = 0;//部分采纳
@@ -852,7 +853,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 //			System.out.println(sql);
 //			System.out.println((isAdopted1+isAdopted2+isAdopted3));
 			if((isAdopted1+isAdopted2+isAdopted3) > 0){
-				commonPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+				commonPercent = ((isAdopted2+isAdopted3)*100/(isAdopted1+isAdopted2+isAdopted3));
 			}
 			
 		} catch (Exception e) {
@@ -863,12 +864,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 		return commonPercent;
 	}
 	
-	private double getPoiPercent() {
+	private int getPoiPercent() {
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		double poiPercent= 0;
+		int poiPercent= 0;
 		int isAdopted1 = 0;//未采纳
 		int isAdopted2 = 0;//采纳
 		int isAdopted3 = 0;//部分采纳
@@ -890,7 +891,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 //			System.out.println(sql);
 //			System.out.println(isAdopted1+isAdopted2+isAdopted3);
 			if((isAdopted1+isAdopted2+isAdopted3) > 0){
-				poiPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+				poiPercent = ((isAdopted2+isAdopted3)*100/(isAdopted1+isAdopted2+isAdopted3));
 			}
 			
 		} catch (Exception e) {

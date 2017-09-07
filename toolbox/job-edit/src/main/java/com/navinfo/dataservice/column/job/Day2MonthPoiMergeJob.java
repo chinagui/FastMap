@@ -1,42 +1,13 @@
 package com.navinfo.dataservice.column.job;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
-import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -44,29 +15,21 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
-import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
-import com.navinfo.dataservice.day2mon.Check;
-import com.navinfo.dataservice.day2mon.Classifier;
-import com.navinfo.dataservice.day2mon.Day2MonPoiLogByFilterGridsSelector;
-import com.navinfo.dataservice.day2mon.Day2MonPoiLogByTaskIdSelector;
-import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
-import com.navinfo.dataservice.day2mon.DeepInfoMarker;
-import com.navinfo.dataservice.day2mon.PoiGuideLinkBatch;
-import com.navinfo.dataservice.day2mon.PostBatch;
-import com.navinfo.dataservice.day2mon.PreBatch;
-import com.navinfo.dataservice.impcore.exception.LockException;
+import com.navinfo.dataservice.day2mon.*;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
@@ -77,9 +40,19 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
 
 /** 
  * @ClassName: Day2MonthPoiMergeJob
@@ -349,7 +322,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							logCloseUnLot.addAll(closeMeshes);//返给管理平台：当前批次关闭图幅
 							logDmsLockLot.putAll(openLotDmsLockInfo);//返给管理平台：当前批次未申请到DMS锁的图幅
 							logDmsLockUnLot.putAll(openUnLotDmsLockInfo);//返给管理平台：非当前批次未申请到DMS锁的图幅
-							
+
 							List<Integer> lotDmsLockInfos = new ArrayList<Integer>();
 							for(Object set:openLotDmsLockInfo.keySet()){
 								lotDmsLockInfos.add(Integer.parseInt(set.toString()));
@@ -358,7 +331,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							for(Object set:openUnLotDmsLockInfo.keySet()){
 								unLotDmsLockInfos.add(Integer.parseInt(set.toString()));
 							}
-
+ 
 							logMeshes.removeAll(lotDmsLockInfos);//删除未申请到DMS图幅锁的图幅
 							logMeshes.removeAll(unLotDmsLockInfos);//删除未申请到DMS图幅锁的图幅
 							
@@ -568,6 +541,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					new PostBatch(result,monthConn).execute();
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
+
+					batchPoi( result,  monthConn);
 				}
 				updateLogCommitStatus(dailyConn,tempOpTable);
 			}
@@ -846,7 +821,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	
 	protected SqlClause getSelectLogSql(Connection conn,List<Integer> grids) throws Exception{
 		StringBuilder sb = new StringBuilder();
-		sb.append(" select distinct g.GRID_ID\r\n" + 
+		sb.append(" select /*+ leading(P,D,G,S)*/ distinct g.GRID_ID\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 
@@ -993,9 +968,472 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	     } 
 		return json;
 	}
-	
+
+	private void batchPoi(OperationResult opResult, Connection conn) throws Exception {
+
+		List<Long> pids = new ArrayList<>();//所有poiPid
+
+		List<Long> addPids = new ArrayList<>();//新增poiPid
+
+		List<Long> updatePids = new ArrayList<>();//修改poiPid
+
+		Collection<Long> namePids = new ArrayList<>();// 改old_name
+
+		Collection<Long> addressPids = new ArrayList<>();//改old_address
+
+		// 外业log:
+		Collection<Long> logNamePids = new ArrayList<>();// 改名称
+
+		Collection<Long> logAddressPids = new ArrayList<>();// 改地址
+
+		Collection<Long> logKindCodePids = new ArrayList<>();// 改分类
+
+		Collection<Long> logLevelPids = new ArrayList<>();// 改POI_LEVEL
+
+		Collection<Long> logIndoorPids = new ArrayList<>();// 改内部标识
+
+		Collection<Long> logSportPids = new ArrayList<>();// 改运动场馆
+
+		Collection<Long> logLocationPids = new ArrayList<>();// 改RELATION
+
+		Collection<Long> xGuidePids = new ArrayList<>();//改xGuide
+
+		Collection<Long> yGuidePids = new ArrayList<>();//改yGuide
+
+		Collection<Long> logChainPids = new ArrayList<>();// 改连锁品牌
+
+		Collection<Long> logRatingPids = new ArrayList<>();// 改酒店星级
+
+		Collection<Long> parkingPids = new ArrayList<>();// 停车场poi
+
+		Collection<Long> parkingType0Pids = new ArrayList<>();//"室内"
+
+		Collection<Long> parkingType1Pids = new ArrayList<>();//"室外"
+
+		Collection<Long> parkingType2Pids = new ArrayList<>();//"占道"
+
+		Collection<Long> parkingType3Pids = new ArrayList<>();//"室内地上"
+
+		Collection<Long> parkingType4Pids = new ArrayList<>();//"地下"
+
+		for (BasicObj obj:opResult.getAllObjs()) {
+
+			IxPoiObj poiObj = (IxPoiObj) obj;
+
+			long pid = poiObj.objPid();
+
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+			pids.add(pid);
+
+			if (OperationType.UPDATE == poi.getHisOpType()) {
+
+				updatePids.add(pid);
+
+			} else if (OperationType.INSERT == poi.getHisOpType()) {
+
+				addPids.add(pid);
+
+				xGuidePids.add(pid);
+
+				yGuidePids.add(pid);
+			}
+
+			if (poi.getKindCode() != null && !poi.getKindCode().equals("230210")) {
+
+				String label = poi.getLabel();
+
+				if (label != null
+						&& (label.contains("室内|")
+						|| label.contains("室外|")
+						|| label.contains("占道|")
+						|| label.contains("室内地上|")
+						|| label.contains("地下|"))) {
+					parkingPids.add(pid);
+				}
+
+				if (poiObj.getIxPoiParkings() != null && poiObj.getIxPoiParkings().size() == 1) {
+
+					String parkingType = poiObj.getIxPoiParkings().get(0).getParkingType();
+
+					if (parkingType.contains("0")) {
+						parkingType0Pids.add(pid);
+					}
+					if (parkingType.contains("1")) {
+						parkingType1Pids.add(pid);
+					}
+					if (parkingType.contains("2")) {
+						parkingType2Pids.add(pid);
+					}
+					if (parkingType.contains("3")) {
+						parkingType3Pids.add(pid);
+					}
+					if (parkingType.contains("4")) {
+						parkingType4Pids.add(pid);
+					}
+				}
+			}
+
+			if (poi.getHisOpType() == OperationType.UPDATE) {
+
+				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
+					logKindCodePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.LEVEL)) {
+					logLevelPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.INDOOR)) {
+					logIndoorPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.SPORTS_VENUE)) {
+					logSportPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.GEOMETRY)) {
+					logLocationPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.X_GUIDE)) {
+					xGuidePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.Y_GUIDE)) {
+					yGuidePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.CHAIN)) {
+					logChainPids.add(pid);
+				}
+			}
+			// 作业季新增修改中文地址
+			if (poiObj.getChiAddress() != null) {
+				IxPoiAddress address = poiObj.getChiAddress();
+				if (address.getHisOpType() == OperationType.UPDATE) {
+					logAddressPids.add(pid);
+				}
+				if (poi.getOldAddress() == null
+						|| !poi.getOldAddress().equals(
+						poiObj.getChiAddress().getFullname())) {
+					addressPids.add(pid);
+				}
+
+			}
+			// 作业季新增修改中文原始
+			if (poiObj.getOfficeOriginCHName() != null) {
+				IxPoiName poiName = poiObj.getOfficeOriginCHName();
+				if (poiName.getHisOpType() == OperationType.UPDATE) {
+					logNamePids.add(pid);
+				}
+				if (poi.getOldName() == null
+						|| !poi.getOldName().equals(
+						poiObj.getOfficeOriginCHName().getName())) {
+					namePids.add(pid);
+				}
+			}
+			// 作业季修改酒店星级
+			if (poiObj.getIxPoiHotels() != null&&poi.getHisOpType() == OperationType.UPDATE) {
+
+				for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
+					if (hotel.getHisOpType() == OperationType.UPDATE && hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+						logRatingPids.add(pid);
+						break;
+					}
+				}
+			}
+		}
+
+		log.info("批记录状态state");
+		this.updateBatchPoi(addPids, this.getStateParaSql(3), conn);
+		this.updateBatchPoi(updatePids, this.getStateParaSql(2), conn);
+
+		log.info("批old_name");
+		this.updateBatchPoi(namePids, this.getUpdatePoiOldNameSql(), conn);
+
+		log.info("批old_address");
+		this.updateBatchPoi(addressPids, this.getUpdatePoiOldAddressSql(), conn);
+
+		log.info("批old_kind");
+		this.updateBatchPoi(pids, this.getUpdatePoiOldKindCodeSql(), conn);
+
+		log.info("批外业log");
+		this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改名称"), conn);
+		this.updateBatchPoi(logAddressPids, this.getUpadeLogForSql("改地址"), conn);
+		this.updateBatchPoi(logKindCodePids, this.getUpadeLogForSql("改分类"), conn);
+		this.updateBatchPoi(logLevelPids, this.getUpadeLogForSql("改POI_LEVEL"), conn);
+		this.updateBatchPoi(logSportPids, this.getUpadeLogForSql("改运动场馆"), conn);
+		this.updateBatchPoi(logIndoorPids, this.getUpadeLogForSql("改内部标识"), conn);
+		this.updateBatchPoi(logLocationPids, this.getUpadeLogForSql("改RELATION"), conn);
+
+		log.info("批验证标识");
+		Collection<Long> metaPids = this.getMetaPidsForPoi(conn);
+		metaPids.retainAll(pids);
+		pids.removeAll(metaPids);
+		this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
+		this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
+
+		log.info("批几何调整标识 精编标识  数据采集版本");
+		this.updateBatchPoi(pids, this.getBatchPoiCommonSql(), conn);
+
+		log.info("批Old_X_Guide");
+		this.updateBatchPoi(xGuidePids, this.getUpdatePoiOldXGuideSql(), conn);
+
+		log.info("批Old_Y_Guide");
+		this.updateBatchPoi(yGuidePids, this.getUpdatePoiOldYGuideSql(), conn);
+
+		log.info("批 FieldState");
+		this.updateBatchPoi(logKindCodePids, this.getUpadeFieldStateForSql("改种别代码"), conn);
+		this.updateBatchPoi(logChainPids, this.getUpadeFieldStateForSql("改连锁品牌"), conn);
+		this.updateBatchPoi(logRatingPids, this.getUpadeFieldStateForSql("改酒店星级"), conn);
+
+		log.info("批处理标记");
+		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
+		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内|"), conn);
+		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外|"), conn);
+		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道|"), conn);
+		this.updateBatchPoi(parkingType3Pids, this.getUpadeLabelForSql("室内地上|"), conn);
+		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下|"), conn);
+
+		log.info("外业任务编号");
+		this.updateBatchPoi(pids, this.getFieldTaskIdSql(), conn);
+	}
+
+
+	private String getStateParaSql(int state) {
+		return "update ix_poi p set state = "
+				+ state
+				+ "  where  pid in (select to_number(column_value) from table(clob_to_table(?)))";
+	}
+
+	private String getUpdatePoiOldNameSql() {
+		return "   UPDATE ix_poi p								                           \n"
+				+ "    SET p.old_name =                                                    \n"
+				+ "          (SELECT n.name                                               \n"
+				+ "                FROM ix_poi_name n                                      \n"
+				+ "               WHERE n.name_class = 1                                    \n"
+				+ "                     AND n.lang_code IN ('CHI', 'CHT')                   \n"
+				+ "                     AND n.name_type = 2                                 \n"
+				+ "                     AND n.poi_pid = p.pid                               \n"
+				+ "                     AND NVL (p.old_name, -1) <> NVL (n.name, -1)      \n"
+				+ "                     AND rownum =1)                                        \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))  \n";
+	}
+
+	private String getUpdatePoiOldAddressSql() {
+		return "   UPDATE ix_poi p								                                       \n"
+				+ "    SET p.old_address =                                                             \n"
+				+ "          (SELECT n.fullname                                                        \n"
+				+ "                FROM ix_poi_address n                                               \n"
+				+ "               WHERE n.lang_code IN ('CHI', 'CHT')                                  \n"
+				+ "                     AND n.poi_pid = p.pid                                          \n"
+				+ "                     AND NVL (p.old_address, -1) <> NVL (n.fullname, -1)          \n"
+				+ "                     AND rownum =1)                                                \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))   \n";
+	}
+
+	private String getUpdatePoiOldKindCodeSql() {
+		return "   UPDATE ix_poi p								                                       \n"
+				+ "    SET p.old_kind = p.kind_code                                                    \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))    \n"
+				+ "           AND NVL (p.old_kind, -1) <> NVL (p.kind_code, -1)                        \n";
+	}
+
+	private String getUpadeLogForSql(String logName) {
+
+		return "   UPDATE ix_poi p								               \n"
+				+ "    SET    p.log =  DECODE (INSTR (p.LOG, '"
+				+ logName
+				+ "'),                                                          \n"
+				+ "                          NULL,  '"
+				+ logName
+				+ "|',                                                          \n"
+				+ "                           0, p.LOG ||  '"
+				+ logName
+				+ "|',                         \n"
+				+ "                           p.LOG)                                        \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
+	}
+
+	/**
+	 * 获取所有的代理店的poi的pid列表 【判断POI是否为代理店POI的方式】：
+	 * 根据配置表SC_POINT_SPEC_KINDCODE_NEW与POI的种别，CHAIN等信息匹配，确定是否是代理店：：
+	 * 1）配置表中TYPE=7且Category=1的记录的POI_KIND与POI的kindcode匹配，则说明是代理店；
+	 * 2）配置表中TYPE=7且Category
+	 * =3的记录的POI_KIND、CHAIN与POI的kindcode、brands.code匹配，则说明是代理店；
+	 * 3）配置表中TYPE=7且Category
+	 * =7的记录的POI_KIND、CHAIN、HM_FLAG与POI的kindcode、brands.code
+	 * 、“大陆数据还是港澳数据”匹配，则说明是代理店； 以上均不满足，则说明是非代理店。 补充说明：poi是港澳的 则匹配HM或DHM；poi是大陆的
+	 * 则匹配D或DHM
+	 *
+	 */
+	private Collection<Long> getMetaPidsForPoi(Connection conn)
+			throws Exception {
+
+		// 得到所有“表内代理店分类的POI”的PiD
+		// 区分大陆港澳
+		String hkFlagStr = "'D','DHM'";
+
+		String tmpMetaTableCreateSql = "select * from(                             \n"
+				+ "select p.pid                                                             \n"
+				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
+				+ " where m.type = 7                                                        \n"
+				+ "   and m.category = 1                                                    \n"
+				+ "   and p.kind_code = m.poi_kind                                          \n"
+				+ "union                                                                    \n"
+				+ "select p.pid                                                             \n"
+				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
+				+ " where m.type = 7                                                        \n"
+				+ "   and m.category = 3                                                    \n"
+				+ "   and p.kind_code = m.poi_kind                                          \n"
+				+ "   and p.chain = m.chain                                                 \n"
+				+ "union                                                                    \n"
+				+ "select p.pid                                                             \n"
+				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
+				+ " where m.type = 7                                                        \n"
+				+ "   and m.category = 7                                                    \n"
+				+ "   and p.kind_code = m.poi_kind                                          \n"
+				+ "   and p.chain = m.chain                                                 \n"
+				+ "   and m.hm_flag in ("
+				+ hkFlagStr
+				+ "))                                                                        \n";
+		return new QueryRunner().query(conn, tmpMetaTableCreateSql,
+				new Day2MonthPoiMergeJob.PidHandler());
+
+	}
+
+	class PidHandler implements ResultSetHandler<Collection<Long>> {
+		@Override
+		public Collection<Long> handle(ResultSet rs) throws SQLException {
+
+			Collection<Long> resultPids = new ArrayList<>();
+			while (rs.next()) {
+				resultPids.add(rs.getLong("pid"));
+			}
+			return resultPids;
+		}
+
+	}
+
+	private String getVerifiedParaSql(int verifiedFlag) {
+		return "update ix_poi p set verified_flag = "
+				+ verifiedFlag
+				+ "  where  pid in (select to_number(column_value) from table(clob_to_table(?)))";
+	}
+
+	/**
+	 * 几何调整标识 精编标识  数据采集版本
+	 */
+	private String getBatchPoiCommonSql() {
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.seasonVersion);
+		return " UPDATE ix_poi p    \n"
+				+ "   SET p.geo_adjust_flag = 1 ,\n"
+				+ "       p.full_attr_flag = 1 ,  \n"
+				+ "       p.data_version = '" + gdbVersion + "'   \n"
+				+ "     WHERE p.pid in (select to_number(column_value) from table(clob_to_table(?))) \n";
+	}
+
+	private String getUpdatePoiOldXGuideSql() {
+		return "   update ix_poi p								                                       \n"
+				+ "    set p.old_x_guide = p.x_guide                                                    \n"
+				+ "     where p.pid in  (select to_number(column_value) from table(clob_to_table(?)))    \n"
+				+ "           and nvl (p.old_x_guide, -1) <> nvl (p.x_guide, -1)                        \n";
+	}
+
+	private String getUpdatePoiOldYGuideSql() {
+		return "   update ix_poi p								                                       \n"
+				+ "    set p.old_y_guide = p.y_guide                                                    \n"
+				+ "     where p.pid in  (select to_number(column_value) from table(clob_to_table(?)))    \n"
+				+ "           and nvl (p.old_y_guide, -1) <> nvl (p.y_guide, -1)                        \n";
+	}
+
+	private String getUpadeFieldStateForSql(String strValue) {
+
+		return "   UPDATE ix_poi p								               \n"
+				+ "    SET    p.FIELD_STATE =  DECODE (INSTR (p.FIELD_STATE, '"
+				+ strValue
+				+ "'),                                                          \n"
+				+ "                          NULL,  '"
+				+ strValue
+				+ "|',                                                          \n"
+				+ "                           0, p.FIELD_STATE ||  '"
+				+ strValue
+				+ "|',                         \n"
+				+ "                           p.FIELD_STATE)                                        \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
+	}
+
+	private String getFieldTaskIdSql() {
+		return "MERGE INTO IX_POI P\n" +
+				"USING (SELECT T2.OB_PID, MAX(A.STK_ID) STK_ID\n" +
+				"         FROM LOG_OPERATION O2,\n" +
+				"              LOG_ACTION A,\n" +
+				"              (SELECT D1.OB_PID, MAX(D1.OP_ID) OP_ID\n" +
+				"                 FROM LOG_DETAIL D1,\n" +
+				"                      LOG_OPERATION O1,\n" +
+				"                      (SELECT D.OB_PID, MAX(O.OP_DT) MAX_DT\n" +
+				"                         FROM LOG_DETAIL D, LOG_OPERATION O\n" +
+				"                        WHERE D.OB_NM = 'IX_POI'\n" +
+				"                          AND D.OP_ID = O.OP_ID\n" +
+				"                          AND D.OB_PID IN\n" +
+				"                              (SELECT TO_NUMBER(COLUMN_VALUE)\n" +
+				"                                 FROM TABLE(CLOB_TO_TABLE(?)))\n" +
+				"                        GROUP BY D.OB_PID) T\n" +
+				"                WHERE D1.OP_ID = O1.OP_ID\n" +
+				"                  AND T.MAX_DT = O1.OP_DT\n" +
+				"                  AND T.OB_PID = D1.OB_PID\n" +
+				"                GROUP BY D1.OB_PID) T2\n" +
+				"        WHERE A.ACT_ID = O2.ACT_ID\n" +
+				"          AND O2.OP_ID = T2.OP_ID\n" +
+				"        GROUP BY T2.OB_PID) C\n" +
+				"ON (P.PID = C.OB_PID)\n" +
+				"WHEN MATCHED THEN\n" +
+				"  UPDATE SET P.FIELD_TASK_ID = C.STK_ID"  ;
+	}
+
+	private String getDelLabelForSql() {
+
+		return " UPDATE IX_POI P\n" +
+				"   SET P.LABEL = REGEXP_REPLACE(P.LABEL,'室内\\||室外\\||占道\\||室内地上\\||地下\\|',\n" +
+				"                                   '')"
+				+ "     WHERE P.PID IN  (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) \n";
+	}
+
+	private String getUpadeLabelForSql(String strValue) {
+
+		return " UPDATE ix_poi p								               \n"
+				+ "    SET    p.LABEL =  DECODE (INSTR (p.LABEL, '"
+				+ strValue
+				+ "'),                                                          \n"
+				+ "                          NULL,  '"
+				+ strValue
+				+ "|',                                                          \n"
+				+ "                           0, p.LABEL ||  '"
+				+ strValue
+				+ "|',                         \n"
+				+ "                           p.LABEL)                                        \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
+	}
+
+	private void updateBatchPoi(Collection<Long> pidList, String sql, Connection conn) throws Exception {
+
+		if (pidList == null || pidList.size() == 0) {
+			return;
+		}
+		PreparedStatement pstmt = null;
+
+		try {
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pidList, ","));
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidsClob);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
 	public static void main(String[] args) throws JobException{
 		new Day2MonthPoiMergeJob(null).execute();
 	}
+
+
 
 }

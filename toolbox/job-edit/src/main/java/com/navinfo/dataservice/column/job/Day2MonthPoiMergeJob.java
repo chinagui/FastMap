@@ -73,6 +73,7 @@ import java.util.Date;
  */
 public class Day2MonthPoiMergeJob extends AbstractJob {
 	private List<LogMover> logMovers= new ArrayList<LogMover>();
+	private Map<Integer,FlushResult> flushResults;
 
 	public Day2MonthPoiMergeJob(JobInfo jobInfo) {
 		super(jobInfo);

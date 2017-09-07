@@ -45,6 +45,10 @@ public class GLM23005 extends baseRule {
 
 		int direct = link.getDirect();
 		int elecDirect = electroniceye.getDirect();
+		
+		if(electroniceye.changedFields().containsKey("direct")){
+			elecDirect = (int) electroniceye.changedFields().get("direct");
+		}
 
 		if ((direct == 1 && elecDirect == 0) || ((direct == 2 || direct == 3) && direct != elecDirect)) {
 			String target = "[RD_ELECTRONICEYE," + electroniceye.getPid() + "]";

@@ -99,13 +99,13 @@ public class AccessTokenFactory {
 	}
 	public static void main(String[] args) {
 		java.util.List<Integer> users = Arrays.asList(
-				1105);
+				2008);
 		java.util.List<Integer> jobs = Arrays.asList(
-				2755
+				23392
 
 );
 		java.util.List<Integer> tasks = Arrays.asList(
-				2689
+				4288
 );
 		try{
 			int i=0;
@@ -116,13 +116,20 @@ public class AccessTokenFactory {
 				//System.out.println(token.getTokenString());
 				//tokens.add(token.getTokenString());
 				
+				//poi
+//				String parameter="{\"jobId\":"+jobs.get(i)+",\"subtaskId\":"+tasks.get(i)+"}";
+//				System.out.println("userId:"+userId+",parameter="+parameter);
+//				String response = ServiceInvokeUtil.invokeByGet("http://fastmap.navinfo.com/service/collector/poi/upload/?access_token="+token.getTokenString()+"&parameter="+URLEncoder.encode(parameter,"UTF-8"));
+				
+				//tips
 				String parameter="{\"jobId\":"+jobs.get(i)+",\"subtaskId\":"+tasks.get(i)+"}";
 				System.out.println("userId:"+userId+",parameter="+parameter);
-				String response = ServiceInvokeUtil.invokeByGet("http://fastmap.navinfo.com/service/collector/poi/upload/?access_token="+token.getTokenString()+"&parameter="+URLEncoder.encode(parameter,"UTF-8"));
+				String response = ServiceInvokeUtil.invokeByGet("http://fastmap.navinfo.com/service/fcc/tip/import/?access_token="+token.getTokenString()+"&parameter="+URLEncoder.encode(parameter,"UTF-8"));
+				
 				msg.add(response);
 				i++;
 			}
-			writeStringTxtFile("E:\\app\\E.TXT",msg);
+			writeStringTxtFile("F:\\upload\\f.TXT",msg);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

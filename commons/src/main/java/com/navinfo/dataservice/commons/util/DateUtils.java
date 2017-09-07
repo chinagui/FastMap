@@ -151,6 +151,8 @@ public class DateUtils {
 //				DateUtils.DATE_YMD));
 //		System.out.println(DateUtils.getCurYyyymm());
 		System.out.println(getCurrentTimestamp());
+		System.out.println(getCurYyyymm());
+		System.out.println(getCurYmd());
 	}
 
 	/**

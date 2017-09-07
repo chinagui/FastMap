@@ -85,7 +85,7 @@ public class BatchTranslate {
         logger.info(String.format("translate meshes with [%s]", Arrays.toString(map.keySet().toArray(new Integer[]{}))));
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(map.size() + 1), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
             Task task = new Task(entry.getKey(), entry.getValue());

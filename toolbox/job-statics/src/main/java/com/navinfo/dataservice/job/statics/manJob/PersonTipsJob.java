@@ -113,38 +113,39 @@ public class PersonTipsJob extends AbstractStatJob {
                                 statObj = new JSONObject();
                                 subtaskTipsMap.put(s_mSubTaskId, statObj);
                             }
-                            tipsAllNum += 1;
-                            statObj.put("tipsAllNum", tipsAllNum);
-
-                            //是否当天新增
-                            int lifecycle = rs.getInt("T_LIFECYCLE");
-                            if(lifecycle == 3) {//Tips状态是新增
-                                JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-                                if(hbaseTip.containsKey("track")) {
-                                    JSONObject track = hbaseTip.getJSONObject("track");
-                                    if(track.containsKey("t_trackInfo")) {
-                                        JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-                                        if(trackInfoArr != null && trackInfoArr.size() > 0) {//查看track履历，外业当天是否提交
-                                            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-                                                JSONObject trackInfo = trackInfoArr.getJSONObject(i);
-                                                int stage = trackInfo.getInt("stage");
-                                                String date = trackInfo.getString("date");
-                                                if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
+                            //判断是否当天的tips
+                            JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+                            if(hbaseTip.containsKey("track")) {
+                                JSONObject track = hbaseTip.getJSONObject("track");
+                                if(track.containsKey("t_trackInfo")) {
+                                    JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+                                    if(trackInfoArr != null && trackInfoArr.size() > 0) {//查看track履历，外业当天是否提交
+                                        for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                                            JSONObject trackInfo = trackInfoArr.getJSONObject(i);
+                                            int stage = trackInfo.getInt("stage");
+                                            String date = trackInfo.getString("date");
+                                            if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
+                                            	tipsAllNum += 1;                                                
+                                            	//是否当天新增
+                                                int lifecycle = rs.getInt("T_LIFECYCLE");
+                                                if(lifecycle == 3) {//Tips状态是新增
                                                 	//测线显示坐标
                                                     STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
                                                     //测线里程计算
                                                     double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
-                                                    newLength += lineLength;
-                                                }
+                                                    newLength += lineLength;                                                    
+                                                } 
+                                                break;
                                             }
                                         }
                                     }
                                 }
-                            }
+                            }    
+                            statObj.put("tipsAllNum", tipsAllNum);
                             statObj.put("tipsAddLen", newLength);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("", e);
                         throw new SQLException("PersonTipsJob报错: ", e);
                     }finally {
                         if(rs != null) {

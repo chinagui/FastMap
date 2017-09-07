@@ -2052,31 +2052,27 @@ public class Transaction {
 
     private void checkErrorOperation() throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
-        try {
-            if (OperType.REPAIR.equals(operType)) {
-                for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    if (!json.containsKey("data") || json.getJSONObject("data").containsKey("catchInfos")) {
-                        return;
-                    }
+        if (OperType.REPAIR.equals(operType)) {
+            for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
+                if (!entry.getKey().equals(objType)) {
+                    continue;
+                }
+                if (!json.containsKey("data") || !json.getJSONObject("data").containsKey("catchInfos")) {
+                    return;
+                }
 
-                    Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
-                    while (iterator.hasNext()) {
-                        JSONObject obj = iterator.next();
-                        if (obj.containsKey("nodePid")) {
-                            IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
-                            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (dbIds.size() > 1) {
-                                throw new Exception("不允分离大区库接边Node.");
-                            }
+                Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
+                while (iterator.hasNext()) {
+                    JSONObject obj = iterator.next();
+                    if (obj.containsKey("nodePid")) {
+                        IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
+                        Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
+                        if (dbIds.size() > 1) {
+                            throw new Exception("不允分离大区库接边Node.");
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-
         }
     }
         /**

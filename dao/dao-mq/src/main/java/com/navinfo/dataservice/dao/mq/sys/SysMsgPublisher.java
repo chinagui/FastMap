@@ -104,5 +104,21 @@ public class SysMsgPublisher {
 		MsgPublisher.publish2WorkQueue(SysMsgType.MSG_PERSONAL_MANJOB, message.toString());
 		log.info("published msg:"+message);
 	}
+	
+	/**
+	 * 发送JOB状态消息到消息队列
+	 * @param jobMessage
+	 * @param auditor
+	 * @throws Exception
+	 */
+	public static void publishManStaticMsg(String staticMessage,String staticType) throws Exception{
+		JSONObject message = new JSONObject();
+		message.put("staticType", staticType);
+		message.put("staticMessage", staticMessage);
+
+		//发送申请消息
+		MsgPublisher.publish2WorkQueue(SysMsgType.ALL_MANSTATIC, message.toString());
+		log.info("published msg:"+message);
+	}
 
 }

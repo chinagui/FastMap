@@ -92,6 +92,17 @@
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
 	
+	<!-- man websocket配置 -->
+	<bean id="staticManWebSocketHandler" class="com.navinfo.dataservice.engine.sys.msg.websocket.ManStaticWebSocketHandler"/>
+    
+	<websocket:handlers	allowed-origins="*">
+		<websocket:mapping 	path="/static/manStaticWebSocketServer" handler="msgManWebSocketHandler"/>
+		<!-- 握手协议接口 --> 
+		<websocket:handshake-interceptors>
+			<bean class="com.navinfo.dataservice.web.sys.websocket.ManWebSocketHandshakeInterceptor"></bean>
+		</websocket:handshake-interceptors>
+	</websocket:handlers>
+	
 	<!-- test begin -->
 	<!-- 
 	<bean

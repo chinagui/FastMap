@@ -33,9 +33,9 @@ import oracle.sql.STRUCT;
 public class LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
-	private Connection targetDbConn;
-	private boolean ignoreError;
-	private String type;// 日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
+	public Connection targetDbConn;
+	public boolean ignoreError;
+	public String type;// 日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
 
 	/**
 	 * @param conn

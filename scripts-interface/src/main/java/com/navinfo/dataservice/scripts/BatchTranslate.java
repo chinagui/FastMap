@@ -46,9 +46,11 @@ public class BatchTranslate {
 
     private static ThreadLocal<BatchTranslate> threadLocal = new ThreadLocal<>();
 
-    private volatile List<Integer> successMesh;
+    private volatile Map<String, Integer> successMesh;
 
-    private volatile List<Integer> failureMesh;
+    private volatile Map<String, Integer> failureMesh;
+
+    private volatile Map<String, Integer> runningMesh;
 
     public static BatchTranslate getInstance() {
         BatchTranslate translate = threadLocal.get();
@@ -62,8 +64,9 @@ public class BatchTranslate {
     private Integer dbId;
 
     private void init(JSONObject request) {
-        successMesh = new ArrayList<>();
-        failureMesh = new ArrayList<>();
+        successMesh = new HashMap<>();
+        failureMesh = new HashMap<>();
+        runningMesh = new HashMap<>();
         dbId = request.optInt("dbId", Integer.MIN_VALUE);
     }
 
@@ -82,7 +85,7 @@ public class BatchTranslate {
         logger.info(String.format("translate meshes with [%s]", Arrays.toString(map.keySet().toArray(new Integer[]{}))));
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(map.size() + 1), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
             Task task = new Task(entry.getKey(), entry.getValue());
@@ -92,12 +95,13 @@ public class BatchTranslate {
         executor.shutdown();
 
         while (!executor.awaitTermination(15, TimeUnit.SECONDS)) {
+            logger.info(String.format("running mesh is [%s]", JSONObject.fromObject(runningMesh).toString()));
             logger.info(String.format("executor.getPoolSize()：%d，executor.getQueue().size()：%d，executor.getCompletedTaskCo" +
                             "unt()：%d", executor.getPoolSize(), executor.getQueue().size(), executor.getCompletedTaskCount()));
         }
 
-        response.put("successMesh", Arrays.toString(successMesh.toArray()));
-        response.put("failureMesh", Arrays.toString(failureMesh.toArray()));
+        response.put("successMesh", JSONObject.fromObject(successMesh).toString());
+        response.put("failureMesh", JSONObject.fromObject(failureMesh).toString());
         response.put("speedTime", (System.currentTimeMillis() - time) >> 10);
 
         logger.info("batch translate end...");
@@ -182,7 +186,7 @@ public class BatchTranslate {
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
             persistBatch(batch);
-            //conn.commit();
+            conn.commit();
         } catch (Exception e) {
             DbUtils.rollback(conn);
             logger.error("run fm-bat-20-115 is error...", e.fillInStackTrace());
@@ -224,11 +228,17 @@ public class BatchTranslate {
         @Override
         public void run() {
             BatchTranslate translate = BatchTranslate.getInstance();
+            String key = String.valueOf(meshId);
             try {
+
+                runningMesh.put(key, list.size());
                 translate.batchTranslate(dbId, list);
-                successMesh.add(meshId);
+                runningMesh.remove(key);
+
+                successMesh.put(key, list.size());
             } catch (Exception e) {
-                failureMesh.add(meshId);
+                logger.error(String.format("mesh %d translate error..", meshId));
+                failureMesh.put(key, list.size());
                 e.fillInStackTrace();
             }
 
@@ -265,8 +275,8 @@ public class BatchTranslate {
             response = translate.execute(request);
 
             ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+irequest);
-            //System.out.println(response);
-            System.out.println("Over.");
+            logger.debug(response);
+            logger.debug("Over.");
             System.exit(0);
         }catch(Exception e){
             System.out.println("Oops, something wrong...");

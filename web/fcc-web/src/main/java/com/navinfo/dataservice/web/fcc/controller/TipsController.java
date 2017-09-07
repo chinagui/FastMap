@@ -366,9 +366,9 @@ public class TipsController extends BaseController {
             String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
                     PropConstant.downloadFilePathTips);
 
-            String parentPath = downloadFilePath +File.separator+ day + "/";
+            String parentPath = downloadFilePath +File.separator+ day + File.separator+userId+File.separator;
 
-            String filePath = parentPath + uuid + "/";
+            String filePath = parentPath + uuid + File.separator;
 
             File file = new File(filePath);
 
@@ -418,7 +418,7 @@ public class TipsController extends BaseController {
             String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
                     PropConstant.downloadUrlPathTips);
             //4.返回的url
-            String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
+            String url = serverUrl + downloadUrlPath +File.separator+ day + File.separator+userId+File.separator
                     + zipFileName;
 
             logger.info("url:"+url);

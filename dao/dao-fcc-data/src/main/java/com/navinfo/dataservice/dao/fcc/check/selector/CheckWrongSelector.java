@@ -10,6 +10,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.dao.fcc.check.model.rowmapper.CheckWrongRowMapper;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -178,13 +179,10 @@ public class CheckWrongSelector {
 				obj.put("worker", rs.getString("worker")!=null?rs.getString("worker"):"");
 				obj.put("checker", rs.getString("checker")!=null?rs.getString("checker"):"");
 				obj.put("isPrefer", rs.getInt("is_prefer"));
-				Date wTime = rs.getDate("work_time");
-				Date cTime = rs.getDate("check_time");
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String workTime = wTime!=null?formatter.format(wTime):"";
-				String checkTime= cTime!=null?formatter.format(cTime):"";
-				obj.put("workTime", workTime);
-				obj.put("checkTime", checkTime);
+				String workTime = DateUtils.format(rs.getTimestamp("work_time"), "yyyy-MM-dd HH:mm:ss");
+				String checkTime= DateUtils.format(rs.getTimestamp("check_time"), "yyyy-MM-dd HH:mm:ss");
+				obj.put("workTime", workTime!=null?workTime:"");
+				obj.put("checkTime", checkTime!=null?checkTime:"");
 			}
 			
 			

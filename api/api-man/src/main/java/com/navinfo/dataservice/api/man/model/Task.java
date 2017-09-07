@@ -57,7 +57,17 @@ public class Task implements Serializable{
 	private String overdueReason;
 	private String overdueOtherReason;
 	private int tips2MarkNum;
+	//是否已经分配子任务
+	private int isAssign;
 	
+	public int getIsAssign() {
+		return isAssign;
+	}
+
+	public void setIsAssign(int isAssign) {
+		this.isAssign = isAssign;
+	}
+
 	public int getTips2MarkNum() {
 		return tips2MarkNum;
 	}

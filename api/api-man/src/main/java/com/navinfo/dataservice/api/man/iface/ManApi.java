@@ -380,5 +380,12 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Map<Integer,Map<String, Object>> cityStatic()throws Exception;
+	
+    /**
+     * 查询已经分配子任务的任务集合
+     * @throws Exception 
+     * 
+     * */
+    public Set<Integer> queryTasksHasSubtask() throws Exception;
 }
 

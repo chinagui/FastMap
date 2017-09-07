@@ -18,7 +18,7 @@ public class FlushLogToDBThread extends Thread {
 	protected Logger log = Logger.getLogger(FlushLogToDBThread.class);
 	protected ThreadSharedObjectExtResult threadSharedObject;
 	protected ThreadPoolExecutor threadPoolExecutor = null;
-	protected LogReader logReader;
+	protected LogReaderDay2Month logReader;
 	protected LogWriterDay2Month logWriter;
 	protected boolean ignoreSQLExeEffectException;
 	protected TransactionalDataSource targetDataSource;
@@ -35,7 +35,7 @@ public class FlushLogToDBThread extends Thread {
 	private String type;
 
 	public FlushLogToDBThread(ThreadSharedObjectExtResult threadSharedObject,
-			LogReader logReader, LogWriterDay2Month logWriter,
+			LogReaderDay2Month logReader, LogWriterDay2Month logWriter,
 			boolean ignoreSQLExeEffectException) throws Exception {
 		this.threadSharedObject = threadSharedObject;
 		this.logReader = logReader;
@@ -51,6 +51,12 @@ public class FlushLogToDBThread extends Thread {
 		} catch (Exception e) {
 			throw new Exception("打开履历写入器出错:" + e.getMessage(), e);
 		}
+		try {
+			log.debug("logWriter.open");
+			logReader.open();
+		} catch (Exception e) {
+			throw new Exception("打开履历写入器出错:" + e.getMessage(), e);
+		}
 	}
 
 	public void run() {
@@ -58,12 +64,12 @@ public class FlushLogToDBThread extends Thread {
 			startTime = System.currentTimeMillis();
 			log.debug("FlushLogToDBThread.run");
 			int index = 0;
+			init();
 			ResultSet rs = logReader.read();
 			rs.setFetchSize(1000);
 			FlushResult flushResult = new FlushResult();
 			LogWriterDay2Month logWriter = new LogWriterDay2Month(
 					targetDataSource, ignoreSQLExeEffectException, type);
-			init();
 			while (rs.next()) {
 
 				try {

@@ -58,8 +58,8 @@ public class BlockJob extends AbstractStatJob {
 			Map<String, Object> result = new HashMap<>();
 			result.put("block", keyMaps);
 			log.info("end blockJob");
-			log.info(result);
-			log.info(JSONObject.fromObject(result).toString());
+			//log.info(result);
+			//log.info(JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

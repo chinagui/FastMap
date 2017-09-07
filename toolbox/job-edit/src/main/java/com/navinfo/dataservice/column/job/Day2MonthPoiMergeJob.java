@@ -8,6 +8,9 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -15,6 +18,7 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -30,6 +34,8 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.*;
+import com.navinfo.dataservice.impcore.flushbylog.FlushObjStatInfo;
+import com.navinfo.dataservice.impcore.flushbylog.FlushObjStatOperator;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
@@ -53,6 +59,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.Map.Entry;
 
 /** 
  * @ClassName: Day2MonthPoiMergeJob
@@ -197,7 +204,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 									String tempOpTable = logSelector.select();
 
 									log.info("开始将日库履历刷新到月库,temptable:"+tempOpTable);
-									result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable);
+									result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable,region);
 									
 									allResult.putAll(result.getAllObjs());
 									log.info("大区库（regionId:"+region.getRegionId()+"）日落月刷库完成。");
@@ -355,6 +362,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			if(phaseId!=0){
 				manApi.updateJobProgress(phaseId,2,logInfo.toString());
 			}
+			//日落月统计
+			insertStatInfo();
+			
 		}catch(Exception e){
 			logInfo.put("errmsg", e.getMessage());
 			if(phaseId!=0){
@@ -455,7 +465,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				tempOpTable = logSelector.select();
 			}
 			
-			result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable);
+			result=logFlushAndBatchData( monthDbSchema, monthConn, dailyDbSchema,dailyConn,tempOpTable,region);
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
@@ -503,7 +513,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 	}
 	
-	private OperationResult logFlushAndBatchData(OracleSchema monthDbSchema,Connection monthConn,OracleSchema dailyDbSchema,Connection dailyConn,String tempOpTable)
+	private OperationResult logFlushAndBatchData(OracleSchema monthDbSchema,Connection monthConn,OracleSchema dailyDbSchema,Connection dailyConn,String tempOpTable,Region region)
 			throws Exception{
 		
 		OperationResult result=new OperationResult();
@@ -537,7 +547,41 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				}
 				updateLogCommitStatus(dailyConn,tempOpTable);
 			}
-
+			//进行履历对象级统计
+			try {
+				String tempFailLogTable = flushResult.getTempFailLogTable();
+				//统计总数
+				Map<String, Integer> totalObjStat = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempOpTable);
+				//统计失败的数量
+				Map<String, Integer> failObjStat = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempFailLogTable);
+				//处理统计数据
+				if(totalObjStat != null && totalObjStat.size() > 0){
+					for(Entry<String, Integer> entry : totalObjStat.entrySet()){
+						String objName = entry.getKey();
+						int total = entry.getValue();
+						int failTotal = 0;
+						if(failObjStat != null && failObjStat.size() > 0){
+							if(failObjStat.containsKey(objName)){
+								failTotal = failObjStat.get(objName);
+							}
+						}
+						//保存数据
+						FlushObjStatInfo objStatInfo = new FlushObjStatInfo(objName);
+						objStatInfo.setTotal(total);
+						objStatInfo.setSuccess(total-failTotal);
+						
+						flushResult.addObjStatInfo(objStatInfo);
+					}
+				}
+				
+				if(flushResults == null){
+					flushResults = new HashMap<Integer,FlushResult>();
+				}
+				flushResults.put(region.getRegionId(), flushResult);
+			} catch (Exception e) {
+				log.error("大区库(regionId:"+region.getRegionId()+")按对象统计日落月失败,"+e.getMessage());
+			}
+			
 			return result;
 		}catch(Exception e){
 			throw e;
@@ -1425,6 +1469,61 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		new Day2MonthPoiMergeJob(null).execute();
 	}
 
-
+	/**
+	 * 将统计信息存入sys库中FM_LOG_STATS
+	 * @author Han Shaoming
+	 * @param beginTime
+	 */
+	private void insertStatInfo()  {
+		try{
+			//设置导入成功状态
+			long jobId = jobInfo.getId();
+			String beginTime = DateUtils.dateToString(jobInfo.getBeginTime(), "yyyy/MM/dd HH:mm:ss");
+			//执行插入
+			if(flushResults != null && flushResults.size() > 0){
+				for (Entry<Integer, FlushResult> entry : flushResults.entrySet()) {
+					int regionId = entry.getKey();
+					FlushResult flushResult = entry.getValue();
+					try {
+						int successTotal = flushResult.getInsertTotal() + flushResult.getUpdateTotal() + flushResult.getDeleteTotal();
+						int failureTotal = flushResult.getFailedTotal();
+						int total = flushResult.getTotal();
+						//处理日志分类描述
+						StringBuilder logDesc = new StringBuilder();
+						logDesc.append(" ,jobId:"+jobId+" ,regionId:"+regionId);
+						Set<FlushObjStatInfo> objStatInfos = flushResult.getObjStatInfo();
+						if(objStatInfos != null && objStatInfos.size() > 0){
+							for (FlushObjStatInfo objStatInfo : objStatInfos) {
+								String objName = objStatInfo.getObjName();
+								int totalObj = objStatInfo.getTotal();
+								int successObj = objStatInfo.getSuccess();
+								logDesc.append(" ,"+objName+":"+successObj+"/"+totalObj);
+							}
+						}
+						//处理失败描述
+						String errorMsg = "记录日落月失败履历的表名:"+flushResult.getTempFailLogTable();
+								
+						SysLogStats log = new SysLogStats();
+						log.setLogType(SysLogConstant.DAY_TO_MONTH_TYPE);
+						log.setLogDesc(SysLogConstant.DAY_TO_MONTH_DESC+logDesc.toString());
+						log.setFailureTotal(failureTotal);
+						log.setSuccessTotal(successTotal);  
+						log.setTotal(total);
+						log.setBeginTime(beginTime);
+						log.setEndTime(DateUtils.getSysDateFormat());
+						log.setErrorMsg(errorMsg);
+						log.setUserId("0");
+						
+						SysLogOperator.getInstance().insertSysLog(log);
+						
+					} catch (Exception e) {
+						log.error("大区库(regionId:"+regionId+")日落月统计入库出错,"+e.getMessage());
+					}
+				}
+			}
+		}catch (Exception e) {
+			log.error("日落月统计入库出错："+e.getMessage(), e);
+		}
+	}
 
 }

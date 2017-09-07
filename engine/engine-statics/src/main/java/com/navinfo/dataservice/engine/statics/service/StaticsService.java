@@ -647,13 +647,70 @@ public class StaticsService {
 				
 				JSONObject cityDetail  = JSONObject.fromObject(jso.get("cityDetail"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
-				JSONArray cityDetail2=reForm(cityDetail ,8,false);
+				JSONArray cityDetail2=reFormCity(cityDetail ,8);
 				task.put("cityDetail",cityDetail2);
 			}
 			return task;
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * originJson中的key为描述，value为百分比，按照百分比排序，此处将取前top的，其余归为一个百分比
+	 * 例如top=4。返回：{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
+	 * @param originJson
+	 * @param top
+	 * @return
+	 */
+	private JSONArray reFormCity(JSONObject originJson,int top){
+		if(originJson.size()==0){
+			return new JSONArray();
+		}
+		List<Map<String,Object>> keyList=new ArrayList<>();
+		Iterator iter = originJson.keys();
+		while(iter.hasNext()){
+			String key = String.valueOf(iter.next());
+			JSONObject value = JSONObject.fromObject(originJson.get(key));
+			Map<String,Object> tMap=new HashMap<>();
+			tMap.put("name", key);
+			tMap.put("count", value.get("total"));
+			tMap.put("link", value.get("roadActualTotal"));
+			keyList.add(tMap);
+		}
+		//冒泡排序
+		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
+            for(int j = 0 ;j < keyList.size() - i - 1; j++){    //对当前无序区间score[0......length-i-1]进行排序(j的范围很关键，这个范围是在逐步缩小的)
+            	Map<String,Object> jMap=keyList.get(j);
+            	String jkey = String.valueOf(jMap.get("name"));
+            	int jValue = (int)jMap.get("count");
+            	int jValue2 = (int)jMap.get("link");
+            	Map<String,Object> j1Map=keyList.get(j + 1);
+            	String j1key = String.valueOf(j1Map.get("name"));
+            	int j1Value = (int)j1Map.get("count");
+            	int j1Value2 = (int)j1Map.get("link");
+            	if(jValue< j1Value){    //把小的值交换到后面
+            		Map<String,Object> tMap=new HashMap<>();
+            		tMap.put("name", j1key);
+            		tMap.put("count", j1Value);
+        			tMap.put("link",j1Value2);
+            		keyList.add(j, tMap);
+            		Map<String,Object> t1Map=new HashMap<>();
+            		t1Map.put("name", jkey);
+            		t1Map.put("count", jValue);
+        			t1Map.put("link",jValue2);
+            		keyList.add(j+1, t1Map);
+               }
+           }
+       }
+		JSONArray orderJson=new JSONArray();
+		for(int i=0;i<top;i++){
+			if(i>=keyList.size()){
+				return orderJson;
+			}
+			orderJson.add(keyList.get(i));
+		}
+		return orderJson;
 	}
 	
 	/**

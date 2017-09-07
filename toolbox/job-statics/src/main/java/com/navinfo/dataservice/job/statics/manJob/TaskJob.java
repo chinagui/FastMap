@@ -79,6 +79,8 @@ public class TaskJob extends AbstractStatJob {
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
+			//所有已经分配子任务的任务id集合
+			Set<Integer> taskIdsHasSubtask = manApi.queryTasksHasSubtask();
 			
 			//modify by songhe 2017/9/04
 			//查询task对应的tips转aumark数量
@@ -95,6 +97,7 @@ public class TaskJob extends AbstractStatJob {
 			for (Task task : taskAll) {
 				int status = task.getStatus();
 				int taskId = task.getTaskId();
+
 				//任务开启
 				if(status == 1){
 					//查询grids
@@ -168,6 +171,10 @@ public class TaskJob extends AbstractStatJob {
 				for (Map<String, Object> map : subtaskList) {
 					int subtaskId = (int) map.get("subtaskId");
 					subtaskIds.add(subtaskId);
+				}
+				//判断是否包含子任务
+				if(taskIdsHasSubtask.contains(taskId)){
+					task.setIsAssign(1);
 				}
 				//处理grid_task_tips相应的统计数据 key:统计描述，value：统计值
 				Map<String, Integer> gridTaskTipsStat =new HashMap<>();
@@ -1305,6 +1312,7 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("workDate", workDate);
 			taskMap.put("tips2MarkNum", task.getTips2MarkNum());
 			taskMap.put("lot", task.getLot());
+			taskMap.put("isAssign", task.getIsAssign());
 			
 			//保存数据
 			taskMap.put("taskId", taskId);

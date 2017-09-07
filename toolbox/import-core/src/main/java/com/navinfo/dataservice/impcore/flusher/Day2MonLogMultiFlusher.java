@@ -1,11 +1,17 @@
 package com.navinfo.dataservice.impcore.flusher;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushLogBySQL;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /***
  * 
@@ -13,9 +19,6 @@ import com.navinfo.dataservice.impcore.flushbylog.FlushLogBySQL;
  */
 public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-
-	protected int tableDatacount;// 并发履历数量
-	protected int concurrentSize;// 实际并发线程个数
 
 	public Day2MonLogMultiFlusher(DataSource sourceDataSource,
 			DataSource targetDataSource, String tempTable, boolean ignoreError,
@@ -28,15 +31,20 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 
 	/**
 	 * 根据表的个数、最大并发大小，取最小值作为并发大小
+	 * 
+	 * @throws SQLException
 	 */
-	protected void calcConcurrentSize(int count) {
-		if (count <= 1000) {
+	@Override
+	protected void calcConcurrentSize() throws SQLException {
+		this.dataCount = this.getLogCount(this.tempTable);
+		if (dataCount <= 1000) {
 			concurrentSize = 1;
 			tableDatacount = 1;
 		} else {
 			concurrentSize = 10;
-			tableDatacount = count / concurrentSize;
+			tableDatacount = dataCount / concurrentSize;
 		}
+		innerCount += (int) Math.ceil((double) dataCount / tableDatacount);
 	}
 
 	/**
@@ -52,7 +60,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 		log.info("createLogReaderInner begin");
 		String queryLogSqlInner = "select a.*		  \n"
 				+ "  from (select L.*, rownum rn                \n"
-				+ "        from LOG_DETAIL L, tempTable T       \n"
+				+ "        from LOG_DETAIL L, " + tempTable + " T       \n"
 				+ "      where L.OP_ID=T.OP_ID                  \n"
 				+ "          ORDER BY T.OP_SEQ) a    \n"
 				+ "         where rn >" + innerCount + "                    \n"
@@ -60,7 +68,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 
 		log.info(queryLogSqlInner);
 		log.info("createLogReaderInner end");
-		return null;
+		return queryLogSqlInner;
 
 	}
 
@@ -69,14 +77,41 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	 * 
 	 * @param tempTable
 	 * @return
+	 * @throws SQLException
 	 */
-	public int getLogCount(String tempTable) {
+	@Override
+	public int getLogCount(String tempTable) throws SQLException {
 		log.info("createLogReaderInner begin");
-		String queryLogCountSql = "select count(1) \n"
-				+ " from LOG_DETAIL L, tempTable T          \n"
+		Connection conn = this.sourceDataSource.getConnection();
+
+		int count = 0;
+		String queryLogCountSql = "select count(1) count \n"
+				+ " from LOG_DETAIL L, " + tempTable + " T          \n"
 				+ " where L.OP_ID=T.OP_ID                     \n";
 		log.info(queryLogCountSql);
-		return 0;
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(queryLogCountSql);
+
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				count = resultSet.getInt("count");
+			}
+
+			return count;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeConnection(conn);
+
+		}
 
 	}
 

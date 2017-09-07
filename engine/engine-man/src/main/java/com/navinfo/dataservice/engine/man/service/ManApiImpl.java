@@ -590,4 +590,14 @@ public class ManApiImpl implements ManApi {
     public List<Map<String, Object>> queryProgramStat() throws Exception{
     	return ProgramService.getInstance().queryProgramStat();
     }
+    
+    /**
+     * 查询已经分配子任务的任务集合
+     * @throws Exception 
+     * 
+     * */
+    public Set<Integer> queryTasksHasSubtask() throws Exception{
+    	return TaskService.getInstance().queryTasksHasSubtask();
+    }
+    
 }

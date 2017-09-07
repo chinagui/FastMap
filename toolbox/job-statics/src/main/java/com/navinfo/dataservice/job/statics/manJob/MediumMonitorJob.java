@@ -3,12 +3,10 @@ package com.navinfo.dataservice.job.statics.manJob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.apache.commons.dbutils.DbUtils;
 import org.bson.Document;
 import com.mongodb.BasicDBObject;
@@ -22,6 +20,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -30,8 +29,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * QuickMonitorJob
- * 快线监控统计job
+ * MediumMonitorJob
+ * 中线监控统计job
  * @author zl 2017.09.04
  *
  */
@@ -95,9 +94,16 @@ public class MediumMonitorJob extends AbstractStatJob {
 		
 		
 		try {
-			
-			mediumMonitorMap.put("planStartDate", manApi.queryConfValueByConfKey("plan_start_date"));
-			mediumMonitorMap.put("planEndDate", manApi.queryConfValueByConfKey("plan_end_date"));
+			String planStartDate ="";
+			if(manApi.queryConfValueByConfKey("plan_start_date") != null && StringUtils.isNotEmpty(manApi.queryConfValueByConfKey("plan_start_date"))){
+				planStartDate=manApi.queryConfValueByConfKey("plan_start_date");
+			}
+			String planEndDate ="";
+			if(manApi.queryConfValueByConfKey("plan_end_date") != null && StringUtils.isNotEmpty(manApi.queryConfValueByConfKey("plan_start_date"))){
+				planEndDate=manApi.queryConfValueByConfKey("plan_end_date");
+			}
+			mediumMonitorMap.put("planStartDate", planStartDate);
+			mediumMonitorMap.put("planEndDate", planEndDate);
 			mediumMonitorMap.put("unplanNum", getUnplanNum());
 			mediumMonitorMap.put("workNum", getWorkNum());
 			mediumMonitorMap.put("workOverdueNum", getWorkOverdueNum());
@@ -246,7 +252,11 @@ public class MediumMonitorJob extends AbstractStatJob {
 			String monthPlanStartDate = getStartOrEndDate("task","plan_start_date",2,"");
 			mediumMonitorMap.put("monthPlanStartDate", monthPlanStartDate);
 			
-			String monthPlanEndDate = getStartOrEndDate("task","plan_end_date",2," desc");
+			String monthPlanEndDateStr = getStartOrEndDate("task","plan_end_date",2," desc");
+			String monthPlanEndDate ="";
+			if(monthPlanEndDateStr != null && StringUtils.isNotEmpty(monthPlanEndDateStr)){
+				monthPlanEndDate=monthPlanEndDateStr;
+			}
 			mediumMonitorMap.put("monthPlanEndDate", monthPlanEndDate);
 			
 			int monthPlanDate = StatUtil.daysOfTwo(monthPlanStartDate, monthPlanEndDate);
@@ -313,15 +323,10 @@ public class MediumMonitorJob extends AbstractStatJob {
 			queryProgram28.put("type", 2);
 			Double monthDay2MonthNum = queryDatasSumInMongo(md, "task", queryProgram28,"day2MonthNum");
 			mediumMonitorMap.put("monthDay2MonthNum", monthDay2MonthNum);
-			//************************************************
-			
-			
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		return null;
+		return mediumMonitorMap;
 			
 	 }
 	
@@ -358,13 +363,13 @@ public class MediumMonitorJob extends AbstractStatJob {
 		String startDate = "";
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "sselect to_char("+column+",'yyyyMMdd') from (select t."+column+" from "+tableName+" t where t.type = "+type+" order by t."+column+" "+orderFlag+" ) where rownum=1";
+			String sql  = "select to_char("+column+",'yyyyMMdd') col from (select t."+column+" from "+tableName+" t where t.type = "+type+" order by t."+column+" "+orderFlag+" ) where rownum=1";
 			pstmt = conn.prepareStatement(sql);
-			
+			System.out.println(sql);
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
-				startDate = rs.getString("num");
+				startDate = rs.getString("col");
 			}
 			
 		} catch (Exception e) {
@@ -373,7 +378,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 //		return programNum;
-		return null;
+		return startDate;
 	}
 
 	private double queryDatasSumInMongo(MongoDao md, String collName, BasicDBObject filter, String cloumn1,String cloumn2) throws Exception {
@@ -492,40 +497,6 @@ public class MediumMonitorJob extends AbstractStatJob {
 		return programNum;
 	}
 
-	private Map<String,Double> getOverdueResonMap(int taskType) throws SQLException {
-		//select t.overdue_reason,count(t.overdue_reason) from task t,program p where t.program_id = p.program_id  and t.type = 0 and p.type = 4 group by t.overdue_reason;
-		Connection conn = null;
-		
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		Map<String,Double> overdueResonMap = null;
-		try {
-			overdueResonMap = new HashMap<String,Double>();
-			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select t.overdue_reason ,count(t.overdue_reason) num from task t,program p where t.program_id = p.program_id  and t.type = "+taskType+" and p.type = 4 group by t.overdue_reason";
-			pstmt = conn.prepareStatement(sql);
-			Map<String,Integer> resonMap = new HashMap<String,Integer>();
-			rs = pstmt.executeQuery();
-			int total = 0 ;
-			while(rs.next()){
-				total+=rs.getInt("num");
-				resonMap.put(rs.getString("overdue_reason"), rs.getInt("num"));
-			}
-			
-			if(resonMap != null && resonMap.size() > 0 && total > 0){
-				for(Entry<String, Integer> entry : resonMap.entrySet()){
-					String key = entry.getKey();
-					Integer value = entry.getValue();
-					overdueResonMap.put(key, (double) (value/total));
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}finally {
-			DbUtils.closeQuietly(conn, pstmt, rs);
-		}
-		return overdueResonMap;
-	}
 
 	public List<Map<String,Integer>> getProgramList() throws Exception{
 		Connection conn = null;
@@ -925,7 +896,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 		int workNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from  program p,fm_stat_overview_task t where p.program_id = t.program_id and  p.type = 1 and  p.status in (1,2)  and t.task_id in (select a.task_id from fm_stat_overview_task a where a.diff_date < 0 ";
+			String sql  = "select count(1) num from  program p,fm_stat_overview_task t where p.program_id = t.program_id and  p.type = 1 and  p.status in (1,2)  and t.task_id in (select a.task_id from fm_stat_overview_task a where a.diff_date < 0 ) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -1192,7 +1163,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 		}
 	}
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		System.out.println((float)4/3);
 		System.out.println((float)5/6);
 		System.out.println((float)4/3*5/6);
@@ -1200,5 +1171,5 @@ public class MediumMonitorJob extends AbstractStatJob {
 //		Double a = Math.floor(((double)4/3*(double)5/6*1.1)*100);
 		Double a = 9.8;
 		System.out.println(a.intValue());
-	}
+	}*/
 }

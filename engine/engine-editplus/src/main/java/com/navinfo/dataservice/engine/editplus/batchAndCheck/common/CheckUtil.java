@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.common;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,12 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -532,6 +536,49 @@ public class CheckUtil {
 			DbUtils.closeQuietly(pstmt);
 		}
     }
+    
+    /**
+     * 
+     * @param conn
+     * @param regionIds
+     * @return
+     * @throws Exception
+     */
+    public static Map<Long, String> queryRegionIdAndName(Connection conn, Set<Long> regionIds) throws Exception{
+		Map<Long, String> regionAndNameMap = new HashMap<>();
+		String sql = "SELECT adn.name,adn.region_id FROM ad_admin_name adn WHERE adn.lang_code IN ('CHI','CHT') AND adn.name_class=1 ";
+		String regionIdString = StringUtils.join(regionIds, ",");
+		boolean clobFlag = false;
+        if (regionIds.size() > 1000) {
+            sql += " and adn.region_id IN (select to_number(column_value) from table(clob_to_table(?)))";
+            clobFlag = true;
+        } else {
+        	sql += " and adn.region_id IN (" + regionIdString + ")";
+        }
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			if(clobFlag){
+	            Clob clob = ConnectionUtil.createClob(conn);
+	            clob.setString(1, regionIdString);
+				pstmt.setClob(1, clob);
+			}
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				regionAndNameMap.put(resultSet.getLong("region_id"), resultSet.getString("name"));
+			}
+			
+			return regionAndNameMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
     
     /**
      * 查询poi是否存在检查错误

@@ -8,11 +8,11 @@ import java.util.Map;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /**
  * 
@@ -29,52 +29,102 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  */
 public class GLM60181 extends BasicCheckRule {
 
+//	@Override
+//	public void runCheck(BasicObj obj) throws Exception {
+//		IxPoiObj poiObj=(IxPoiObj) obj;
+//		IxPoi poi=(IxPoi) poiObj.getMainrow();
+//
+//		IxPoiAddress address=poiObj.getCHAddress();
+//		if (address == null) {
+//			return;
+//		}
+//
+//		String province = address.getProvince();
+//		String city = address.getCity();
+//		String county = address.getCounty();
+//		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+//		Map<String, List<String>> addrAdminMap = metadataApi.scPointAdminareaDataMap();
+//		List<String> errList = new ArrayList<String>();
+//		if (StringUtils.isNotEmpty(province)) {
+//			if(!(addrAdminMap.get("province").contains(province)||addrAdminMap.get("province_short").contains(province))){
+//				errList.add("省名不在该POI对应的行政区划中；");
+//			}
+//		}
+//		
+//		if (StringUtils.isNotEmpty(city)) {
+//			if(!(addrAdminMap.get("city").contains(city)||addrAdminMap.get("city_short").contains(city)||
+//					addrAdminMap.get("district_remark1").contains(city)||addrAdminMap.get("district_short_remark1").contains(city))){
+//				errList.add("市名不在该POI对应的行政区划中；");
+//			}
+//		}
+//		
+//		if (StringUtils.isNotEmpty(county)) {
+//			if(!(addrAdminMap.get("district").contains(county)||addrAdminMap.get("district_short").contains(county))){
+//				errList.add("区县名不在该POI对应的行政区划中；");
+//			}
+//		}
+//		
+//		if (errList.size()>0) {
+//			String errStr = org.apache.commons.lang.StringUtils.join(errList, ";");
+//			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),errStr);
+//		}
+//
+//	}
+
+	private MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+
+	public void run() throws Exception {
+		Map<String, List<String>> addrAdminMap = metadataApi.scPointAdminareaDataMap();
+		
+		for (Map.Entry<Long, BasicObj> entry : getRowList().entrySet()) {
+			BasicObj basicObj = entry.getValue();
+
+			if (!basicObj.objName().equals(ObjectName.IX_POI)) continue;
+
+			IxPoiObj poiObj = (IxPoiObj) basicObj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+
+			IxPoiAddress address = poiObj.getCHAddress();
+			
+			if (address == null) continue;
+
+
+			String province = address.getProvince();
+			String city = address.getCity();
+			String county = address.getCounty();
+			List<String> errList = new ArrayList<String>();
+			if (StringUtils.isNotEmpty(province)) {
+				if(!(addrAdminMap.get("province").contains(province) || addrAdminMap.get("province_short").contains(province))){
+					errList.add("省名不在该POI对应的行政区划中；");
+				}
+			}
+			
+			if (StringUtils.isNotEmpty(city)) {
+				if(!(addrAdminMap.get("city").contains(city) || addrAdminMap.get("city_short").contains(city) || 
+						addrAdminMap.get("district_remark1").contains(city) || addrAdminMap.get("district_short_remark1").contains(city))){
+					errList.add("市名不在该POI对应的行政区划中；");
+				}
+			}
+			
+			if (StringUtils.isNotEmpty(county)) {
+				if(!(addrAdminMap.get("district").contains(county) || addrAdminMap.get("district_short").contains(county))){
+					errList.add("区县名不在该POI对应的行政区划中；");
+				}
+			}
+			
+			if (errList.size() > 0) {
+				String errStr = org.apache.commons.lang.StringUtils.join(errList, ";");
+				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), errStr);
+			}
+		}
+	}
+	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		IxPoiObj poiObj=(IxPoiObj) obj;
-		IxPoi poi=(IxPoi) poiObj.getMainrow();
-
-		IxPoiAddress address=poiObj.getCHAddress();
-		if (address == null) {
-			return;
-		}
-
-		String province = address.getProvince();
-		String city = address.getCity();
-		String county = address.getCounty();
-		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		Map<String, List<String>> addrAdminMap = metadataApi.scPointAdminareaDataMap();
-		List<String> errList = new ArrayList<String>();
-		if (StringUtils.isNotEmpty(province)) {
-			if(!(addrAdminMap.get("province").contains(province)||addrAdminMap.get("province_short").contains(province))){
-				errList.add("省名不在该POI对应的行政区划中；");
-			}
-		}
-		
-		if (StringUtils.isNotEmpty(city)) {
-			if(!(addrAdminMap.get("city").contains(city)||addrAdminMap.get("city_short").contains(city)||
-					addrAdminMap.get("district_remark1").contains(city)||addrAdminMap.get("district_short_remark1").contains(city))){
-				errList.add("市名不在该POI对应的行政区划中；");
-			}
-		}
-		
-		if (StringUtils.isNotEmpty(county)) {
-			if(!(addrAdminMap.get("district").contains(county)||addrAdminMap.get("district_short").contains(county))){
-				errList.add("区县名不在该POI对应的行政区划中；");
-			}
-		}
-		
-		if (errList.size()>0) {
-			String errStr = org.apache.commons.lang.StringUtils.join(errList, ";");
-			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),errStr);
-		}
-
 	}
-
+	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
-
 	}
 
 }

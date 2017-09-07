@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.web.sys;
 
 import com.navinfo.dataservice.engine.sys.msg.handle.ManJobMsgHandler;
+import com.navinfo.dataservice.engine.sys.msg.handle.ManStaticMsgHandler;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -69,6 +71,17 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				public void run(){
 					try{
 						SysMsgSubscriber.subscribeMsg(SysMsgType.MSG_PERSONAL_MANJOB, new ManJobMsgHandler(), null);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
+			new Thread(){
+				@Override
+				public void run(){
+					try{
+						SysMsgSubscriber.subscribeMsg(SysMsgType.ALL_MANSTATIC, new ManStaticMsgHandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();

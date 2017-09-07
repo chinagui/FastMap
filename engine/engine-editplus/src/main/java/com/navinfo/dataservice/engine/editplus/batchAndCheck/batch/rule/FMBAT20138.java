@@ -54,7 +54,7 @@ public class FMBAT20138 extends BasicBatchRule {
 			}
 			String newKindCode=poi.getKindCode();
 			String newChain=poi.getChain();
-			IxPoiName br=poiObj.getOfficeOriginCHName();
+			IxPoiName br=poiObj.getOfficeStandardCHName();
 			if(br==null){return;}
 			String name=br.getName();
 			if(newKindCode.equals("150101")){

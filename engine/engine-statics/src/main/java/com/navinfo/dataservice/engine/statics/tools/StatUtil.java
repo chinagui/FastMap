@@ -2,10 +2,13 @@ package com.navinfo.dataservice.engine.statics.tools;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import com.navinfo.dataservice.commons.util.DateUtils;
 
 public class StatUtil {
 
@@ -33,6 +36,26 @@ public class StatUtil {
 		long day2 = aCalendar.getTimeInMillis();
 
 		return Integer.parseInt(String.valueOf((day2 - day1)/(24*60*60*1000)));
+	}
+	public static int daysOfTwo(String startDateStr, String endDateStr) {
+		if(startDateStr==null||endDateStr==null){return 0;}
+		Date startDate = null;
+		Date endDate = null;
+		try {
+			startDate = DateUtils.stringToDate(startDateStr, "yyyyMMddHHmmss");
+			endDate = DateUtils.stringToDate(endDateStr, "yyyyMMddHHmmss");
+		} catch (ParseException e) {
+			return 0;
+		}
+		Calendar aCalendar = Calendar.getInstance();
+
+		aCalendar.setTime(startDate);
+		long day1 = aCalendar.getTimeInMillis();
+
+		aCalendar.setTime(endDate);
+		long day2 = aCalendar.getTimeInMillis();
+
+		return Integer.parseInt(String.valueOf((day2 - day1)/(24*60*60*1000) + 1));
 	}
 
 	public static void main(String[] args) {

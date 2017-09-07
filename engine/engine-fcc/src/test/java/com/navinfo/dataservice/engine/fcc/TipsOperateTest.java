@@ -57,7 +57,7 @@ public class TipsOperateTest extends InitApplication {
 	@Test
 	public void testEdit() {
 		
-		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"0212016086f35d16434fad8038541a01533abf\",\"pid\":508000041,\"editStatus\":0,\"editMeth\":2}";
+		String  parameter="{\"mdFlag\":\"d\",\"handler\":1176,\"rowkey\":\"0280021e5debf3bb44467bb7588c832a59a33e\",\"pid\":508000041,\"editStatus\":0,\"editMeth\":2}";
 		
 		
 
@@ -162,8 +162,7 @@ public class TipsOperateTest extends InitApplication {
 
 		// String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
 		    String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
-		    parameter = "{\"mdFlag\":\"d\",\"handler\":1315,\"data\":[{\"rowkey\":\"028002b4eb017e06fd4690a2473409a33bc39b\",\"editStatus\"" +
-                    ":2,\"editMeth\":1}]}";
+		    parameter = "{\"mdFlag\":\"d\",\"handler\":1664,\"data\":[{\"rowkey\":\"0280021e5debf3bb44467bb7588c832a59a33e\",\"editStatus\":0,\"editMeth\":1}]}{\"mdFlag\":\"d\",\"handler\":1664,\"data\":[{\"rowkey\":\"0280021e5debf3bb44467bb7588c832a59a33e\",\"editStatus\":0,\"editMeth\":1}]}";
             if (StringUtils.isEmpty(parameter)) {
                  throw new IllegalArgumentException("parameter参数不能为空。");
             }

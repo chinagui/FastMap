@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.bizcommons.upload.RegionUploadResult;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
@@ -944,10 +945,12 @@ public class TipsUpload {
                     // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
                     int res = canUpdate(oldTip, json.getString("t_dataDate"));
                     if (res < 0) {
-                        failed += 1;
+                        
                         // -1表示old已删除
                         if (res == -1) {
+                        	 failed += 1;
                             reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
+                           
                         }
                         // else =-2表示当前采集时间较旧
                         else {
@@ -1228,11 +1231,14 @@ public class TipsUpload {
                 // 时间判断
                 int res = canUpdate(oldTip, json.getString("t_dataDate"));
                 if (res < 0) {
-                    failed += 1;
-
+                    
                     if (res == -1) {
+                    	failed += 1;
                         reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
-                    } else {
+                        
+                    }
+                    //时间冲突不计算失败
+                    else {
                         //reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     }
@@ -1414,6 +1420,10 @@ public class TipsUpload {
         
         //入库和t_dataDate时间做对比
         lastDate=oldTrack.getString("t_dataDate");
+        
+        if(lastDate==null){
+        	lastDate="";
+        }
 
         JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 

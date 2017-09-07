@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +17,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.service.PoiService;
 import com.navinfo.dataservice.engine.dropbox.dao.DBController;
@@ -79,8 +81,11 @@ public class CollectConvert {
 			log.info("开始转换路径："+outPath);	
 			String fileName="IncrementalData_0_"+new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
 			DBController controller = new DBController();
-
-			int seq = controller.addUploadRecord(fileName+".zip", "collectConvert", 1,1);
+			//添加子目录
+			String curYmd = DateUtils.getCurYmd();
+			String subDir = curYmd+File.separator+"0";
+			
+			int seq = controller.addUploadRecord(fileName+".zip", "collectConvert", 1,1,subDir);
 			
 			convertSeqList.add(seq);
 			String uploadPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);

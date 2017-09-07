@@ -21,6 +21,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -53,12 +54,21 @@ public class QuickMonitorJob extends AbstractStatJob {
 		try {
 			long t = System.currentTimeMillis();
 			
-			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
-			result.put("quick_monitor", getStats());
+//			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
+//			result.put("quick_monitor", getStats());
 
+			JSONArray stats = new JSONArray();
+			stats.add(getStats());
+			
+			JSONObject result = new JSONObject();
+			
 			log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			return JSONObject.fromObject(result).toString();
+			System.out.println(JSONObject.fromObject(result).toString());
+			result.put("quick_monitor", stats);
+			System.out.println(result.toString());
+			return result.toString();
+//			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -110,7 +120,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram1.put("type", 4);
 			quickMonitorMap.put("produceNum", queryCountInMongo(md, "program", queryProgram1));
 			
-			int programTotal = queryCountInMongo(md, "program", null);
+			BasicDBObject queryProgramTotal = new BasicDBObject();
+			queryProgramTotal.put("type", 4);
+			int programTotal = queryCountInMongo(md, "program", queryProgramTotal);
 			
 			BasicDBObject queryProgram2 = new BasicDBObject();
 			queryProgram2.put("status", 2);
@@ -164,7 +176,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram9.put("type", 4);
 			quickMonitorMap.put("dayOverdueNum", queryCountInMongo(md, "program", queryProgram9));
 			//日编逾期原因统计
-			quickMonitorMap.put("dayOverdueReasonNum  ", getOverdueResonMap(1));
+			quickMonitorMap.put("dayOverdueReasonNum", getOverdueResonMap(1));
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
 			queryProgram10.put("produceOverdue", 1);
@@ -179,7 +191,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("poiPlanTotal",statMap.get("poiPlanTotal"));
 			quickMonitorMap.put("poiActualTotal",statMap.get("poiActualTotal"));
 			
-			quickMonitorMap.put("tipsPlanTotal", manApi.queryConfValueByConfKey("tips_plan_total"));
+			int tipsPlanTotal = 0;
+			String tipPlanTotalStr = manApi.queryConfValueByConfKey("tips_plan_total");
+			if(tipPlanTotalStr != null && StringUtils.isNotEmpty(tipPlanTotalStr)){
+				tipsPlanTotal = Integer.parseInt(tipPlanTotalStr);
+			}
+			quickMonitorMap.put("tipsPlanTotal", tipsPlanTotal);
 			
 			quickMonitorMap.put("collectTipsUploadNum", statMap.get("collectTipsUploadNum"));
 			
@@ -224,8 +241,8 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			BasicDBObject queryProgram19 = new BasicDBObject();
 			queryProgram19.put("type", 4);	
-			Map<String,Map<String,Integer>> cityDetailLMap = getCityDetailLMapInMongo(md, "program", queryProgram19);
-			quickMonitorMap.put("cityDetailL", cityDetailLMap);
+			Map<String,Map<String,Integer>> cityDetailMap = getCityDetailMapInMongo(md, "program", queryProgram19);
+			quickMonitorMap.put("cityDetail", cityDetailMap);
 			
 			
 		} catch (Exception e) {
@@ -600,7 +617,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int poiOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and (i.method <> '矢量制作' and i.method <> '预采集' ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and (i.method <> '矢量制作' and i.method <> '预采集') ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -794,7 +811,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 					isAdopted3 = rs.getInt("num");
 				}
 			}
-			fastPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+//			System.out.println(sql);
+//			System.out.println((isAdopted1+isAdopted2+isAdopted3));
+			if((isAdopted1+isAdopted2+isAdopted3) > 0){
+				fastPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
@@ -827,7 +849,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 					isAdopted3 = rs.getInt("num");
 				}
 			}
-			commonPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+//			System.out.println(sql);
+//			System.out.println((isAdopted1+isAdopted2+isAdopted3));
+			if((isAdopted1+isAdopted2+isAdopted3) > 0){
+				commonPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
@@ -860,7 +887,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 					isAdopted3 = rs.getInt("num");
 				}
 			}
-			poiPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+//			System.out.println(sql);
+//			System.out.println(isAdopted1+isAdopted2+isAdopted3);
+			if((isAdopted1+isAdopted2+isAdopted3) > 0){
+				poiPercent = ((isAdopted2+isAdopted3)/(isAdopted1+isAdopted2+isAdopted3));
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
@@ -869,33 +901,31 @@ public class QuickMonitorJob extends AbstractStatJob {
 		return poiPercent;
 	}
 	
-	private Map<String, Map<String, Integer>> getCityDetailLMapInMongo(MongoDao md, String collName, BasicDBObject filter) throws Exception {
-		Map<String, Map<String, Integer>> cityDetailLMap = null;
+	private Map<String, Map<String, Integer>> getCityDetailMapInMongo(MongoDao md, String collName, BasicDBObject filter) throws Exception {
+		Map<String, Map<String, Integer>> cityDetailMap = null;
 		try {
-			cityDetailLMap = new HashMap<String, Map<String, Integer>>();
+			cityDetailMap = new HashMap<String, Map<String, Integer>>();
 			if(filter == null ){
 //				filter = new BasicDBObject("timestamp", null);
 			}
 			FindIterable<Document> findIterable = md.find(collName, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<String,Integer> stat = new HashMap<String,Integer>();
 		
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
-				int total = 0;
 				int roadActualTotal= 0;
-				if(jso.containsKey("inforCity")){
-					if(cityDetailLMap.containsKey("inforCity")){
-						Map<String, Integer> cityMap =  cityDetailLMap.get(jso.getString("inforCity"));
+				if(jso.containsKey("inforCity") && jso.getString("inforCity") != null && StringUtils.isNotEmpty(jso.getString("inforCity"))){
+					if(cityDetailMap.containsKey("inforCity")){
+						Map<String, Integer> cityMap =  cityDetailMap.get(jso.getString("inforCity"));
 						cityMap.put("total", cityMap.get("total")+1);
 						if(jso.containsKey("roadActualTotal")){
 							roadActualTotal = jso.getInt("roadActualTotal");
 						}
 						cityMap.put("roadActualTotal", cityMap.get("roadActualTotal")+roadActualTotal);
 						
-						cityDetailLMap.put(jso.getString("inforCity"), cityMap);
+						cityDetailMap.put(jso.getString("inforCity"), cityMap);
 					}else{
 						Map<String, Integer> cityMap = new HashMap<String, Integer>();
 						cityMap.put("total", 1);
@@ -903,12 +933,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 							roadActualTotal = jso.getInt("roadActualTotal");
 						}
 						cityMap.put("roadActualTotal", roadActualTotal);
-						cityDetailLMap.put(jso.getString("inforCity"), cityMap);
+						cityDetailMap.put(jso.getString("inforCity"), cityMap);
 					}
 				}
 				
 			}
-			return cityDetailLMap;
+			return cityDetailMap;
 		} catch (Exception e) {
 			log.error("查询mongo "+collName+" 中各城市统计数据报错"+e.getMessage());
 			throw new Exception("查询mongo "+collName+" 中城市统计数据报错"+e.getMessage(),e);

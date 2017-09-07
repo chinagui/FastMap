@@ -22,17 +22,18 @@ import net.sf.json.JSONObject;
  *
  */
 public class FMA0913 extends BasicCheckRule {
-
+	MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	JSONObject characterMap = null;
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
+		long startTime=System.currentTimeMillis();  
 		IxPoiObj poiObj=(IxPoiObj) obj;
 		IxPoi poi=(IxPoi) poiObj.getMainrow();	
 		List<IxPoiAddress> addresses = poiObj.getIxPoiAddresses();
 		if (addresses.size()==0) {
 			return;
 		}
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		JSONObject characterMap = metaApi.tyCharacterEgalcharExt();
+		
 		String errorStr = "";
 		for (IxPoiAddress addr:addresses) {
 			if (!addr.getLangCode().equals("CHI") && !addr.getLangCode().equals("CHT")) {
@@ -50,14 +51,14 @@ public class FMA0913 extends BasicCheckRule {
 			String error = "地址中含有非法字符“"+errorStr+"”。";
 			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),error);
 		}
-		
+		long endTime=System.currentTimeMillis();
+		System.out.println("程序运行时间： "+((double)(endTime-startTime)/100000)*100.00+"s");   
 
 	}
 	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
-
+		characterMap = metaApi.tyCharacterEgalcharExt();
 	}
 
 }

@@ -18,6 +18,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.dao.plus.selector.ObjAllSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -43,14 +44,18 @@ public class DiffByJava extends DiffTool{
 		Connection leftConn = null;
 		Connection rightConn = null;
 		try{
-			String sql = parseMainObjPidSql();
 			leftConn = leftSchema.getPoolDataSource().getConnection();
 			rightConn = rightSchema.getPoolDataSource().getConnection();
+			Set<String> tabs = parseDiffTabNames();
+/*			String sql = parseMainObjPidSql();
 			List<Long> leftPids = run.query(leftConn, sql, new ListLongResultSetHandler());
 			List<Long> rightPids = run.query(rightConn, sql, new ListLongResultSetHandler());
-			Set<String> tabs = parseDiffTabNames();
 			leftPois = ObjBatchSelector.selectByPids(leftConn, req.getObjName(), tabs, false, leftPids, false, false);
 			rightPois = ObjBatchSelector.selectByPids(rightConn, req.getObjName(), tabs, false, rightPids, false, false);
+			*/
+			leftPois = ObjAllSelector.selectAll(leftConn, req.getObjName(), tabs, false, false, false);
+			rightPois = ObjAllSelector.selectAll(rightConn, req.getObjName(), tabs, false, false, false);
+			
 			log.info("load data finished.");
 		}catch(Exception e){
 			log.error("diff err:"+e.getMessage(),e);

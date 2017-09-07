@@ -1414,6 +1414,10 @@ public class TipsUpload {
         
         //入库和t_dataDate时间做对比
         lastDate=oldTrack.getString("t_dataDate");
+        
+        if(lastDate==null){
+        	lastDate="";
+        }
 
         JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 

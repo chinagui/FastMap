@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,6 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.Lists;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 
@@ -81,7 +81,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 			
 			resultSet = pstmt.executeQuery();
 			
-			List<Long> pidList = Lists.newArrayList();
+			List<Long> pidList = new ArrayList<>();
 			
 			while (resultSet.next()) {
 				if (total == 0) {
@@ -170,7 +170,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 */
 	public List<String> getDeepCheckRules(String type) throws Exception{
 				
-		List<String> deepCheckRules = Lists.newArrayList();
+		List<String> deepCheckRules =  new ArrayList<>();
 		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item='poi_deep' and second_work_item=:1 ";
 		
 		PreparedStatement pstmt = null;

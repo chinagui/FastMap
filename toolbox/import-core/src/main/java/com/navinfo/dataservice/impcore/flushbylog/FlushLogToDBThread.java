@@ -68,8 +68,7 @@ public class FlushLogToDBThread extends Thread {
 			ResultSet rs = logReader.read();
 			rs.setFetchSize(1000);
 			FlushResult flushResult = new FlushResult();
-			LogWriterDay2Month logWriter = new LogWriterDay2Month(
-					targetDataSource, ignoreSQLExeEffectException, type);
+
 			while (rs.next()) {
 
 				try {

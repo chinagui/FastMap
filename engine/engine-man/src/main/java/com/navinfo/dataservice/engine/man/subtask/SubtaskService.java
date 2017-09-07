@@ -3232,6 +3232,9 @@ public class SubtaskService {
 			if(id2!=0){ids.add(id2);}
 			if(ids.size()!=0){conditionQuery2.put("ids", ids);}
 			List<SubtaskRefer> refers = queryReferByTaskId(conn,conditionQuery2,true);
+			if(refers.size()!=0&&id1==0){
+				throw new ServiceException("block已有不规则圈，请刷新后重画");
+			}
 
 //			JSONObject conditionQuery=new JSONObject();
 //			conditionQuery.put("taskId", taskId);

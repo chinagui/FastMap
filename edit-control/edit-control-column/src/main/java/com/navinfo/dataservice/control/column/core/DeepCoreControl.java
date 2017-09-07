@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,8 +21,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -640,8 +639,8 @@ public class DeepCoreControl {
      * @throws  
      */   
     private static List<Integer> createRandomList(List<Integer> list, int n) {  
-        Map<Integer,String> map = Maps.newHashMap();
-        List<Integer> listNew = Lists.newArrayList();
+        Map<Integer,String> map = new HashMap<>();
+        List<Integer> listNew = new ArrayList<>();
         if(list.size()<=n){  
             return list;  
         }else{  

@@ -30,6 +30,8 @@ public class UploadController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 
 			JSONObject json = JSONObject.fromObject(parameter);
 
@@ -43,7 +45,7 @@ public class UploadController extends BaseController {
 
 			UploadService upload = UploadService.getInstance();
 
-			int jobId = upload.startUpload(fileName, md5, fileSize, chunkSize);
+			int jobId = upload.startUpload(fileName, md5, fileSize, chunkSize,userId);
 
 			return new ModelAndView("jsonView", success(jobId));
 

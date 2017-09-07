@@ -3,14 +3,16 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -44,8 +46,8 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		
 		String type = jsonReq.getString("type");
 
-		JSONArray deepCheckRules = getdeepCheckRules(type);
-		
+		List<String> deepCheckRules = getDeepCheckRules(type);
+		 
 		int status = jsonReq.getInt("status");
 		
 		JSONObject result = new JSONObject();
@@ -78,6 +80,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 			pstmt = conn.prepareStatement(bufferCondition.toString());
 			
 			resultSet = pstmt.executeQuery();
+			
+			List<Long> pidList = new ArrayList<>();
+			
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");
@@ -90,23 +95,42 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 				json.put("memo", StringUtils.isBlank(resultSet.getString("poi_memo"))?"":resultSet.getString("poi_memo"));
 				json.put("status", status);
 				int pid = resultSet.getInt("pid");
-				//获取state
+				/*//获取state
 				LogReader logRead = new LogReader(conn);
 				int poiState = logRead.getObjectState(pid, "IX_POI");
+				
 				json.put("state", poiState);
 				//获取checkErrorTotal
 				int checkErrorTotal = getcheckErrorTotal(pid, deepCheckRules);
+				
 				json.put("checkErrorTotal", checkErrorTotal);
 				//获取photoTotal
 				int photoTotal = getPoiPhotoTotal(pid);
+				
 				json.put("photoTotal", photoTotal);
-
+				
+				*/
+				
+				pidList.add((long)pid);
 				array.add(json);
 			}
 			result.put("total", total);
-
+			
+			LogReader logRead = new LogReader(conn);
+			Map<Long,Integer> stateResult  = logRead.getObjectState(pidList,"IX_POI");
+			Map<Integer,Integer> checkErrorResult  = getCheckErrorTotal(deepCheckRules, pidList);
+			Map<Integer,Integer> photoTotalResult  = getPoiPhotoTotal(pidList);
+			for(int i=0;i<array.size();i++){
+			    JSONObject json = array.getJSONObject(i);  
+			    Integer pid = (Integer)json.get("pid");
+			    json.put("state", stateResult.get(pid.longValue()));
+			    json.put("checkErrorTotal",checkErrorResult==null||checkErrorResult.isEmpty()?0:checkErrorResult.get(pid));
+			    json.put("photoTotal", photoTotalResult==null||photoTotalResult.isEmpty()?0:photoTotalResult.get(pid));
+		    }
 			result.put("rows", array);
-
+			
+			System.out.println(array);
+			
 			return result;
 			
 		}  catch (Exception e) {
@@ -144,9 +168,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getdeepCheckRules(String type) throws Exception{
+	public List<String> getDeepCheckRules(String type) throws Exception{
 				
-		JSONArray deepCheckRules = new JSONArray();
+		List<String> deepCheckRules =  new ArrayList<>();
 		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item='poi_deep' and second_work_item=:1 ";
 		
 		PreparedStatement pstmt = null;
@@ -229,24 +253,36 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 * @return
 	 * @throws Exception
 	 */
-	public int getPoiPhotoTotal(int pid) throws Exception {
-		int total = 0;
-		String sql = "select count(1) total from ix_poi_photo where poi_pid=:1 and U_RECORD !=2";
+	public Map<Integer,Integer> getPoiPhotoTotal(List<Long> pidList) throws Exception {
+		if(pidList==null||pidList.isEmpty()){
+			return null;
+		}
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("select poi_pid,count(1) total from ix_poi_photo where  U_RECORD !=2 and poi_pid IN (");
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
-			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setInt(1, pid);
+			String pid_temp = "";
+			for (long pid : pidList) {
+				sb.append(pid_temp);
+				sb.append(pid);
+				pid_temp = ",";
+			}
+			sb.append(") GROUP BY poi_pid");
+			
+			pstmt = conn.prepareStatement(sb.toString());
 			
 			resultSet = pstmt.executeQuery();
+			Map<Integer,Integer> countMap = new HashMap<>();
 			while (resultSet.next()) {
-				total = resultSet.getInt("total");
+				countMap.put(resultSet.getInt(1), resultSet.getInt(2));
 			}
 			
-			return total;
+			return countMap;
 		} catch (Exception e) {
 
 			throw e;
@@ -262,31 +298,51 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	
 	/**
 	 * 获取poi的检查项错误个数
-	 * @param pid
+	 * @param pidList
 	 * @param deepCheckRules
 	 * @return
 	 * @throws Exception
 	 */
-	public int getcheckErrorTotal(int pid, JSONArray deepCheckRules) throws Exception {
-		int total = 0;
-		String sql = "select n.RULEID from ni_val_exception n,ck_result_object c where n.MD5_CODE=c.MD5_CODE and c.PID = :1";
-
+	public Map<Integer,Integer> getCheckErrorTotal(List<String> deepCheckRules,List<Long> pidList) throws Exception {
+		if(pidList==null||pidList.isEmpty()){
+			return null;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select C.PID,COUNT(1) from ni_val_exception n,ck_result_object c where n.MD5_CODE=c.MD5_CODE and RULEID IN (");
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
-			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setInt(1, pid);
+			String temp = "";
+			for (String deepCheckRule : deepCheckRules) {
+				sb.append(temp);
+				sb.append("'" + deepCheckRule + "'");
+				temp = ",";
+			}
+			sb.append(")");
+			
+			sb.append(" AND pid in (");
+			String pid_temp = "";
+			for (long pid : pidList) {
+				sb.append(pid_temp);
+				sb.append(pid);
+				pid_temp = ",";
+			}
+			sb.append(") GROUP BY C.PID");
+			
+			pstmt = conn.prepareStatement(sb.toString());
 			
 			resultSet = pstmt.executeQuery();
+			
+			Map<Integer,Integer> countMap = new HashMap<>();
 			while (resultSet.next()) {
-				if (deepCheckRules.contains(resultSet.getString("RULEID"))) {
-					total += 1;
-				}
+				countMap.put(resultSet.getInt(1), resultSet.getInt(2));
 			}
 			
-			return total;
+			return countMap;
 		} catch (Exception e) {
 
 			throw e;

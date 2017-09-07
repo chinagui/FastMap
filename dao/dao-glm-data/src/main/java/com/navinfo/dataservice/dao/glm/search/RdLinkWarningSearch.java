@@ -125,7 +125,7 @@ public class RdLinkWarningSearch implements ISearch {
 
                 jsonM.put("e", typeCode);
 
-                String strGeo = ja.toString();
+                String strGeo = ja.toString() + String.valueOf(direct);
 
                 if (sameGeo.containsKey(strGeo)) {
 

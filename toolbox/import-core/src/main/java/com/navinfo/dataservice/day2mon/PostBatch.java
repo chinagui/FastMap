@@ -44,6 +44,9 @@ public class PostBatch {
 	}
 
 	public void execute() throws Exception {
+		// 处理sourceFlag
+		log.info("执行sourceFlag特殊处理");
+		detealSourceFlag();
 		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
 		log.info("执行115批处理");
 		deteal201150();
@@ -53,9 +56,6 @@ public class PostBatch {
 		// 201250特殊处理
 		log.info("执行201250特殊处理");
 		deteal201250();
-		// 处理sourceFlag
-		log.info("执行sourceFlag特殊处理");
-		detealSourceFlag();
 		// handler置0
 		updateHandler();
 	}

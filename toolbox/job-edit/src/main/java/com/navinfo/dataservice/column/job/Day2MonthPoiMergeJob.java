@@ -121,7 +121,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);
 				} 
-			}else if(specRegionId!=null||specRegionId.size()>0){//按照指定大区库进行日落月
+			}else if(specRegionId!=null&&specRegionId.size()>0){//按照指定大区库进行日落月
 				for(int regionId:specRegionId){
 					Region r = manApi.queryByRegionId(regionId);
 					regions.add(r);
@@ -330,8 +330,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							logDmsLockLot.putAll(openLotDmsLockInfo);//返给管理平台：当前批次未申请到DMS锁的图幅
 							logDmsLockUnLot.putAll(openUnLotDmsLockInfo);//返给管理平台：非当前批次未申请到DMS锁的图幅
 
-							logMeshes.removeAll(openLotDmsLockInfo.keySet());//删除未申请到DMS图幅锁的图幅
-							logMeshes.removeAll(openUnLotDmsLockInfo.keySet());//删除未申请到DMS图幅锁的图幅
+							List<Integer> lotDmsLockInfos = new ArrayList<Integer>();
+							for(Object set:openLotDmsLockInfo.keySet()){
+								lotDmsLockInfos.add(Integer.parseInt(set.toString()));
+							}
+							List<Integer> unLotDmsLockInfos = new ArrayList<Integer>();
+							for(Object set:openUnLotDmsLockInfo.keySet()){
+								unLotDmsLockInfos.add(Integer.parseInt(set.toString()));
+							}
+ 
+							logMeshes.removeAll(lotDmsLockInfos);//删除未申请到DMS图幅锁的图幅
+							logMeshes.removeAll(unLotDmsLockInfos);//删除未申请到DMS图幅锁的图幅
 							
 							List<Integer> grids = meshs2grids(logMeshes);
 							if(grids!=null&&grids.size()>0){

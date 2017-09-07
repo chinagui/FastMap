@@ -94,8 +94,8 @@ public class DayPlanJob extends AbstractStatJob {
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				QueryRunner run = new QueryRunner();
 				
-				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND r.u_record <> 2 AND d.data_type = 2 AND d.task_id = ";
-				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND p.u_record <> 2 AND d.data_type = 1 AND d.task_id = ";
+				String rdLinkSql = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
+				String poiSql = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";
 				String planSuffix = " AND d.is_plan_selected=1 ";
 				
 					

@@ -54,12 +54,22 @@ public class MediumMonitorJob extends AbstractStatJob {
 		try {
 			long t = System.currentTimeMillis();
 			
-			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
-			result.put("medium_monitor", getStats());
-
+//			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
+//			result.put("medium_monitor", getStats());
+			Map<String,Object> statsMap = getStats();
+			JSONArray stats = new JSONArray();
+//			JSONObject statsjson = JSONObject.fromObject(statsMap);
+			stats.add(statsMap);
+			
+			JSONObject result = new JSONObject();
+			
 			log.debug("medium_monitor---"+JSONObject.fromObject(result).toString());
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			return JSONObject.fromObject(result).toString();
+			
+			result.put("medium_monitor", stats);
+			System.out.println(result.toString());
+			return result.toString();
+//			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -95,7 +105,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			BasicDBObject queryProgram = new BasicDBObject();
 			queryProgram.put("normalClosed", 1);
-			queryProgram.put("type", 1);			
+			queryProgram.put("type", 1);		
 			mediumMonitorMap.put("normalClosedNum",queryCountInMongo(md, "program", queryProgram));
 			
 			BasicDBObject queryProgram1 = new BasicDBObject();
@@ -141,19 +151,25 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("poiAllNum", poiAllNum);
 			
 			Double poiActualCoverPercent = Math.floor((poiActualTotal/poiAllNum)*100);
-			mediumMonitorMap.put("poiActualPercent", poiActualCoverPercent.intValue());
+			mediumMonitorMap.put("poiActualCoverPercent", poiActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
-			queryProgram9.put("type", 0);
-			double collectWorkDate = queryDatasSumInMongo(md, "task", queryProgram9,"workDate");
-			mediumMonitorMap.put("collectWorkDate", collectWorkDate);
+//			queryProgram9.put("type", 0);
+//			?????????????????有没有查询条件
+			Double collectWorkDate = queryDatasSumInMongo(md, "task", queryProgram9,"workDate");
+			mediumMonitorMap.put("collectWorkDate", collectWorkDate.intValue());
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
-			queryProgram10.put("type", 0);
-			double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"collectPlanDate");
+//			queryProgram10.put("type", 0);
+//			?????????????????有没有查询条件
+			Double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"collectPlanDate");
 			mediumMonitorMap.put("collectPlanDate", collectPlanDate);
 			
-			double planPercent = collectWorkDate/collectPlanDate;
+			double planPercent = 0;
+			//???????????要不要 *100
+			if(collectPlanDate != 0){
+				planPercent = collectWorkDate*100/collectPlanDate;
+			}
 			mediumMonitorMap.put("planPercent", planPercent);
 			
 			BasicDBObject queryProgram11 = new BasicDBObject();
@@ -168,17 +184,23 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("unassignRoadPlanNum", unassignRoadPlanNum);
 			
 			
-			BasicDBObject queryProgram13 = new BasicDBObject();
+			/*BasicDBObject queryProgram13 = new BasicDBObject();
 			queryProgram13.put("type", 1);
-			double workRoadPlanTotal = queryDatasSumInMongo(md, "task", queryProgram13,"roadPlanTotal");
+			double workRoadPlanTotal = queryDatasSumInMongo(md, "task", queryProgram13,"roadPlanTotal");*/
+			int workRoadPlanTotal = getColumnSumInTask("road_plan_total", "0", "1,2");
 			mediumMonitorMap.put("workRoadPlanTotal", workRoadPlanTotal);
 			
 			BasicDBObject queryProgram14 = new BasicDBObject();
-			queryProgram14.put("type", 1);
+			queryProgram14.put("type", 0);
+			queryProgram14.put("status", 0);
 			double closeCollectLinkUpdateTotal = queryDatasSumInMongo(md, "task", queryProgram14,"collectLinkUpdateTotal");
 			mediumMonitorMap.put("closeCollectLinkUpdateTotal", closeCollectLinkUpdateTotal);
 			
-			Double roadActualPercent = collectLinkUpdateTotal/unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal;
+			//?????????????进度要不要 *100 
+			Double roadActualPercent = (double) 0;
+			if((unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal) != 0){
+				roadActualPercent =collectLinkUpdateTotal*100/(unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal);
+			}
 			mediumMonitorMap.put("roadActualPercent", roadActualPercent);
 			
 			BasicDBObject queryProgram16 = new BasicDBObject();
@@ -187,16 +209,23 @@ public class MediumMonitorJob extends AbstractStatJob {
 			double unassignPoiPlanNum = queryDatasSumInMongo(md, "task", queryProgram16,"poiAllNum","poiPlanIn");
 			mediumMonitorMap.put("unassignPoiPlanNum", unassignPoiPlanNum);
 			
-			BasicDBObject queryProgram17 = new BasicDBObject();
+			/*BasicDBObject queryProgram17 = new BasicDBObject();
 			queryProgram17.put("type", 0);
-			double workPoiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram17,"poiPlanTotal");
+			double workPoiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram17,"poiPlanTotal");*/
+			int workPoiPlanTotal = getColumnSumInTask("poi_plan_total", "0", "1,2");
 			mediumMonitorMap.put("workPoiPlanTotal", workPoiPlanTotal);
 			
 			BasicDBObject queryProgram18 = new BasicDBObject();
 			queryProgram18.put("type", 0);
+			queryProgram18.put("status", 0);
 			double closePoiFinishNum = queryDatasSumInMongo(md, "task", queryProgram18,"poiFinishNum");
 			mediumMonitorMap.put("closePoiFinishNum", closePoiFinishNum);
-			Double poiActualPercent = poiActualTotal*100/unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum;
+			
+			//?????????????进度要不要 *100 
+			Double poiActualPercent = (double) 0 ;
+			if((unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum) != 0){
+				poiActualPercent = poiActualTotal*100/(unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum);
+			}
 			mediumMonitorMap.put("poiActualPercent", poiActualPercent);
 			
 			mediumMonitorMap.put("collectPlanPercent", planPercent);
@@ -227,21 +256,63 @@ public class MediumMonitorJob extends AbstractStatJob {
 			int monthWorkDate = StatUtil.daysOfTwo(monthPlanStartDate, curDate);
 			mediumMonitorMap.put("monthWorkDate", monthWorkDate);
 			
-			Double a = Math.floor((monthPoiPlanOut/monthPlanDate*monthWorkDate/poiPlanTotal*1.1)*100);
+			Double a = (double) 0 ;
+			if(monthPlanDate !=0 && poiPlanTotal != 0){
+				a =Math.floor(((monthPoiPlanOut/monthPlanDate)*(monthWorkDate/poiPlanTotal)*1.1)*100);
+			}
 			mediumMonitorMap.put("monthPlanPercent", a.intValue());
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
-//			mediumMonitorMap.put("", );
+			
+			BasicDBObject queryProgram22 = new BasicDBObject();
+			queryProgram22.put("type", 2);
+			Double monthPoiFinishNum = queryDatasSumInMongo(md, "task", queryProgram22,"monthPoiFinishNum");
+			mediumMonitorMap.put("monthPoiFinishNum", monthPoiFinishNum.intValue());
+			
+			int monthWorkPoiPlanOut = getColumnSumInTask("poi_plan_out", "2", "1,2");
+			mediumMonitorMap.put("monthWorkPoiPlanOut", monthWorkPoiPlanOut);
 			
 			
+			BasicDBObject queryProgram23 = new BasicDBObject();
+			queryProgram23.put("type", 2);
+			queryProgram23.put("status", 0);
+			Double monthCloseDay2MonthNum = queryDatasSumInMongo(md, "task", queryProgram23,"day2MonthNum");
+			mediumMonitorMap.put("monthCloseDay2MonthNum", monthCloseDay2MonthNum.intValue());
 			
+			Double monthActualPercent = (double) 0;
+			if((monthCloseDay2MonthNum + monthWorkPoiPlanOut) != 0){
+				monthActualPercent = monthPoiFinishNum*100/(monthCloseDay2MonthNum + monthWorkPoiPlanOut);
+			}
+			mediumMonitorMap.put("monthActualPercent", monthActualPercent.intValue());
+			
+			BasicDBObject queryProgram24 = new BasicDBObject();
+			queryProgram24.put("type", 0);
+			Double roadPlanTotal = queryDatasSumInMongo(md, "task", queryProgram24,"roadPlanTotal");
+			mediumMonitorMap.put("roadPlanTotal", roadPlanTotal.intValue());
+			
+			BasicDBObject queryProgram25 = new BasicDBObject();
+			queryProgram25.put("type", 0);
+			Double roadPlanOut = queryDatasSumInMongo(md, "task", queryProgram25,"roadPlanOut");
+			mediumMonitorMap.put("roadPlanOut", roadPlanOut.intValue());
+			
+			Double tipsPlanNum = (double) 0;
+			if(collectPlanDate > 0){
+				tipsPlanNum =roadPlanOut/collectPlanDate*collectWorkDate;
+			}
+			mediumMonitorMap.put("tipsPlanNum", tipsPlanNum);
+			
+			BasicDBObject queryProgram26 = new BasicDBObject();
+			queryProgram26.put("type", 0);
+			Double tipsActualNum = queryDatasSumInMongo(md, "task", queryProgram26,"collectTipsUploadNum");
+			mediumMonitorMap.put("tipsActualNum", tipsActualNum);
+			
+			BasicDBObject queryProgram27 = new BasicDBObject();
+			queryProgram27.put("type", 0);
+			Double tips2MarkNum = queryDatasSumInMongo(md, "task", queryProgram27,"tips2MarkNum");
+			mediumMonitorMap.put("tips2MarkNum", tips2MarkNum);
+			
+			BasicDBObject queryProgram28 = new BasicDBObject();
+			queryProgram28.put("type", 2);
+			Double monthDay2MonthNum = queryDatasSumInMongo(md, "task", queryProgram28,"day2MonthNum");
+			mediumMonitorMap.put("monthDay2MonthNum", monthDay2MonthNum);
 			//************************************************
 			
 			
@@ -249,13 +320,35 @@ public class MediumMonitorJob extends AbstractStatJob {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-//		log.debug(JSONArray.fromObject(quickMonitorMap));
 		
 		return null;
 			
 	 }
 	
-
+	public int getColumnSumInTask(String column ,String taskType,String taskStatus) throws Exception{
+		Connection conn = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int total = 0;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			String sql  = " select sum(t."+column+") total from task t where t.type = "+taskType+" and t.status in ("+taskStatus+") ";
+			pstmt = conn.prepareStatement(sql);
+			
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()){
+				total = rs.getInt("total");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
+		}
+		return total;
+		
+	}
 	private String getStartOrEndDate(String tableName, String column,int type, String orderFlag) {
 		//select to_char(plan_start_date,'yyyyMMdd') from (select t.plan_start_date from task t where t.type = 2 order by t.plan_start_date ) where rownum=1
 		Connection conn = null;
@@ -1104,7 +1197,8 @@ public class MediumMonitorJob extends AbstractStatJob {
 		System.out.println((float)5/6);
 		System.out.println((float)4/3*5/6);
 		System.out.println((float)4/3*5/6*1.1);
-		Double a = Math.floor(((double)4/3*(double)5/6*1.1)*100);
+//		Double a = Math.floor(((double)4/3*(double)5/6*1.1)*100);
+		Double a = 9.8;
 		System.out.println(a.intValue());
 	}
 }

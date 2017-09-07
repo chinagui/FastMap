@@ -31,7 +31,6 @@ public class FMYW20038 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
-			long startTime=System.currentTimeMillis();  
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiAddress> addrs = poiObj.getIxPoiAddresses();
@@ -55,8 +54,6 @@ public class FMYW20038 extends BasicCheckRule {
 					}
 				}
 			}
-			long endTime=System.currentTimeMillis();
-			System.out.println("程序运行时间： "+((double)(endTime-startTime)/100000)*100.00+"s");   
 		}
 	}
 

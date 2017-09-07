@@ -30,7 +30,6 @@ public class FM14SUM0603 extends BasicCheckRule {
 		if (addresses.size()==0) {
 			return;
 		}
-		long startTime=System.currentTimeMillis();  
 		
 		List<String> errMsgList = new ArrayList<String>();
 		for (IxPoiAddress addr:addresses) {
@@ -61,8 +60,6 @@ public class FM14SUM0603 extends BasicCheckRule {
 			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),error);
 			return;
 		}
-		long endTime=System.currentTimeMillis();
-		System.out.println("程序运行时间： "+((double)(endTime-startTime)/100000)*100.00+"s");   
 		
 	}
 	

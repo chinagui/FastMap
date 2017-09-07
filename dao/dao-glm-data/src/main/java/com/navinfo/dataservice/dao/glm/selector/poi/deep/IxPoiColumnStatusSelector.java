@@ -1695,29 +1695,24 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		sb.append(" AND s.pid = p.pid");
 		sb.append(" AND s.first_work_status = 1 AND s.second_work_status = 1 AND s.handler = 0");
 		sb.append(" AND w.type = :1");
-		sb.append(" AND sdo_within_distance(p.geometry, sdo_geometry(:2 , 8307), 'mask=anyinteract') = 'TRUE'");
-		sb.append(" AND s.task_id = :3");
-		sb.append(" AND w.first_work_item = :4");
-		sb.append(" AND w.second_work_item = :5");
+		sb.append(" AND s.task_id = :2");
+		sb.append(" AND w.first_work_item = :3");
+		sb.append(" AND w.second_work_item = :4");
 		sb.append(" AND s.qc_flag = 1 ");
-		sb.append(" AND s.common_handler <> :6 ");
+		sb.append(" AND s.common_handler <> :5 ");
 
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
 			logger.info("getExtractPids sql:"+sb);
-			logger.info("subtask.getGeometry():"+subtask.getGeometry());
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setInt(1, type);
-			Clob geom = ConnectionUtil.createClob(conn);
-			geom.setString(1, subtask.getGeometry());
-			pstmt.setClob(2,geom);
-			pstmt.setInt(3,subtask.getSubtaskId());
-			pstmt.setString(4,firstWorkItem);
-			pstmt.setString(5,secondWorkItem);
-			pstmt.setLong(6,userId);
+			pstmt.setInt(2,subtask.getSubtaskId());
+			pstmt.setString(3,firstWorkItem);
+			pstmt.setString(4,secondWorkItem);
+			pstmt.setLong(5,userId);
 
 			resultSet = pstmt.executeQuery();
 
@@ -1727,7 +1722,6 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 				int pid = resultSet.getInt("pid");
 				pids.add(pid);
 			}
-
 			
 			return pids;
 

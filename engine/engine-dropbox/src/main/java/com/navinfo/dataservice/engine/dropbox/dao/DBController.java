@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.dropbox.dao;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +25,7 @@ import net.sf.json.JSONObject;
 public class DBController {
 
 	public int addUploadRecord(String fileName, String md5, int fileSize,
-			int chunkSize) throws Exception {
+			int chunkSize, String subDir) throws Exception {
 
 		Connection conn = null;
 
@@ -65,7 +66,7 @@ public class DBController {
 						PropConstant.uploadPath);
 			}
 
-			pstmt.setString(3, uploadPath);
+			pstmt.setString(3, uploadPath+File.separator+subDir);
 
 			pstmt.setString(4, md5);
 

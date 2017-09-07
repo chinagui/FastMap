@@ -1494,7 +1494,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					int regionId = entry.getKey();
 					FlushResult flushResult = entry.getValue();
 					try {
-						int successTotal = flushResult.getInsertTotal() + flushResult.getUpdateTotal() + flushResult.getDeleteTotal();
+						int successTotal = flushResult.getTotal() - flushResult.getFailedTotal();
 						int failureTotal = flushResult.getFailedTotal();
 						int total = flushResult.getTotal();
 						//处理日志分类描述
@@ -1512,7 +1512,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							}
 						}
 						//处理失败描述
-						String errorMsg = "记录日落月失败履历的表名:"+flushResult.getTempFailLogTable();
+						String errorMsg = null;
+						if(failureTotal > 0){
+							errorMsg = "存在刷履历失败的log,请查看:"+flushResult.getTempFailLogTable();
+						}
 								
 						SysLogStats log = new SysLogStats();
 						log.setLogType(SysLogConstant.DAY_TO_MONTH_TYPE);

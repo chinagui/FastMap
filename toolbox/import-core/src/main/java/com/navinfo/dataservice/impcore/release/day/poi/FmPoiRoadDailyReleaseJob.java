@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -31,6 +32,9 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
@@ -44,6 +48,8 @@ import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.DeepInfoMarker;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
+import com.navinfo.dataservice.impcore.flushbylog.FlushObjStatInfo;
+import com.navinfo.dataservice.impcore.flushbylog.FlushObjStatOperator;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.DailyReleaseLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
@@ -66,6 +72,7 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 
 import net.sf.json.JSONObject;
@@ -86,6 +93,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	
 	private List<LogSelector> LogSelectors =new ArrayList<LogSelector>();
 
+	private Map<Integer,FlushResult> flushResults;
+	
 	/**
 	 * @param jobInfo
 	 */
@@ -183,7 +192,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			updateReleaseTaskStatus(newTaskId,oldTaskId,3,jobId,null,null);
 			this.log.info("调用出品转换api");
 			callReleaseTransApi();
-			
+			//日出品统计
+			insertStatInfo();
 		}catch(Exception e){
 			throw new JobException(e);
 		}
@@ -332,6 +342,85 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 				logStatusModifierPR.execute(dailyUpdateStatusConn);
 				log.info("完成P+R库出品状态更新（road）");
 				
+				//进行履历对象级统计
+				try {
+					//处理poi刷库记录
+					String tempFailLogTableP = flushResultPRP.getTempFailLogTable();
+					//统计总数
+					Map<String, Integer> totalObjStatP = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempP);
+					//统计失败的数量
+					Map<String, Integer> failObjStatP = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempFailLogTableP);
+					//处理统计数据
+					if(totalObjStatP != null && totalObjStatP.size() > 0){
+						for(Entry<String, Integer> entry : totalObjStatP.entrySet()){
+							String objName = entry.getKey();
+							int total = entry.getValue();
+							int failTotal = 0;
+							if(failObjStatP != null && failObjStatP.size() > 0){
+								if(failObjStatP.containsKey(objName)){
+									failTotal = failObjStatP.get(objName);
+								}
+							}
+							//保存数据
+							FlushObjStatInfo objStatInfo = new FlushObjStatInfo(objName);
+							objStatInfo.setTotal(total);
+							objStatInfo.setSuccess(total-failTotal);
+							
+							flushResultPRP.addObjStatInfo(objStatInfo);
+						}
+					}
+					//处理道路刷库记录
+					String tempFailLogTableR = flushResultPRR.getTempFailLogTable();
+					//统计总数
+					Map<String, Integer> totalObjStatR = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempR);
+					//统计失败的数量
+					Map<String, Integer> failObjStatR = FlushObjStatOperator.getTotalObjStatByLog(dailyConn, tempFailLogTableR);
+					//处理统计数据
+					if(totalObjStatR != null && totalObjStatR.size() > 0){
+						for(Entry<String, Integer> entry : totalObjStatR.entrySet()){
+							String objName = entry.getKey();
+							int total = entry.getValue();
+							int failTotal = 0;
+							if(failObjStatR != null && failObjStatR.size() > 0){
+								if(failObjStatR.containsKey(objName)){
+									failTotal = failObjStatR.get(objName);
+								}
+							}
+							//保存数据
+							FlushObjStatInfo objStatInfo = new FlushObjStatInfo(objName);
+							objStatInfo.setTotal(total);
+							objStatInfo.setSuccess(total-failTotal);
+							
+							flushResultPRR.addObjStatInfo(objStatInfo);
+						}
+					}
+					//将poi和道路的结果合并
+					int total = flushResultPRP.getTotal() + flushResultPRR.getTotal();
+					int insertTotal = flushResultPRP.getInsertTotal() + flushResultPRR.getInsertTotal();
+					int updateTotal = flushResultPRP.getUpdateTotal() + flushResultPRR.getUpdateTotal();
+					int deleteTotal = flushResultPRP.getDeleteTotal() + flushResultPRR.getDeleteTotal();
+					int failedTotal = flushResultPRP.getFailedTotal() + flushResultPRR.getFailedTotal();
+					String tempFailLogTable = "poi:"+flushResultPRP.getTempFailLogTable()+"road:"+flushResultPRR.getTempFailLogTable();
+					Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
+					objStatInfo.addAll(flushResultPRP.getObjStatInfo());
+					objStatInfo.addAll(flushResultPRR.getObjStatInfo());
+					
+					FlushResult flushResult = new FlushResult();
+					flushResult.setTotal(total);
+					flushResult.setInsertTotal(insertTotal);
+					flushResult.setUpdateTotal(updateTotal);
+					flushResult.setDeleteTotal(deleteTotal);
+					flushResult.setFailedTotal(failedTotal);
+					flushResult.setTempFailLogTable(tempFailLogTable);
+					flushResult.addObjStatInfos(objStatInfo);
+					
+					if(flushResults == null){
+						flushResults = new HashMap<Integer,FlushResult>();
+					}
+					flushResults.put(region.getRegionId(), flushResult);
+				} catch (Exception e) {
+					log.error("大区库(regionId:"+region.getRegionId()+")按对象统计日出品失败,"+e.getMessage());
+				}
 				
 			}
 			
@@ -509,6 +598,69 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		 } catch (Exception e) {
 			 log.debug("调用出品转换接口报错:"+e.getMessage());
 	     } 
+	}
+	
+	
+	/**
+	 * 将统计信息存入sys库中FM_LOG_STATS
+	 * @author Han Shaoming
+	 * @param beginTime
+	 */
+	private void insertStatInfo()  {
+		try{
+			//设置导入成功状态
+			long jobId = jobInfo.getId();
+			String beginTime = DateUtils.dateToString(jobInfo.getBeginTime(), "yyyy/MM/dd HH:mm:ss");
+			//执行插入
+			if(flushResults != null && flushResults.size() > 0){
+				for (Entry<Integer, FlushResult> entry : flushResults.entrySet()) {
+					int regionId = entry.getKey();
+					FlushResult flushResult = entry.getValue();
+					try {
+						int successTotal = flushResult.getTotal() - flushResult.getFailedTotal();
+						int failureTotal = flushResult.getFailedTotal();
+						int total = flushResult.getTotal();
+						//处理日志分类描述
+						StringBuilder logDesc = new StringBuilder();
+						logDesc.append(" ,jobId:"+jobId+" ,regionId:"+regionId);
+						Set<FlushObjStatInfo> objStatInfos = flushResult.getObjStatInfo();
+						if(objStatInfos != null && objStatInfos.size() > 0){
+							for (FlushObjStatInfo objStatInfo : objStatInfos) {
+								String objName = objStatInfo.getObjName();
+								//同一关系的过滤
+								if("IX_SAMEPOI".equals(objName)){continue;}
+								int totalObj = objStatInfo.getTotal();
+								int successObj = objStatInfo.getSuccess();
+								logDesc.append(" ,"+objName+":"+successObj+"/"+totalObj);
+							}
+						}
+						//处理失败描述
+						String errorMsg = null;
+						if(failureTotal > 0){
+							errorMsg = "存在刷履历失败的log,请查看:"+flushResult.getTempFailLogTable();
+						}
+								
+						SysLogStats log = new SysLogStats();
+						log.setLogType(SysLogConstant.DAY_TO_PRODUCT);
+						log.setLogDesc(SysLogConstant.DAY_TO_PRODUCT_DESC+logDesc.toString());
+						log.setFailureTotal(failureTotal);
+						log.setSuccessTotal(successTotal);  
+						log.setTotal(total);
+						log.setBeginTime(beginTime);
+						log.setEndTime(DateUtils.getSysDateFormat());
+						log.setErrorMsg(errorMsg);
+						log.setUserId("0");
+						
+						SysLogOperator.getInstance().insertSysLog(log);
+						
+					} catch (Exception e) {
+						log.error("大区库(regionId:"+regionId+")日出品统计入库出错,"+e.getMessage());
+					}
+				}
+			}
+		}catch (Exception e) {
+			log.error("日出品统计入库出错："+e.getMessage(), e);
+		}
 	}
 	
 }

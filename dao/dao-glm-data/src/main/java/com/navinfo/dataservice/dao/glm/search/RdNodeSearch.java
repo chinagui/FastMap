@@ -276,13 +276,8 @@ public class RdNodeSearch implements ISearch {
 
 					}
 				}
-				if (linkMeshPids.size() > 0) {
-					m.element(
-							"a",
-							m.getString("a")
-									.concat(","
-											+ org.apache.commons.lang.StringUtils
-													.join(linkMeshPids, ",")));
+				if (linkMeshPids.size() > 0 && m.containsKey("a")) {
+					m.element("a", m.getString("a").concat("," + org.apache.commons.lang.StringUtils.join(linkMeshPids, ",")));
 				}
 
 				Geojson.point2Pixel(geojson, z, px, py);

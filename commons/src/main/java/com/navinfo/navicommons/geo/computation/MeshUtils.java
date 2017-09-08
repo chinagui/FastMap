@@ -1103,6 +1103,15 @@ public abstract class MeshUtils {
             }
             return meshes.toArray(new String[]{});
         }
+        if (GeometryTypeName.POLYGON.equals(geometry.getGeometryType())) {
+            coordinates = geometry.getBoundary().getCoordinates();
+            for (int index = 0; index < coordinates.length -1; index++) {
+                String[] array = line2Meshes(coordinates[index].x, coordinates[index].y, coordinates[index + 1].x, coordinates[index + 1].y);
+                if (array.length == 1){
+                    return array;
+                }
+            }
+        }
 
         Set<String> meshes = new HashSet<>();
         for (Coordinate coordinate : coordinates) {

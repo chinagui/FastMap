@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.impcore.flushbylog;
 
-import java.sql.Connection;
-
 import java.sql.SQLException;
 
 import com.navinfo.navicommons.database.TransactionalDataSource;

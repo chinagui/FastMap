@@ -1445,6 +1445,7 @@ public class Transaction {
         Map<Integer, Map<IRow, ObjStatus>> updateData = calcDbIdRefUpdateList(result.getUpdateObjects(), sourceDbId);
         for (Map.Entry<Integer, Map<IRow, ObjStatus>> entry : updateData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1491,6 +1492,7 @@ public class Transaction {
         Map<Integer, List<IRow>> createData = calcDbIdRefAddOrDelList(result.getAddObjects(), sourceDbId, additional);
         for (Map.Entry<Integer, List<IRow>> entry : createData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1512,6 +1514,7 @@ public class Transaction {
         Map<Integer, List<IRow>> deleteData = calcDbIdRefAddOrDelList(result.getDelObjects(), sourceDbId, new HashMap<Integer, List<IRow>>());
         for (Map.Entry<Integer, List<IRow>> entry : deleteData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 

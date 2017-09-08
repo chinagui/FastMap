@@ -62,8 +62,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDOBJECT\",\"data\":{\"links\":[2571609,17621452,30314412,2574669]," +
-                "\"inters\":[],\"roads\":[],\"longitude\":115.50035119056702,\"latitude\":36.061326740549056},\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDINTER\",\"data\":{\"links\":[503000715],\"nodes\":[1961989,505000615]}," +
+                "\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 
@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search() {
-        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDLINK\"],\"x\":53983,\"y\":24870,\"z\":16}";
+        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDNODE\"],\"x\":107588,\"y\":51430,\"z\":17}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {

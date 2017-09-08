@@ -7,10 +7,13 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushLogBySQL;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 /***
@@ -37,6 +40,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	@Override
 	protected void calcConcurrentSize() throws SQLException {
 		this.dataCount = this.getLogCount(this.tempTable);
+		log.debug("dataCount ==== " + dataCount);
 		if (dataCount <= 1000) {
 			concurrentSize = 1;
 			tableDatacount = 1;
@@ -113,6 +117,44 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 
 		}
 
+	}
+
+	/***
+	 * 结果重组 zhaokk
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public FlushResult flush() throws Exception {
+		Connection conn = null;
+		FlushResult flushResult = new FlushResult();
+
+		try {
+			conn = sourceDataSource.getConnection();
+			this.run();
+			flushResult = this.getExtResult().combineFlushResults(
+					this.getExtResult().getaddFlushResults());
+			log.info("flushResult.getTotal() ===" + flushResult.getTotal());
+			log.info("flushResult.getUpdateTotal() ==="
+					+ flushResult.getUpdateTotal());
+			log.info("flushResult.getInsertTotal() ==="
+					+ flushResult.getInsertTotal());
+
+			String failLogTempTable = LogFlusherHelper
+					.createFailueLogTempTable(conn);
+			flushResult.setTempFailLogTable(failLogTempTable);
+			log.info("将错误日志记录到错误日志temp表中：" + failLogTempTable);
+			flushResult.recordFailLog2Temptable(sourceDataSource
+					.getConnection());//
+
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+			throw e;
+
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return flushResult;
 	}
 
 }

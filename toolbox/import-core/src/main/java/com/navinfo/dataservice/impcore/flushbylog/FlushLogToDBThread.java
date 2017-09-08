@@ -32,7 +32,6 @@ public class FlushLogToDBThread extends Thread {
 	long startTime;
 	long endTime;
 
-	private String type;
 
 	public FlushLogToDBThread(ThreadSharedObjectExtResult threadSharedObject,
 			LogReaderDay2Month logReader, LogWriterDay2Month logWriter,

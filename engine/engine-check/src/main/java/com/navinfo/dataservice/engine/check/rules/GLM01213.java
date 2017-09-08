@@ -8,6 +8,7 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
@@ -35,6 +36,10 @@ public class GLM01213 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		List<Integer> linkPidList=new ArrayList<Integer>();
 		for(IRow obj : checkCommand.getGlmList()){
+			if(obj.status() == ObjStatus.DELETE){
+				continue;
+			}
+			
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				//一条环岛link链上的link不重复检查
@@ -112,8 +117,8 @@ public class GLM01213 extends baseRule {
 		
 		Set<Integer> chainPidSet=huandaoChain.getRdLinkPidSet();
 		String pidStr= chainPidSet.toString().replace("[", "").replace("]", "");
-		String sql = "with tmp1 as(SELECT SUM(COUNT(1)) num FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID IN (" + pidStr + ") AND "
-                + "L.U_RECORD != 2 GROUP BY L.FROM_LIMIT_SRC), tmp2 as( SELECT SUM(COUNT(1)) num FROM RD_LINK_SPEEDLIMIT L "
+		String sql = "with tmp1 as(SELECT COUNT(DISTINCT FROM_SPEED_LIMIT) num FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID IN (" + pidStr + ") AND "
+                + "L.U_RECORD != 2 GROUP BY L.FROM_LIMIT_SRC), tmp2 as( SELECT COUNT(DISTINCT FROM_SPEED_LIMIT) num FROM RD_LINK_SPEEDLIMIT L "
                 + "WHERE L.LINK_PID IN (" + pidStr + ") AND L.U_RECORD != 2 GROUP BY L.TO_LIMIT_SRC) "
                 + "select tmp1.num + tmp2.num from tmp1, tmp2";
         DatabaseOperator getObj=new DatabaseOperator();

@@ -2,7 +2,9 @@ package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/***
+ * zhaokk 多线程数据处理
+ */
 import com.navinfo.dataservice.commons.thread.ThreadSharedObjectExt;
 
 public class ThreadSharedObjectExtResult extends ThreadSharedObjectExt {
@@ -45,7 +47,7 @@ public class ThreadSharedObjectExtResult extends ThreadSharedObjectExt {
 			deleteTotal += result.getDeleteTotal();
 			insertFailed += result.getInsertFailed();
 			insertFailedList.addAll(result.getInsertFailedList());
-			insertTotal += result.getInsertFailed();
+			insertTotal += result.getInsertTotal();
 			updateFailed += result.getUpdateFailed();
 			updateFailedList.addAll(result.getUpdateFailedList());
 			updateTotal += result.getUpdateTotal();

@@ -117,8 +117,8 @@ public class GLM01213 extends baseRule {
 		
 		Set<Integer> chainPidSet=huandaoChain.getRdLinkPidSet();
 		String pidStr= chainPidSet.toString().replace("[", "").replace("]", "");
-		String sql = "with tmp1 as(SELECT COUNT(DISTINCT FROM_SPEED_LIMIT) num FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID IN (" + pidStr + ") AND "
-                + "L.U_RECORD != 2 GROUP BY L.FROM_LIMIT_SRC), tmp2 as( SELECT COUNT(DISTINCT FROM_SPEED_LIMIT) num FROM RD_LINK_SPEEDLIMIT L "
+		String sql = "with tmp1 as(SELECT SUM(COUNT(DISTINCT FROM_SPEED_LIMIT)) num FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID IN (" + pidStr + ") AND "
+                + "L.U_RECORD != 2 GROUP BY L.FROM_LIMIT_SRC), tmp2 as( SELECT SUM(COUNT(DISTINCT FROM_SPEED_LIMIT)) num FROM RD_LINK_SPEEDLIMIT L "
                 + "WHERE L.LINK_PID IN (" + pidStr + ") AND L.U_RECORD != 2 GROUP BY L.TO_LIMIT_SRC) "
                 + "select tmp1.num + tmp2.num from tmp1, tmp2";
         DatabaseOperator getObj=new DatabaseOperator();

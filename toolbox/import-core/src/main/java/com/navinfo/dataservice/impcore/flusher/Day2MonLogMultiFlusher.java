@@ -49,7 +49,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 			concurrentSize = 1;
 			tableDatacount = 1;
 		} else {
-			concurrentSize = 10;
+			concurrentSize = 20;
 			tableDatacount = dataCount / concurrentSize;
 		}
 		innerCount += (int) Math.ceil((double) dataCount / tableDatacount);

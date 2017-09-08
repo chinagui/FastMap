@@ -258,7 +258,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				 * Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
 				 * tempOpTable, "day2MonSync") .flush();
 				 */
-				FlushResult flushResult = new Day2MonLogMultiFlusher(
+				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
 						dailyDbSchema.getPoolDataSource(),
 						monthDbSchema.getPoolDataSource(), tempOpTable, true,
 						"day2MonSync").flush();

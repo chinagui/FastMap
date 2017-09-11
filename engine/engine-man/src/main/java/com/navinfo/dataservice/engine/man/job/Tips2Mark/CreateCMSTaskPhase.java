@@ -49,7 +49,7 @@ public class CreateCMSTaskPhase extends JobPhase {
 
             if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
                 //如果无数据，不需要创建cms任务
-            	jobProgress.setStatus(JobProgressStatus.SUCCESS);
+            	jobProgress.setStatus(JobProgressStatus.NODATA);
             	jobProgressOperator.updateStatus(jobProgress);
                 //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
                 return jobProgress.getStatus();

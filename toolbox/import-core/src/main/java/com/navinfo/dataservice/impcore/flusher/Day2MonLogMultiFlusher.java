@@ -9,6 +9,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushLogBySQL;
@@ -22,13 +24,15 @@ import com.navinfo.navicommons.database.sql.DBUtils;
  */
 public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private OracleSchema dailyDbSchema;
 
-	public Day2MonLogMultiFlusher(DataSource sourceDataSource,
-			DataSource targetDataSource, String tempTable, boolean ignoreError,
-			String type) {
+	public Day2MonLogMultiFlusher(OracleSchema dailyDbSchema,
+			DataSource sourceDataSource, DataSource targetDataSource,
+			String tempTable, boolean ignoreError, String type) {
 
 		super(sourceDataSource, targetDataSource, tempTable, type, ignoreError);
 		this.setThreads(true);
+		this.dailyDbSchema = dailyDbSchema;
 
 	}
 
@@ -45,7 +49,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 			concurrentSize = 1;
 			tableDatacount = 1;
 		} else {
-			concurrentSize = 10;
+			concurrentSize = 20;
 			tableDatacount = dataCount / concurrentSize;
 		}
 		innerCount += (int) Math.ceil((double) dataCount / tableDatacount);
@@ -86,6 +90,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	@Override
 	public int getLogCount(String tempTable) throws SQLException {
 		log.info("createLogReaderInner begin");
+
 		Connection conn = this.sourceDataSource.getConnection();
 
 		int count = 0;
@@ -130,7 +135,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 		FlushResult flushResult = new FlushResult();
 
 		try {
-			conn = sourceDataSource.getConnection();
+			conn = dailyDbSchema.getPoolDataSource().getConnection();
 			this.run();
 			flushResult = this.getExtResult().combineFlushResults(
 					this.getExtResult().getaddFlushResults());
@@ -144,8 +149,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 					.createFailueLogTempTable(conn);
 			flushResult.setTempFailLogTable(failLogTempTable);
 			log.info("将错误日志记录到错误日志temp表中：" + failLogTempTable);
-			flushResult.recordFailLog2Temptable(sourceDataSource
-					.getConnection());//
+			flushResult.recordFailLog2Temptable(conn);//
 
 		} catch (Exception e) {
 			log.debug(e.getMessage(), e);

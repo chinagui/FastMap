@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  */
 public class FMD0121 extends BasicCheckRule {
 	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	Map<Integer, Map<String, String>> convertFtMap = new HashMap<>();
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
@@ -37,7 +39,6 @@ public class FMD0121 extends BasicCheckRule {
 						&&nameTmp.getNameClass()==1){
 					String name=nameTmp.getName();
 					if(name==null){continue;}
-					Map<Integer, Map<String, String>> convertFtMap = metadataApi.tyCharacterFjtHzConvertFtMap();
 					Map<String, String> convert2Map = convertFtMap.get(2);
 					for(String ft:convert2Map.keySet()){
 						if(name.contains(ft)){
@@ -47,12 +48,14 @@ public class FMD0121 extends BasicCheckRule {
 					}
 				}
 			}
+			
 		}
 	}
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
+		convertFtMap = metadataApi.tyCharacterFjtHzConvertFtMap();
 	}
 
 }

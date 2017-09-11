@@ -156,6 +156,8 @@ public abstract class JobRunner {
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+            	job.setStatus(JobStatus.NODATA);
+            	finish=false;
                 //如果第一步的状态是无数据，不需要执行创建CMS任务
                 break;
             }
@@ -198,7 +200,8 @@ public abstract class JobRunner {
         }
 
         if (job.getStatus() == JobStatus.FAILURE ||
-                job.getStatus() == JobStatus.SUCCESS) {
+                job.getStatus() == JobStatus.SUCCESS||
+                job.getStatus() == JobStatus.NODATA) {
             JobOperator jobOperator = new JobOperator(conn);
             jobOperator.updateStatusByJobId(job.getJobId(), job.getStatus());
         }

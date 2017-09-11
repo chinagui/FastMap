@@ -81,13 +81,11 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				.getBean("day2MonthSyncApi");
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil
 				.getBean("metadataApi");
-		long phaseId = 0;
 		try {
 			Day2MonthPoiMerge915TmpJobRequest day2MonRequest = (Day2MonthPoiMerge915TmpJobRequest) request;
 			String tmpOpTable = day2MonRequest.getTmpOpTable();// 日库临时表
 			String tempFailLogTable = day2MonRequest.getTempFailLogTable();// 日库失败履历临时表
 			int onlyFlushLog = day2MonRequest.getOnlyFlushLog();// 日库失败履历临时表
-			phaseId = (long) day2MonRequest.getPhaseId();
 			int specRegionId = day2MonRequest.getSpecRegionId();
 
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS
@@ -258,7 +256,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				 * Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
 				 * tempOpTable, "day2MonSync") .flush();
 				 */
-				FlushResult flushResult = new Day2MonLogMultiFlusher(
+				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
 						dailyDbSchema.getPoolDataSource(),
 						monthDbSchema.getPoolDataSource(), tempOpTable, true,
 						"day2MonSync").flush();
@@ -319,7 +317,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							result, monthConn).execute();
 					new Classifier(checkResult, monthConn).execute();
 					log.info("开始执行后批处理");
-					new PostBatch(result, monthConn).execute();
+					new PostBatch(result, monthConn).execute915();
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
 

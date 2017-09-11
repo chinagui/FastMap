@@ -141,6 +141,7 @@ public class SyncTips2Oracle {
 			String trackString = Bytes.toString(result.getValue(Bytes.toBytes("data"), Bytes.toBytes("track")));
 			JSONObject trackJSON = JSONObject.fromObject(trackString);
 			String tDate = trackJSON.getString("t_date");
+			String tDataDate = trackJSON.getString("t_dataDate");
 			int lifecycle = trackJSON.getInt("t_lifecycle");
 //			int command = trackJSON.getInt("t_command");
 			int dEditMeth = trackJSON.getInt("t_dEditMeth");
@@ -149,6 +150,7 @@ public class SyncTips2Oracle {
 			int mEditStatus = trackJSON.getInt("t_mEditStatus");
 			int tipStatus = trackJSON.getInt("t_tipStatus");
 			ti.setT_date(tDate);
+			ti.setT_dataDate(tDataDate);
 			ti.setT_lifecycle(lifecycle);
 //			ti.settCommand(command);
 			ti.setT_dEditMeth(dEditMeth);

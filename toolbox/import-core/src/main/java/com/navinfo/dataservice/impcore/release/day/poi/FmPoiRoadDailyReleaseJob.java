@@ -400,7 +400,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					int updateTotal = flushResultPRP.getUpdateTotal() + flushResultPRR.getUpdateTotal();
 					int deleteTotal = flushResultPRP.getDeleteTotal() + flushResultPRR.getDeleteTotal();
 					int failedTotal = flushResultPRP.getFailedTotal() + flushResultPRR.getFailedTotal();
-					String tempFailLogTable = "poi:"+flushResultPRP.getTempFailLogTable()+"road:"+flushResultPRR.getTempFailLogTable();
+					String tempFailLogTable = "poi:"+flushResultPRP.getTempFailLogTable()+",road:"+flushResultPRR.getTempFailLogTable();
 					Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
 					objStatInfo.addAll(flushResultPRP.getObjStatInfo());
 					objStatInfo.addAll(flushResultPRR.getObjStatInfo());

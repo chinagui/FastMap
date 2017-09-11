@@ -106,14 +106,14 @@ public class JobProgressOperator {
         QueryRunner run = new QueryRunner();
         String sql;
         if (jobProgress.getStatus().equals(JobProgressStatus.RUNNING)) {
-            sql = "update job_progress set status=?,start_date=SYSDATE,message=? where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getPhaseId());
+            sql = "update job_progress set status=?,start_date=SYSDATE,message=?,in_parameter=? where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter(),jobProgress.getPhaseId());
         } else if (jobProgress.getStatus().equals(JobProgressStatus.CREATED)) {
             sql = "update job_progress set status=?, end_date=NULL, start_date=NULL where phase_id=?";
             run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getPhaseId());
         } else {
-            sql = "update job_progress set status=?, end_date=SYSDATE, message=?, OUT_PARAMETER=? where phase_id=?";
-            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getOutParameter(), jobProgress.getPhaseId());
+            sql = "update job_progress set status=?, end_date=SYSDATE, message=?,in_parameter=?, OUT_PARAMETER=? where phase_id=?";
+            run.update(conn, sql, jobProgress.getStatus().value(), jobProgress.getMessage(), jobProgress.getInParameter(),jobProgress.getOutParameter(), jobProgress.getPhaseId());
         }
     }
 

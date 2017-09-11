@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.navinfo.dataservice.api.es.iface.EsApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.fcc.AdasHBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.nirobot.core.model.elasticsearch.TrackPoint;
 import net.sf.json.JSON;
@@ -60,10 +61,15 @@ public abstract class TrackUpload {
 	 * @throws Exception
 	 */
 	public void run(String fileName, String tableName, int type) throws Exception {
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-        this.createTabIfNotExists(hbaseConn, tableName);
+		Connection hbaseConn = null;
         Table htab = null;
         try{
+			if(type == 2){//ADAS轨迹
+                hbaseConn = AdasHBaseConnector.getInstance().getConnection();
+            }else {//普通轨迹
+                hbaseConn = HBaseConnector.getInstance().getConnection();
+            }
+            this.createTabIfNotExists(hbaseConn, tableName);
 			htab = hbaseConn.getTable(TableName
 					.valueOf(tableName));
 			loadFileContent(fileName, htab, type);

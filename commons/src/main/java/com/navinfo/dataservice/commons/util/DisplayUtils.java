@@ -53,7 +53,7 @@ public class DisplayUtils {
 	 * 
 	 * @param geom
 	 * @param direct
-	 * @param nValue
+	 * @param ratioValue
 	 * @return
 	 */
 	public static double[] getRatioPointForLink(JGeometry geom, int direct, double ratioValue) {
@@ -348,12 +348,8 @@ public class DisplayUtils {
 		return length;
 	}
 
-	// 求出引导坐标位置
 	/**
-	 * 
-	 * @param linkMerArray
-	 * @param unit
-	 * @param seqNum
+	 * 求出引导坐标位置
 	 * @return 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
 	 */
 	private static int getGuidePosition(double[][] linkMerArray, double guidePointDistance, double[] guidePosition) {
@@ -981,7 +977,7 @@ public class DisplayUtils {
 
 		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
 
-		if (direct == 3) {
+		if (direct == 2) {
 			int len = linkMerArray.length;
 
 			for (int i = 0; i < len / 2; i++) {
@@ -1410,17 +1406,24 @@ public class DisplayUtils {
 	
 	public static double getVerUint(int z)
 	{
-		double offset = 10;
+		double offset = 0;
 		switch(z){
+		case 15:
+			offset = 96; break;
 		case 16:
+			offset = 48; break;
 		case 17:
-			offset = 17; break;
+			offset = 24; break;
 		case 18:
-			offset = 6; break;
+			offset = 12; break;
 		case 19:
-			offset = 3; break;
+			offset = 6; break;
 		case 20:
-			offset = 1; break;
+			offset = 3; break;
+		case 21:
+			offset = 1.5; break;
+		case 22:
+			offset = 0.75; break;
 		}
 		return offset;
 	}

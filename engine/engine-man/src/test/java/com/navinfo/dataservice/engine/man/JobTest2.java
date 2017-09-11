@@ -15,6 +15,8 @@ import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 
+import net.sf.json.JSONObject;
+
 public class JobTest2 {
 	@Before
 	public void before(){
@@ -26,7 +28,11 @@ public class JobTest2 {
 	
 	@Test
 	public void testUpdateJob() throws Exception {
-		JobService.getInstance().updateJobProgress(71, JobProgressStatus.FAILURE, "");
+		JSONObject detailjson=new JSONObject();
+		detailjson.put("tipsNum", 12);
+		JSONObject returnjson=new JSONObject();
+		returnjson.put("detail", detailjson);
+		JobService.getInstance().updateJobProgress(718, JobProgressStatus.NODATA, returnjson.toString());
 	}
 	
 	@Test

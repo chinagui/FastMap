@@ -22,7 +22,13 @@ public class MetadataMap implements Serializable {
 	private Map<String,String> chishort;
 	private Map<String,String> aliasName;
 	
-	public MetadataMap(){}
+	private static class SingletonHolder {
+		private static final MetadataMap INSTANCE = new MetadataMap();
+	}
+
+	public static final MetadataMap getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
 	
 	public Map<String, String> getChain() {
 		return chain;

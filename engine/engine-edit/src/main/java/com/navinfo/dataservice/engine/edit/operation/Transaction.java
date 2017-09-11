@@ -1445,6 +1445,7 @@ public class Transaction {
         Map<Integer, Map<IRow, ObjStatus>> updateData = calcDbIdRefUpdateList(result.getUpdateObjects(), sourceDbId);
         for (Map.Entry<Integer, Map<IRow, ObjStatus>> entry : updateData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1491,6 +1492,7 @@ public class Transaction {
         Map<Integer, List<IRow>> createData = calcDbIdRefAddOrDelList(result.getAddObjects(), sourceDbId, additional);
         for (Map.Entry<Integer, List<IRow>> entry : createData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1512,6 +1514,7 @@ public class Transaction {
         Map<Integer, List<IRow>> deleteData = calcDbIdRefAddOrDelList(result.getDelObjects(), sourceDbId, new HashMap<Integer, List<IRow>>());
         for (Map.Entry<Integer, List<IRow>> entry : deleteData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -2052,31 +2055,27 @@ public class Transaction {
 
     private void checkErrorOperation() throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
-        try {
-            if (OperType.REPAIR.equals(operType)) {
-                for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    if (!json.containsKey("data") || json.getJSONObject("data").containsKey("catchInfos")) {
-                        return;
-                    }
+        if (OperType.REPAIR.equals(operType)) {
+            for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
+                if (!entry.getKey().equals(objType)) {
+                    continue;
+                }
+                if (!json.containsKey("data") || !json.getJSONObject("data").containsKey("catchInfos")) {
+                    return;
+                }
 
-                    Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
-                    while (iterator.hasNext()) {
-                        JSONObject obj = iterator.next();
-                        if (obj.containsKey("nodePid")) {
-                            IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
-                            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (dbIds.size() > 1) {
-                                throw new Exception("不允分离大区库接边Node.");
-                            }
+                Iterator<JSONObject> iterator = json.getJSONObject("data").getJSONArray("catchInfos").iterator();
+                while (iterator.hasNext()) {
+                    JSONObject obj = iterator.next();
+                    if (obj.containsKey("nodePid")) {
+                        IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
+                        Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
+                        if (dbIds.size() > 1) {
+                            throw new Exception("不允分离大区库接边Node.");
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-
         }
     }
         /**
@@ -2501,7 +2500,8 @@ public class Transaction {
             boolean hasSourceDb = false;
 
             // 跨大区处理6种点要素以及所对应线要素
-            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
+            if (Constant.FACE_TYPES.containsKey(objType) || Constant.LINK_TYPES.containsKey(objType)
+                    || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
                 Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响

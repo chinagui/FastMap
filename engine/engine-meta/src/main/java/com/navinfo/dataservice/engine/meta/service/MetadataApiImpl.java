@@ -376,22 +376,61 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	@Override
 	public MetadataMap getMetadataMap() throws Exception {
-		MetadataMap result = new MetadataMap();
+		MetadataMap result =MetadataMap.getInstance();
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
-			
-			result.setChain((Map<String,String>) getChainMap(conn));
-			result.setKindCode((Map<String,String>) getKindCodeMap(conn));
-			result.setAdmin((Map<String,String>) getAdminMap(conn));
-			result.setCharacter((Map<String,String>) getTyCharacterFjtHmCheckMap(conn,0));
-			result.setKind((Map<String,String>) getKindMap(conn));
-			
-			result.setEngshort((Map<String,String>) getEngshortMap(conn));
-			result.setNavicovpy((Map<String,List<String>>) getNavicovpyMap(conn));
-			result.setNameUnifyShort(scPointNameckTypeD1_2_3_4_8_11());
-			result.setChishort(scPointNameckTypeD4_10());
-			result.setAliasName(scPointNameckTypeD4());
+
+			 if(result.getChain()==null||result.getChain().isEmpty()){
+			 result.setChain((Map<String,String>) getChainMap(conn));
+			 }
+			 if(result.getKindCode()==null||result.getKindCode().isEmpty()){
+			 result.setKindCode((Map<String,String>) getKindCodeMap(conn));
+			 }
+			 if(result.getAdmin()==null||result.getAdmin().isEmpty()){
+			 result.setAdmin((Map<String,String>) getAdminMap(conn));
+			 }
+			 if(result.getCharacter()==null||result.getCharacter().isEmpty()){
+			 result.setCharacter((Map<String,String>)
+			 getTyCharacterFjtHmCheckMap(conn,0));
+			 }
+			 if(result.getKind()==null||result.getKind().isEmpty()){
+			 result.setKind((Map<String,String>) getKindMap(conn));
+			 }
+			 if(result.getEngshort()==null||result.getEngshort().isEmpty()){
+			 result.setEngshort((Map<String,String>) getEngshortMap(conn));
+			 }
+			 if(result.getNavicovpy()==null||result.getNavicovpy().isEmpty()){
+			 result.setNavicovpy((Map<String,List<String>>)
+			 getNavicovpyMap(conn));
+			 }
+			 if(result.getNameUnifyShort()==null||result.getNameUnifyShort().isEmpty()){
+			 result.setNameUnifyShort(scPointNameckTypeD1_2_3_4_8_11());
+			 }
+			 if(result.getChishort()==null||result.getChishort().isEmpty()){
+			 result.setChishort(scPointNameckTypeD4_10());
+			 }
+			 if(result.getAliasName()==null||result.getAliasName().isEmpty()){
+			 result.setAliasName(scPointNameckTypeD4());
+			 }
+
+//			result.setChain((Map<String, String>) getChainMap(conn));
+//
+//			result.setKindCode((Map<String, String>) getKindCodeMap(conn));
+//
+//			result.setAdmin((Map<String, String>) getAdminMap(conn));
+//
+//			result.setCharacter((Map<String, String>) getTyCharacterFjtHmCheckMap(conn, 0));
+//
+//			result.setKind((Map<String, String>) getKindMap(conn));
+//
+//			result.setEngshort((Map<String, String>) getEngshortMap(conn));
+//
+//			result.setNavicovpy((Map<String, List<String>>) getNavicovpyMap(conn));
+//
+//			result.setNameUnifyShort(scPointNameckTypeD1_2_3_4_8_11());
+//			result.setChishort(scPointNameckTypeD4_10());
+//			result.setAliasName(scPointNameckTypeD4());
 
 			return result;
 		} catch (Exception e) {

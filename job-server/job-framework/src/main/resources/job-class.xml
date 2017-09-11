@@ -169,4 +169,13 @@
           class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"
           request="com.navinfo.dataservice.job.statics.manJob.ProgramJobRequest" >
     </type>
+    <type name="quickMonitorStat"
+          class="com.navinfo.dataservice.job.statics.manJob.QuickMonitorJob"
+          request="com.navinfo.dataservice.job.statics.manJob.QuickMonitorJobRequest" >
+    </type>
+   	<type name="mediumMonitorStat"
+          class="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJob"
+          request="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJobRequest" >
+    </type>
+    
 	</mapping>

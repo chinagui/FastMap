@@ -29,4 +29,9 @@ public class SysMsgType {
 	 * 发给个人JOB状态消息
 	 */
 	public static final String MSG_PERSONAL_MANJOB="manjob_personal_msg";
+	
+	/**
+	 * 发给所有人统计
+	 */
+	public static final String ALL_MANSTATIC="ALL_MANSTATIC";
 }

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import net.sf.json.JSONObject;
 
@@ -23,11 +24,12 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author gaopengrong
  */
 public class FMD0124 extends BasicCheckRule {
-	
+	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	Map<String, JSONObject> ft = new HashMap<>();
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
+		ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
 	}
 
 	@Override
@@ -39,8 +41,6 @@ public class FMD0124 extends BasicCheckRule {
 			if(name==null){return;}
 			String nameStr= name.getName();
 			if(nameStr.isEmpty()){return;}
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
 			for (int i = 0; i < nameStr.length(); i++) {
 				char  item =nameStr.charAt(i);
 				String str=String.valueOf(item);
@@ -54,6 +54,7 @@ public class FMD0124 extends BasicCheckRule {
 					}
 				}
 		    }
+			
 		}
 	}
 	

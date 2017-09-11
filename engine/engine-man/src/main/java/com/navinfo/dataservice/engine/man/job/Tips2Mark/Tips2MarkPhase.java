@@ -123,11 +123,13 @@ public class Tips2MarkPhase extends JobPhase {
 
             parameter.put("taskInfo", taskPar);
             log.info("tips2mark fccApi:" + parameter);
+            jobProgress.setInParameter(parameter.toString());
+            jobProgressOperator.updateStatus(jobProgress);
 
             FccApi fccApi = (FccApi) ApplicationContextUtil
                     .getBean("fccApi");
             fccApi.tips2Aumark(parameter);
-
+            
             //return jobProgress.getStatus();
         } catch (Exception ex) {
             //有异常，更新状态为执行失败

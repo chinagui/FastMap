@@ -44,12 +44,31 @@ public class PostBatch {
 	}
 
 	public void execute() throws Exception {
-		// 处理sourceFlag
-		log.info("执行sourceFlag特殊处理");
-		detealSourceFlag();
+
 		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
 		log.info("执行115批处理");
 		deteal201150();
+		// 处理sourceFlag
+		log.info("执行sourceFlag特殊处理");
+		detealSourceFlag();
+		// 200170特殊处理
+		log.info("执行200170特殊处理");
+		deteal200170();
+		// 201250特殊处理
+		log.info("执行201250特殊处理");
+		deteal201250();
+		// handler置0
+		updateHandler();
+	}
+	
+	public void execute915() throws Exception {
+
+		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
+		log.info("执行115批处理");
+		deteal201150_915();
+		// 处理sourceFlag
+		log.info("执行sourceFlag特殊处理");
+		detealSourceFlag();
 		// 200170特殊处理
 		log.info("执行200170特殊处理");
 		deteal200170();
@@ -211,6 +230,24 @@ public class PostBatch {
 		BatchCommand batchCommand=new BatchCommand();
 		batchCommand.setRuleId("FM-BAT-M01-08");
 		batchCommand.setRuleId("FM-BAT-20-115");
+		Batch batch=new Batch(conn,operationResult);
+
+		batch.operate(batchCommand);
+		persistBatch(batch);
+	}
+	
+	// 所有数据均需执行115批处理
+	private void deteal201150_915() throws Exception {
+
+		log.info("所有数据均需执行115批处理");
+		OperationResult operationResult = new OperationResult();
+		operationResult.putAll(opResult.getAllObjs());
+
+		// 执行批处理FM-BAT-20-115
+
+		BatchCommand batchCommand=new BatchCommand();
+		batchCommand.setRuleId("FM-BAT-M01-08");
+		//batchCommand.setRuleId("FM-BAT-20-115");
 		Batch batch=new Batch(conn,operationResult);
 
 		batch.operate(batchCommand);

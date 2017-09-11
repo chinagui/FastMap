@@ -400,6 +400,9 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					int updateTotal = flushResultPRP.getUpdateTotal() + flushResultPRR.getUpdateTotal();
 					int deleteTotal = flushResultPRP.getDeleteTotal() + flushResultPRR.getDeleteTotal();
 					int failedTotal = flushResultPRP.getFailedTotal() + flushResultPRR.getFailedTotal();
+					int insertFailed = flushResultPRP.getInsertFailed() + flushResultPRR.getInsertFailed();
+					int updateFailed = flushResultPRP.getUpdateFailed() + flushResultPRR.getUpdateFailed();
+					int deleteFailed = flushResultPRP.getDeleteFailed() + flushResultPRR.getDeleteFailed();
 					String tempFailLogTable = "poi:"+flushResultPRP.getTempFailLogTable()+",road:"+flushResultPRR.getTempFailLogTable();
 					Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
 					objStatInfo.addAll(flushResultPRP.getObjStatInfo());
@@ -410,7 +413,12 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					flushResult.setInsertTotal(insertTotal);
 					flushResult.setUpdateTotal(updateTotal);
 					flushResult.setDeleteTotal(deleteTotal);
+					
 					flushResult.setFailedTotal(failedTotal);
+					flushResult.setInsertFailed(insertFailed);
+					flushResult.setUpdateFailed(updateFailed);
+					flushResult.setDeleteFailed(deleteFailed);
+					
 					flushResult.setTempFailLogTable(tempFailLogTable);
 					flushResult.addObjStatInfos(objStatInfo);
 					

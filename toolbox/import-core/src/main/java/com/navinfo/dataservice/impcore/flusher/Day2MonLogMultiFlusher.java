@@ -7,10 +7,15 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushLogBySQL;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 /***
@@ -19,13 +24,15 @@ import com.navinfo.navicommons.database.sql.DBUtils;
  */
 public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private OracleSchema dailyDbSchema;
 
-	public Day2MonLogMultiFlusher(DataSource sourceDataSource,
-			DataSource targetDataSource, String tempTable, boolean ignoreError,
-			String type) {
+	public Day2MonLogMultiFlusher(OracleSchema dailyDbSchema,
+			DataSource sourceDataSource, DataSource targetDataSource,
+			String tempTable, boolean ignoreError, String type) {
 
 		super(sourceDataSource, targetDataSource, tempTable, type, ignoreError);
 		this.setThreads(true);
+		this.dailyDbSchema = dailyDbSchema;
 
 	}
 
@@ -37,11 +44,12 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	@Override
 	protected void calcConcurrentSize() throws SQLException {
 		this.dataCount = this.getLogCount(this.tempTable);
+		log.debug("dataCount ==== " + dataCount);
 		if (dataCount <= 1000) {
 			concurrentSize = 1;
 			tableDatacount = 1;
 		} else {
-			concurrentSize = 10;
+			concurrentSize = 20;
 			tableDatacount = dataCount / concurrentSize;
 		}
 		innerCount += (int) Math.ceil((double) dataCount / tableDatacount);
@@ -82,6 +90,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	@Override
 	public int getLogCount(String tempTable) throws SQLException {
 		log.info("createLogReaderInner begin");
+
 		Connection conn = this.sourceDataSource.getConnection();
 
 		int count = 0;
@@ -113,6 +122,43 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 
 		}
 
+	}
+
+	/***
+	 * 结果重组 zhaokk
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public FlushResult flush() throws Exception {
+		Connection conn = null;
+		FlushResult flushResult = new FlushResult();
+
+		try {
+			conn = dailyDbSchema.getPoolDataSource().getConnection();
+			this.run();
+			flushResult = this.getExtResult().combineFlushResults(
+					this.getExtResult().getaddFlushResults());
+			log.info("flushResult.getTotal() ===" + flushResult.getTotal());
+			log.info("flushResult.getUpdateTotal() ==="
+					+ flushResult.getUpdateTotal());
+			log.info("flushResult.getInsertTotal() ==="
+					+ flushResult.getInsertTotal());
+
+			String failLogTempTable = LogFlusherHelper
+					.createFailueLogTempTable(conn);
+			flushResult.setTempFailLogTable(failLogTempTable);
+			log.info("将错误日志记录到错误日志temp表中：" + failLogTempTable);
+			flushResult.recordFailLog2Temptable(conn);//
+
+		} catch (Exception e) {
+			log.debug(e.getMessage(), e);
+			throw e;
+
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return flushResult;
 	}
 
 }

@@ -946,6 +946,9 @@ public class SubtaskOperation {
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
 			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
 			
+			if(0 == platForm){
+				sb.append(" AND ST.WORK_KIND = 1");
+			}
 			if (dataJson.containsKey("stage")) {
 				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
 			}else{

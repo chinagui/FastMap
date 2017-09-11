@@ -110,7 +110,7 @@ public class IxPoiSearch implements ISearch {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE,POI_NUM INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
+		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE,POI_NUM, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
 				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
 				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
@@ -155,7 +155,8 @@ public class IxPoiSearch implements ISearch {
 						resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
 				m.put("mediumFlag",
 						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
-				m.put("n", resultSet.getString("poi_num"));
+				m.put("n", resultSet.getString("poi_num") == null ? ""
+						: resultSet.getString("poi_num"));
 
 				// Double xGuide = resultSet.getDouble("x_guide");
 
@@ -473,7 +474,7 @@ public class IxPoiSearch implements ISearch {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
+		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE,POI_NUM, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
 				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
 				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
@@ -538,6 +539,8 @@ public class IxPoiSearch implements ISearch {
 						: 1);
 				m.put("mediumFlag", resultSet.getInt("medium_task_id") == 0 ? 0
 						: 1);
+				m.put("n", resultSet.getString("poi_num") == null ? ""
+						: resultSet.getString("poi_num"));
 
 				// Double xGuide = resultSet.getDouble("x_guide");
 				//
@@ -609,14 +612,6 @@ public class IxPoiSearch implements ISearch {
 		}
 
 		return haveParentOrChild;
-	}
-
-	public static void main(String[] args) throws Exception {
-
-		// Connection conn = DBConnector.getInstance().getConnectionById(11);
-		// new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
-		System.out.println(MercatorProjection.getWktWithGap(107940, 49615, 17,
-				80));
 	}
 
 	/**
@@ -1701,8 +1696,8 @@ public class IxPoiSearch implements ISearch {
 
 						/**
 						 * 特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'==
-						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiP
-						 * i n y i n ， 取值原则：对address中字段addrName、roadName、
+						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMul
+						 * t i P i n y i n ， 取值原则：对address中字段addrName、roadName、
 						 * fullName存在多音字分别获取其对应的拼音
 						 */
 						if (secondWorkItem.equals("addrPinyin")) {
@@ -1869,4 +1864,9 @@ public class IxPoiSearch implements ISearch {
 		}
 	}
 
+	public static void main(String[] args) {
+		JSONObject m = new JSONObject();
+		m.put("n", null);
+		System.out.println(m);
+	}
 }

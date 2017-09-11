@@ -81,13 +81,11 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				.getBean("day2MonthSyncApi");
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil
 				.getBean("metadataApi");
-		long phaseId = 0;
 		try {
 			Day2MonthPoiMerge915TmpJobRequest day2MonRequest = (Day2MonthPoiMerge915TmpJobRequest) request;
 			String tmpOpTable = day2MonRequest.getTmpOpTable();// 日库临时表
 			String tempFailLogTable = day2MonRequest.getTempFailLogTable();// 日库失败履历临时表
 			int onlyFlushLog = day2MonRequest.getOnlyFlushLog();// 日库失败履历临时表
-			phaseId = (long) day2MonRequest.getPhaseId();
 			int specRegionId = day2MonRequest.getSpecRegionId();
 
 			DbInfo dbInfo = datahubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.GDB_PLUS

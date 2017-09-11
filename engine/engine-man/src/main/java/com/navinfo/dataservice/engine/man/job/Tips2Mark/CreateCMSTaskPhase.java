@@ -94,7 +94,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             Map<String, String> parMap = new HashMap<>();
             parMap.put("parameter", parameter.toString());
             log.info("phaseId:"+jobProgress.getPhaseId()+",cms param:"+parameter.toString());
-            jobProgress.setMessage(parameter.toString());
+            jobProgress.setInParameter(parameter.toString());
             String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
             log.info("phaseId:"+jobProgress.getPhaseId()+",cms result:"+result);
             //result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";

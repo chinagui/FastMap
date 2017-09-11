@@ -1445,6 +1445,7 @@ public class Transaction {
         Map<Integer, Map<IRow, ObjStatus>> updateData = calcDbIdRefUpdateList(result.getUpdateObjects(), sourceDbId);
         for (Map.Entry<Integer, Map<IRow, ObjStatus>> entry : updateData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1491,6 +1492,7 @@ public class Transaction {
         Map<Integer, List<IRow>> createData = calcDbIdRefAddOrDelList(result.getAddObjects(), sourceDbId, additional);
         for (Map.Entry<Integer, List<IRow>> entry : createData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -1512,6 +1514,7 @@ public class Transaction {
         Map<Integer, List<IRow>> deleteData = calcDbIdRefAddOrDelList(result.getDelObjects(), sourceDbId, new HashMap<Integer, List<IRow>>());
         for (Map.Entry<Integer, List<IRow>> entry : deleteData.entrySet()) {
             if (entry.getKey().equals(sourceDbId)) {
+                resultMap.put(entry.getKey(), null);
                 continue;
             }
 
@@ -2497,7 +2500,8 @@ public class Transaction {
             boolean hasSourceDb = false;
 
             // 跨大区处理6种点要素以及所对应线要素
-            if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
+            if (Constant.FACE_TYPES.containsKey(objType) || Constant.LINK_TYPES.containsKey(objType)
+                    || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
                 Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响

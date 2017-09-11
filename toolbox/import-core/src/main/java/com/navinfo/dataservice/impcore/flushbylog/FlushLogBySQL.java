@@ -46,7 +46,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 			if (!isThreads) {
 				log.info("开始单线程刷履历。。。");
 				setUseSingleThread(true);
-				flush();
+				flushThread();
 			} else {
 				log.info("开始多线程刷履历。。。");
 				setUseSingleThread(false);
@@ -68,7 +68,7 @@ public class FlushLogBySQL extends AbstractFlushLog {
 		}
 	}
 
-	public void flush() throws Exception {
+	public void flushThread() throws Exception {
 		LogReaderDay2Month logReader = new LogReaderDay2Month(sourceDataSource,
 				this.getLogQuerySql(this.dataCount, tempTable));
 		LogWriterDay2Month logWriter = new LogWriterDay2Month(targetDataSource,

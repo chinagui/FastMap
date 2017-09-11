@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search() {
-        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDLINK\"],\"x\":53983,\"y\":24870,\"z\":16}";
+        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDNODE\"],\"x\":07588,\"y\":24870,\"z\":16}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {

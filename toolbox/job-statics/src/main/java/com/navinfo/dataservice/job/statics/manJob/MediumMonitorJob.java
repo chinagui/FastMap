@@ -160,19 +160,16 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("poiActualCoverPercent", poiActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
-//			queryProgram9.put("type", 0);
-//			?????????????????有没有查询条件
+			queryProgram9.put("type", 0);
 			Double collectWorkDate = queryDatasSumInMongo(md, "task", queryProgram9,"workDate");
 			mediumMonitorMap.put("collectWorkDate", collectWorkDate.intValue());
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
-//			queryProgram10.put("type", 0);
-//			?????????????????有没有查询条件
+			queryProgram10.put("type", 0);
 			Double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"collectPlanDate");
 			mediumMonitorMap.put("collectPlanDate", collectPlanDate);
 			
 			double planPercent = 0;
-			//???????????要不要 *100
 			if(collectPlanDate != 0){
 				planPercent = collectWorkDate*100/collectPlanDate;
 			}
@@ -202,7 +199,6 @@ public class MediumMonitorJob extends AbstractStatJob {
 			double closeCollectLinkUpdateTotal = queryDatasSumInMongo(md, "task", queryProgram14,"collectLinkUpdateTotal");
 			mediumMonitorMap.put("closeCollectLinkUpdateTotal", closeCollectLinkUpdateTotal);
 			
-			//?????????????进度要不要 *100 
 			Double roadActualPercent = (double) 0;
 			if((unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal) != 0){
 				roadActualPercent =collectLinkUpdateTotal*100/(unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal);
@@ -227,7 +223,6 @@ public class MediumMonitorJob extends AbstractStatJob {
 			double closePoiFinishNum = queryDatasSumInMongo(md, "task", queryProgram18,"poiFinishNum");
 			mediumMonitorMap.put("closePoiFinishNum", closePoiFinishNum);
 			
-			//?????????????进度要不要 *100 
 			Double poiActualPercent = (double) 0 ;
 			if((unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum) != 0){
 				poiActualPercent = poiActualTotal*100/(unassignPoiPlanNum + workPoiPlanTotal+closePoiFinishNum);

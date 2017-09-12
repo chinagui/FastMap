@@ -55,6 +55,7 @@ public class EditPoiBatchPlusJob extends AbstractJob{
 						releaseJobRequest.getPids(), false, false);
 				//log.info(2);
 			}else{
+				tabNames.add("IX_POI_NAME_FLAG");
 				objs=ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
 						releaseJobRequest.getPids(), false, false);
 			}

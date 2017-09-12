@@ -12,9 +12,13 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.day2mon.PostBatch;
+import com.navinfo.dataservice.day2mon.PostBatchOperation;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -44,11 +48,17 @@ public class BatchTranslate {
     private BatchTranslate(){
     }
 
+    private final static Integer INIT_THREAD_SIZE = 16;
+
+    private final static Integer MAX_THREAD_SIZE = INIT_THREAD_SIZE << 2;
+
+    private final static Integer PART_SIZE = 3000;
+
     private static ThreadLocal<BatchTranslate> threadLocal = new ThreadLocal<>();
 
     private volatile Map<String, Integer> successMesh;
 
-    private volatile Map<String, Integer> failureMesh;
+    private volatile List<Integer> failureMesh;
 
     private volatile Map<String, Integer> runningMesh;
 
@@ -65,7 +75,7 @@ public class BatchTranslate {
 
     private void init(JSONObject request) {
         successMesh = new HashMap<>();
-        failureMesh = new HashMap<>();
+        failureMesh = new ArrayList<>();
         runningMesh = new HashMap<>();
         dbId = request.optInt("dbId", Integer.MIN_VALUE);
     }
@@ -84,24 +94,42 @@ public class BatchTranslate {
         }
         logger.info(String.format("translate meshes with [%s]", Arrays.toString(map.keySet().toArray(new Integer[]{}))));
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(map.size() + 1), new ThreadPoolExecutor.DiscardOldestPolicy());
+        int queueSize = 0;
+        for (List<BasicObj> list : map.values()) {
+            queueSize += list.size() % PART_SIZE == 0 ? list.size() /PART_SIZE : list.size() / PART_SIZE + 1;
+        }
+        queueSize = queueSize > MAX_THREAD_SIZE ? queueSize - MAX_THREAD_SIZE : queueSize;
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(INIT_THREAD_SIZE, MAX_THREAD_SIZE, 3, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<Runnable>(queueSize), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
-            Task task = new Task(entry.getKey(), entry.getValue());
-            executor.execute(task);
+            //List<BasicObj> list = entry.getValue();
+            //
+            //List<List<BasicObj>> parts = new ArrayList<>();
+            //
+            //int size = list.size();
+            //for (int index = 0; index < size; index += PART_SIZE) {
+            //    parts.add(new ArrayList<>(list.subList(index, Math.min(size, index + PART_SIZE))));
+            //}
+            List<List<BasicObj>> parts = ListUtils.partition(entry.getValue(), PART_SIZE);
+
+            for (List<BasicObj> part : parts) {
+                Task task = new Task(entry.getKey(), part);
+                executor.execute(task);
+            }
         }
 
         executor.shutdown();
 
-        while (!executor.awaitTermination(15, TimeUnit.SECONDS)) {
+        while (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
             logger.info(String.format("running mesh is [%s]", JSONObject.fromObject(runningMesh).toString()));
             logger.info(String.format("executor.getPoolSize()：%d，executor.getQueue().size()：%d，executor.getCompletedTaskCo" +
                             "unt()：%d", executor.getPoolSize(), executor.getQueue().size(), executor.getCompletedTaskCount()));
         }
 
-        response.put("successMesh", JSONObject.fromObject(successMesh).toString());
-        response.put("failureMesh", JSONObject.fromObject(failureMesh).toString());
+        response.put("successMesh", JSONArray.fromObject(successMesh).toString());
+        response.put("failureMesh", JSONArray.fromObject(failureMesh).toString());
         response.put("speedTime", (System.currentTimeMillis() - time) >> 10);
 
         logger.info("batch translate end...");
@@ -140,7 +168,7 @@ public class BatchTranslate {
             Set<String> tabNames = new HashSet<>();
             tabNames.add("IX_POI_NAME");
             Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames,false, pids, true, true);
-            Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, pids);
+            Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
             ObjHisLogParser.parse(objs, logs);
 
             IxPoi ixPoi;
@@ -186,6 +214,14 @@ public class BatchTranslate {
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
             persistBatch(batch);
+            
+    		// 处理sourceFlag
+            new PostBatch(operationResult, conn).detealSourceFlag();
+    		// 200170特殊处理
+            new PostBatch(operationResult, conn).deteal200170();
+            // 改171状态
+            new PostBatch(operationResult, conn).updateHandler();
+            
             conn.commit();
         } catch (Exception e) {
             DbUtils.rollback(conn);
@@ -228,17 +264,25 @@ public class BatchTranslate {
         @Override
         public void run() {
             BatchTranslate translate = BatchTranslate.getInstance();
-            String key = String.valueOf(meshId);
-            try {
+            if (failureMesh.contains(meshId)) {
+                return;
+            }
 
+            String key = String.format("%d(%d)", meshId, Thread.currentThread().getId());
+            try {
                 runningMesh.put(key, list.size());
                 translate.batchTranslate(dbId, list);
                 runningMesh.remove(key);
 
-                successMesh.put(key, list.size());
+                if (successMesh.containsKey(meshId)) {
+                    successMesh.put(String.valueOf(meshId), successMesh.get(meshId) + list.size());
+                } else {
+                    successMesh.put(String.valueOf(meshId), list.size());
+                }
+                //successMesh.put(key, list.size());
             } catch (Exception e) {
                 logger.error(String.format("mesh %d translate error..", meshId));
-                failureMesh.put(key, list.size());
+                failureMesh.add(meshId);
                 e.fillInStackTrace();
             }
 

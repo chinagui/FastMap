@@ -45,6 +45,7 @@ public class FlushResult {
 	
 	protected Set<FlushObjStatInfo> objStatInfo = new HashSet<FlushObjStatInfo>();
 
+
 	public void insertFailedLog(String opId, String rowId, String log) {
 		List<String> row = new ArrayList<String>();
 		row.add(opId);
@@ -287,5 +288,8 @@ public class FlushResult {
 	}
 	public boolean removeObjStatInfo(FlushObjStatInfo info){
 		return objStatInfo.remove(info);
+	}
+	public Set<FlushObjStatInfo> getObjStatInfo() {
+		return objStatInfo;
 	}
 }

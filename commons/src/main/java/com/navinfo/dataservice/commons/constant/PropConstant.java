@@ -107,6 +107,7 @@ public class PropConstant {
 	public static final String productConvert="product.convert";
 	public static final String day2mounthGetLock="day2mounth.getLock";
 	public static final String day2mounthReleaseLock="product.releaseLock";
+	public static final String FMBAT20110ThreadParameter="FMBAT20110.Thread";
 	
 	public static final String valueSmtp="VALUE_SMTP";
 	public static final String sendEmail="SEND_EMAil";
@@ -130,4 +131,7 @@ public class PropConstant {
 	public static final String es_port = "es.port";
 	public static final String es_cluster ="es.cluster";
 	public static final String es_index_trackpoints ="es.index.trackpoints";
+
+    //20170911 adas hbase库独立
+    public static final String adasHbaseAddress = "hbase.adas.address";
 }

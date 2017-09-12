@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,9 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNamec
  *
  */
 public class FMD0109 extends BasicCheckRule {
-
+	private MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	Map<String, String> typeD4 = new HashMap<String, String>();
+	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
@@ -34,8 +37,6 @@ public class FMD0109 extends BasicCheckRule {
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.getLangCode().equals("CHI")&&nameTmp.getNameType()==1
 						&&nameTmp.getNameClass()==1){
-					MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					Map<String, String> typeD4 = metadataApi.scPointNameckTypeD4();
 					Map<String, String> result = ScPointNameckUtil.matchType(nameTmp.getName(), typeD4);
 					if(result!=null&&result.size()>0){
 						//String log="名称错别字：“xxxx”应为“xxxx”";
@@ -50,12 +51,14 @@ public class FMD0109 extends BasicCheckRule {
 					}
 				}
 			}
+			
 		}
 	}
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
+		typeD4 = metadataApi.scPointNameckTypeD4();
 	}
 
 }

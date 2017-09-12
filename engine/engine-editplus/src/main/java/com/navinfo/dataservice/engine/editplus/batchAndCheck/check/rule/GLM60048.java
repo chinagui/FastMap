@@ -48,7 +48,13 @@ public class GLM60048 extends BasicCheckRule {
 							setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 							return;
 						}
-						counter =  countStr(officeChildName, "医院")+countStr(officeChildName, "醫院");
+						if(officeChildName.contains("医院")&&officeChildName.contains("醫院")){
+							counter =  countStr(officeChildName, "医院")+countStr(officeChildName, "醫院");
+						}else if(officeChildName.contains("医院")){
+							counter =  countStr(officeChildName, "医院");
+						}else if(officeChildName.contains("醫院")){
+							counter =  countStr(officeChildName, "醫院");
+						}
 						if(counter>1){
 							setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 							return;
@@ -56,6 +62,7 @@ public class GLM60048 extends BasicCheckRule {
 					}
 				}
 			}
+			
 		}
 	}
 	
@@ -69,10 +76,12 @@ public class GLM60048 extends BasicCheckRule {
         if (str1.indexOf(str2) == -1) {  
             return 0;  
         } else if (str1.indexOf(str2) != -1) {  
-            counter++;  
-            countStr(str1.substring(str1.indexOf(str2) +  
-                   str2.length()), str2);  
-               return counter;  
+            counter++;
+            if(counter<=1){
+            	 countStr(str1.substring(str1.indexOf(str2) +  
+                         str2.length()), str2);  
+            }
+            return counter;  
         }  
         return 0;  
     }  

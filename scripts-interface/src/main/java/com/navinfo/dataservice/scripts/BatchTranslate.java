@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import net.sf.json.JSONArray;
@@ -46,7 +47,7 @@ public class BatchTranslate {
     private BatchTranslate(){
     }
 
-    private final static Integer INIT_THREAD_SIZE = 16;
+    private final static Integer INIT_THREAD_SIZE = 32;
 
     private final static Integer MAX_THREAD_SIZE = INIT_THREAD_SIZE << 2;
 
@@ -56,7 +57,7 @@ public class BatchTranslate {
 
     private volatile Map<String, Integer> successMesh;
 
-    private volatile List<Integer> failureMesh;
+    private volatile List<String> failureMesh;
 
     private volatile Map<String, Integer> runningMesh;
 
@@ -212,6 +213,14 @@ public class BatchTranslate {
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
             persistBatch(batch);
+            
+    		// 处理sourceFlag
+            new PostBatch(operationResult, conn).detealSourceFlag();
+    		// 200170特殊处理
+            new PostBatch(operationResult, conn).deteal200170();
+            // 改171状态
+            new PostBatch(operationResult, conn).updateHandler();
+            
             conn.commit();
         } catch (Exception e) {
             DbUtils.rollback(conn);
@@ -254,7 +263,7 @@ public class BatchTranslate {
         @Override
         public void run() {
             BatchTranslate translate = BatchTranslate.getInstance();
-            if (failureMesh.contains(meshId)) {
+            if (failureMesh.contains(meshId.toString())) {
                 return;
             }
 
@@ -264,15 +273,15 @@ public class BatchTranslate {
                 translate.batchTranslate(dbId, list);
                 runningMesh.remove(key);
 
-                if (successMesh.containsKey(meshId)) {
-                    successMesh.put(String.valueOf(meshId), successMesh.get(meshId) + list.size());
+                if (successMesh.containsKey(meshId.toString())) {
+                    successMesh.put(meshId.toString(), successMesh.get(meshId.toString()) + list.size());
                 } else {
-                    successMesh.put(String.valueOf(meshId), list.size());
+                    successMesh.put(meshId.toString(), list.size());
                 }
                 //successMesh.put(key, list.size());
             } catch (Exception e) {
                 logger.error(String.format("mesh %d translate error..", meshId));
-                failureMesh.add(meshId);
+                failureMesh.add(meshId.toString());
                 e.fillInStackTrace();
             }
 

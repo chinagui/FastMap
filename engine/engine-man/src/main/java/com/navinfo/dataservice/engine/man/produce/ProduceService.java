@@ -5,10 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -32,6 +34,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.StringUtil;
+import com.sun.tools.internal.ws.wsdl.framework.Entity;
 
 public class ProduceService {
 
@@ -317,19 +320,46 @@ public class ProduceService {
 				}
 			};		
 			List<Map<String,Object>> produceList=run.query(conn, sql,rsHandler);
+			List<Map<String,Object>> produceResultList = new ArrayList<>();
+			List<Map<String,Object>> intersectList = new ArrayList<>();
+			Map<Integer, Set<Integer>> allGridsWithOpenProgram = queryAllGridsWithOpenProgram(conn);
 			//补充相关的grid信息
 			for(Map<String,Object> produce:produceList){
 				int programId=(int) produce.get("programId");
 				int produceId=(int) produce.get("produceId");
 				Map<Integer, Set<Integer>> gridIds =ProgramService.getInstance().queryInforProgramGridById(conn, programId);
 				produce.put("gridIds", gridIds);
-				JSONObject paraJson=new JSONObject();
-				paraJson.put("gridIds", gridIds.toString());
-				if(gridIds==null||gridIds.size()==0){continue;}
-				sql="update produce p set parameter='"+paraJson+"' where produce_id="+produceId;
-				run.update(conn, sql);
+				//modify by songhe
+				//新增判断，快线关闭待出品的与开启状态的项目之间存在grid交集，则不能出品
+				boolean notIntersec = true;
+				for(Set<Integer> grids : gridIds.values()){
+					for(int gridId : grids){
+						//是否有重复的数据
+						for(Entry<Integer, Set<Integer>> entry : allGridsWithOpenProgram.entrySet()){
+							Set<Integer> openGrids = entry.getValue();
+							if(openGrids.contains(gridId)){
+								produce.put("intersecGrids", produce.containsKey("intersecGrids") && produce.get("intersecGrids").toString().indexOf(String.valueOf(gridId)) == -1 ? produce.get("intersecGrids").toString() + "," + gridId : gridId);
+								produce.put("intersecProgramId", entry.getKey());
+								intersectList.add(produce);
+								notIntersec = false;
+							}
+						}
+					}
+				}
+				if(notIntersec){
+					JSONObject paraJson=new JSONObject();
+					paraJson.put("gridIds", gridIds.toString());
+					if(gridIds==null||gridIds.size()==0){continue;}
+					sql="update produce p set parameter='"+paraJson+"' where produce_id="+produceId;
+					run.update(conn, sql);
+					produceResultList.add(produce);
+				}
 			}
-			return produceList;
+			//保存冲突信息到出品表中
+			if(intersectList.size() > 0){
+				updateIntersectMessage(conn, intersectList);
+			}
+			return produceResultList;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -337,6 +367,81 @@ public class ProduceService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 查询所有开启项目以及情报的grid集合
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<Integer, Set<Integer>> queryAllGridsWithOpenProgram(Connection conn) throws Exception{
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String sql = "select to_number(t.program_id) as program_id,t.grid_id from PROGRAM_GRID_MAPPING t where t.program_id in"
+					+ " (select p.program_id from program p where p.status = 1) union all "
+					+ " select pm.program_id, t.grid_id from INFOR_GRID_MAPPING t,program pm where t.infor_id in "
+					+ " (select p.infor_id from program p where p.status = 1 "
+					+ " and p.infor_id <> 0) and t.infor_id = pm.infor_id(+)";
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Map<Integer, Set<Integer>>> rsHandler = new ResultSetHandler<Map<Integer, Set<Integer>>>() {
+				public Map<Integer, Set<Integer>> handle(ResultSet rs) throws SQLException{
+					Map<Integer, Set<Integer>> result = new HashMap<>();
+					while(rs.next()){
+						Set<Integer> grids = new HashSet<>();
+						int programId = rs.getInt("program_id");
+						if(programId != 0){
+							if(result.containsKey(programId)){
+								grids = result.get(programId);
+								grids.add(rs.getInt("grid_id"));
+								result.put(programId, grids);
+							}else{
+								grids.add(rs.getInt("grid_id"));
+								result.put(programId, grids);
+							}
+						}
+					}
+					return result;
+				}
+			};
+			return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 保存冲突的无法出品的项目到出品表中记录信息
+	 * @param Connection
+	 * @param List<Map<String,Object>>
+	 * @throws Exception 
+	 * 
+	 * */
+	public void updateIntersectMessage(Connection conn, List<Map<String,Object>> intersectList) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "update PRODUCE t set t.parameter = ?, t.produce_status = 4 where t.produce_id = ?";
+			Object[][] inParam = new Object[intersectList.size()][];
+			int i = 0;
+			for(Map<String,Object> map : intersectList){
+				JSONObject json = new JSONObject();
+				Object[] temp = new Object[2];
+				json.put("programId", map.get("programId"));
+				json.put("intersecGrids", map.get("intersecGrids"));
+				json.put("intersecProgramId", map.get("intersecProgramId"));
+				temp[0] = json.toString();
+				temp[1] = map.get("produceId");
+				inParam[i] = temp;
+				i++;
+			}
+			log.info("保存冲突的无法出品的项目到出品表中记录信息:" + sql);
+			run.batch(conn, sql, inParam);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("保存失败，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 
 	public static void main(String[] args) {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -29,6 +31,10 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * Log3: 营业时间存在半角字符
  * 
  * @author gaopengrong
+ * ===============================
+ * @version 2.0
+ * @desc 修改bug8744,判断开始时间和结束时间算法修改，并且考虑多组情况
+ * @author z
  */
 public class FMZY20198 extends BasicCheckRule {
 
@@ -93,38 +99,28 @@ public class FMZY20198 extends BasicCheckRule {
 
 			// 上面已经做的全半角及非法字符检查，因此下面直接转成半角做格式检查
 			openHour = ExcelReader.f2h(openHour);
-			String[] openHourArray = openHour.split("-");
-			for (int i=0;i<openHourArray.length;i++) {
-				String startTime = openHourArray[i];
-				if (startTime.length()>=5) {
-					startTime = startTime.substring(startTime.length() - 5, startTime.length());
-				} 
-				if (startTime.equals("24:00")) {
-					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-							"营业时间开始时间或结束时间错误");
-					break;
-				}
-				if (i + 1 == openHourArray.length) {
-					break;
-				}
-				String endTime = openHourArray[i + 1];
-				if (endTime.length()>=5) {
-					endTime = endTime.substring(0, 5);
-				} else if (endTime.length()==4) {
-					if (endTime.equals("0:00")) {
-						setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-								"营业时间开始时间或结束时间错误");
-						break;
+			Pattern pattern = Pattern.compile("\\d+:\\d+-\\d+:\\d+");
+			Matcher matcher = pattern.matcher(openHour);
+			String time = "";
+			if(matcher.find()){
+				matcher.reset();
+				while(matcher.find()){
+					time = matcher.group(0);
+					String[] timeArray = time.split("-");
+					if(timeArray.length == 2){
+						if(StringUtils.isNotEmpty(timeArray[0]) && "24:00".equals(timeArray[0])){
+							setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+									"营业时间开始时间或结束时间错误");
+							break;
+						}
+						if(StringUtils.isNotEmpty(timeArray[1]) && ("00:00".equals(timeArray[1]) || "0:00".equals(timeArray[1]))){
+							setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+									"营业时间开始时间或结束时间错误");
+							break;
+						}
 					}
 				}
-				
-				if (endTime.equals("00:00")) {
-					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-							"营业时间开始时间或结束时间错误");
-					break;
-				}
 			}
-
 		}
 	}
 

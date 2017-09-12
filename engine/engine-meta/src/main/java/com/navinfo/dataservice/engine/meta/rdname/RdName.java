@@ -642,6 +642,8 @@ public class RdName {
 			obj.setAdminName(rs.getString("admin_name"));
 			
 			obj.setSplitFlag(rs.getInt("split_flag"));
+			
+			obj.setCity(rs.getString("city"));
 		}
 
 	}

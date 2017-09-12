@@ -737,7 +737,7 @@ public class DataEditService {
 		
 		//调用生成POI履历
 		log.info(resultId+"调用生成POI履历");
-		JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId);
+		JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId, rKind, rKindChain);
 		producePOIDRecord(json, regionConn, userId);
 		
 		String pid = resultKindCode.get("pid");
@@ -767,7 +767,7 @@ public class DataEditService {
 	 * @param result
 	 * 
 	 * */
-	public JSONObject prepareDeepControlData(Map<String, String> poiMap, int dailyDbId){
+	public JSONObject prepareDeepControlData(Map<String, String> poiMap, int dailyDbId, String rKind, String rKindChain){
 		
 		Map<String, Object> data = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
@@ -775,15 +775,17 @@ public class DataEditService {
 //		String pid = poiMap.get("pid");
 		int pid = Integer.valueOf(poiMap.get("pid"));
 		String rowId = poiMap.get("rowId");
-		String chain = poiMap.get("poiChain");
-		String kindCode = poiMap.get("poiKindCode");
+		
+//		String chain = poiMap.get("poiChain");
+//		String kindCode = poiMap.get("poiKindCode");
+		
 		result.put("dbId", dailyDbId);
 		result.put("objId", pid);
 		result.put("command", "UPDATE");
 		result.put("type", "IXPOI");
 		data.put("rowId", rowId);
-		data.put("chain", chain);
-		data.put("kindCode", kindCode);
+		data.put("chain", rKindChain);
+		data.put("kindCode", rKind);
 		data.put("pid", pid);
 		data.put("objStatus", "UPDATE");
 //		data.put("command", "UPDATE");

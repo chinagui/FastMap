@@ -500,13 +500,13 @@ public class CompGridUtil {
 	}
 	
 	public static void main(String[] args) {
-		String[] grids = point2Grids(116.23296,39.94998);
+		String[] grids = point2Grids(121.4025,37.51506);
 		for(String g:grids){
 			System.out.println(g);
 		}
-		double[] rect = grid2Rect(59566331);
-		for(double d:rect){
-			System.out.println(d);
-		}
+//		double[] rect = grid2Rect(59566331);
+//		for(double d:rect){
+//			System.out.println(d);
+//		}
 	}	
 }

@@ -903,7 +903,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 			}
 
 			if (poi.getKindCode() != null
-					&& !poi.getKindCode().equals("230210")) {
+					&& poi.getKindCode().equals("230210")) {
 
 				String label = poi.getLabel();
 

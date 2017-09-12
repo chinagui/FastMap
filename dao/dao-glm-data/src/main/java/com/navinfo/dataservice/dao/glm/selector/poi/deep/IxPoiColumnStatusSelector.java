@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -1067,7 +1068,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getColumnCount(Subtask subtask,long userId,int isQuality) throws Exception{
+	public JSONObject getColumnCount(Subtask subtask,int deepTaskId,long userId,int isQuality) throws Exception{
 		int taskId = subtask.getSubtaskId();
 		
 		PreparedStatement pstmt = null;
@@ -1120,6 +1121,15 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" select count(1) as num, p1.second_work_item as type");
 			sb.append("   from t1 p1");
 			sb.append("  where p1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
+			if(isQuality==0){//常规任务
+				sb.append("	AND p1.COMMON_HANDLER =0 ");
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND p1.COMMON_HANDLER <> "+userId);
+				sb.append("	AND p1.QC_FLAG = 1");
+				sb.append(" AND NOT exists (SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
+				sb.append(" WHERE PS.PID = p1.pid AND PS.HANDLER <> 0 AND PC.TYPE = 1 AND PC.CHECK_FLAG IN (1, 3) ");
+				sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID AND pc.second_work_item  = p1.second_work_item)");
+			}
 			sb.append("  GROUP BY p1.second_work_item");
 
 
@@ -1156,9 +1166,10 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 					result.put("deepCarrental", json);
 				}
 			}
-			JSONObject res = getKcLogFlag(result, taskId, userId,isQuality);
+			JSONObject res = getKcLogFlag(result, taskId,deepTaskId, userId,isQuality);
 			return res;
 		} catch (Exception e){
+			logger.error(e.getMessage());
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
@@ -1175,10 +1186,9 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId,Integer isQuality) throws Exception{
+	public JSONObject getKcLogFlag(JSONObject res,int taskId,int deepTaskId,long userId,Integer isQuality) throws Exception{
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select count(1) as num, c.first_work_item as type");
@@ -1202,13 +1212,19 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
 			sb.append("  and s1.task_id = :3");
 			sb.append("  and s1.handler = :4");
+			if(isQuality==0){//常规任务
+				sb.append("	AND s1.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s1.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s1.QC_FLAG = 1");
+			}
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());
 			 
 			pstmt.setInt(1, taskId);
 			pstmt.setLong(2, userId);
-			pstmt.setInt(3, taskId);
+			pstmt.setInt(3, deepTaskId);
 			pstmt.setLong(4, userId);
 			
 			resultSet = pstmt.executeQuery();

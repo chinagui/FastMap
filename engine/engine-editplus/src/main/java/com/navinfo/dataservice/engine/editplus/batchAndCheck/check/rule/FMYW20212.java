@@ -29,6 +29,8 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
    log描述：重要分类POI必须存在英文地址
 */
 public class FMYW20212 extends BasicCheckRule{
+	MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		// TODO Auto-generated method stub
@@ -40,11 +42,10 @@ public class FMYW20212 extends BasicCheckRule{
 		if (obj.objName().equals(ObjectName.IX_POI)) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
-			List<IxPoiAddress> addresses= poiObj.getIxPoiAddresses();
-			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
 				return;
 			}
+			List<IxPoiAddress> addresses= poiObj.getIxPoiAddresses();
 			if (addresses == null || addresses.size() == 0){return;}
 			boolean hasEngAddr = false;
 			for (IxPoiAddress address: addresses){
@@ -53,6 +54,7 @@ public class FMYW20212 extends BasicCheckRule{
 					String fullName = address.getFullname();
 					if (StringUtils.isEmpty(fullName)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						break;
 					}
 				}
 			}

@@ -18,6 +18,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.dao.plus.selector.ObjAllSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -43,14 +44,23 @@ public class DiffByJava extends DiffTool{
 		Connection leftConn = null;
 		Connection rightConn = null;
 		try{
-			String sql = parseMainObjPidSql();
 			leftConn = leftSchema.getPoolDataSource().getConnection();
 			rightConn = rightSchema.getPoolDataSource().getConnection();
-			List<Long> leftPids = run.query(leftConn, sql, new ListLongResultSetHandler());
-			List<Long> rightPids = run.query(rightConn, sql, new ListLongResultSetHandler());
 			Set<String> tabs = parseDiffTabNames();
-			leftPois = ObjBatchSelector.selectByPids(leftConn, req.getObjName(), tabs, false, leftPids, false, false);
-			rightPois = ObjBatchSelector.selectByPids(rightConn, req.getObjName(), tabs, false, rightPids, false, false);
+			if(DiffConfig.CONDITION_ALL.equals(req.getCondition())){
+				leftPois = ObjAllSelector.selectAll(leftConn, req.getObjName(), tabs, false, false, false);
+				rightPois = ObjAllSelector.selectAll(rightConn, req.getObjName(), tabs, false, false, false);
+			}else if(DiffConfig.CONDITION_PID_TABLE.equals(req.getCondition())){
+				String sql = mainObjPidSql(req.getPidTable());
+				List<Long> leftPids = run.query(leftConn, sql, new ListLongResultSetHandler());
+				List<Long> rightPids = run.query(rightConn, sql, new ListLongResultSetHandler());
+				leftPois = ObjBatchSelector.selectByPids(leftConn, req.getObjName(), tabs, false, leftPids, false, false);
+				rightPois = ObjBatchSelector.selectByPids(rightConn, req.getObjName(), tabs, false, rightPids, false, false);
+				
+			}else{
+				log.warn("暂不支持的差分条件类型，差分结束。");
+			}
+
 			log.info("load data finished.");
 		}catch(Exception e){
 			log.error("diff err:"+e.getMessage(),e);
@@ -62,9 +72,9 @@ public class DiffByJava extends DiffTool{
 		return null;
 	}
 	
-	private String parseMainObjPidSql()throws Exception{
+	private String mainObjPidSql(String pidTable)throws Exception{
 		if(objMainTable!=null&&objMainTable.isMaintable()){
-			return "SELECT "+ objMainTable.getObjPidCol()+" FROM "+objMainTable.getName()+" WHERE U_RECORD<>2";
+			return "SELECT T.PID FROM "+pidTable+" T,IX_POI P WHERE T.PID=P.PID AND P.U_RECORD IN (0,1,3)";
 		}else{
 			throw new Exception("差分对象配置错误");
 		}

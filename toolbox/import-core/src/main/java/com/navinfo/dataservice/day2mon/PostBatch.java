@@ -44,12 +44,13 @@ public class PostBatch {
 	}
 
 	public void execute() throws Exception {
-		// 处理sourceFlag
-		log.info("执行sourceFlag特殊处理");
-		detealSourceFlag();
+
 		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
 		log.info("执行115批处理");
 		deteal201150();
+		// 处理sourceFlag
+		log.info("执行sourceFlag特殊处理");
+		detealSourceFlag();
 		// 200170特殊处理
 		log.info("执行200170特殊处理");
 		deteal200170();
@@ -59,9 +60,27 @@ public class PostBatch {
 		// handler置0
 		updateHandler();
 	}
+	
+	public void execute915() throws Exception {
+
+		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
+		log.info("执行M108批处理");
+		deteal201150_915();
+		// 处理sourceFlag
+		//og.info("执行sourceFlag特殊处理");
+		//detealSourceFlag();
+		// 200170特殊处理
+		//log.info("执行200170特殊处理");
+		//deteal200170();
+		// 201250特殊处理
+		log.info("执行201250特殊处理");
+		deteal201250();
+		// handler置0
+		updateHandler915();
+	}
 
 	// 处理sourceFlag
-	private void detealSourceFlag() throws Exception {
+	public void detealSourceFlag() throws Exception {
 		OperationResult operationResult = new OperationResult();
 		operationResult.putAll(changeSourceFlag("FM-YW-20-013", "110020010000"));
 		operationResult.putAll(changeSourceFlag("FM-YW-20-012", "110020010000"));
@@ -148,7 +167,7 @@ public class PostBatch {
 	}
 
 	// 200170特殊处理
-	private void deteal200170() throws Exception {
+	public void deteal200170() throws Exception {
 		int handler = 200170;
 		List<Long> pidList = getPidByHandler(handler);
 		log.info("特殊处理200170pids:" + pidList.toString());
@@ -211,6 +230,24 @@ public class PostBatch {
 		BatchCommand batchCommand=new BatchCommand();
 		batchCommand.setRuleId("FM-BAT-M01-08");
 		batchCommand.setRuleId("FM-BAT-20-115");
+		Batch batch=new Batch(conn,operationResult);
+
+		batch.operate(batchCommand);
+		persistBatch(batch);
+	}
+	
+	// 所有数据均需执行115批处理
+	private void deteal201150_915() throws Exception {
+
+		log.info("所有数据均需执行115批处理");
+		OperationResult operationResult = new OperationResult();
+		operationResult.putAll(opResult.getAllObjs());
+
+		// 执行批处理FM-BAT-20-115
+
+		BatchCommand batchCommand=new BatchCommand();
+		batchCommand.setRuleId("FM-BAT-M01-08");
+		//batchCommand.setRuleId("FM-BAT-20-115");
 		Batch batch=new Batch(conn,operationResult);
 
 		batch.operate(batchCommand);
@@ -316,8 +353,29 @@ public class PostBatch {
 	}
 
 	// 后批完成，handler置0
-	private void updateHandler() throws Exception {
+	public void updateHandler() throws Exception {
 		String sql = "UPDATE poi_column_status SET handler=0 WHERE handler in (1,201250,200170,200140,201150,107020) and pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		PreparedStatement pstmt = null;
+		try {
+			Map<String, Map<Long, BasicObj>> ObjMap = opResult.getAllObjsMap();
+			Map<Long, BasicObj> poiMap = ObjMap.get("IX_POI");
+			Set<Long> pids = poiMap.keySet();
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pids, ","));
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidsClob);
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	// 后批完成，handler置0,去掉对200170的修改，日落月完成后才批批完再改状态
+	private void updateHandler915() throws Exception {
+		String sql = "UPDATE poi_column_status SET handler=0 WHERE handler in (1,201250,200140,201150,107020) and pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		PreparedStatement pstmt = null;
 		try {
 			Map<String, Map<Long, BasicObj>> ObjMap = opResult.getAllObjsMap();

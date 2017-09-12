@@ -59,8 +59,10 @@ public class GridUtils {
 //					60561200,
 //					60561100});
 //			String wkt = GridUtils.grids2Wkt(grids);
-			String grid = getNeighborGridInSameMesh("59567100",TopoLocation.Top);
-			System.out.println("grid:"+grid);
+//			String grid = getNeighborGridInSameMesh("59567100",TopoLocation.Top);
+//			System.out.println("grid:"+grid);
+			String wkt = GridUtils.grid2Wkt("56612300");
+			System.out.println("wkt:"+wkt);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

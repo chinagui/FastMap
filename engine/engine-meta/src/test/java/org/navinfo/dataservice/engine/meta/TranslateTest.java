@@ -3,6 +3,7 @@ package org.navinfo.dataservice.engine.meta;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.translates.TranslateDictData;
+import org.apache.http.HttpConnectionFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -28,10 +29,12 @@ public class TranslateTest {
     @Test
     public void translateTest() {
         EnglishConvert convert = new EnglishConvert();
-        System.out.println(convert.convert("７１１便利店０３３｜９店"));
-        System.out.println(convert.convert("333｜9"));
-        System.out.println(convert.convert("名￥著的是"));
-        System.out.println(convert.convert("名￥著"));
+
+        System.out.println(convert.convert("ＪＯＥ　ＪＯＥ＇Ｓ　ＳＡＬＯＮ"));
+        //System.out.println(convert.convert("７１１便利店０３３｜９店"));
+        //System.out.println(convert.convert("333｜9"));
+        //System.out.println(convert.convert("名￥著的是"));
+        //System.out.println(convert.convert("名￥著"));
         //System.out.println(convert.convert("ＪＯ（Ｅ郞 ＪＯＥ＇Ｓ　ＳＡＬＯＮ"));
         //System.out.println(convert.convert("ＪＯＥ）郞 ＪＯＥ,Ｓ　ＳＡＬＯＮ"));
         //System.out.println(convert.convert("ＪＯＥ×郞 ＪＯＥ，Ｓ　ＳＡＬＯＮ"));
@@ -112,4 +115,5 @@ public class TranslateTest {
 
         TranslateDictData.getInstance().getDictEngKeyword();
     }
+
 }

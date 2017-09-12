@@ -12,6 +12,8 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.day2mon.PostBatch;
+import com.navinfo.dataservice.day2mon.PostBatchOperation;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import net.sf.json.JSONArray;
@@ -212,6 +214,14 @@ public class BatchTranslate {
             Batch batch=new Batch(conn,operationResult);
             batch.operate(batchCommand);
             persistBatch(batch);
+            
+    		// 处理sourceFlag
+            new PostBatch(operationResult, conn).detealSourceFlag();
+    		// 200170特殊处理
+            new PostBatch(operationResult, conn).deteal200170();
+            // 改171状态
+            new PostBatch(operationResult, conn).updateHandler();
+            
             conn.commit();
         } catch (Exception e) {
             DbUtils.rollback(conn);

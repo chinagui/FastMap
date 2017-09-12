@@ -23,6 +23,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
@@ -132,7 +134,14 @@ public class FMBAT20110 extends BasicBatchRule {
 		}
 		regionAdminMap = getAdminCode(super.getBatchRuleCommand().getConn(), regions);
 		
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 20, 3,
+		//获取线程参数
+		String threadParameter = SystemConfigFactory.getSystemConfig().getValue(PropConstant.FMBAT20110ThreadParameter);
+		JSONObject jsonReq = JSONObject.fromObject(threadParameter);
+		int corePoolSize=jsonReq.getInt("corePoolSize");
+		int maximumPoolSize=jsonReq.getInt("maximumPoolSize");
+		int keepAliveTime=jsonReq.getInt("keepAliveTime");
+		
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime,
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (ArrayList<BasicObj> list: dataList) {

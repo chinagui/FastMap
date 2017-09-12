@@ -1083,7 +1083,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				yGuidePids.add(pid);
 			}
 
-			if (poi.getKindCode() != null && !poi.getKindCode().equals("230210")) {
+			if (poi.getKindCode() != null && poi.getKindCode().equals("230210")) {
 
 				String label = poi.getLabel();
 

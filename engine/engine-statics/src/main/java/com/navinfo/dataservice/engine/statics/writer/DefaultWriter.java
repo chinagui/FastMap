@@ -119,7 +119,7 @@ public class DefaultWriter {
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);
 		//若存在identify，需要增加删除条件，identify转成json，按照其进行删除库中数据
-		if(StringUtils.isEmpty(identify)){
+		if(!StringUtils.isEmpty(identify)){
 			try{
 				JSONObject identifyJson = JSONObject.fromObject(identify);
 				query.putAll(identifyJson);

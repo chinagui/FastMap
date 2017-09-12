@@ -131,4 +131,7 @@ public class PropConstant {
 	public static final String es_port = "es.port";
 	public static final String es_cluster ="es.cluster";
 	public static final String es_index_trackpoints ="es.index.trackpoints";
+
+    //20170911 adas hbase库独立
+    public static final String adasHbaseAddress = "hbase.adas.address";
 }

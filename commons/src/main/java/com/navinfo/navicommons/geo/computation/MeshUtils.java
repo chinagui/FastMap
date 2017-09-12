@@ -1,5 +1,7 @@
 package com.navinfo.navicommons.geo.computation;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1105,10 +1107,28 @@ public abstract class MeshUtils {
         }
         if (GeometryTypeName.POLYGON.equals(geometry.getGeometryType())) {
             coordinates = geometry.getBoundary().getCoordinates();
+            Set<String> meshes = new HashSet<>();
             for (int index = 0; index < coordinates.length -1; index++) {
                 String[] array = line2Meshes(coordinates[index].x, coordinates[index].y, coordinates[index + 1].x, coordinates[index + 1].y);
-                if (array.length == 1){
-                    return array;
+                meshes.addAll(Arrays.asList(array));
+            }
+            if (meshes.size() == 1) {
+                return meshes.toArray(new String[]{});
+            } else {
+                Iterator<String> iterator = meshes.iterator();
+                while (iterator.hasNext()) {
+                    try {
+                        Geometry mesh = mesh2Jts(iterator.next());
+                        String type = geometry.intersection(mesh).getGeometryType();
+                        if (GeometryTypeName.LINESTRING.equals(type) || GeometryTypeName.MULTILINESTRING.equals(type)) {
+                            iterator.remove();
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (meshes.size() > 0) {
+                    return meshes.toArray(new String[]{});
                 }
             }
         }
@@ -1121,6 +1141,7 @@ public abstract class MeshUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println(Arrays.toString(line2Meshes(115.49989,36.06251,115.49991,36.0624)));
+        String wkt = "POLYGON ((119.74966 38.60531, 119.75 38.60504, 119.75 38.60529, 119.74966 38.60531))";
+        System.out.println(Arrays.toString(MeshUtils.geometry2Mesh(GeoTranslator.wkt2Geometry(wkt))));
     }
 }

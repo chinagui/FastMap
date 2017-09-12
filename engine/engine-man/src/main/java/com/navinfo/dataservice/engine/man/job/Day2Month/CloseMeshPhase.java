@@ -87,7 +87,7 @@ public class CloseMeshPhase extends JobPhase {
                 }
                 //维护快线项目下月编任务对应的lot字段
                 int programId = (int) jobRelation.getItemId();
-                String sql = "UPDATE TASK T SET T.LOT = "+lot+" WHERE T.PROGRAM_ID = "+programId+" AND T.TYPE = 2";
+                String sql = "UPDATE TASK T SET T.LOT = "+lot+" WHERE T.PROGRAM_ID = "+programId;
                 run.update(conn, sql);
             }
             //更新状态为成功

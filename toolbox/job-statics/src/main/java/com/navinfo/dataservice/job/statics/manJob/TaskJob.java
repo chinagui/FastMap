@@ -260,7 +260,7 @@ public class TaskJob extends AbstractStatJob {
 			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
 			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(task, null).sort(new BasicDBObject("timestamp",-1));
+			FindIterable<Document> findIterable = mongoDao.find(task, null).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
 			String timestampLast="";

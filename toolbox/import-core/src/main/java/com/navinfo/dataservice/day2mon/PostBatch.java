@@ -120,6 +120,7 @@ public class PostBatch {
 				IxPoi ixPoi = (IxPoi) obj.getMainrow();
 
 				if (ixPoi.getPid() == pid) {
+					log.info("pid:" +pid);
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
 					IxPoiObj poiObj = (IxPoiObj) obj;
 					Long nameId = 0l;

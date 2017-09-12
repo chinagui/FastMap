@@ -323,7 +323,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 					batchPoi(result, monthConn);
 				}
-				updateLogCommitStatus(dailyConn, tempOpTable);
+				updateLogCommitStatus(dailyConn, tmpOpTable);
 			}
 
 			// result=logFlushAndBatchData( monthDbSchema, monthConn,

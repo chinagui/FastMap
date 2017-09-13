@@ -1133,7 +1133,7 @@ public class TipsUpload {
         if (JsonIsEqualUtil.equalsJson(g_locationOldWkt, g_locationNewWkt) && JsonIsEqualUtil.equalsJson(g_guideOldWkt,g_guideNewWkt) && JsonIsEqualUtil.equalsJson(deepOld,deepNew) && JsonIsEqualUtil.equalsJson(feedbackOld,feedbackNew)&& JsonIsEqualUtil.equalsJson(tCommandOldStr,tCommandNewStr)) {
             return true;
         }
-
+ 
         return false;
     }
 

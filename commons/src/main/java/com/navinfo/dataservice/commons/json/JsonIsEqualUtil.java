@@ -38,6 +38,5 @@ public class JsonIsEqualUtil {
 			e.printStackTrace();
 			return StringUtils.equals(json1, json2);
 		}
-	}
-	
+	}	
 }

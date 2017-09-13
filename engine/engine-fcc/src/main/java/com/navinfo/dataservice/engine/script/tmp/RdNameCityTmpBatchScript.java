@@ -154,8 +154,9 @@ public class RdNameCityTmpBatchScript {
 				updateCount++;
 				if(count%1000==0){
 					metaPst.executeBatch();
-					metaPst.clearBatch();
 					metaConn.commit();
+					metaPst.clearBatch();
+					
 				}
 				
 				

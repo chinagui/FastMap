@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
@@ -140,6 +141,7 @@ public class TipsUpload {
     private String firstCollectTime = null;
     private boolean isInsertFirstTime = false;
     private List<RegionUploadResult> regionResults = new ArrayList<RegionUploadResult>();
+    private int taskRegionId = 0;
 
     public String getQcErrMsg() {
         return qcErrMsg;
@@ -249,6 +251,10 @@ public class TipsUpload {
                 }
 
                 subtask = manApi.queryBySubtaskId(subTaskId);
+                Region region = manApi.queryRegionByDbId(subtask.getDbId());
+                if(region != null) {
+                    taskRegionId = region.getRegionId();
+                }
             } else {
                 throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:" + subTaskId);
             }
@@ -538,8 +544,12 @@ public class TipsUpload {
 		//返回统计结果
 		for(int regionId : regionResultMap.keySet()) {
 		    RegionUploadResult regionResult = new RegionUploadResult(regionId);
-		    regionResult.setSubtaskId(subTaskId);
-		    JSONObject jsonObject = regionResultMap.get(regionId);
+            if(taskRegionId == regionId) {
+                regionResult.setSubtaskId(subTaskId);
+            }else{
+                regionResult.setSubtaskId(0);
+            }
+            JSONObject jsonObject = regionResultMap.get(regionId);
 		    regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
 		    regionResults.add(regionResult);
 		}
@@ -621,10 +631,9 @@ public class TipsUpload {
 
                 int lifecycle = json.getInt("t_lifecycle");
 
-                //20170828跨大区统计，统计上传Tips的图幅
-                JSONObject gLocation = json.getJSONObject("g_location");
+                //20170828跨大区统计，按照统计坐标统计Tips所在图幅
                 try {
-                    Set<String> tipsMeshes = CompGeometryUtil.calculateGeometeryMesh(GeoTranslator.geojson2Jts(gLocation));
+                    Set<String> tipsMeshes = getTipsWktMeshes(json);
                     TipsMeshGrid tipsMeshGrid = new TipsMeshGrid();
                     tipsMeshGrid.setMeshes(tipsMeshes);
                     tipsMeshGrid.setGridId(getTipsWktGird(json));
@@ -710,8 +719,10 @@ public class TipsUpload {
                 feedbackObj.put("f_array", newFeedbacks);
                 json.put("feedback", feedbackObj);
 
-                String sourceType = json.getString("s_sourceType");
+                JSONObject gLocation = json.getJSONObject("g_location");
                 JSONObject deep = json.getJSONObject("deep");
+                String sourceType = json.getString("s_sourceType");
+
                 if (sourceType.equals("2001")) {
 
                     double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(gLocation));
@@ -1065,6 +1076,20 @@ public class TipsUpload {
         //任选一个grid作为该Tips的girdId
         String gridId = grids.iterator().next();
         return gridId;
+    }
+
+    /**
+     * 根据tipsjson获取统计坐标
+     * @return
+     */
+    private Set<String> getTipsWktMeshes(JSONObject json) throws Exception{
+        String sourceType = json.getString("s_sourceType");
+        JSONObject g_location = json.getJSONObject("g_location");
+        JSONObject deep = json.getJSONObject("deep");
+        String wkt = TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, null);
+        Geometry wktGeo = GeoTranslator.wkt2Geometry(wkt);
+        Set<String> tipsMeshes = CompGeometryUtil.calculateGeometeryMesh(wktGeo);
+        return tipsMeshes;
     }
 
     /**

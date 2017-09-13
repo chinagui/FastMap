@@ -953,22 +953,13 @@ public class TipsUpload {
                         continue;
                     }
 
-                    // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
+                    // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.t_dataDate
                     int res = canUpdate(oldTip, json.getString("t_dataDate"));
                     if (res < 0) {
-                        
-                        // -1表示old已删除
+                        // -1表示当前采集时间较旧,时间冲突，tips入库，只是记录冲突给采集
                         if (res == -1) {
-                        	 failed += 1;
-                            reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
-                           
-                        }
-                        // else =-2表示当前采集时间较旧
-                        else {
-                          //  reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                         	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                         }
-                        continue;
                     }
 
                     put = updatePut(rowkey, json, oldTip);
@@ -1256,19 +1247,10 @@ public class TipsUpload {
                 // 时间判断
                 int res = canUpdate(oldTip, json.getString("t_dataDate"));
                 if (res < 0) {
-                    
+                    // -1表示当前采集时间较旧,时间冲突，tips入库，只是记录冲突给采集
                     if (res == -1) {
-                    	failed += 1;
-                        reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
-                        
-                    }
-                    //时间冲突不计算失败
-                    else {
-                        //reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     }
-
-                    continue;
                 }
 
                 //判断数据是否在大区库范围内，如果不在，则强制刷成无任务
@@ -1417,71 +1399,29 @@ public class TipsUpload {
         return photo;
     }
 
+    /**
+     * @Description:915原则，只对比t_dataDate
+     * @param oldTips
+     * @param collectior_tDataDate
+     * @return -1:表示采集时间较旧，0表示正常
+     * @author: y
+     * @time:2017-9-13 上午9:54:18
+     */
     private int canUpdate(JSONObject oldTips, String collectior_tDataDate) {
         JSONObject oldTrack = oldTips.getJSONObject("track");
 
-        int lifecycle = oldTrack.getInt("t_lifecycle");
-        if(!oldTrack.containsKey("t_trackInfo")) {
-            return 0;
-        }
-        JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
-        if(tracks == null || tracks.size() == 0) {
-            return 0;
-        }
         String lastDate = null;
 
-        // 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据(取消)
-     /*   for (int i = tracks.size(); i > 0; i--) {
-
-            JSONObject info = tracks.getJSONObject(i - 1);
-
-            if (info.getInt("stage") == 1) {
-
-                lastDate = info.getString("date");
-
-                break;
-            }
-        }*/
-        
         //入库和t_dataDate时间做对比
         lastDate=oldTrack.getString("t_dataDate");
         
         if(lastDate==null){
         	lastDate="";
         }
-
-        JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
-
-        int lastStage = lastTrack.getInt("stage");
-
-        // lifecycle:0（无） 1（删除）2（修改）3（新增） ;
-        // 0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量；5 内业预处理；6 多源融合；
-        // 1)是增量更新删除：不对比时间。
-        // 库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新 : -1表示old已删除
-        if (lifecycle == 1 && lastStage == 4) {
+        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
+        if (collectior_tDataDate.compareTo(lastDate) <0) {
             return -1;
         }
-
-        // 增量的：新增修改的和stage=0的一样处理，不判断时间
-        if (lifecycle != 1 && lastStage == 4) {
-            return 0;
-        }
-
-        if (lastStage == 0) {
-            return 0;
-        }
-
-        // 2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-        // 如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
-        if (lastDate == null && hasPreStage(tracks)) {
-            return 0;
-        } else {
-        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
-            if (collectior_tDataDate.compareTo(lastDate) <0) {
-                return -2;
-            }
-        }
-        // 其他情况都返回0，包括 stage=0 、stage=4(除了增量更新删除的)
         return 0;
     }
 

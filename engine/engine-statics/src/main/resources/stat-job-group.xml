@@ -5,7 +5,6 @@
 	</group>
 	<group name="personStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PersonStatStarter">
 		<job name="personDayJob"/>
-		<job name="dayPlanStat"/>
 		<job name="personTipsJob"/>
 		<job name="personFccJob"/>
 	</group>

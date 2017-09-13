@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +134,7 @@ public class ExportStatFromMongo {
 	@SuppressWarnings("unchecked")
 	public static List<Map<String,Object>> getStatData(String startTime,String endTime,String collectionName) throws Exception{
 		String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
+		System.out.println(dbName);
 		try {
 			//处理时间
 			String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
@@ -149,6 +152,65 @@ public class ExportStatFromMongo {
 					Map<String,Object> mapData = json;
 					mapData.remove("_id");
 					stat.add(mapData);
+				}
+			}else if("person".equals(collectionName)){
+				String lastTimestamp = "0";
+				if(StringUtils.isNotEmpty(startTime) && !"0".equals(startTime)){
+					lastTimestamp = startTime.substring(0, 8);
+				}else{
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("workDay",1));
+					MongoCursor<Document> iterator = findIterable.iterator();
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject jso = JSONObject.fromObject(iterator.next());
+						lastTimestamp=String.valueOf(jso.get("workDay"));
+						if(StringUtils.isNotEmpty(lastTimestamp)&&!lastTimestamp.equals("0")){
+							break;
+						}
+					}
+				}
+				if(StringUtils.isNotEmpty(endTime) && !"0".equals(endTime)){
+					timestamp = endTime.substring(0, 8);
+				}else{
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("workDay",-1));
+					MongoCursor<Document> iterator = findIterable.iterator();
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject jso = JSONObject.fromObject(iterator.next());
+						timestamp=String.valueOf(jso.get("workDay"));
+						if(StringUtils.isNotEmpty(lastTimestamp)&&!lastTimestamp.equals("0")){
+							break;
+						}
+					}
+				}
+				
+				Timestamp start = DateUtils.stringToTimestamp(lastTimestamp, DateUtils.DATE_YMD);
+				Timestamp end = DateUtils.stringToTimestamp(timestamp, DateUtils.DATE_YMD);
+				Date startDate = DateUtils.stringToDate(lastTimestamp, DateUtils.DATE_YMD);
+				long days=DateUtils.diffDay(start, end);
+				System.out.println("date:"+lastTimestamp+"--"+timestamp+";diffDay:"+days); 
+				for(int i=0;i<=days;i++){
+					String workDay=DateUtils.dateToString(DateUtils.addDay(startDate, i),  DateUtils.DATE_YMD);
+					BasicDBObject filter = new BasicDBObject("workDay", workDay);
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
+					MongoCursor<Document> iterator = findIterable.iterator();
+					String timestampLast="";
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject jso = JSONObject.fromObject(iterator.next());
+						String timestampOrigin=String.valueOf(jso.get("timestamp"));
+						if(StringUtils.isEmpty(timestampLast)){
+							timestampLast=timestampOrigin;
+							System.out.println(workDay+"最近一次的统计日期为："+timestampLast);
+						}
+						if(!timestampLast.equals(timestampOrigin)){
+							break;
+						}
+						stat.add(jso);
+					}
 				}
 			}else{
 				//查询最新的数据
@@ -220,7 +282,7 @@ public class ExportStatFromMongo {
 		}
 		//0-路径,1-表名,2-开始时间(没有startTime的字段赋值"0"),3-结束时间(没有endTime的字段赋值"0")
 		execute(args[0],args[1],args[2],args[3]);
-//		execute("D:/temp","task_day_plan","0","0");
+		//execute("D:/temp","person","0","0");
 		System.out.println("Over.");
 		System.exit(0);
 	}

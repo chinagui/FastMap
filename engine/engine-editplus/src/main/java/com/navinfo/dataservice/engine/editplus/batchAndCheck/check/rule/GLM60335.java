@@ -19,7 +19,8 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * 
  */
 public class GLM60335 extends BasicCheckRule {
-
+	private MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	private List<String> scPointNameckType9 = new ArrayList<>();
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -27,8 +28,6 @@ public class GLM60335 extends BasicCheckRule {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 		List<IxPoiAddress> addresses = poiObj.getIxPoiAddresses();
 		if (addresses == null) {return;}
-		MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<String> scPointNameckType9 = metadataApi.scPointNameckType9();
 		for(IxPoiAddress address:addresses){
 			if(address.isEng()){
 				String fullname= address.getFullname();
@@ -47,7 +46,7 @@ public class GLM60335 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		// TODO Auto-generated method stub
-
+		scPointNameckType9 = metadataApi.scPointNameckType9();
 	}
 
 }

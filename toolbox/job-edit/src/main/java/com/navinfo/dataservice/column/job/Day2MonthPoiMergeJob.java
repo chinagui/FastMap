@@ -20,6 +20,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -1013,54 +1014,75 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		return json;
 	}
 
-	private void batchPoi(OperationResult opResult, Connection conn) throws Exception {
+	private void batchPoi(OperationResult opResult, Connection conn)
+			throws Exception {
 
-		List<Long> pids = new ArrayList<>();//所有poiPid
+		List<Long> pids = new ArrayList<>();// 所有poiPid
 
-		List<Long> addPids = new ArrayList<>();//新增poiPid
+		for (BasicObj Obj : opResult.getAllObjs()) {
+			IxPoi ixPoi = (IxPoi) Obj.getMainrow();
+			long pid = ixPoi.getPid();
+			pids.add(pid);
+		}
 
-		List<Long> updatePids = new ArrayList<>();//修改poiPid
+		LogReader logRead = new LogReader(conn);
 
-		Collection<Long> namePids = new ArrayList<>();// 改old_name
+		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
 
-		Collection<Long> addressPids = new ArrayList<>();//改old_address
+		List<Long> addPids = new ArrayList<>();// 作业季新增poiPid
 
-		// 外业log:
-		Collection<Long> logNamePids = new ArrayList<>();// 改名称
+		List<Long> updatePids = new ArrayList<>();// 作业季修改poiPid
 
-		Collection<Long> logAddressPids = new ArrayList<>();// 改地址
+		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
 
-		Collection<Long> logKindCodePids = new ArrayList<>();// 改分类
+			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
 
-		Collection<Long> logLevelPids = new ArrayList<>();// 改POI_LEVEL
+				addPids.add(entry.getKey());
 
-		Collection<Long> logIndoorPids = new ArrayList<>();// 改内部标识
+			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
 
-		Collection<Long> logSportPids = new ArrayList<>();// 改运动场馆
+				updatePids.add(entry.getKey());
+			}
+		}
 
-		Collection<Long> logLocationPids = new ArrayList<>();// 改RELATION
+		Collection<Long> oldNamePids = new ArrayList<>();// 改OLD名称
+		Collection<Long> namePids = new ArrayList<>();// 改名称
 
-		Collection<Long> xGuidePids = new ArrayList<>();//改xGuide
+		Collection<Long> oldAddressPids = new ArrayList<>();// 改OLD地址
+		Collection<Long> addressPids = new ArrayList<>();// 改地址
 
-		Collection<Long> yGuidePids = new ArrayList<>();//改yGuide
+		Collection<Long> oldKindCodePids = new ArrayList<>();// 改OLD种别
+		Collection<Long> kindCodePids = new ArrayList<>();// 改分类
 
-		Collection<Long> logChainPids = new ArrayList<>();// 改连锁品牌
+		Collection<Long> levelPids = new ArrayList<>();// 改POI_LEVEL
 
-		Collection<Long> logRatingPids = new ArrayList<>();// 改酒店星级
+		Collection<Long> relationPids = new ArrayList<>();// 改RELATION
+
+		Collection<Long> sportPids = new ArrayList<>();// 改运动场馆
+
+		Collection<Long> indoorPids = new ArrayList<>();// 改内部标识
+
+		Collection<Long> oldXGuidePids = new ArrayList<>();// 改OLD_X_GUIDE
+
+		Collection<Long> oldYGuidePids = new ArrayList<>();// 作改OLD_X_GUIDE
 
 		Collection<Long> parkingPids = new ArrayList<>();// 停车场poi
 
-		Collection<Long> parkingType0Pids = new ArrayList<>();//"室内"
+		Collection<Long> parkingType0Pids = new ArrayList<>();// "室内"
 
-		Collection<Long> parkingType1Pids = new ArrayList<>();//"室外"
+		Collection<Long> parkingType1Pids = new ArrayList<>();// "室外"
 
-		Collection<Long> parkingType2Pids = new ArrayList<>();//"占道"
+		Collection<Long> parkingType2Pids = new ArrayList<>();// "占道"
 
-		Collection<Long> parkingType3Pids = new ArrayList<>();//"室内地上"
+		Collection<Long> parkingType3Pids = new ArrayList<>();// "室内地上"
 
-		Collection<Long> parkingType4Pids = new ArrayList<>();//"地下"
+		Collection<Long> parkingType4Pids = new ArrayList<>();// "地下"
 
-		for (BasicObj obj:opResult.getAllObjs()) {
+		Collection<Long> chainPids = new ArrayList<>();// 改连锁品牌
+
+		Collection<Long> ratingPids = new ArrayList<>();// 改酒店星级
+
+		for (BasicObj obj : opResult.getAllObjs()) {
 
 			IxPoiObj poiObj = (IxPoiObj) obj;
 
@@ -1068,31 +1090,109 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			pids.add(pid);
+			if (updatePids.contains(pid)) {
 
-			if (OperationType.UPDATE == poi.getHisOpType()) {
+				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
+					oldKindCodePids.add(pid);
+					kindCodePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.LEVEL)) {
+					levelPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.INDOOR)) {
+					indoorPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.SPORTS_VENUE)) {
+					sportPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.GEOMETRY)) {
+					relationPids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.X_GUIDE)) {
+					oldXGuidePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.Y_GUIDE)) {
+					oldYGuidePids.add(pid);
+				}
+				if (poi.hisOldValueContains(IxPoi.CHAIN)) {
+					chainPids.add(pid);
+				}
+				// 作业季修改酒店星级
+				if (poiObj.getIxPoiHotels() != null) {
 
-				updatePids.add(pid);
+					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
-			} else if (OperationType.INSERT == poi.getHisOpType()) {
+						if (hotel.getHisOpType() == OperationType.UPDATE
+								&& hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+							ratingPids.add(pid);
+							break;
+						}
+					}
+				}
+				// 作业季修改中文地址
+				if (poiObj.getChiAddress() != null) {
 
-				addPids.add(pid);
+					IxPoiAddress address = poiObj.getChiAddress();
 
-				xGuidePids.add(pid);
+					if (address.getHisOpType() == OperationType.UPDATE) {
 
-				yGuidePids.add(pid);
+						addressPids.add(pid);
+
+						if (poi.getOldAddress() == null
+								|| !poi.getOldAddress().equals(poiObj.getChiAddress().getFullname())) {
+							oldAddressPids.add(pid);
+						}
+					}
+				}
+				// 作业季修改中文原始Name
+				if (poiObj.getOfficeOriginCHName() != null) {
+
+					IxPoiName poiName = poiObj.getOfficeOriginCHName();
+
+					if (poiName.getHisOpType() == OperationType.UPDATE) {
+
+						namePids.add(pid);
+
+						if (poi.getOldName() == null
+								|| !poi.getOldName().equals(poiObj.getOfficeOriginCHName().getName())) {
+							oldNamePids.add(pid);
+						}
+					}
+				}
+
+			} else if (addPids.contains(pid)) {
+
+				if (poiObj.getChiAddress() != null) {
+
+					String oldAddress = poi.getOldAddress() == null ? "" : poi.getOldAddress();
+
+					if (!oldAddress.equals(poiObj.getChiAddress().getFullname())) {
+						oldAddressPids.add(pid);
+					}
+				}
+
+				if (poiObj.getOfficeOriginCHName() != null) {
+
+					String oldName = poi.getOldName() == null ? "" : poi.getOldName();
+
+					if (!oldName.equals(poiObj.getOfficeOriginCHName().getName())) {
+						oldNamePids.add(pid);
+					}
+				}
+				oldKindCodePids.add(pid);
+				oldXGuidePids.add(pid);
+				oldYGuidePids.add(pid);
 			}
 
-			if (poi.getKindCode() != null && !poi.getKindCode().equals("230210")) {
+			if (poi.getKindCode() != null && poi.getKindCode().equals("230210")) {
 
-				String label = poi.getLabel();
+				String label = poi.getLabel() != null ? poi.getLabel() : "";
 
-				if (label != null
-						&& (label.contains("室内|")
+				if (label.contains("室内|")
 						|| label.contains("室外|")
 						|| label.contains("占道|")
 						|| label.contains("室内地上|")
-						|| label.contains("地下|"))) {
+						|| label.contains("地下|")) {
 					parkingPids.add(pid);
 				}
 
@@ -1117,69 +1217,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					}
 				}
 			}
-
-			if (poi.getHisOpType() == OperationType.UPDATE) {
-
-				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
-					logKindCodePids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.LEVEL)) {
-					logLevelPids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.INDOOR)) {
-					logIndoorPids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.SPORTS_VENUE)) {
-					logSportPids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.GEOMETRY)) {
-					logLocationPids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.X_GUIDE)) {
-					xGuidePids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.Y_GUIDE)) {
-					yGuidePids.add(pid);
-				}
-				if (poi.hisOldValueContains(IxPoi.CHAIN)) {
-					logChainPids.add(pid);
-				}
-			}
-			// 作业季新增修改中文地址
-			if (poiObj.getChiAddress() != null) {
-				IxPoiAddress address = poiObj.getChiAddress();
-				if (address.getHisOpType() == OperationType.UPDATE) {
-					logAddressPids.add(pid);
-				}
-				if (poi.getOldAddress() == null
-						|| !poi.getOldAddress().equals(
-						poiObj.getChiAddress().getFullname())) {
-					addressPids.add(pid);
-				}
-
-			}
-			// 作业季新增修改中文原始
-			if (poiObj.getOfficeOriginCHName() != null) {
-				IxPoiName poiName = poiObj.getOfficeOriginCHName();
-				if (poiName.getHisOpType() == OperationType.UPDATE) {
-					logNamePids.add(pid);
-				}
-				if (poi.getOldName() == null
-						|| !poi.getOldName().equals(
-						poiObj.getOfficeOriginCHName().getName())) {
-					namePids.add(pid);
-				}
-			}
-			// 作业季修改酒店星级
-			if (poiObj.getIxPoiHotels() != null&&poi.getHisOpType() == OperationType.UPDATE) {
-
-				for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
-					if (hotel.getHisOpType() == OperationType.UPDATE && hotel.hisOldValueContains(IxPoiHotel.RATING)) {
-						logRatingPids.add(pid);
-						break;
-					}
-				}
-			}
 		}
 
 		log.info("批记录状态state");
@@ -1187,22 +1224,55 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		this.updateBatchPoi(updatePids, this.getStateParaSql(2), conn);
 
 		log.info("批old_name");
-		this.updateBatchPoi(namePids, this.getUpdatePoiOldNameSql(), conn);
+		this.updateBatchPoi(oldNamePids, this.getUpdatePoiOldNameSql(), conn);
 
 		log.info("批old_address");
-		this.updateBatchPoi(addressPids, this.getUpdatePoiOldAddressSql(), conn);
+		this.updateBatchPoi(oldAddressPids, this.getUpdatePoiOldAddressSql(), conn);
 
 		log.info("批old_kind");
-		this.updateBatchPoi(pids, this.getUpdatePoiOldKindCodeSql(), conn);
+		this.updateBatchPoi(oldKindCodePids, this.getUpdatePoiOldKindCodeSql(), conn);
 
 		log.info("批外业log");
-		this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改名称"), conn);
-		this.updateBatchPoi(logAddressPids, this.getUpadeLogForSql("改地址"), conn);
-		this.updateBatchPoi(logKindCodePids, this.getUpadeLogForSql("改分类"), conn);
-		this.updateBatchPoi(logLevelPids, this.getUpadeLogForSql("改POI_LEVEL"), conn);
-		this.updateBatchPoi(logSportPids, this.getUpadeLogForSql("改运动场馆"), conn);
-		this.updateBatchPoi(logIndoorPids, this.getUpadeLogForSql("改内部标识"), conn);
-		this.updateBatchPoi(logLocationPids, this.getUpadeLogForSql("改RELATION"), conn);
+		this.updateBatchPoi(namePids, this.getUpadeLogForSql("改名称"), conn);
+		this.updateBatchPoi(addressPids, this.getUpadeLogForSql("改地址"), conn);
+		this.updateBatchPoi(kindCodePids, this.getUpadeLogForSql("改分类"), conn);
+		this.updateBatchPoi(levelPids, this.getUpadeLogForSql("改POI_LEVEL"), conn);
+		this.updateBatchPoi(sportPids, this.getUpadeLogForSql("改运动场馆"), conn);
+		this.updateBatchPoi(indoorPids, this.getUpadeLogForSql("改内部标识"), conn);
+		this.updateBatchPoi(relationPids, this.getUpadeLogForSql("改RELATION"), conn);
+
+		log.info("批Old_X_Guide");
+		this.updateBatchPoi(oldXGuidePids, this.getUpdatePoiOldXGuideSql(), conn);
+
+		log.info("批Old_Y_Guide");
+		this.updateBatchPoi(oldYGuidePids, this.getUpdatePoiOldYGuideSql(), conn);
+
+		log.info("批 FieldState");
+		this.updateBatchPoi(kindCodePids,
+				this.getUpadeFieldStateForSql("改种别代码"), conn);
+		this.updateBatchPoi(chainPids,
+				this.getUpadeFieldStateForSql("改连锁品牌"), conn);
+		this.updateBatchPoi(ratingPids,
+				this.getUpadeFieldStateForSql("改酒店星级"), conn);
+
+		log.info("批处理标记");
+		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
+		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内|"),
+				conn);
+		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外|"),
+				conn);
+		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道|"),
+				conn);
+		this.updateBatchPoi(parkingType3Pids,
+				this.getUpadeLabelForSql("室内地上|"), conn);
+		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下|"),
+				conn);
+
+		log.info("外业任务编号");
+		this.updateBatchPoi(pids, this.getFieldTaskIdSql(), conn);
+
+		log.info("批几何调整标识 精编标识  数据采集版本");
+		this.updateBatchPoi(pids, this.getBatchPoiCommonSql(), conn);
 
 		log.info("批验证标识");
 		Collection<Long> metaPids = this.getMetaPidsForPoi(conn);
@@ -1210,33 +1280,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		pids.removeAll(metaPids);
 		this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
 		this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
-
-		log.info("批几何调整标识 精编标识  数据采集版本");
-		this.updateBatchPoi(pids, this.getBatchPoiCommonSql(), conn);
-
-		log.info("批Old_X_Guide");
-		this.updateBatchPoi(xGuidePids, this.getUpdatePoiOldXGuideSql(), conn);
-
-		log.info("批Old_Y_Guide");
-		this.updateBatchPoi(yGuidePids, this.getUpdatePoiOldYGuideSql(), conn);
-
-		log.info("批 FieldState");
-		this.updateBatchPoi(logKindCodePids, this.getUpadeFieldStateForSql("改种别代码"), conn);
-		this.updateBatchPoi(logChainPids, this.getUpadeFieldStateForSql("改连锁品牌"), conn);
-		this.updateBatchPoi(logRatingPids, this.getUpadeFieldStateForSql("改酒店星级"), conn);
-
-		log.info("批处理标记");
-		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
-		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内|"), conn);
-		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外|"), conn);
-		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道|"), conn);
-		this.updateBatchPoi(parkingType3Pids, this.getUpadeLabelForSql("室内地上|"), conn);
-		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下|"), conn);
-
-		log.info("外业任务编号");
-		this.updateBatchPoi(pids, this.getFieldTaskIdSql(), conn);
 	}
-
 
 	private String getStateParaSql(int state) {
 		return "update ix_poi p set state = "
@@ -1481,7 +1525,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	/**
 	 * 将统计信息存入sys库中FM_LOG_STATS
 	 * @author Han Shaoming
-	 * @param beginTime
+	 * @param
 	 */
 	private void insertStatInfo()  {
 		try{

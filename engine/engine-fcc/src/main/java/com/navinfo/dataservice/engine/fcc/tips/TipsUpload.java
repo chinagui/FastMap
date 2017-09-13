@@ -14,6 +14,7 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.json.JsonIsEqualUtil;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -1106,13 +1107,13 @@ public class TipsUpload {
 
         JSONObject trackOld = oldTip.getJSONObject("track");
         int tCommandOld = trackOld.getInt("t_command");
-
+        String tCommandOldStr = String.valueOf(tCommandOld);
+        
         Geometry g_locationOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationOld));
         String g_locationOldWkt = GeoTranslator.jts2Wkt(g_locationOldGeo);
         Geometry g_guideOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideOld));
         String g_guideOldWkt = GeoTranslator.jts2Wkt(g_guideOldGeo);
-        String mdb5Old = MD5Utils.md5(g_locationOldWkt + g_guideOldWkt + deepOld + feedbackOld + tCommandOld);
-
+        
         // new
         String g_locationNew = json.getString("g_location");
         String g_guideNew = json.getString("g_guide");
@@ -1121,13 +1122,15 @@ public class TipsUpload {
 
         // JSONObject trackNew=json.getJSONObject("track");
         int tCommandNew = json.getInt("t_command");
+        String tCommandNewStr = String.valueOf(tCommandNew);
+        
         Geometry g_locationNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationNew));
         String g_locationNewWkt = GeoTranslator.jts2Wkt(g_locationNewGeo);
         Geometry g_guideNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideNew));
         String g_guideNewWkt = GeoTranslator.jts2Wkt(g_guideNewGeo);
-        String mdb5New = MD5Utils.md5(g_locationNewWkt + g_guideNewWkt + deepNew + feedbackNew + tCommandNew);
 
-        if (mdb5Old.equals(mdb5New)) {
+        //g_location、g_guide、t_command、deep、feedback全部相同，则返回true
+        if (JsonIsEqualUtil.equalsJson(g_locationOldWkt, g_locationNewWkt) && JsonIsEqualUtil.equalsJson(g_guideOldWkt,g_guideNewWkt) && JsonIsEqualUtil.equalsJson(deepOld,deepNew) && JsonIsEqualUtil.equalsJson(feedbackOld,feedbackNew)&& JsonIsEqualUtil.equalsJson(tCommandOldStr,tCommandNewStr)) {
             return true;
         }
 

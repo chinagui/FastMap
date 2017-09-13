@@ -1145,13 +1145,15 @@ public class DeepCoreControl {
 				Integer problemId = data.containsKey("problemId")?data.getInt("problemId"):0;
 				String problemLevel = data.containsKey("problemLevel")?data.getString("problemLevel"):"";
 				String problemDesc = data.containsKey("problemDesc")?data.getString("problemDesc"):"";
+				String newValue = data.containsKey("newValue")?data.getString("newValue"):"";
 				
 				params.add(problemLevel);
 				params.add(problemDesc);
+				params.add(newValue);
 				params.add(problemId);
 				
 				StringBuilder builder = new StringBuilder();
-				builder.append("UPDATE DEEP_QC_PROBLEM SET PROBLEM_LEVEL = ?,PROBLEM_DESC = ?  WHERE PROBLEM_ID = ?");
+				builder.append("UPDATE DEEP_QC_PROBLEM SET PROBLEM_LEVEL = ?,PROBLEM_DESC = ?,NEW_VALUE = ? WHERE PROBLEM_ID = ?");
 				if(problemId!=0){
 					run.update(conn, builder.toString(), params.toArray());
 				}

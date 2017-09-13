@@ -368,7 +368,7 @@ public class TipsUpload {
             List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshes);
             if(regions==null||regions.size()==0){
                 logger.error("根据图幅未查询到所属大区库信息");
-               // throw new Exception("根据图幅未查询到所属大区库信息");
+                throw new Exception("根据图幅未查询到所属大区库信息");
             }
             meshes.clear();
             // 新增(已存在)或者修改的时候判断是否是鲜度验证的tips

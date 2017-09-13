@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
+import net.sf.json.JSONObject;
+
 /** 
  * @ClassName: GroupStatJob
  * @author xiaoxiaowen4127
@@ -55,13 +57,14 @@ public class GroupStatJob {
 		return false;
 	}
 	
-	public void trigger(String identify,String jobType)throws Exception{
+	public void trigger(String identify,JSONObject identifyJson,String jobType)throws Exception{
 		//log.info("2");
 		if(!subJobs.contains(jobType)){
 			//log.info("3");
 			return;
 		}
 		synchronized(this){
+			//
 			//统计结果加入
 			Set<String> types = statFeedbacks.get(identify);
 			if(types==null){
@@ -74,7 +77,7 @@ public class GroupStatJob {
 			if(types.size()==subJobs.size()&&types.containsAll(subJobs)){
 				//log.info("4");
 				StatJobStarter starter =  (StatJobStarter)Class.forName(groupJobStarter).getConstructor().newInstance();
-				starter.start(identify);
+				starter.start(identify,identifyJson);
 				//remove started timestamp
 				statFeedbacks.remove(identify);
 			}

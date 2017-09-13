@@ -33,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
+import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1676,7 +1677,7 @@ public class Transaction {
                         continue;
                     }
                     if (ObjStatus.INSERT.equals(entry.getValue())) {
-                        row = this.cloneNode(row);
+                        row = NodeOperateUtils.clone(row);
                     }
 
                     if (map.containsKey(entry.getKey())) {
@@ -1739,56 +1740,6 @@ public class Transaction {
         }
 
         return map;
-    }
-
-    private IRow cloneNode(IRow row) {
-        if (!(row instanceof IObj)) {
-            return row;
-        }
-
-        IObj obj = (IObj) row;
-
-        IObj result = null;
-        if (row instanceof RdNode) {
-            RdNode node = new RdNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof RwNode) {
-            RwNode node = new RwNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof AdNode) {
-            AdNode node = new AdNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof ZoneNode) {
-            ZoneNode node = new ZoneNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof LcNode) {
-            LcNode node = new LcNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof LuNode) {
-            LuNode node = new LuNode();
-            node.setPid(obj.pid());
-            result = node;
-        }
-
-        if (result == null) {
-            return row;
-        } else {
-            result.copy(row);
-            result.setRowId(row.rowId());
-            try {
-                JSONObject json = JSONObject.fromObject(row.changedFields());
-                result.Unserialize(json);
-            } catch (Exception e) {
-                logger.error("拷贝点对象失败.", e);
-            }
-
-            return result;
-        }
     }
 
     private List<Geometry> getCRFGeom(Connection conn, List<IRow> rows) {

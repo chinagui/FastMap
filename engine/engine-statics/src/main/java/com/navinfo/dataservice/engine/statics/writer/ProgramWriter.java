@@ -67,13 +67,13 @@ public class ProgramWriter extends DefaultWriter {
 					value[6] = cityId;
 					value[7] = inforId;
 					value[8] = roadPlanTotal;
-					value[9] = DateUtils.stringToTimestamp(actualEndDate, "yyyyMMddHHmmss");
-					value[10] = DateUtils.stringToTimestamp(collectAcutalStartDate, "yyyyMMddHHmmss");
-					value[11] = DateUtils.stringToTimestamp(collectAcutalEndDate, "yyyyMMddHHmmss");
-					value[12] = DateUtils.stringToTimestamp(dayAcutalStartDate, "yyyyMMddHHmmss");
-					value[13] = DateUtils.stringToTimestamp(dayAcutalEndDate, "yyyyMMddHHmmss");
-					value[14] = DateUtils.stringToTimestamp(monthAcutalStartDate, "yyyyMMddHHmmss");
-					value[15] = DateUtils.stringToTimestamp(monthAcutalEndDate, "yyyyMMddHHmmss");
+					value[9] = DateUtils.stringToTimestamp(actualEndDate, DateUtils.DATE_YMD);
+					value[10] = DateUtils.stringToTimestamp(collectAcutalStartDate,DateUtils.DATE_YMD);
+					value[11] = DateUtils.stringToTimestamp(collectAcutalEndDate, DateUtils.DATE_YMD);
+					value[12] = DateUtils.stringToTimestamp(dayAcutalStartDate, DateUtils.DATE_YMD);
+					value[13] = DateUtils.stringToTimestamp(dayAcutalEndDate, DateUtils.DATE_YMD);
+					value[14] = DateUtils.stringToTimestamp(monthAcutalStartDate, DateUtils.DATE_YMD);
+					value[15] = DateUtils.stringToTimestamp(monthAcutalEndDate, DateUtils.DATE_YMD);
 					
 					valueList[i] = value;
 				}

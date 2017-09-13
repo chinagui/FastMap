@@ -335,9 +335,10 @@ public class CityService {
 					extentSql=extentSql+"   AND (P.NOTASK_POI_TOTAL>0 or P.NOTASK_TIPS_TOTAL>0) ";
 				}
 			}
-			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS"
-					+ "  FROM CITY T, FM_STAT_OVERVIEW_city P"
+			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS,NVL(R.PROGRAM_ID, 0) PROGRAM_ID"
+					+ "  FROM CITY T, FM_STAT_OVERVIEW_city P, PROGRAM R"
 					+ " WHERE T.CITY_ID = P.CITY_ID(+)"
+					+ "   AND T.CITY_ID = R.CITY_ID(+)"
 					+ extentSql ;
 			log.info(querySql);
 			List<Map<String, Object>> result= run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
@@ -358,6 +359,7 @@ public class CityService {
 							log.error(e1.getMessage(),e1);
 						}
 						cityMap.put("planStatus", rs.getInt("PLAN_STATUS"));
+						cityMap.put("programId", rs.getInt("PROGRAM_ID"));
 						res.add(cityMap);
 					}
 					return res;

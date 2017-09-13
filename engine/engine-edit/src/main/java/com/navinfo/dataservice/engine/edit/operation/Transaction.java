@@ -2181,12 +2181,16 @@ public class Transaction {
             // 检查接边点不允许分离
             checkErrorOperation();
 
+            EdgeResult edge = new EdgeResult(operType, objType);
+
+            Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
+            edge.setSourceDb(sourceDbId);
+
             boolean hasSourceDb = false;
 
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.FACE_TYPES.containsKey(objType) || Constant.LINK_TYPES.containsKey(objType)
                     || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
-                Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响
                 Map<Integer, Result> map = calcDbIdsRefResult(result, sourceDbId);

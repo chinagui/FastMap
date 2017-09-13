@@ -17,6 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EdgeResult{
 
     /**
+     * 本次请求大区库
+     */
+    private Integer sourceDb;
+
+    /**
      * 本次请求是否涉及源大区库
      */
     private boolean hasSourceDb;
@@ -57,6 +62,11 @@ public class EdgeResult{
     private Map<Integer, List<IRow>> deletedData;
 
     public void insert(Integer dbId, IRow row, ObjStatus status) {
+        if (dbId.equals(sourceDb)) {
+            hasSourceDb = true;
+            return;
+        }
+
         switch (status) {
             case INSERT: insertData(dbId, row, addedData); break;
             case UPDATE: insertData(dbId, row, modifiedData); break;
@@ -130,12 +140,12 @@ public class EdgeResult{
     }
 
     /**
-     * Setter method for property <tt>hasSourceDb</tt>.
+     * Setter method for property <tt>sourceDb</tt>.
      *
-     * @param hasSourceDb value to be assigned to property hasSourceDb
+     * @param sourceDb value to be assigned to property sourceDb
      */
-    public void setHasSourceDb(boolean hasSourceDb) {
-        this.hasSourceDb = hasSourceDb;
+    public void setSourceDb(Integer sourceDb) {
+        this.sourceDb = sourceDb;
     }
 
     public Map<Integer, Result> conversion() {

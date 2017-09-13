@@ -37,6 +37,7 @@ public abstract class AbstractStatJob extends AbstractJob{
 				}
 				JSONObject identifyJson=statReq.getIdentifyJson();
 				if(identifyJson==null||identifyJson.size()==0){
+					identifyJson=new JSONObject();
 					identifyJson.put("timestamp", statReq.getTimestamp());
 				}
 				JobMsgPublisher.sendStatJobResult(statReq.getJobType(),statReq.getTimestamp(),identify,identifyJson,result,jobInfo.getId());

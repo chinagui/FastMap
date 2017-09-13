@@ -607,7 +607,7 @@ public class StaticsService {
 				int monthPoiLogUnFinishNum = monthPoiLogTotalNum - monthPoiLogFinishNum;
 				task.put("monthPoiLogFinishNum", (int) jso.get("monthPoiLogFinishNum"));
 				task.put("monthPoiLogUnFinishNum", monthPoiLogUnFinishNum);
-				task.put("roadPlanTotal", (double) jso.get("roadPlanTotal"));
+				task.put("roadPlanTotal", Double.valueOf(jso.get("roadPlanTotal").toString()));
 				task.put("poiPlanTotal", (int) jso.get("poiPlanTotal"));
 			}
 			return task;

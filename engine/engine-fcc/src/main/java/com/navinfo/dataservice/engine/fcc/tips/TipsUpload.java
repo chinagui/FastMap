@@ -373,8 +373,8 @@ public class TipsUpload {
             ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
             List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshes);
             if(regions==null||regions.size()==0){
-                logger.error("根据图幅未查询到所属大区库信息");
-                throw new Exception("根据图幅未查询到所属大区库信息");
+                logger.error("Tips上传报错，根据图幅未查询到所属大区库信息");
+                throw new Exception("Tips上传报错，根据图幅未查询到所属大区库信息");
             }
             meshes.clear();
             // 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
@@ -407,7 +407,7 @@ public class TipsUpload {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             DbUtils.rollbackAndCloseQuietly(conn);
-            throw new Exception("Tips上传报错", e);
+            throw e;
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
            

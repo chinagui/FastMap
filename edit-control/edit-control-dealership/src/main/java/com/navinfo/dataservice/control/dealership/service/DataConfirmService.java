@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -213,18 +214,21 @@ public class DataConfirmService {
 					log.error("“情报类型”为空，文件不可以上传");
 					throw new Exception("“情报类型”为空，文件不可以上传");
 				} else {
-					if(!infoTypeList.contains(Integer.valueOf(infoType))){
+					if(StringUtils.isNumeric(infoType) == false || !infoTypeList.contains(Integer.valueOf(infoType))){
 						log.error("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
 						throw new Exception("“情报类型”值不在{1,2,3}范围内，文件不可以上传");
 					}
 				}
-				// 若文件中“UUID”和“情报ID”联合匹配必须唯一，否则整个文件不可导入
-				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
-				if (uniqueKeys.contains(uniqueKey)) {
-					log.error("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
-					throw new Exception("文件中“UUID”和“情报ID”联合匹配不唯一，文件不可导入");
-				} else {
-					uniqueKeys.add(uniqueKey);
+				// 若文件中“UUID”有值且必须唯一，否则整个文件不可导入
+//				String uniqueKey = result.get("resultId") + "," + result.get("infoId");
+				String uniqueKey = result.get("resultId").toString();
+				if(uniqueKey != null && StringUtils.isNotEmpty(uniqueKey)){
+					if (uniqueKeys.contains(uniqueKey)) {
+						log.error("文件中“UUID”有值但不唯一，文件不可导入");
+						throw new Exception("文件中“UUID”有值但不唯一，文件不可导入");
+					} else {
+						uniqueKeys.add(uniqueKey);
+					}
 				}
 			}
 			
@@ -344,7 +348,6 @@ public class DataConfirmService {
 						DateUtils.dateToString(new Date(), "yyyyMMddHHmmss"), success.replace("\"", ""));
 				run.execute(conn, sql);
 			}
-			conn.commit();
 			int generateFail = resultObj.getString("generateFailedList").equals("[]") ? 0
 					: (resultObj.getString("generateFailedList").replace("[", "").replace("]", "")).split(",").length;
 			int insertFail = resultObj.getString("insertFailedList").equals("[]") ? 0
@@ -358,13 +361,11 @@ public class DataConfirmService {
 			data.put("failCount", generateFail + insertFail + sendFail + updateFail);
 
 		} catch (Exception e) {
-			conn.rollback();
+			DbUtils.rollback(conn);
 			log.error(e.getMessage());
 			throw e;
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return data;
 	}
@@ -451,16 +452,13 @@ public class DataConfirmService {
 				
 				run.execute(conn, sql);
 			}
-			conn.commit();
 		} catch (Exception e) {
-			conn.rollback();
+			DbUtils.rollback(conn);
 			log.error(e.getMessage());
 			throw e;
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
-		}//
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 		return filePath;
 	}
 

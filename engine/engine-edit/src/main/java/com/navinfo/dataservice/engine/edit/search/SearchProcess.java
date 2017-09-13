@@ -2,14 +2,18 @@ package com.navinfo.dataservice.engine.edit.search;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.*;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,12 +29,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISearch;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
@@ -64,7 +62,7 @@ import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.utils.DbMeshInfoUtil;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 查询进程
@@ -207,6 +205,7 @@ public class SearchProcess {
 					logger.info("dbId========" + dbId);
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 					SearchFactory factory = new SearchFactory(conn);
+					factory.setDbId(dbId);
 					for (ObjType type : types) {
 						if (dbId != this.getDbId()) {
 							if (!this.getBasicObjForRender(type)) {
@@ -232,6 +231,13 @@ public class SearchProcess {
 							for (SearchSnapshot snapshot : list) {
 								if (!snapshots.contains(snapshot)) {
 									snapshots.add(snapshot);
+									continue;
+								}
+								if (snapshots.contains(snapshot)
+										&& snapshot.getDbId() == this.getDbId()) {
+									snapshots.remove(snapshot);
+									snapshots.add(snapshot);
+									continue;
 								}
 
 							}
@@ -308,6 +314,12 @@ public class SearchProcess {
 			return true;
 		} else if (type == ObjType.RDINTER) {
 			return true;
+		} else if (type == ObjType.ZONENODE) {
+			return true;
+		} else if (type == ObjType.ZONELINK) {
+			return true;
+		} else if (type == ObjType.ZONEFACE) {
+			return true;
 		} else {
 			return false;
 		}
@@ -353,29 +365,33 @@ public class SearchProcess {
 							}
 						}
 						List<SearchSnapshot> list = null;
-						
-						if(z <= 14){
+
+						if (z <= 14) {
 							if (type == ObjType.IXPOI) {
 								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-								list = ixPoiSearch.searchDataByTileWithGapSnapshot(x, y, z,
-										gap, taskId);
+								list = ixPoiSearch
+										.searchDataByTileWithGapSnapshot(x, y,
+												z, gap, taskId);
 							} else if (type == ObjType.RDLINK) {
-								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-								list = rdLinkSearch.searchDataByTileWithGapSnapshot(x, y,
-										z, gap, taskId);
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(
+										conn);
+								list = rdLinkSearch
+										.searchDataByTileWithGapSnapshot(x, y,
+												z, gap, taskId);
 							}
-						}else{
+						} else {
 							if (type == ObjType.IXPOI) {
 								IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
-								list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
-										gap, taskId);
+								list = ixPoiSearch.searchDataByTileWithGap(x,
+										y, z, gap, taskId);
 							} else if (type == ObjType.RDLINK) {
-								RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
-								list = rdLinkSearch.searchDataByTileWithGap(x, y,
-										z, gap, taskId);
+								RdLinkSearch rdLinkSearch = new RdLinkSearch(
+										conn);
+								list = rdLinkSearch.searchDataByTileWithGap(x,
+										y, z, gap, taskId);
 							}
 						}
-						
+
 						for (SearchSnapshot snapshot : list) {
 							snapshot.setDbId(dbId);
 						}
@@ -441,6 +457,37 @@ public class SearchProcess {
 			IObj obj = search.searchDataByPid(pid);
 
 			return obj;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+	}
+
+	/**
+	 * 根据pid查询删除数据
+	 * 
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public IObj searchDelDataByPid(ObjType type, int pid) throws Exception {
+
+		try {
+			SearchFactory factory = new SearchFactory(conn);
+
+			ISearch search = factory.createSearch(type);
+
+			if (search instanceof ISearchDelObj) {
+
+				ISearchDelObj searchDelObj = (ISearchDelObj) search;
+
+				return searchDelObj.searchDelDataByPid(pid);
+			}
+			return null;
+
 		} catch (Exception e) {
 
 			throw e;
@@ -542,10 +589,11 @@ public class SearchProcess {
 						if (condition.containsKey("speedDependent")) {
 							speedDependent = condition.getInt("speedDependent");
 						}
+						int speedValue = condition.getInt("speedValue");
 
 						List<Integer> nextLinkPids = searchUtils
 								.getConnectLinks(linkPid, direct,
-										speedDependent);
+										speedDependent, speedValue * 10);
 
 						JSONArray linkPidsArray = new JSONArray();
 
@@ -911,7 +959,8 @@ public class SearchProcess {
 
 					RdLink link = (RdLink) row;
 
-					List<Integer> viaList = calLinkOperateUtils.calViaLinks(this.conn, link, outLinkPid);
+					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
+							this.conn, link, outLinkPid);
 
 					for (Integer pid : viaList) {
 						array.add(pid);
@@ -1061,83 +1110,6 @@ public class SearchProcess {
 		return json;
 	}
 
-	public static void main(String[] args) throws Exception {
-		SearchProcess p = new SearchProcess();
-		p.setArray(null);
-		p.setDbId(13);
-		int x = 442895;
-		int y = 212474;
-		int z = 19;
-		List<ObjType> types = new ArrayList<ObjType>();
-		types.add(ObjType.RDLINK);
-		types.add(ObjType.RDNODE);
-		types.add(ObjType.IXPOI);
-		types.add(ObjType.ZONELINK);
-		types.add(ObjType.LULINK);
-		types.add(ObjType.ZONENODE);
-		types.add(ObjType.ADADMIN);
-		int gap = 10;
-
-		JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
-		System.out.println(data);
-
-		// parameter={"dbId":13,"gap":10,"types":["RDLINK","RDNODE","IXPOI","ADLINK","ZONELINK","LULINK","ZONENODE","ADADMIN"],"x":442895,"y":212474,"z":19}
-
-		/*
-		 * JSONObject json = new JSONObject();
-		 * 
-		 * String str1 =
-		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
-		 * ; JSONObject obj1 = JSONObject.fromObject(str1); String str2 =
-		 * "{\"ZONELINK\":[{\"i\":401000024,\"m\":{\"a\":406000027,\"b\":408000021}},{\"i\":400000017,\"m\":{\"a\":401000020,\"b\":409000013}}],\"ZONENODE\":[{\"i\":401000020,\"m\":{\"a\":\"400000017\"}},{\"i\":406000027,\"m\":{\"a\":\"401000024\"}}],\"ZONEFACE\":[]}"
-		 * ; JSONObject obj2 = JSONObject.fromObject(str2);
-		 * System.out.println(obj2); System.out.println(obj1);
-		 * obj1.accumulateAll(obj2); System.out.println(obj1);
-		 * 
-		 * Map<String, List<SearchSnapshot>> map = new HashMap<String,
-		 * List<SearchSnapshot>>();
-		 * 
-		 * List<SearchSnapshot> list1 = new ArrayList<SearchSnapshot>();
-		 * List<SearchSnapshot> list2 = new ArrayList<SearchSnapshot>();
-		 * SearchSnapshot snapshot11 = new SearchSnapshot();
-		 * snapshot11.setI(1101); SearchSnapshot snapshot12 = new
-		 * SearchSnapshot(); snapshot12.setI(1102); // list1.add(snapshot11); //
-		 * list1.add(snapshot12);
-		 * 
-		 * SearchSnapshot snapshot21 = new SearchSnapshot();
-		 * snapshot21.setI(2101); SearchSnapshot snapshot22 = new
-		 * SearchSnapshot(); snapshot22.setI(1102); // list2.add(snapshot21); //
-		 * list2.add(snapshot22);
-		 * 
-		 * List<List<SearchSnapshot>> lists = new
-		 * ArrayList<List<SearchSnapshot>>();
-		 * 
-		 * lists.add(list1); lists.add(list2);
-		 * 
-		 * List<ObjType> types = new ArrayList<ObjType>();
-		 * types.add(ObjType.ADLINK); types.add(ObjType.ADLINK); for (int i = 0;
-		 * i < lists.size(); i++) { for (ObjType type : types) { if
-		 * (map.containsKey(type.toString())) { List<SearchSnapshot> snapshots =
-		 * map.get(type.toString());
-		 * 
-		 * for (SearchSnapshot snapshot : lists.get(i)) { if
-		 * (!snapshots.contains(snapshot)) { snapshots.add(snapshot); }
-		 * 
-		 * } } else { map.put(type.toString(), lists.get(i)); } } } for
-		 * (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
-		 * JSONArray array = new JSONArray();
-		 * 
-		 * for (SearchSnapshot snap : entry.getValue()) {
-		 * 
-		 * try { array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig()); }
-		 * catch (Exception e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); } }
-		 * 
-		 * json.accumulate(entry.getKey(), array, getJsonConfig());
-		 * 
-		 * } System.out.println(json);
-		 */}
-
 	public int getZ() {
 		return z;
 	}
@@ -1152,5 +1124,18 @@ public class SearchProcess {
 
 	public void setTaskId(int taskId) {
 		this.taskId = taskId;
+	}
+
+	public static void main(String[] args) throws Exception {
+		String wkt = MercatorProjection.getWktWithGap(873813, 396170, 20, 10);
+		/*
+		 * // 2 根据瓦片计算 Set<Integer> dbIds =
+		 * DbMeshInfoUtil.calcDbIds(GeoTranslator .wkt2Geometry(wkt));
+		 */
+
+		String[] str = MeshUtils.geometry2Mesh(GeoTranslator.transform(
+				GeoTranslator.wkt2Geometry(wkt), 0.00001, 5));
+		System.out.println(Arrays.toString(str));
+
 	}
 }

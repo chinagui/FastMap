@@ -22,6 +22,7 @@ public class ScPointSpecKindcode {
 
 
 	private Map<String, List<String>> typeMap14= new HashMap<String, List<String>>();
+	private List<String> typeList16= new ArrayList<String>();
 
 	private static class SingletonHolder {
 		private static final ScPointSpecKindcode INSTANCE = new ScPointSpecKindcode();
@@ -227,4 +228,32 @@ public class ScPointSpecKindcode {
 		return typeMap7;
 	}
 
+	public List<String> scPointSpecKindCodeType16() throws Exception{
+		if (typeList16==null||typeList16.isEmpty()) {
+				synchronized (this) {
+					if (typeList16==null||typeList16.isEmpty()) {
+						try {
+							String sql = "select distinct POI_KIND from sc_point_spec_kindcode_new t WHERE TYPE=16";
+								
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeList16.add(rs.getString("POI_KIND"));					
+								} 
+							} finally {
+								DbUtils.closeQuietly(conn, pstmt, rs);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeList16;
+	}
 }

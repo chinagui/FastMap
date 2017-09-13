@@ -1,8 +1,14 @@
 package com.navinfo.dataservice.engine.fcc.track;
 
 import com.alibaba.fastjson.JSONObject;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
+
+import java.util.Date;
+import java.util.List;
+
+import java.util.List;
 
 /**
  * @ClassName: AdasTrackPointUpload.java
@@ -15,13 +21,15 @@ public class AdasTrackPointUpload extends TrackUpload{
 
     @Override
     public String getSourceRowkey(JSONObject json) {
-        String a_prjName=json.getString("prjName");
-        String a_weekSeconds=json.getString("weekSeconds");
-        return a_prjName + a_weekSeconds;
+//        String a_prjName=json.getString("prjName");
+//        String a_weekSeconds=json.getString("weekSeconds");
+       // String timestamp = DateUtils.dateToString(new Date(), "yyyyMMdd");
+        String uuid = json.getString("id");
+        return  uuid;
     }
 
     @Override
-    public Put generatePut(JSONObject json, String rowkey) throws Exception {
+    public Put generatePut(JSONObject json, String rowkey, List trackIdxList) throws Exception {
         Put put = new Put(rowkey.getBytes());
         put.addColumn("attribute".getBytes(), "a_id".getBytes(),
                 json.getString("id").getBytes());

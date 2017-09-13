@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -448,26 +449,26 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	P.GROUP_ID AS PGROUP_ID,");
 		sb.append("	C.GROUP_ID AS CGROUP_ID");
 		sb.append("	FROM IX_POI IX, IX_POI_PARENT P, IX_POI_CHILDREN C");
-		sb.append("	WHERE IX.PID = P.PARENT_POI_PID(+)");
-		sb.append("	AND IX.PID = C.CHILD_POI_PID(+)");
-		sb.append("	AND IX.PID IN");
+		sb.append("	WHERE IX.PID IN");
 		sb.append("	(SELECT DISTINCT S.PID");
 		sb.append("	FROM POI_COLUMN_STATUS S,");
 		sb.append("	POI_COLUMN_WORKITEM_CONF W");
-		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
-		sb.append("	AND S.HANDLER =:1");
-		sb.append("	AND W.SECOND_WORK_ITEM =:2");
-		sb.append("	AND S.SECOND_WORK_STATUS =:3");
-		sb.append("	AND S.TASK_ID = :4");
+		sb.append("	WHERE S.HANDLER =:1 ");
+		sb.append("	AND S.SECOND_WORK_STATUS =:2");
+		sb.append("	AND S.TASK_ID = :3");
 		if(isQuality==0){//常规任务
-			sb.append("	AND S.COMMON_HANDLER = "+userId+")");
+			sb.append("	AND S.COMMON_HANDLER = "+userId);
 		}else if(isQuality==1){//质检任务
 			sb.append("	AND S.COMMON_HANDLER <> "+userId);
-			sb.append("	AND S.QC_FLAG = 1)");
+			sb.append("	AND S.QC_FLAG = 1");
 		}
+		sb.append("	AND S.WORK_ITEM_ID = W.WORK_ITEM_ID");
+		sb.append("	AND W.SECOND_WORK_ITEM =:4)");
 		
+		sb.append("	AND IX.PID = P.PARENT_POI_PID(+)");
+		sb.append("	AND IX.PID = C.CHILD_POI_PID(+)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
-		
+		logger.info(sb.toString());
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		JSONObject data = new JSONObject();
@@ -475,9 +476,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setLong(1, userId);
-			pstmt.setString(2, secondWorkItem);
-			pstmt.setInt(3, status);
-			pstmt.setInt(4, taskId);
+			pstmt.setInt(2, status);
+			pstmt.setInt(3, taskId);
+			pstmt.setString(4, secondWorkItem);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();
@@ -1067,7 +1068,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getColumnCount(Subtask subtask,long userId,int isQuality) throws Exception{
+	public JSONObject getColumnCount(Subtask subtask,int deepTaskId,long userId,int isQuality) throws Exception{
 		int taskId = subtask.getSubtaskId();
 		
 		PreparedStatement pstmt = null;
@@ -1120,6 +1121,15 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" select count(1) as num, p1.second_work_item as type");
 			sb.append("   from t1 p1");
 			sb.append("  where p1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
+			if(isQuality==0){//常规任务
+				sb.append("	AND p1.COMMON_HANDLER =0 ");
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND p1.COMMON_HANDLER <> "+userId);
+				sb.append("	AND p1.QC_FLAG = 1");
+				sb.append(" AND NOT exists (SELECT 1 FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC ");
+				sb.append(" WHERE PS.PID = p1.pid AND PS.HANDLER <> 0 AND PC.TYPE = 1 AND PC.CHECK_FLAG IN (1, 3) ");
+				sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID AND pc.second_work_item  = p1.second_work_item)");
+			}
 			sb.append("  GROUP BY p1.second_work_item");
 
 
@@ -1156,9 +1166,10 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 					result.put("deepCarrental", json);
 				}
 			}
-			JSONObject res = getKcLogFlag(result, taskId, userId,isQuality);
+			JSONObject res = getKcLogFlag(result, taskId,deepTaskId, userId,isQuality);
 			return res;
 		} catch (Exception e){
+			logger.error(e.getMessage());
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
@@ -1175,10 +1186,9 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId,Integer isQuality) throws Exception{
+	public JSONObject getKcLogFlag(JSONObject res,int taskId,int deepTaskId,long userId,Integer isQuality) throws Exception{
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select count(1) as num, c.first_work_item as type");
@@ -1202,13 +1212,19 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
 			sb.append("  and s1.task_id = :3");
 			sb.append("  and s1.handler = :4");
+			if(isQuality==0){//常规任务
+				sb.append("	AND s1.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s1.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s1.QC_FLAG = 1");
+			}
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());
 			 
 			pstmt.setInt(1, taskId);
 			pstmt.setLong(2, userId);
-			pstmt.setInt(3, taskId);
+			pstmt.setInt(3, deepTaskId);
 			pstmt.setLong(4, userId);
 			
 			resultSet = pstmt.executeQuery();
@@ -1674,6 +1690,96 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			}
 		}
 		return "";
+	}
+
+	/**
+	 * 获取抽检的pid
+	 * @param subtask
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @param type
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getExtractPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type, long userId) throws Exception {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT s.pid");
+		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
+		sb.append(" WHERE s.work_item_id = w.work_item_id");
+		sb.append(" AND s.pid = p.pid");
+		sb.append(" AND s.first_work_status = 1 AND s.second_work_status = 1 AND s.handler = 0");
+		sb.append(" AND w.type = :1");
+		sb.append(" AND s.task_id = :2");
+		sb.append(" AND w.first_work_item = :3");
+		sb.append(" AND w.second_work_item = :4");
+		sb.append(" AND s.qc_flag = 1 ");
+		sb.append(" AND s.common_handler <> :5 ");
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			logger.info("getExtractPids sql:"+sb);
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, type);
+			pstmt.setInt(2,subtask.getSubtaskId());
+			pstmt.setString(3,firstWorkItem);
+			pstmt.setString(4,secondWorkItem);
+			pstmt.setLong(5,userId);
+
+			resultSet = pstmt.executeQuery();
+
+			List<Integer> pids = new ArrayList<Integer>();
+
+			while (resultSet.next()) {
+				int pid = resultSet.getInt("pid");
+				pids.add(pid);
+			}
+			
+			return pids;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * 抽取数据是调用，更新ColumnStatus状态
+	 * @param pids
+	 * @param userId
+	 * @param taskId
+	 * @param timeStamp
+	 * @throws Exception
+	 */
+	public void updateExtractColumnStatus(List<Integer> pids, long userId, int taskId, Timestamp timeStamp) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE ");
+		sb.append(" PID IN ("+org.apache.commons.lang.StringUtils.join(pids, ",")+")");
+
+		PreparedStatement pstmt = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setLong(1, userId);
+			pstmt.setInt(2, taskId);
+			pstmt.setTimestamp(3, timeStamp);
+
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+		
 	}
 
 	

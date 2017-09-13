@@ -236,16 +236,16 @@ public abstract class BasicRow{
 			return null;
 		}
 		//以下肯定有变化
-		RunnableSQL sql = new RunnableSQL();
-		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
-		System.out.println("tbName  :"+tbName);
+		RunnableSQL sql = new RunnableSQL(tbName);
+		StringBuilder sb = new StringBuilder();
+		log.info("tbName  :"+tbName);
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
-		System.out.println("tbName2 tab :"+tab.getName()+"tab.Columns"+tab.getColumns());
+		log.info("tbName2 tab :"+tab.getName()+"tab.Columns"+tab.getColumns());
 		List<String> columnName = new ArrayList<String>();
 		List<String> columnPlaceholder = new ArrayList<String>();
 		List<Object> columnValues = new ArrayList<Object>();
-		System.out.println("this.opType: "+this.opType);
+		log.info("this.opType: "+this.opType);
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName);
 			//字段信息
@@ -286,7 +286,7 @@ public abstract class BasicRow{
 				//更新U_RECORD字段为2
 				sb.append("UPDATE "+ tbName + " SET U_RECORD = ?,U_DATE=TO_CHAR(SYSDATE,'yyyymmddhh24miss')");
 				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
-				System.out.println("sb.toString()  :"+sb.toString());
+				log.info("sb.toString()  :"+sb.toString());
 				columnValues.add(2);
 			}
 		}
@@ -307,12 +307,12 @@ public abstract class BasicRow{
 	 */
 	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnNames,
 			List<String> columnPlaceholder, List<Object> columnValues, OperationType operationType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
-		System.out.println("columns :"+columns.size());
+		log.info("columns :"+columns.size());
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
 			GlmColumn glmColumn = entry.getValue();	
-			System.out.println("entry.getKey(): "+entry.getKey());
+			log.info("entry.getKey(): "+entry.getKey());
 			Object columnValue = getAttrByColName(entry.getKey());
-			System.out.println("columnValue: "+columnValue);
+			log.info("columnValue: "+columnValue);
 			//如果字段为空,则不拼入sql
 			if(columnValue==null){
 				continue;
@@ -626,6 +626,33 @@ public abstract class BasicRow{
 			return RowJsonUtils.toJson(getAttrs(oldValues.keySet()));
 		}
 		return null;
+	}
+	/**
+	 * 
+	 * @param row
+	 * @param cols
+	 */
+	public void diff(BasicRow row,Collection<String> specCols)throws Exception{
+		if(row==null){
+			return;
+		}
+		//
+		if(specCols!=null&&specCols.size()>0){
+			for(String col:specCols){
+				if(col.equals("ROW_ID")){//rowid不参与差分
+					continue;
+				}
+				setAttrByCol(col,row.getAttrByColName(col));
+			}
+		}else{
+			GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
+			for(String col:glmTable.getColumns().keySet()){
+				if(col.equals("ROW_ID")){//rowid不参与差分
+					continue;
+				}
+				setAttrByCol(col,row.getAttrByColName(col));
+			}
+		}
 	}
 	
 	public static void main(String[] args) {

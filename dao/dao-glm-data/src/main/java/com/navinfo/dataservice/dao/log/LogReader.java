@@ -42,9 +42,11 @@ public class LogReader {
 	private Connection conn;
 
 	 @SuppressWarnings("serial")
-	private final static List<String> filterFdList = new ArrayList<String>(){{
+	private final static List<String> filterFdList = new ArrayList<String>(){{ add("\"FIELD_STATE\""); add("\"OLD_NAME\"");
+	add("\"OLD_ADDRESS\"");add("\"OLD_KIND\"");add("\"LOG\"");add("\"POI_MEMO\"");
 	        add("\"DATA_VERSION\""); add("\"COLLECT_TIME\""); add("\"OLD_Y_GUIDE\"");add("\"OLD_X_GUIDE\"");
 	    }};
+	   
 	    
 	public LogReader(Connection conn) {
 		this.conn = conn;
@@ -284,7 +286,7 @@ public class LogReader {
 		String fd_lst=null;
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
 				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM='IX_POI_PHOTO' OR (de.TB_NM='IX_POI' AND  instr(de.FD_LST,'POI_MEMO')>0)) "
-				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI'))";
+				+ " AND  NOT EXISTS (SELECT 1 FROM LOG_DETAIL WHERE TB_NM NOT IN ('IX_POI_PHOTO','IX_POI') AND OB_PID=de.OB_PID)";
 
 		PreparedStatement pstmt = null;
 
@@ -326,12 +328,12 @@ public class LogReader {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isExistObjHis(int objPid) throws Exception {
+	public boolean isFreshVerified(int objPid) throws Exception {
 		String tb_num=null;
 		String fd_lst=null;
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM='IX_POI'";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -343,17 +345,16 @@ public class LogReader {
 				tb_num=resultSet.getString("tb_nm");
 				fd_lst=resultSet.getString("fd_lst");
 				if ("IX_POI".equals(tb_num)){
+					  if(fd_lst==null){return false;}
 					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
 					  for(int j= 0 ; j<arrFd.length;j++){
 			            	if (!filterFdList.contains(arrFd[j]))
-			            	{ return true;}
+			            	{ return false;}
 			            }  
-				}else{
-					return true;
+				}else if(!("IX_POI_PHOTO".equals(tb_num)||"IX_POI_AUDIO".equals(tb_num)))
+					return false;
 				}
-				
-			} 
-			return false;
+			return true;
 		} catch (Exception e) {
 
 			throw e;
@@ -932,19 +933,21 @@ public class LogReader {
 	
 	
 	/**
-	 * 根据SubtaskId查询相应的poi数量
+	 * 根据采集子任务履历，按照grid返回相应的poi数量,
 	 * @param objName
-	 * @param mainTabName
-	 * @param pid
-	 * @return 
+	 * @param subtasks 采集子任务集合
+	 * @return Map<Integer,Integer> key：gridId，value：poi数量
 	 * @throws Exception
 	 */
-	public Map<Integer,Integer> getPoiNumBySubtaskId(String objName) throws Exception {
+	public Map<Integer,Integer> getPoiNumBySubtaskId(String objName,Set<Integer> subtasks) throws Exception {
 		Map<Integer,Integer> result = new HashMap<Integer,Integer>();
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT LD.GEO_PID,LA.STK_ID FROM LOG_ACTION LA,LOG_OPERATION LO,LOG_DETAIL LD ");
-		sb.append(" WHERE LA.ACT_ID = LO.ACT_ID AND LO.OP_ID = LD.OP_ID ");
-		sb.append(" AND LD.GEO_NM = '"+objName+"'");
+		sb.append(" SELECT DISTINCT LD.GEO_PID, LA.STK_ID,G.GRID_ID"
+				+ "  FROM LOG_ACTION LA, LOG_OPERATION LO, LOG_DETAIL LD,LOG_DETAIL_GRID G"
+				+ " WHERE LA.ACT_ID = LO.ACT_ID"
+				+ "   AND LO.OP_ID = LD.OP_ID"
+				+ "   AND LD.GEO_NM = '"+objName+"'"
+				+ "   AND LD.ROW_ID=G.LOG_ROW_ID ");
 		
 		log.info("根据SubtaskId查询相应的poi数量的sql语句:"+sb.toString());
 		
@@ -957,6 +960,9 @@ public class LogReader {
 			while(resultSet.next()){
 				long pid = resultSet.getLong("GEO_PID");
 				int subtaskId = resultSet.getInt("STK_ID");
+				if(!subtasks.contains(subtaskId)){
+					continue;
+				}
 				if(!map.containsKey(subtaskId)){
 					map.put(subtaskId, new HashSet<Long>());
 				}
@@ -1021,7 +1027,7 @@ public class LogReader {
 //		System.out.println(new Date());
 //		System.out.println(new Date());
 //		String objTable = "IX_POI";
-		int objPid = 6058564 ;
+		int objPid = 408000056 ;
 //		int status = new LogReader(con).getObjectState(objPid, objTable);
 //		List<Long> pidList = new ArrayList<Long>();
 //		pidList.add(505000108L);
@@ -1038,7 +1044,7 @@ public class LogReader {
 //		Map<Integer, Integer> poiNumBySubtaskId = new LogReader(con).getPoiNumBySubtaskId(objName);
 //		System.out.println(poiNumBySubtaskId);
 		LogReader l=new LogReader(con);
-		System.out.println(l.isExistObjHis(objPid));
-		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
+		System.out.println(l.isFreshVerified(objPid));
+//		System.out.println(l.isOnlyPhotoAndMetoHis(objPid));
 	}
 }

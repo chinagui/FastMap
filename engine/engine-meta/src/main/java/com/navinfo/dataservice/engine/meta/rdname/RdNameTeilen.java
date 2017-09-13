@@ -431,6 +431,9 @@ public class RdNameTeilen {
 
 		engRdName.setCodeType(chiRdName.getCodeType());
 		engRdName.setRoadType(chiRdName.getRoadType());
+		
+		//20170912 added by liya 拆分，11.	英文名地级市字段赋值：赋中文地级市名字
+		engRdName.setCity(chiRdName.getCity()); 
 
 		// ROUTE_ID赋值为默认值
 		/*if (engRdName.getRouteId() == null)

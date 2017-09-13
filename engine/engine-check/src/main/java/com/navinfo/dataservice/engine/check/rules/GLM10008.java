@@ -150,7 +150,7 @@ public class GLM10008 extends baseRule {
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if(resultList.size()>0){
-				String target = "[RD_LINK_FORM," + linkPid + "]";
+				String target = "[RD_LINK," + linkPid + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

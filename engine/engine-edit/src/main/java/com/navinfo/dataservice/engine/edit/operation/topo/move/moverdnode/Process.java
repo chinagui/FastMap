@@ -64,7 +64,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
 				updateNode);
-		//check.checkCRFI(this.getConn(), this.getCommand().getNodePid());
+		check.checkCRFI(this.getConn(), this.getCommand().getNodePid());
 		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());
 	}
 

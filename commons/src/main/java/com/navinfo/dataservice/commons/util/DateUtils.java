@@ -151,6 +151,8 @@ public class DateUtils {
 //				DateUtils.DATE_YMD));
 //		System.out.println(DateUtils.getCurYyyymm());
 		System.out.println(getCurrentTimestamp());
+		System.out.println(getCurYyyymm());
+		System.out.println(getCurYmd());
 	}
 
 	/**
@@ -223,6 +225,20 @@ public class DateUtils {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		date = calendar.getTime();
+		return date;
+	}
+	
+	/**
+	 * date时间增加day天，例如：date=20170906，day=2；则返回20170908
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static Date addDay(Date date,int day) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.DAY_OF_MONTH, day);
 		date = calendar.getTime();
 		return date;
 	}
@@ -535,6 +551,18 @@ public class DateUtils {
 		calendar.setTime(date);
 		String index = "" + (calendar.get(Calendar.MONTH) + 1);
 		return index;
+	}
+	
+	/**
+	 * 计算2个日期之前的天数。date2-date1
+	 * @param date1
+	 * @param date2
+	 * @return
+	 */
+	public static long diffDay(Timestamp start,Timestamp end){
+	    long diff = end.getTime() - start.getTime();
+	    long days = diff / (1000 * 60 * 60 * 24);
+	    return days;
 	}
 
 	/**

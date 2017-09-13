@@ -4,7 +4,7 @@ package com.navinfo.dataservice.engine.man.job.bean;
  * Created by wangshishuai3966 on 2017/7/6.
  */
 public enum JobStatus {
-    RUNNING(1), SUCCESS(2), FAILURE(3);
+    RUNNING(1), SUCCESS(2), FAILURE(3),NODATA(4);
 
     private int value = 0;
 

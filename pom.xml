@@ -475,6 +475,12 @@
                 <artifactId>javamelody-core</artifactId>
                 <version>1.60.0</version>
             </dependency>
+
+			<dependency>
+				<groupId>org.elasticsearch.client</groupId>
+				<artifactId>transport</artifactId>
+				<version>5.5.2</version>
+			</dependency>
 			<!-- utils end -->
 			<!-- spring start -->
 			<dependency>
@@ -846,6 +852,11 @@
             </dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-es</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>dao-mq</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
@@ -900,6 +911,12 @@
 				<artifactId>service-monitor</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
 			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>engine-es</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+
 			<!-- dataservice module end -->
 			<!-- navicop -->
 			<dependency>
@@ -949,17 +966,18 @@
 			    <version>2.25</version>
 			</dependency>
             
-            		<dependency>
-		  <groupId>gdal</groupId>
-		  <artifactId>gdal</artifactId>
-		  <version>1.8.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.tencent</groupId>
-  		<artifactId>xinge</artifactId>
-  		<version>1.0</version>
-		</dependency>
+            <dependency>
+				<groupId>gdal</groupId>
+				<artifactId>gdal</artifactId>
+				<version>1.8.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.tencent</groupId>
+		  		<artifactId>xinge</artifactId>
+		  		<version>1.0</version>
+			</dependency>
 
+			
         </dependencies>
 
     </dependencyManagement>

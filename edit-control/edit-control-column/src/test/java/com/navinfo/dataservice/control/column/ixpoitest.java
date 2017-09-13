@@ -116,10 +116,11 @@ public class ixpoitest {
 	@Test
 	public void testApplyData() throws Exception{
 		long userId = 1674;
-		int subtaskId = 23;
+		int subtaskId = 252;
 		
-		String firstWorkItem = "poi_name";
-		String secondWorkItem = "";
+		String firstWorkItem = "poi_deep";
+		String secondWorkItem = "deepDetail";
+//		String secondWorkItem = "deepParking";
 		try {
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
@@ -162,7 +163,7 @@ public class ixpoitest {
 	}
 	@Test
 	public void testColumnQuery() throws Exception{
-		String parameter = "{\"taskId\":\"23\",\"firstWorkItem\":\"poi_name\",\"secondWorkItem\":\"shortName\",\"status\":2}";
+		String parameter = "{\"taskId\":\"23\",\"firstWorkItem\":\"poi_address\",\"secondWorkItem\":\"addrSplit\",\"status\":1}";
 		try {
 			JSONObject param = JSONObject.fromObject(parameter);
 			//long userId =2;
@@ -244,14 +245,14 @@ public class ixpoitest {
 	@Test
 	public void testDeepQuery() throws Exception{
 		JSONObject jsonReq = new JSONObject();
-		jsonReq.put("subtaskId", 84);
-		jsonReq.put("dbId", 19);
-		jsonReq.put("type", "deepDetail");
+		jsonReq.put("subtaskId", 23);
+		jsonReq.put("dbId", 12);
+		jsonReq.put("type", "deepCarrental");
 		jsonReq.put("status", 1);
 		jsonReq.put("pageNum", 1);
 		jsonReq.put("pageSize", 10);
 		try {
-			long userId = 4994;
+			long userId = 1674;
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
 			
@@ -334,4 +335,56 @@ public class ixpoitest {
 		}
 	}
 	
+	
+	@Test
+	public void testExtractData() throws Exception{
+		long userId = 5;
+		int subtaskId = 251;
+		
+		String firstWorkItem = "poi_deep";
+		String secondWorkItem = "deepDetail";
+		try {
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			//申请数据，返回本次申请成功的数据条数
+			int extractNum = deepCore.qcExtractData(subtaskId, userId, firstWorkItem, secondWorkItem);
+			System.out.println(extractNum);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	
+	@Test
+	public void testOperateProblem() throws Exception{
+		
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("command", "ADD");
+		
+		JSONObject data = new JSONObject();
+		data.put("problemLevel", "D");
+		data.put("problemDesc", "test333");
+		data.put("subtaskId", 257);
+		data.put("secondWorkItem", "deepDetail");
+		data.put("pid", 4894);
+		data.put("poiProperty", "tollStd");
+		data.put("newValue", "AAA");
+		data.put("oldValue", "BBB");
+		data.put("commonWorker", "sunjiawei");
+		data.put("workTime", "2017.9.4");
+		data.put("qcWorker", "zhanggenqiang");
+		data.put("qcTime", "2017.9.6");
+		
+		
+		jsonReq.put("data", data);
+		try {
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			deepCore.operateProblem(jsonReq);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+
 }

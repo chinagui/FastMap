@@ -1,22 +1,22 @@
 package com.navinfo.dataservice.control.app.download;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Clob;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.log4j.Logger;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -35,20 +35,27 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
+import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class PoiDownloadOperation {
 	private static final Logger logger = Logger.getLogger(PoiDownloadOperation.class);
+	//*******2017.08.16 zl *****
+	//
+	private List<ErrorLog> errorLogs = null;
+	
 	/**
 	 * 
 	 * @param grids
 	 * @return url
 	 * @throws Exception
 	 */
-	public String generateZip(Map<String,String> gridDateMap,int subtaskId) throws Exception{
+	public String generateZip(Map<String,String> gridDateMap,int subtaskId,long userId) throws Exception{
+		
 		try{
+			errorLogs = new ArrayList<ErrorLog>();
 			Date startTime = new Date();
 			String day = StringUtils.getCurrentDay();
 
@@ -57,23 +64,28 @@ public class PoiDownloadOperation {
 			String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadFilePathPoi);
 
-			String parentPath = downloadFilePath +File.separator+ day + "/";
+			String parentPath = downloadFilePath +File.separator+ day + File.separator+userId+File.separator;
 
-			String filePath = parentPath + uuid + "/";
+			String filePath = parentPath + uuid + File.separator;
 
 			File file = new File(filePath);
 			
 			if (!file.exists()) {
 				file.mkdirs();
 			}
+			//初始化存储图片属性的map
+			Map<String, Object> logMap=new HashMap<String, Object>();
+			logMap.put("beginTime", DateUtils.getSysDateFormat());
+			
 			logger.info("export ix_poi to poi.txt--->start");
-			export2Txt(gridDateMap, filePath, "poi.txt");
+			export2Txt(gridDateMap, filePath, "poi.txt",logMap);
 			logger.info("export ix_poi to poi.txt--->end");
 			if(subtaskId > 0){
 				logger.info("export pid to --->start");
 				export2TxtBySubtaskId(filePath, subtaskId);
 				logger.info("export pid--->end");
 			}
+			
 			
 			String zipFileName = uuid + ".zip";
 
@@ -87,11 +99,17 @@ public class PoiDownloadOperation {
 			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadUrlPathPoi);
 
-			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
+			String url = serverUrl + downloadUrlPath +File.separator+ day + File.separator+userId+File.separator
 					+ zipFileName;
 			
 			Date endTime = new Date();
 			logger.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
+			
+			logMap.put("endTime", DateUtils.getSysDateFormat());
+			logMap.put("userId", userId);
+			logMap.put("uuid", uuid);
+			
+			insertStatisticsInfoNoException(subtaskId, userId, logMap);
 			return url;
 		} catch (Exception e){
 			throw e;
@@ -100,14 +118,52 @@ public class PoiDownloadOperation {
 	
 
 	/**
+	 * @Title: insertStatisticsInfoNoException
+	 * @Description: 记录poi下载日志
+	 * @param subtaskId
+	 * @param userId
+	 * @param logMap  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年8月15日 下午3:05:07 
+	 */
+	private void insertStatisticsInfoNoException( int subtaskId,
+			long userId, Map<String, Object> logMap)  {
+		try{
+			
+			SysLogStats log = new SysLogStats();
+			log.setLogType(SysLogConstant.POI_DOWNLOAD_TYPE);
+			log.setLogDesc(SysLogConstant.POI_DOWNLOAD_DESC+",jobId :0,subtaskId:"+subtaskId+",downloadTime:"+logMap.get("endTime")+",uuid:"+logMap.get("uuid"));
+			log.setFailureTotal(((int) logMap.get("total"))-((int) logMap.get("success")));
+			log.setSuccessTotal((int) logMap.get("success"));  
+			log.setTotal((int) logMap.get("total"));
+			log.setBeginTime((String) logMap.get("beginTime"));
+			log.setEndTime(DateUtils.getSysDateFormat());
+			if(errorLogs != null && errorLogs.size() > 0 ){
+				JSONArray jsonArrFail = JSONArray.fromObject(errorLogs);
+				log.setErrorMsg(jsonArrFail.toString());
+			}else{
+				log.setErrorMsg("");
+			}
+			log.setUserId(String.valueOf(userId));
+			
+			SysLogOperator.getInstance().insertSysLog(log);
+		
+		}catch (Exception e) {
+			logger.error("记录poi下载日志出错："+e.getMessage(), e);
+		}
+	}
+	
+	/**
 	 * 
 	 * @param grids
 	 * @param folderName
 	 * @param fileName
+	 * @param errorLogs 
 	 * @throws Exception
 	 */
 	public void export2Txt(Map<String,String> gridDateMap,  String folderName,
-			String fileName) throws Exception {
+			String fileName,Map<String, Object> logMap) throws Exception {
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
 		}
@@ -122,12 +178,18 @@ public class PoiDownloadOperation {
 			logger.info("starting convert data...");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");
+			String encoding = System.getProperty("file.encoding");
+			logger.info("系统编码encoding:"+encoding);
 			for (int j = 0; j < ja.size(); j++) {
 				pw.println(ja.getJSONObject(j).toString());
 			}
 			logger.info("file write ok");
+			logMap.put("total", data.size());
+			logMap.put("success", ja.size());
 		} catch (Exception e) {
-			throw e;
+			errorLogs.add(new ErrorLog("", "poi 下载报错:"+e.getMessage()));
+			logger.error("poi 下载报错:"+e.getMessage());
+//			throw e;
 		} finally {
 			pw.close();
 
@@ -143,8 +205,9 @@ public class PoiDownloadOperation {
 		int taskId = 0;
 		int dbid = 0;
 		Map<String,Integer> map = seach.getRegionIdTaskIdBySubtaskId(subtaskId);
+		String fileName = "";
 		if(map != null && map.size() > 0 ){
-			String fileName = map.get("regionId")+"_"+map.get("taskId")+"_"+subtaskId+".txt";
+			fileName = map.get("regionId")+"_"+map.get("taskId")+"_"+subtaskId+".txt";
 			fileName = folderName + fileName;
 			logger.info("fileName : "+fileName);
 			if(map.containsKey("taskId")){taskId = map.get("taskId");}
@@ -166,7 +229,9 @@ public class PoiDownloadOperation {
 				}
 				logger.info("file write ok");
 			} catch (Exception e) {
-				throw e;
+//				throw e;
+				logger.error("生成"+fileName+"文件错误:"+e.getMessage());
+				errorLogs.add(new ErrorLog("", "生成"+fileName+"文件错误:"+e.getMessage()));
 			} finally {
 				pw.close();
 

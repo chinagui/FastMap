@@ -77,10 +77,9 @@ public class DataConfirmController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			//return new ModelAndView("jsonView", fail(e.toString()));
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

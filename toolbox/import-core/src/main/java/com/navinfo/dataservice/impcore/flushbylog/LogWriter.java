@@ -33,9 +33,9 @@ import oracle.sql.STRUCT;
 public class LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
-	private Connection targetDbConn;
-	private boolean ignoreError;
-	private String type;// 日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
+	public Connection targetDbConn;
+	public boolean ignoreError;
+	public String type;// 日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
 
 	/**
 	 * @param conn
@@ -48,6 +48,9 @@ public class LogWriter {
 		this.ignoreError = ignoreError;
 		this.type = type;
 
+	}
+
+	public LogWriter() {
 	}
 
 	/**
@@ -190,7 +193,6 @@ public class LogWriter {
 			this.log.debug("json" + json);
 
 			tmpPos = 0;
-			this.log.debug(json.keys());
 			int i = 0;
 			for (Object key : json.keySet()) {
 				if ("IX_POI".equalsIgnoreCase(tableName)
@@ -275,15 +277,9 @@ public class LogWriter {
 				}
 
 			}
-			int count = this.getDataByRowId(editLog);
-			if (count == 0) {
-				int result = pstmt.executeUpdate();
-				data.put("result", result);
-				data.put("log", "");
-			} else {
-				data.put("result", -1);
-				data.put("log", "新增已存在-接边履历重复");
-			}
+			int result = pstmt.executeUpdate();
+			data.put("result", result);
+			data.put("log", "");
 			return data;
 		} catch (Exception e) {
 

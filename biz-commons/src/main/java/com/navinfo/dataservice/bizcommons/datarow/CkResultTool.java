@@ -211,7 +211,8 @@ public class CkResultTool {
 			//没计算出grid的检查结果
 			sql = "INSERT INTO "+tempTable+"@"+dbLinkName+" SELECT MD5_CODE FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE) AND NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION P WHERE T.MD5_CODE=P.MD5_CODE) AND NOT EXISTS(SELECT 1 FROM CK_EXCEPTION CK WHERE T.MD5_CODE=CK.MD5_CODE)";
 			runner.update(tarConn,sql);
-			sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
+			sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION").replace("\"RESERVED\"", "1 \"RESERVED\"")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
+			log.info("insert sql: "+sql);
 			runner.execute(tarConn, sql);
 			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(tarConn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
 			runner.execute(tarConn, sql);

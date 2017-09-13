@@ -68,15 +68,19 @@ public class SubtaskOperation {
 			List<Object> value = new ArrayList<Object>();
 			if (changeFields.containsKey("NAME")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " NAME= " + "'" + bean.getName() + "'";
+				updateSql += " NAME= '" + bean.getName() + "'";
+			};
+			if (changeFields.containsKey("TYPE")){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " TYPE= " + bean.getType() ;
 			};
 			if (changeFields.containsKey("DESCP")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " DESCP= " + "'" + bean.getDescp() + "'";
+				updateSql += " DESCP= '" + bean.getDescp() + "'";
 			};
 			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_START_DATE= " + "to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
+				updateSql += " PLAN_START_DATE= to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (changeFields.containsKey("EXE_USER_ID")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -88,7 +92,7 @@ public class SubtaskOperation {
 			};
 			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
+				updateSql += " PLAN_END_DATE= to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (changeFields.containsKey("STATUS")){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -728,12 +732,13 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+			sb.append("select fs.finished_poi, fs.total_poi, fs.wait_work_poi,t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
 					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
-			sb.append(" from subtask st,task t,region r,program p");
+			sb.append(" from subtask st,task t,region r,program p,FM_STAT_OVERVIEW_SUBTASK fs ");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
 			sb.append(" and t.program_id = p.program_id");
+			sb.append(" and st.subtask_id = fs.subtask_id(+)");
 			if(dataJson.containsKey("lot") && StringUtils.isNotBlank(dataJson.get("lot").toString())){
 				sb.append(" and t.lot = "+dataJson.getInt("lot"));
 			}
@@ -745,6 +750,9 @@ public class SubtaskOperation {
 				if(0 == platForm){
 					//采集端
 					sb.append(" and st.STAGE in (0) ");
+					//modify by songhe 2017/08.21
+					//只将外业采集的子任务传给采集端
+					sb.append(" and st.work_kind = 1 ");
 				}
 //				else if(1 == platForm){
 //					//编辑端
@@ -822,9 +830,26 @@ public class SubtaskOperation {
 								subtaskObj.setExeUserId(rs.getInt("exe_user_id"));
 
 								log.debug("get stat");
-								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
-								if(subtaskStat != null){
-//									if(subtaskStat.containsKey("poiCommit")){
+								Map<String,Integer> subtaskStat = new HashMap<>();
+								
+								//type=3,一体化grid粗编子任务。增加道路数量及完成度
+								log.debug("get tips stat");
+								if(3 == subtaskObj.getType()||4 == subtaskObj.getType()){
+									FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+									JSONObject resultRoad = api.getSubTaskStatsByWkt(subtaskObj.getSubtaskId(), subtaskObj.getGeometry(), subtaskObj.getType(), subtaskObj.getExeUserId(), subtaskObj.getIsQuality());
+									subtaskStat.put("tipsPrepared", resultRoad.getInt("prepared"));
+									subtaskStat.put("tipsTotal", resultRoad.getInt("total"));
+								}
+								
+								if(rs.getInt("work_kind") == 4){
+									int workedPoi = rs.getInt("total_poi") - rs.getInt("finished_poi") - rs.getInt("wait_work_poi");
+									subtaskStat.put("poiCommit", rs.getInt("finished_poi"));
+									subtaskStat.put("poiWorked", workedPoi);
+									subtaskStat.put("poiWaitWork", rs.getInt("wait_work_poi"));
+								}else{
+									subtaskStat.putAll(subtaskStatRealtime(subtaskObj));
+								}
+								if(subtaskStat != null && subtaskStat.size() > 0){
 									if(rs.getInt("TYPE") == 0 || rs.getInt("TYPE") == 2){
 										subtask.put("poiCommit",subtaskStat.get("poiCommit"));
 										subtask.put("poiWorked",subtaskStat.get("poiWorked"));
@@ -921,6 +946,9 @@ public class SubtaskOperation {
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
 			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
 			
+			if(0 == platForm){
+				sb.append(" AND ST.WORK_KIND = 1");
+			}
 			if (dataJson.containsKey("stage")) {
 				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
 			}else{
@@ -1059,7 +1087,7 @@ public class SubtaskOperation {
 			String sql = "select pes.status, count(1) finishNum"
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.pid = pes.pid"
-					+ " and pes.status ！= 0"
+					+ " and pes.status <> 0"
 					+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
 					//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
 					+ "group by pes.status ";
@@ -1090,23 +1118,6 @@ public class SubtaskOperation {
 				}
 			}
 			);
-			//type=3,一体化grid粗编子任务。增加道路数量及完成度
-			log.debug("get tips stat");
-			if(3 == subtask.getType()||4 == subtask.getType()){
-				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getSubtaskId(), subtask.getGeometry(), subtask.getType(), subtask.getExeUserId(), subtask.getIsQuality());
-//				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
-				stat.put("tipsPrepared", resultRoad.getInt("prepared"));
-				stat.put("tipsTotal", resultRoad.getInt("total"));
-				/*if(0 != tips){
-					percentRoad = resultRoad.getInt("finished")*100/tips;
-				}else{
-					percentRoad = 100;
-				}*/
-			}
-			/*percent = (int) (percentPOI*0.5 + percentRoad*0.5);
-			stat.put("percent", percent);*/
 			return stat;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

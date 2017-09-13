@@ -3,12 +3,14 @@ package com.navinfo.dataservice.engine.man.job;
 import com.alibaba.fastjson.JSON;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
 import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
+import com.navinfo.dataservice.engine.man.job.operator.JobDetailOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONArray;
@@ -19,6 +21,7 @@ import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunne
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.Iterator;
 
 /**
  * Created by wangshishuai3966 on 2017/7/10.
@@ -137,6 +140,28 @@ public class JobService {
             jobProgressOperator= new JobProgressOperator(conn);
             jobProgressOperator.updateStatus(phaseId, status, outParameter);
             conn.commit();
+            if(!StringUtils.isEmpty(outParameter)){
+            	try{
+            		JSONObject outJson = null;
+            		try{
+            			outJson = JSONObject.fromObject(outParameter);
+            		}catch (Exception e) {
+            			log.warn("返回值不是json格式，不进行后续解析："+outParameter);
+            		}
+            		if(outJson!=null&&outJson.containsKey("detail")){
+            			JSONObject detailJson = JSONObject.fromObject(outJson.get("detail"));
+            			JobOperator jobOperator = new JobOperator(conn);
+            			Job job = jobOperator.getByPhaseId(phaseId);
+                        if (job == null) {
+                            throw new Exception("phaseId:" + phaseId + "对应的job不存在！");
+                        }
+                        JobDetailOperator detailOperator=new JobDetailOperator(conn);
+                        detailOperator.batchInsert(job.getJobId(),detailJson);
+            		}
+            	}catch (Exception e) {
+					log.warn("详情解析失败："+outParameter, e);
+				}
+            }
         } catch (Exception e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             log.error(e.getMessage(), e);
@@ -202,12 +227,11 @@ public class JobService {
 	 */
 	private JobRunner jobFactory(JobType jobType){
 		JobRunner runner=null;
-		/*if(jobType==JobType.DAY2MONTH){
+		if(jobType==JobType.DAY2MONTH){
 			runner= new Day2MonthJobRunner();
 		}else if(jobType==JobType.TiPS2MARK){
 			runner= new Tips2MarkJobRunner();
-		}else*/
-		if(jobType==JobType.NOTASK2MID){
+		}else if(jobType==JobType.NOTASK2MID){
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		
  			runner = new TaskMedium2QuickRunner();		

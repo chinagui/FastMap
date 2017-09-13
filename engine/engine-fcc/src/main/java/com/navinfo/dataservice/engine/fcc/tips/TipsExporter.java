@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -45,19 +46,20 @@ public class TipsExporter {
 
 	private static final Logger logger = Logger.getLogger(TipsExporter.class);
 	private String folderName;
+	private String currentDate=DateUtils.getCurrentTimestamp();
 
 	public TipsExporter() {
 	}
 
 	private List<Get> generateGets(String gridId, String date,
-			List<String> rowkeySet) throws Exception {
+			int workType, List<String> rowkeySet) throws Exception {
 		java.sql.Connection conn = null;
 		List<Get> gets = new ArrayList<Get>();
 		try {
 
 			String wkt = GridUtils.grid2Wkt(gridId);
 			TipsRequestParamSQL paramSQL = new TipsRequestParamSQL();
-			String param = paramSQL.getTipsMobileWhere(date,
+			String param = paramSQL.getTipsMobileWhere(date,workType,
 					TipsUtils.notExpSourceType);
 			conn = DBConnector.getInstance().getTipsIdxConnection();
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(conn);
@@ -219,6 +221,14 @@ public class TipsExporter {
 
 				// track.t_trackInfo中最后一条date赋值
 				json.put("t_operateDate", lastDate);
+				
+				if(trackjson.containsKey("t_dataDate")){
+					json.put("t_dataDate", trackjson.getString("t_dataDate"));
+				}
+				else{
+					json.put("t_dataDate", currentDate);
+				}
+				
 
 				json.put("t_handler", 0);
 				/*
@@ -723,12 +733,13 @@ public class TipsExporter {
 	 *            网格 、时间戳对象数组 整型
 	 * @param folderName
 	 *            时间
+	 *  @param workType 作业类型。1：常规下载2：行人导航下载
 	 * @param fileName
 	 *            导出文件名
 	 * @return 导出个数
 	 * @throws Exception
 	 */
-	public int export(JSONArray condition, String folderName, String fileName,
+	public int export(JSONArray condition,int workType, String folderName, String fileName,
 			Map<String, Set<String>> patternImages) throws Exception {
 
 		int count = 0;
@@ -758,7 +769,7 @@ public class TipsExporter {
 				date = null;
 			}
 
-			List<Get> gets = generateGets(grid, date, rowkeySet);
+			List<Get> gets = generateGets(grid, date,workType, rowkeySet);
 
 			getsAll.addAll(gets);
 		}
@@ -793,7 +804,7 @@ public class TipsExporter {
 		Set<String> images = new HashSet<String>();
 
 		TipsExporter exporter = new TipsExporter();
-		System.out.println(exporter.export(condition, "F:\\FCC\\track",
+		System.out.println(exporter.export(condition, 1,"F:\\FCC\\track",
 				"1.txt", null));
 		System.out.println(images);
 		System.out.println("done");

@@ -3,14 +3,19 @@ package com.navinfo.dataservice.dao.fcc.check.selector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.dao.fcc.check.model.rowmapper.CheckWrongRowMapper;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: CheckResultSelector.java
@@ -42,11 +47,11 @@ public class CheckWrongSelector {
 	 * @throws Exception 
 	 * @time:2017-5-24 下午8:58:36
 	 */
-	public  CheckWrong queryByTipsRowkey(int checkTaskId,String rowkey) throws Exception {
+	public  CheckWrong queryByTipsRowkey(int checkTaskId,String objectId) throws Exception {
 		
 		CheckWrong wrong=null;
 		
-		String sql="SELECT * FROM check_wrong g WHERE g.check_task_id=?  AND g.tips_rowkey= ?";
+		String sql="SELECT * FROM check_wrong g WHERE g.check_task_id=?  AND g.object_id= ?";
 		
 		PreparedStatement pst=null;
 		
@@ -61,7 +66,7 @@ public class CheckWrongSelector {
 			
 			pst.setInt(1, checkTaskId);
 			
-			pst.setString(2, rowkey);
+			pst.setString(2, objectId);
 			
 			rs=pst.executeQuery();
 			
@@ -93,7 +98,7 @@ public class CheckWrongSelector {
 	 * @throws Exception 
 	 * @time:2017-5-25 下午3:43:06
 	 */
-	public  boolean rowkeyHasExtract(int checkTaskId,String rowkey) throws Exception{
+	public  boolean rowkeyHasExtract(int checkTaskId,String objectId) throws Exception{
 		
 		int count=0;
 		Connection conn=null;
@@ -101,7 +106,7 @@ public class CheckWrongSelector {
 			
 			conn=DBConnector.getInstance().getCheckConnection();
 			QueryRunner run = new QueryRunner();
-			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.check_task_id=?  AND g.tips_rowkey= ?",checkTaskId,rowkey);	
+			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.check_task_id=?  AND g.object_id= ?",checkTaskId,objectId);	
 		}catch (Exception e) {
 			throw e;
 		}finally{
@@ -141,7 +146,55 @@ public class CheckWrongSelector {
 		return count>0;
 	}
 	
-	
+	/**
+	 * 根据logId获取质检问题记录
+	 * @param logId
+	 * @throws Exception
+	 */
+	public static JSONObject getByLogId(String logId) throws Exception {
+		JSONObject obj = new JSONObject();
+		String sql = "select log_id, check_task_id, object_type, object_id, qu_desc, reason, "
+				+ "er_content, qu_rank, work_time, check_time, is_prefer, worker, checker, er_type "
+				+ "from check_wrong where log_id=:1";
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnector.getInstance().getCheckConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, logId);
+			
+			rs = pstmt.executeQuery();
+			while(rs.next()){
+				obj.put("logId", rs.getString("log_id"));
+				obj.put("checkTaskId", rs.getInt("check_task_id"));
+				obj.put("objectType", rs.getString("object_type")!=null?rs.getString("object_type"):"");
+				obj.put("objectId", rs.getString("object_id")!=null?rs.getString("object_id"):"");
+				obj.put("erType", rs.getInt("er_type"));
+				obj.put("quDesc", rs.getString("qu_desc")!=null?rs.getString("qu_desc"):"");
+				obj.put("reason", rs.getString("reason")!=null?rs.getString("reason"):"");
+				obj.put("erContent", rs.getString("er_content")!=null?rs.getString("er_content"):"");
+				obj.put("quRank", rs.getString("qu_rank")!=null?rs.getString("qu_rank"):"");
+				obj.put("worker", rs.getString("worker")!=null?rs.getString("worker"):"");
+				obj.put("checker", rs.getString("checker")!=null?rs.getString("checker"):"");
+				obj.put("isPrefer", rs.getInt("is_prefer"));
+				String workTime = DateUtils.format(rs.getTimestamp("work_time"), "yyyy-MM-dd HH:mm:ss");
+				String checkTime= DateUtils.format(rs.getTimestamp("check_time"), "yyyy-MM-dd HH:mm:ss");
+				obj.put("workTime", workTime!=null?workTime:"");
+				obj.put("checkTime", checkTime!=null?checkTime:"");
+			}
+			
+			
+			return obj;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception(e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	
 

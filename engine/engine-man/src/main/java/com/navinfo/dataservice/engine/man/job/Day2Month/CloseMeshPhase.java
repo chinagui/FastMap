@@ -64,6 +64,7 @@ public class CloseMeshPhase extends JobPhase {
 
                 tipsMeshset.addAll(meshs);
                 
+                QueryRunner run = new QueryRunner();
                 if(tipsMeshset.size()>0) {
                 	//快线传进来的参数为第3批次，不关闸；其他的，则与原始批次不一致的都要关闸
                 	meta = DBConnector.getInstance().getMetaConnection();
@@ -82,9 +83,12 @@ public class CloseMeshPhase extends JobPhase {
                     String updateSql = "UPDATE SC_PARTITION_MESHLIST SET QUICK"+lot+"_FLAG=1 WHERE MESH IN "
                             + tipsMeshset.toString().replace("[", "(").replace("]", ")");
                     log.info("phaseId:"+jobProgress.getPhaseId()+",updateMesh sql:"+updateSql);
-                    QueryRunner run = new QueryRunner();
                     run.update(meta, updateSql);
                 }
+                //维护快线项目下月编任务对应的lot字段
+                int programId = (int) jobRelation.getItemId();
+                String sql = "UPDATE TASK T SET T.LOT = "+lot+" WHERE T.PROGRAM_ID = "+programId;
+                run.update(conn, sql);
             }
             //更新状态为成功
             jobProgress.setStatus(JobProgressStatus.SUCCESS);

@@ -85,7 +85,7 @@ public class TranslateConstant {
         put("收费处", "Toll Gate ");
         put("岗", "Post ");
         put("口", "Intersection ");
-        put("桥", "Bridge ");
+        put("桥", "Brg ");
         put("岛", "Island ");
         put("宫", "Temple ");
         put("庙", "Temple ");

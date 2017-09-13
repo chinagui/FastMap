@@ -29,8 +29,9 @@ public class CheckWrongRowMapper {
 		CheckWrong wrong=new CheckWrong();
 		wrong.setLogId(rs.getString("LOG_ID"));
 		wrong.setCheckTaskId(rs.getInt("CHECK_TASK_ID"));
-		wrong.setTipsCode(rs.getString("TIPS_CODE"));
-		wrong.setTipsRowkey(rs.getString("TIPS_ROWKEY"));
+		wrong.setObjectType(rs.getString("OBJECT_TYPE"));
+		wrong.setObjectId(rs.getString("OBJECT_ID"));
+		wrong.setErType(rs.getInt("ER_TYPE"));
 		wrong.setQuDesc(rs.getString("QU_DESC"));
 		wrong.setReason(rs.getString("REASON"));
 		wrong.setErContent(rs.getString("ER_CONTENT"));

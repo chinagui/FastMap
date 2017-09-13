@@ -253,7 +253,7 @@ public class ColumnCoreControl {
 
 		try {
 			// int taskId= jsonReq.getInt("taskId");
-
+			logger.info("start columnQuery");
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 
 			int status = jsonReq.getInt("status");
@@ -266,13 +266,14 @@ public class ColumnCoreControl {
 			
 //			int startRow = (pageNo - 1) * pageSize + 1;
 //			int endRow = pageNo * pageSize;
-			
+			logger.info("query subtask");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
+			logger.info("获取未提交数据的pid以及总数");
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
@@ -289,15 +290,20 @@ public class ColumnCoreControl {
 				return result;
 			}
 			//获取数据详细字段
+			logger.info("查詢pidList已打作业标记");
 			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId,isQuality);
+			logger.info("查詢pidList在当前一级项下的检查错误");
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
+			logger.info("查詢POI质检问题");
 			Map<Integer,JSONObject> isProblems=new HashMap<Integer,JSONObject>();
 			if(isQuality==1&&status==2){isProblems= selector.queryIsProblemsByPids(pidList,secondWorkItem,subtask.getSubtaskId());}
+			logger.info("查詢精编作业数据");
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules,isProblems);
 
 			result.put("total", total);
 			result.put("rows", datas);
+			logger.info("end columnQuery");
 			return result;
 		} catch (Exception e) {
 			throw e;
@@ -556,7 +562,6 @@ public class ColumnCoreControl {
 			}
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
-			
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
 			}
@@ -564,7 +569,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId,isQuality);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask,subtaskId, userId,isQuality);
 			
 			return result;
 		} catch (Exception e) {

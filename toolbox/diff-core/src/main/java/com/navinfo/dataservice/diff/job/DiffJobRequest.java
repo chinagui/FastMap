@@ -18,14 +18,19 @@ public class DiffJobRequest extends AbstractJobRequest
 	//左边为变化库，右边为基准库
     private int leftDbId;//左边数据库
     private int rightDbId;//右边数据库
+    private String objName;
+    private String condition;//差分的范围：all|pidTable|pidSegment|mesh...,暂只支持all|pidTable
+    private String pidTable;//党condition为pidTable时有意义，传入写入pid的 表名，左右库中都需存在
 	//两者只能一个有值，当两者都有值时只取specificTables
 	private List<String> specificTables;
 	private List<String> excludedTables;
+	private int diffType=1;//1为oracle差分，2为java差分
     //线程数
     private int threadCount = 10;
     private String level = LEVEL_COLUMN; //差分粒度：表级，
     public static final String LEVEL_TABLE = "table";
     public static final String LEVEL_COLUMN = "column";
+    
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -67,6 +72,30 @@ public class DiffJobRequest extends AbstractJobRequest
 		this.rightDbId = rightDbId;
 	}
 
+	public String getObjName() {
+		return objName;
+	}
+
+	public void setObjName(String objName) {
+		this.objName = objName;
+	}
+
+	public String getCondition() {
+		return condition;
+	}
+
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
+
+	public String getPidTable() {
+		return pidTable;
+	}
+
+	public void setPidTable(String pidTable) {
+		this.pidTable = pidTable;
+	}
+
 	public List<String> getSpecificTables() {
 		return specificTables;
 	}
@@ -81,6 +110,14 @@ public class DiffJobRequest extends AbstractJobRequest
 
 	public void setExcludedTables(List<String> excludedTables) {
 		this.excludedTables = excludedTables;
+	}
+
+	public int getDiffType() {
+		return diffType;
+	}
+
+	public void setDiffType(int diffType) {
+		this.diffType = diffType;
 	}
 
 	public int getThreadCount() {

@@ -4,6 +4,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -40,9 +41,12 @@ public class PersonTipsJob extends AbstractStatJob {
 
     @Override
     public String stat() throws JobException {
+    	PersonTipsJobRequest statReq = (PersonTipsJobRequest)request;
         try {
+        	String workDay = statReq.getWorkDay();
+        	log.info("start stat PersonTipsJob");
             //1.获取需要统计的子任务号
-            Map<Integer, JSONObject> resultMap = getSubTaskLineStat();
+            Map<Integer, JSONObject> resultMap = getSubTaskLineStat(workDay);
 
             Map<String,List<Map<String,Object>>> result = new HashMap<String,List<Map<String,Object>>>();
             List<Map<String,Object>> resultMapList = new ArrayList<>();
@@ -51,10 +55,16 @@ public class PersonTipsJob extends AbstractStatJob {
                 Map<String, Object> subTaskMap = new HashMap<>();
                 subTaskMap.put("subtaskId", mSubTaskId);
                 subTaskMap.put("tipsAddLen", statObj.getDouble("tipsAddLen"));
-                subTaskMap.put("tipsAllLen", statObj.getDouble("tipsAllLen"));
+                subTaskMap.put("tipsAllNum", statObj.getDouble("tipsAllNum"));
+                subTaskMap.put("workDay", workDay);
                 resultMapList.add(subTaskMap);
             }
             result.put("person_tips", resultMapList);
+            JSONObject identifyJson=new JSONObject();
+			identifyJson.put("timestamp", statReq.getTimestamp());
+			identifyJson.put("workDay", statReq.getWorkDay());
+			statReq.setIdentify(identifyJson.toString());
+            log.info("end stat PersonTipsJob");
             return JSONObject.fromObject(result).toString();
         }catch (Exception e) {
             throw new JobException("PersonTipsJob执行报错", e);
@@ -66,7 +76,7 @@ public class PersonTipsJob extends AbstractStatJob {
      * @return
      * @throws Exception
      */
-    private Map<Integer, JSONObject> getSubTaskLineStat() throws Exception {
+    private Map<Integer, JSONObject> getSubTaskLineStat(final String timestamp) throws Exception {
         java.sql.Connection orclConn = null;
         try {
             String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE\n" +
@@ -88,56 +98,54 @@ public class PersonTipsJob extends AbstractStatJob {
                     try{
                         hbaseConn = HBaseConnector.getInstance().getConnection();
                         htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-                        //当前时间
-                        String systemDate = sdf.format(new Date());
                         while(rs.next()){
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
                             String rowkey = rs.getString("ID");
-                            double allLength = 0;
+                            long tipsAllNum = 0;
                             double newLength = 0;
                             JSONObject statObj = null;
                             if(subtaskTipsMap.containsKey(s_mSubTaskId)) {//已有
                                 statObj = subtaskTipsMap.get(s_mSubTaskId);
-                                allLength = statObj.getDouble("tipsAllLen");
+                                tipsAllNum = statObj.getLong("tipsAllNum");
                                 newLength = statObj.getDouble("tipsAddLen");
                             }else {
                                 statObj = new JSONObject();
                                 subtaskTipsMap.put(s_mSubTaskId, statObj);
                             }
-                            //测线显示坐标
-                            STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
-                            //测线里程计算
-                            double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
-                            allLength += lineLength;
-                            statObj.put("tipsAllLen", allLength);
-
-                            //是否当天新增
-                            int lifecycle = rs.getInt("T_LIFECYCLE");
-                            if(lifecycle == 3) {//Tips状态是新增
-                                JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
-                                if(hbaseTip.containsKey("track")) {
-                                    JSONObject track = hbaseTip.getJSONObject("track");
-                                    if(track.containsKey("t_trackInfo")) {
-                                        JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-                                        if(trackInfoArr != null && trackInfoArr.size() > 0) {//查看track履历，外业当天是否提交
-                                            for (int i = trackInfoArr.size() - 1; i > -1; i--) {
-                                                JSONObject trackInfo = trackInfoArr.getJSONObject(i);
-                                                int stage = trackInfo.getInt("stage");
-                                                String date = trackInfo.getString("date");
-                                                if(stage == 1 && date.startsWith(systemDate)) {//当天外业新增
-                                                    newLength += lineLength;
-                                                }
+                            //判断是否当天的tips
+                            JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+                            if(hbaseTip.containsKey("track")) {
+                                JSONObject track = hbaseTip.getJSONObject("track");
+                                if(track.containsKey("t_trackInfo")) {
+                                    JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+                                    if(trackInfoArr != null && trackInfoArr.size() > 0) {//查看track履历，外业当天是否提交
+                                        for (int i = trackInfoArr.size() - 1; i > -1; i--) {
+                                            JSONObject trackInfo = trackInfoArr.getJSONObject(i);
+                                            int stage = trackInfo.getInt("stage");
+                                            String date = trackInfo.getString("date");
+                                            if(stage == 1 && date.startsWith(timestamp)) {//当天外业新增
+                                            	tipsAllNum += 1;                                                
+                                            	//是否当天新增
+                                                int lifecycle = rs.getInt("T_LIFECYCLE");
+                                                if(lifecycle == 3) {//Tips状态是新增
+                                                	//测线显示坐标
+                                                    STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
+                                                    //测线里程计算
+                                                    double lineLength = GeometryUtils.getLinkLength(GeoTranslator.struct2Jts(wktLocation));
+                                                    newLength += lineLength;                                                    
+                                                } 
+                                                break;
                                             }
                                         }
                                     }
                                 }
-                            }
+                            }    
+                            statObj.put("tipsAllNum", tipsAllNum);
                             statObj.put("tipsAddLen", newLength);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("", e);
                         throw new SQLException("PersonTipsJob报错: ", e);
                     }finally {
                         if(rs != null) {

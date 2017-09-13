@@ -5,8 +5,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -40,34 +38,30 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":401000503,\"data\":{\"kind\":9," +
-                "\"routeAdopt\":0,\"speedlimits\":[{\"fromSpeedLimit\":15,\"toSpeedLimit\":15,\"speedClass\":7," +
-                "\"rowId\":\"5F330AFA59CC4088BD524D779563404E\",\"linkPid\":401000503,\"objStatus\":\"UPDATE\"}]," +
-                "\"rowId\":\"1FC94788D96A4DE18083C83D366F94BE\",\"pid\":401000503,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDROAD\",\"data\":{\"linkPids\":[609000169,610000148,701000145,601000168," +
+                "605000157]},\"dbId\":65,\"subtaskId\":672}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"RDLINK\",\"objId\":400000505,\"data\":{\"kind\":2," +
-                "\"routeAdopt\":5,\"rowId\":\"5DAF09FEDCDE4A569418F7E93FF20D22\",\"pid\":400000505,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"objId\":703000004,\"infect\":0,\"dbId\":65,\"subtaskId\":672}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void repair() {
-        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":501000385,\"dbId\":13,\"subtaskId\":64," +
-                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[113.35777,36.50017]," +
-                "[113.35765376687048,36.50000001391655]]},\"catchInfos\":[{\"nodePid\":404000309,\"longitude\":113.35765376687048," +
-                "\"latitude\":36.50000001391655}]}}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":17908374,\"data\":{\"type\":\"RDLINK\"," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.49924612045288,36.08966735778462],[115.49817,36.09029]]}," +
+                "\"catchInfos\":[{\"nodePid\":14026462,\"longitude\":115.49924612045288,\"latitude\":36.08966735778462}]},\"dbId\":13," +
+                "\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":393,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.85005083680153,39.96127128417874]," +
-                "[116.85031503438948,39.96148303704254]]},\"catchLinks\":[]}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDOBJECT\",\"data\":{\"links\":[2571609,17621452,30314412,2574669]," +
+                "\"inters\":[],\"roads\":[],\"longitude\":115.50035119056702,\"latitude\":36.061326740549056},\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 
@@ -80,7 +74,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search() {
-        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDLINK\"],\"x\":53983,\"y\":24870,\"z\":16}";
+        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDNODE\"],\"x\":07588,\"y\":24870,\"z\":16}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {
@@ -157,9 +151,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void delete() throws Exception {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"dbId\":18,\"subtaskId\":24,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.99932030154248,40.08102790254993]," +
-                "[119.99975,40.08087]]},\"catchLinks\":[{\"linkPid\":401000001,\"lon\":119.99932030154248,\"lat\":40.08102790254993}]}}";
+        String requester = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"objId\":400000683,\"infect\":0,\"dbId\":13,\"subtaskId\":817}";
         TestUtil.run(requester);
     }
 

@@ -87,12 +87,12 @@ public class GroupStatJobLauncher {
         }
 	}
 	
-	public void exchange(String timestamp,String jobType)throws Exception{
+	public void exchange(String identify,String jobType)throws Exception{
 		if(jobs!=null){
 			//log.info("1");
 			for(GroupStatJob job:jobs){
 				//log.info("1.1");
-				job.trigger(timestamp, jobType);
+				job.trigger(identify, jobType);
 			}
 		}
 	}

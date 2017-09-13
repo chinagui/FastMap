@@ -2,7 +2,12 @@ package com.navinfo.dataservice.engine.fcc.track;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.navinfo.dataservice.api.es.iface.EsApi;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.fcc.AdasHBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.nirobot.core.model.elasticsearch.TrackPoint;
 import net.sf.json.JSON;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -40,7 +45,7 @@ public abstract class TrackUpload {
      * @return
      * @throws Exception
      */
-    public abstract Put generatePut(JSONObject json, String rowkey) throws Exception;
+    public abstract Put generatePut(JSONObject json, String rowkey, List trackIdxList) throws Exception;
 
     /**
      * 轨迹类型  "traceType":0 普通轨迹线； 1 adas轨迹点
@@ -52,16 +57,22 @@ public abstract class TrackUpload {
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
 	 * 
 	 * @param fileName
+     * @param type 1普通轨迹 2ADAS轨迹
 	 * @throws Exception
 	 */
-	public void run(String fileName, String tableName) throws Exception {
-		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-        this.createTabIfNotExists(hbaseConn, tableName);
+	public void run(String fileName, String tableName, int type) throws Exception {
+		Connection hbaseConn = null;
         Table htab = null;
         try{
+			if(type == 2){//ADAS轨迹
+                hbaseConn = AdasHBaseConnector.getInstance().getConnection();
+            }else {//普通轨迹
+                hbaseConn = HBaseConnector.getInstance().getConnection();
+            }
+            this.createTabIfNotExists(hbaseConn, tableName);
 			htab = hbaseConn.getTable(TableName
 					.valueOf(tableName));
-			loadFileContent(fileName, htab);
+			loadFileContent(fileName, htab, type);
         }catch (Exception e) {
 			throw e;
 		}finally {
@@ -75,16 +86,19 @@ public abstract class TrackUpload {
 	 * 读取track文件，组装Get列表
 	 * 
 	 * @param fileName
+     * @param type 1普通轨迹 2ADAS轨迹
 	 * @return
 	 * @throws Exception
 	 */
-	private void loadFileContent(String fileName, Table htab) throws Exception {
+	private void loadFileContent(String fileName, Table htab, int type) throws Exception {
 		FileInputStream fis = null;
 		try{
 			fis=new FileInputStream(fileName);
 			Scanner scanner = new Scanner(fis);
 			List<Put> puts = new ArrayList<Put>();
 			int count = 0;
+            List trackIdxList = new ArrayList();
+            EsApi apiService = (EsApi) ApplicationContextUtil.getBean("esApi");
 			while (scanner.hasNextLine()) {
 				total++;
 				String rowkey = null;
@@ -94,20 +108,31 @@ public abstract class TrackUpload {
 	                //获取rowkey
 	                rowkey = this.getSourceRowkey(json);
 					//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
-					Put put = this.generatePut(json, rowkey);
+					Put put = this.generatePut(json, rowkey, trackIdxList);
 					puts.add(put);
 					count++;
 					if (count > 5000) {
 						htab.put(puts);
 						puts.clear();
+
+                        if(trackIdxList != null && trackIdxList.size() > 0) {
+                            apiService.insert(trackIdxList);
+                            trackIdxList.clear();
+                        }
 						count = 0;
 					}
 				}catch (Exception e) {
 					failed ++;
-					throw new Exception(e.getMessage());
+					throw new Exception(rowkey + "报错", e);
 				}
 			}
-			htab.put(puts);
+			if(puts.size() > 0) {
+                htab.put(puts);
+            }
+            if(trackIdxList.size() > 0) {
+                apiService.insert(trackIdxList);
+                trackIdxList.clear();
+            }
 		}finally{
 			if(fis!=null)fis.close();
 		}
@@ -153,11 +178,30 @@ public abstract class TrackUpload {
 	public static void main(String[] args) throws Exception {
 //		AdasTrackPointUpload trackUploader = new AdasTrackPointUpload();
 //		trackUploader.run("F:\\FCC\\adas_track_collect.json","trackpoints_trunk");
+
+
+        TrackLinesUpload trackUploader = new TrackLinesUpload();
+        trackUploader.run("F:\\FCC\\track_collection.json", HBaseConstant.trackLineTab, 1);
+System.exit(0);
 //        System.out.println(trackUploader.getFailed());
-        net.sf.json.JSONObject nameTipsJson = new net.sf.json.JSONObject();
-        nameTipsJson.put("g_location", "{\"coordinates\":[116.79561,39.93595],\"type\":\"Point\"}");
-        net.sf.json.JSONObject gLocation = net.sf.json.JSONObject.fromObject(nameTipsJson.get("g_location"));
-        net.sf.json.JSONArray jsonArray = gLocation.getJSONArray("coordinates");
-        System.out.println(jsonArray.get(0));
+//        net.sf.json.JSONObject nameTipsJson = new net.sf.json.JSONObject();
+//        nameTipsJson.put("g_location", "{\"coordinates\":[116.79561,39.93595],\"type\":\"Point\"}");
+//        net.sf.json.JSONObject gLocation = net.sf.json.JSONObject.fromObject(nameTipsJson.get("g_location"));
+//        net.sf.json.JSONArray jsonArray = gLocation.getJSONArray("coordinates");
+//        System.out.println(jsonArray.get(0));
+        List list = new ArrayList();
+        list.add(1);
+        list.add(2);
+
+        for(Object obj : list) {
+            System.out.println(obj);
+        }
+
+        list.clear();
+        System.out.println("****************************");
+        for(Object obj : list) {
+            System.out.println(obj);
+        }
+        System.out.println("****************************");
 	}
 }

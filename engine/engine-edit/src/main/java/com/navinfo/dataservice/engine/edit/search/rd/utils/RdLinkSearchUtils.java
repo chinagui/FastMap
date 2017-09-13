@@ -1,32 +1,22 @@
 package com.navinfo.dataservice.engine.edit.search.rd.utils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
-import com.navinfo.navicommons.database.sql.DBUtils;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
+import net.sf.json.JSONArray;
+
+import java.sql.Connection;
+import java.util.*;
 
 /**
  * 
@@ -41,6 +31,8 @@ public class RdLinkSearchUtils {
 	}
 
 	public final int variableSpeedNextLinkCount = 99;
+
+	private final int speedLimitNextLinkCount = 30;
 
 	RdLinkSelector linkSelector = null;
 
@@ -207,20 +199,15 @@ public class RdLinkSearchUtils {
 
 	/**
 	 * 查询link串，批量修改限速使用。
-	 * 
-	 * @param linkPid
-	 *            关联link
-	 * @param direct
-	 *            限速方向
-	 * @param speedDependent
-	 *            小于0，普通限速； 大于0，条件限速，speedDependent（限速条件值）
-	 * @return
-	 * @throws Exception
+	 *
+	 * @param linkPid   关联link
+	 * @param direct    限速方向
+	 * @param dependent 小于0，普通限速； 大于0，条件限速，dependent（限速条件值）
 	 */
-	public List<Integer> getConnectLinks(int linkPid, int direct,
-			int speedDependent) throws Exception {
+	public List<Integer> getConnectLinks(int linkPid, int direct, int dependent, int speedValue)
+			throws Exception {
 
-		List<Integer> nextLinkPids = new ArrayList<Integer>();
+		List<Integer> nextLinkPids = new ArrayList<>();
 
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
@@ -243,13 +230,22 @@ public class RdLinkSearchUtils {
 			nodePid = targetLink.getsNodePid();
 		}
 
-		getConnectLink(targetLink, nodePid, nextLinkPids,  speedDependent);
+		getConnectLink(targetLink, nodePid, nextLinkPids, dependent, speedValue);
 
 		return nextLinkPids;
-	}	
-	
-	private void getConnectLink(RdLink targetLink, int connectNodePid,
-			List<Integer> linkPids, int speedDependent) throws Exception {
+	}
+
+	/**
+	 * 批量修改限速查询link串 递归调用
+	 *
+	 * @param targetLink 当前link
+	 * @param nodePid    连接点nodePid
+	 * @param linkPids   link串Pid
+	 * @param dependent  小于0，普通限速； 大于0，条件限速，dependent（限速条件值）
+	 * @param speedValue 限速值
+	 */
+	private void getConnectLink(RdLink targetLink, int nodePid, List<Integer> linkPids, int dependent, int speedValue)
+			throws Exception {
 
 		if (!linkPids.contains(targetLink.getPid())) {
 
@@ -257,108 +253,93 @@ public class RdLinkSearchUtils {
 		} else {
 			return;
 		}
-		if (linkPids.size() > 29) {
+		if (linkPids.size() >= speedLimitNextLinkCount) {
 
 			return;
 		}
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2) SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3)))) ";
+		RdLinkSelector selector = new RdLinkSelector(conn);
 
-		if (speedDependent >= 0) {
+		List<RdLink> links = selector.loadByNodePidOnlyRdLink(nodePid, true);
 
-			sql += " AND S.SPEED_TYPE = 3 ";
+		RdLink nextLink = null;
 
-		} else {
+		double minAngle = Double.MAX_VALUE;
 
-			sql += " AND S.SPEED_TYPE = 0 ";
-		}
-		
-		sql += "  ) RDSPEEDLIMIT FROM TMP1 B ";
+		LineSegment targetlineSegment = getLineSegment(targetLink,
+				nodePid);
 
-		PreparedStatement pstmt = null;
+		for (RdLink link : links) {
 
-		ResultSet resultSet = null;
-
-		try {
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, connectNodePid);
-			pstmt.setInt(2, connectNodePid);
-			pstmt.setInt(3, connectNodePid);
-			pstmt.setInt(4, connectNodePid);
-			pstmt.setInt(5, connectNodePid);
-			pstmt.setInt(6, connectNodePid);
-
-			resultSet = pstmt.executeQuery();
-
-			int speedlimitCount = -1;
-
-			RdLink nextLink = null;
-
-			double minAngle = Double.MAX_VALUE;
-
-			LineSegment targetlineSegment = getLineSegment(targetLink,
-					connectNodePid);
-
-			while (resultSet.next()) {
-
-				int linkPid = resultSet.getInt("LINK_PID");
-
-				if (linkPid == targetLink.getPid()) {
-					continue;
-				}
-
-				Geometry linkGeometry = GeoTranslator.struct2Jts(
-						(STRUCT) resultSet.getObject("GEOMETRY"), 100000, 0);
-
-				int sNodePid = resultSet.getInt("S_NODE_PID");
-
-				int eNodePid = resultSet.getInt("E_NODE_PID");
-
-				RdLink link = new RdLink();
-
-				link.setPid(linkPid);
-
-				link.setGeometry(linkGeometry);
-
-				link.setsNodePid(sNodePid);
-
-				link.seteNodePid(eNodePid);
-
-				LineSegment lineSegment = getLineSegment(link, connectNodePid);
-
-				double angle = Math.abs(180 - AngleCalculator
-						.getConnectLinksAngle(targetlineSegment, lineSegment,0));
-
-				if (angle < minAngle) {
-
-					minAngle = angle;
-
-					nextLink = link;
-
-					speedlimitCount = resultSet.getInt("RDSPEEDLIMIT");
-				}
+			if (link.getPid() == targetLink.getPid()) {
+				continue;
+			}
+			if (link.getDirect() == 2 && link.getsNodePid() != nodePid) {
+				continue;
+			}
+			if (link.getDirect() == 3 && link.geteNodePid() != nodePid) {
+				continue;
 			}
 
-			if (speedlimitCount > 0 || nextLink == null) {
-				return;
+			LineSegment lineSegment = getLineSegment(link, nodePid);
+
+			double angle = Math.abs(180 - AngleCalculator.getConnectLinksAngle(targetlineSegment, lineSegment, 0));
+
+			if (angle < minAngle) {
+
+				minAngle = angle;
+
+				nextLink = link;
 			}
-
-			int targetNodePid = nextLink.getsNodePid() == connectNodePid ? nextLink
-					
-					.geteNodePid() : nextLink.getsNodePid();
-
-			getConnectLink(nextLink, targetNodePid, linkPids, speedDependent);
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-
-			DBUtils.closeStatement(pstmt);
 		}
+
+		if (nextLink == null || stopBySpeedLimit(nextLink, speedValue, nodePid, dependent)) {
+			return;
+		}
+
+		int targetNodePid = nextLink.getsNodePid() == nodePid ? nextLink.geteNodePid() : nextLink.getsNodePid();
+
+		getConnectLink(nextLink, targetNodePid, linkPids, dependent, speedValue);
+	}
+
+	/**
+	 * 判断指定link上关联的限速是否满足停止追踪条件
+	 *
+	 * @param nextLink       下一条link
+	 * @param speedValue     限速值
+	 * @param nodePid        连接点nodePid
+	 * @param speedDependent 小于0，普通限速； 大于0，条件限速，dependent（限速条件值）
+	 */
+	private boolean stopBySpeedLimit(RdLink nextLink, int speedValue, int nodePid, int speedDependent) throws Exception {
+
+		int direct = nextLink.getDirect();
+
+		if (direct != 2 && direct != 3) {
+			direct = nextLink.getsNodePid() == nodePid ? 2 : 3;
+		}
+
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
+
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(nextLink.getPid(), true);
+
+		for (RdSpeedlimit limit : limits) {
+
+			if (limit.getDirect() != direct) {
+				continue;
+			}
+			if (limit.getSpeedFlag() == 1 && limit.getSpeedValue() != speedValue) {
+				continue;
+			}
+			if (speedDependent < 0 && limit.getSpeedType() != 0) {
+				continue;
+
+			} else if (speedDependent >= 0
+					&& (limit.getSpeedType() != 3 || limit.getSpeedDependent() != speedDependent)) {
+				continue;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids,
@@ -395,10 +376,10 @@ public class RdLinkSearchUtils {
 
 		return array;
 	}
-	
+
 
 	/***
-	 * @查询上下线分离关联的link 1.关联link数量不能超过maxNum 2.关联查找link必须联通link方向一致
+	 * 查询上下线分离关联的link 1.关联link数量不能超过maxNum 2.关联查找link必须联通link方向一致
 	 *                 3.关联link必须是夹角最小的一个link
 	 * @param cuurentLinkPid
 	 * @param cruuentNodePidDir

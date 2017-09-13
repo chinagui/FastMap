@@ -3,8 +3,10 @@ package com.navinfo.dataservice.control.service;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,10 +17,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.app.upload.stat.UploadCrossRegionInfoDao;
+import com.navinfo.dataservice.control.app.upload.stat.UploadRegionInfoOperator;
 import com.navinfo.dataservice.control.model.UploadIxPoi;
 import com.navinfo.dataservice.control.model.UploadIxPoiAttachments;
 import com.navinfo.dataservice.control.model.UploadIxPoiChargingPole;
@@ -40,6 +46,8 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelat
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorUploadPois;
 import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -57,14 +65,13 @@ import net.sf.json.JSONObject;
 public class UploadManager {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Long userId;
-	private String fileName;
+	private String dir;
 	private int subtaskId=0;
 	private boolean multiThread=false;
-	
 	private UploadResult result;
-	public UploadManager(long userId,String fileName){
+	public UploadManager(long userId,String dir){
 		this.userId=userId;
-		this.fileName=fileName;
+		this.dir=dir;
 	}
 	public int getSubtaskId(){
 		return subtaskId;
@@ -73,10 +80,10 @@ public class UploadManager {
 		this.subtaskId=subtaskId;
 	}
 	
-	public UploadResult upload(Map<String, Photo> photoMap)throws Exception{
+	public UploadResult upload()throws Exception{
 		result = new UploadResult();
 		//1.读取文件
-		if(StringUtils.isEmpty(fileName)) throw new Exception("上传文件名为空");
+		if(StringUtils.isEmpty(dir)) throw new Exception("上传目录为空");
 		JSONArray rawPois = readPois();
 		if(rawPois==null||rawPois.size()==0){
 			log.warn("从文件中未读取到有效poi,导入0条数据。");
@@ -86,85 +93,157 @@ public class UploadManager {
 		log.info("从文件中读取poi："+result.getTotal()+"条。");
 		//检查上传的文件的字段的格式
 		checkAttribute(rawPois);
-		
-		//2.将pois分发到各个大区
-		Map<Integer,CollectorUploadPois> pois = distribute(rawPois);//key:大区库id
-		//3.开始导入数据
+
 		//先获取任务信息
-		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-		Map<String,Integer> taskMap = manApi.getTaskBySubtaskId(subtaskId);
 		int taskId=0;
 		int taskType=0;
-		if(taskMap!=null&&taskMap.size()>0){
-			taskId=taskMap.get("taskId");
-			taskType=taskMap.get("programType");
-		}
-		//开始入库
-		for(Entry<Integer, CollectorUploadPois> entry:pois.entrySet()){
-			int dbId = entry.getKey();
-			CollectorUploadPois uPois = entry.getValue();
-			log.info("start importing pois in dbId:"+dbId);
-			Connection conn=null;
-			try{
-				conn=DBConnector.getInstance().getConnectionById(dbId);
-				CollectorPoiImportorCommand cmd = new CollectorPoiImportorCommand(dbId,uPois);
-				CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
-				imp.setSubtaskId(subtaskId);
-				imp.operate(cmd,photoMap,userId);
-				
-				
-				Set<Long> freshVerPois = imp.getFreshVerPois();
-				//获取所有pois
-				Map<Long,String> allPois = imp.getAllPois();
-				//写入数据库
-				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
-				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
-				//父子关系
-				CollectorPoiPcRelationImportorCommand pcCmd = new CollectorPoiPcRelationImportorCommand(dbId,imp.getPcs());
-				CollectorPoiPcRelationImportor pcImp = new CollectorPoiPcRelationImportor(conn,imp.getResult());
-				pcImp.setSubtaskId(subtaskId);
-				pcImp.operate(pcCmd);
-				for(Long l:pcImp.getChangedPids()){
-					freshVerPois.remove(l);
-				}
-				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
-				result.addWarnPcs(pcImp.getErrLogs());
-				//同一关系
-				CollectorPoiSpRelationImportorCommand spCmd = new CollectorPoiSpRelationImportorCommand(dbId,imp.getSps());
-				CollectorPoiSpRelationImportor spImp = new CollectorPoiSpRelationImportor(conn,null);
-				spImp.setSubtaskId(subtaskId);
-				spImp.operate(spCmd);
-				for(Long l:spImp.getChangedPids()){
-					freshVerPois.remove(l);
-				}
-				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
-				result.addWarnSps(spImp.getErrLogs());
-				//维护编辑状态
-//				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
-				//从所有的poi map中排除鲜度验证的poi
-				for(Long fpi : freshVerPois){
-					allPois.remove(fpi);
-				}
-				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
-			}catch(Exception e){
-				log.error(e.getMessage(),e);
-				DbUtils.rollbackAndCloseQuietly(conn);
-				//如果发生异常，整个db的poi都未入库
-				result.addResults(0, uPois.allFail("Db("+dbId+")入库异常："+e.getMessage()));
-			}finally{
-				DbUtils.commitAndCloseQuietly(conn);
+		int taskDbId=0;
+		if(subtaskId>0){
+			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+			Map<String,Integer> taskMap = manApi.getTaskBySubtaskId(subtaskId);
+			if(taskMap!=null&&taskMap.size()>0){
+				taskId=taskMap.get("taskId");
+				taskType=taskMap.get("programType");
+			}else{
+				throw new Exception("未查询到该子任务所属的任务。subtaskId:"+subtaskId);
 			}
-			log.info("end importing pois in dbId:"+dbId);
+			Subtask subtask = manApi.queryBySubtaskId(subtaskId);
+			taskDbId = subtask.getDbId();
 		}
-		log.info("Imported all pois.");
+		//2.将pois分发到各个大区
+		Collection<CollectorUploadPois> pois = distribute(rawPois);//
+		//3.开始导入数据
+		//开始入库
+		for(CollectorUploadPois p:pois){
+			//跨大区强制无任务号
+			if(p.getRegionDayDbId()==taskDbId){
+				uploadSingleRegion(p,subtaskId,taskId,taskType);
+			}else{
+				uploadSingleRegion(p,0,0,0);
+				//无任务号写统计
+				writeCrossRegionStat(subtaskId,p);
+			}
+		}
+		log.info("Imported all pois and photos.");
 		return result;
 		
+	}
+	private void uploadSingleRegion(CollectorUploadPois uPois,int stkId,int tkId,int tkType)throws Exception{
+		long t1 = System.currentTimeMillis();
+		log.info("start importing pois in regionId:"+uPois.getRegionId()+", dbId:"+uPois.getRegionDayDbId()+", stkId:"+stkId);
+		//初始化存储图片属性的map
+		Map<String, Photo> photoMap=new HashMap<String, Photo>();
+		int dbId = uPois.getRegionDayDbId();
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getConnectionById(dbId);
+			CollectorPoiImportorCommand cmd = new CollectorPoiImportorCommand(dbId,uPois);
+			cmd.setUserId(userId);
+			CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
+			imp.setSubtaskId(stkId);
+			imp.operate(cmd,photoMap,userId);
+			
+			
+			Set<Long> freshVerPois = imp.getFreshVerPois();
+			//获取所有pois
+			Map<Long,String> allPois = imp.getAllPois();
+			//写入数据库
+			imp.persistChangeLog(OperationSegment.SG_ROW, userId);
+			result.addResults(imp.getSuccessNum(), imp.getErrLogs());
+			RegionUploadResult regionResult = new RegionUploadResult(uPois.getRegionId());
+			regionResult.setSubtaskId(stkId);
+			regionResult.addResult(imp.getSuccessNum(), imp.getErrLogs().size());
+			result.addRegionResult(regionResult);
+			uPois.filterErrorFid(imp.getErrLogs());
+			//父子关系
+			log.info("start importing poi pc relation in dbId:"+dbId);
+			CollectorPoiPcRelationImportorCommand pcCmd = new CollectorPoiPcRelationImportorCommand(dbId,imp.getPcs());
+			CollectorPoiPcRelationImportor pcImp = new CollectorPoiPcRelationImportor(conn,imp.getResult());
+			pcImp.setSubtaskId(stkId);
+			pcImp.operate(pcCmd);
+			for(Long l:pcImp.getChangedPids()){
+				freshVerPois.remove(l);
+			}
+			pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+			result.addWarnPcs(pcImp.getErrLogs());
+			//同一关系
+			log.info("start importing poi pc relation in dbId:"+dbId);
+			CollectorPoiSpRelationImportorCommand spCmd = new CollectorPoiSpRelationImportorCommand(dbId,imp.getSps());
+			CollectorPoiSpRelationImportor spImp = new CollectorPoiSpRelationImportor(conn,null);
+			spImp.setSubtaskId(stkId);
+			spImp.operate(spCmd);
+			for(Long l:spImp.getChangedPids()){
+				freshVerPois.remove(l);
+			}
+			spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+			result.addWarnSps(spImp.getErrLogs());
+			//维护编辑状态
+			log.info("start writing poi edit status in dbId:"+dbId);
+//			PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
+			//从所有的poi map中排除鲜度验证的poi
+			for(Long fpi : freshVerPois){
+				allPois.remove(fpi);
+			}
+			Set<Long> freshVerPoisForPhoto = imp.getFreshVerPoisForPhoto();
+			PoiEditStatus.forCollector(conn,allPois,freshVerPois,stkId,tkId,tkType,freshVerPoisForPhoto);
+			long t2 = System.currentTimeMillis();
+			log.info("pois imported,total time:"+(t2-t1)+"ms.");
+			//写入照片
+			log.info("start importing photos(size:"+photoMap.size()+") in dbId:"+dbId);
+			//读取照片文件，导入hbase
+			CollectorImport.importPhoto(photoMap,dir);
+			long t3 = System.currentTimeMillis();
+			log.info("photos imported,total time:"+(t3-t2)+"ms.");
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			//如果发生异常，整个db的poi都未入库
+			List<ErrorLog> errs = uPois.allFail("Db("+dbId+")入库异常："+e.getMessage());
+			result.addResults(0, errs);
+			RegionUploadResult regionResult = new RegionUploadResult(uPois.getRegionId());
+			regionResult.setSubtaskId(stkId);
+			regionResult.addResult(0, errs.size());
+			result.addRegionResult(regionResult);
+			uPois.filterErrorFid(errs);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		log.info("end importing pois in dbId:"+dbId);
+		
+	}
+	private void writeCrossRegionStat(int fromSubtaskId,CollectorUploadPois uPois){
+		//
+		Connection conn = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			List<UploadCrossRegionInfoDao> infos = new ArrayList<UploadCrossRegionInfoDao>();
+			for(Entry<String,Set<String>> entry:uPois.gridFids.entrySet()){
+				if(entry.getValue()!=null&&entry.getValue().size()>0){
+					UploadCrossRegionInfoDao info = new UploadCrossRegionInfoDao();
+					info.setUserId(userId);
+					info.setFromSubtaskId(fromSubtaskId);
+					info.setUploadType(1);
+					info.setOutRegionId(uPois.getRegionId());
+					info.setOutGridId(Integer.valueOf(entry.getKey()));
+					info.setOutGridNumber(entry.getValue().size());
+					infos.add(info);
+				}
+			}
+			UploadRegionInfoOperator op = new UploadRegionInfoOperator(conn);
+			op.save(infos);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			//不抛异常
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	private JSONArray readPois() throws Exception {
 		FileInputStream fis=null;
 		Scanner scan = null;
 		try{
-			fis = new FileInputStream(fileName);
+			fis = new FileInputStream(dir + "/poi.txt");
 			scan = new Scanner(fis);
 			JSONArray pois = new JSONArray();
 			while(scan.hasNextLine()){
@@ -182,10 +261,11 @@ public class UploadManager {
 			if(scan!=null)scan.close();
 		}
 	}
-	private Map<Integer,CollectorUploadPois> distribute(JSONArray rawPois)throws Exception{
-		Map<Integer,CollectorUploadPois> poiMap = new HashMap<Integer,CollectorUploadPois>();//key:大区dbid
-		//计算poi所属图幅
-		Map<String,Map<String,JSONObject>> meshPoiMap=new HashMap<String,Map<String,JSONObject>>();//key:mesh_id,value(key:fid,value:poi json)
+	
+	private Collection<CollectorUploadPois> distribute(JSONArray rawPois)throws Exception{
+		Map<Integer,CollectorUploadPois> regionPoiMap = new HashMap<Integer,CollectorUploadPois>();//key:regionId,values:upload pois
+		//计算poi所属grid
+		Map<String,Map<String,JSONObject>> gridPoiMap=new HashMap<String,Map<String,JSONObject>>();//key:grid_id,value(key:fid,value:poi json)
 		for (int i = 0; i < rawPois.size(); i++) {
 			JSONObject jo = rawPois.getJSONObject(i);
 			String fid = jo.getString("fid");
@@ -195,46 +275,59 @@ public class UploadManager {
 				
 				Geometry point = new WKTReader().read(wkt);
 				Coordinate[] coordinate = point.getCoordinates();
-				String mesh = MeshUtils.point2Meshes(coordinate[0].x, coordinate[0].y)[0];
-				if(!meshPoiMap.containsKey(mesh)){
-					meshPoiMap.put(mesh, new HashMap<String,JSONObject>());
+				String grid = CompGridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
+				if(!gridPoiMap.containsKey(grid)){
+					gridPoiMap.put(grid, new HashMap<String,JSONObject>());
 				}
-				meshPoiMap.get(mesh).put(fid, jo);
+				gridPoiMap.get(grid).put(fid, jo);
 			}catch(Exception e){
 				result.addFail(new ErrorLog(fid,0,"几何错误"));
 				log.error(e.getMessage(),e);
 			}
 		}
-		log.info("所有poi所属的图幅号："+StringUtils.join(meshPoiMap.keySet(),","));
+		log.info("所有poi所属的grid号："+StringUtils.join(gridPoiMap.keySet(),","));
+		//换算成图幅
+		Set<String> meshes = new HashSet<String>();
+		for(String g:gridPoiMap.keySet()){
+			meshes.add(g.substring(0, g.length()-2));
+		}
+		log.info("换算成图幅号："+StringUtils.join(meshes,","));
 		//映射到对应的大区库上
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-		List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshPoiMap.keySet());
+		List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshes);
 		if(regions==null||regions.size()==0){
 			log.error("根据图幅未查询到所属大区库信息");
 			throw new Exception("根据图幅未查询到所属大区库信息");
 		}
-		for(Entry<String, Map<String,JSONObject>> entry:meshPoiMap.entrySet()){
-			String meshId = entry.getKey();
-			int dbId=0;
+		for(Entry<String, Map<String,JSONObject>> entry:gridPoiMap.entrySet()){
+			String gridId = entry.getKey();
+			String meshId = gridId.substring(0, gridId.length()-2);
+			int regionId=0;
+			int regionDayDbId=0;
 			for(RegionMesh r:regions){
 				if(r.meshContains(meshId)){
-					dbId = r.getDailyDbId();
+					regionId = r.getRegionId();
+					regionDayDbId = r.getDailyDbId();
 					break;
 				}
 			}
-			if(dbId>0){
-				if(!poiMap.containsKey(dbId)){
-					poiMap.put(dbId, new CollectorUploadPois());
+			if(regionId>0&&regionDayDbId>0){
+				if(!regionPoiMap.containsKey(regionId)){
+					CollectorUploadPois c = new CollectorUploadPois();
+					c.setRegionId(regionId);
+					c.setRegionDayDbId(regionDayDbId);
+					regionPoiMap.put(regionId, c);
 				}
-				poiMap.get(dbId).addJsonPois(entry.getValue());
+				regionPoiMap.get(regionId).addJsonPois(entry.getValue());
+				regionPoiMap.get(regionId).gridFids.put(gridId, entry.getValue().keySet());
 			}else{
 				for(String f:entry.getValue().keySet()){
-					result.addFail(new ErrorLog(f,0,"所属图幅未找到大区库ID"));
+					result.addFail(new ErrorLog(f,0,"所属grid未找到大区库ID"));
 				}
-				log.warn("图幅（"+meshId+"）未找到大区库ID，涉及的poi有："+StringUtils.join(entry.getValue().keySet(),","));
+				log.warn("grid（"+gridId+"）未找到大区库ID，涉及的poi有："+StringUtils.join(entry.getValue().keySet(),","));
 			}
 		}
-		return poiMap;
+		return regionPoiMap.values();
 	}
 	
 	/**
@@ -816,6 +909,8 @@ public class UploadManager {
 		}
 		return uploadIxPoi;
 	}
+	
+	
 	
 	public static void main(String[] args) {
 		String poiStr = "{'fid':'00166420170608112433','name':'小区1','pid':420000114,'meshid':595672,"

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.job.statics;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -28,7 +29,11 @@ public abstract class AbstractStatJob extends AbstractJob{
 		}finally{
 			//send stat result to MQ
 			try{
-				JobMsgPublisher.sendStatJobResult(statReq.getJobType(),statReq.getTimestamp(),result,jobInfo.getId());
+				String identify=statReq.getIdentify();
+				if(StringUtils.isEmpty(identify)){
+					identify=statReq.getTimestamp();
+				}
+				JobMsgPublisher.sendStatJobResult(statReq.getJobType(),statReq.getTimestamp(),identify,result,jobInfo.getId());
 			}catch(Exception e){
 				log.warn("注意，统计结果未成功发送，原因："+e.getMessage());
 				log.error(e.getMessage(),e);;

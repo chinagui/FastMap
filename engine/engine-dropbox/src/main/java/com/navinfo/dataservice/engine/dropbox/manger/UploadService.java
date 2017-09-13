@@ -26,6 +26,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -81,19 +82,27 @@ public class UploadService {
 	}
 
 	public int startUpload(String fileName, String md5, int fileSize,
-			int chunkSize) throws Exception {
+			int chunkSize, long userId) throws Exception {
 
+		//添加子目录
+		String curYmd = DateUtils.getCurYmd();
+		String subDir = curYmd+File.separator+userId;
+		
 		DBController controller = new DBController();
 
 		int jobId = controller.addUploadRecord(fileName, md5, fileSize,
-				chunkSize);
+				chunkSize,subDir);
 
 		String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.uploadPathCustom);
+		if(StringUtils.isEmpty(uploadPath)){
+			uploadPath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);
+		}
+		
+		File file = new File(uploadPath + "/" +subDir+File.separator+ jobId);
 
-		File file = new File(uploadPath + "/" + jobId);
-
-		file.mkdir();
+		file.mkdirs();
 
 		return jobId;
 	}

@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
@@ -232,7 +233,7 @@ public class ManApiImpl implements ManApi {
 		return CpRegionProvinceService.getInstance().listDayDbIdsByAdminId();
 	}
 	@Override
-	public Map getCityById(Integer cityId)throws Exception{
+	public Map<String,Object> getCityById(Integer cityId)throws Exception{
 		JSONObject json = new JSONObject().element("cityId", cityId);
 		return CityService.getInstance().query(json );
 	}
@@ -305,6 +306,11 @@ public class ManApiImpl implements ManApi {
 		return taskIdSet;
 	}
 
+	@Override
+	public Set<Integer> getCollectTaskIdByDayTask(int taskId) throws ServiceException {
+		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDayTask(taskId);
+		return taskIdSet;
+	}
 
 	@Override
 	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
@@ -528,4 +534,70 @@ public class ManApiImpl implements ManApi {
     public void saveTimeline(int objID, String objName, int objType, String operateDate) throws Exception {
         TimelineService.saveTimeline(objID, objName, objType, operateDate);
     }
+    
+    /**
+     * 获取所有采集子任务的集合
+     * @throws Exception
+     */
+    public Set<Integer> allCollectSubtaskId() throws Exception{
+    	return SubtaskService.getInstance().allCollectSubtaskId();
+    }
+    
+    /**
+     * 根据taskId获取对应任务的tips转aumark数量
+     * @throws Exception 
+     * 
+     * */
+    public Map<Integer, Integer> getTips2MarkNumByTaskId() throws Exception{
+    	return TaskService.getInstance().getTips2MarkNumByTaskId();
+    }
+    
+	/**
+	 * 查询所有city下的所有block对应的grid集合
+	 * @return Map<Integer,Map<Integer, Set<Integer>>>>
+	 * @throws Exception 
+	 * 
+	 * */
+    public Map<Integer, Map<Integer, Set<Integer>>> queryAllCityGrids() throws Exception{
+    	return CityService.getInstance().queryAllCityGrids();
+    }
+    
+    /**
+	 * 区县统计api，主要是为区县统计脚本提供初始查询结果，blockJob用
+	 * @return
+	 * @throws Exception
+	 */
+    @Override
+	public Map<Integer,Map<String, Object>> blockStatic()throws Exception{
+		return BlockService.getInstance().blockStatic();
+	}
+    
+    /**
+	 * 城市统计api，主要是为城市统计脚本提供初始查询结果，cityJob用
+	 * @return
+	 * @throws Exception
+	 */
+    @Override
+	public Map<Integer,Map<String, Object>> cityStatic()throws Exception{
+		return CityService.getInstance().cityStatic();
+	}
+    
+    /**
+     * 查询所有项目统计相关信息
+     * @throws Exception 
+     * 
+     * */
+    public List<Map<String, Object>> queryProgramStat() throws Exception{
+    	return ProgramService.getInstance().queryProgramStat();
+    }
+    
+    /**
+     * 查询已经分配子任务的任务集合
+     * @throws Exception 
+     * 
+     * */
+    public Set<Integer> queryTasksHasSubtask() throws Exception{
+    	return TaskService.getInstance().queryTasksHasSubtask();
+    }
+    
 }

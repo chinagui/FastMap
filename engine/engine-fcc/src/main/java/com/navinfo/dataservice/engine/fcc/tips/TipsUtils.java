@@ -1,24 +1,25 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.Map;
-
+import org.apache.commons.lang.StringUtils;
 import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.fcc.model.TipsDao;
-
 import net.sf.json.JsonConfig;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @ClassName: TipsUtils.java
@@ -34,10 +35,60 @@ public class TipsUtils {
 
 	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211,1520 }; // 不下载的tips
 	
+	public static int[]   VecInfoDownloadTips={2201,2202,2203,2204,1519,1213,1212,1104,1510,1518,1511,1702,1116,1901,1201,1803,2001,1806,2102,2101,1701}; //行人导航下载的tips类型
+	
+	
+	/*	过街天桥/地下通道 2201
+	 
+	人行过道 2202
+	 
+	单线虚拟连接 2203
+	 
+	复合虚拟连接 2204
+	 
+	休闲路线 1519
+	 
+	普通路行人非机动车禁行 1213
+	 
+	高速路行人非机动车通行 1212
+	 
+	大门 1104
+	 
+	桥 1510
+	 
+	阶梯 1518
+	 
+	隧道 1511
+	 
+	铁路道口 1702
+	 
+	立交 1116
+	 
+	道路名 1901
+	 
+	种别 1201
+	 
+	挂接 1803
+	 
+	测线 2001
+	 
+	草图 1806
+	 
+	万能标记 2102
+	 
+	形状删除 2101
+	 
+	障碍物 1701*/
+	 
+
+	
 	//关于空值得定义：对象NULL,数据[]，字符串""
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
+	
+	static final String [] TIPS_TABLE_COlS={"source","geometry","track","information","deep","recommended","feedback","confirm","diff","tipdiff","old"}; //tip 规格中 tips表的列。以后tips规格变更改这里
+	
 
 
 	/**
@@ -99,6 +150,8 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(json.getInt("t_tipStatus"));
+        
+        tipsIndexModel.setT_dataDate(json.getString("t_dataDate")); //915新增字段
  
 
 		return tipsIndexModel;
@@ -173,6 +226,8 @@ public class TipsUtils {
         tipsIndexModel.setT_dEditMeth(trackJson.getInt("t_dEditMeth"));
         tipsIndexModel.setT_mEditStatus(trackJson.getInt("t_mEditStatus"));
         tipsIndexModel.setT_mEditMeth(trackJson.getInt("t_mEditMeth"));
+        
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
 
         return tipsIndexModel;
 	}
@@ -237,6 +292,7 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(trackJson.getInt("t_tipStatus"));
+        tipsIndexModel.setT_dataDate(trackJson.getString("t_dataDate")); //915新增字段
         //Tips上传赋值为0，无需赋值
 //        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
 //        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
@@ -386,6 +442,33 @@ public class TipsUtils {
         return json;
     }
 
+    // 相邻形状点不可过近，不能小于2m
+    public static void checkShapePointDistance(JSONObject geom) throws Exception {
+        Geometry g = GeoTranslator.geojson2Jts(geom);
+        Coordinate[] coords = g.getCoordinates();
+        for (int i = 0; i < coords.length - 1; i++) {
+            double distance = GeometryUtils.getDistance(coords[i].y,
+                    coords[i].x, coords[i + 1].y, coords[i + 1].x);
+            if (distance <= 2) {
+                throw new Exception("相邻形状点不可过近，不能小于2m");
+            }
+        }
+    }
+
+    public static String ClobToString(Clob clob) throws SQLException, IOException {
+
+        String reString = "";
+        Reader is = clob.getCharacterStream();// 得到流
+        BufferedReader br = new BufferedReader(is);
+        String s = br.readLine();
+        StringBuffer sb = new StringBuffer();
+        while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING
+            sb.append(s);
+            s = br.readLine();
+        }
+        reString = sb.toString();
+        return reString;
+    }
     public static void main(String[] args) throws Exception {
         String parameter = "{\"subtaskId\":108,\"grids\":[46597623,47590731,47590700,47590730,47591701,46597711,47591700,46597730,46597633,46597720,50600122,46597603,46597613,47591603,47590603],\"mdFlag\":\"d\",\"workStatus\":5}";
         JSONObject jsonObject = TipsUtils.stringToSFJson(parameter);

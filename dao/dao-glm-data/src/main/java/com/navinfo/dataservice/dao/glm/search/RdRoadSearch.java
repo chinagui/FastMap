@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,19 +15,42 @@ import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
+
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdRoadSearch implements ISearch {
+	private Logger logger = Logger.getLogger(RdRoadSearch.class);
 
 	private Connection conn;
+
+	private int dbId;
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
+	}
 
 	public RdRoadSearch(Connection conn) {
 		this.conn = conn;
@@ -38,17 +62,17 @@ public class RdRoadSearch implements ISearch {
 		return (IObj) new AbstractSelector(RdRoad.class, conn).loadById(pid,
 				false);
 	}
-	
+
 	@Override
 	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
-		
+
 		AbstractSelector selector = new AbstractSelector(RdRoad.class, conn);
 
 		List<IRow> rows = selector.loadByIds(pidList, false, true);
 
 		return rows;
 	}
-	
+
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {
@@ -67,10 +91,8 @@ public class RdRoadSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.PID ROAD_PID FROM RD_ROAD_LINK A, TMP1 B WHERE B.LINK_PID = A.LINK_PID AND A.U_RECORD != 2) SELECT /*+index(b)*/ B.PID, C.LINK_PID, C.GEOMETRY FROM TMP2 A, RD_ROAD_LINK B, RD_LINK C WHERE A.ROAD_PID = B.PID AND C.LINK_PID = B.LINK_PID AND B.U_RECORD != 2";
-		
-		
-		
+		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ distinct（A.PID） ROAD_PID FROM RD_ROAD_LINK A, TMP1 B WHERE B.LINK_PID = A.LINK_PID AND A.U_RECORD != 2) SELECT /*+index(b)*/ B.PID, C.LINK_PID, C.GEOMETRY FROM TMP2 A, RD_ROAD_LINK B, RD_LINK C WHERE A.ROAD_PID = B.PID AND C.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 AND C.U_RECORD !=2";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -115,15 +137,20 @@ public class RdRoadSearch implements ISearch {
 			}
 
 			for (String roadPid : values.keySet()) {
+				int pid = Integer.parseInt(roadPid);
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				snapshot.setT(40);
 
-				snapshot.setI(Integer.parseInt(roadPid));
-
+				snapshot.setI(pid);
+				RdRoad rdRoad = (RdRoad) this.searchDataByPid(pid);
 				Map<String, JSONObject> linkMap = values.get(roadPid);
+				// 处理接边渲染 zhaokk
+				if (this.isCheckLinkArea(rdRoad, linkMap)) {
+					this.addRdRoadForArea(rdRoad, linkMap, wkt, z, px, py);
 
+				}
 				JSONArray gArray = new JSONArray();
 
 				for (String linkpid : linkMap.keySet()) {
@@ -143,6 +170,7 @@ public class RdRoadSearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 
 			throw new Exception(e);
 		} finally {
@@ -154,7 +182,97 @@ public class RdRoadSearch implements ISearch {
 		return list;
 	}
 
-	public List<SearchSnapshot> searchDataByRoadPids(List<Integer> pids) throws Exception {
+	/***
+	 * @author zhaokk 判断rdroad是否跨大区
+	 * @param rdRoad
+	 * @param linkMap
+	 * @return
+	 */
+	private boolean isCheckLinkArea(RdRoad rdRoad,
+			Map<String, JSONObject> linkMap) {
+
+		if (rdRoad.getLinks() != null && rdRoad.getLinks().size() > 0) {
+			if (rdRoad.getLinks().size() != linkMap.size()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/***
+	 * 处理rdRoad跨大区渲染
+	 * 
+	 * @author zhaokk
+	 * @param rdRoad
+	 * @param linkMap
+	 * @param wkt
+	 * @param py
+	 * @param px
+	 * @param z
+	 * @throws Exception
+	 */
+	private void addRdRoadForArea(RdRoad rdRoad,
+			Map<String, JSONObject> linkMap, String wkt, int z, double px,
+			double py) throws Exception {
+		// 计算跨大区库
+		Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
+		List<Integer> links = new ArrayList<Integer>();
+		if (dbIds == null) {
+			return;
+		}
+		if (dbIds.size() == 1 && dbIds.contains(this.getDbId())) {
+			return;
+		}
+		// 计算不在本大区库的RDLINK
+		for (IRow row : rdRoad.getLinks()) {
+			RdRoadLink roadLink = (RdRoadLink) row;
+			if (!linkMap.containsKey(String.valueOf(roadLink.getLinkPid()))) {
+				links.add(roadLink.getLinkPid());
+
+			}
+		}
+		for (int dbId : dbIds) {
+
+			Connection connection = null;
+			try {
+				logger.info("dbId========" + dbId);
+				connection = DBConnector.getInstance().getConnectionById(dbId);
+				if (this.getDbId() == dbId) {
+					continue;
+				}
+				if (links.size() > 0) {
+					RdLinkSelector linkSelector = new RdLinkSelector(connection);
+					List<IRow> rows = linkSelector.loadByIds(links, false,
+							false);
+					if (rows.size() > 0) {
+						for (IRow row : rows) {
+							RdLink link = (RdLink) row;
+							JSONObject geojson = GeoTranslator.jts2Geojson(
+									link.getGeometry(), 0.00001, 5);
+							Geojson.coord2Pixel(geojson, z, px, py);
+							linkMap.put(String.valueOf(link.getPid()), geojson);
+
+						}
+					}
+				}
+				if (!this.isCheckLinkArea(rdRoad, linkMap)) {
+					break;
+				}
+
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				throw e;
+
+			} finally {
+				DBUtils.closeConnection(connection);
+			}
+
+		}
+
+	}
+
+	public List<SearchSnapshot> searchDataByRoadPids(List<Integer> pids)
+			throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<>();
 
@@ -169,7 +287,8 @@ public class RdRoadSearch implements ISearch {
 
 		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
 
-		String sql = "SELECT A.PID, A.LINK_PID, B.GEOMETRY FROM RD_ROAD_LINK A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE A.U_RECORD <> 2 AND B.U_RECORD <> 2 AND A.PID IN ( " + ids + " )";
+		String sql = "SELECT A.PID, A.LINK_PID, B.GEOMETRY FROM RD_ROAD_LINK A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE A.U_RECORD <> 2 AND B.U_RECORD <> 2 AND A.PID IN ( "
+				+ ids + " )";
 
 		PreparedStatement pstmt = null;
 

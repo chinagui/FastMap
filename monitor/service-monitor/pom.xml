@@ -34,5 +34,10 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>biz-commons</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>org.elasticsearch</groupId>
+		<artifactId>elasticsearch</artifactId>
+        <version>2.4.5</version>
+	</dependency>
   </dependencies>
 </project>

@@ -2436,8 +2436,8 @@ public class TaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			String selectSql = "SELECT *"
-					+ "  FROM TASK"
-					+ " WHERE LATEST = 1";
+					+ "  FROM TASK";
+					//+ " WHERE LATEST = 1";
 					//+ "   AND STATUS IN (0, 1)";
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
 		}catch(Exception e){

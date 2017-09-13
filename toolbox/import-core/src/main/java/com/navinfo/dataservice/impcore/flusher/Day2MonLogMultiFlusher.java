@@ -45,6 +45,9 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 	protected void calcConcurrentSize() throws SQLException {
 		this.dataCount = this.getLogCount(this.tempTable);
 		log.debug("dataCount ==== " + dataCount);
+		if (dataCount == 0) {
+			return;
+		}
 		if (dataCount <= 1000) {
 			concurrentSize = 1;
 			tableDatacount = 1;

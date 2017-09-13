@@ -403,6 +403,7 @@ public class DayPoiJob extends AbstractStatJob {
 						Map<Integer, Map<String, Integer>> notaskStat = new HashMap<Integer, Map<String, Integer>>();
 						while (rs.next()) {
 						    int subtaskId = rs.getInt("MEDIUM_SUBTASK_ID");
+						    int quickSubtaskId = rs.getInt("QUICK_SUBTASK_ID");						    
 						    int taskId = rs.getInt("MEDIUM_TASK_ID");
 						    int quickTaskId = rs.getInt("QUICK_TASK_ID");
 						    int status = rs.getInt("STATUS");
@@ -411,6 +412,10 @@ public class DayPoiJob extends AbstractStatJob {
 						    if(subtaskId != 0){
 						    	String collectTime = (rs.getString("COLLECT_TIME") == null) ? "" : rs.getString("COLLECT_TIME");
 						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate, collectTime);
+						    }
+						    if(quickSubtaskId != 0){
+						    	String collectTime = (rs.getString("COLLECT_TIME") == null) ? "" : rs.getString("COLLECT_TIME");
+						    	statisticsSubTaskDataImp(subtaskStat, quickSubtaskId, status, subTaskDate, collectTime);
 						    }
 						    if(taskId != 0){
 						    	//调用处理任务统计方法

@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -37,7 +37,6 @@ import net.sf.json.JSONObject;
 public class ProgramJob extends AbstractStatJob {
 
 	private static final String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
-	private SimpleDateFormat sd = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	protected ManApi manApi = null;
 	
@@ -348,10 +347,11 @@ public class ProgramJob extends AbstractStatJob {
 	 * 根据orical中查出来的数据判断部分统计项
 	 * @param List<Map<String, Object>>
 	 * @return Map<Integer, Object>
+	 * @throws Exception 
 	 * 
 	 * */
 	@SuppressWarnings("unchecked")
-	public Map<Integer, Object> calculateProgram(List<Map<String, Object>> programs, Map<Integer, Map<String, Object>> manTimeline){
+	public Map<Integer, Object> calculateProgram(List<Map<String, Object>> programs, Map<Integer, Map<String, Object>> manTimeline) throws Exception{
 		Map<Integer, Object> result = new HashMap<>();
 		for(int i = 0; i < programs.size(); i++){
 			Map<String, Object> programMap = programs.get(i);
@@ -412,21 +412,23 @@ public class ProgramJob extends AbstractStatJob {
 				name = programMap.get("name").toString();
 			}
 			if(programMap.get("inforInsertTime") != null && StringUtils.isNotBlank(programMap.get("inforInsertTime").toString())){
-				inforInsertTime = sd.format((Timestamp) programMap.get("inforInsertTime"));
+				inforInsertTime = DateUtils.formatterTime((Timestamp) programMap.get("inforInsertTime"),DateUtils.DATE_YMD);
 			}
 			if(programMap.get("inforExpectDate") != null && StringUtils.isNotBlank(programMap.get("inforExpectDate").toString())){
-				inforExpectDate = sd.format((Timestamp) programMap.get("inforExpectDate"));
+				inforExpectDate = DateUtils.formatterTime((Timestamp) programMap.get("inforExpectDate"),DateUtils.DATE_YMD);
 			}
 
 			if(programMap.get("createDate") != null && StringUtils.isNotBlank(programMap.get("createDate").toString())){
-				createDate = sd.format((Timestamp) programMap.get("createDate"));
+				createDate = DateUtils.formatterTime((Timestamp) programMap.get("createDate"),DateUtils.DATE_YMD);
 			}
 			int cityId = (int) programMap.get("cityId");
 			
 			if(manTimeline.containsKey(programId)){
-				actualEndDate = (String) manTimeline.get(programId).get("operateDate");
+				String actualEndAll=(String) manTimeline.get(programId).get("operateDate");
+				actualEndDate=DateUtils.dateToString(DateUtils.stringToDate(actualEndAll, DateUtils.DATE_COMPACTED_FORMAT),DateUtils.DATE_YMD);
+				//actualEndDate = (String) manTimeline.get(programId).get("operateDate");
 			}else{
-				actualEndDate = sd.format(new Date());
+				actualEndDate = DateUtils.formatDate(new Date(),DateUtils.DATE_YMD);
 			}
 			//取当前programId值进行统计项判断
 			if(result.containsKey(programId)){
@@ -461,18 +463,18 @@ public class ProgramJob extends AbstractStatJob {
 			int diffDate = (int) programMap.get("diffDate");
 			String producePlanEndDate = "";
 			if(programMap.get("producePlanEndDate") != null){
-				producePlanEndDate = sd.format((Timestamp) programMap.get("producePlanEndDate"));
+				producePlanEndDate = DateUtils.formatterTime((Timestamp) programMap.get("producePlanEndDate"),DateUtils.DATE_YMD);
 			}
 			String produceDate = "";
 			if(programMap.get("produceDate") != null){
-				produceDate = sd.format((Timestamp) programMap.get("produceDate"));
+				produceDate = DateUtils.formatterTime((Timestamp) programMap.get("produceDate"),DateUtils.DATE_YMD);
 			}
 			//取更早的任务创建时间
 			if(programMap.get("taskCreateDate") != null && StringUtils.isNotBlank(programMap.get("taskCreateDate").toString())){
 				if(StringUtils.isBlank(taskCreateDate)){
-					taskCreateDate = sd.format((Timestamp) programMap.get("taskCreateDate"));
+					taskCreateDate = DateUtils.formatterTime((Timestamp) programMap.get("taskCreateDate"),DateUtils.DATE_YMD);
 				}else{
-					String taskDate = sd.format((Timestamp) programMap.get("taskCreateDate"));
+					String taskDate = DateUtils.formatterTime((Timestamp) programMap.get("taskCreateDate"),DateUtils.DATE_YMD);
 					taskCreateDate = taskCreateDate.compareTo(taskDate) > 0 ? taskDate : taskCreateDate;
 				}
 				

@@ -26,7 +26,7 @@ public class JsonIsEqualUtil {
 			return true;
 		}
 		try {
-			
+			 
 			JsonParser parser = new JsonParser();
 			JsonObject obj = (JsonObject) parser.parse(json1);
 			JsonParser parser1 = new JsonParser();

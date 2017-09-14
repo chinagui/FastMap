@@ -164,18 +164,19 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
 			queryProgram9.put("programType", 1);
-
+			queryProgram9.put("type", 0);
 			Double collectWorkDate = queryDatasSumInMongo(md, "task", queryProgram9,"workDate");
 			mediumMonitorMap.put("collectWorkDate", collectWorkDate.intValue());
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
 			queryProgram10.put("programType", 1);
-			Double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"collectPlanDate");
+			queryProgram10.put("type", 0);
+			Double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"planDate");
 			mediumMonitorMap.put("collectPlanDate", collectPlanDate);
 			
 			double planPercent = 0;
 			if(collectPlanDate != 0){
-				planPercent = collectWorkDate*100/collectPlanDate;
+				planPercent = Math.floor(collectWorkDate*100/collectPlanDate);
 			}
 			mediumMonitorMap.put("planPercent", planPercent);
 			
@@ -207,7 +208,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			Double roadActualPercent = (double) 0;
 			if((unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal) != 0){
-				roadActualPercent =collectLinkUpdateTotal*100/(unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal);
+				roadActualPercent =Math.floor(collectLinkUpdateTotal*100/(unassignRoadPlanNum + workRoadPlanTotal + closeCollectLinkUpdateTotal));
 			}
 			mediumMonitorMap.put("roadActualPercent", DoubleUtil.keepSpecDecimal(roadActualPercent,2));
 			
@@ -295,7 +296,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			Double monthActualPercent = (double) 0;
 			if((monthCloseDay2MonthNum + monthWorkPoiPlanOut) != 0){
-				monthActualPercent = monthPoiFinishNum*100/(monthCloseDay2MonthNum + monthWorkPoiPlanOut);
+				monthActualPercent = Math.floor(monthPoiFinishNum*100/(monthCloseDay2MonthNum + monthWorkPoiPlanOut));
 			}
 			mediumMonitorMap.put("monthActualPercent", monthActualPercent.intValue());
 			

@@ -574,6 +574,7 @@ public class DateUtils {
 	 * @return
 	 */
 	public static long diffDay(Timestamp start,Timestamp end){
+		if(start==null||end==null){return 0;}
 	    long diff = end.getTime() - start.getTime();
 	    long days = diff / (1000 * 60 * 60 * 24);
 	    return days;

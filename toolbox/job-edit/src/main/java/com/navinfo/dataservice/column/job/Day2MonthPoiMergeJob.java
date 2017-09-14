@@ -1128,8 +1128,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
-						if (hotel.getHisOpType() == OperationType.UPDATE
-								&& hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+						if (hotel.getHisOpType() == OperationType.INSERT
+								|| (hotel.getHisOpType() == OperationType.UPDATE
+								&& hotel.hisOldValueContains(IxPoiHotel.RATING))) {
 							ratingPids.add(pid);
 							break;
 						}
@@ -1140,7 +1141,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 					IxPoiAddress address = poiObj.getChiAddress();
 
-					if (address.getHisOpType() == OperationType.UPDATE) {
+					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
@@ -1149,6 +1150,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							oldAddressPids.add(pid);
 						}
 					}
+
 				}
 				// 作业季修改中文原始Name
 				if (poiObj.getOfficeOriginCHName() != null) {
@@ -1164,6 +1166,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							oldNamePids.add(pid);
 						}
 					}
+
 				}
 
 			} else if (addPids.contains(pid)) {

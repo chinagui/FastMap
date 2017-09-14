@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.log.LogOpTypeStat;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -70,8 +72,16 @@ public class DeepInfoMarker {
 
 			Map<Long, BasicObj> objMap = opResult.getObjsMapByType(ObjectName.IX_POI);
 			
-			LogReader logRead = new LogReader(conn);
-			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
+//			LogReader logRead = new LogReader(conn);
+//			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
+			Map<Long,Integer> poiStates = new HashMap<Long,Integer>(); 
+			LogOpTypeStat stat = new LogOpTypeStat(conn);
+			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, objMap.keySet(), null, null);
+			for(Map.Entry<Integer, Collection<Long>> entry:updatedObjs.entrySet()){
+				for(Long pid:entry.getValue()){
+					poiStates.put(pid, entry.getKey());
+				}
+			}
 
 			for (Map.Entry<Long, BasicObj> entry : objMap.entrySet()) {
 				IxPoiObj poiObj = (IxPoiObj) entry.getValue();

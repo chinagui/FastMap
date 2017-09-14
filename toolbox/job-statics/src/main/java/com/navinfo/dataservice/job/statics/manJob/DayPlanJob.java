@@ -57,8 +57,6 @@ public class DayPlanJob extends AbstractStatJob {
 	@Override
 	public String stat() throws JobException {
 		try {
-			long t = System.currentTimeMillis();
-			log.debug("所有Day_规划量数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			Map<String,List<Map<String,String>>> result = new HashMap<String,List<Map<String,String>>>();
 			result.put("task_day_plan", getStats());
@@ -89,7 +87,7 @@ public class DayPlanJob extends AbstractStatJob {
 		for (Map<String, Object> taskIdMap : taskIdMapList) {
 			Integer dbId = Integer.valueOf(String.valueOf(taskIdMap.get("dbId")));
 			Integer taskId = Integer.valueOf(String.valueOf(taskIdMap.get("taskId")));
-			
+			log.info("start taskId="+taskId);
 			if(md.find("task_day_plan",Filters.eq("taskId", taskId+"")).iterator().hasNext()){
 				continue;
 			}
@@ -227,8 +225,8 @@ public class DayPlanJob extends AbstractStatJob {
 				
 
 			}catch(Exception e){
+				log.error("dbId("+dbId+")Day_规划量数据统计失败.taskId="+taskId+";originGeo="+originWkt);
 				log.error(e.getMessage(),e);
-				throw new ThreadExecuteException("dbId("+dbId+")Day_规划量数据统计失败");
 			}finally{
 				DbUtils.closeQuietly(conn);
 			}

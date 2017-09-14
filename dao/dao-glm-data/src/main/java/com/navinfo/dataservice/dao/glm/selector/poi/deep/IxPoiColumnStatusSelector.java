@@ -1757,10 +1757,10 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @param timeStamp
 	 * @throws Exception
 	 */
-	public void updateExtractColumnStatus(List<Integer> pids, long userId, int taskId, Timestamp timeStamp) throws Exception {
+	public void updateExtractColumnStatus(List<Integer> pids, long userId, int taskId, Timestamp timeStamp,String firstWorkItem, String secondWorkItem) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE ");
-		sb.append(" PID IN ("+org.apache.commons.lang.StringUtils.join(pids, ",")+")");
+		sb.append(" UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item =:4 and second_work_item = :5 )");
+		sb.append(" AND PID IN ("+org.apache.commons.lang.StringUtils.join(pids, ",")+")");
 
 		PreparedStatement pstmt = null;
 
@@ -1771,6 +1771,8 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			pstmt.setLong(1, userId);
 			pstmt.setInt(2, taskId);
 			pstmt.setTimestamp(3, timeStamp);
+			pstmt.setString(4, firstWorkItem);
+			pstmt.setString(5, secondWorkItem);
 
 			pstmt.executeUpdate();
 

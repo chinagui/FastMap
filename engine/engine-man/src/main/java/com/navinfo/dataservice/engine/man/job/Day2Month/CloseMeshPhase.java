@@ -58,7 +58,11 @@ public class CloseMeshPhase extends JobPhase {
                 List<Integer> meshs =new ArrayList<Integer>();
                 //存在日落月没有图幅的情况
                 if(outPrarm.containsKey("allQuickMeshes")){
-                	meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
+                	try{
+                		meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
+                	}catch (Exception e) {
+						log.warn("获取日落月图幅信息错误："+e.getMessage()+",outParam:"+outPrarm);
+					}
                 }
                 log.info("phaseId:"+jobProgress.getPhaseId()+",day2month mesh:"+meshs.toString());
                 FccApi fccApi = (FccApi) ApplicationContextUtil.getBean("fccApi");

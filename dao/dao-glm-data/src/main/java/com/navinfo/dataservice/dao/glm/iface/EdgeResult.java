@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.dao.glm.iface;
 
+
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +20,24 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EdgeResult{
 
     /**
-     * 本次请求大区库
+     * 源请求大区库
      */
     private Integer sourceDb;
+
+    /**
+     * 请求参数
+     */
+    private JSONObject request;
+
+    /**
+     * 子任务号
+     */
+    private Integer subtaskId;
+
+    /**
+     * 源请求操作结果
+     */
+    private Result sourceResult;
 
     /**
      * 本次请求是否涉及源大区库
@@ -36,10 +54,12 @@ public class EdgeResult{
      */
     private ObjType objType;
 
-    public EdgeResult(OperType operType, ObjType objType) {
+    public EdgeResult(String request) {
+        this.request = JSONObject.parseObject(request);
+
         this.hasSourceDb = false;
-        this.operType = operType;
-        this.objType = objType;
+        this.operType = Enum.valueOf(OperType.class, this.request.getString("command"));
+        this.objType = Enum.valueOf(ObjType.class, this.request.getString("type"));
 
         this.addedData = new ConcurrentHashMap<>();
         this.modifiedData = new ConcurrentHashMap<>();
@@ -136,16 +156,7 @@ public class EdgeResult{
      * @return property value of objType
      */
     public boolean hasSourceDb() {
-        return hasSourceDb;
-    }
-
-    /**
-     * Setter method for property <tt>sourceDb</tt>.
-     *
-     * @param sourceDb value to be assigned to property sourceDb
-     */
-    public void setSourceDb(Integer sourceDb) {
-        this.sourceDb = sourceDb;
+        return !(objType.equals(ObjType.RDINTER) || objType.equals(ObjType.RDROAD) || objType.equals(ObjType.RDOBJECT)) || hasSourceDb;
     }
 
     public Map<Integer, Result> conversion() {
@@ -195,5 +206,59 @@ public class EdgeResult{
             }
         }
         return pids;
+    }
+
+    /**
+     * Getter method for property <tt>sourceResult</tt>.
+     *
+     * @return property value of sourceResult
+     */
+    public Result getSourceResult() {
+        return sourceResult;
+    }
+
+    /**
+     * Setter method for property <tt>sourceResult</tt>.
+     *
+     * @param sourceResult value to be assigned to property sourceResult
+     */
+    public void setSourceResult(Result sourceResult) {
+        this.sourceResult = sourceResult;
+    }
+
+    /**
+     * Getter method for property <tt>subtaskId</tt>.
+     *
+     * @return property value of subtaskId
+     */
+    public Integer getSubtaskId() {
+        return subtaskId;
+    }
+
+    /**
+     * Setter method for property <tt>subtaskId</tt>.
+     *
+     * @param subtaskId value to be assigned to property subtaskId
+     */
+    public void setSubtaskId(Integer subtaskId) {
+        this.subtaskId = subtaskId;
+    }
+
+    /**
+     * Getter method for property <tt>request</tt>.
+     *
+     * @return property value of request
+     */
+    public JSONObject getRequest() {
+        return request;
+    }
+
+    /**
+     * Getter method for property <tt>sourceDb</tt>.
+     *
+     * @return property value of sourceDb
+     */
+    public Integer getSourceDb() {
+        return sourceDb;
     }
 }

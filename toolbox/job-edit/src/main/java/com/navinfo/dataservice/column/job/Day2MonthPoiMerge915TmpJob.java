@@ -1074,15 +1074,15 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 		log.info("批处理标记");
 		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
-		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内|"),
+		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内"),
 				conn);
-		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外|"),
+		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外"),
 				conn);
-		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道|"),
+		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道"),
 				conn);
 		this.updateBatchPoi(parkingType3Pids,
-				this.getUpadeLabelForSql("室内地上|"), conn);
-		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下|"),
+				this.getUpadeLabelForSql("室内地上"), conn);
+		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下"),
 				conn);
 
 		log.info("外业任务编号");
@@ -1275,9 +1275,11 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				+ "                 FROM LOG_DETAIL D1,\n"
 				+ "                      LOG_OPERATION O1,\n"
 				+ "                      (SELECT D.OB_PID, MAX(O.OP_DT) MAX_DT\n"
-				+ "                         FROM LOG_DETAIL D, LOG_OPERATION O\n"
+				+ "                         FROM LOG_DETAIL D, LOG_OPERATION O, LOG_ACTION A1\n"
 				+ "                        WHERE D.OB_NM = 'IX_POI'\n"
 				+ "                          AND D.OP_ID = O.OP_ID\n"
+				+ "                          AND A1.ACT_ID = O.ACT_ID\n"
+				+ "                          AND A1.STK_ID <> 0\n"
 				+ "                          AND D.OB_PID IN\n"
 				+ "                              (SELECT TO_NUMBER(COLUMN_VALUE)\n"
 				+ "                                 FROM TABLE(CLOB_TO_TABLE(?)))\n"

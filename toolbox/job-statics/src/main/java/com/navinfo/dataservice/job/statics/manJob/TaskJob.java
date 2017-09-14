@@ -22,7 +22,6 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -406,8 +405,18 @@ public class TaskJob extends AbstractStatJob {
 				if(StringUtils.isNotEmpty(link17LenS)){
 					link17Len = Double.parseDouble(link17LenS);
 				}
+				
+				double linkUpdateAndPlanLen = 0;
+				if(jso.containsKey("linkUpdateAndPlanLen")){
+					String linkUpdateAndPlanLenS = String.valueOf(jso.get("linkUpdateAndPlanLen"));
+					if(StringUtils.isNotEmpty(linkUpdateAndPlanLenS)){
+						linkUpdateAndPlanLen = Double.parseDouble(linkUpdateAndPlanLenS);
+					}
+				}
+				
 				task.put("linkLen", linkLen);
 				task.put("link17Len", link17Len);
+				task.put("linkUpdateAndPlanLen", linkUpdateAndPlanLen);
 				stat.put(taskId, task);
 			}
 			return stat;
@@ -982,6 +991,7 @@ public class TaskJob extends AbstractStatJob {
 		double collectLinkUpdateTotal = 0;
 		double collectLink17UpdateTotal = 0;
 		double collectLinkAddTotal = 0;
+		double linkUpdateAndPlanLen=0;
 		int crowdTipsTotal = 0;
 		int inforTipsTotal = 0;
 		
@@ -1177,6 +1187,17 @@ public class TaskJob extends AbstractStatJob {
 			if(dataMap.containsKey("poiFinishAndPlanNum")){
 				poiFinishAndPlanNum = (int) dataMap.get("poiFinishAndPlanNum");
 			}
+			if(poiFinishAndPlanNum==0){
+				if(programType==1&&poiPlanTotal!=0){
+					poiFinishAndPlanNum=poiFinishNum;
+				}
+			}
+			
+			//道路规划完成量
+			if(dataMap.containsKey("linkUpdateAndPlanLen")){
+				linkUpdateAndPlanLen = (double) dataMap.get("linkUpdateAndPlanLen");
+			}
+			
 			//POI实际新增个数(暂不统计)
 			//POI实际修改个数(暂不统计)
 			//POI实际删除个数(暂不统计)
@@ -1348,6 +1369,8 @@ public class TaskJob extends AbstractStatJob {
 			taskMap.put("collectLinkUpdateTotal", collectLinkUpdateTotal);
 			taskMap.put("collectLink17UpdateTotal", collectLink17UpdateTotal);
 			taskMap.put("collectLinkAddTotal", collectLinkAddTotal);
+			taskMap.put("linkUpdateAndPlanLen", linkUpdateAndPlanLen);
+			
 			taskMap.put("crowdTipsTotal", crowdTipsTotal);
 			taskMap.put("inforTipsTotal", inforTipsTotal);
 			taskMap.put("poiAllNum", poiAllNum);

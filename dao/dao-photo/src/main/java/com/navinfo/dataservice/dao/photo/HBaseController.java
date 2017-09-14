@@ -252,6 +252,7 @@ public class HBaseController {
 		Photo photo = new Photo();
 		
 		photo.setRowkey(rowkey);
+		photo.setA_uuid(rowkey);
 		photo.setA_version(SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.seasonVersion));
 		photo.setA_content(aContent);

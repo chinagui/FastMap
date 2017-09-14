@@ -5,8 +5,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -40,14 +38,16 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDOBJECT\",\"objId\":404000008,\"infect\":0,\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"sNodePid\":0,\"eNodePid\":0," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.74972961044188,38.60499992721783],[119.7498419880867," +
+                "38.60498262071445]]},\"catchLinks\":[{\"linkPid\":403000741,\"lon\":119.74972961044188,\"lat\":38.60499992721783}]}," +
+                "\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDLINK\",\"objId\":403000671,\"data\":{\"kind\":8," +
-                "\"rowId\":\"A8A6F1827CC8444BBA4DEB240B12EEE8\",\"pid\":403000671,\"objStatus\":\"UPDATE\"},\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"objId\":703000004,\"infect\":0,\"dbId\":65,\"subtaskId\":672}";
         TestUtil.run(parameter);
     }
 

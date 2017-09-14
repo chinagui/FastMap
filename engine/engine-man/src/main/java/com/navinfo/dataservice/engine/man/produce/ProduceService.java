@@ -305,8 +305,8 @@ public class ProduceService {
 					+ "   (SELECT 1 FROM PRODUCE PR WHERE P.PROGRAM_ID = PR.PROGRAM_ID)";
 			QueryRunner run=new QueryRunner();
 			run.update(conn, sql);
-			//获取未出品&出品失败的情报出品记录
-			sql="SELECT P.PRODUCE_ID,P.PROGRAM_ID FROM PRODUCE P WHERE P.PRODUCE_STATUS IN (0, 3) AND P.PROGRAM_ID IS NOT NULL";
+			//获取未出品&出品失败&出品冲突的情报出品记录
+			sql="SELECT P.PRODUCE_ID,P.PROGRAM_ID,P.PRODUCE_STATUS FROM PRODUCE P WHERE P.PRODUCE_STATUS IN (0, 3, 4) AND P.PROGRAM_ID IS NOT NULL";
 			ResultSetHandler<List<Map<String,Object>>> rsHandler=new ResultSetHandler<List<Map<String,Object>>>() {
 				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException{
 					List<Map<String,Object>> list=new ArrayList<Map<String,Object>>();
@@ -314,6 +314,7 @@ public class ProduceService {
 						Map<String,Object> map=new HashMap<String, Object>();
 						map.put("produceId", rs.getInt("PRODUCE_ID"));
 						map.put("programId", rs.getInt("PROGRAM_ID"));
+						map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
 						list.add(map);
 					}
 					return list;
@@ -327,6 +328,7 @@ public class ProduceService {
 			for(Map<String,Object> produce:produceList){
 				int programId=(int) produce.get("programId");
 				int produceId=(int) produce.get("produceId");
+				int produceStatus = (int) produce.get("produceStatus");
 				Map<Integer, Set<Integer>> gridIds =ProgramService.getInstance().queryInforProgramGridById(conn, programId);
 				produce.put("gridIds", gridIds);
 				//modify by songhe
@@ -339,7 +341,7 @@ public class ProduceService {
 							Set<Integer> openGrids = entry.getValue();
 							if(openGrids.contains(gridId)){
 								produce.put("intersecGrids", produce.containsKey("intersecGrids") && produce.get("intersecGrids").toString().indexOf(String.valueOf(gridId)) == -1 ? produce.get("intersecGrids").toString() + "," + gridId : gridId);
-								produce.put("intersecProgramId", entry.getKey());
+								produce.put("intersecProgramId", produce.containsKey("intersecProgramId") && produce.get("intersecProgramId").toString().indexOf(String.valueOf(entry.getKey())) == -1 ? produce.get("intersecProgramId").toString() + "," + entry.getKey() : entry.getKey());
 								intersectList.add(produce);
 								notIntersec = false;
 							}
@@ -350,8 +352,14 @@ public class ProduceService {
 					JSONObject paraJson=new JSONObject();
 					paraJson.put("gridIds", gridIds.toString());
 					if(gridIds==null||gridIds.size()==0){continue;}
-					sql="update produce p set parameter='"+paraJson+"' where produce_id="+produceId;
-					run.update(conn, sql);
+					StringBuffer sb = new StringBuffer();
+					sb.append("update produce p set parameter='"+paraJson+"' ");
+					if(produceStatus == 4){
+						 sb.append(", produce_status = 0");
+						 produce.put("produceStatus", 0);
+					}
+					sb.append("where produce_id = "+produceId);
+					run.update(conn, sb.toString());
 					produceResultList.add(produce);
 				}
 			}

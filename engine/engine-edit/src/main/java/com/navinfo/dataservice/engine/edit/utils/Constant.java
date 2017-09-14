@@ -55,65 +55,81 @@ public class Constant {
     /**
      * 接边操作点
      */
-    public static Map<ObjType, Class<IRow>> NODE_TYPES = new HashMap() {{
-        put(ObjType.RDNODE, RdNode.class);
-        put(ObjType.RWNODE, RwNode.class);
-        put(ObjType.LCNODE, LcNode.class);
-        put(ObjType.LUNODE, LuNode.class);
-        put(ObjType.ADNODE, AdNode.class);
-        put(ObjType.ZONENODE, ZoneNode.class);
-    }};
+    public static Map<ObjType, Class<? extends IRow>> NODE_TYPES = new HashMap<>();
+
+    static {
+        NODE_TYPES.put(ObjType.RDNODE, RdNode.class);
+        NODE_TYPES.put(ObjType.RWNODE, RwNode.class);
+        NODE_TYPES.put(ObjType.LCNODE, LcNode.class);
+        NODE_TYPES.put(ObjType.LUNODE, LuNode.class);
+        NODE_TYPES.put(ObjType.ADNODE, AdNode.class);
+        NODE_TYPES.put(ObjType.ZONENODE, ZoneNode.class);
+    }
 
     /**
      * 接边操作线
      */
-    public static Map<ObjType, Class<IRow>> LINK_TYPES = new HashMap() {{
-        put(ObjType.RDLINK, RdLink.class);
-        put(ObjType.RWLINK, RwLink.class);
-        put(ObjType.LCLINK, LcLink.class);
-        put(ObjType.LULINK, LuLink.class);
-        put(ObjType.ADLINK, AdLink.class);
-        put(ObjType.ZONELINK, ZoneLink.class);
-    }};
+    public static Map<ObjType, Class<? extends IRow>> LINK_TYPES = new HashMap<>();
+
+    static {
+        LINK_TYPES.put(ObjType.RDLINK, RdLink.class);
+        LINK_TYPES.put(ObjType.RWLINK, RwLink.class);
+        LINK_TYPES.put(ObjType.LCLINK, LcLink.class);
+        LINK_TYPES.put(ObjType.LULINK, LuLink.class);
+        LINK_TYPES.put(ObjType.ADLINK, AdLink.class);
+        LINK_TYPES.put(ObjType.ZONELINK, ZoneLink.class);
+    }
 
     /**
      * 接边操作面
      */
-    public static Map<ObjType, Class<IRow>> FACE_TYPES = new HashMap() {{
-        put(ObjType.LCFACE, LcFace.class);
-        put(ObjType.LUFACE, LuFace.class);
-        put(ObjType.ADFACE, AdFace.class);
-        put(ObjType.ZONEFACE, ZoneFace.class);
-    }};
+    public static Map<ObjType, Class<? extends IRow>> FACE_TYPES = new HashMap<>();
+
+    static {
+        FACE_TYPES.put(ObjType.LCFACE, LcFace.class);
+        FACE_TYPES.put(ObjType.LUFACE, LuFace.class);
+        FACE_TYPES.put(ObjType.ADFACE, AdFace.class);
+        FACE_TYPES.put(ObjType.ZONEFACE, ZoneFace.class);
+    }
 
     /**
      * RDLINK相关关系要素
      */
-    public static List<ObjType> CRF_TYPES = new ArrayList() {{
-        add(ObjType.RDINTER);
-        add(ObjType.RDROAD);
-        add(ObjType.RDOBJECT);
-    }};
+    public static List<ObjType> CRF_TYPES = new ArrayList<>();
 
-    public final static Map<ObjType, Class> OBJ_TYPE_CLASS_MAP = new HashMap() {{
-        put(ObjType.RDNODE, RdLink.class);
-        put(ObjType.RWNODE, RwLink.class);
-        put(ObjType.LCNODE, LcLink.class);
-        put(ObjType.LUNODE, LuLink.class);
-        put(ObjType.ADNODE,  AdLink.class);
-        put(ObjType.ZONENODE, ZoneLink.class);
+    static {
+        // INTER
+        CRF_TYPES.add(ObjType.RDINTER);
+        CRF_TYPES.add(ObjType.RDINTERNODE);
+        CRF_TYPES.add(ObjType.RDINTERLINK);
+        // ROAD
+        CRF_TYPES.add(ObjType.RDROAD);
+        CRF_TYPES.add(ObjType.RDROADLINK);
+        // OBJECT
+        CRF_TYPES.add(ObjType.RDOBJECT);
+        CRF_TYPES.add(ObjType.RDOBJECTNAME);
+        CRF_TYPES.add(ObjType.RDOBJECTINTER);
+        CRF_TYPES.add(ObjType.RDOBJECTNODE);
+        CRF_TYPES.add(ObjType.RDOBJECTLINK);
+        CRF_TYPES.add(ObjType.RDOBJECTROAD);
+    }
 
-        put(ObjType.RDLINK, RdNode.class);
-        put(ObjType.RWLINK, RwNode.class);
-        put(ObjType.LCLINK, LcNode.class);
-        put(ObjType.LULINK, LuNode.class);
-        put(ObjType.ADLINK, AdNode.class);
-        put(ObjType.ZONELINK, ZoneNode.class);
+    public final static Map<ObjType, Class<? extends IRow>> OBJ_TYPE_CLASS_MAP = new HashMap<>() ;
 
-        put(ObjType.LCFACETOPO, LcLink.class);
-        put(ObjType.LUFACETOPO, LuLink.class);
-        put(ObjType.ADFACETOPO, AdLink.class);
-        put(ObjType.ZONEFACETOPO, ZoneLink.class);
-
-    }};
+    static {
+        // NODE
+        OBJ_TYPE_CLASS_MAP.put(ObjType.RDNODE, RdLink.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.RWNODE, RwLink.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.LCNODE, LcLink.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.LUNODE, LuLink.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.ADNODE,  AdLink.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.ZONENODE, ZoneLink.class);
+        // LINK
+        OBJ_TYPE_CLASS_MAP.put(ObjType.RDLINK, RdNode.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.RWLINK, RwNode.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.LCLINK, LcNode.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.LULINK, LuNode.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.ADLINK, AdNode.class);
+        OBJ_TYPE_CLASS_MAP.put(ObjType.ZONELINK, ZoneNode.class);
+    }
 }

@@ -26,9 +26,12 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 public class NodeOperateUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(NodeOperateUtils.class);
 
     public static RdNode createRdNode(double x, double y) throws Exception {
 
@@ -304,5 +307,27 @@ public class NodeOperateUtils {
             }
         }
         return form;
+    }
+
+    public static IRow clone(IRow row) {
+        IRow node;
+        switch (row.objType()) {
+            case RDNODE: RdNode rd = new RdNode(); rd.setPid(((RdNode) row).pid()); node = rd; break;
+            case RWNODE: RwNode rw = new RwNode(); rw.setPid(((RdNode) row).pid()); node = rw; break;
+            case ADNODE: AdNode ad = new AdNode(); ad.setPid(((RdNode) row).pid()); node = ad; break;
+            case ZONENODE: ZoneNode zone = new ZoneNode(); zone.setPid(((RdNode) row).pid()); node = zone; break;
+            case LCNODE: LcNode lc = new LcNode(); lc.setPid(((RdNode) row).pid()); node = lc; break;
+            case LUNODE: LuNode lu = new LuNode(); lu.setPid(((RdNode) row).pid()); node = lu; break;
+            default:
+                return row;
+        }
+        node.copy(row);
+        try {
+            node.Unserialize(JSONObject.fromObject(row.changedFields()));
+        } catch (Exception e) {
+            LOGGER.error("error in clone node object..", e.fillInStackTrace());
+        }
+        node.setRowId(row.rowId());
+        return node;
     }
 }

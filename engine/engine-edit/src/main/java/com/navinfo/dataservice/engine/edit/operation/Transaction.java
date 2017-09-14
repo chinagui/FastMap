@@ -1,17 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
-import com.google.common.base.CaseFormat;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
-import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
-import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
-import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.*;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -20,31 +13,24 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
-import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.operation.edge.EdgeOperation;
+import com.navinfo.dataservice.engine.edit.operation.edge.EdgeUtil;
+import com.navinfo.dataservice.engine.edit.operation.edge.TransactionFactory;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
+import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.*;
 
@@ -241,7 +227,7 @@ public class Transaction {
      *
      * @return 命令
      */
-    private AbstractCommand createCommand(String requester) throws Exception {
+    public AbstractCommand createCommand(String requester) throws Exception {
         // 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
         com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
         JSONObject json = JsonUtils.fastJson2netJson(fastJson);
@@ -845,7 +831,7 @@ public class Transaction {
      * @return 操作进程
      * @throws Exception
      */
-    private AbstractProcess createProcess(AbstractCommand command) throws Exception {
+    public AbstractProcess createProcess(AbstractCommand command) throws Exception {
         switch (objType) {
             case RDLINK:
                 switch (operType) {
@@ -1676,7 +1662,7 @@ public class Transaction {
                         continue;
                     }
                     if (ObjStatus.INSERT.equals(entry.getValue())) {
-                        row = this.cloneNode(row);
+                        row = NodeOperateUtils.clone(row);
                     }
 
                     if (map.containsKey(entry.getKey())) {
@@ -1739,55 +1725,6 @@ public class Transaction {
         }
 
         return map;
-    }
-
-    private IRow cloneNode(IRow row) {
-        if (!(row instanceof IObj)) {
-            return row;
-        }
-
-        IObj obj = (IObj) row;
-
-        IObj result = null;
-        if (row instanceof RdNode) {
-            RdNode node = new RdNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof RwNode) {
-            RwNode node = new RwNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof AdNode) {
-            AdNode node = new AdNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof ZoneNode) {
-            ZoneNode node = new ZoneNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof LcNode) {
-            LcNode node = new LcNode();
-            node.setPid(obj.pid());
-            result = node;
-        } else if (row instanceof LuNode) {
-            LuNode node = new LuNode();
-            node.setPid(obj.pid());
-            result = node;
-        }
-
-        if (result == null) {
-            return row;
-        } else {
-            result.copy(row);
-            try {
-                JSONObject json = JSONObject.fromObject(row.changedFields());
-                result.Unserialize(json);
-            } catch (Exception e) {
-                logger.error("拷贝点对象失败.", e);
-            }
-
-            return result;
-        }
     }
 
     private List<Geometry> getCRFGeom(Connection conn, List<IRow> rows) {
@@ -2011,52 +1948,10 @@ public class Transaction {
             return 0;
     }
 
-    /**
-     * 根据子表计算对应主表是否跨大区
-     *
-     * @param dbIds
-     * @param row
-     */
-    private void calcDbIdRefParentObj(Set<Integer> dbIds, IRow row) {
-        if (StringUtils.startsWithIgnoreCase(row.tableName(), row.parentTableName() + "_")) {
-            try {
-                String className = String.format("%s.%s", row.getClass().getPackage().getName(), CaseFormat.UPPER_UNDERSCORE.to
-                        (CaseFormat.UPPER_CAMEL, row.parentTableName()));
-                IRow partent = new AbstractSelector(Class.forName(className), process.getConn()).loadById(row.parentPKValue(), false);
-                calcDbIdRefNode(dbIds, row, partent);
-
-                dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(partent)));
-            } catch (Exception e) {
-                logger.error(String.format("未找到对应主表信息 [row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
-            }
-        }
-    }
-
-    /**
-     * 要素类型为NODE时,根据关联LINK计算是否跨大区
-     * @param dbIds
-     * @param row
-     * @param partent
-     */
-    private void calcDbIdRefNode(Set<Integer> dbIds, IRow row, IRow partent) {
-        if (Constant.NODE_TYPES.containsKey(partent.objType())) {
-            try {
-                int nodePid = Integer.parseInt(loadFieldValue(partent, "Pid").toString());
-
-                List<IObj> links = listLinkByNodePid(nodePid, partent.objType());
-                for (IObj obj : links) {
-                    dbIds.addAll(DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj)));
-                }
-            } catch (Exception e) {
-                logger.error(String.format("获取关联LINK要素失败[row.table_name: %s, row.row_id: %s]", row.tableName(), row.rowId()), e);
-            }
-        }
-    }
-
-    private void checkErrorOperation() throws Exception {
+    private void checkErrorOperation(Result result) throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
         if (OperType.REPAIR.equals(operType)) {
-            for (Map.Entry<ObjType, Class> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
+            for (Map.Entry<ObjType, Class<? extends IRow>> entry : Constant.OBJ_TYPE_CLASS_MAP.entrySet()) {
                 if (!entry.getKey().equals(objType)) {
                     continue;
                 }
@@ -2071,387 +1966,31 @@ public class Transaction {
                         IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("nodePid"), false);
                         Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
                         if (dbIds.size() > 1) {
-                            throw new Exception("不允分离大区库接边Node.");
+                            throw new Exception("不允分离大区库接边Node!");
                         }
                     }
                 }
             }
         }
-    }
-        /**
-         * 检查操作合法性
-         */
-    private void assertErrorOperation() throws Exception {
-        JSONObject json = JSONObject.fromObject(requester);
+        if (OperType.DELETE.equals(operType) && (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType))) {
+            if (json.containsKey("objId")) {
+                int objId = json.getInt("objId");
 
-        try {
-            if (OperType.MOVE.equals(operType)) {
-                if (!json.containsKey("objId") || !json.containsKey("data")) {
-                    return;
-                }
-
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.NODE_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    IRow row = new AbstractSelector(entry.getValue(), process.getConn()).loadById(json.getInt("objId"), false);
-                    Geometry geometry = GeometryUtils.loadGeometry(row);
-                    Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    JSONObject data = json.getJSONObject("data");
-                    geometry = GeoTranslator.createPoint(new Coordinate(data.getDouble("longitude"), data.getDouble("latitude")));
-                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库移动操作.");
-                    }
-                }
-            }
-            if (OperType.REPAIR.equals(operType)) {
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.LINK_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(json.getInt("objId"), false);
-                    if (!json.containsKey("data")) {
-                        return;
-                    }
-
-                    JSONObject data = json.getJSONObject("data");
-                    Geometry geometry = GeometryUtils.loadGeometry(link);
-                    Set<Integer> oldDbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    Set<Integer> newDbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.geojson2Jts(data.getJSONObject("geometry")));
-                    if (!CollectionUtils.isSubCollection(newDbIds, oldDbIds)) {
-                        throw new Exception("不允许进行跨大区库修形操作.");
-                    }
-                    if (newDbIds.size() == 1) {
-                        return;
-                    }
-                    if (!data.containsKey("catchInfos")) {
-                        continue;
-                    }
-                    Iterator<JSONObject> iterator = data.getJSONArray("catchInfos").iterator();
-                    while (iterator.hasNext()) {
-                        JSONObject obj = iterator.next();
-                        if (obj.containsKey("catchLinkPid")) {
-                            link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
-                            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (dbIds.size() > 1) {
-                                throw new Exception("不允许挂接大区库接边LINK.");
-                            }
+                for (IRow row : result.getDelObjects()) {
+                    for (Map.Entry<ObjType, Class<? extends IRow>> entry : Constant.NODE_TYPES.entrySet()) {
+                        if (!row.objType().equals(entry.getKey()) || (row.parentPKValue() == objId)) {
+                            continue;
                         }
-                        if (obj.containsKey("catchNodePid")) {
-                            throw new Exception("大区接边LINK不允许挂接NODE操作.");
-                        }
-                    }
-                }
-            }
-            if (OperType.CREATE.equals(operType)) {
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.LINK_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    if (!json.containsKey("data")) {
-                        return;
-                    }
-                    JSONObject data = json.getJSONObject("data");
-                    if (!data.containsKey("catchLinks")) {
-                        return;
-                    }
-                    Iterator<JSONObject> iterator = data.getJSONArray("catchLinks").iterator();
-                    while (iterator.hasNext()) {
-                        final JSONObject obj = iterator.next();
-                        if (obj.containsKey("linkPid")) {
-                            IRow link = new AbstractSelector(entry.getValue(), process.getConn()).loadById(obj.getInt("linkPid"), false);
-                            Set<Integer> catchDbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(link));
-                            if (catchDbIds.size() > 1) {
-                                throw new Exception("创建大区接边LINK不能挂接LINK操作.");
-                            }
-                        }
-                        //if (obj.containsKey("nodePid")) {
-                        //    throw new Exception("创建大区接边LINK不允许挂接NODE操作.");
-                        //}
-                    }
-                }
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.FACE_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    Class clazz = entry.getValue();
 
-                    if (!json.containsKey("data") || !json.getJSONObject("data").containsKey("linkPid")) {
-                        return;
-                    }
-                    if (json.getJSONObject("data").containsKey("linkType") && ObjType.RDLINK.toString().equals(json.getJSONObject
-                            ("data").getString("linkType"))) {
-                        clazz = RdLink.class;
-                    }
-                    Iterator<Integer> iterator = json.getJSONObject("data").getJSONArray("linkPids").iterator();
-                    while (iterator.hasNext()) {
-                        int linkPid = iterator.next();
-                        IRow row = new AbstractSelector(clazz, process.getConn()).loadById(linkPid, false);
-                        Geometry geometry = GeometryUtils.loadGeometry(row);
+                        IRow node = new AbstractSelector(entry.getValue(), process.getConn()).loadById(row.parentPKValue(), false);
+                        Geometry geometry = GeometryUtils.loadGeometry(node);
                         Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                         if (dbIds.size() > 1) {
-                            throw new Exception("不允许使用大区接边LINK进行线构面操作.");
+                            throw new Exception("该操作会导致跨大区Node删除，请优先执行跨大区Node删除操作!");
                         }
                     }
                 }
             }
-            if (OperType.DELETE.equals(operType)) {
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.LINK_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    int linkPid = json.getInt("objId");
-                    IRow row = new AbstractSelector(entry.getValue(), process.getConn()).loadById(linkPid, false);
-                    Geometry geometry = GeometryUtils.loadGeometry(row);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (dbIds.size() > 1) {
-                        assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "sNodePid").toString()));
-                        assertConnectionLink(linkPid, Integer.parseInt(loadFieldValue(row, "eNodePid").toString()));
-                    }
-                }
-                for (Map.Entry<ObjType, Class<IRow>> entry : Constant.NODE_TYPES.entrySet()) {
-                    if (!entry.getKey().equals(objType)) {
-                        continue;
-                    }
-                    int nodePid = json.getInt("objId");
-                    IRow node = new AbstractSelector(entry.getValue(), process.getConn()).loadById(nodePid, false);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(node));
-                    if (dbIds.size() > 1) {
-                        return;
-                    }
-
-                    List<IObj> links = listLinkByNodePid(nodePid, entry.getKey());
-                    for (IObj obj : links) {
-                        dbIds = DbMeshInfoUtil.calcDbIds(GeometryUtils.loadGeometry(obj));
-                        if (dbIds.size() > 1) {
-                            throw new Exception("不允许对大区接边LINK的非跨大区点进行删除操作.");
-                        }
-                    }
-                }
-            }
-            if (OperType.BATCH.equals(operType) && ObjType.RDLINK.equals(objType)) {
-                if (!json.containsKey("data")) {
-                    return;
-                }
-                Iterator<JSONObject> iterator = json.getJSONArray("data").iterator();
-                while (iterator.hasNext()) {
-                    JSONObject obj = iterator.next();
-                    if (!obj.containsKey("pid")) {
-                        continue;
-                    }
-                    int linkPid = obj.getInt("pid");
-                    IRow row = new AbstractSelector(RdLink.class, process.getConn()).loadById(linkPid, false);
-                    Geometry geometry = GeometryUtils.loadGeometry(row);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量编辑操作.");
-                    }
-                }
-            }
-            if (OperType.BATCHDELETE.equals(operType) && ObjType.RDLINK.equals(objType)) {
-                if (!json.containsKey("objIds")) {
-                    return;
-                }
-                Iterator<Integer> iterator = json.getJSONArray("objIds").iterator();
-                while (iterator.hasNext()) {
-                    Integer linkPid = iterator.next();
-                    IRow row = new AbstractSelector(RdLink.class, process.getConn()).loadById(linkPid, false);
-                    Geometry geometry = GeometryUtils.loadGeometry(row);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-                    if (dbIds.size() > 1) {
-                        throw new Exception("不允许对大区接边LINK进行批量删除操作.");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    /**
-     * 删除接边LINK时判断是否有挂接LINK
-     * @param linkPid
-     * @param nodePid
-     * @throws Exception
-     */
-    private void assertConnectionLink(int linkPid, int nodePid) throws Exception {
-        List<IObj> objs = listLinkByNodePid(nodePid, objType);
-
-        for (IObj obj : objs) {
-            if (obj.pid() == linkPid) {
-                continue;
-            }
-
-            Geometry geometry = GeometryUtils.loadGeometry(obj);
-            Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
-            if (dbIds.size() == 1) {
-                throw new Exception("删除接边LINK时请优先删除挂接LINK.");
-            }
-        }
-    }
-
-    private List<IObj> listLinkByNodePid(int nodePid, ObjType tpye) throws Exception {
-        List<IObj> objs = new ArrayList<>();
-        switch (tpye) {
-            case RDNODE:
-            case RDLINK:
-                objs = new ArrayList<IObj>(new RdLinkSelector(process.getConn()).loadByNodePid(nodePid, false));  break;
-            case LCNODE:
-            case LCLINK:
-                objs = new ArrayList<IObj>(new LcLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case LUNODE:
-            case LULINK:
-                objs = new ArrayList<IObj>(new LuLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ADNODE:
-            case ADLINK:
-                objs = new ArrayList<IObj>(new AdLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case ZONENODE:
-            case ZONELINK:
-                objs = new ArrayList<IObj>(new ZoneLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-            case RWLINK:
-                objs = new ArrayList<IObj>(new RwLinkSelector(process.getConn()).loadByNodePid(nodePid, false)); break;
-        }
-        return objs;
-    }
-
-    /**
-     * 处理跨大区数据
-     *
-     * @param sourceResult
-     * @return
-     * @throws Exception
-     */
-    private Result filterResult(Result sourceResult) throws Exception {
-        Result result = sourceResult.clone();
-
-        removeInvalidData(result.getAddObjects(), result.getListAddIRowObPid());
-        removeInvalidData(result.getUpdateObjects(), result.getListUpdateIRowObPid());
-        removeInvalidData(result.getDelObjects(), result.getListDelIRowObPid());
-
-        return result;
-    }
-
-    /**
-     * 删除跨大区无效数据
-     *
-     * @param rows
-     * @param pids
-     */
-    private void removeInvalidData(List<IRow> rows, List<Integer> pids) {
-        StringBuffer patter = new StringBuffer("^(");
-
-        patter.append("RD_LINK|RD_NODE|RD_LANE");
-        patter.append("RW_NODE|RW_LINK|RW_FEATURE");
-        patter.append("|AD_|ZONE_|LC_|LU_");
-        patter.append("|RD_INTER|RD_ROAD|RD_OBJECT");
-        //patter.append("|RD_WARNINGINFO|RD_LINK_WARNING");
-        patter.append("|RD_TRAFFICSIGNAL");
-        patter.append("|RD_TMCLOCATION_LINK");
-        patter.append("|RD_SPEEDBUMP");
-        patter.append("|RD_ELECTRONICEYE|RD_ELECEYE_PAIR|RD_ELECEYE_PART");
-
-        patter.append(").*");
-
-        Iterator<IRow> rowIterator = rows.iterator();
-        Iterator<Integer> pidIterator = pids.iterator();
-        while (rowIterator.hasNext()) {
-            IRow row = rowIterator.next();
-            int pid = pidIterator.next();
-            String tableName = row.tableName().toUpperCase();
-            if (!tableName.matches(patter.toString())) {
-                logger.info(String.format("跨大区操作过滤数据[%s: %s]", tableName, row.rowId()));
-                rowIterator.remove();
-                pidIterator.remove();
-            }
-        }
-    }
-
-    /**
-     * 根据属性名获取值
-     *
-     * @param row
-     * @param fieldName
-     * @return
-     */
-    private Object loadFieldValue(IRow row, String fieldName) throws Exception {
-        Class clazz = row.getClass();
-        for (Method method : clazz.getDeclaredMethods()) {
-            if (StringUtils.equalsIgnoreCase(method.getName(), "get" + fieldName)) {
-                try {
-                    return method.invoke(row);
-                } catch (IllegalAccessException e) {
-                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    logger.error(String.format("获取[%s: %s]的%s属性值出错", row.tableName(), row.rowId(), fieldName), e);
-                    e.printStackTrace();
-                }
-            }
-        }
-        throw new Exception();
-    }
-
-    /**
-     * 补全缺失NODE
-     *
-     * @param addObjects
-     * @param nodePid
-     * @param inserts
-     * @param row
-     * @param conn
-     * @throws Exception
-     */
-    private void addMissNode(List<IRow> addObjects, int nodePid, Map<String, IRow> inserts, IRow row, Connection conn) throws Exception {
-        if (!Constant.OBJ_TYPE_CLASS_MAP.containsKey(row.objType())) {
-            return;
-        }
-        Class clazz = Constant.OBJ_TYPE_CLASS_MAP.get(row.objType());
-
-        for (IRow n : addObjects) {
-            if (StringUtils.equalsIgnoreCase(clazz.getSimpleName(), n.objType().toString()) && n.parentPKValue() == nodePid) {
-                return;
-            }
-        }
-
-        try {
-            new AbstractSelector(clazz, conn).loadById(nodePid, false);
-        } catch (Exception e) {
-            IRow node = new AbstractSelector(clazz, process.getConn()).loadById(nodePid, false);
-            inserts.put(node.objType().toString() + node.parentPKValue(), node);
-        }
-    }
-
-    /**
-     * 补全缺失Node
-     *
-     * @param addObjects
-     * @param inserts
-     * @param row
-     * @param conn
-     * @throws Exception
-     */
-    private void addMissLink(List<IRow> addObjects, Map<String, IRow> inserts, IRow row, Connection conn) throws Exception {
-        if (!Constant.OBJ_TYPE_CLASS_MAP.containsKey(row.objType())) {
-            return;
-        }
-        Class clazz = Constant.OBJ_TYPE_CLASS_MAP.get(row.objType());
-
-        int linkPid = Integer.parseInt(loadFieldValue(row, "LinkPid").toString());
-        for (IRow n : addObjects) {
-            if (StringUtils.equalsIgnoreCase(clazz.getSimpleName(), n.objType().toString()) && n.parentPKValue() == linkPid) {
-                return;
-            }
-        }
-
-        try {
-            new AbstractSelector(LcLink.class, conn).loadById(linkPid, false);
-        } catch (Exception e) {
-            inserts.put(row.objType().toString() + row.parentPKValue(), row);
-            IRow link = new AbstractSelector(LcLink.class, process.getConn()).loadById(linkPid, false);
-            inserts.put(link.objType().toString() + link.parentPKValue(), link);
-            addMissNode(addObjects, Integer.parseInt(loadFieldValue(link, "sNodePid").toString()), inserts, link, conn);
-            addMissNode(addObjects, Integer.parseInt(loadFieldValue(link, "eNodePid").toString()), inserts, link, conn);
         }
     }
 
@@ -2463,7 +2002,7 @@ public class Transaction {
      */
     public String run() throws Exception {
         List<AbstractProcess> processes = new ArrayList<>();
-        AbstractCommand abstractCommand = initCommand(requester);
+        AbstractCommand abstractCommand = TransactionFactory.generateCommand(this, requester);
         AbstractProcess abstractProcess = createProcess(abstractCommand);
         processes.add(abstractProcess);
         if (abstractCommand.isHasConn() && null != conn) {
@@ -2487,22 +2026,27 @@ public class Transaction {
                 return delPrompt(result);
             }
 
-            // 初始化新增数据RowId，保证接边库数据一致
-            initRowid(result.getAddObjects());
-
-            // 操作合法性检查
-            // 2017.8.24修改跨大区方案，取消控制
-            // assertErrorOperation();
-
             // 检查接边点不允许分离
-            checkErrorOperation();
+            checkErrorOperation(result);
+
+            //EdgeResult edge = new EdgeResult(requester);
+            // 初始化新增数据RowId，保证接边库数据一致
+            EdgeUtil.initalizeRowId(result.getAddObjects());
+            //edge.setSourceResult(result);
+
+            Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
+            //edge.setSourceDb(sourceDbId);
+            //EdgeOperation edgeOperation = new EdgeOperation();
+            //edgeOperation.getAbstractProcesses().add(process);
+            //edgeOperation.setTransaction(this);
+
+            //edgeOperation.handleEdge(edge);
 
             boolean hasSourceDb = false;
 
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.FACE_TYPES.containsKey(objType) || Constant.LINK_TYPES.containsKey(objType)
                     || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
-                Integer sourceDbId = Integer.valueOf(process.getCommand().getDbId());
 
                 // 检查操作结果是否产生接边影响
                 Map<Integer, Result> map = calcDbIdsRefResult(result, sourceDbId);
@@ -2574,7 +2118,7 @@ public class Transaction {
                     data.put("latitude", geometry.getCoordinate().y);
                     jsonObject.put("data", data);
 
-                    AbstractCommand command = initCommand(jsonObject.toString());
+                    AbstractCommand command = TransactionFactory.generateCommand(this, jsonObject.toString());
                     AbstractProcess process = createProcess(command);
                     processes.add(process);
                     process.run();
@@ -2597,11 +2141,11 @@ public class Transaction {
                 jsonObject.put("command", operType.toString());
                 jsonObject.put("subtaskId", json.getInt("subtaskId"));
 
-                if (Constant.NODE_TYPES.containsKey(deleteRow.objType()) || Constant.CRF_TYPES.contains(deleteRow.objType())) {
+                if (Constant.NODE_TYPES.containsKey(deleteRow.objType()) || Constant.LINK_TYPES.containsKey(deleteRow.objType())) {
                     jsonObject.put("type", deleteRow.objType());
                     jsonObject.put("objId", ((IObj) deleteRow).pid());
 
-                    AbstractCommand command = initCommand(jsonObject.toString());
+                    AbstractCommand command = TransactionFactory.generateCommand(this, jsonObject.toString());
                     AbstractProcess process = createProcess(command);
                     processes.add(process);
                     process.run();
@@ -2609,6 +2153,31 @@ public class Transaction {
                     this.recordData(process, process.getResult());
                 }
             }
+
+            Result crfResult = new Result();
+            for (IRow iRow : res.getAddObjects()) {
+                if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    crfResult.getAddObjects().add(iRow);
+                    crfResult.getListAddIRowObPid().add(iRow.parentPKValue());
+                }
+            }
+            for (IRow iRow : res.getUpdateObjects()) {
+                if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    crfResult.getUpdateObjects().add(iRow);
+                    crfResult.getListUpdateIRowObPid().add(iRow.parentPKValue());
+                }
+            }
+            for (IRow iRow : res.getDelObjects()) {
+                if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    crfResult.getDelObjects().add(iRow);
+                    crfResult.getListDelIRowObPid().add(iRow.parentPKValue());
+                }
+            }
+            AbstractCommand command = TransactionFactory.generateCommand(this, json.element("dbId", entry.getKey()).toString());
+
+            AbstractProcess process = createProcess(command);
+            processes.add(process);
+            this.recordData(process, crfResult);
         }
     }
 
@@ -2616,7 +2185,7 @@ public class Transaction {
         JSONObject json = JSONObject.fromObject(requester);
 
         for (Map.Entry<Integer, Result> entry : map.entrySet()) {
-            AbstractCommand command = initCommand(json.element("dbId", entry.getKey()).toString());
+            AbstractCommand command = TransactionFactory.generateCommand(this, json.element("dbId", entry.getKey()).toString());
 
             AbstractProcess process = createProcess(command);
             processes.add(process);
@@ -2634,7 +2203,7 @@ public class Transaction {
      */
     public String innerRun() throws Exception {
         List<AbstractProcess> processes = new ArrayList<>();
-        AbstractCommand abstractCommand = initCommand(requester);
+        AbstractCommand abstractCommand = TransactionFactory.generateCommand(this, requester);
         AbstractProcess abstractProcess = createProcess(abstractCommand);
         processes.add(abstractProcess);
         if (abstractCommand.isHasConn() && null != conn) {
@@ -2659,13 +2228,7 @@ public class Transaction {
             }
 
             // 初始化新增数据RowId，保证接边库数据一致
-            initRowid(result.getAddObjects());
-
-            // 操作合法性检查
-            // assertErrorOperation();
-
-            // 检查操作结果是否产生接边影响
-            //calcDbIdsRefResult(commands, processes, result);
+            EdgeUtil.initalizeRowId(result.getAddObjects());
 
             // 跨大区处理6种点要素以及所对应线要素
             if (Constant.LINK_TYPES.containsKey(objType) || Constant.NODE_TYPES.containsKey(objType) || Constant.CRF_TYPES.contains(objType)) {
@@ -2687,10 +2250,7 @@ public class Transaction {
             // 写入数据、履历
             recordData(process, result);
 
-            // 执行后检查
-            if (!hasOverride("innerRun")) {
-                process.postCheck();
-            }
+            process.postCheck();
 
             // 数据入库
             for (AbstractProcess process : processes) {
@@ -2711,25 +2271,6 @@ public class Transaction {
             }
         }
         return msg;
-    }
-
-    /**
-     * 判断子类是否已经重写了methodName方法
-     * 如果重写过了则默认子类进行调用
-     * @param methodName
-     * @return
-     */
-    private boolean hasOverride(String methodName) {
-        Class clazz = process.getClass();
-        boolean flag = false;
-
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (methodName.equals(method.getName()) && method.getParameterTypes().length == 0) {
-                flag =  true;
-            }
-        }
-        return flag;
     }
 
     /**
@@ -2754,48 +2295,6 @@ public class Transaction {
             logger.error(e.getMessage(), e);
         }
         return true;
-    }
-
-    /**
-     * 填充AddObject数据的RowId，防止跨库数据不一致
-     *
-     * @param rows
-     */
-    private void initRowid(List<IRow> rows) {
-        for (IRow row : rows) {
-            String tableName = SelectorUtils.getObjTableName(row);
-            if (StringUtils.isNotEmpty(row.rowId())) {
-                if (!tableName.equals("IX_POI")) {
-                    row.setRowId(UuidUtils.genUuid());
-                }
-            } else {
-                row.setRowId(UuidUtils.genUuid());
-            }
-            if (CollectionUtils.isNotEmpty(row.children())) {
-                for (List<IRow> list : row.children()) {
-                    initRowid(list);
-                }
-            }
-        }
-    }
-
-    /**
-     * 初始化Command信息
-     *
-     * @param request
-     * @return
-     * @throws Exception
-     */
-    private AbstractCommand initCommand(String request) throws Exception {
-        AbstractCommand command = createCommand(request);
-        command.setUserId(userId);
-        command.setTaskId(subTaskId);
-        command.setDbType(dbType);
-        command.setInfect(infect);
-        if (null != conn) {
-            command.setHasConn(true);
-        }
-        return command;
     }
 
     private String delPrompt(Result result) {
@@ -2836,11 +2335,8 @@ public class Transaction {
     private Map<String, List<AlertObject>> sort(List<IObj> objs, ObjStatus status) {
         Map<String, List<AlertObject>> tm = new HashMap();
         for (IObj obj : objs) {
-
             if (tm.containsKey(ObjStatus.getCHIName(status).concat(obj.objType().toString()))) {
-
                 AlertObject object = new AlertObject(obj.objType(), obj.pid(), status);
-
                 List<AlertObject> list = tm.get(ObjStatus.getCHIName(status).concat(obj.objType().toString()));
                 list.add(object);
             } else {
@@ -2849,24 +2345,44 @@ public class Transaction {
                 tem.add(object);
                 tm.put(ObjStatus.getCHIName(status).concat(obj.objType().toString()), tem);
             }
-
         }
         return tm;
     }
 
     /**
-     * @return 操作简要日志信息
+     * Getter method for property <tt>logs</tt>.
+     *
+     * @return property value of logs
      */
     public String getLogs() {
         return process.getResult().getLogs();
     }
 
+    /**
+     * Getter method for property <tt>checkLog</tt>.
+     *
+     * @return property value of checkLog
+     */
     public JSONArray getCheckLog() {
         return process.getResult().getCheckResults();
 
     }
 
+    /**
+     * Getter method for property <tt>pid</tt>.
+     *
+     * @return property value of pid
+     */
     public int getPid() {
         return process.getResult().getPrimaryPid();
+    }
+
+    /**
+     * Getter method for property <tt>dbType</tt>.
+     *
+     * @return property value of dbType
+     */
+    public int getDbType() {
+        return dbType;
     }
 }

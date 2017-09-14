@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -49,13 +51,18 @@ public class GLM28016 extends baseRule{
 	 * @param rdRoad
 	 * @throws SQLException 
 	 */
-	private void checkRdRoad(RdRoad rdRoad) throws SQLException {
+	private void checkRdRoad(RdRoad rdRoad) throws Exception {
 		if(rdRoad.status().equals(ObjStatus.INSERT)){
-			Set<Integer> linkPidSet = new HashSet<Integer>();
+			Set<Integer> linkPidSet = new HashSet<>();
 			for(IRow iRow:rdRoad.getLinks()){
 				RdRoadLink rdRoadLink = (RdRoadLink)iRow;
 				linkPidSet.add(rdRoadLink.getLinkPid());
 			}
+			List<RdLink> links = new RdLinkSelector(this.getConn()).loadByPids(new ArrayList(linkPidSet), false);
+			if (linkPidSet.size() != links.size()) {
+			    return;
+            }
+
 			if(!linkPidSet.isEmpty()){
 
 				//查出CRFRoad涉及的所有CRFInode信息

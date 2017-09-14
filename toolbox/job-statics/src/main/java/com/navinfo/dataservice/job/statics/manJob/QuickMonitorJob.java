@@ -65,7 +65,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			System.out.println(JSONObject.fromObject(result).toString());
 			result.put("quick_monitor", stats);
-			System.out.println(result.toString());
+			//System.out.println(result.toString());
 			return result.toString();
 //			return JSONObject.fromObject(result).toString();
 			

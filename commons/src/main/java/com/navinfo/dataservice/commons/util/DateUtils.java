@@ -484,6 +484,20 @@ public class DateUtils {
 				new Object[] { parseDateTime2(date) });
 		return Timestamp.valueOf(mDateTime);
 	}
+	
+	/**
+	 * 日期转换成字符串(Timestamp)，字符串格式默认‘yyyy-MM-dd HH:mm:ss’
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static String formatterTime(Timestamp data, String type) {
+		String str = null;
+		SimpleDateFormat df = new SimpleDateFormat(type);
+		if (data != null)
+			str = df.format(data);
+		return str;
+	}
 
 	/**
 	 * 日期转换成字符串(Timestamp)，字符串格式默认‘yyyy-MM-dd HH:mm:ss’
@@ -560,6 +574,7 @@ public class DateUtils {
 	 * @return
 	 */
 	public static long diffDay(Timestamp start,Timestamp end){
+		if(start==null||end==null){return 0;}
 	    long diff = end.getTime() - start.getTime();
 	    long days = diff / (1000 * 60 * 60 * 24);
 	    return days;

@@ -915,7 +915,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			if (updatePids.contains(pid)) {
+			if (updatePids!=null&&updatePids.contains(pid)) {
 
 				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					oldKindCodePids.add(pid);
@@ -985,7 +985,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					}
 				}
 
-			} else if (addPids.contains(pid)) {
+			} else if (addPids!=null&&addPids.contains(pid)) {
 
 				if (poiObj.getChiAddress() != null) {
 

@@ -62,11 +62,11 @@ public abstract class StatJobStarter {
 	 * @return
 	 * @throws Exception 
 	 */
-	protected RunJobInfo updateRequestByIdentify(RunJobInfo info,String identify) throws Exception{	
+	protected RunJobInfo updateRequestByIdentify(RunJobInfo info,String identify,JSONObject identifyJson) throws Exception{	
 		JSONObject request = info.getRequest();
 		try{
-			//request.put("identify", identify);
-			JSONObject identifyJson = JSONObject.fromObject(identify);
+			request.put("identify", identify);
+			request.put("identifyJson", identifyJson);
 			request.putAll(identifyJson);
 		}catch (Exception e) {
 			log.warn("identify不是json:"+identify);
@@ -78,9 +78,9 @@ public abstract class StatJobStarter {
 	}
 	
 	public void start(){
-		start(null);
+		start(null,null);
 	}
-	public boolean start(String identify){
+	public boolean start(String identify,JSONObject identifyJson){
 		RunJobInfo info = null;
 		try{
 			//根据配置，是否可以重复启动相同的统计job
@@ -95,7 +95,7 @@ public abstract class StatJobStarter {
 				return false;
 			}
 			if(StringUtils.isNotEmpty(identify)){
-				info=updateRequestByIdentify(info,identify);
+				info=updateRequestByIdentify(info,identify,identifyJson);
 			}
 			log.info("create job:jobType="+jobType()+",request="+info.getRequest());
 			JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");

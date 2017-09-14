@@ -391,7 +391,7 @@ public class TipsRequestParamSQL {
 		
 		//20170915修改
 		if (date != null && !date.equals("")) {
-			param += " AND t_dateDate > to_date('" + date + "','yyyyMMddHH24MIss')"
+			param += " AND t_dataDate > to_date('" + date + "','yyyyMMddHH24MIss')"
 					+ " ";
 		}
 		

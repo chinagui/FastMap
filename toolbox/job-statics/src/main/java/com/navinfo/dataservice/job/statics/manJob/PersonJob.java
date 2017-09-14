@@ -147,7 +147,8 @@ public class PersonJob extends AbstractStatJob {
 			JSONObject identifyJson=new JSONObject();
 			identifyJson.put("timestamp", statReq.getTimestamp());
 			identifyJson.put("workDay", statReq.getWorkDay());
-			statReq.setIdentify(identifyJson.toString());
+			statReq.setIdentifyJson(identifyJson);
+			statReq.setIdentify("timestamp:"+statReq.getTimestamp()+",workDay:"+statReq.getWorkDay());
 			return JSONObject.fromObject(result).toString();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

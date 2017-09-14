@@ -50,7 +50,7 @@ public class ConvertUtil {
         sourceText = sourceText.replaceAll(" \\( ", " (");
         sourceText = sourceText.replaceAll("\\( ", "(");
         sourceText = sourceText.replaceAll(" \\. ", ".");
-        sourceText = sourceText.replaceAll(" \\' ", ".");
+        sourceText = sourceText.replaceAll(" \\' ", "'");
         sourceText = sourceText.replaceAll(" & ", "&");
         sourceText = sourceText.replaceAll("& ", "&");
         sourceText = sourceText.replaceAll(" &", "&");

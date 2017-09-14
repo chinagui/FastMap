@@ -65,7 +65,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			System.out.println(JSONObject.fromObject(result).toString());
 			result.put("quick_monitor", stats);
-			System.out.println(result.toString());
+			//System.out.println(result.toString());
 			return result.toString();
 //			return JSONObject.fromObject(result).toString();
 			
@@ -223,11 +223,13 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			//获取时间平均值
 			BasicDBObject queryProgram16 = new BasicDBObject();
-			queryProgram16.put("type", 0);		
+			queryProgram16.put("type", 0);	
+			queryProgram16.put("programType", 4);
 			quickMonitorMap.put("collectAverageDate", getDateAvgInMongo(md, "task",queryProgram16,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram17 = new BasicDBObject();
 			queryProgram17.put("type", 1);	
+			queryProgram17.put("programType", 1);
 			quickMonitorMap.put("dayAverageDate", getDateAvgInMongo(md, "task",queryProgram17,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram18 = new BasicDBObject();

@@ -607,6 +607,8 @@ public class StaticsService {
 				int monthPoiLogUnFinishNum = monthPoiLogTotalNum - monthPoiLogFinishNum;
 				task.put("monthPoiLogFinishNum", (int) jso.get("monthPoiLogFinishNum"));
 				task.put("monthPoiLogUnFinishNum", monthPoiLogUnFinishNum);
+				task.put("roadPlanTotal", Double.valueOf(jso.get("roadPlanTotal").toString()));
+				task.put("poiPlanTotal", (int) jso.get("poiPlanTotal"));
 			}
 			return task;
 		} catch (Exception e) {
@@ -803,10 +805,13 @@ public class StaticsService {
 	 * @return Map<String, Object>
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> cityMonitor(int cityId) throws Exception{
+	public Map<String, Object> cityMonitor(int cityId,int programId) throws Exception{
 		try {
 			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
-			BasicDBObject filter = new BasicDBObject("cityId", cityId);
+			
+			BasicDBObject filter =null;
+			if(cityId!=0){filter=new BasicDBObject("cityId", cityId);}
+			if(programId!=0){filter=new BasicDBObject("programId", programId);}
 			FindIterable<Document> findIterable = mongoDao.find(PROGRAM,filter).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<String, Object> task = new HashMap<>();
@@ -816,14 +821,15 @@ public class StaticsService {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				task.putAll(jso);
 			}
-			
-			FindIterable<Document> findIterable2 = mongoDao.find(CITY,filter).sort(new BasicDBObject("timestamp",-1));
-			MongoCursor<Document> iterator2 = findIterable2.iterator();
-			//处理数据
-			if(iterator2.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iterator2.next());
-				task.putAll(jso);
+			if(cityId!=0){
+				FindIterable<Document> findIterable2 = mongoDao.find(CITY,filter).sort(new BasicDBObject("timestamp",-1));
+				MongoCursor<Document> iterator2 = findIterable2.iterator();
+				//处理数据
+				if(iterator2.hasNext()){
+					//获取统计数据
+					JSONObject jso = JSONObject.fromObject(iterator2.next());
+					task.putAll(jso);
+				}
 			}
 			return task;
 		} catch (Exception e) {

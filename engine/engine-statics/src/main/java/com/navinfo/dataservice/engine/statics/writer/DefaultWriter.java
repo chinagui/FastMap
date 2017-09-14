@@ -10,7 +10,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -39,11 +38,12 @@ public class DefaultWriter {
 		String jobType=messageJSON.getString("jobType");
 		String timestamp=messageJSON.getString("timestamp");
 		String identify=messageJSON.getString("identify");
+		JSONObject identifyJson=messageJSON.getJSONObject("identifyJson");
 		log.info("start write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 		
-		write2Mongo(timestamp,identify,messageJSON.getJSONObject("statResult"));	
+		write2Mongo(timestamp,identifyJson,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
-		pushEndMsg(jobType,timestamp,identify);
+		pushEndMsg(jobType,timestamp,identify,identifyJson);
 		String staticMessage=getLatestStatic();
 		if(!StringUtils.isEmpty(staticMessage)){
 			pushWebSocket(staticMessage,jobType);
@@ -65,19 +65,19 @@ public class DefaultWriter {
 	 * 统计信息写入mongo库
 	 * @param messageJSON
 	 */
-	public void write2Mongo(String timestamp,String identify,JSONObject messageJSON){
+	public void write2Mongo(String timestamp,JSONObject identifyJson,JSONObject messageJSON){
 		log.info("start write2Mongo");
 		for(Object collectionNameTmp:messageJSON.keySet()){
 			String collectionName=String.valueOf(collectionNameTmp);
 			//初始化统计collection
-			initMongoDb(collectionName,timestamp,identify);
+			initMongoDb(collectionName,timestamp,identifyJson);
 			//统计信息入库
 			MongoDao md = new MongoDao(dbName);
 			List<Document> docs=new ArrayList<>();
 			for(Object tmp:messageJSON.getJSONArray(collectionName)){
-				Document resultDoc=new Document();
-				resultDoc.put("timestamp",timestamp);
+				Document resultDoc=new Document();				
 				resultDoc.putAll((JSONObject)tmp);
+				resultDoc.put("timestamp",timestamp);
 				docs.add(resultDoc);
 			}
 			md.insertMany(collectionName, docs);
@@ -91,7 +91,7 @@ public class DefaultWriter {
 	 * 2.删除时间点相同的重复统计数据
 	 * @param collectionName
 	 */
-	public void initMongoDb(String collectionName,String timestamp,String identify) {
+	public void initMongoDb(String collectionName,String timestamp,JSONObject identifyJson) {
 		log.info("init mongo "+collectionName);
 		MongoDao mdao = new MongoDao(dbName);
 		MongoDatabase md = mdao.getDatabase();
@@ -117,16 +117,7 @@ public class DefaultWriter {
 		// 删除时间点相同的重复统计数据
 		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",timestamp="+timestamp);
 		BasicDBObject query = new BasicDBObject();
-		query.put("timestamp", timestamp);
-		//若存在identify，需要增加删除条件，identify转成json，按照其进行删除库中数据
-		if(!StringUtils.isEmpty(identify)){
-			try{
-				JSONObject identifyJson = JSONObject.fromObject(identify);
-				query.putAll(identifyJson);
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
-		}
+		query.putAll(identifyJson);
 		mdao.deleteMany(collectionName, query);
 	}
 	
@@ -157,12 +148,13 @@ public class DefaultWriter {
 	 * @param jobName
 	 * @throws Exception 
 	 */
-	public void pushEndMsg(String jobType,String timestamp,String identify) throws Exception{
+	public void pushEndMsg(String jobType,String timestamp,String identify,JSONObject identifyJson) throws Exception{
 		log.info(jobType+" end(execute+write)");
 		JSONObject msg=new JSONObject();
 		msg.put("jobType", jobType);
 		msg.put("timestamp", timestamp);
 		msg.put("identify", identify);
+		msg.put("identifyJson", identifyJson);
 		MsgPublisher.publish2WorkQueue("stat_job_end", msg.toString());
 	}
 	

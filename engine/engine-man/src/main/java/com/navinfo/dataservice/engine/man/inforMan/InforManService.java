@@ -135,9 +135,9 @@ public class InforManService {
 				extendSql=extendSql+"   AND T.PLAN_STATUS IN "+planStatus;
 			}
 
-			String selectSql = "SELECT T.INFOR_ID, T.GEOMETRY, T.PLAN_STATUS"
-					+ "  FROM INFOR T"
-					+ " WHERE 1=1"
+			String selectSql = "SELECT T.INFOR_ID, T.GEOMETRY, T.PLAN_STATUS,NVL(R.PROGRAM_ID, 0) PROGRAM_ID"
+					+ "  FROM INFOR T, PROGRAM R"
+					+ " WHERE t.infor_id=r.infor_id(+)"
 					+ extendSql;
 			QueryRunner run=new QueryRunner();
 			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String,Object>>>(){
@@ -164,6 +164,7 @@ public class InforManService {
 						}
 						map.put("geometry", geoList);
 						map.put("planStatus",rs.getInt("PLAN_STATUS"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
 						res.add(map);
 					}
 					return res;

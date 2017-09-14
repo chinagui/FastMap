@@ -15,6 +15,8 @@ import com.navinfo.dataservice.commons.exception.ConfigParseException;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
+import net.sf.json.JSONObject;
+
 /** 
  * @ClassName: GroupStatJobLauncher
  * @author xiaoxiaowen4127
@@ -87,12 +89,12 @@ public class GroupStatJobLauncher {
         }
 	}
 	
-	public void exchange(String identify,String jobType)throws Exception{
+	public void exchange(String identify,JSONObject identifyJson,String jobType)throws Exception{
 		if(jobs!=null){
 			//log.info("1");
 			for(GroupStatJob job:jobs){
 				//log.info("1.1");
-				job.trigger(identify, jobType);
+				job.trigger(identify,identifyJson, jobType);
 			}
 		}
 	}

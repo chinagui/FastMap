@@ -1651,10 +1651,10 @@ public class TaskService {
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
-			//任务关闭清空该任务的规划数据
+			//任务关闭清空该任务的非作业规划数据
 			Region region = RegionService.getInstance().query(conn,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
-			String updateSql="DELETE FROM data_plan t where t.task_id="+ taskId;
+			String updateSql="DELETE FROM data_plan t where t.is_plan_selected=0 and t.task_id="+ taskId;
 			QueryRunner run=new QueryRunner();
 			run.execute(dailyConn, updateSql);
 			//若有延迟原因，需更新进入任务表
@@ -2436,8 +2436,8 @@ public class TaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			String selectSql = "SELECT *"
-					+ "  FROM TASK"
-					+ " WHERE LATEST = 1";
+					+ "  FROM TASK";
+					//+ " WHERE LATEST = 1";
 					//+ "   AND STATUS IN (0, 1)";
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
 		}catch(Exception e){

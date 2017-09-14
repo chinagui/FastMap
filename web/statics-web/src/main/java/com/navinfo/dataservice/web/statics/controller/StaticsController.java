@@ -88,8 +88,11 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			int cityId = dataJson.getInt("cityId");
-			Map<String, Object> data = StaticsService.getInstance().cityMonitor(cityId);
+			int cityId =0;
+			if(dataJson.containsKey("cityId")){cityId=dataJson.getInt("cityId");}
+			int programId =0;
+			if(dataJson.containsKey("programId")){programId=dataJson.getInt("programId");}
+			Map<String, Object> data = StaticsService.getInstance().cityMonitor(cityId,programId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);

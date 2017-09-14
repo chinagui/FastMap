@@ -250,11 +250,10 @@ public class OracleDao {
 			conn = DBConnector.getInstance().getManConnection();
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务，月编（poi专项）
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
-			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,"
+			String sql = "SELECT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,"
 					+ " S.TASK_ID,P.TYPE PROGRAM_TYPE FROM SUBTASK S,TASK T,PROGRAM P "
 					+ " WHERE S.TASK_ID = T.TASK_ID AND T.PROGRAM_ID = P.PROGRAM_ID "
-					+ " AND S.STATUS IN (0, 1) AND NOT EXISTS (SELECT 1 FROM FM_STAT_OVERVIEW_SUBTASK FSOS "
-					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID AND FSOS.STATUS = 0) ORDER BY S.SUBTASK_ID";
+					+ " AND S.STATUS IN (0, 1) ORDER BY S.SUBTASK_ID";
 			
 			return run.query(conn, sql, new ResultSetHandler<List<Subtask>>() {
 

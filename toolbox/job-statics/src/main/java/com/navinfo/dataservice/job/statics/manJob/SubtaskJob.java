@@ -23,7 +23,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
@@ -74,14 +73,8 @@ public class SubtaskJob extends AbstractStatJob {
 			List<Subtask> subtaskListNeedStat = OracleDao.getSubtaskListNeedStatistics();
 			//获取已关闭的统计
 			List<Map<String, Object>> subtaskStatList = new ArrayList<Map<String, Object>>();
-			List<Integer> subtaskListWithStat = OracleDao.getSubtaskListWithStatistics();
-			Map<Integer, Map<String, Object>> subtaskStatData = getSubtaskStatData(timestamp);
-			for (Integer subtaskId : subtaskListWithStat) {
-//				int subtaskId = (int) document.get("subtaskId");
-				if(subtaskStatData.containsKey(subtaskId)){
-					subtaskStatList.add(subtaskStatData.get(subtaskId));
-				}
-			}
+			Map<Integer, Map<String, Object>> subtaskStatDataClose = getSubtaskStatData(timestamp);
+			
 			//查询mongo库处理数据
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
@@ -92,6 +85,10 @@ public class SubtaskJob extends AbstractStatJob {
 			while(subtaskItr.hasNext()){
 				Subtask subtask = subtaskItr.next();
 				int subtaskId = subtask.getSubtaskId();
+				if(subtaskStatDataClose!=null&&subtaskStatDataClose.containsKey(subtaskId)){
+					subtaskStatList.add(subtaskStatDataClose.get(subtaskId));
+					continue;
+				}
 				//获取grid
 				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
 				subtask.setGridIds(gridIds);
@@ -155,7 +152,7 @@ public class SubtaskJob extends AbstractStatJob {
 			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
 			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(subtask, null).sort(new BasicDBObject("timestamp",-1));;
+			FindIterable<Document> findIterable = mongoDao.find(subtask, null).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));;
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
 			String timestampLast="";
@@ -172,8 +169,11 @@ public class SubtaskJob extends AbstractStatJob {
 					break;
 				}
 				int subtaskId = (int) jso.get("subtaskId");
-				Map<String,Object> map = jso;
-				stat.put(subtaskId, map);
+				int status = (int) jso.get("status");
+				if(status == 0){
+					Map<String,Object> map = jso;
+					stat.put(subtaskId, map);
+				}				
 			}
 			return stat;
 		} catch (Exception e) {

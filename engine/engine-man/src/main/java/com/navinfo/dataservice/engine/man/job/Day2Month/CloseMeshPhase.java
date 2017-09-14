@@ -19,6 +19,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -54,15 +55,18 @@ public class CloseMeshPhase extends JobPhase {
                 int lot = parameter.getInt("lot");
 
                 JSONObject outPrarm = JSONObject.fromObject(lastJobProgress.getOutParameter());
-                List<Integer> meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
+                List<Integer> meshs =new ArrayList<Integer>();
+                //存在日落月没有图幅的情况
+                if(outPrarm.containsKey("allQuickMeshes")){
+                	meshs = (List<Integer>) JSONArray.toCollection(outPrarm.getJSONArray("allQuickMeshes"));
+                }
                 log.info("phaseId:"+jobProgress.getPhaseId()+",day2month mesh:"+meshs.toString());
                 FccApi fccApi = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
                 Set<Integer> collectTaskSet = Day2MonthUtils.getTaskIdSet(conn, jobRelation.getItemId());
                 Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet,4);
                 log.info("phaseId:"+jobProgress.getPhaseId()+",tips mesh:"+tipsMeshset.toString());
-
-                tipsMeshset.addAll(meshs);
+                if(meshs!=null&&meshs.size()!=0){tipsMeshset.addAll(meshs);}                
                 
                 QueryRunner run = new QueryRunner();
                 if(tipsMeshset.size()>0) {
@@ -87,7 +91,7 @@ public class CloseMeshPhase extends JobPhase {
                 }
                 //维护快线项目下月编任务对应的lot字段
                 int programId = (int) jobRelation.getItemId();
-                String sql = "UPDATE TASK T SET T.LOT = "+lot+" WHERE T.PROGRAM_ID = "+programId+" AND T.TYPE = 2";
+                String sql = "UPDATE TASK T SET T.LOT = "+lot+" WHERE T.PROGRAM_ID = "+programId;
                 run.update(conn, sql);
             }
             //更新状态为成功

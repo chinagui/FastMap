@@ -314,6 +314,12 @@ public class SearchProcess {
 			return true;
 		} else if (type == ObjType.RDINTER) {
 			return true;
+		} else if (type == ObjType.ZONENODE) {
+			return true;
+		} else if (type == ObjType.ZONELINK) {
+			return true;
+		} else if (type == ObjType.ZONEFACE) {
+			return true;
 		} else {
 			return false;
 		}
@@ -1120,25 +1126,16 @@ public class SearchProcess {
 		this.taskId = taskId;
 	}
 
-	public static void main(String[] args) {
-		List<SearchSnapshot> snapshots = new ArrayList<SearchSnapshot>();
-		SearchSnapshot snapshot = new SearchSnapshot();
-		snapshot.setI(1101);
-		snapshot.setDbId(13);
-		snapshots.add(snapshot);
-		System.out.println(snapshot);
-		SearchSnapshot snapshot1 = new SearchSnapshot();
-		snapshot1.setI(1101);
-		snapshot1.setDbId(14);
-		System.out.println(snapshot1);
-		if (snapshots.contains(snapshot1)) {
-			System.out.println("222");
-			System.out.println(snapshots);
+	public static void main(String[] args) throws Exception {
+		String wkt = MercatorProjection.getWktWithGap(873813, 396170, 20, 10);
+		/*
+		 * // 2 根据瓦片计算 Set<Integer> dbIds =
+		 * DbMeshInfoUtil.calcDbIds(GeoTranslator .wkt2Geometry(wkt));
+		 */
 
-			snapshots.add(snapshots.indexOf(snapshot1), snapshot1);
-
-		}
-		System.out.println(snapshots.toString());
+		String[] str = MeshUtils.geometry2Mesh(GeoTranslator.transform(
+				GeoTranslator.wkt2Geometry(wkt), 0.00001, 5));
+		System.out.println(Arrays.toString(str));
 
 	}
 }

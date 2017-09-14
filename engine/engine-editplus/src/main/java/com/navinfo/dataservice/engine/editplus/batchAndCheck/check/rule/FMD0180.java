@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  */
 public class FMD0180 extends BasicCheckRule {
 	private MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+	private Map<String,String> engshortListMap = new HashMap<>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -44,7 +46,6 @@ public class FMD0180 extends BasicCheckRule {
 			Pattern p1 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
 			Pattern p4 = Pattern.compile("^ +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
 			Pattern p5 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+(?! )+$");
-			Map<String,String> engshortListMap = metadataApi.scEngshortListMap();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isEng()&&nameTmp.isOfficeName()
 						&&nameTmp.isOriginName()){
@@ -77,8 +78,7 @@ public class FMD0180 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
-		
+		engshortListMap = metadataApi.scEngshortListMap();
 	}
 
 }

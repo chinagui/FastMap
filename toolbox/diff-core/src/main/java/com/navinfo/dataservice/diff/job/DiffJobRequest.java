@@ -19,6 +19,8 @@ public class DiffJobRequest extends AbstractJobRequest
     private int leftDbId;//左边数据库
     private int rightDbId;//右边数据库
     private String objName;
+    private String condition;//差分的范围：all|pidTable|pidSegment|mesh...,暂只支持all|pidTable
+    private String pidTable;//党condition为pidTable时有意义，传入写入pid的 表名，左右库中都需存在
 	//两者只能一个有值，当两者都有值时只取specificTables
 	private List<String> specificTables;
 	private List<String> excludedTables;
@@ -76,6 +78,22 @@ public class DiffJobRequest extends AbstractJobRequest
 
 	public void setObjName(String objName) {
 		this.objName = objName;
+	}
+
+	public String getCondition() {
+		return condition;
+	}
+
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
+
+	public String getPidTable() {
+		return pidTable;
+	}
+
+	public void setPidTable(String pidTable) {
+		this.pidTable = pidTable;
 	}
 
 	public List<String> getSpecificTables() {

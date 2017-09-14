@@ -189,6 +189,56 @@ public class MeshSelector {
 		}
 
 	}
+	
+	
+	
+	/**
+	 * @Description:通过图幅号获取地级市
+	 * @param meshId
+	 * @return
+	 * @throws ServiceException
+	 * @author: y
+	 * @time:2016-6-28 下午1:53:19
+	 */
+	public List<String> getCityListByMesh(String meshId)
+			throws ServiceException {
+
+		Connection conn = null;
+		
+		try{
+			String selectSql = "SELECT city FROM sc_partition_meshlist WHERE mesh = :1";
+
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
+				public List<String> handle(ResultSet rs) throws SQLException {
+                    List<String> rsList = new ArrayList<String>();
+					while (rs.next()) {
+                        rsList.add(rs.getString("city"));
+					}
+                    return rsList;
+				}
+			};
+
+            List<String> rsList = run.query(conn, selectSql, rsHandler, meshId);
+
+			return rsList;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+
+	}
 
 	public static void main(String[] args) throws Exception {
 

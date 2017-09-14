@@ -97,9 +97,23 @@ public class RdNameImportor {
             }else {//该图幅所在行政区划name不存在
 				//TODO 暂时保存一个
                 String srcResume ="\"tips\":\""+rowkey+"\"";
-//                for(int adminId : adminIdList) {
-                    insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminIdList.get(0), srcResume, roadType);
-//                }
+                //city字段（20170912）：根据tips几何（显示坐标）所在的图幅号与SC_PARTITION_MESHLIST关联，然后获得“CITY”字段的值，赋值给RD_NAME表的“CITY”，如果有多个值时，使用半角的“|”。如“A|B”
+                StringBuffer city=new StringBuffer("");
+                List<String> cityList  =meshSelector.getCityListByMesh(meshId);
+                int index=0;
+                if(cityList!=null&&cityList.size()!=0){
+                	for (String cityStr : cityList) {
+                		if(index!=0){
+                			city.append("|"+cityStr);
+                		}else{
+                			city.append(cityStr);
+                		}
+                		index++;
+    				}
+                }
+                
+                
+                insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminIdList.get(0), srcResume, roadType,city.toString());
             }
         }
 
@@ -116,26 +130,7 @@ public class RdNameImportor {
 	 * @time:2016-6-28 下午3:49:58
 	 */
 	private void insertNameAndTeilen(String name, String langCode, int adminId,
-			String srcResume, int roadType) throws Exception {
-		
-		//***********************以下代码是路演环境临时使用*begin***********************
-		/*Connection conn=null;
-		
-		try{
-			
-		
-		String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
-		
-		if(StringUtils.isEmpty(dbId)){
-			throw new Exception("未配置region_db_id系统参数。");
-		}
-
-		//路演环境临时使用
-		conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
-		
-		RdNameOperation operation = new RdNameOperation(conn);*/
-		
-		//***********************end ***********************
+			String srcResume, int roadType,String city) throws Exception {
 		
 		Connection conn=null;
 		try{
@@ -156,6 +151,7 @@ public class RdNameImportor {
 		rdName.setCodeType(0);
 		rdName.setSplitFlag(0);
 		rdName.setProcessFlag(0);
+		rdName.setCity(city); //20170912修改
 
 		if (name.contains("高速公路")
 				|| (name.contains("高架") && !name.endsWith("高架桥"))

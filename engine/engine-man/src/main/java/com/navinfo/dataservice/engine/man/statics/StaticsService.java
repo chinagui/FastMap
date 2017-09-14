@@ -2525,6 +2525,9 @@ public class StaticsService {
 			
 			//从orical中查询task部分统计项
 			Map<String, Integer> oricalTaskData = getTaskProgress(conn, taskId);
+			if(oricalTaskData.size() == 0){
+				throw new ServiceException("getTaskProgress失败:没有找到对应taskId:" + taskId + "的任务");
+			}
 
 			Map<String, Object> mongoTaskData = getTaskProgressFromMongo(taskId);
 			
@@ -2602,14 +2605,8 @@ public class StaticsService {
 	public Map<String, Integer> getTaskProgress(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
-			StringBuilder sb = new StringBuilder();
-			sb.append("select t.status, t.type, t.road_plan_total,  ");
-			sb.append("       t.poi_plan_total, t.task_id from      ");
-			sb.append("       FM_STAT_OVERVIEW_TASK t               ");
-			sb.append("       where t.task_id = "+ taskId            );
-
-			String sql = sb.toString();
-			log.info("getTaskProgress sql:" + sb.toString());
+			String sql = "select sk.status, sk.type from task sk where sk.task_id = "+ taskId;
+			log.info("getTaskProgress sql:" + sql);
 
 			return queryRunner.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
 				@Override
@@ -2618,8 +2615,6 @@ public class StaticsService {
 					if(rs.next()) {
 						taskData.put("status", rs.getInt("status"));
 						taskData.put("type", rs.getInt("type"));
-						taskData.put("roadPlanTotal", rs.getInt("road_plan_total"));
-						taskData.put("poiPlanTotal", rs.getInt("poi_plan_total"));
 					}
 					return taskData;
 				}
@@ -2658,8 +2653,8 @@ public class StaticsService {
 		resultMap.put("taskId", taskId);
 		resultMap.put("status", oricalTaskData.get("status"));
 		resultMap.put("type", type);
-		resultMap.put("roadPlanTotal", oricalTaskData.get("roadPlanTotal") == null ? 0 : oricalTaskData.get("roadPlanTotal"));
-		resultMap.put("poiPlanTotal", oricalTaskData.get("poiPlanTotal") == null ? 0 : oricalTaskData.get("poiPlanTotal"));
+		resultMap.put("roadPlanTotal", mongoTaskData.get("roadPlanTotal") == null ? 0 : mongoTaskData.get("roadPlanTotal"));
+		resultMap.put("poiPlanTotal", mongoTaskData.get("poiPlanTotal") == null ? 0 : mongoTaskData.get("poiPlanTotal"));
 		if(type == 0){
 			resultMap.put("poiUnfinishNum", mongoTaskData.get("poiUnfinishNum") == null ? 0 : mongoTaskData.get("poiUnfinishNum"));
 			resultMap.put("crowdTipsTotal", mongoTaskData.get("crowdTipsTotal") == null ? 0 : mongoTaskData.get("crowdTipsTotal"));

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.json.JsonIsEqualUtil;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -140,6 +142,7 @@ public class TipsUpload {
     private String firstCollectTime = null;
     private boolean isInsertFirstTime = false;
     private List<RegionUploadResult> regionResults = new ArrayList<RegionUploadResult>();
+    private int taskRegionId = 0;
 
     public String getQcErrMsg() {
         return qcErrMsg;
@@ -249,6 +252,10 @@ public class TipsUpload {
                 }
 
                 subtask = manApi.queryBySubtaskId(subTaskId);
+                Region region = manApi.queryRegionByDbId(subtask.getDbId());
+                if(region != null) {
+                    taskRegionId = region.getRegionId();
+                }
             } else {
                 throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:" + subTaskId);
             }
@@ -367,8 +374,8 @@ public class TipsUpload {
             ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
             List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshes);
             if(regions==null||regions.size()==0){
-                logger.error("根据图幅未查询到所属大区库信息");
-                throw new Exception("根据图幅未查询到所属大区库信息");
+                logger.error("Tips上传报错，根据图幅未查询到所属大区库信息");
+                throw new Exception("Tips上传报错，根据图幅未查询到所属大区库信息");
             }
             meshes.clear();
             // 新增(已存在)或者修改的时候判断是否是鲜度验证的tips
@@ -401,7 +408,7 @@ public class TipsUpload {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             DbUtils.rollbackAndCloseQuietly(conn);
-            throw new Exception("Tips上传报错", e);
+            throw e;
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
            
@@ -538,8 +545,12 @@ public class TipsUpload {
 		//返回统计结果
 		for(int regionId : regionResultMap.keySet()) {
 		    RegionUploadResult regionResult = new RegionUploadResult(regionId);
-		    regionResult.setSubtaskId(subTaskId);
-		    JSONObject jsonObject = regionResultMap.get(regionId);
+            if(taskRegionId == regionId) {
+                regionResult.setSubtaskId(subTaskId);
+            }else{
+                regionResult.setSubtaskId(0);
+            }
+            JSONObject jsonObject = regionResultMap.get(regionId);
 		    regionResult.addResult(jsonObject.getInt("sCount"), jsonObject.getInt("eCount"));
 		    regionResults.add(regionResult);
 		}
@@ -621,10 +632,9 @@ public class TipsUpload {
 
                 int lifecycle = json.getInt("t_lifecycle");
 
-                //20170828跨大区统计，统计上传Tips的图幅
-                JSONObject gLocation = json.getJSONObject("g_location");
+                //20170828跨大区统计，按照统计坐标统计Tips所在图幅
                 try {
-                    Set<String> tipsMeshes = CompGeometryUtil.calculateGeometeryMesh(GeoTranslator.geojson2Jts(gLocation));
+                    Set<String> tipsMeshes = getTipsWktMeshes(json);
                     TipsMeshGrid tipsMeshGrid = new TipsMeshGrid();
                     tipsMeshGrid.setMeshes(tipsMeshes);
                     tipsMeshGrid.setGridId(getTipsWktGird(json));
@@ -710,8 +720,10 @@ public class TipsUpload {
                 feedbackObj.put("f_array", newFeedbacks);
                 json.put("feedback", feedbackObj);
 
-                String sourceType = json.getString("s_sourceType");
+                JSONObject gLocation = json.getJSONObject("g_location");
                 JSONObject deep = json.getJSONObject("deep");
+                String sourceType = json.getString("s_sourceType");
+
                 if (sourceType.equals("2001")) {
 
                     double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(gLocation));
@@ -942,22 +954,13 @@ public class TipsUpload {
                         continue;
                     }
 
-                    // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
+                    // 对比采集时间，采集时间和数据库中 hbase old.trackinfo.t_dataDate
                     int res = canUpdate(oldTip, json.getString("t_dataDate"));
                     if (res < 0) {
-                        
-                        // -1表示old已删除
+                        // -1表示当前采集时间较旧,时间冲突，tips入库，只是记录冲突给采集
                         if (res == -1) {
-                        	 failed += 1;
-                            reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
-                           
-                        }
-                        // else =-2表示当前采集时间较旧
-                        else {
-                          //  reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                         	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                         }
-                        continue;
                     }
 
                     put = updatePut(rowkey, json, oldTip);
@@ -1068,6 +1071,20 @@ public class TipsUpload {
     }
 
     /**
+     * 根据tipsjson获取统计坐标
+     * @return
+     */
+    private Set<String> getTipsWktMeshes(JSONObject json) throws Exception{
+        String sourceType = json.getString("s_sourceType");
+        JSONObject g_location = json.getJSONObject("g_location");
+        JSONObject deep = json.getJSONObject("deep");
+        String wkt = TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,g_location, null);
+        Geometry wktGeo = GeoTranslator.wkt2Geometry(wkt);
+        Set<String> tipsMeshes = CompGeometryUtil.calculateGeometeryMesh(wktGeo);
+        return tipsMeshes;
+    }
+
+    /**
      * @Description:判断是否是鲜度验证的tips
      * @param oldTip
      * @param json
@@ -1090,13 +1107,13 @@ public class TipsUpload {
 
         JSONObject trackOld = oldTip.getJSONObject("track");
         int tCommandOld = trackOld.getInt("t_command");
-
+        String tCommandOldStr = String.valueOf(tCommandOld);
+        
         Geometry g_locationOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationOld));
         String g_locationOldWkt = GeoTranslator.jts2Wkt(g_locationOldGeo);
         Geometry g_guideOldGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideOld));
         String g_guideOldWkt = GeoTranslator.jts2Wkt(g_guideOldGeo);
-        String mdb5Old = MD5Utils.md5(g_locationOldWkt + g_guideOldWkt + deepOld + feedbackOld + tCommandOld);
-
+        
         // new
         String g_locationNew = json.getString("g_location");
         String g_guideNew = json.getString("g_guide");
@@ -1105,16 +1122,18 @@ public class TipsUpload {
 
         // JSONObject trackNew=json.getJSONObject("track");
         int tCommandNew = json.getInt("t_command");
+        String tCommandNewStr = String.valueOf(tCommandNew);
+        
         Geometry g_locationNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_locationNew));
         String g_locationNewWkt = GeoTranslator.jts2Wkt(g_locationNewGeo);
         Geometry g_guideNewGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(g_guideNew));
         String g_guideNewWkt = GeoTranslator.jts2Wkt(g_guideNewGeo);
-        String mdb5New = MD5Utils.md5(g_locationNewWkt + g_guideNewWkt + deepNew + feedbackNew + tCommandNew);
 
-        if (mdb5Old.equals(mdb5New)) {
+        //g_location、g_guide、t_command、deep、feedback全部相同，则返回true
+        if (JsonIsEqualUtil.equalsJson(g_locationOldWkt, g_locationNewWkt) && JsonIsEqualUtil.equalsJson(g_guideOldWkt,g_guideNewWkt) && JsonIsEqualUtil.equalsJson(deepOld,deepNew) && JsonIsEqualUtil.equalsJson(feedbackOld,feedbackNew)&& JsonIsEqualUtil.equalsJson(tCommandOldStr,tCommandNewStr)) {
             return true;
         }
-
+  
         return false;
     }
 
@@ -1231,19 +1250,10 @@ public class TipsUpload {
                 // 时间判断
                 int res = canUpdate(oldTip, json.getString("t_dataDate"));
                 if (res < 0) {
-                    
+                    // -1表示当前采集时间较旧,时间冲突，tips入库，只是记录冲突给采集
                     if (res == -1) {
-                    	failed += 1;
-                        reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
-                        
-                    }
-                    //时间冲突不计算失败
-                    else {
-                        //reasons.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     	conflict.add(newReasonObject(rowkey, ErrorType.InvalidDate));
                     }
-
-                    continue;
                 }
 
                 //判断数据是否在大区库范围内，如果不在，则强制刷成无任务
@@ -1392,71 +1402,29 @@ public class TipsUpload {
         return photo;
     }
 
+    /**
+     * @Description:915原则，只对比t_dataDate
+     * @param oldTips
+     * @param collectior_tDataDate
+     * @return -1:表示采集时间较旧，0表示正常
+     * @author: y
+     * @time:2017-9-13 上午9:54:18
+     */
     private int canUpdate(JSONObject oldTips, String collectior_tDataDate) {
         JSONObject oldTrack = oldTips.getJSONObject("track");
 
-        int lifecycle = oldTrack.getInt("t_lifecycle");
-        if(!oldTrack.containsKey("t_trackInfo")) {
-            return 0;
-        }
-        JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
-        if(tracks == null || tracks.size() == 0) {
-            return 0;
-        }
         String lastDate = null;
 
-        // 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据(取消)
-     /*   for (int i = tracks.size(); i > 0; i--) {
-
-            JSONObject info = tracks.getJSONObject(i - 1);
-
-            if (info.getInt("stage") == 1) {
-
-                lastDate = info.getString("date");
-
-                break;
-            }
-        }*/
-        
         //入库和t_dataDate时间做对比
         lastDate=oldTrack.getString("t_dataDate");
         
         if(lastDate==null){
         	lastDate="";
         }
-
-        JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
-
-        int lastStage = lastTrack.getInt("stage");
-
-        // lifecycle:0（无） 1（删除）2（修改）3（新增） ;
-        // 0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量；5 内业预处理；6 多源融合；
-        // 1)是增量更新删除：不对比时间。
-        // 库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新 : -1表示old已删除
-        if (lifecycle == 1 && lastStage == 4) {
+        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
+        if (collectior_tDataDate.compareTo(lastDate) <0) {
             return -1;
         }
-
-        // 增量的：新增修改的和stage=0的一样处理，不判断时间
-        if (lifecycle != 1 && lastStage == 4) {
-            return 0;
-        }
-
-        if (lastStage == 0) {
-            return 0;
-        }
-
-        // 2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-        // 如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
-        if (lastDate == null && hasPreStage(tracks)) {
-            return 0;
-        } else {
-        	//20170830修改   时间判断修改。外业的时间 >=库里面的时间  都可以上传。
-            if (collectior_tDataDate.compareTo(lastDate) <0) {
-                return -2;
-            }
-        }
-        // 其他情况都返回0，包括 stage=0 、stage=4(除了增量更新删除的)
         return 0;
     }
 

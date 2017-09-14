@@ -1779,6 +1779,7 @@ public class Transaction {
             return row;
         } else {
             result.copy(row);
+            result.setRowId(row.rowId());
             try {
                 JSONObject json = JSONObject.fromObject(row.changedFields());
                 result.Unserialize(json);

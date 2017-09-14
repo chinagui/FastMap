@@ -562,7 +562,6 @@ public class ColumnCoreControl {
 			}
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
-			
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
 			}
@@ -570,7 +569,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId,isQuality);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask,subtaskId, userId,isQuality);
 			
 			return result;
 		} catch (Exception e) {

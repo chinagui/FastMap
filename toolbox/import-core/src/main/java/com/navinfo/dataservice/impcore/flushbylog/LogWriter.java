@@ -193,7 +193,6 @@ public class LogWriter {
 			this.log.debug("json" + json);
 
 			tmpPos = 0;
-			this.log.debug(json.keys());
 			int i = 0;
 			for (Object key : json.keySet()) {
 				if ("IX_POI".equalsIgnoreCase(tableName)

@@ -123,9 +123,9 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 			for(int i=0;i<array.size();i++){
 			    JSONObject json = array.getJSONObject(i);  
 			    Integer pid = (Integer)json.get("pid");
-			    json.put("state", stateResult.get(pid.longValue()));
-			    json.put("checkErrorTotal",checkErrorResult==null||checkErrorResult.isEmpty()?0:checkErrorResult.get(pid));
-			    json.put("photoTotal", photoTotalResult==null||photoTotalResult.isEmpty()?0:photoTotalResult.get(pid));
+			    json.put("state",(stateResult.get(pid.longValue())==null?0:stateResult.get(pid.longValue())));
+			    json.put("checkErrorTotal",checkErrorResult==null||checkErrorResult.isEmpty()?0:(checkErrorResult.get(pid)==null?0:checkErrorResult.get(pid)));
+			    json.put("photoTotal", photoTotalResult==null||photoTotalResult.isEmpty()?0:(photoTotalResult.get(pid)==null?0:photoTotalResult.get(pid)));
 		    }
 			result.put("rows", array);
 			

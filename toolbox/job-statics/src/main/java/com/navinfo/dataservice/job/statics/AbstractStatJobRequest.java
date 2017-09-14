@@ -14,6 +14,15 @@ public abstract class AbstractStatJobRequest extends AbstractJobRequest {
 	
 	protected String timestamp;
 	protected String identify;
+	protected JSONObject identifyJson;
+
+	public JSONObject getIdentifyJson() {
+		return identifyJson;
+	}
+
+	public void setIdentifyJson(JSONObject identifyJson) {
+		this.identifyJson = identifyJson;
+	}
 
 	public String getIdentify() {
 		return identify;

@@ -947,8 +947,9 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
-						if (hotel.getHisOpType() == OperationType.UPDATE
-								&& hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+						if (hotel.getHisOpType() == OperationType.INSERT
+								|| (hotel.getHisOpType() == OperationType.UPDATE
+								&& hotel.hisOldValueContains(IxPoiHotel.RATING))) {
 							ratingPids.add(pid);
 							break;
 						}
@@ -959,7 +960,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 					IxPoiAddress address = poiObj.getChiAddress();
 
-					if (address.getHisOpType() == OperationType.UPDATE) {
+					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
@@ -977,7 +978,6 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					if (poiName.getHisOpType() == OperationType.UPDATE) {
 
 						namePids.add(pid);
-
 						if (poi.getOldName() == null
 								|| !poi.getOldName().equals(poiObj.getOfficeOriginCHName().getName())) {
 							oldNamePids.add(pid);

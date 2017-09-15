@@ -139,7 +139,7 @@ public class EdgeOperation {
                     try {
                         TransactionFactory.generateCommand(transaction, json.toString());
                     } catch (Exception e) {
-                        LOGGER.error("error is run edge db..", e.fillInStackTrace());
+                        LOGGER.error("run edge database has error..", e.fillInStackTrace());
                         throw e;
                     }
                 }

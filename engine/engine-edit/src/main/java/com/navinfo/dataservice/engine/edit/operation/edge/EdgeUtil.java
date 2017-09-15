@@ -291,11 +291,28 @@ public class EdgeUtil {
         return false;
     }
 
-    /**
-     * 填充AddObject数据的RowId，防止跨库数据不一致
-     *
-     * @param addedData
-     */
+    public static boolean contains(List<IRow> sources, IRow iRow) {
+        for (IRow source : sources) {
+            if (source == iRow) {
+                return true;
+            }
+            if (source.rowId() == iRow.rowId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean notContains(List<IRow> sources, IRow iRow) {
+        return !contains(sources, iRow);
+    }
+
+
+        /**
+         * 填充AddObject数据的RowId，防止跨库数据不一致
+         *
+         * @param addedData
+         */
     public static void initalizeRowId(List<IRow> addedData) {
         for (IRow iRow : addedData) {
             String tableName = SelectorUtils.getObjTableName(iRow);

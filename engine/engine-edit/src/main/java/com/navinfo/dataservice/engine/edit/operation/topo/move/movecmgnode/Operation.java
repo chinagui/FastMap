@@ -65,7 +65,7 @@ public class Operation implements IOperation {
                     coordinate.y = command.getLatitude();
                 }
             }
-            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersection(geometry).isEmpty()) {
+            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
                 int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);

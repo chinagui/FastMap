@@ -1141,7 +1141,6 @@ public abstract class MeshUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        String wkt = "POLYGON ((119.74966 38.60531, 119.75 38.60504, 119.75 38.60529, 119.74966 38.60531))";
-        System.out.println(Arrays.toString(MeshUtils.geometry2Mesh(GeoTranslator.wkt2Geometry(wkt))));
+        System.out.println(Arrays.toString(MeshUtils.geometry2Mesh(GeoTranslator.wkt2Geometry(MercatorProjection.getWktWithGap(873085, 395618, 20, 10)))));
     }
 }

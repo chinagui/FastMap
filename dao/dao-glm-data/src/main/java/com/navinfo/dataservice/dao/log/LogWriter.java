@@ -665,6 +665,7 @@ public class LogWriter {
 			ld.setTbNm(r.tableName().toUpperCase());
 
 			ld.setIsCk(0);
+			ld.setOldValue(convertObj2NewValue(r).toString());
 
 			ld.setRowId(UuidUtils.genUuid());
 
@@ -891,6 +892,7 @@ public class LogWriter {
 					ldC.setTbNm(row.tableName().toUpperCase());
 
 					ldC.setIsCk(0);
+					ldC.setOldValue(convertObj2NewValue(r).toString());
 
 					if (status != Status.DELETE) {
 						ldC.setNewValue(convertObj2NewValue(row).toString());

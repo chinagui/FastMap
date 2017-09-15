@@ -867,7 +867,6 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
 		
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
-
 		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
 
 		Collection<Long> oldNamePids = new ArrayList<>();// 改OLD名称
@@ -915,7 +914,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			if (updatePids.contains(pid)) {
+			if (updatePids!=null&&updatePids.contains(pid)) {
 
 				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					oldKindCodePids.add(pid);
@@ -954,21 +953,27 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							break;
 						}
 					}
+				} else if (obj.isDelPoiHotel()) {
+					ratingPids.add(pid);
 				}
 				// 作业季修改中文地址
-				if (poiObj.getChiAddress() != null) {
+				if (poiObj.getCHAddress() != null) {
 
-					IxPoiAddress address = poiObj.getChiAddress();
+					IxPoiAddress address = poiObj.getCHAddress();
 
 					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
 						if (poi.getOldAddress() == null
-								|| !poi.getOldAddress().equals(poiObj.getChiAddress().getFullname())) {
+								|| !poi.getOldAddress().equals(address.getFullname())) {
 							oldAddressPids.add(pid);
 						}
 					}
+				}
+				else if (obj.isDelCHAddress())
+				{
+					addressPids.add(pid);
 				}
 				// 作业季修改中文原始Name
 				if (poiObj.getOfficeOriginCHName() != null) {
@@ -978,14 +983,19 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					if (poiName.getHisOpType() == OperationType.UPDATE) {
 
 						namePids.add(pid);
+
 						if (poi.getOldName() == null
 								|| !poi.getOldName().equals(poiObj.getOfficeOriginCHName().getName())) {
 							oldNamePids.add(pid);
 						}
 					}
 				}
+				else if (obj.isDelOfficeOriginCHName())
+				{
+					namePids.add(pid);
+				}
 
-			} else if (addPids.contains(pid)) {
+			} else if (addPids!=null&&addPids.contains(pid)) {
 
 				if (poiObj.getChiAddress() != null) {
 

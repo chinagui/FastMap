@@ -96,10 +96,10 @@
 	<bean id="staticManWebSocketHandler" class="com.navinfo.dataservice.engine.sys.msg.websocket.ManStaticWebSocketHandler"/>
     
 	<websocket:handlers	allowed-origins="*">
-		<websocket:mapping 	path="/static/manStaticWebSocketServer" handler="msgManWebSocketHandler"/>
+		<websocket:mapping 	path="/static/manStaticWebSocketServer" handler="staticManWebSocketHandler"/>
 		<!-- 握手协议接口 --> 
 		<websocket:handshake-interceptors>
-			<bean class="com.navinfo.dataservice.web.sys.websocket.ManWebSocketHandshakeInterceptor"></bean>
+			<bean class="com.navinfo.dataservice.web.sys.websocket.WebNoTokenSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
 	

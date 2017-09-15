@@ -66,6 +66,8 @@ public class ObjHisLogParser {
 					//删除的履历在对象中不会加载，所以要判断row是否为空
 					if(row!=null){
 						row.addChangeLog(new ChangeLog(opTp,oldValues));
+					}else{//row不存在，则表明删除了
+						obj.addPreDelRowLog(tb, ld);
 					}
 				}
 			}

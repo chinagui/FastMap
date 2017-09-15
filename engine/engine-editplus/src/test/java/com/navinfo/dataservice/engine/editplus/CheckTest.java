@@ -11,6 +11,8 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule.*;
@@ -57,36 +59,51 @@ public class CheckTest extends ClassPathXmlAppContextInit{
 
     @Test
     public void check() throws Exception {
-        FMDGC008 check = new FMDGC008();
-        Connection conn = DBConnector.getInstance().getConnectionById(69);
-        CheckRuleCommand command = new CheckRuleCommand();
-        command.setConn(conn);
-        check.setCheckRuleCommand(command);
+        //FMDGC008 check = new FMDGC008();
+        //Connection conn = DBConnector.getInstance().getConnectionById(69);
+        //CheckRuleCommand command = new CheckRuleCommand();
+        //command.setConn(conn);
+        //check.setCheckRuleCommand(command);
+        //
+        //Set<Long> pids = new HashSet<Long>();
+        //String sql = "SELECT ip.pid" +
+        //        "  FROM ix_poi ip, poi_edit_status ps" +
+        //        " WHERE ip.pid = ps.pid" +
+        //        "   AND ps.status = 2" +
+        //        "   AND (ps.QUICK_SUBTASK_ID = 202 OR ps.MEDIUM_SUBTASK_ID = 202)";
+        ////String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 20000";
+        ////String sql = "SELECT PID FROM IX_POI WHERE PID = 420000011";
+        //PreparedStatement pstmt = conn.prepareStatement(sql);
+        //ResultSet resultSet = pstmt.executeQuery();
+        //while (resultSet.next()) {
+        //    pids.add(resultSet.getLong("PID"));
+        //}
+        //
+        //CheckRule checkRule = new CheckRule();
+        //checkRule.setObjNameSet(ObjectName.IX_POI);
+        //check.setCheckRule(checkRule);
+        //
+        //Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, true, pids, false, false);
+        //Map<String, Map<Long, BasicObj>> map = new HashMap<>();
+        //map.put(ObjectName.IX_POI, pois);
+        //command.setAllDatas(map);
+        //
+        //check.run();
 
-        Set<Long> pids = new HashSet<Long>();
-        String sql = "SELECT ip.pid" +
-                "  FROM ix_poi ip, poi_edit_status ps" +
-                " WHERE ip.pid = ps.pid" +
-                "   AND ps.status = 2" +
-                "   AND (ps.QUICK_SUBTASK_ID = 202 OR ps.MEDIUM_SUBTASK_ID = 202)";
-        //String sql = "SELECT PID FROM IX_POI WHERE U_RECORD <> 2  AND MESH_ID = 595676 AND ROWNUM <= 20000";
-        //String sql = "SELECT PID FROM IX_POI WHERE PID = 420000011";
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        ResultSet resultSet = pstmt.executeQuery();
-        while (resultSet.next()) {
-            pids.add(resultSet.getLong("PID"));
-        }
+        ApplicationContextUtil applicationContextUtil = new ApplicationContextUtil();
+        Connection conn = DBConnector.getInstance().getConnectionById(126);
+        Set<String> tabNames = new HashSet<>();
+        tabNames.add("IX_POI_ADDRESS");
+        Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, true,
+                Arrays.asList(new Long[]{99912521L}), false, false);
+        OperationResult operationResult=new OperationResult();
+        operationResult.putAll(pois.values());
 
-        CheckRule checkRule = new CheckRule();
-        checkRule.setObjNameSet(ObjectName.IX_POI);
-        check.setCheckRule(checkRule);
-
-        Map<Long, BasicObj> pois = ObjBatchSelector.selectByPids(conn, "IX_POI", null, true, pids, false, false);
-        Map<String, Map<Long, BasicObj>> map = new HashMap<>();
-        map.put(ObjectName.IX_POI, pois);
-        command.setAllDatas(map);
-
-        check.run();
+        // 执行批处理FM-BAT-20-115
+        BatchCommand batchCommand=new BatchCommand();
+        batchCommand.setRuleId("FM-BAT-20-125");
+        Batch batch=new Batch(conn,operationResult);
+        batch.operate(batchCommand);
     }
 
     public static void main(String[] args) throws Exception {

@@ -5,18 +5,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
-
 import net.sf.json.JSONObject;
 
 /**
@@ -93,8 +90,8 @@ public class JobScriptsInterface {
 			}
 			JSONObject request = null;
 			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+//			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
 			request = readJson(dir + "request" + File.separator + irequest);
 			// 初始化context
 			initContext();

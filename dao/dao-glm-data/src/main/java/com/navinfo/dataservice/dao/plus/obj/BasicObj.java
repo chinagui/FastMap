@@ -413,9 +413,13 @@ public abstract class BasicObj {
 					}else{//子表都有，再差分
 						//新增和修改的
 						for(BasicRow tr:tarRows){
-							if(!myRows.contains(tr)){
+							int i = myRows.indexOf(tr);
+							if(i<0){//新增
 								tr.setOpType(OperationType.INSERT);
 								this.insertSubrow(tr);
+							}else{
+								BasicRow mr = myRows.get(i);
+								mr.diff(tr, null);
 							}
 						}
 						//删除的

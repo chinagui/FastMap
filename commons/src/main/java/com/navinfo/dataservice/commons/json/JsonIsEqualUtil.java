@@ -2,13 +2,10 @@ package com.navinfo.dataservice.commons.json;
 
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.navinfo.dataservice.commons.util.StringUtils;
-
-import net.sf.json.JSONObject;
 
 /**
  * 判断两个json字符串是否相等

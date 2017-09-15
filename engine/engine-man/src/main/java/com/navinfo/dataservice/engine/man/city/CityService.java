@@ -335,7 +335,7 @@ public class CityService {
 					extentSql=extentSql+"   AND (P.NOTASK_POI_TOTAL>0 or P.NOTASK_TIPS_TOTAL>0) ";
 				}
 			}
-			String querySql = "SELECT T.CITY_ID, T.ADMIN_GEO, T.PLAN_STATUS,NVL(R.PROGRAM_ID, 0) PROGRAM_ID"
+			String querySql = "SELECT T.CITY_ID,t.city_name, T.ADMIN_GEO, T.PLAN_STATUS,NVL(R.PROGRAM_ID, 0) PROGRAM_ID"
 					+ "  FROM CITY T, FM_STAT_OVERVIEW_city P, PROGRAM R"
 					+ " WHERE T.CITY_ID = P.CITY_ID(+)"
 					+ "   AND T.CITY_ID = R.CITY_ID(+)"
@@ -350,6 +350,7 @@ public class CityService {
 					while(rs.next()){
 						Map<String, Object> cityMap=new HashMap<String, Object>();
 						cityMap.put("cityId", rs.getInt("CITY_ID"));
+						cityMap.put("cityName", rs.getString("CITY_NAME"));
 						cityMap.put("geometry",null);
 						STRUCT struct=(STRUCT)rs.getObject("ADMIN_GEO");
 						try {

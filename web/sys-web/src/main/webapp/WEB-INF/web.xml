@@ -46,7 +46,7 @@
 		<filter-class>com.navinfo.dataservice.commons.token.TokenValidateFilter</filter-class>
 		<init-param>
 			<param-name>exclude-url-pattern</param-name>
-			<param-value>/login|/druid|/monitoring|/monitor/emailMessage</param-value>
+			<param-value>/login|/druid|/monitoring|/monitor/emailMessage|/static/manStaticWebSocketServer</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>

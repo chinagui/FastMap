@@ -1089,7 +1089,7 @@ public class DeepCoreControl {
 			}
 			
 			Timestamp timeStamp = new Timestamp(new Date().getTime());
-			poiColumnSelector.updateExtractColumnStatus(pids,userId, taskId, timeStamp);
+			poiColumnSelector.updateExtractColumnStatus(pids,userId, taskId, timeStamp,firstWorkItem, secondWorkItem);
 			
 			
 			return pids.size();

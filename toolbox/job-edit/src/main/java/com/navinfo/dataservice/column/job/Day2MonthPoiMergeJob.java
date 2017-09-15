@@ -20,6 +20,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
+import com.navinfo.dataservice.dao.log.LogOpTypeStat;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -31,6 +32,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -1025,25 +1027,29 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			pids.add(pid);
 		}
 
-		LogReader logRead = new LogReader(conn);
+//		LogReader logRead = new LogReader(conn);
+//
+//		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
+		
 
-		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
+		LogOpTypeStat stat = new LogOpTypeStat(conn);
+		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
+		
+		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
 
-		List<Long> addPids = new ArrayList<>();// 作业季新增poiPid
+		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
 
-		List<Long> updatePids = new ArrayList<>();// 作业季修改poiPid
-
-		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
-
-			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
-
-				addPids.add(entry.getKey());
-
-			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
-
-				updatePids.add(entry.getKey());
-			}
-		}
+//		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
+//
+//			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
+//
+//				addPids.add(entry.getKey());
+//
+//			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
+//
+//				updatePids.add(entry.getKey());
+//			}
+//		}
 
 		Collection<Long> oldNamePids = new ArrayList<>();// 改OLD名称
 		Collection<Long> namePids = new ArrayList<>();// 改名称
@@ -1122,8 +1128,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
-						if (hotel.getHisOpType() == OperationType.UPDATE
-								&& hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+						if (hotel.getHisOpType() == OperationType.INSERT
+								|| (hotel.getHisOpType() == OperationType.UPDATE
+								&& hotel.hisOldValueContains(IxPoiHotel.RATING))) {
 							ratingPids.add(pid);
 							break;
 						}
@@ -1134,7 +1141,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 					IxPoiAddress address = poiObj.getChiAddress();
 
-					if (address.getHisOpType() == OperationType.UPDATE) {
+					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
@@ -1143,6 +1150,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							oldAddressPids.add(pid);
 						}
 					}
+
 				}
 				// 作业季修改中文原始Name
 				if (poiObj.getOfficeOriginCHName() != null) {
@@ -1158,6 +1166,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							oldNamePids.add(pid);
 						}
 					}
+
 				}
 
 			} else if (addPids.contains(pid)) {

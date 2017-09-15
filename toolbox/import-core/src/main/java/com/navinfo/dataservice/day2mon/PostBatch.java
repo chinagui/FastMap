@@ -138,10 +138,11 @@ public class PostBatch {
 						}
 					}
 					List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
-
+					List<BasicRow> flagListCopy=new ArrayList<BasicRow>(); 
+					flagListCopy.addAll(flagList);
 					if (CollectionUtils.isNotEmpty(flagList)) {
 						String lastSourceFlag = sourceFlag;
-						for (BasicRow flag : flagList) {
+						for (BasicRow flag : flagListCopy) {
 							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
 							String flagCode = poiFlag.getFlagCode();
 							if ("FM-YW-20-014".equals(workItem) && (!("110020070000".equals(flagCode)

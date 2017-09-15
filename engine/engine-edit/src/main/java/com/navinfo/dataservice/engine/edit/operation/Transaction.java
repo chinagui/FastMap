@@ -28,6 +28,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.analysis.function.Abs;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
@@ -2132,7 +2133,11 @@ public class Transaction {
     private void execEdgeDelete(List<AbstractProcess> processes, Map<Integer, Result> map) throws Exception {
         JSONObject json = JSONObject.fromObject(requester);
 
+        Result otherResult = null;
+
         for (Map.Entry<Integer, Result> entry : map.entrySet()) {
+            AbstractProcess process = null;
+
             Result res = entry.getValue();
             List<IRow> delObjects = res.getDelObjects();
             for (IRow deleteRow : delObjects) {
@@ -2146,10 +2151,11 @@ public class Transaction {
                     jsonObject.put("objId", ((IObj) deleteRow).pid());
 
                     AbstractCommand command = TransactionFactory.generateCommand(this, jsonObject.toString());
-                    AbstractProcess process = createProcess(command);
+                    process = createProcess(command);
                     processes.add(process);
                     process.run();
 
+                    otherResult = process.getResult();
                     this.recordData(process, process.getResult());
                 }
             }
@@ -2157,27 +2163,59 @@ public class Transaction {
             Result crfResult = new Result();
             for (IRow iRow : res.getAddObjects()) {
                 if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    if (null != otherResult && EdgeUtil.contains(otherResult.getAddObjects(), iRow)) {
+                        continue;
+                    }
                     crfResult.getAddObjects().add(iRow);
                     crfResult.getListAddIRowObPid().add(iRow.parentPKValue());
                 }
             }
             for (IRow iRow : res.getUpdateObjects()) {
                 if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    if (null != otherResult && EdgeUtil.contains(otherResult.getUpdateObjects(), iRow)) {
+                        continue;
+                    }
                     crfResult.getUpdateObjects().add(iRow);
                     crfResult.getListUpdateIRowObPid().add(iRow.parentPKValue());
                 }
             }
             for (IRow iRow : res.getDelObjects()) {
                 if (Constant.CRF_TYPES.contains(iRow.objType())) {
+                    if (null != otherResult && EdgeUtil.contains(otherResult.getDelObjects(), iRow)) {
+                        continue;
+                    }
                     crfResult.getDelObjects().add(iRow);
                     crfResult.getListDelIRowObPid().add(iRow.parentPKValue());
                 }
             }
-            AbstractCommand command = TransactionFactory.generateCommand(this, json.element("dbId", entry.getKey()).toString());
-
-            AbstractProcess process = createProcess(command);
-            processes.add(process);
+            if (null == process) {
+                AbstractCommand command = TransactionFactory.generateCommand(this, json.element("dbId", entry.getKey()).toString());
+                process = createProcess(command);
+                processes.add(process);
+            }
             this.recordData(process, crfResult);
+
+            AbstractProcess mainProcess = processes.get(0);
+            if (null != otherResult) {
+                for (IRow iRow : otherResult.getAddObjects()) {
+                    if (Constant.CRF_TYPES.contains(iRow.objType()) && EdgeUtil.notContains(mainProcess.getResult().getAddObjects(), iRow)) {
+                        mainProcess.getResult().getAddObjects().add(iRow);
+                        mainProcess.getResult().getListAddIRowObPid().add(iRow.parentPKValue());
+                    }
+                }
+                for (IRow iRow : otherResult.getUpdateObjects()) {
+                    if (Constant.CRF_TYPES.contains(iRow.objType()) && EdgeUtil.notContains(mainProcess.getResult().getUpdateObjects(), iRow)) {
+                        mainProcess.getResult().getUpdateObjects().add(iRow);
+                        mainProcess.getResult().getListUpdateIRowObPid().add(iRow.parentPKValue());
+                    }
+                }
+                for (IRow iRow : otherResult.getDelObjects()) {
+                    if (Constant.CRF_TYPES.contains(iRow.objType()) && EdgeUtil.notContains(mainProcess.getResult().getDelObjects(), iRow)) {
+                        mainProcess.getResult().getDelObjects().add(iRow);
+                        mainProcess.getResult().getListDelIRowObPid().add(iRow.parentPKValue());
+                    }
+                }
+            }
         }
     }
 

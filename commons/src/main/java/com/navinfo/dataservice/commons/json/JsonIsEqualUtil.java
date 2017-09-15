@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.commons.json;
 
-
 import org.apache.log4j.Logger;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.navinfo.dataservice.commons.util.StringUtils;

@@ -35,7 +35,7 @@ public class ManStaticWebSocketHandler extends TextWebSocketHandler {
 		log.info("connect to the websocket success......");
 		users.add(session);
 		//日志
-		log.info("管理消息集合中WebSocketSession的保存个数:"+users.size());
+		log.info("管理消息集合中ManStaticWebSocketHandler的保存个数:"+users.size());
 	}
 
 	
@@ -73,6 +73,8 @@ public class ManStaticWebSocketHandler extends TextWebSocketHandler {
 		for (WebSocketSession user : users) {
 			try {
 				if (user.isOpen()) {
+					log.info(user.getAttributes());
+					log.info(user.getRemoteAddress());
 					user.sendMessage(message);
 				}
 			} catch (IOException e) {

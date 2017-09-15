@@ -21,9 +21,6 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
@@ -33,8 +30,6 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -44,7 +39,6 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.navicommons.database.QueryRunner;
 
 /**
  * @ClassName: MonthPoiBatchSyncJob
@@ -57,7 +51,6 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	public MonthPoiBatchSyncJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
-
 	@Override
 	public void execute() throws JobException {
 		log.info(" start MonthPoiBatchSyncJob");
@@ -98,17 +91,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			// 获取poi对象信息
 			Set<String> tabNames = new HashSet<String>();
 			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_ADDRESS");
 			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
 					ObjectName.IX_POI, tabNames, false, pids, true, true);
-			log.info("批管理字段几何标识 外业标识 外业任务编号 数据采集版本");
-			this.updateBatchPoi(pids, this.getBatchPoiCommonSql(taskId), conn);
-			log.info("批管理字段state 状态");
-			// 新增
-			this.updateBatchPoi(addPids, this.getStateParaSql(3), conn);
-			// 修改
-			this.updateBatchPoi(updatePids, this.getStateParaSql(2), conn);
-			log.info("获取poi对应的log信息");
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat
 					.loadByColEditStatus(conn, pids);
 			log.info(" 加载poi信息以及对应子表信息");
@@ -117,108 +101,75 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			if (!objs.isEmpty()) {
 				ObjHisLogParser.parse(objs, logs);
 			}
-			// 改old_name
-			Collection<Long> namePids = new ArrayList<Long>();
-			// 改old_address
-			Collection<Long> addressPids = new ArrayList<Long>();
 
-			// 外业log
-			// 改名称
-			Collection<Long> logNamePids = new ArrayList<Long>();
-			// 改地址
-			Collection<Long> logAddressPids = new ArrayList<Long>();
-			// 该分类
-			Collection<Long> logKindCodePids = new ArrayList<Long>();
-			// 改POI_LEVEL
-			Collection<Long> logLevelPids = new ArrayList<Long>();
-			// 改内部标识
-			Collection<Long> logIndoorPids = new ArrayList<Long>();
-			// 改运动场馆
-			Collection<Long> logSportPids = new ArrayList<Long>();
-			// 改RELATION
-			Collection<Long> logLocationPids = new ArrayList<Long>();
-			log.info("加载外业log引起变化的pid信息");
+			Collection<Long> chiNamePids = new ArrayList<Long>();
+
+			Collection<Long> chtNamePids = new ArrayList<Long>();
+
+			Collection<Long> originEngNamePids = new ArrayList<Long>();
+
+			Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
+
+			Collection<Long> originPotNamePids = new ArrayList<Long>();
 			for (long pid : objs.keySet()) {
 				BasicObj obj = objs.get(pid);
 				IxPoiObj poiObj = (IxPoiObj) obj;
-				// 获取POI的主表信息
-				IxPoi poi = (IxPoi) poiObj.getMainrow();
-				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
-					if (poi.getHisOpType() == OperationType.UPDATE) {
-						logKindCodePids.add(pid);
-					}
-				}
-				if (poi.getHisOpType() == OperationType.UPDATE) {
-					if (poi.hisOldValueContains(IxPoi.LEVEL)) {
-						logLevelPids.add(pid);
-					}
-					if (poi.hisOldValueContains(IxPoi.INDOOR)) {
-						logIndoorPids.add(pid);
-					}
-					if (poi.hisOldValueContains(IxPoi.SPORTS_VENUE)) {
-						logSportPids.add(pid);
-					}
-					if (poi.hisOldValueContains(IxPoi.GEOMETRY)) {
-						logLocationPids.add(pid);
-					}
-				}
-				// 作业季新增修改中文地址
-				if (poiObj.getChiAddress() != null) {
-					IxPoiAddress address = poiObj.getChiAddress();
-					if (address.getHisOpType() == OperationType.UPDATE) {
-						logAddressPids.add(pid);
-					}
-					if (poi.getOldAddress() == null
-							|| !poi.getOldAddress().equals(
-									poiObj.getChiAddress().getFullname())) {
-						addressPids.add(pid);
+				if (poiObj.getOfficeStandardCHIName() != null) {
+					IxPoiName poiName = poiObj.getOfficeStandardCHIName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						chiNamePids.add(pid);
 					}
 
 				}
-				// 作业季新增修改中文原始
-				if (poiObj.getOfficeOriginCHName() != null) {
-					IxPoiName poiName = poiObj.getOfficeOriginCHName();
-					if (poiName.getHisOpType() == OperationType.UPDATE) {
-						logNamePids.add(pid);
+
+				if (poiObj.getOfficeStandardCHTName() != null) {
+					IxPoiName poiName = poiObj.getOfficeStandardCHTName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						chtNamePids.add(pid);
 					}
-					if (poi.getOldName() == null
-							|| !poi.getOldName().equals(
-									poiObj.getOfficeOriginCHName().getName())) {
-						namePids.add(pid);
+
+				}
+				if (poiObj.getOfficeOriginEngName() != null) {
+					IxPoiName poiName = poiObj.getOfficeOriginEngName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						originEngNamePids.add(pid);
+					}
+
+				}
+				if (poiObj.getOfficeStandardEngName() != null) {
+					IxPoiName poiName = poiObj.getOfficeStandardEngName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						OfficeStandardEngNamePids.add(pid);
+					}
+
+				}
+				if (poiObj.getOfficeOriginPOTName() != null) {
+					IxPoiName poiName = poiObj.getOfficeOriginPOTName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						originPotNamePids.add(pid);
 					}
 
 				}
 
 			}
-			// 修改old_name
-			this.updateBatchPoi(namePids, this.getUpdatePoiOldNameSql(), conn);
 
-			// 修改old_address
-			this.updateBatchPoi(addressPids, this.getUpdatePoiOldAddressSql(),
-					conn);
-			// 修改old_kind
-			this.updateBatchPoi(pids, this.getUpdatePoiOldKindCodeSql(), conn);
-			// 赋值外业log
-			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改名称"),
-					conn);
-			this.updateBatchPoi(logAddressPids, this.getUpadeLogForSql("改地址"),
-					conn);
-			this.updateBatchPoi(logKindCodePids, this.getUpadeLogForSql("改分类"),
-					conn);
-			this.updateBatchPoi(logLevelPids,
-					this.getUpadeLogForSql("改POI_LEVEL"), conn);
-			this.updateBatchPoi(logSportPids, this.getUpadeLogForSql("改运动场馆"),
-					conn);
-			this.updateBatchPoi(logIndoorPids, this.getUpadeLogForSql("改内部标识"),
-					conn);
-			this.updateBatchPoi(logLocationPids,
-					this.getUpadeLogForSql("改RELATION"), conn);
-			// 处理验证标识
-			Collection<Long> metaPids = this.getMetaPidsForPoi(conn);
-			metaPids.retainAll(pids);
-			pids.removeAll(metaPids);
-			this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
-			this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
+			log.info("批 FieldState");
+			this.updateBatchPoi(chiNamePids,
+					this.getUpadeFieldStateForSql("改标准化简体中文"), conn);
+			this.updateBatchPoi(chtNamePids,
+					this.getUpadeFieldStateForSql("改标准化繁体中文"), conn);
+			this.updateBatchPoi(originEngNamePids,
+					this.getUpadeFieldStateForSql("改官方名原始英文"), conn);
+			this.updateBatchPoi(OfficeStandardEngNamePids,
+					this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
+			this.updateBatchPoi(originPotNamePids,
+					this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
+
 			log.info("关闭任务");
 			apiService.closeSubtask(taskId, userId);
 		} catch (Exception e) {
@@ -232,85 +183,20 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 
 	}
 
-	private String getVerifiedParaSql(int verifiedFlag) {
-		return "update ix_poi p set verified_flag = "
-				+ verifiedFlag
-				+ "  where  pid in (select to_number(column_value) from table(clob_to_table(?)))";
-	}
-
-	private String getStateParaSql(int state) {
-		return "update ix_poi p set state = "
-				+ state
-				+ "  where  pid in (select to_number(column_value) from table(clob_to_table(?)))";
-	}
-
-	private String getUpdatePoiOldNameSql() {
-		return "   UPDATE ix_poi p								                           \n"
-				+ "    SET p.old_name =                                                    \n"
-				+ "          (SELECT n.name                                               \n"
-				+ "                FROM ix_poi_name n                                      \n"
-				+ "               WHERE n.name_class = 1                                    \n"
-				+ "                     AND n.lang_code IN ('CHI', 'CHT')                   \n"
-				+ "                     AND n.name_type = 2                                 \n"
-				+ "                     AND n.poi_pid = p.pid                               \n"
-				+ "                     AND NVL (p.old_name, -1) <> NVL (n.name, -1)      \n"
-				+ "                     AND rownum =1)                                        \n"
-				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))  \n";
-	}
-
-	private String getUpdatePoiOldAddressSql() {
-		return "   UPDATE ix_poi p								                                       \n"
-				+ "    SET p.old_address =                                                             \n"
-				+ "          (SELECT n.fullname                                                        \n"
-				+ "                FROM ix_poi_address n                                               \n"
-				+ "               WHERE n.lang_code IN ('CHI', 'CHT')                                  \n"
-				+ "                     AND n.poi_pid = p.pid                                          \n"
-				+ "                     AND NVL (p.old_address, -1) <> NVL (n.fullname, -1)          \n"
-				+ "                     AND rownum =1)                                                \n"
-				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))   \n";
-	}
-
-	private String getUpdatePoiOldKindCodeSql() {
-		return "   UPDATE ix_poi p								                                       \n"
-				+ "    SET p.old_kind = p.kind_code                                                    \n"
-				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))    \n"
-				+ "           AND NVL (p.old_kind, -1) <> NVL (p.kind_code, -1)                        \n";
-	}
-
-	private String getUpadeLogForSql(String logName) {
+	private String getUpadeFieldStateForSql(String strValue) {
 
 		return "   UPDATE ix_poi p								               \n"
-				+ "    SET    p.log =  DECODE (INSTR (p.LOG, '"
-				+ logName
+				+ "    SET    p.FIELD_STATE =  DECODE (INSTR (p.FIELD_STATE, '"
+				+ strValue
 				+ "'),                                                          \n"
 				+ "                          NULL,  '"
-				+ logName
+				+ strValue
 				+ "|',                                                          \n"
-				+ "                           0, p.LOG ||  '"
-				+ logName
+				+ "                           0, p.FIELD_STATE ||  '"
+				+ strValue
 				+ "|',                         \n"
-				+ "                           p.LOG)                                        \n"
+				+ "                           p.FIELD_STATE)                                        \n"
 				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
-	}
-
-	/**
-	 * 批管理字段几何标识 外业标识 外业任务编号 数据采集版本
-	 * 
-	 * @return
-	 */
-	private String getBatchPoiCommonSql(long taskId) {
-		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.seasonVersion);
-		return " UPDATE ix_poi p    \n"
-				+ "   SET p.geo_adjust_flag = 1 ,\n"
-				+ "       p.full_attr_flag = 1 ,  \n"
-				+ "       p.data_version = '"
-				+ gdbVersion
-				+ "' ,  \n"
-				+ "       p.field_task_id = '"
-				+ taskId
-				+ "'  \n"
-				+ "     WHERE p.pid in (select to_number(column_value) from table(clob_to_table(?))) \n";
 	}
 
 	public void updateBatchPoi(Collection<Long> pidList, String sql,
@@ -333,54 +219,6 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
-	}
-
-	/**
-	 * 获取所有的代理店的poi的pid列表 【判断POI是否为代理店POI的方式】：
-	 * 根据配置表SC_POINT_SPEC_KINDCODE_NEW与POI的种别，CHAIN等信息匹配，确定是否是代理店：：
-	 * 1）配置表中TYPE=7且Category=1的记录的POI_KIND与POI的kindcode匹配，则说明是代理店；
-	 * 2）配置表中TYPE=7且Category
-	 * =3的记录的POI_KIND、CHAIN与POI的kindcode、brands.code匹配，则说明是代理店；
-	 * 3）配置表中TYPE=7且Category
-	 * =7的记录的POI_KIND、CHAIN、HM_FLAG与POI的kindcode、brands.code
-	 * 、“大陆数据还是港澳数据”匹配，则说明是代理店； 以上均不满足，则说明是非代理店。 补充说明：poi是港澳的 则匹配HM或DHM；poi是大陆的
-	 * 则匹配D或DHM
-	 * 
-	 * @throws Exception
-	 */
-	private Collection<Long> getMetaPidsForPoi(Connection conn)
-			throws Exception {
-
-		// 得到所有“表内代理店分类的POI”的PiD
-		// 区分大陆港澳
-		String hkFlagStr = "'D','DHM'";
-
-		String tmpMetaTableCreateSql = "select * from(                             \n"
-				+ "select p.pid                                                             \n"
-				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
-				+ " where m.type = 7                                                        \n"
-				+ "   and m.category = 1                                                    \n"
-				+ "   and p.kind_code = m.poi_kind                                          \n"
-				+ "union                                                                    \n"
-				+ "select p.pid                                                             \n"
-				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
-				+ " where m.type = 7                                                        \n"
-				+ "   and m.category = 3                                                    \n"
-				+ "   and p.kind_code = m.poi_kind                                          \n"
-				+ "   and p.chain = m.chain                                                 \n"
-				+ "union                                                                    \n"
-				+ "select p.pid                                                             \n"
-				+ "  from sc_point_spec_kindCode_new@DBLINK_RMS M, ix_poi p     \n"
-				+ " where m.type = 7                                                        \n"
-				+ "   and m.category = 7                                                    \n"
-				+ "   and p.kind_code = m.poi_kind                                          \n"
-				+ "   and p.chain = m.chain                                                 \n"
-				+ "   and m.hm_flag in ("
-				+ hkFlagStr
-				+ "))                                                                        \n";
-		return new QueryRunner().query(conn, tmpMetaTableCreateSql,
-				new PidHandler());
-
 	}
 
 	class PidHandler implements ResultSetHandler<Collection<Long>> {

@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.plus.diff.ObjectDiffConfig;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -41,6 +42,8 @@ public abstract class BasicObj {
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
 	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	protected BasicObjGrid grid;
+	
+	protected Map<String,List<LogDetail>> preDelRowLogs = new HashMap<String,List<LogDetail>>();//会存放对象被删除的子表的履历，如果不清楚该属性应用场景，不要使用。
 	
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
@@ -232,6 +235,25 @@ public abstract class BasicObj {
 			}
 		}
 	}
+	
+	public Map<String, List<LogDetail>> getPreDelRowLogs() {
+		return preDelRowLogs;
+	}
+	public void addPreDelRowLog(String tbName,LogDetail log) {
+		if(preDelRowLogs.containsKey(tbName)){
+			preDelRowLogs.get(tbName).add(log);
+		}else{
+			List<LogDetail> logs = new ArrayList<LogDetail>();
+			logs.add(log);
+			preDelRowLogs.put(tbName, logs);
+		}
+	}
+	public void addPreDelRowLogs(String tbName,List<LogDetail> logs) {
+		preDelRowLogs.put(tbName, logs);
+	}
+	
+	
+	
 	/**
 	 * 持久化后理论上应该所有INSERT_DELETE的对象会删除，不会再进入下一操作阶段
 	 * 删除的子表在afterPersist后会移除

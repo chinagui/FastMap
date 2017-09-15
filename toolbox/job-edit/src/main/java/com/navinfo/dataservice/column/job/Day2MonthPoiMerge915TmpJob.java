@@ -867,7 +867,6 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
 		
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
-
 		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
 
 		Collection<Long> oldNamePids = new ArrayList<>();// 改OLD名称
@@ -915,7 +914,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			if (updatePids.contains(pid)) {
+			if (updatePids!=null&&updatePids.contains(pid)) {
 
 				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					oldKindCodePids.add(pid);
@@ -985,7 +984,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					}
 				}
 
-			} else if (addPids.contains(pid)) {
+			} else if (addPids!=null&&addPids.contains(pid)) {
 
 				if (poiObj.getChiAddress() != null) {
 

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import org.apache.log4j.Logger;
 
 import java.util.Set;
@@ -217,7 +219,7 @@ public abstract class BasicObj {
 	/**
 	 * 根据表名删除，会把该子表全部记录删除 如果是新增状态，物理删除，其他状态打删除标识
 	 * 
-	 * @param subrow
+	 * @param
 	 */
 	public void deleteSubrows(String tableName) {
 		List<BasicRow> rows = subrows.get(tableName);
@@ -278,15 +280,23 @@ public abstract class BasicObj {
 
 	public boolean isDelOfficeStandardCHIName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
+
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "CHI"
+						&& jo.getString(IxPoiName.LANG_CODE).equals("CHI")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 1) {
 					return true;
 
@@ -298,15 +308,21 @@ public abstract class BasicObj {
 
 	public boolean isDelOfficeStandardCHTName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "CHT"
+						&& jo.getString(IxPoiName.LANG_CODE).equals( "CHT")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 1) {
 					return true;
 
@@ -317,15 +333,21 @@ public abstract class BasicObj {
 
 	public boolean isDelOfficeOriginEngName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "ENG"
+						&& jo.getString(IxPoiName.LANG_CODE).equals("ENG")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 2) {
 					return true;
 
@@ -336,15 +358,21 @@ public abstract class BasicObj {
 
 	public boolean isDelOfficeStandardEngName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "ENG"
+						&& jo.getString(IxPoiName.LANG_CODE).equals( "ENG")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 1) {
 					return true;
 
@@ -355,15 +383,21 @@ public abstract class BasicObj {
 
 	public  boolean isDelOfficeOriginPotName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "POT"
+						&& jo.getString(IxPoiName.LANG_CODE).equals("POT")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 2) {
 					return true;
 
@@ -374,21 +408,89 @@ public abstract class BasicObj {
 
 	public boolean isDelOfficeStandardPotName() {
 
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
 		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
 		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
 			JSONObject jo = JSONObject.fromObject(detail.getOld());
 			if (jo.containsKey(IxPoiName.NAME_CLASS)
 					&& jo.containsKey(IxPoiName.LANG_CODE)
 					&& jo.containsKey(IxPoiName.NAME_TYPE))
 
 				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
-						&& jo.getString(IxPoiName.LANG_CODE) == "POT"
+						&& jo.getString(IxPoiName.LANG_CODE).equals("POT")
 						&& jo.getInt(IxPoiName.NAME_TYPE) == 1) {
 					return true;
 
 				}
 		}
 		return false;
+	}
+
+	public boolean isDelCHAddress() {
+
+		if (!getPreDelRowLogs().containsKey("IX_POI_ADDRESS")) {
+			return false;
+		}
+
+		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_ADDRESS");
+
+		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
+			JSONObject jo = JSONObject.fromObject(detail.getOld());
+			if (jo.containsKey(IxPoiAddress.LANG_CODE))
+
+				if (jo.getString(IxPoiAddress.LANG_CODE).equals("CHI") || jo.getString(IxPoiAddress.LANG_CODE).equals("CHT")) {
+					return true;
+				}
+		}
+		return false;
+	}
+
+	public boolean isDelOfficeOriginCHName() {
+		if (!getPreDelRowLogs().containsKey("IX_POI_NAME")) {
+			return false;
+		}
+
+		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_NAME");
+		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
+			JSONObject jo = JSONObject.fromObject(detail.getOld());
+			if (jo.containsKey(IxPoiName.NAME_CLASS)
+					&& jo.containsKey(IxPoiName.LANG_CODE)
+					&& jo.containsKey(IxPoiName.NAME_TYPE))
+
+				if (jo.getInt(IxPoiName.NAME_CLASS) == 1
+						&& (jo.getString(IxPoiName.LANG_CODE).equals( "CHI") || jo.getString(IxPoiName.LANG_CODE).equals("CHT"))
+						&& jo.getInt(IxPoiName.NAME_TYPE) == 2) {
+					return true;
+
+				}
+		}
+		return false;
+	}
+
+	public boolean isDelPoiHotel() {
+
+		if (!getPreDelRowLogs().containsKey("IX_POI_HOTEL")) {
+			return false;
+		}
+
+		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_HOTEL");
+
+		if (list == null || list.size() < 0) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

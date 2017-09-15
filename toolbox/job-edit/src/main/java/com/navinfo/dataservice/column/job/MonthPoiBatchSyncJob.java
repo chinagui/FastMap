@@ -111,6 +111,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
 
 			Collection<Long> originPotNamePids = new ArrayList<Long>();
+
+			Collection<Long> standardPotNamePids = new ArrayList<Long>();
 			for (long pid : objs.keySet()) {
 				BasicObj obj = objs.get(pid);
 				IxPoiObj poiObj = (IxPoiObj) obj;
@@ -155,6 +157,14 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					}
 
 				}
+				if (poiObj.getOfficeStandardPOTName() != null) {
+					IxPoiName poiName = poiObj.getOfficeStandardPOTName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						standardPotNamePids.add(pid);
+					}
+
+				}
 
 			}
 
@@ -169,6 +179,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
 			this.updateBatchPoi(originPotNamePids,
 					this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
+			this.updateBatchPoi(standardPotNamePids,
+					this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
 
 			log.info("关闭任务");
 			apiService.closeSubtask(taskId, userId);

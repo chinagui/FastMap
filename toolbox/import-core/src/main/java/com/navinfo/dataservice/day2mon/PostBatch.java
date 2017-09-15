@@ -138,9 +138,9 @@ public class PostBatch {
 						}
 					}
 					List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
-					List<BasicRow> flagListCopy=new ArrayList<BasicRow>(); 
-					flagListCopy.addAll(flagList);
 					if (CollectionUtils.isNotEmpty(flagList)) {
+                        List<BasicRow> flagListCopy=new ArrayList<BasicRow>();
+                        flagListCopy.addAll(flagList);
 						String lastSourceFlag = sourceFlag;
 						for (BasicRow flag : flagListCopy) {
 							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;

@@ -293,7 +293,7 @@ public class PoiLogDetailStat {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
 				+ " FROM LOG_DETAIL T,LOG_ACTION A,LOG_OPERATION O"
-				+ " WHERE A.ACT_ID=O.ACT_ID AND O.OP_ID=T.OP_ID AND A.SRC_DB=0"
+				+ " WHERE A.ACT_ID=O.ACT_ID AND O.OP_ID=T.OP_ID "
 				+ " AND T.OB_NM='" + ObjectName.IX_POI + "'");
 
 		List<Object> values = new ArrayList<Object>();

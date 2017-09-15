@@ -1025,6 +1025,20 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 
 	/**
+	 * 官方标准化葡萄名
+	 */
+	public IxPoiName getOfficeStandardPOTName() {
+		List<IxPoiName> subRows = getIxPoiNames();
+		for (IxPoiName br : subRows) {
+			if (br.isOfficeName() && br.isStandardName() && br.isPOT()) {
+				return br;
+			}
+		}
+		return null;
+	}
+
+
+	/**
 	 * 官方标准英文名
 	 */
 	public IxPoiName getOfficeStandardEngName() {

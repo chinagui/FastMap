@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +32,7 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -51,6 +54,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	public MonthPoiBatchSyncJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
+
 	@Override
 	public void execute() throws JobException {
 		log.info(" start MonthPoiBatchSyncJob");
@@ -111,6 +115,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
 
 			Collection<Long> originPotNamePids = new ArrayList<Long>();
+
+			Collection<Long> standardPotNamePids = new ArrayList<Long>();
 			for (long pid : objs.keySet()) {
 				BasicObj obj = objs.get(pid);
 				IxPoiObj poiObj = (IxPoiObj) obj;
@@ -121,6 +127,10 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 						chiNamePids.add(pid);
 					}
 
+				} else {
+					if (obj.isDelOfficeStandardCHIName()) {
+						chiNamePids.add(pid);
+					}
 				}
 
 				if (poiObj.getOfficeStandardCHTName() != null) {
@@ -130,6 +140,10 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 						chtNamePids.add(pid);
 					}
 
+				} else {
+					if (obj.isDelOfficeStandardCHTName()) {
+						chtNamePids.add(pid);
+					}
 				}
 				if (poiObj.getOfficeOriginEngName() != null) {
 					IxPoiName poiName = poiObj.getOfficeOriginEngName();
@@ -138,6 +152,10 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 						originEngNamePids.add(pid);
 					}
 
+				} else {
+					if (obj.isDelOfficeOriginEngName()) {
+						originEngNamePids.add(pid);
+					}
 				}
 				if (poiObj.getOfficeStandardEngName() != null) {
 					IxPoiName poiName = poiObj.getOfficeStandardEngName();
@@ -146,6 +164,11 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 						OfficeStandardEngNamePids.add(pid);
 					}
 
+				} else {
+					if (obj.isDelOfficeStandardEngName()) {
+						OfficeStandardEngNamePids.add(pid);
+					}
+				
 				}
 				if (poiObj.getOfficeOriginPOTName() != null) {
 					IxPoiName poiName = poiObj.getOfficeOriginPOTName();
@@ -154,6 +177,20 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 						originPotNamePids.add(pid);
 					}
 
+				}else{
+					if(obj.isDelOfficeOriginPotName()){
+						originPotNamePids.add(pid);
+					}
+				}
+				if (poiObj.getOfficeStandardPOTName() != null) {
+					IxPoiName poiName = poiObj.getOfficeStandardPOTName();
+					if (poiName.getHisOpType() == OperationType.UPDATE
+							|| poiName.getHisOpType() == OperationType.INSERT) {
+						standardPotNamePids.add(pid);
+					}
+
+				}if(obj.isDelOfficeStandardPotName()){
+					standardPotNamePids.add(pid);
 				}
 
 			}
@@ -169,6 +206,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
 			this.updateBatchPoi(originPotNamePids,
 					this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
+			this.updateBatchPoi(standardPotNamePids,
+					this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
 
 			log.info("关闭任务");
 			apiService.closeSubtask(taskId, userId);

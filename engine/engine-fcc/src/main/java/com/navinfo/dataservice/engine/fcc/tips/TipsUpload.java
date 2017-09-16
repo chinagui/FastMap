@@ -1112,7 +1112,8 @@ public class TipsUpload {
         JSONArray feedbackOld2 = new JSONArray();
         for (Object object : fArray) {
 			JSONObject jsonObject = JSONObject.fromObject(object);
-			JSONObject delAfter = jsonObject.discard("date");
+			JSONObject delAfter1 = jsonObject.discard("date");
+			JSONObject delAfter = delAfter1.discard("user");
 			feedbackOld2.add(delAfter);
 		}
         JSONObject feedbackOld3 = new JSONObject();
@@ -1139,7 +1140,9 @@ public class TipsUpload {
         JSONArray feedbackNew2 = new JSONArray();
         for (Object object : fArrayNew) {
 			JSONObject jsonObject = JSONObject.fromObject(object);
-			JSONObject delAfter = jsonObject.discard("date");
+			JSONObject delAfter1 = jsonObject.discard("date");
+			JSONObject delAfter = delAfter1.discard("user");
+			
 			feedbackNew2.add(delAfter);
 		}
         JSONObject feedbackNew3 = new JSONObject();

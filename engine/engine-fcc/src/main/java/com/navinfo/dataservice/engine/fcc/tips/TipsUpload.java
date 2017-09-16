@@ -41,7 +41,6 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
-import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;

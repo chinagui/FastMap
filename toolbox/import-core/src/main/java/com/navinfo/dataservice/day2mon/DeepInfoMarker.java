@@ -78,7 +78,7 @@ public class DeepInfoMarker {
 //			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
 			Map<Long,Integer> poiStates = new HashMap<Long,Integer>(); 
 			LogOpTypeStat stat = new LogOpTypeStat(conn);
-			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable, null, null);
+			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable, null, null);
 			for(Map.Entry<Integer, Collection<Long>> entry:updatedObjs.entrySet()){
 				for(Long pid:entry.getValue()){
 					poiStates.put(pid, entry.getKey());

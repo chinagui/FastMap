@@ -864,7 +864,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 //			}
 //		}
 		LogOpTypeStat stat = new LogOpTypeStat(conn);
-		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable, null, null);
+		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
 		
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
 		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid

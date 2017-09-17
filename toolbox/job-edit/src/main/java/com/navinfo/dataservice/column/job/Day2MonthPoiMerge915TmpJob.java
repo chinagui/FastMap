@@ -284,7 +284,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							logMoveResult.getLogOperationTempTable());
 					if (result.getAllObjs().size() > 0) {
 						log.info("开始进行深度信息打标记");
-						new DeepInfoMarker(result, monthConn).execute();
+						new DeepInfoMarker(result, monthConn,logMoveResult.getLogOperationTempTable()).execute();
 						log.info("开始执行前批");
 						new PreBatch(result, monthConn).execute();
 						log.info("开始执行检查");
@@ -296,7 +296,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 						log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 						updateField(result, monthConn);
 
-						batchPoi(result, monthConn);
+						batchPoi(result, monthConn,logMoveResult.getLogOperationTempTable());
 					}
 					updateLogCommitStatus(dailyConn, tempOpTable);
 				}
@@ -311,7 +311,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 						logMoveResult.getLogOperationTempTable());
 				if (result.getAllObjs().size() > 0) {
 					log.info("开始进行深度信息打标记");
-					new DeepInfoMarker(result, monthConn).execute();
+					new DeepInfoMarker(result, monthConn,logMoveResult.getLogOperationTempTable()).execute();
 					log.info("开始执行前批");
 					new PreBatch(result, monthConn).execute();
 					log.info("开始执行检查");
@@ -323,7 +323,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
 
-					batchPoi(result, monthConn);
+					batchPoi(result, monthConn,logMoveResult.getLogOperationTempTable());
 				}
 				updateLogCommitStatus(dailyConn, tmpOpTable);
 			}
@@ -833,7 +833,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		return json;
 	}
 
-	private void batchPoi(OperationResult opResult, Connection conn)
+	private void batchPoi(OperationResult opResult, Connection conn,String opTempTable)
 			throws Exception {
 
 		List<Long> pids = new ArrayList<>();// 所有poiPid
@@ -864,7 +864,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 //			}
 //		}
 		LogOpTypeStat stat = new LogOpTypeStat(conn);
-		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
+		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable, null, null);
 		
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
 

@@ -41,6 +41,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -1103,8 +1104,21 @@ public class TipsUpload {
         String g_locationOld = geoObj.getString("g_location");
         String g_guideOld = geoObj.getString("g_guide");
         String deepOld = oldTip.getString("deep");
-        String feedbackOld = oldTip.getString("feedback");
-
+        
+        //删除feedback中的data字段，鲜度验证时不验证该字段
+        JSONObject feedbackOld1 = oldTip.getJSONObject("feedback");
+        JSONArray fArray = feedbackOld1.getJSONArray("f_array");
+        JSONArray feedbackOld2 = new JSONArray();
+        for (Object object : fArray) {
+			JSONObject jsonObject = JSONObject.fromObject(object);
+			JSONObject delAfter1 = jsonObject.discard("date");
+			JSONObject delAfter = delAfter1.discard("user");
+			feedbackOld2.add(delAfter);
+		}
+        JSONObject feedbackOld3 = new JSONObject();
+        feedbackOld3.accumulate("f_array", feedbackOld2);
+        String feedbackOld = feedbackOld3.toString();
+        
         JSONObject trackOld = oldTip.getJSONObject("track");
         int tCommandOld = trackOld.getInt("t_command");
         String tCommandOldStr = String.valueOf(tCommandOld);
@@ -1118,7 +1132,21 @@ public class TipsUpload {
         String g_locationNew = json.getString("g_location");
         String g_guideNew = json.getString("g_guide");
         String deepNew = json.getString("deep");
-        String feedbackNew = json.getString("feedback");
+               
+      //删除feedback中的data字段，鲜度验证时不验证该字段
+        JSONObject feedbackNew1 = json.getJSONObject("feedback");
+        JSONArray fArrayNew = feedbackNew1.getJSONArray("f_array");
+        JSONArray feedbackNew2 = new JSONArray();
+        for (Object object : fArrayNew) {
+			JSONObject jsonObject = JSONObject.fromObject(object);
+			JSONObject delAfter1 = jsonObject.discard("date");
+			JSONObject delAfter = delAfter1.discard("user");
+			
+			feedbackNew2.add(delAfter);
+		}
+        JSONObject feedbackNew3 = new JSONObject();
+        feedbackNew3.accumulate("f_array", feedbackNew2);
+        String feedbackNew = feedbackNew3.toString();
 
         // JSONObject trackNew=json.getJSONObject("track");
         int tCommandNew = json.getInt("t_command");
@@ -1833,4 +1861,6 @@ public class TipsUpload {
         System.out.println(jsonArray1.get(1));
         System.out.println(GeoTranslator.transform(GeoTranslator.geojson2Jts(locJson1), 0.00001, 5));
     }
+    
+    
 }

@@ -120,7 +120,7 @@ public class LogWriter {
 				"field_task_id", "verified_flag", "collect_time",
 				"geo_adjust_flag", "full_attr_flag", "old_x_guide",
 				"old_y_guide", "u_record", "u_fields", "u_date", "row_id",
-				"level", "sports_venue", "indoor", "vip_flag" };
+				"level", "sports_venue", "indoor", "vip_flag" ,"truck_flag"};
 		includeFiledsSet.addAll(Arrays.asList(includeFiledsArr));
 	}
 

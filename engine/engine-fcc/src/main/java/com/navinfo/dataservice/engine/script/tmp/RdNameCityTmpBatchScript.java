@@ -274,8 +274,6 @@ public class RdNameCityTmpBatchScript {
 			String selectSql = "SELECT city FROM sc_partition_meshlist WHERE mesh = :1";
 
 			QueryRunner run = new QueryRunner();
-
-			metaConn = DBConnector.getInstance().getMetaConnection();
 			
 			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
 				public List<String> handle(ResultSet rs) throws SQLException {

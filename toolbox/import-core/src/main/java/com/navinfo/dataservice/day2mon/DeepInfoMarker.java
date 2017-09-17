@@ -40,6 +40,7 @@ public class DeepInfoMarker {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	private OperationResult opResult;
 	private Connection conn = null;
+	private String opTempTable ="";
 	private List<String> parkingKindCode = Arrays.asList("230210", "230213", "230214");
 	private List<String> carrentalKindCode = Arrays.asList("200201");
 	private List<String> carrentalChain = Arrays.asList("8007", "8006", "8004", "8003", "3000", "3854", "3902", "8005",
@@ -55,12 +56,18 @@ public class DeepInfoMarker {
 	private List<String> otherKindCode = Arrays.asList("130501", "130105", "110200");
 	private List<Integer> hostelRatings = Arrays.asList(3, 13, 4, 14, 5, 15);
 
+	public DeepInfoMarker(OperationResult opResult, Connection conn,String opTempTable) {
+		super();
+		this.opResult = opResult;
+		this.conn = conn;
+		this.opTempTable = opTempTable;
+	}
+
 	public DeepInfoMarker(OperationResult opResult, Connection conn) {
 		super();
 		this.opResult = opResult;
 		this.conn = conn;
 	}
-
 
 	public void execute() throws Exception {
 		// TODO:根据OperationResult进行深度信息打标记；
@@ -76,7 +83,7 @@ public class DeepInfoMarker {
 //			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
 			Map<Long,Integer> poiStates = new HashMap<Long,Integer>(); 
 			LogOpTypeStat stat = new LogOpTypeStat(conn);
-			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, objMap.keySet(), null, null);
+			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
 			for(Map.Entry<Integer, Collection<Long>> entry:updatedObjs.entrySet()){
 				for(Long pid:entry.getValue()){
 					poiStates.put(pid, entry.getKey());

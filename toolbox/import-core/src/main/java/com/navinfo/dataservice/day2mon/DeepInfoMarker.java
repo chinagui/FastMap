@@ -63,6 +63,11 @@ public class DeepInfoMarker {
 		this.opTempTable = opTempTable;
 	}
 
+	public DeepInfoMarker(OperationResult opResult, Connection conn) {
+		super();
+		this.opResult = opResult;
+		this.conn = conn;
+	}
 
 	public void execute() throws Exception {
 		// TODO:根据OperationResult进行深度信息打标记；

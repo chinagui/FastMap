@@ -17,10 +17,17 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
+
 /**
  * 
  * 当中文地址18个中文字段更新时，将18个字段分别转拼音
  * @author gaopengrong
+ * ==========================
+ * @author z
+ * @desc 修复bug8921 履历中取出的值为null,转String会报异常
+ * java.lang.ClassCastException: net.sf.json.JSONNull cannot be cast to java.lang.String
  */
 public class FMBAT20142 extends BasicBatchRule {
 	private Map<Long,Long> pidAdminId;
@@ -48,7 +55,7 @@ public class FMBAT20142 extends BasicBatchRule {
 
 		//PROVINCE
 		if(chiAddress.hisOldValueContains(IxPoiAddress.PROVINCE)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.PROVINCE);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.PROVINCE) instanceof JSONNull?"":(String)chiAddress.getHisOldValue(IxPoiAddress.PROVINCE);
 			String newValue=chiAddress.getProvince();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -57,7 +64,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//CITY
 		if(chiAddress.hisOldValueContains(IxPoiAddress.CITY)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.CITY);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.CITY) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.CITY);
 			String newValue=chiAddress.getCity();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -66,7 +73,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//COUNTY
 		if(chiAddress.hisOldValueContains(IxPoiAddress.COUNTY)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.COUNTY);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.COUNTY) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.COUNTY);
 			String newValue=chiAddress.getCounty();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -75,7 +82,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//TOWN
 		if(chiAddress.hisOldValueContains(IxPoiAddress.TOWN)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.TOWN);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.TOWN) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.TOWN);
 			String newValue=chiAddress.getTown();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -84,7 +91,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//PLACE
 		if(chiAddress.hisOldValueContains(IxPoiAddress.PLACE)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.PLACE);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.PLACE) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.PLACE);
 			String newValue=chiAddress.getPlace();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -93,7 +100,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//STREET
 		if(chiAddress.hisOldValueContains(IxPoiAddress.STREET)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.STREET);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.STREET) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.STREET);
 			String newValue=chiAddress.getStreet();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -102,7 +109,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//LANDMARK
 		if(chiAddress.hisOldValueContains(IxPoiAddress.LANDMARK)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.LANDMARK);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.LANDMARK) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.LANDMARK);
 			String newValue=chiAddress.getLandmark();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -111,7 +118,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//PREFIX
 		if(chiAddress.hisOldValueContains(IxPoiAddress.PREFIX)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.PREFIX);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.PREFIX) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.PREFIX);
 			String newValue=chiAddress.getPrefix();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -120,7 +127,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//HOUSENUM
 		if(chiAddress.hisOldValueContains(IxPoiAddress.HOUSENUM)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.HOUSENUM);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.HOUSENUM) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.HOUSENUM);
 			String newValue=chiAddress.getHousenum();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -129,7 +136,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//TYPE
 		if(chiAddress.hisOldValueContains(IxPoiAddress.TYPE)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.TYPE);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.TYPE) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.TYPE);
 			String newValue=chiAddress.getType();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -138,7 +145,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//SUBNUM
 		if(chiAddress.hisOldValueContains(IxPoiAddress.SUBNUM)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.SUBNUM);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.SUBNUM) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.SUBNUM);
 			String newValue=chiAddress.getSubnum();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -147,7 +154,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//SURFIX
 		if(chiAddress.hisOldValueContains(IxPoiAddress.SURFIX)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.SURFIX);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.SURFIX) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.SURFIX);
 			String newValue=chiAddress.getSurfix();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -156,7 +163,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//ESTAB
 		if(chiAddress.hisOldValueContains(IxPoiAddress.ESTAB)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.ESTAB);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.ESTAB) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.ESTAB);
 			String newValue=chiAddress.getEstab();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -165,7 +172,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//BUILDING
 		if(chiAddress.hisOldValueContains(IxPoiAddress.BUILDING)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.BUILDING);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.BUILDING) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.BUILDING);
 			String newValue=chiAddress.getBuilding();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -174,7 +181,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//UNIT
 		if(chiAddress.hisOldValueContains(IxPoiAddress.UNIT)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.UNIT);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.UNIT) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.UNIT);
 			String newValue=chiAddress.getUnit();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -183,7 +190,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//FLOOR
 		if(chiAddress.hisOldValueContains(IxPoiAddress.FLOOR)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.FLOOR);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.FLOOR) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.FLOOR);
 			String newValue=chiAddress.getFloor();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -192,7 +199,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//ROOM
 		if(chiAddress.hisOldValueContains(IxPoiAddress.ROOM)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.ROOM);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.ROOM) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.ROOM);
 			String newValue=chiAddress.getRoom();
 			if(!newValue.equals(oldValue)){
 				//批拼音
@@ -201,12 +208,21 @@ public class FMBAT20142 extends BasicBatchRule {
 		}
 		//ADDONS
 		if(chiAddress.hisOldValueContains(IxPoiAddress.ADDONS)){
-			String oldValue=(String) chiAddress.getHisOldValue(IxPoiAddress.ADDONS);
+			String oldValue = chiAddress.getHisOldValue(IxPoiAddress.ADDONS) instanceof JSONNull?"":(String) chiAddress.getHisOldValue(IxPoiAddress.ADDONS);
 			String newValue=chiAddress.getAddons();
 			if(!newValue.equals(oldValue)){
 				//批拼音
 				chiAddress.setAddonsPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
+		}
+	}
+	
+	public static void main(String argv[]){
+		String test = "{\"name\":null}";
+		JSONObject testObj =  JSONObject.fromObject(test);
+		Object oldName = testObj.get("name");
+		if (oldName instanceof JSONNull){
+			System.out.println("he he");
 		}
 	}
 

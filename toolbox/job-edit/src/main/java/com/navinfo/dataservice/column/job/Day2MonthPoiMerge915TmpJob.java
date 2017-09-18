@@ -254,64 +254,67 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					logSelector = new Day2MonPoiLogByFilterGridsSelector(
 							dailyDbSchema, syncTimeStamp, filterGrids, 0);
 					tempOpTable = logSelector.select();
-				}
 
-				FlushResult flushResult = new Day2MonLogFlusher(dailyDbSchema,
-						dailyConn, monthConn, true, tempOpTable, "day2MonSync")
-						.flush();
+					FlushResult flushResult = new Day2MonLogFlusher(
+							dailyDbSchema, dailyConn, monthConn, true,
+							tempOpTable, "day2MonSync").flush();
 
-				/*
-				 * FlushResult flushResult = new
-				 * Day2MonLogMultiFlusher(dailyDbSchema,
-				 * dailyDbSchema.getPoolDataSource(),
-				 * monthDbSchema.getPoolDataSource(), tempOpTable, true,
-				 * "day2MonSync").flush();
-				 */
-				if (onlyFlushLog == 1) {
-					return;
-				}
-				if (0 == flushResult.getTotal()) {
-					log.info("没有符合条件的履历，不执行日落月，返回");
-				} else {
-					log.info("开始将履历搬到月库：logtotal:" + flushResult.getTotal());
-					log.info("日库临时表:" + tempOpTable);
-					log.info("日库失败履历临时表：" + flushResult.getTempFailLogTable());
-					// 快线搬移履历是传进去的日大区库连接（刷库用的连接），如果出现异常，回滚日大区库连接即可；
-					LogMover logMover = new Day2MonMover(dailyDbSchema,
-							monthDbSchema, tempOpTable,
-							flushResult.getTempFailLogTable());
-					logMovers.add(logMover);
-					LogMoveResult logMoveResult = logMover.move();
-					log.info("月库临时表："
-							+ logMoveResult.getLogOperationTempTable());
-					log.info("收集统计信息");
-					DataBaseUtils.gatherStats(monthConn,
-							logMoveResult.getLogOperationTempTable());
-					DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
+					/*
+					 * FlushResult flushResult = new
+					 * Day2MonLogMultiFlusher(dailyDbSchema,
+					 * dailyDbSchema.getPoolDataSource(),
+					 * monthDbSchema.getPoolDataSource(), tempOpTable, true,
+					 * "day2MonSync").flush();
+					 */
 
-					log.info("开始进行履历分析");
-					result = parseLog(monthConn,
-							logMoveResult.getLogOperationTempTable());
-					if (result.getAllObjs().size() > 0) {
-						log.info("开始进行深度信息打标记");
-						new DeepInfoMarker(result, monthConn,
-								logMoveResult.getLogOperationTempTable())
-								.execute();
-						log.info("开始执行前批");
-						new PreBatch(result, monthConn).execute();
-						log.info("开始执行检查");
-						Map<String, Map<Long, Set<String>>> checkResult = new Check(
-								result, monthConn).execute();
-						new Classifier(checkResult, monthConn).execute();
-						log.info("开始执行后批处理");
-						new PostBatch(result, monthConn).execute915();
-						log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
-						updateField(result, monthConn);
-
-						batchPoi(result, monthConn,
-								logMoveResult.getLogOperationTempTable());
+					if (onlyFlushLog == 1) {
+						return;
 					}
-					updateLogCommitStatus(dailyConn, tempOpTable);
+					if (0 == flushResult.getTotal()) {
+						log.info("没有符合条件的履历，不执行日落月，返回");
+					} else {
+						log.info("开始将履历搬到月库：logtotal:" + flushResult.getTotal());
+						log.info("日库临时表:" + tempOpTable);
+						log.info("日库失败履历临时表："
+								+ flushResult.getTempFailLogTable());
+						// 快线搬移履历是传进去的日大区库连接（刷库用的连接），如果出现异常，回滚日大区库连接即可；
+						LogMover logMover = new Day2MonMover(dailyDbSchema,
+								monthDbSchema, tempOpTable,
+								flushResult.getTempFailLogTable());
+						logMovers.add(logMover);
+						LogMoveResult logMoveResult = logMover.move();
+						log.info("月库临时表："
+								+ logMoveResult.getLogOperationTempTable());
+						log.info("收集统计信息");
+
+						DataBaseUtils.gatherStats(monthConn,
+								logMoveResult.getLogOperationTempTable());
+						DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
+
+						log.info("开始进行履历分析");
+						result = parseLog(monthConn,
+								logMoveResult.getLogOperationTempTable());
+						if (result.getAllObjs().size() > 0) {
+							log.info("开始进行深度信息打标记");
+							new DeepInfoMarker(result, monthConn,
+									logMoveResult.getLogOperationTempTable())
+									.execute();
+							log.info("开始执行前批");
+							new PreBatch(result, monthConn).execute();
+							log.info("开始执行检查");
+							Map<String, Map<Long, Set<String>>> checkResult = new Check(
+									result, monthConn).execute();
+							new Classifier(checkResult, monthConn).execute();
+							log.info("开始执行后批处理");
+							new PostBatch(result, monthConn).execute915();
+							log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
+							updateField(result, monthConn);
+
+							batchPoi(result, monthConn,
+									logMoveResult.getLogOperationTempTable());
+						}
+						updateLogCommitStatus(dailyConn, tempOpTable);
+					}
 				}
 			} else {
 				LogMover logMover = new Day2MonMover(dailyDbSchema,
@@ -320,8 +323,13 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("月库临时表：" + logMoveResult.getLogOperationTempTable());
 				log.info("收集统计信息");
+
 				DataBaseUtils.gatherStats(monthConn,
 						logMoveResult.getLogOperationTempTable());
+
+				DataBaseUtils.gatherStats(monthConn,
+						logMoveResult.getLogOperationTempTable());
+
 				DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
 				log.info("开始进行履历分析");
 				result = parseLog(monthConn,

@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.*;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogMultiFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
@@ -41,6 +42,7 @@ import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONObject;
@@ -253,15 +255,15 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							dailyDbSchema, syncTimeStamp, filterGrids, 0);
 					tempOpTable = logSelector.select();
 				}
-				/*
-				 * FlushResult flushResult = new
-				 * Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
-				 * tempOpTable, "day2MonSync") .flush();
-				 */
-				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
-						dailyDbSchema.getPoolDataSource(),
-						monthDbSchema.getPoolDataSource(), tempOpTable, true,
-						"day2MonSync").flush();
+				
+				FlushResult flushResult = new
+				Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
+				tempOpTable, "day2MonSync") .flush();
+				
+//				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
+//						dailyDbSchema.getPoolDataSource(),
+//						monthDbSchema.getPoolDataSource(), tempOpTable, true,
+//						"day2MonSync").flush();
 				if (onlyFlushLog == 1) {
 					return;
 				}
@@ -279,6 +281,9 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					LogMoveResult logMoveResult = logMover.move();
 					log.info("月库临时表："
 							+ logMoveResult.getLogOperationTempTable());
+					log.info("收集统计信息");
+					DataBaseUtils.gatherStats(monthConn, logMoveResult.getLogOperationTempTable());
+					DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
 					log.info("开始进行履历分析");
 					result = parseLog(monthConn,
 							logMoveResult.getLogOperationTempTable());
@@ -306,6 +311,9 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				logMovers.add(logMover);
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("月库临时表：" + logMoveResult.getLogOperationTempTable());
+				log.info("收集统计信息");
+				DataBaseUtils.gatherStats(monthConn, logMoveResult.getLogOperationTempTable());
+				DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
 				log.info("开始进行履历分析");
 				result = parseLog(monthConn,
 						logMoveResult.getLogOperationTempTable());

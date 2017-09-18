@@ -90,7 +90,16 @@ public class LogWriter {
 					listener.deleteFailed(editLog, data.get("log").toString());
 				}
 			} else if (type.equals("day2MonSync")) {
-				listener.preDelete();
+				l_state",
+				"label", "type", "address_flag", "ex_priority", "edition_flag",
+				"poi_memo", "old_blockcode", "old_name", "old_address",
+				"old_kind", "poi_num", "log", "task_id", "data_version",
+				"field_task_id", "verified_flag", "collect_time",
+				"geo_adjust_flag", "full_attr_flag", "old_x_guide",
+				"old_y_guide", "u_record", "u_fields", "u_date", "row_id",
+				"level", "sports_venue", "indoor", "vip_flag" ,"truck_flag"};
+
+		includeFiledsSet.addAll(Arrays.asList(includeFiledsArr));istener.preDelete();
 				data = PhysicalDeleteData(editLog);
 				if (data.get("result").equals(0)) {
 					listener.deleteFailed(editLog, data.get("log").toString());
@@ -113,15 +122,7 @@ public class LogWriter {
 				"name_groupid", "road_flag", "pmesh_id", "admin_real",
 				"importance", "chain", "airport_code", "access_flag",
 				"open_24h", "mesh_id_5k", "mesh_id", "region_id", "post_code",
-				"edit_flag", "dif_groupid", "reserved", "state", "field_state",
-				"label", "type", "address_flag", "ex_priority", "edition_flag",
-				"poi_memo", "old_blockcode", "old_name", "old_address",
-				"old_kind", "poi_num", "log", "task_id", "data_version",
-				"field_task_id", "verified_flag", "collect_time",
-				"geo_adjust_flag", "full_attr_flag", "old_x_guide",
-				"old_y_guide", "u_record", "u_fields", "u_date", "row_id",
-				"level", "sports_venue", "indoor", "vip_flag" ,"truck_flag"};
-		includeFiledsSet.addAll(Arrays.asList(includeFiledsArr));
+				"edit_flag", "dif_groupid", "reserved", "state", "field
 	}
 
 	private boolean isFieldInIncludeFiledsSet(String field) {

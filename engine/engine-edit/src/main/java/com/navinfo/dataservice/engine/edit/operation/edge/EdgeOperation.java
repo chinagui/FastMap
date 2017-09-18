@@ -7,7 +7,6 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
-import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
@@ -29,7 +28,7 @@ public class EdgeOperation {
 
     private static final Logger LOGGER = Logger.getLogger(EdgeOperation.class);
 
-    private List<AbstractProcess> abstractProcesses = new ArrayList<>();
+    private Map<Integer, AbstractProcess> abstractProcesses = new HashMap<>();
 
     private static Set<ObjType> objTypes = new HashSet<>();
 
@@ -137,7 +136,12 @@ public class EdgeOperation {
                     json.put("type", edge.getObjType());
                     json.put("objId", iRow.parentPKValue());
                     try {
-                        TransactionFactory.generateCommand(transaction, json.toString());
+                        AbstractCommand abstractCommand = TransactionFactory.generateCommand(transaction, json.toString());
+                        AbstractProcess abstractProcess = transaction.createProcess(abstractCommand);
+                        abstractProcesses.put(entry.getKey(), abstractProcess);
+                        abstractProcess.run();
+                        Result result = abstractProcess.getResult();
+                        transaction.recordData(abstractProcess, result);
                     } catch (Exception e) {
                         LOGGER.error("run edge database has error..", e.fillInStackTrace());
                         throw e;
@@ -166,10 +170,8 @@ public class EdgeOperation {
             }
         }
         try {
-            AbstractCommand command = TransactionFactory.generateCommand(transaction, edge.getRequest().put("dbId", entry.getKey()).toString());
-            AbstractProcess process = transaction.createProcess(command);
-            abstractProcesses.add(process);
-            transaction.recordData(process, result);
+            AbstractProcess abstractProcess = loadAbstractProcess(edge, entry);
+            transaction.recordData(abstractProcess, result);
         } catch (Exception e) {
             LOGGER.error("", e.fillInStackTrace());
             throw e;
@@ -179,11 +181,8 @@ public class EdgeOperation {
     public void excute(EdgeResult edge) throws Exception{
         for (Map.Entry<Integer, Result> entry : edge.conversion().entrySet()) {
             try {
-                AbstractCommand command = TransactionFactory.generateCommand(transaction, edge.getRequest().put("dbId", entry.getKey()).toString());
-
-                AbstractProcess process = transaction.createProcess(command);
-                abstractProcesses.add(process);
-                transaction.recordData(process, entry.getValue());
+                AbstractProcess abstractProcess = loadAbstractProcess(edge, entry);
+                transaction.recordData(abstractProcess, entry.getValue());
             } catch (Exception e) {
                 LOGGER.error("", e.fillInStackTrace());
                 throw e;
@@ -191,12 +190,24 @@ public class EdgeOperation {
         }
     }
 
+    private AbstractProcess loadAbstractProcess(EdgeResult edge, Map.Entry<Integer, Result> entry) throws Exception {
+        AbstractProcess abstractProcess;
+        if (abstractProcesses.containsKey(entry.getKey())) {
+            abstractProcess = abstractProcesses.get(entry.getKey());
+        } else {
+            AbstractCommand command = TransactionFactory.generateCommand(transaction, edge.getRequest().put("dbId", entry.getKey()).toString());
+            abstractProcess = transaction.createProcess(command);
+            abstractProcesses.put(entry.getKey(), abstractProcess);
+        }
+        return abstractProcess;
+    }
+
     /**
      * Getter method for property <tt>abstractProcesses</tt>.
      *
      * @return property value of abstractProcesses
      */
-    public List<AbstractProcess> getAbstractProcesses() {
+    public Map<Integer, AbstractProcess> getAbstractProcesses() {
         return abstractProcesses;
     }
 }

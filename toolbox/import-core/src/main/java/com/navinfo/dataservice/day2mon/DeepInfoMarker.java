@@ -63,6 +63,11 @@ public class DeepInfoMarker {
 		this.opTempTable = opTempTable;
 	}
 
+	public DeepInfoMarker(OperationResult opResult, Connection conn) {
+		super();
+		this.opResult = opResult;
+		this.conn = conn;
+	}
 
 	public void execute() throws Exception {
 		// TODO:根据OperationResult进行深度信息打标记；
@@ -78,7 +83,13 @@ public class DeepInfoMarker {
 //			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
 			Map<Long,Integer> poiStates = new HashMap<Long,Integer>(); 
 			LogOpTypeStat stat = new LogOpTypeStat(conn);
-			Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
+			Map<Integer,Collection<Long>> updatedObjs=new HashMap<Integer,Collection<Long>>();
+			if(StringUtils.isNotEmpty(opTempTable)){
+				updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
+			}else{
+				updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, objMap.keySet(), null, null);
+			}
+			
 			for(Map.Entry<Integer, Collection<Long>> entry:updatedObjs.entrySet()){
 				for(Long pid:entry.getValue()){
 					poiStates.put(pid, entry.getKey());

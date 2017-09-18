@@ -263,7 +263,11 @@ public class DeepInfoMarker {
 
 //			LogReader logRead = new LogReader(conn);
 //			int poiState = logRead.getObjectState((int) poi.getPid(), "IX_POI");
-			int poiState = poiStates.get(poi.getPid());
+			
+			int poiState = 3;
+			if(poiStates.containsKey(poi.getPid())){
+				poiState = poiStates.get(poi.getPid());
+			}
 
 			// 非新增（IX_POI.STATE=3）且种别为医院（170101、170102）的不提取
 			if (hospitalKindCode.contains(kindCode)) {

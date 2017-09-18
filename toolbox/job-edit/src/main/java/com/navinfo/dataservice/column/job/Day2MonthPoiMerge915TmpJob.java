@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.*;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogMultiFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
@@ -258,10 +259,11 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				 * Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
 				 * tempOpTable, "day2MonSync") .flush();
 				 */
-				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
-						dailyDbSchema.getPoolDataSource(),
-						monthDbSchema.getPoolDataSource(), tempOpTable, true,
-						"day2MonSync").flush();
+				FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
+//				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
+//						dailyDbSchema.getPoolDataSource(),
+//						monthDbSchema.getPoolDataSource(), tempOpTable, true,
+//						"day2MonSync").flush();
 				if (onlyFlushLog == 1) {
 					return;
 				}

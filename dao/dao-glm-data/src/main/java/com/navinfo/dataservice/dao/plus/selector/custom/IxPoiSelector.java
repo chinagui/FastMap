@@ -244,6 +244,43 @@ public class IxPoiSelector {
 		return childPids;
 	}
 	
+	public static Map<Long,Long> getNoFilterDeleteParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		try{
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(pidList, ","));
+			
+			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.CHILD_POI_PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			
+			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+					Map<Long,Long> result = new HashMap<Long,Long>();
+					while (rs.next()) {
+						long parentPid = rs.getLong("PARENT_POI_PID");
+						long childPid = rs.getLong("CHILD_POI_PID");
+						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob);
+			return childPidParentPid;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
 	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		if(pidList.isEmpty()){
@@ -454,6 +491,32 @@ public class IxPoiSelector {
 		while(poiPids.size()!=pidList.size()){
 			pidList.addAll(poiPids);
 			childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
+			poiPids.addAll(childPidParentPid.values());
+		}
+		return childPidParentPid;
+	}
+	
+	/**
+	 * 通过子poi查询父，祖父等，一直到一级父（即父没有父了，只有子） 不过滤删除
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,Long> getAllNoFilterDeleteParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		childPidParentPid=getNoFilterDeleteParentPidsByChildrenPids(conn, pidList);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids.addAll(childPidParentPid.keySet());
+		poiPids.addAll(childPidParentPid.values());
+		poiPids.addAll(pidList);
+		//循环查询直到没有新父被查出来为止
+		while(poiPids.size()!=pidList.size()){
+			pidList.addAll(poiPids);
+			childPidParentPid=getNoFilterDeleteParentPidsByChildrenPids(conn, pidList);
 			poiPids.addAll(childPidParentPid.values());
 		}
 		return childPidParentPid;

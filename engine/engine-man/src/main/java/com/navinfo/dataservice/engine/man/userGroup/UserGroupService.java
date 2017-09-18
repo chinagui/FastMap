@@ -577,7 +577,7 @@ public class UserGroupService {
 	}
 	
 	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
+	 * 组赋值方法 1采集2编辑3众包4情报5多源6月编
 	 * @param adminCode
 	 * @param type
 	 * @throws Exception 
@@ -598,55 +598,61 @@ public class UserGroupService {
 	}
 	
 	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
+	 * 组赋值方法 1采集2编辑3众包4情报5多源6月编
 	 * @param adminCode
 	 * @param type
 	 * @throws Exception 
 	 * @author songhe
 	 */
-	public UserGroup getGroupByAminCode(Connection conn,String adminCode, int type){
+	public UserGroup getGroupByAminCode(Connection conn, String adminCode, int type) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			
 			String name = "";
-			if(type == 1){
-				name = "COLLECT_GROUP_NAME";
-			}else if(type == 2){
-				name="EDIT_GROUP_NAME";
-			}else if(type == 3){
-				name = "CROWD_GROUP_NAME";
-			}else if(type == 4){
-				name = "INFOR_GROUP_NAME";
-			}else if(type == 5){
-				name = "MULTISOURCE_GROUP_NAME";
+			switch(type){
+				case 1:
+					name = "COLLECT_GROUP_NAME";
+					break;
+				case 2:
+					name = "EDIT_GROUP_NAME";
+					break;
+				case 3:
+					name = "CROWD_GROUP_NAME";
+					break;
+				case 4:
+					name = "INFOR_GROUP_NAME";
+					break;
+				case 5:
+					name = "MULTISOURCE_GROUP_NAME";
+					break;
+				case 6:
+					name = "MONTH_GROUP_NAME";
+					break;
 			}
 			
 			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
 					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
 					+ "and u.group_name = t." + name;
 			
-			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
+			return run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
 				
 				@Override
 				public UserGroup handle(ResultSet result) throws SQLException {
 					UserGroup  userGroup = new UserGroup();
-					while(result.next()){
+					if(result.next()){
 						userGroup.setGroupId(result.getInt("GROUP_ID"));
 						userGroup.setGroupName(result.getString("GROUP_NAME"));
 						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
 						userGroup.setLeaderId(result.getInt("LEADER_ID"));
 						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
-						return userGroup;
 					}
-					return null;
+					return userGroup;
 				}});
-			return group;
-			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}
-		return null;
 	}
 	
 }

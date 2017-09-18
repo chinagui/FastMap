@@ -131,22 +131,26 @@ public class TaskService {
 					bean.setRegionId(regionId);
 				}
 				
-				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
-				if(bean.getType()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
-					String adminCode = selectAdminCode(taskJson.getInt("programId"));
+				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法
+				//modify by songhe 2017/09/18,月编任务创建自动调用组赋值方法进行作业组id赋值
+				if((bean.getType() == 0 && (bean.getSubWorkKind(1) == 1 || bean.getSubWorkKind (2) ==1)) || bean.getType() == 2){
+					String adminCode = selectAdminCode(conn, taskJson.getInt("programId"));
 					
 					if(adminCode != null && !"".equals(adminCode)){
-						UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
-						if(userGroup!=null){
-							Integer userGroupID = userGroup.getGroupId();
-							bean.setGroupId(userGroupID);
+						//默认采集作业组
+						int groupType = 1;
+						if(bean.getType() == 2){
+							//月编作业组
+							groupType = 6;
+						}
+						UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(conn, adminCode, groupType);
+						if(userGroup != null && userGroup.getGroupId() != 0){
+							bean.setGroupId(userGroup.getGroupId());
 						}
 					}
 				}
-
 				taskList.add(bean);
 			}
-			
 			total = create(conn,taskList);
 			return "任务批量创建"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -158,6 +162,7 @@ public class TaskService {
 		}
 	}
 	
+	
 	/**
 	 * 查询adminCode
 	 * @param int,String
@@ -168,6 +173,24 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return selectAdminCode(conn, programID);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return "";
+	}
+	
+	/**
+	 * 查询adminCode
+	 * @param int,String
+	 * @throws Exception
+	 * @author songhe
+	 */
+	public String selectAdminCode(Connection conn, int programID) throws Exception{
+		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT TO_CHAR(C.ADMIN_ID) ADMIN_CODE"
 					+ "  FROM CITY C, PROGRAM P"
@@ -179,27 +202,20 @@ public class TaskService {
 					+ " WHERE P.INFOR_ID = I.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = "+programID;
 			
-			String adminCode = run.query(conn, selectSql, new ResultSetHandler<String>(){
+			return run.query(conn, selectSql, new ResultSetHandler<String>(){
 				@Override
-				public String handle(ResultSet rs)
-						throws SQLException {
+				public String handle(ResultSet rs)throws SQLException {
+					String adminCode = "";
 						if(rs.next()){
-							return String.valueOf(rs.getString("ADMIN_CODE"));
+							adminCode =  String.valueOf(rs.getString("ADMIN_CODE"));
 						}
-					return "";
+					return adminCode;
 				}
 			});
-			
-			return adminCode;
-			
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
+			throw e;
 		}
-		
-		return null;
 	}
 	
 
@@ -410,9 +426,12 @@ public class TaskService {
 				if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
 					if(task.getSubWorkKind(3)==1){
 						createCollectSubtaskByTask(3, task);
+						
 					}
 					if(task.getSubWorkKind(4)==1){
-						createCollectSubtaskByTask(4, task);
+						int subtaskId = createCollectSubtaskByTask(4, task);
+						//modify by songhe 2017/09/18  多源子任务创建后自动发布
+						subPushMsgIds.add(subtaskId);
 					}
 				}
 				//}
@@ -767,7 +786,8 @@ public class TaskService {
 	 * @param num
 	 * @throws Exception 
 	 */
-	private void createCollectSubtaskByTask(int num,Task task) throws Exception{
+	private int createCollectSubtaskByTask(int num,Task task) throws Exception{
+		int subtaskId = 0;
 		int programType=1;
 		if(task.getBlockId()==0){//情报任务
 			programType=4;
@@ -791,7 +811,7 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			subtask.setGeometry(wkt);
-			SubtaskService.getInstance().createSubtask(subtask);
+			subtaskId = SubtaskService.getInstance().createSubtask(subtask);
 		}
 		//多源子任务
 		if(num==4){
@@ -822,8 +842,9 @@ public class TaskService {
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			subtask.setGeometry(wkt);
 
-			SubtaskService.getInstance().createSubtask(subtask);
+			subtaskId = SubtaskService.getInstance().createSubtask(subtask);
 		}
+		return subtaskId;
 	}
 	
 	/**

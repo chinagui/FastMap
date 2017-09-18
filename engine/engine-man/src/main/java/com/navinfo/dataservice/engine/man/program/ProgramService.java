@@ -1932,7 +1932,7 @@ public class ProgramService {
 	 * @param userId
 	 * @throws Exception
 	 */
-	private void splitInforTasks(Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
+	private void splitInforTasks(final Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
 		try{
 			if(inforPrograms==null||inforPrograms.size()==0){return;}
 			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID,r.region_name"
@@ -1964,6 +1964,9 @@ public class ProgramService {
 						if(programId!=programIdTmp){
 							//创建月编任务
 					    	Task monthTask=new Task();
+					    	//modify by songhe
+					    	//月编任务创建自动赋值作业组
+					    	updateMonthTaskGroupIdByProgram(conn, programId, monthTask);
 					    	monthTask.setProgramId(programId);
 					    	monthTask.setRegionId(regionId);
 					    	monthTask.setGridIds(monthGridMap);
@@ -2025,6 +2028,9 @@ public class ProgramService {
 						
 						//创建月编任务
 				    	Task monthTask=new Task();
+				    	//modify by songhe
+				    	//月编任务创建自动赋值作业组
+				    	updateMonthTaskGroupIdByProgram(conn, programId, monthTask);
 				    	monthTask.setProgramId(programId);
 				    	monthTask.setRegionId(regionId);
 				    	monthTask.setGridIds(monthGridMap);
@@ -2858,6 +2864,25 @@ public class ProgramService {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据项目id自动给月编任务的作业组赋值
+	 * @param int programId
+	 * @param Connection
+	 * @param Task
+	 * 
+	 * */
+	public void updateMonthTaskGroupIdByProgram(Connection conn, int programId, Task monthTask){
+		//modify by songhe
+		//月编任务创建自动赋值作业组id
+		try {
+			String adminCode = TaskService.getInstance().selectAdminCode(conn, programId);
+			UserGroup userGrop = UserGroupService.getInstance().getGroupByAminCode(conn, adminCode, 6);
+			monthTask.setGroupId(userGrop.getGroupId());
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

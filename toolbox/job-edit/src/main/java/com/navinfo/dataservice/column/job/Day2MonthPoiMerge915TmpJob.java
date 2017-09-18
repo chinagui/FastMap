@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.*;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogMultiFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
@@ -41,6 +42,7 @@ import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONObject;
@@ -253,15 +255,18 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							dailyDbSchema, syncTimeStamp, filterGrids, 0);
 					tempOpTable = logSelector.select();
 				}
+
+				FlushResult flushResult = new Day2MonLogFlusher(dailyDbSchema,
+						dailyConn, monthConn, true, tempOpTable, "day2MonSync")
+						.flush();
+
 				/*
 				 * FlushResult flushResult = new
-				 * Day2MonLogFlusher(dailyDbSchema, dailyConn, monthConn, true,
-				 * tempOpTable, "day2MonSync") .flush();
+				 * Day2MonLogMultiFlusher(dailyDbSchema,
+				 * dailyDbSchema.getPoolDataSource(),
+				 * monthDbSchema.getPoolDataSource(), tempOpTable, true,
+				 * "day2MonSync").flush();
 				 */
-				FlushResult flushResult = new Day2MonLogMultiFlusher(dailyDbSchema,
-						dailyDbSchema.getPoolDataSource(),
-						monthDbSchema.getPoolDataSource(), tempOpTable, true,
-						"day2MonSync").flush();
 				if (onlyFlushLog == 1) {
 					return;
 				}
@@ -279,12 +284,19 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					LogMoveResult logMoveResult = logMover.move();
 					log.info("月库临时表："
 							+ logMoveResult.getLogOperationTempTable());
+					log.info("收集统计信息");
+					DataBaseUtils.gatherStats(monthConn,
+							logMoveResult.getLogOperationTempTable());
+					DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
+
 					log.info("开始进行履历分析");
 					result = parseLog(monthConn,
 							logMoveResult.getLogOperationTempTable());
 					if (result.getAllObjs().size() > 0) {
 						log.info("开始进行深度信息打标记");
-						new DeepInfoMarker(result, monthConn,logMoveResult.getLogOperationTempTable()).execute();
+						new DeepInfoMarker(result, monthConn,
+								logMoveResult.getLogOperationTempTable())
+								.execute();
 						log.info("开始执行前批");
 						new PreBatch(result, monthConn).execute();
 						log.info("开始执行检查");
@@ -296,7 +308,8 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 						log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 						updateField(result, monthConn);
 
-						batchPoi(result, monthConn,logMoveResult.getLogOperationTempTable());
+						batchPoi(result, monthConn,
+								logMoveResult.getLogOperationTempTable());
 					}
 					updateLogCommitStatus(dailyConn, tempOpTable);
 				}
@@ -306,12 +319,17 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				logMovers.add(logMover);
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("月库临时表：" + logMoveResult.getLogOperationTempTable());
+				log.info("收集统计信息");
+				DataBaseUtils.gatherStats(monthConn,
+						logMoveResult.getLogOperationTempTable());
+				DataBaseUtils.gatherStats(monthConn, "LOG_DETAIL");
 				log.info("开始进行履历分析");
 				result = parseLog(monthConn,
 						logMoveResult.getLogOperationTempTable());
 				if (result.getAllObjs().size() > 0) {
 					log.info("开始进行深度信息打标记");
-					new DeepInfoMarker(result, monthConn,logMoveResult.getLogOperationTempTable()).execute();
+					new DeepInfoMarker(result, monthConn,
+							logMoveResult.getLogOperationTempTable()).execute();
 					log.info("开始执行前批");
 					new PreBatch(result, monthConn).execute();
 					log.info("开始执行检查");
@@ -323,7 +341,8 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
 
-					batchPoi(result, monthConn,logMoveResult.getLogOperationTempTable());
+					batchPoi(result, monthConn,
+							logMoveResult.getLogOperationTempTable());
 				}
 				updateLogCommitStatus(dailyConn, tmpOpTable);
 			}
@@ -833,8 +852,8 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		return json;
 	}
 
-	private void batchPoi(OperationResult opResult, Connection conn,String opTempTable)
-			throws Exception {
+	private void batchPoi(OperationResult opResult, Connection conn,
+			String opTempTable) throws Exception {
 
 		List<Long> pids = new ArrayList<>();// 所有poiPid
 
@@ -844,28 +863,32 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 			pids.add(pid);
 		}
 
-//		LogReader logRead = new LogReader(conn);
-//
-//		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
-//
-//		List<Long> addPids = new ArrayList<>();// 作业季新增poiPid
-//
-//		List<Long> updatePids = new ArrayList<>();// 作业季修改poiPid
-//
-//		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
-//
-//			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
-//
-//				addPids.add(entry.getKey());
-//
-//			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
-//
-//				updatePids.add(entry.getKey());
-//			}
-//		}
+		// LogReader logRead = new LogReader(conn);
+		//
+		// Map<Long,Integer> stateResult =
+		// logRead.getObjectState(pids,"IX_POI");
+		//
+		// List<Long> addPids = new ArrayList<>();// 作业季新增poiPid
+		//
+		// List<Long> updatePids = new ArrayList<>();// 作业季修改poiPid
+		//
+		// for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
+		//
+		// if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
+		//
+		// addPids.add(entry.getKey());
+		//
+		// } else if (entry.getValue() == 3 &&
+		// !updatePids.contains(entry.getKey())) {
+		//
+		// updatePids.add(entry.getKey());
+		// }
+		// }
 		LogOpTypeStat stat = new LogOpTypeStat(conn);
-		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
-		
+		Map<Integer, Collection<Long>> updatedObjs = stat
+				.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI,
+						opTempTable);
+
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
 		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
 
@@ -914,7 +937,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			if (updatePids!=null&&updatePids.contains(pid)) {
+			if (updatePids != null && updatePids.contains(pid)) {
 
 				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					oldKindCodePids.add(pid);
@@ -947,8 +970,8 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
 						if (hotel.getHisOpType() == OperationType.INSERT
-								|| (hotel.getHisOpType() == OperationType.UPDATE
-								&& hotel.hisOldValueContains(IxPoiHotel.RATING))) {
+								|| (hotel.getHisOpType() == OperationType.UPDATE && hotel
+										.hisOldValueContains(IxPoiHotel.RATING))) {
 							ratingPids.add(pid);
 							break;
 						}
@@ -961,18 +984,18 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 					IxPoiAddress address = poiObj.getCHAddress();
 
-					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
+					if (address.getHisOpType() == OperationType.UPDATE
+							|| address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
 						if (poi.getOldAddress() == null
-								|| !poi.getOldAddress().equals(address.getFullname())) {
+								|| !poi.getOldAddress().equals(
+										address.getFullname())) {
 							oldAddressPids.add(pid);
 						}
 					}
-				}
-				else if (obj.isDelCHAddress())
-				{
+				} else if (obj.isDelCHAddress()) {
 					addressPids.add(pid);
 				}
 				// 作业季修改中文原始Name
@@ -985,32 +1008,36 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 						namePids.add(pid);
 
 						if (poi.getOldName() == null
-								|| !poi.getOldName().equals(poiObj.getOfficeOriginCHName().getName())) {
+								|| !poi.getOldName().equals(
+										poiObj.getOfficeOriginCHName()
+												.getName())) {
 							oldNamePids.add(pid);
 						}
 					}
-				}
-				else if (obj.isDelOfficeOriginCHName())
-				{
+				} else if (obj.isDelOfficeOriginCHName()) {
 					namePids.add(pid);
 				}
 
-			} else if (addPids!=null&&addPids.contains(pid)) {
+			} else if (addPids != null && addPids.contains(pid)) {
 
 				if (poiObj.getChiAddress() != null) {
 
-					String oldAddress = poi.getOldAddress() == null ? "" : poi.getOldAddress();
+					String oldAddress = poi.getOldAddress() == null ? "" : poi
+							.getOldAddress();
 
-					if (!oldAddress.equals(poiObj.getChiAddress().getFullname())) {
+					if (!oldAddress
+							.equals(poiObj.getChiAddress().getFullname())) {
 						oldAddressPids.add(pid);
 					}
 				}
 
 				if (poiObj.getOfficeOriginCHName() != null) {
 
-					String oldName = poi.getOldName() == null ? "" : poi.getOldName();
+					String oldName = poi.getOldName() == null ? "" : poi
+							.getOldName();
 
-					if (!oldName.equals(poiObj.getOfficeOriginCHName().getName())) {
+					if (!oldName.equals(poiObj.getOfficeOriginCHName()
+							.getName())) {
 						oldNamePids.add(pid);
 					}
 				}
@@ -1023,17 +1050,17 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 
 				String label = poi.getLabel() != null ? poi.getLabel() : "";
 
-				if (label.contains("室内|")
-						|| label.contains("室外|")
-						|| label.contains("占道|")
-						|| label.contains("室内地上|")
+				if (label.contains("室内|") || label.contains("室外|")
+						|| label.contains("占道|") || label.contains("室内地上|")
 						|| label.contains("地下|")) {
 					parkingPids.add(pid);
 				}
 
-				if (poiObj.getIxPoiParkings() != null && poiObj.getIxPoiParkings().size() == 1) {
+				if (poiObj.getIxPoiParkings() != null
+						&& poiObj.getIxPoiParkings().size() == 1) {
 
-					String parkingType = poiObj.getIxPoiParkings().get(0).getParkingType();
+					String parkingType = poiObj.getIxPoiParkings().get(0)
+							.getParkingType();
 
 					if (parkingType.contains("0")) {
 						parkingType0Pids.add(pid);
@@ -1062,33 +1089,39 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		this.updateBatchPoi(oldNamePids, this.getUpdatePoiOldNameSql(), conn);
 
 		log.info("批old_address");
-		this.updateBatchPoi(oldAddressPids, this.getUpdatePoiOldAddressSql(), conn);
+		this.updateBatchPoi(oldAddressPids, this.getUpdatePoiOldAddressSql(),
+				conn);
 
 		log.info("批old_kind");
-		this.updateBatchPoi(oldKindCodePids, this.getUpdatePoiOldKindCodeSql(), conn);
+		this.updateBatchPoi(oldKindCodePids, this.getUpdatePoiOldKindCodeSql(),
+				conn);
 
 		log.info("批外业log");
 		this.updateBatchPoi(namePids, this.getUpadeLogForSql("改名称"), conn);
 		this.updateBatchPoi(addressPids, this.getUpadeLogForSql("改地址"), conn);
 		this.updateBatchPoi(kindCodePids, this.getUpadeLogForSql("改分类"), conn);
-		this.updateBatchPoi(levelPids, this.getUpadeLogForSql("改POI_LEVEL"), conn);
+		this.updateBatchPoi(levelPids, this.getUpadeLogForSql("改POI_LEVEL"),
+				conn);
 		this.updateBatchPoi(sportPids, this.getUpadeLogForSql("改运动场馆"), conn);
 		this.updateBatchPoi(indoorPids, this.getUpadeLogForSql("改内部标识"), conn);
-		this.updateBatchPoi(relationPids, this.getUpadeLogForSql("改RELATION"), conn);
+		this.updateBatchPoi(relationPids, this.getUpadeLogForSql("改RELATION"),
+				conn);
 
 		log.info("批Old_X_Guide");
-		this.updateBatchPoi(oldXGuidePids, this.getUpdatePoiOldXGuideSql(), conn);
+		this.updateBatchPoi(oldXGuidePids, this.getUpdatePoiOldXGuideSql(),
+				conn);
 
 		log.info("批Old_Y_Guide");
-		this.updateBatchPoi(oldYGuidePids, this.getUpdatePoiOldYGuideSql(), conn);
+		this.updateBatchPoi(oldYGuidePids, this.getUpdatePoiOldYGuideSql(),
+				conn);
 
 		log.info("批FieldState");
 		this.updateBatchPoi(kindCodePids,
 				this.getUpadeFieldStateForSql("改种别代码"), conn);
-		this.updateBatchPoi(chainPids,
-				this.getUpadeFieldStateForSql("改连锁品牌"), conn);
-		this.updateBatchPoi(ratingPids,
-				this.getUpadeFieldStateForSql("改酒店星级"), conn);
+		this.updateBatchPoi(chainPids, this.getUpadeFieldStateForSql("改连锁品牌"),
+				conn);
+		this.updateBatchPoi(ratingPids, this.getUpadeFieldStateForSql("改酒店星级"),
+				conn);
 
 		log.info("批处理标记");
 		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
@@ -1098,8 +1131,8 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 				conn);
 		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道"),
 				conn);
-		this.updateBatchPoi(parkingType3Pids,
-				this.getUpadeLabelForSql("室内地上"), conn);
+		this.updateBatchPoi(parkingType3Pids, this.getUpadeLabelForSql("室内地上"),
+				conn);
 		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下"),
 				conn);
 
@@ -1116,7 +1149,6 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 		this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
 		this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
 	}
-
 
 	private String getStateParaSql(int state) {
 		return "update ix_poi p set state = "

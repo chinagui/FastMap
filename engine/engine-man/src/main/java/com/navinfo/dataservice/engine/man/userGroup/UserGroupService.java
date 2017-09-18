@@ -608,7 +608,8 @@ public class UserGroupService {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			String name = "";
+			//默认采集作业组
+			String name = "COLLECT_GROUP_NAME";
 			switch(type){
 				case 1:
 					name = "COLLECT_GROUP_NAME";

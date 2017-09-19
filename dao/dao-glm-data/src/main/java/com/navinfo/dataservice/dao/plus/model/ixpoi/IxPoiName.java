@@ -186,6 +186,10 @@ public class IxPoiName extends BasicRow {
 		if(this.langCode.equals("ENG")){return true;}
 		else{return false;}
 	}
+	public boolean isPOT(){
+		if(this.langCode.equals("POT")){return true;}
+		else{return false;}
+	}
 	
 	@Override
 	public String tableName() {

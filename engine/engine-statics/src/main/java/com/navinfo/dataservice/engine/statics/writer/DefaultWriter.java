@@ -75,9 +75,9 @@ public class DefaultWriter {
 			MongoDao md = new MongoDao(dbName);
 			List<Document> docs=new ArrayList<>();
 			for(Object tmp:messageJSON.getJSONArray(collectionName)){
-				Document resultDoc=new Document();
-				resultDoc.put("timestamp",timestamp);
+				Document resultDoc=new Document();				
 				resultDoc.putAll((JSONObject)tmp);
+				resultDoc.put("timestamp",timestamp);
 				docs.add(resultDoc);
 			}
 			md.insertMany(collectionName, docs);

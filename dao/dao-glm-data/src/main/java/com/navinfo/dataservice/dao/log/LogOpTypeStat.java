@@ -104,6 +104,12 @@ public class LogOpTypeStat {
 		}
 		return updPids;
 	}
+	public Collection<Long> getUpdatedObjByTempOpTable(String objName,String tempOpTable)throws SQLException{
+		Collection<Long> updPids = null;
+		String sql = "SELECT DISTINCT D.OB_PID FROM "+tempOpTable+" O,LOG_DETAIL D WHERE O.OP_ID=D.OP_ID AND D.OB_NM=?";
+		updPids = run.query(conn, sql, new SingleOpTypeHandler(),objName);
+		return updPids;
+	}
 	
 	public Map<Integer,Collection<Long>> getOpType(String objName,String mainTabName,String startDate,String endDate)throws SQLException{
 		return getOpTypeByPids(objName,mainTabName,null,startDate,endDate);
@@ -221,6 +227,38 @@ public class LogOpTypeStat {
 				insdelPids = run.query(conn, sb2.toString(), new OpTypeHandler(),objName,mainTabName);
 			}
 		}
+		//添加新增删除的。
+		allPids.putAll(insdelPids);
+		//updPids中去除新增删除的
+		if(insdelPids.containsKey(1)){
+			updPids.removeAll(insdelPids.get(1));//过滤新增的
+		}
+		if(insdelPids.containsKey(2)){
+			updPids.removeAll(insdelPids.get(2));//过滤删除的
+		}
+		if(updPids.size()>0){
+			allPids.put(3, updPids);
+		}
+		return allPids;
+	}
+	
+	public Map<Integer,Collection<Long>> getOpTypeByTempOpTable(String objName,String mainTabName,String tempOpTable)throws SQLException{
+		Map<Integer,Collection<Long>> allPids = new HashMap<Integer,Collection<Long>>();
+		//1. 查询所有的变更的数据
+		Collection<Long> updPids = getUpdatedObjByTempOpTable(objName,tempOpTable);
+		
+		if(updPids.size()==0){
+			return allPids;
+		}
+		//2. 查询为新增和删除状态的对象
+		Map<Integer,Collection<Long>> insdelPids = null;
+		StringBuilder sb2 = new StringBuilder();
+		sb2.append("WITH A AS (");
+		sb2.append("SELECT D.OB_PID,D.OP_TP,O.OP_DT FROM "+tempOpTable+" O,LOG_DETAIL D WHERE O.OP_ID=D.OP_ID");
+		sb2.append(" AND D.OP_TP IN (1,2) AND D.OB_NM=? AND D.TB_NM=?");
+		sb2.append(") SELECT A.OB_PID,A.OP_TP FROM A,(SELECT OB_PID,MAX(OP_DT) OP_DT FROM A GROUP BY OB_PID) B WHERE A.OB_PID=B.OB_PID AND A.OP_DT=B.OP_DT");
+		insdelPids = run.query(conn, sb2.toString(), new OpTypeHandler(),objName,mainTabName);
+		
 		//添加新增删除的。
 		allPids.putAll(insdelPids);
 		//updPids中去除新增删除的

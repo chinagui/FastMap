@@ -61,7 +61,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
 			infor.setInforId(inforId);
-			infor.setAdminName(infor.getAdminName().replace("|", ""));
+			infor.setAdminName(infor.getAdminName());
 			
 			infor.setExpectDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("expectDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));

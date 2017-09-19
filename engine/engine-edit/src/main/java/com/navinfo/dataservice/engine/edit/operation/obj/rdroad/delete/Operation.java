@@ -57,9 +57,9 @@ public class Operation implements IOperation {
 
 	private String delete(Result result, List<RdRoad> roadList, List<Integer> deleteRoadPidList) throws Exception {
 
-		for (RdRoad road : roadList) {
-			delete(result, road);
-		}
+		//for (RdRoad road : roadList) {
+		//	delete(result, road);
+		//}
 
 		// 维护CRFO:如果删除的CRFI属于某个CRFO，要从CRFO组成信息中去掉
 		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation(

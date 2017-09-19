@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.log.LogOpTypeStat;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -38,6 +40,7 @@ public class DeepInfoMarker {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	private OperationResult opResult;
 	private Connection conn = null;
+	private String opTempTable ="";
 	private List<String> parkingKindCode = Arrays.asList("230210", "230213", "230214");
 	private List<String> carrentalKindCode = Arrays.asList("200201");
 	private List<String> carrentalChain = Arrays.asList("8007", "8006", "8004", "8003", "3000", "3854", "3902", "8005",
@@ -53,12 +56,18 @@ public class DeepInfoMarker {
 	private List<String> otherKindCode = Arrays.asList("130501", "130105", "110200");
 	private List<Integer> hostelRatings = Arrays.asList(3, 13, 4, 14, 5, 15);
 
+	public DeepInfoMarker(OperationResult opResult, Connection conn,String opTempTable) {
+		super();
+		this.opResult = opResult;
+		this.conn = conn;
+		this.opTempTable = opTempTable;
+	}
+
 	public DeepInfoMarker(OperationResult opResult, Connection conn) {
 		super();
 		this.opResult = opResult;
 		this.conn = conn;
 	}
-
 
 	public void execute() throws Exception {
 		// TODO:根据OperationResult进行深度信息打标记；
@@ -70,8 +79,22 @@ public class DeepInfoMarker {
 
 			Map<Long, BasicObj> objMap = opResult.getObjsMapByType(ObjectName.IX_POI);
 			
-			LogReader logRead = new LogReader(conn);
-			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
+//			LogReader logRead = new LogReader(conn);
+//			Map<Long,Integer> poiStates = logRead.getObjectState(objMap.keySet(), "IX_POI");
+			Map<Long,Integer> poiStates = new HashMap<Long,Integer>(); 
+			LogOpTypeStat stat = new LogOpTypeStat(conn);
+			Map<Integer,Collection<Long>> updatedObjs=new HashMap<Integer,Collection<Long>>();
+			if(StringUtils.isNotEmpty(opTempTable)){
+				updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI, opTempTable);
+			}else{
+				updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, objMap.keySet(), null, null);
+			}
+			
+			for(Map.Entry<Integer, Collection<Long>> entry:updatedObjs.entrySet()){
+				for(Long pid:entry.getValue()){
+					poiStates.put(pid, entry.getKey());
+				}
+			}
 
 			for (Map.Entry<Long, BasicObj> entry : objMap.entrySet()) {
 				IxPoiObj poiObj = (IxPoiObj) entry.getValue();
@@ -240,7 +263,11 @@ public class DeepInfoMarker {
 
 //			LogReader logRead = new LogReader(conn);
 //			int poiState = logRead.getObjectState((int) poi.getPid(), "IX_POI");
-			int poiState = poiStates.get(poi.getPid());
+			
+			int poiState = 3;
+			if(poiStates.containsKey(poi.getPid())){
+				poiState = poiStates.get(poi.getPid());
+			}
 
 			// 非新增（IX_POI.STATE=3）且种别为医院（170101、170102）的不提取
 			if (hospitalKindCode.contains(kindCode)) {

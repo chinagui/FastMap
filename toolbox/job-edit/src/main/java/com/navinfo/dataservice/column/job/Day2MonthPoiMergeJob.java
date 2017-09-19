@@ -20,6 +20,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
+import com.navinfo.dataservice.dao.log.LogOpTypeStat;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -31,6 +32,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -1025,25 +1027,28 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			pids.add(pid);
 		}
 
-		LogReader logRead = new LogReader(conn);
+//		LogReader logRead = new LogReader(conn);
+//
+//		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
+		
 
-		Map<Long,Integer> stateResult  = logRead.getObjectState(pids,"IX_POI");
+		LogOpTypeStat stat = new LogOpTypeStat(conn);
+		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
+		
+		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
+		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
 
-		List<Long> addPids = new ArrayList<>();// 作业季新增poiPid
-
-		List<Long> updatePids = new ArrayList<>();// 作业季修改poiPid
-
-		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
-
-			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
-
-				addPids.add(entry.getKey());
-
-			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
-
-				updatePids.add(entry.getKey());
-			}
-		}
+//		for (Map.Entry<Long, Integer> entry : stateResult.entrySet()) {
+//
+//			if (entry.getValue() == 1 && !addPids.contains(entry.getKey())) {
+//
+//				addPids.add(entry.getKey());
+//
+//			} else if (entry.getValue() == 3 && !updatePids.contains(entry.getKey())) {
+//
+//				updatePids.add(entry.getKey());
+//			}
+//		}
 
 		Collection<Long> oldNamePids = new ArrayList<>();// 改OLD名称
 		Collection<Long> namePids = new ArrayList<>();// 改名称
@@ -1090,7 +1095,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 
-			if (updatePids.contains(pid)) {
+			if (updatePids!=null&&updatePids.contains(pid)) {
 
 				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					oldKindCodePids.add(pid);
@@ -1122,27 +1127,34 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 					for (IxPoiHotel hotel : poiObj.getIxPoiHotels()) {
 
-						if (hotel.getHisOpType() == OperationType.UPDATE
-								&& hotel.hisOldValueContains(IxPoiHotel.RATING)) {
+						if (hotel.getHisOpType() == OperationType.INSERT
+								|| (hotel.getHisOpType() == OperationType.UPDATE
+								&& hotel.hisOldValueContains(IxPoiHotel.RATING))) {
 							ratingPids.add(pid);
 							break;
 						}
 					}
+				} else if (obj.isDelPoiHotel()) {
+					ratingPids.add(pid);
 				}
 				// 作业季修改中文地址
-				if (poiObj.getChiAddress() != null) {
+				if (poiObj.getCHAddress() != null) {
 
-					IxPoiAddress address = poiObj.getChiAddress();
+					IxPoiAddress address = poiObj.getCHAddress();
 
-					if (address.getHisOpType() == OperationType.UPDATE) {
+					if (address.getHisOpType() == OperationType.UPDATE || address.getHisOpType() == OperationType.INSERT) {
 
 						addressPids.add(pid);
 
 						if (poi.getOldAddress() == null
-								|| !poi.getOldAddress().equals(poiObj.getChiAddress().getFullname())) {
+								|| !poi.getOldAddress().equals(address.getFullname())) {
 							oldAddressPids.add(pid);
 						}
 					}
+				}
+				else if (obj.isDelCHAddress())
+				{
+					addressPids.add(pid);
 				}
 				// 作业季修改中文原始Name
 				if (poiObj.getOfficeOriginCHName() != null) {
@@ -1159,8 +1171,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 						}
 					}
 				}
+				else if (obj.isDelOfficeOriginCHName())
+				{
+					namePids.add(pid);
+				}
 
-			} else if (addPids.contains(pid)) {
+			} else if (addPids!=null&&addPids.contains(pid)) {
 
 				if (poiObj.getChiAddress() != null) {
 
@@ -1257,15 +1273,15 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 		log.info("批处理标记");
 		this.updateBatchPoi(parkingPids, this.getDelLabelForSql(), conn);
-		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内|"),
+		this.updateBatchPoi(parkingType0Pids, this.getUpadeLabelForSql("室内"),
 				conn);
-		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外|"),
+		this.updateBatchPoi(parkingType1Pids, this.getUpadeLabelForSql("室外"),
 				conn);
-		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道|"),
+		this.updateBatchPoi(parkingType2Pids, this.getUpadeLabelForSql("占道"),
 				conn);
 		this.updateBatchPoi(parkingType3Pids,
-				this.getUpadeLabelForSql("室内地上|"), conn);
-		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下|"),
+				this.getUpadeLabelForSql("室内地上"), conn);
+		this.updateBatchPoi(parkingType4Pids, this.getUpadeLabelForSql("地下"),
 				conn);
 
 		log.info("外业任务编号");
@@ -1447,31 +1463,32 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 
 	private String getFieldTaskIdSql() {
-		return "MERGE INTO IX_POI P\n" +
-				"USING (SELECT T2.OB_PID, MAX(A.STK_ID) STK_ID\n" +
-				"         FROM LOG_OPERATION O2,\n" +
-				"              LOG_ACTION A,\n" +
-				"              (SELECT D1.OB_PID, MAX(D1.OP_ID) OP_ID\n" +
-				"                 FROM LOG_DETAIL D1,\n" +
-				"                      LOG_OPERATION O1,\n" +
-				"                      (SELECT D.OB_PID, MAX(O.OP_DT) MAX_DT\n" +
-				"                         FROM LOG_DETAIL D, LOG_OPERATION O\n" +
-				"                        WHERE D.OB_NM = 'IX_POI'\n" +
-				"                          AND D.OP_ID = O.OP_ID\n" +
-				"                          AND D.OB_PID IN\n" +
-				"                              (SELECT TO_NUMBER(COLUMN_VALUE)\n" +
-				"                                 FROM TABLE(CLOB_TO_TABLE(?)))\n" +
-				"                        GROUP BY D.OB_PID) T\n" +
-				"                WHERE D1.OP_ID = O1.OP_ID\n" +
-				"                  AND T.MAX_DT = O1.OP_DT\n" +
-				"                  AND T.OB_PID = D1.OB_PID\n" +
-				"                GROUP BY D1.OB_PID) T2\n" +
-				"        WHERE A.ACT_ID = O2.ACT_ID\n" +
-				"          AND O2.OP_ID = T2.OP_ID\n" +
-				"        GROUP BY T2.OB_PID) C\n" +
-				"ON (P.PID = C.OB_PID)\n" +
-				"WHEN MATCHED THEN\n" +
-				"  UPDATE SET P.FIELD_TASK_ID = C.STK_ID"  ;
+		return "MERGE INTO IX_POI P\n"
+				+ "USING (SELECT T2.OB_PID, MAX(A.STK_ID) STK_ID\n"
+				+ "         FROM LOG_OPERATION O2,\n"
+				+ "              LOG_ACTION A,\n"
+				+ "              (SELECT D1.OB_PID, MAX(D1.OP_ID) OP_ID\n"
+				+ "                 FROM LOG_DETAIL D1,\n"
+				+ "                      LOG_OPERATION O1,\n"
+				+ "                      (SELECT D.OB_PID, MAX(O.OP_DT) MAX_DT\n"
+				+ "                         FROM LOG_DETAIL D, LOG_OPERATION O, LOG_ACTION A1\n"
+				+ "                        WHERE D.OB_NM = 'IX_POI'\n"
+				+ "                          AND D.OP_ID = O.OP_ID\n"
+				+ "                          AND A1.ACT_ID = O.ACT_ID\n"
+				+ "                          AND A1.STK_ID <> 0\n"
+				+ "                          AND D.OB_PID IN\n"
+				+ "                              (SELECT TO_NUMBER(COLUMN_VALUE)\n"
+				+ "                                 FROM TABLE(CLOB_TO_TABLE(?)))\n"
+				+ "                        GROUP BY D.OB_PID) T\n"
+				+ "                WHERE D1.OP_ID = O1.OP_ID\n"
+				+ "                  AND T.MAX_DT = O1.OP_DT\n"
+				+ "                  AND T.OB_PID = D1.OB_PID\n"
+				+ "                GROUP BY D1.OB_PID) T2\n"
+				+ "        WHERE A.ACT_ID = O2.ACT_ID\n"
+				+ "          AND O2.OP_ID = T2.OP_ID\n"
+				+ "        GROUP BY T2.OB_PID) C\n" + "ON (P.PID = C.OB_PID)\n"
+				+ "WHEN MATCHED THEN\n"
+				+ "  UPDATE SET P.FIELD_TASK_ID = C.STK_ID";
 	}
 
 	private String getDelLabelForSql() {

@@ -38,10 +38,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"sNodePid\":0,\"eNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[119.74972961044188,38.60499992721783],[119.7498419880867," +
-                "38.60498262071445]]},\"catchLinks\":[{\"linkPid\":403000741,\"lon\":119.74972961044188,\"lat\":38.60499992721783}]}," +
-                "\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDNODE\",\"objId\":709000131,\"infect\":0,\"dbId\":65,\"subtaskId\":986}";
         TestUtil.run(parameter);
     }
 

@@ -33,6 +33,7 @@ public class DBConnector {
 	private DataSource checkDataSource;
 	private DataSource renderDataSource;
 	private DataSource tipsIdxDataSource;
+	private DataSource limitlineinfoDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -287,5 +288,29 @@ public class DBConnector {
 			}
 		}
 		return tipsIdxDataSource.getConnection();
+	}
+	
+	public Connection getlimitLineInfoConnection() throws SQLException {
+		if (tipsIdxDataSource == null) {
+			synchronized (this) {
+				if (tipsIdxDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo limitlineinfoDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						limitlineinfoDb = datahub.getOnlyDbByType("limitlineinfo");
+						connConfig = DbConnectConfig
+								.createConnectConfig(limitlineinfoDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取limitlineinfo信息失败："
+								+ e.getMessage(), e);
+					}
+					tipsIdxDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return limitlineinfoDataSource.getConnection();
 	}
 }

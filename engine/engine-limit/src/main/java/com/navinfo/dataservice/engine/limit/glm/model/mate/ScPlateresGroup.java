@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.limit.glm.model.mate;
 
-import com.navinfo.dataservice.engine.limit.commons.util.JsonUtils;
 import com.navinfo.dataservice.engine.limit.glm.iface.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -10,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import com.navinfo.dataservice.commons.util.*;
 
 /**
  * Created by ly on 2017/9/18.

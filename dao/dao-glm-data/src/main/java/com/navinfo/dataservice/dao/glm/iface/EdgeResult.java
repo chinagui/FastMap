@@ -2,12 +2,9 @@ package com.navinfo.dataservice.dao.glm.iface;
 
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 /**
  * @Title: EdgeResult
@@ -54,16 +51,26 @@ public class EdgeResult{
      */
     private ObjType objType;
 
+    /**
+     * 本次请求所涉及所有大区库
+     */
+    private Set<Integer> globalDbIds;
+
+    private Map<Integer, Result> conversions;
+
     public EdgeResult(String request) {
         this.request = JSONObject.parseObject(request);
 
         this.hasSourceDb = false;
         this.operType = Enum.valueOf(OperType.class, this.request.getString("command"));
         this.objType = Enum.valueOf(ObjType.class, this.request.getString("type"));
+        this.sourceDb = this.request.getInteger("dbId");
 
-        this.addedData = new ConcurrentHashMap<>();
-        this.modifiedData = new ConcurrentHashMap<>();
-        this.deletedData = new ConcurrentHashMap<>();
+        this.addedData = new LinkedHashMap<>();
+        this.modifiedData = new LinkedHashMap<>();
+        this.deletedData = new LinkedHashMap<>();
+
+        this.globalDbIds = new HashSet<>();
     }
 
     /**
@@ -160,7 +167,14 @@ public class EdgeResult{
     }
 
     public Map<Integer, Result> conversion() {
-        Map<Integer, Result> map = new HashMap<>();
+        if (MapUtils.isEmpty(conversions)) {
+            conversions = conversionResult();
+        }
+        return conversions;
+    }
+
+    private Map<Integer, Result> conversionResult() {
+        Map<Integer, Result> map = new LinkedHashMap<>();
 
         for (Map.Entry<Integer, List<IRow>> entry : this.getAddedData().entrySet()) {
             Result result = new Result();
@@ -260,5 +274,23 @@ public class EdgeResult{
      */
     public Integer getSourceDb() {
         return sourceDb;
+    }
+
+    /**
+     * Getter method for property <tt>globalDbIds</tt>.
+     *
+     * @return property value of globalDbIds
+     */
+    public Set<Integer> getGlobalDbIds() {
+        return globalDbIds;
+    }
+
+    public void setGlobalDbIds(Set<Integer> dbIds) {
+        for (Integer dbId : dbIds) {
+            if (dbId.equals(sourceDb)) {
+                continue;
+            }
+            globalDbIds.add(dbId);
+        }
     }
 }

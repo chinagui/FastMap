@@ -144,6 +144,14 @@
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.navinfo.dataservice</groupId>
+            <artifactId>dao-glm-data</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.navinfo.dataservice</groupId>
+            <artifactId>commons</artifactId>
+        </dependency>
 
         <!-- jdbc driver -->
         <dependency>

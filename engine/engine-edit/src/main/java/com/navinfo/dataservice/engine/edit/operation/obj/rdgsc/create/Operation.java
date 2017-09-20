@@ -242,7 +242,7 @@ public class Operation implements IOperation {
 
 		if (!RdGscOperateUtils.pointOnline(linkGeometry, gscGeo)) {
 
-			throw new Exception("立交点" + gscGeo.toString() + "不在" + type + gscLink + "上");
+			throw new Exception("立交点" + gscGeo.toString() + "不在" + type + gscLink.getLinkPid() + "上");
 		}
 		
 		LineString linkNewGeo = lineStringInsertPoint(linkGeometry, gscGeo);

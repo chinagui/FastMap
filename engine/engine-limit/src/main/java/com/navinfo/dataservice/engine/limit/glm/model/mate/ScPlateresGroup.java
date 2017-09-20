@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.limit.glm.model.mate;
 
-import com.navinfo.dataservice.engine.limit.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.*;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -11,22 +13,67 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by ly on 2017/9/18.
- */
 public class ScPlateresGroup implements IObj{
 
-    String groupId = "";//GROUP_ID
+  private   String groupId = "";//GROUP_ID
 
-    String infoIntelId = "";//INFO_INTEL_ID
+    private String infoIntelId = "";//INFO_INTEL_ID
 
-    int adAdmin = 0;//AD_ADMIN
+    private int adAdmin = 0;//AD_ADMIN
 
-    String principle = "";//PRINCIPLE
+    private  String principle = "";//PRINCIPLE
 
-    int groupType = 1;//GROUP_TYPE
+    private  int groupType = 1;//GROUP_TYPE
 
-    String uDate = "";//U_DATE
+    private  String uDate = "";//U_DATE
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getInfoIntelId() {
+        return infoIntelId;
+    }
+
+    public void setInfoIntelId(String infoIntelId) {
+        this.infoIntelId = infoIntelId;
+    }
+
+    public int getAdAdmin() {
+        return adAdmin;
+    }
+
+    public void setAdAdmin(int adAdmin) {
+        this.adAdmin = adAdmin;
+    }
+
+    public String getPrinciple() {
+        return principle;
+    }
+
+    public void setPrinciple(String principle) {
+        this.principle = principle;
+    }
+
+    public int getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(int groupType) {
+        this.groupType = groupType;
+    }
+
+    public String getuDate() {
+        return uDate;
+    }
+
+    public void setuDate(String uDate) {
+        this.uDate = uDate;
+    }
 
     protected ObjStatus status;
 
@@ -74,8 +121,8 @@ public class ScPlateresGroup implements IObj{
     }
 
     @Override
-    public ObjType objType() {
-        return ObjType.SCPLATERESGROUP;
+    public LimitObjType objType() {
+        return LimitObjType.SCPLATERESGROUP;
     }
 
     @Override
@@ -121,7 +168,7 @@ public class ScPlateresGroup implements IObj{
 
                     Object objValue = field.get(this);
 
-                    String oldValue = null;
+                    String oldValue ;
 
                     if (objValue == null) {
                         oldValue = "null";
@@ -141,17 +188,11 @@ public class ScPlateresGroup implements IObj{
                         }
 
                     }
-
-
                 }
             }
         }
 
-        if (changedFields.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return changedFields.size() > 0;
     }
 
     @Override

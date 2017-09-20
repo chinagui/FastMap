@@ -267,9 +267,10 @@ public class FMBAT20142 extends BasicBatchRule {
 		// }
 
 		Map<String, Object> oldValues = null;
-		JSONObject jo = JSONObject.fromObject("{\"NAME\":\"zhang\"}");
+		JSONObject jo = JSONObject.fromObject("{\"NAME\":null}");
 		oldValues = (Map) JSONObject.toBean(jo, Map.class);
-		String name = oldValues.get("NAME").toString();
+		System.out.println(oldValues.get("NAME").getClass());
+		String name = String.valueOf(oldValues.get("NAME"));
 		System.out.println(name);
 	}
 

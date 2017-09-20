@@ -1525,7 +1525,16 @@ public class DeepCoreControl {
 		String propertyOldValue=null;
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
+		Map MapCurContact=new HashMap(); 
 		try{
+			
+//			String queryCurValueSql=" SELECT ROW_ID,CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
+//			pstmt = regionConn.prepareStatement(queryCurValueSql);
+//			resultSet = pstmt.executeQuery();
+//			if (resultSet.next()) {
+//				MapCurContact.put(key, value)
+//				propertyOldValue=resultSet.getString("CONTACT");
+//			}
 		//先判断是否有常规作业员履历，有则取最后一条newValue
 		String existWorkHisSql=" SELECT NEWVALUE  FROM (SELECT LD.NEW  NEWVALUE FROM LOG_ACTION LA,  "
 		           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
@@ -1574,7 +1583,7 @@ public class DeepCoreControl {
 		}
 		//没作业履历，取当前库里值
 		if (propertyOldValue==null){
-			String queryCurValueSql=" SELECT CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
+			String queryCurValueSql=" SELECT ROW_ID,CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
 			pstmt = regionConn.prepareStatement(queryCurValueSql);
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
@@ -1621,11 +1630,12 @@ public Map queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId,
 				           +" AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
 				           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 "
 				           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT) WHERE ROWNUM = 1 ";
-				String propertyOldValue=null;
+				
 				PreparedStatement pstmt = null;
 				ResultSet resultSet = null;
 		try{
 		for(int i=0;i<listBusinessFeilds.size();i++){
+			String propertyOldValue=null;
 		//先判断是否有常规作业员履历，有则取最后一条newValue
 		String propertyBusiness= (String) listBusinessFeilds.get(i);
 		pstmt = regionConn.prepareStatement(existWorkHisSql);

@@ -32,15 +32,11 @@ public class ScPlateresInfoSearch  {
 
         StringBuilder sql = new StringBuilder();
 
-        List<Object> params = new ArrayList<>();
+        sql.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE = ");
+        sql.append("'" + adminCode +"'");
 
-        sql.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE = ?");
-        params.add(adminCode);
-        componentSql(condition,sql,params,pageSize,pageNum);
+        componentSql(condition,sql,pageSize,pageNum);
 
-//        if (isLock) {
-//            sql += " for update nowait";
-//        }
         List<IRow> rows = new ArrayList<>();
         PreparedStatement pstmt = null;
 
@@ -48,7 +44,7 @@ public class ScPlateresInfoSearch  {
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
-
+            
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
@@ -71,23 +67,32 @@ public class ScPlateresInfoSearch  {
         return rows;
     }
 
-    private void componentSql(JSONObject obj,StringBuilder sql,List<Object> params,int pageSize,int pageNum){
+    private void componentSql(JSONObject obj,StringBuilder sql,int pageSize,int pageNum){
 
         if (obj.containsKey("infoCode")) {
             String infoCode = obj.getString("infoCode");
 
             if (infoCode != null && !infoCode.isEmpty()) {
-                sql.append(" AND INFO_CODE = ?");
-                params.add(infoCode);
+                sql.append(" AND INFO_CODE = ");
+                sql.append("'" + infoCode + "'");
             }
         }
 
-        if (obj.containsKey("newsTime")) {
-            String newsTime = obj.getString("newsTime");
+        if (obj.containsKey("startTime")) {
+            String startTime = obj.getString("startTime");
 
-            if (newsTime != null && !newsTime.isEmpty()) {
-                sql.append(" AND NEWS_TIME = ?");
-                params.add(newsTime);
+            if (startTime != null && !startTime.isEmpty()) {
+                sql.append(" AND NEWS_TIME >= ");
+                sql.append("'" + startTime + "'");
+            }
+        }
+        
+        if (obj.containsKey("endTime")) {
+            String endTime = obj.getString("endTime");
+
+            if (endTime != null && !endTime.isEmpty()) {
+                sql.append(" AND NEWS_TIME <= ");
+                sql.append("'" + endTime + "'");
             }
         }
 
@@ -95,8 +100,8 @@ public class ScPlateresInfoSearch  {
             String complete = obj.getString("complete");
 
             if (complete != null && !complete.isEmpty()) {
-                sql.append(" AND COMPLETE IN ?");
-                params.add("(" + complete + ")");
+                sql.append(" AND COMPLETE IN ");
+                sql.append("(" + complete + ")");
             }
         }
 
@@ -104,14 +109,12 @@ public class ScPlateresInfoSearch  {
             String condition = obj.getString("condition");
 
             if (condition != null && !condition.isEmpty()) {
-                sql.append(" AND CONDITION = ?");
-                params.add("(" + condition + ")");
+                sql.append(" AND CONDITION IN ");
+                sql.append("(" + condition + ")");
             }
         }
 
-        sql.append(" AND rownum BETWEEN ? AND ?");
-        params.add((pageNum - 1) * pageSize + 1);
-        params.add(pageNum * pageSize);
+        sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
     }
 
 }

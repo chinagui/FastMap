@@ -269,7 +269,7 @@ public class ChargePoiConvertor {
 		//充电桩庄主,该字段不更新
 		chargePoi.put("owner", "");
 		//插座详细信息描述,插座数量描述
-		Map<String, Object> socketMap = this.getSockerParamsAndSockerNum(plotMap);
+		Map<String, Object> socketMap = this.getSockerParamsAndSockerNum(poiObj,plotMap);
 		JSONArray sockerParams = (JSONArray) socketMap.get("sockerParams");
 		JSONObject sockerNum = (JSONObject) socketMap.get("sockerNum");
 		chargePoi.put("sockerParams", sockerParams);
@@ -374,7 +374,7 @@ public class ChargePoiConvertor {
 			}
 			return objs;
 		} catch (Exception e) {
-			log.error("pid:"+poiObj.objPid()+",获取充电桩出错:"+e.getMessage(),e);
+			log.error("充电站pid为:"+poiObj.objPid()+",获取充电桩出错:"+e.getMessage(),e);
 			throw new Exception("获取充电桩出错:"+e.getMessage(),e);
 		}
 	}
@@ -639,7 +639,7 @@ public class ChargePoiConvertor {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String,Object> getSockerParamsAndSockerNum(Map<Long, BasicObj> plotMap) throws Exception{
+	private Map<String,Object> getSockerParamsAndSockerNum(IxPoiObj poiObj,Map<Long, BasicObj> plotMap) throws Exception{
 		Map<String,Object> map = new HashMap<String,Object>();
 		JSONArray sockerParams = new JSONArray();
 		JSONObject sockerNum = new JSONObject();
@@ -817,7 +817,7 @@ public class ChargePoiConvertor {
 						}
 					}else if(socketSum < sum){
 						//报log
-						errorLog.add("pid("+pid+")的充电桩数据有问题,PLUG_TYPE数量("+sum+")大于PLUG_NUM数量("+socketSum+")");
+						errorLog.add("充电站(pid:"+poiObj.objPid()+")下的充电桩(pid:"+pid+")的数据有问题,PLUG_TYPE数量("+sum+")大于PLUG_NUM数量("+socketSum+")");
 						list.subList(socketSum, sum).clear();
 					}
 					//桩poi数据添加到sockerParams
@@ -1046,8 +1046,8 @@ public class ChargePoiConvertor {
 					validationMethod = 1;
 				}else if(verRecord == 3 || verRecord == 5){
 					//VER_RECORD=3或5时，该条POI转换失败，程序报LOG：VER_RECORD值域为代理店或多源
-					errorLog.add("VER_RECORD值域为代理店或多源,pid为:"+poiObj.objPid());
-					throw new Exception("VER_RECORD值域为代理店或多源,pid为:"+poiObj.objPid()); 
+					errorLog.add("VER_RECORD值域为代理店或多源,充电站pid为:"+poiObj.objPid());
+					throw new Exception("VER_RECORD值域为代理店或多源,充电站pid为:"+poiObj.objPid()); 
 				}
 			}
 		}
@@ -1147,18 +1147,29 @@ public class ChargePoiConvertor {
 			String adminId = String.valueOf(poiObj.getAdminId());
 			if(scPointAdminarea.containsKey(adminId)){
 				Map<String, String> data = scPointAdminarea.get(adminId);
+				String provinceA = data.get("province");
+				String districtA = city = data.get("district");
 				if(StringUtils.isNotEmpty(data.get("province"))){
 					province = data.get("province");
 				}
 				if(StringUtils.isNotEmpty(data.get("city"))){
 					city = data.get("city");
+				}else if(StringUtils.isEmpty(data.get("city"))){
+					if(StringUtils.isNotEmpty(data.get("province"))){
+						if(provinceA.endsWith("市")||provinceA.endsWith("特別行政區")||provinceA.endsWith("特别行政区")){
+							city = data.get("province");
+						}else{
+							if(StringUtils.isNotEmpty(districtA)){
+								city = districtA;
+							}
+						}
+					}
 				}
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error("pid:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
-			throw new Exception("pid:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
+			log.error("充电站pid为:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
+			throw new Exception("充电站pid为:"+poiObj.objPid()+",查询省市名称报错,"+e.getMessage(),e);
 		}
 		map.put("province", province);
 		map.put("city", city);
@@ -1216,8 +1227,8 @@ public class ChargePoiConvertor {
 				}
 			}
 		} catch (Exception e) {
-			log.error("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
-			throw new Exception("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
+			log.error("充电站pid为:"+pid+",查询履历报错,"+e.getMessage(),e);
+			throw new Exception("充电站pid为:"+pid+",查询履历报错,"+e.getMessage(),e);
 		}
 		map.put("validationDate", validationDate);
 		map.put("updateDate", updateDate);
@@ -1263,8 +1274,8 @@ public class ChargePoiConvertor {
 				}
 			}
 		} catch (Exception e) {
-			log.error("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
-			throw new Exception("pid:"+pid+",查询履历报错,"+e.getMessage(),e);
+			log.error("充电站pid为:"+pid+",查询履历报错,"+e.getMessage(),e);
+			throw new Exception("充电站pid为:"+pid+",查询履历报错,"+e.getMessage(),e);
 		}
 		return createDate;
 	}

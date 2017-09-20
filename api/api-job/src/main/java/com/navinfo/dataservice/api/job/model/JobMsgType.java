@@ -9,6 +9,7 @@ package com.navinfo.dataservice.api.job.model;
 public enum JobMsgType {
 	MSG_CREATE_JOB("create_job")
 	,MSG_RUN_JOB("run_job")
+	,MSG_RUN_STATICS_JOB("run_statics_job")
 	,MSG_RESPONSE_JOB("resp_job")
 	,MSG_END_JOB("end_job");
 	private String name;

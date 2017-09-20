@@ -30,6 +30,14 @@ public class JobApiImpl implements JobApi{
 			throw new Exception(e.getMessage(),e);
 		}
 	}
+	public long createStaticsJob(String jobType,JSONObject request,long userId,long taskId,String descp)throws Exception{
+		try{
+			return JobService.getInstance().createStatics(jobType, request, userId,taskId,descp);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new Exception(e.getMessage(),e);
+		}
+	}
 	public JobInfo getJobById(long jobId)throws Exception{
 		try{
 			return JobService.getInstance().getJobById(jobId);

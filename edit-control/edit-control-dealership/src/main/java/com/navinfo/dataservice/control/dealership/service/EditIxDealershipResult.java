@@ -196,8 +196,8 @@ public class EditIxDealershipResult {
 			ResultSetHandler<Map<String, Object>> rs = new ResultSetHandler<Map<String, Object>>() {
 				@Override
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> result = new HashMap<>();
 					if(rs.next()){
-						Map<String, Object> result = new HashMap<>();
 						result.put("sourceId", rs.getInt("SOURCE_ID"));
 						result.put("cfmPoiNum", rs.getString("CFM_POI_NUM"));
 						result.put("deaCfmDate", rs.getString("DEAL_CFM_DATE"));
@@ -226,9 +226,8 @@ public class EditIxDealershipResult {
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
-						return result;
 					}
-					return null;
+					return result;
 				}
 			};
 			return run.query(conn, sql, rs);

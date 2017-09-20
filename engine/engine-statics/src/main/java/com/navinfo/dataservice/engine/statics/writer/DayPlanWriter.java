@@ -33,9 +33,9 @@ public class DayPlanWriter extends DefaultWriter{
                //统计信息入库
     			Document resultDoc=new Document();
     			resultDoc.put("taskId",map.get("taskId"));
-    			resultDoc.put("linkPlanLen",map.get("linkPlanLen"));
+    			//resultDoc.put("linkPlanLen",map.get("linkPlanLen"));
     			resultDoc.put("linkAllLen",map.get("linkAllLen"));
-    			resultDoc.put("poiPlanNum",map.get("poiPlanNum"));
+    			//resultDoc.put("poiPlanNum",map.get("poiPlanNum"));
     			resultDoc.put("poiAllNum",map.get("poiAllNum"));
     			resultDoc.put("link17AllLen",map.get("link17AllLen"));
     			resultDoc.put("link27AllLen",map.get("link27AllLen"));

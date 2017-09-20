@@ -2131,7 +2131,7 @@ public class DataPrepareService {
 						}
 						
 						String telephone = "";
-						if(tel != null){
+						if(tel != null && tel.length() != 0){
 							telephone = tel.toString().substring(0, tel.toString().length() - 1);
 						}
 						entity.setTelephone(telephone);
@@ -2172,7 +2172,7 @@ public class DataPrepareService {
 				for (AdditionResultEntity entity : regionIdEntity.getValue()) {
 					
 					String poiNum = entity.getCfmPoiNum();
-					if (poiNum != null){
+					if (poiNum != null) {
 						entity.setChainName(getChainNameByChain(metaConn, entity.getChain()));
 						entity.setNamePhonetic(queryNamePhonetic(gdbConn, poiNum));
 						entity.setNavEnglishName(queryNavEnglishName(gdbConn, poiNum));
@@ -2181,14 +2181,20 @@ public class DataPrepareService {
 						
 						//电话优先级和电话类型
 						String poiTel = entity.getNavPoiTel();
-						if(poiTel != null){
+						if (poiTel != null && StringUtils.isNotBlank(poiTel)) {
 							String param = StringUtils.join(poiTel.split("\\|"), ",");
 							Map<String, List<String>> priorityAndTypeMap = queryPriorityAndType(regionConn, param, poiNum);
-							
-							String telephonePriority = StringUtils.join(priorityAndTypeMap.get("priority"), "|");
-							String elephoneType = StringUtils.join(priorityAndTypeMap.get("contactType"), "|");
-							entity.setTelephonePriority(telephonePriority);
-							entity.setTelephoneType(elephoneType);
+							List<String> priorityList = priorityAndTypeMap.get("priority");
+							List<String> contactTypeList = priorityAndTypeMap.get("contactType");
+							if (priorityList != null && priorityList.size() > 0) {
+								String telephonePriority = StringUtils.join(priorityList, "|");
+								entity.setTelephonePriority(telephonePriority);
+								
+							}
+							if (contactTypeList != null && contactTypeList.size() > 0) {
+								String elephoneType = StringUtils.join(contactTypeList, "|");
+								entity.setTelephoneType(elephoneType);
+							}
 						}
 						
 						String navOriginalName = queryNavOriginalName(gdbConn, poiNum);

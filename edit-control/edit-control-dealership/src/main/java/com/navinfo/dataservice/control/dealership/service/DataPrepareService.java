@@ -27,6 +27,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Strings;
+import com.mongodb.DBCollection;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.job.iface.JobApi;
@@ -44,6 +46,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
+import com.navinfo.dataservice.control.dealership.service.excelModel.AdditionResultEntity;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.excelModel.exportWorkResultEntity;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
@@ -1291,6 +1294,34 @@ public class DataPrepareService {
 		}
 	
 	}
+	
+	/**
+	 * 附加成果导出导出
+	 * @param chains
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<AdditionResultEntity> additionResultExportList(JSONArray chains) throws Exception{
+		try{
+			
+			List<AdditionResultEntity> exportList = new ArrayList<>();
+			String chainCode = "";
+			for(int i = 0; i < chains.size(); i++){
+				chainCode += "'" + chains.get(i).toString() + "',";
+			}
+			chainCode = chainCode.substring(0, chainCode.length() - 1);
+			if(StringUtils.isNotBlank(chainCode)){
+				exportList = exportList(chainCode);
+			}
+			
+			return exportList;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		
+	}
+	
 	/**
 	 * @param chainCode
 	 * @return
@@ -2028,6 +2059,545 @@ public class DataPrepareService {
 			throw e;
 		}
 	}
+	
+	/**
+	 * 附加成果导出实体类List构成
+	 * @param chainCode
+	 * @param dealershipConn
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AdditionResultEntity> exportList(String chainCode) throws Exception{
+		Connection metaConn = null;
+		Connection gdbConn = null;
+		Connection dealershipConn = null;
+		Map<Integer, Connection> allRegionConn = null;
+		
+		List<AdditionResultEntity> entityList = new ArrayList<>(); 
+		try{
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			int dbId = searchMonthDbId();
+			gdbConn = DBConnector.getInstance().getConnectionById(dbId);
+			dealershipConn = DBConnector.getInstance().getDealershipConnection();
+			allRegionConn = queryAllRegionConn();
+			
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT R.REGION_ID, S.SOURCE_ID, S.CFM_POI_NUM, S.CHAIN, S.KIND_CODE, S.PROVINCE, S.CITY, S.NAME, S.POI_NAME, ");
+			sql.append("S.NAME_ENG, S.ADDRESS, S.POI_ADDRESS, S.ADDRESS_ENG, S.TEL_SALE, S.TEL_SERVICE, S.TEL_OTHER, S.POI_TEL, S.POST_CODE, S.POI_CHAIN, ");
+			sql.append("S.POI_POST_CODE, S.NAME_SHORT, S.POI_NAME_SHORT, S.IS_DELETED, S.PROJECT, S.FB_CONTENT, S.FB_AUDIT_REMARK, S.FB_DATE, S.DEAL_CFM_DATE, ");
+			sql.append("S.CFM_MEMO FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S WHERE S.SOURCE_ID = R.SOURCE_ID AND R.CHAIN IN ( ").append(chainCode).append(" )");
+       
+			ResultSetHandler<Map<Integer, List<AdditionResultEntity>>> rs = new ResultSetHandler<Map<Integer, List<AdditionResultEntity>>>() {
+				@Override
+				public Map<Integer, List<AdditionResultEntity>> handle(ResultSet rs) throws SQLException {
+					Map<Integer, List<AdditionResultEntity>> resultMap = new HashMap<>();
+					int id = 0;
+					while(rs.next()){
+						id++;
+						AdditionResultEntity entity = new AdditionResultEntity();
+						
+						Integer regionId = rs.getInt("REGION_ID");
+						
+						entity.setId(id);
+						entity.setSourceId(rs.getInt("SOURCE_ID"));
+						entity.setCfmPoiNum(rs.getString("CFM_POI_NUM"));
+
+						entity.setKindCode(rs.getString("KIND_CODE"));
+						entity.setChain(rs.getString("CHAIN"));
+						entity.setProvince(rs.getString("PROVINCE"));
+						entity.setCity(rs.getString("CITY"));
+						entity.setCounty("");
+						entity.setName(rs.getString("NAME"));
+						entity.setPoiName(rs.getString("POI_NAME"));
+						entity.setEnglishName(rs.getString("NAME_ENG"));
+						entity.setAddress(rs.getString("ADDRESS"));
+						entity.setPoiAddress(rs.getString("POI_ADDRESS"));
+						entity.setEnglishAddress(rs.getString("ADDRESS_ENG"));
+						
+						String telSale = rs.getString("TEL_SALE");
+						String telService = rs.getString("TEL_SERVICE");
+						String telOther = rs.getString("TEL_OTHER");
+						StringBuilder tel = new StringBuilder();
+						if(telSale != null && StringUtils.isNotBlank(telSale)){
+							tel.append(telSale).append("|");
+						}
+						if(telService != null && StringUtils.isNotBlank(telService)){
+							tel.append(telService).append("|");
+						}
+						if(telOther != null && StringUtils.isNotBlank(telOther)){
+							tel.append(telOther).append("|");
+						}
+						
+						String telephone = "";
+						if(tel != null){
+							telephone = tel.toString().substring(0, tel.toString().length() - 1);
+						}
+						entity.setTelephone(telephone);
+						
+						entity.setNavPoiTel(rs.getString("POI_TEL"));
+						entity.setPostCode(rs.getString("POST_CODE"));
+						entity.setNavPoiChain(rs.getString("POI_CHAIN"));
+						entity.setNavPoiPostCode(rs.getString("POI_POST_CODE"));
+						entity.setNameShort(rs.getString("NAME_SHORT"));
+						entity.setNavPoiNameShort(rs.getString("POI_NAME_SHORT"));
+						entity.setIsDelete(rs.getInt("IS_DELETED"));
+						entity.setProject(rs.getString("PROJECT"));
+						
+						entity.setPersonId("");
+						entity.setFbContent(rs.getString("FB_CONTENT"));
+						entity.setFbAuditRemark(rs.getString("FB_AUDIT_REMARK"));
+						entity.setFbDate(rs.getString("FB_DATE"));
+						entity.setDealCfmDate(rs.getString("DEAL_CFM_DATE"));
+						entity.setCfmMemo(rs.getString("CFM_MEMO"));
+						
+						if(resultMap.containsKey(regionId)){
+							resultMap.get(regionId).add(entity);
+						} else {
+							List<AdditionResultEntity> list = new ArrayList<>();
+							list.add(entity);
+							resultMap.put(regionId, list);
+						}
+					}
+					return resultMap;
+				}
+			};
+			Map<Integer, List<AdditionResultEntity>> resultMap = run.query(dealershipConn, sql.toString(), rs);
+
+			Connection regionConn = null;
+			for (Entry<Integer, List<AdditionResultEntity>> regionIdEntity : resultMap.entrySet()) {
+				
+				regionConn = allRegionConn.get(regionIdEntity.getKey());
+				for (AdditionResultEntity entity : regionIdEntity.getValue()) {
+					
+					String poiNum = entity.getCfmPoiNum();
+					if (poiNum != null){
+						entity.setChainName(getChainNameByChain(metaConn, entity.getChain()));
+						entity.setNamePhonetic(queryNamePhonetic(gdbConn, poiNum));
+						entity.setNavEnglishName(queryNavEnglishName(gdbConn, poiNum));
+						entity.setNavEnglishShortName(queryNavEnglishShortName(gdbConn, poiNum));
+						entity.setNavFullName(queryNavFullName(gdbConn, poiNum));
+						
+						//电话优先级和电话类型
+						String poiTel = entity.getNavPoiTel();
+						if(poiTel != null){
+							String param = StringUtils.join(poiTel.split("\\|"), ",");
+							Map<String, List<String>> priorityAndTypeMap = queryPriorityAndType(regionConn, param, poiNum);
+							
+							String telephonePriority = StringUtils.join(priorityAndTypeMap.get("priority"), "|");
+							String elephoneType = StringUtils.join(priorityAndTypeMap.get("contactType"), "|");
+							entity.setTelephonePriority(telephonePriority);
+							entity.setTelephoneType(elephoneType);
+						}
+						
+						String navOriginalName = queryNavOriginalName(gdbConn, poiNum);
+						if(navOriginalName != null && StringUtils.isNotBlank(navOriginalName)){
+							entity.setNavOriginalName(navOriginalName.substring(0, navOriginalName.length() - 1));
+						}
+						
+						String navStandardName = queryNavStandardName(gdbConn, poiNum);
+						if(navStandardName != null && StringUtils.isNotBlank(navStandardName)){
+							entity.setNavStandardName(navStandardName.substring(0, navStandardName.length() - 1));
+						}
+						
+						String navAnotherName = queryNavAnotherName(gdbConn, poiNum);
+						if(navAnotherName != null && StringUtils.isNotBlank(navAnotherName)){
+							entity.setNavOriginalName(navAnotherName.substring(0, navAnotherName.length() - 1));
+						}
+						
+						Boolean flag = queryAddressInfo(regionConn, poiNum, entity);
+						if(!flag){
+							log.info("查询不到该poi的地址及发音,poiNum : " + poiNum);
+						}
+					}
+					
+					entityList.add(entity);
+				}
+			}
+			
+			return entityList;
+		} catch(Exception e) {
+			log.error(e);
+			throw e;
+		} finally {
+			for (Connection conn : allRegionConn.values()) {
+				DbUtils.closeQuietly(conn);
+			}
+			DbUtils.closeQuietly(dealershipConn);
+			DbUtils.closeQuietly(gdbConn);
+			DbUtils.closeQuietly(metaConn);
+		}
+	}
+	
+	/**
+	 * 查询月库dbId
+	 * @return
+	 * @throws Exception
+	 */
+	private int searchMonthDbId() throws Exception {
+		Connection conn = null;
+		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				return resultSet.getInt(1);
+			}
+			return 0;
+			
+		} catch (Exception e) {
+			DbUtils.rollback(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+	
+	/**
+	 * 根据chainCode查询chainName
+	 * @param metaConn
+	 * @param chain
+	 * @return
+	 * @throws Exception
+	 */
+	public String getChainNameByChain(Connection metaConn, String chain) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "SELECT CHAIN_NAME FROM SC_POINT_CHAIN_CODE WHERE CHAIN_CODE = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getString(1);
+					}
+					return null;
+				}
+			};
+			return run.query(metaConn, sql, rs, chain);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询官方标准化中文名称对应的拼音
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNamePhonetic(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "SELECT T.NAME_PHONETIC FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 1 AND T.NAME_TYPE = 1 AND T.LANG_CODE = 'CHI' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getString(1);
+					}
+					return null;
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询官方原始英文名称
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavEnglishName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 1 AND T.NAME_TYPE = 2 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getString(1);
+					}
+					return null;
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询官方标准化英文名称
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavEnglishShortName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 1 AND T.NAME_TYPE = 1 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getString(1);
+					}
+					return null;
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询英文地址
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavFullName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.FULLNAME FROM IX_POI P, IX_POI_ADDRESS T WHERE P.PID = T.POI_PID AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getString(1);
+					}
+					return null;
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询电话优先级和电话类型
+	 * @param regionConn
+	 * @param param
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> queryPriorityAndType(Connection regionConn, String param, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT PRIORITY, CONTACT_TYPE FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND CONTACT IN ( ? ) AND P.POI_NUM = ? ";
+			ResultSetHandler<Map<String, List<String>>> rs = new ResultSetHandler<Map<String, List<String>>>() {
+				Map<String, List<String>> result = new HashMap<>();
+				@Override
+				public Map<String, List<String>> handle(ResultSet rs) throws SQLException {
+					while (rs.next()) {
+						if(result.containsKey("priority")){
+							result.get("priority").add(rs.getString(1));
+						} else {
+							List<String> priorityList = new ArrayList<>();
+							priorityList.add(rs.getString(1));
+							result.put("priority", priorityList);
+						}
+						
+						if(result.containsKey("contactType")){
+							result.get("contactType").add(rs.getString(1));
+						} else {
+							List<String> contactTypeList = new ArrayList<>();
+							contactTypeList.add(rs.getString(1));
+							result.put("contactType", contactTypeList);
+						}
+					}
+					return result;
+				}
+			};
+			return run.query(regionConn, sql, rs, param, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 查询英文别名
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavOriginalName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					StringBuilder sb = new StringBuilder();
+					while (rs.next()) {
+						 sb.append(rs.getString(1)).append("|");
+					}
+					return sb.toString();
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 查询标准化英文别名
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavStandardName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND T.NAME_TYPE = 1 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					StringBuilder sb = new StringBuilder();
+					while (rs.next()) {
+						sb.append(rs.getString(1)).append("|");
+					}
+					return sb.toString();
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 查询别名拼音
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryNavAnotherName(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.NAME_PHONETIC FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND P.POI_NUM = ?";
+			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					StringBuilder sb = new StringBuilder();
+					while (rs.next()) {
+						sb.append(rs.getString(1)).append("|");
+					}
+					return sb.toString();
+				}
+			};
+			return run.query(gdbConn, sql, rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 查询地址及发音信息
+	 * @param regionConn
+	 * @param poiNum
+	 * @param entity
+	 * @return
+	 * @throws Exception
+	 */
+	public Boolean queryAddressInfo(Connection regionConn, String poiNum, final AdditionResultEntity entity) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT T.PROVINCE, T.CITY, T.COUNTY, T.TOWN, T.PLACE, T.STREET, T.LANDMARK, T.PREFIX, T.HOUSENUM, T.TYPE, ");
+			sql.append("T.SUBNUM, T.SURFIX, T.ESTAB, T.BUILDING, T.FLOOR, T.UNIT, T.ROOM, T.ADDONS, T.PROV_PHONETIC, T.CITY_PHONETIC, ");
+			sql.append("T.COUNTY_PHONETIC, T.TOWN_PHONETIC, T.PLACE_PHONETIC, T.STREET_PHONETIC, T.LANDMARK_PHONETIC, T.PREFIX_PHONETIC, ");
+			sql.append("T.HOUSENUM_PHONETIC, T.TYPE_PHONETIC, T.SUBNUM_PHONETIC, T.SURFIX_PHONETIC, T.ESTAB_PHONETIC, T.BUILDING_PHONETIC, ");
+			sql.append("T.FLOOR_PHONETIC, T.UNIT_PHONETIC, T.ROOM_PHONETIC, T.ADDONS_PHONETIC FROM IX_POI P, IX_POI_ADDRESS T ");
+			sql.append("WHERE P.PID = T.POI_PID AND P.POI_NUM = ? ");
+			
+			ResultSetHandler<Boolean> rs = new ResultSetHandler<Boolean>() {
+				@Override
+				public Boolean handle(ResultSet rs) throws SQLException {
+					Boolean flag = false;
+					if (rs.next()) {
+						flag = true;
+						entity.setAddressProvince(rs.getString("PROVINCE"));
+						entity.setAddressCity(rs.getString("CITY"));
+						entity.setAddressCounty(rs.getString("COUNTY"));
+						entity.setAddressTown(rs.getString("TOWN"));
+						entity.setAddressPlace(rs.getString("PLACE"));
+						entity.setAddressStreet(rs.getString("STREET"));
+						entity.setAddressLandMark(rs.getString("LANDMARK"));
+						entity.setAddressPrefix(rs.getString("PREFIX"));
+						entity.setAddressHouseNum(rs.getString("HOUSENUM"));
+						entity.setAddressType(rs.getString("TYPE"));
+						entity.setAddressSubNum(rs.getString("SUBNUM"));
+						entity.setAddressSurfix(rs.getString("SURFIX"));
+						entity.setAddressEstab(rs.getString("ESTAB"));
+						entity.setAddressBuilding(rs.getString("BUILDING"));
+						entity.setAddressFloor(rs.getString("FLOOR"));
+						entity.setAddressUnit(rs.getString("UNIT"));
+						entity.setAddressRoom(rs.getString("ROOM"));
+						entity.setAddressAddons(rs.getString("ADDONS"));
+						
+						entity.setAddressProvincePhonetic(rs.getString("PROV_PHONETIC"));
+						entity.setAddressCityPhonetic(rs.getString("CITY_PHONETIC"));
+						entity.setAddressCountyPhonetic(rs.getString("COUNTY_PHONETIC"));
+						entity.setAddressTownPhonetic(rs.getString("TOWN_PHONETIC"));
+						entity.setAddressPlacePhonetic(rs.getString("PLACE_PHONETIC"));
+						entity.setAddressStreetPhonetic(rs.getString("STREET_PHONETIC"));
+						entity.setAddressLandMarkPhonetic(rs.getString("LANDMARK_PHONETIC"));
+						entity.setAddressPrefixPhonetic(rs.getString("PREFIX_PHONETIC"));
+						entity.setAddressHouseNumPhonetic(rs.getString("HOUSENUM_PHONETIC"));
+						entity.setAddressTypePhonetic(rs.getString("TYPE_PHONETIC"));
+						entity.setAddressSubNumPhonetic(rs.getString("SUBNUM_PHONETIC"));
+						entity.setAddressSurfixPhonetic(rs.getString("SURFIX_PHONETIC"));
+						entity.setAddressEstabPhonetic(rs.getString("ESTAB_PHONETIC"));
+						entity.setAddressBuildingPhonetic(rs.getString("BUILDING_PHONETIC"));
+						entity.setAddressFloorPhonetic(rs.getString("FLOOR_PHONETIC"));
+						entity.setAddressUnitPhonetic(rs.getString("UNIT_PHONETIC"));
+						entity.setAddressRoomPhonetic(rs.getString("ROOM_PHONETIC"));
+						entity.setAddressAddonsPhonetic(rs.getString("ADDONS_PHONETIC"));
+						
+					}
+					return flag;
+				}
+			};
+			return run.query(regionConn, sql.toString(), rs, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	
 	
 	/**
 	 * 获取dailyDbId

@@ -74,7 +74,7 @@ public class ExtractEightTypesPoi {
 			manAdminCodeMap = queryMap(manConn, "SELECT DISTINCT T.ADMINCODE, T.REGION_ID FROM CP_REGION_PROVINCE T");
 			allRegionConn = queryAllRegionConn(manConn);
 			
-			String excelName = "partition_result_data_" + DateUtils.dateToString(new Date(), "yyyyMMdd");
+			String excelName = "partition_result_data_" + DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			
 			List<EightTypesPoi> insertEightTypesPois = searchInsertPidExtractEightTypesPoi(monthConn, manConn, startDate, endDate);
 			List<EightTypesPoi> updateEightTypesPois = searchUpdatePidExtractEightTypesPoi(monthConn, manConn, startDate, endDate);

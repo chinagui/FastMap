@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.excelModel.AdditionResultEntity;
 import com.navinfo.dataservice.control.dealership.service.excelModel.exportWorkResultEntity;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpDbDiffResult;
@@ -320,6 +321,62 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
+	
+	//附加成果导出
+	@RequestMapping(value = "/additionResultExport")
+	public void additionResultExport(HttpServletRequest request, HttpServletResponse response) {
+		response.setContentType("octets/stream");
+		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONArray chains = dataJson.getJSONArray("chains");
+			if(chains.size() < 1){
+				throw new Exception("chains参数不能为空。");
+			}
+			
+			List<AdditionResultEntity> additionResultEntityList = dealerShipService.additionResultExportList(chains);
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_附加成果导出");
+			String excelName = sb.toString();
+			
+			ExportExcel<AdditionResultEntity> ex = new ExportExcel<AdditionResultEntity>();  
+
+			response.addHeader("Content-Disposition", "attachment;filename=" + new String( excelName.getBytes("gb2312"), "ISO8859-1" ) + ".xls");
+			
+			String[] headers = { "序号", "一览表ID", "IDCODE", "品牌", "分类", "CHAIN", "省/直辖市", "市", "县/区", "厂商提供名称",
+										"四维录入名称", "名称拼音", "厂商提供英文名称", "四维录入英文全称", "四维录入英文简称" , "厂商提供地址",
+										"四维录入地址", "地址省名", "地址市名", "地址区县名", "地址乡镇街道办", "地址地名小区名", "地址街巷名",
+										"地址标志物名", "地址前缀", "地址门牌号", "地址类型名", "地址子号", "地址后缀", "地址附属设施名",
+										"地址楼栋号", "地址楼层", "地址楼门号", "地址房间号", "地址附加信息", "地址省名发音", "地址市名发音",
+										"地址区县名发音", "地址乡镇街道办发音", "地址地名小区名发音", "地址街巷名发音", "地址标志物名发音", 
+										"地址前缀发音", "地址门牌号发音", "地址类型名发音", "地址子号发音", "地址后缀发音", "地址附属设施名发音",
+										"地址楼栋号发音", "地址楼层发音", "地址楼门号发音", "地址房间号发音", "地址附加信息发音", "厂商提供英文地址",
+										"四维录入英文地址", "厂商提供电话", "四维录入电话", "电话优先级", "电话类型", "厂商提供邮编", "四维录入CHAIN",
+										"四维录入邮编", "厂商提供别名", "四维录入别名", "四维录入别名原始英文", "四维录入别名标准化英文", "别名拼音",
+										"是否删除记录", "项目", "反馈人ID", "负责人反馈结果", "审核意见", "反馈时间", "一览表确认时间", "备注" }; 
+			
+			try{  
+				OutputStream out = response.getOutputStream();  
+				ex.exportExcel(excelName, headers, additionResultEntityList, out, "yyyy-MM-dd");
+				out.close();  
+				logger.error("附加成果导出列表excel导出成功！");  
+			} catch (FileNotFoundException e) {  
+				logger.error(e.getMessage());
+				throw e;
+			} catch (IOException e) {  
+				logger.error(e.getMessage());
+				throw e;
+			} 
+		} catch(Exception e) {
+			logger.error("导出失败，原因：" + e.getMessage(), e);
+		}
+			
+	}
 	
 	
 	@RequestMapping(value = "/expDbDiff")

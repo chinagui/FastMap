@@ -31,7 +31,7 @@ public class Day2MonLogMultiFlusher extends FlushLogBySQL {
 			String tempTable, boolean ignoreError, String type) {
 
 		super(sourceDataSource, targetDataSource, tempTable, type, ignoreError);
-		this.setThreads(false);
+		this.setThreads(true);
 		this.dailyDbSchema = dailyDbSchema;
 
 	}

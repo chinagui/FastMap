@@ -99,7 +99,7 @@ public abstract class StatJobStarter {
 			}
 			log.info("create job:jobType="+jobType()+",request="+info.getRequest());
 			JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");
-			jobApi.createJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
+			jobApi.createStaticsJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
 			return true;
 		}catch(Exception e){
 			log.warn("jobType:"+jobType()+"，request:"+(info==null||info.getRequest()==null?"null":info.getRequest().toString())+"启动错误:"+e.getMessage(),e);

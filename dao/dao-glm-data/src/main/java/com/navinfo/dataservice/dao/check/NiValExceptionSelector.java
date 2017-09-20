@@ -1168,10 +1168,19 @@ public class NiValExceptionSelector {
 	 */
 	public JSONArray queryRefFeatures(String pids, int thisPid)
 			throws SQLException {
-		StringBuilder sql = new StringBuilder(
+		/*StringBuilder sql = new StringBuilder(
 				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 2 AND n.lang_code =  'CHI' and n.name_class = 1 and rownum = 1) name "
 						+ "from ix_poi t  where t.pid in ("
 						+ pids
+						+ ")  and t.pid != " + thisPid + " ");*/
+		//2017.09.19 zl 
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, pids);
+		
+		StringBuilder sql = new StringBuilder(
+				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 2 AND n.lang_code =  'CHI' and n.name_class = 1 and rownum = 1) name "
+						+ "from ix_poi t  where t.pid in ("
+						+ "select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))"
 						+ ")  and t.pid != " + thisPid + " ");
 		log.info("queryRefFeatures : " + sql);
 
@@ -1238,7 +1247,7 @@ public class NiValExceptionSelector {
 
 							return results;
 						}
-					});
+					},pidsClob);
 		} catch (SQLException e) {
 			throw e;
 		}

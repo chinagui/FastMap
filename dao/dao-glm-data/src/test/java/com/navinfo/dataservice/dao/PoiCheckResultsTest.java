@@ -65,7 +65,7 @@ public class PoiCheckResultsTest {
 		}
 	}
 	
-//	@Test
+	@Test
 	public void checkListPoiResults(){
 		Connection conn =null;
 		try{
@@ -74,7 +74,7 @@ public class PoiCheckResultsTest {
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':306,'dbId':13,'sortby':'-ruleid'}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':68,'dbId':13,'sortby':'-ruleid'}");	
 			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
 			
 				//List<JSONObject> page =null;
@@ -94,7 +94,7 @@ public class PoiCheckResultsTest {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	@Test
+//	@Test
 	public void getListPoiResultsCount(){
 		Connection conn =null;
 		try{

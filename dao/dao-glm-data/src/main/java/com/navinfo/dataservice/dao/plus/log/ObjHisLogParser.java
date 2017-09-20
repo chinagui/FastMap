@@ -2,8 +2,10 @@ package com.navinfo.dataservice.dao.plus.log;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -15,6 +17,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.utils.RowJsonUtils;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 /** 
@@ -55,8 +58,18 @@ public class ObjHisLogParser {
 				OperationType opTp = OperationType.getOperationType(ld.getOpTp());
 				Map<String,Object> oldValues = null;
 				if(opTp.equals(OperationType.UPDATE)){
+					oldValues = new HashMap<String,Object>();
 					JSONObject jo = JSONObject.fromObject(ld.getOld());
-					oldValues=(Map)JSONObject.toBean(jo, Map.class);
+					Iterator<String> it = jo.keys();
+					while(it.hasNext()){
+						String key = it.next();
+						Object value = jo.get(key);
+						if(value instanceof JSONNull){
+							oldValues.put(key, null);
+						}else{
+							oldValues.put(key, value);
+						}
+					}
 				}
 				if(tb.equals(mainTableName)){
 					BasicRow row =obj.getMainrow();

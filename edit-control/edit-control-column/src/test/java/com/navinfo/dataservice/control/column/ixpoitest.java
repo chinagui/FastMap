@@ -386,5 +386,22 @@ public class ixpoitest {
 		}
 	}
 
+	@Test
+	public void testQcProblemInit() throws Exception{
+		long userId = 5;
+		int subtaskId = 252;
+		long pid=510000003;
+		
+		String firstWorkItem = "poi_deep";
+		String secondWorkItem = "deepDetail";
+		try {
+		
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject resultJson  = deepCore.qcProblemInit(pid,subtaskId, firstWorkItem, secondWorkItem, userId);
+			System.out.println(resultJson);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
 }

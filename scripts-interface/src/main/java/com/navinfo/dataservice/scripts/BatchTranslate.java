@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -301,8 +302,8 @@ public class BatchTranslate {
             }
             JSONObject request=null;
             JSONObject response = null;
-            //String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-            String dir = "D:/";
+            String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+            //String dir = "D:/";
             //初始化context
             JobScriptsInterface.initContext();
             //

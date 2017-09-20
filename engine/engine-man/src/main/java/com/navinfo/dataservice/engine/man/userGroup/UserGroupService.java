@@ -629,6 +629,8 @@ public class UserGroupService {
 				case 6:
 					name = "MONTH_GROUP_NAME";
 					break;
+				default:
+					return new UserGroup();
 			}
 			
 			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"

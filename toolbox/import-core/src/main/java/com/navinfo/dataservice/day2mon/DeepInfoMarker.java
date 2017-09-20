@@ -263,6 +263,7 @@ public class DeepInfoMarker {
 
 //			LogReader logRead = new LogReader(conn);
 //			int poiState = logRead.getObjectState((int) poi.getPid(), "IX_POI");
+			
 			int poiState = poiStates.get(poi.getPid());
 
 			// 非新增（IX_POI.STATE=3）且种别为医院（170101、170102）的不提取
@@ -423,5 +424,15 @@ public class DeepInfoMarker {
 		sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler) VALUES(T2.b,T2.c,1,1,T2.d)");
 		return sb.toString();
 
+	}
+	
+	public static void main(String[] args) {
+		try{
+			Map<Integer,Integer> map = new HashMap<Integer,Integer>();
+			System.out.println(map.get(2));
+			int status = map.get(1);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

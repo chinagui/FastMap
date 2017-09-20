@@ -68,6 +68,31 @@ public class JobService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public long createStatics(String jobType,JSONObject request,long userId,long taskId,String descp)throws ServiceException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
+			String jobGuid = UuidUtils.genUuid();
+			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,TASK_ID,DESCP)"
+					+ " VALUES (?,?,SYSDATE,?,?,?,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,taskId,descp);
+			//发送run_job消息
+			JobMsgPublisher.runStaticsJob(jobId,jobGuid,jobType,request,userId,taskId);
+			return jobId;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job创建失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}	
+	
 	public List<JobInfo> getAllJob()throws ServiceException{
 		return null;
 	}

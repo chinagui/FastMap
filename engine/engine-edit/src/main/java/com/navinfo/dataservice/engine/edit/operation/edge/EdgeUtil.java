@@ -22,8 +22,10 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.GeometryUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -44,203 +46,206 @@ public class EdgeUtil {
     private EdgeUtil() {
     }
 
-    /**
-     * 计算本次操作跨大区CRF影响
-     * @param edge
-     */
-    public static void handleCrf(EdgeResult edge) {
-        Result sourceResult = edge.getSourceResult();
-
-    }
-
-    public static Set<Integer> calcDbIds(IRow iRow, Integer sourceDb, List<IRow> iRows) throws Exception{
+    public static Set<Integer> calcDbIds(IRow iRow) throws Exception {
         Set<Integer> dbIds = new HashSet<>();
 
-        if (Constant.CRF_TYPES.contains(iRow)) {
-            List<Geometry> geometries = getCRFGeom(iRows, sourceDb);
-        } else {
-            Geometry geometry = GeometryUtils.loadGeometry(iRow);
+        Geometry geometry = GeometryUtils.loadGeometry(iRow);
+        dbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+
+        return dbIds;
+    }
+
+    public static Set<Integer> calcNewDbIds(IRow iRow) throws Exception {
+        Set<Integer> dbIds = new HashSet<>();
+
+        Geometry geometry = GeometryUtils.loadGeometry(iRow);
+        if (iRow.changedFields().containsKey("geometry")) {
+            geometry = GeoTranslator.geojson2Jts((JSONObject) iRow.changedFields().get("geometry"));
+        }
+        dbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+
+        return dbIds;
+    }
+
+    public static Set<Integer> calcCrfDbIds(EdgeResult edge, Connection conn) throws Exception {
+        Set<Integer> dbIds = new HashSet<>();
+        for (Geometry geometry : getCRFGeom(edge.getSourceResult().getAddObjects(), edge.getSourceDb(), conn)) {
+            dbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+        }
+        for (Geometry geometry : getCRFGeom(edge.getSourceResult().getUpdateObjects(), edge.getSourceDb(), conn)) {
+            dbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
+        }
+        for (Geometry geometry : getCRFGeom(edge.getSourceResult().getDelObjects(), edge.getSourceDb(), conn)) {
             dbIds.addAll(DbMeshInfoUtil.calcDbIds(geometry));
         }
 
         return dbIds;
     }
 
-    public static List<Geometry> getCRFGeom(List<IRow> rows, Integer sourceDb) throws Exception{
+    private static List<Geometry> getCRFGeom(List<IRow> rows, Integer sourceDb, Connection conn) throws Exception {
         List<Geometry> geoms = new ArrayList<>();
 
-        Connection conn = null;
+        List<Integer> currentInter = new ArrayList<>();
+        List<Integer> currentRoad = new ArrayList<>();
+        List<Integer> currentObject = new ArrayList<>();
+
+        for (IRow iRow : rows) {
+            if (Constant.CRF_INTER.contains(iRow.objType())) {
+                currentInter.add(getCRFPid(iRow));
+            }
+            if (Constant.CRF_ROAD.contains(iRow.objType())) {
+                currentRoad.add(getCRFPid(iRow));
+            }
+            if (Constant.CRF_OBJECT.contains(iRow.objType())) {
+                currentObject.add(getCRFPid(iRow));
+            }
+        }
+
+        List<Integer> interPids = new ArrayList<>(currentInter);
+        List<Integer> roadPids = new ArrayList<>(currentRoad);
+        List<Integer> linkPids = new ArrayList<>();
+        List<Integer> nodePids = new ArrayList<>();
+
+        AbstractSelector selector = new AbstractSelector(RdObject.class, conn);
+        List<IRow> iRows;
         try {
-            conn = DBConnector.getInstance().getConnectionById(sourceDb);
-
-            Set<Integer> currInterPids = new HashSet<>();
-            Set<Integer> currRoadPids = new HashSet<>();
-            Set<Integer> currObjectPids = new HashSet<>();
-
-            for (IRow row : rows) {
-                if (row instanceof RdInter || row instanceof RdInterLink || row instanceof RdInterNode) {
-                    currInterPids.add(getCRFPid(row));
-                } else if (row instanceof RdRoad || row instanceof RdRoadLink) {
-                    currRoadPids.add(getCRFPid(row));
-                } else if (row instanceof RdObject || row instanceof RdObjectInter || row instanceof RdObjectRoad || row instanceof RdObjectNode || row instanceof RdObjectName || row instanceof RdObjectLink) {
-
-                    currObjectPids.add(getCRFPid(row));
+            iRows = selector.loadByIds(currentObject, false, true);
+            for (IRow iRow : rows) {
+                if (iRow instanceof RdObject && ObjStatus.INSERT.equals(iRow.status())) {
+                    iRows.add(iRow);
                 }
-            }
-
-            Set<Integer> inters = new HashSet<>(currInterPids);
-            Set<Integer> roads = new HashSet<>(currRoadPids);
-            Set<Integer> links = new HashSet<>();
-            Set<Integer> nodes = new HashSet<>();
-
-            AbstractSelector selector = new AbstractSelector(RdObject.class, conn);
-            List<IRow> rowsTmp = null;
-            try {
-                rowsTmp = selector.loadByIds(new ArrayList<>(currObjectPids), true, true);
-                for (IRow row : rows) {
-                    if (row instanceof RdObject && row.status().equals(ObjStatus.INSERT)) {
-                        rowsTmp.add(row);
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(String.format("获取RdObject出错[ids: %s]", Arrays.toString(currObjectPids.toArray())), e);
-            }
-
-            for (IRow rowObj : rowsTmp) {
-                RdObject obj = (RdObject) rowObj;
-                for (IRow row : obj.getInters()) {
-                    inters.add(((RdObjectInter) row).getInterPid());
-                }
-                for (IRow row : obj.getRoads()) {
-                    roads.add(((RdObjectRoad) row).getRoadPid());
-                }
-                for (IRow row : obj.getLinks()) {
-                    links.add(((RdObjectLink) row).getLinkPid());
-                }
-                for (IRow row : obj.getNodes()) {
-                    nodes.add(((RdObjectNode) row).getNodePid());
-                }
-            }
-
-            selector = new AbstractSelector(RdInter.class, conn);
-            try {
-                rowsTmp = selector.loadByIds(new ArrayList<>(inters), true, true);
-                for (IRow row : rows) {
-                    if (row instanceof RdInter && row.status().equals(ObjStatus.INSERT)) {
-                        rowsTmp.add(row);
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(String.format("获取RdInter出错[ids: %s]", Arrays.toString(inters.toArray())), e);
-            }
-
-            for (IRow rowInter : rowsTmp) {
-                RdInter obj = (RdInter) rowInter;
-                for (IRow row : obj.getLinks()) {
-                    links.add(((RdInterLink) row).getLinkPid());
-                }
-                for (IRow row : obj.getNodes()) {
-                    nodes.add(((RdInterNode) row).getNodePid());
-                }
-            }
-
-            selector = new AbstractSelector(RdRoad.class, conn);
-            try {
-                rowsTmp = selector.loadByIds(new ArrayList<>(roads), true, true);
-                for (IRow row : rows) {
-                    if (row instanceof RdRoad && row.status().equals(ObjStatus.INSERT)) {
-                        rowsTmp.add(row);
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(String.format("获取RdRoad出错[ids: %s]", Arrays.toString(roads.toArray())), e);
-            }
-
-            for (IRow rowRoad : rowsTmp) {
-                RdRoad obj = (RdRoad) rowRoad;
-                for (IRow row : obj.getLinks()) {
-                    links.add(((RdRoadLink) row).getLinkPid());
-                }
-            }
-
-
-            selector = new AbstractSelector(RdLink.class, conn);
-            try {
-                rowsTmp = selector.loadByIds(new ArrayList<>(links), true, false);
-                if (rowsTmp.size() != links.size() && rowsTmp.size() > 0) {
-                    int minus = links.size() - rowsTmp.size();
-
-                    RdLink link = (RdLink) rowsTmp.get(0);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION), 3);
-                    for (Integer dbId : dbIds) {
-                        if (dbId.equals(sourceDb)) {
-                            continue;
-                        }
-
-                        Connection connection = null;
-                        try {
-                            connection = DBConnector.getInstance().getConnectionById(dbId);
-                            List<RdLink> rdLinks = new RdLinkSelector(connection).loadByPids(new ArrayList<>(links), false);
-                            rowsTmp.addAll(rdLinks);
-                            if (rdLinks.size() == minus) {
-                                break;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            DBUtils.closeConnection(connection);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(String.format("获取RdLink出错[ids: %s]", Arrays.toString(links.toArray())), e);
-            }
-
-            for (IRow rowLink : rowsTmp) {
-                RdLink obj = (RdLink) rowLink;
-                geoms.add(obj.getGeometry());
-            }
-
-            selector = new AbstractSelector(RdNode.class, conn);
-            try {
-                rowsTmp = selector.loadByIds(new ArrayList<>(nodes), true, false);
-                if (rowsTmp.size() != nodes.size() && rowsTmp.size() > 0) {
-                    int minus = nodes.size() - rowsTmp.size();
-
-                    RdNode node = (RdNode) rowsTmp.get(0);
-                    Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(GeoTranslator.jts2Wkt(node.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION), 3);
-                    for (Integer dbId : dbIds) {
-                        if (dbId.equals(sourceDb)) {
-                            continue;
-                        }
-
-                        Connection connection = null;
-                        try {
-                            connection = DBConnector.getInstance().getConnectionById(dbId);
-                            List<IRow> rdNodes = new RdNodeSelector(connection).loadByIds(new ArrayList<>(links), false, false);
-                            rowsTmp.addAll(rdNodes);
-                            if (rdNodes.size() == minus) {
-                                break;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            DBUtils.closeConnection(connection);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(String.format("获取RdNode出错[ids: %s]", Arrays.toString(nodes.toArray())), e);
-            }
-
-            for (IRow rowNode : rowsTmp) {
-                RdNode obj = (RdNode) rowNode;
-                geoms.add(obj.getGeometry());
             }
         } catch (Exception e) {
+            LOGGER.error(String.format("获取RdObject出错[ids: %s]", Arrays.toString(currentObject.toArray())), e.fillInStackTrace());
             throw e;
-        } finally {
-            DbUtils.closeQuietly(conn);
+        }
+
+        for (IRow rowObj : iRows) {
+            RdObject obj = (RdObject) rowObj;
+            for (IRow row : obj.getInters()) {
+                interPids.add(((RdObjectInter) row).getInterPid());
+            }
+            for (IRow row : obj.getRoads()) {
+                roadPids.add(((RdObjectRoad) row).getRoadPid());
+            }
+            for (IRow row : obj.getLinks()) {
+                linkPids.add(((RdObjectLink) row).getLinkPid());
+            }
+            for (IRow row : obj.getNodes()) {
+                nodePids.add(((RdObjectNode) row).getNodePid());
+            }
+        }
+
+        selector = new AbstractSelector(RdInter.class, conn);
+        try {
+            iRows = selector.loadByIds(interPids, false, true);
+            for (IRow iRow : rows) {
+                if (iRow instanceof RdInter && ObjStatus.INSERT.equals(iRow.status())) {
+                    iRows.add(iRow);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("获取RdInter出错[ids: %s]", Arrays.toString(interPids.toArray())), e.fillInStackTrace());
+            throw e;
+        }
+
+        for (IRow rowInter : iRows) {
+            RdInter obj = (RdInter) rowInter;
+            for (IRow row : obj.getLinks()) {
+                linkPids.add(((RdInterLink) row).getLinkPid());
+            }
+            for (IRow row : obj.getNodes()) {
+                nodePids.add(((RdInterNode) row).getNodePid());
+            }
+        }
+
+        selector = new AbstractSelector(RdRoad.class, conn);
+        try {
+            iRows = selector.loadByIds(roadPids, false, true);
+            for (IRow iRow : rows) {
+                if (iRow instanceof RdRoad && ObjStatus.INSERT.equals(iRow.status())) {
+                    iRows.add(iRow);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("获取RdRoad出错[ids: %s]", Arrays.toString(roadPids.toArray())), e.fillInStackTrace());
+            throw e;
+        }
+
+        for (IRow rowRoad : iRows) {
+            RdRoad obj = (RdRoad) rowRoad;
+            for (IRow row : obj.getLinks()) {
+                linkPids.add(((RdRoadLink) row).getLinkPid());
+            }
+        }
+
+
+        selector = new AbstractSelector(RdLink.class, conn);
+        try {
+            iRows = selector.loadByIds(linkPids, false, false);
+            if (CollectionUtils.isNotEmpty(iRows) && iRows.size() != linkPids.size()) {
+                String wkt = GeoTranslator.jts2Wkt(GeometryUtils.loadGeometry(iRows.iterator().next()), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
+                Iterator<Integer> iterator = dbIds.iterator();
+                do {
+                    Integer dbId = iterator.next();
+                    if (!sourceDb.equals(dbId)) {
+                        Connection connection = null;
+                        try {
+                            connection = DBConnector.getInstance().getConnectionById(dbId);
+                            List<IRow> nodes = new RdLinkSelector(connection).loadByIds(linkPids, false, false);
+                            iRows.addAll(nodes);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            DBUtils.closeConnection(connection);
+                        }
+                    }
+                } while (iRows.size() != linkPids.size() && iterator.hasNext());
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("获取RdLink出错[ids: %s]", Arrays.toString(linkPids.toArray())), e.fillInStackTrace());
+            throw e;
+        }
+
+        for (IRow rowLink : iRows) {
+            RdLink obj = (RdLink) rowLink;
+            geoms.add(obj.getGeometry());
+        }
+
+        selector = new AbstractSelector(RdNode.class, conn);
+        try {
+            iRows = selector.loadByIds(nodePids, true, false);
+            if (CollectionUtils.isNotEmpty(iRows) && iRows.size() != nodePids.size()) {
+                String wkt = GeoTranslator.jts2Wkt(GeometryUtils.loadGeometry(iRows.iterator().next()), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+                Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(wkt, 3);
+
+                Iterator<Integer> iterator = dbIds.iterator();
+                do {
+                    Integer dbId = iterator.next();
+                    if (!sourceDb.equals(dbId)) {
+                        Connection connection = null;
+                        try {
+                            connection = DBConnector.getInstance().getConnectionById(dbId);
+                            List<IRow> nodes = new RdNodeSelector(connection).loadByIds(nodePids, false, false);
+                            iRows.addAll(nodes);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            DBUtils.closeConnection(connection);
+                        }
+                    }
+                } while (iRows.size() != nodePids.size() && iterator.hasNext());
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("获取RdNode出错[ids: %s]", Arrays.toString(nodePids.toArray())), e.fillInStackTrace());
+            throw e;
+        }
+
+        for (IRow rowNode : iRows) {
+            RdNode obj = (RdNode) rowNode;
+            geoms.add(obj.getGeometry());
         }
         return geoms;
     }
@@ -291,6 +296,23 @@ public class EdgeUtil {
         return false;
     }
 
+    public static boolean contains(List<IRow> sources, IRow iRow) {
+        for (IRow source : sources) {
+            if (source == iRow) {
+                return true;
+            }
+            if (source.rowId() == iRow.rowId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean notContains(List<IRow> sources, IRow iRow) {
+        return !contains(sources, iRow);
+    }
+
+
     /**
      * 填充AddObject数据的RowId，防止跨库数据不一致
      *
@@ -314,4 +336,26 @@ public class EdgeUtil {
         }
     }
 
+    public static boolean isEmptyResult(Result result) {
+        return CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&
+                CollectionUtils.isEmpty(result.getDelObjects());
+    }
+
+    public static Map<Integer, ObjStatus> diffDb(Set<Integer> sourceDb, Set<Integer> newDb) {
+        Map<Integer, ObjStatus> map = new HashMap<>();
+        for (Integer dbId : sourceDb) {
+            if (newDb.contains(dbId.intValue())) {
+                map.put(dbId, ObjStatus.UPDATE);
+            } else {
+                map.put(dbId, ObjStatus.DELETE);
+            }
+        }
+        for (Integer dbId : newDb) {
+            if (!map.containsKey(dbId.intValue())) {
+                map.put(dbId, ObjStatus.INSERT);
+            }
+        }
+
+        return map;
+    }
 }

@@ -717,7 +717,6 @@ public class DataEditService {
 		//IX_POI数据
 		Map<String, String> resultKindCode = getResultKindCode(poiNumber, regionConn);
 		if(resultKindCode == null || resultKindCode.size() == 0){
-			log.info("poiNumber" + poiNumber + "在日库中对应的内容为空");
 			return;
 		}
 		String poiChain = resultKindCode.get("poiChain");
@@ -725,33 +724,26 @@ public class DataEditService {
 		//元数据库中数据
 		Map<String, String> metaKindCode = getMetaKindCode(poiChain, poiKindCode);
 		if(metaKindCode == null || metaKindCode.size() == 0){
-			log.info("resultId" + resultId + "在元数据库中对应的内容为空");
 			return;
 		}
 		
+		//将POI对象的分类赋值SC_POINT_KIND_INNER2OUT. R_KIND, POI的品牌赋值SC_POINT_KIND_INNER2OUT. R_KIND_CHAIN 且 调用生成POI履历 
+		log.info(resultId + "将POI对象的分类赋值SC_POINT_KIND_INNER2OUT. R_KIND, POI的品牌赋值SC_POINT_KIND_INNER2OUT. R_KIND_CHAIN 且 调用生成POI履历 ");
 		String rKind = metaKindCode.get("rKind");
 		String rKindChain = metaKindCode.get("rKindChain");
-		//将POI对象的分类赋值SC_POINT_KIND_INNER2OUT. R_KIND, POI的品牌赋值SC_POINT_KIND_INNER2OUT. R_KIND_CHAIN
-		log.info(resultId+"调用POI分类和品牌赋值方法");
-		updateChainAndKindCode(poiNumber, regionConn, rKind, rKindChain);
-		
-		//调用生成POI履历
-		log.info(resultId+"调用生成POI履历");
 		JSONObject json = prepareDeepControlData(resultKindCode, dailyDbId, rKind, rKindChain);
 		producePOIDRecord(json, regionConn, userId);
 		
 		String pid = resultKindCode.get("pid");
 		int poiStatus = getPoiStatus(pid, regionConn);
-		log.info("resultId:" + resultId + "对应的在元数据库中poiStatus为" + poiStatus);
 		if(poiStatus == 0){
 			//POI状态修改为已提交3
-			log.info(resultId+"resultId对应的POI状态修改为已提交3");
+			log.info(resultId + "resultId对应的POI状态修改为已提交3");
 			updatePoiStatus(pid, regionConn);
 			withoutTaskValuation(pid, regionConn);
 		}
 		//清空关联POI作业属性
 		int matchMethod = getMatchMethodFromResult(resultId, dealershipConn);
-		log.info(resultId + "resultId对应的matchMethod值为：" + matchMethod);
 		if(matchMethod == 1){
 			log.info(resultId + "resultId清空关联POI作业属性");
 			clearRelevancePoi(resultId, dealershipConn);
@@ -920,26 +912,6 @@ public class DataEditService {
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(metaConn);
-		}
-	}
-	
-	/**
-	 * 更改ix_poi表中品牌和分类
-	 * @param poiNumber
-	 * @param regionConn
-	 * @param rKind
-	 * @param rKindChain
-	 * @throws Exception
-	 */
-	public void updateChainAndKindCode(String poiNumber, Connection regionConn, String rKind, String rKindChain) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-			String sql = "UPDATE IX_POI T SET T.KIND_CODE = ?, T.CHAIN = ? WHERE T.POI_NUM = ? ";
-			log.info("POI品牌和分类赋值方法sql : " + sql);
-			run.update(regionConn, sql, rKind, rKindChain, poiNumber);
-		}catch(Exception e){
-			log.error("POI品牌和分类赋值方法异常:" + e.getMessage(), e);
-			throw e;
 		}
 	}
 	

@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.control.column.utils.ColumnOperate;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -51,10 +53,20 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 public class DeepCoreControl {
 	private static final Logger logger = Logger.getLogger(DeepCoreControl.class);
-
+	private static final  Map mapDeepQcProperty = new HashMap() {{    
+	    put("deepDetail", Arrays.asList(new String[]{"WEB_SITE", "BRIEF_DESC","HOSPITAL_CLASS","FAX","OPEN_TIME"}));    
+	    put("deepParking", Arrays.asList(new String[]{"TOLL_STD", "TOLL_DES","TOLL_WAY","OPEN_TIIME","TOTAL_NUM","PAYMENT","REMARK"}));  
+	    put("deepCarrental",  Arrays.asList(new String[]{"OPEN_HOUR", "HOW_TO_GO","ADDRESS","WEB_SITE","PHONE_400"}));  
+	}}; 
+	private static final  Map mapDeepTable = new HashMap() {{    
+	    put("deepDetail", "IX_POI_DETAIL");    
+	    put("deepParking", "IX_POI_PARKING");  
+	    put("deepCarrental",  "IX_POI_CARRENTAL");  
+	}}; 
 	/**
 	 * 深度信息库存统计
 	 * 
@@ -1304,7 +1316,7 @@ public class DeepCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject qcProblemInit(long pid, int qualitySubtaskId, String firstWorkItem, String secondWorkItem) throws Exception{
+	public JSONObject qcProblemInit(long pid, int qualitySubtaskId, String firstWorkItem, String secondWorkItem,long qcUserId) throws Exception{
 		Connection regionConn = null;
 		Connection manConn = null;
 		JSONObject resultJson  = new JSONObject();
@@ -1312,6 +1324,7 @@ public class DeepCoreControl {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(qualitySubtaskId, "2", 1);
 			int dbId = subtask.getDbId();
+
 			regionConn = DBConnector.getInstance().getConnectionById(dbId);
 			manConn = DBConnector.getInstance().getManConnection();
 			
@@ -1323,9 +1336,12 @@ public class DeepCoreControl {
 			String groupName = getGroupNameBySubtaskId(manConn, subtaskId);
 			
 			long operationTime = queryOperationTime(regionConn, pid, subtaskId, userId);
-			
+			resultJson.put("commonWorkerId",userId);
 			resultJson.put("commonWorker", realName + "-" + groupName);
 			resultJson.put("workTime", operationTime == 0L ? "" : DateUtils.longToString(operationTime, "yyyy-MM-dd HH:mm:ss"));
+			//增加返回更改前的值(即质检前的值)，add by jch 20170913
+			Map mapPoiPropertyOldValue=queryPropertyOldValue(secondWorkItem,regionConn, pid,subtaskId,qualitySubtaskId,userId,qcUserId);
+			resultJson.put("oldPropertyValues", mapPoiPropertyOldValue);
 			return resultJson;
 		} catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -1493,4 +1509,307 @@ public class DeepCoreControl {
 			DbUtils.closeQuietly(manConn);
 		}
 	}
+	/**
+	 * 查询传真
+	 * @param regionConn
+	 * @param pid
+	 * @param subtaskId
+	 * @param qualitySubtaskId
+	 * @param userId
+	 * @param qcUserId
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryDetailFax(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
+		
+		String propertyOldValue=null;
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		Map MapCurContact=new HashMap(); 
+		try{
+			
+//			String queryCurValueSql=" SELECT ROW_ID,CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
+//			pstmt = regionConn.prepareStatement(queryCurValueSql);
+//			resultSet = pstmt.executeQuery();
+//			if (resultSet.next()) {
+//				MapCurContact.put(key, value)
+//				propertyOldValue=resultSet.getString("CONTACT");
+//			}
+		//先判断是否有常规作业员履历，有则取最后一条newValue
+		String existWorkHisSql=" SELECT NEWVALUE  FROM (SELECT LD.NEW  NEWVALUE FROM LOG_ACTION LA,  "
+		           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+		           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 AND LD.TB_NM=:5"
+		           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1 ";
+		pstmt = regionConn.prepareStatement(existWorkHisSql);
+		
+		pstmt.setLong(1, pid);
+		pstmt.setString(2, "CONTACT");
+		pstmt.setInt(3, subtaskId);
+		pstmt.setLong(4, userId);
+		pstmt.setString(5, "IX_POI_CONTACT");
+		resultSet = pstmt.executeQuery();
+		if (resultSet.next()) {
+			JSONObject jo = JSONObject.fromObject(resultSet
+					.getString("NEWVALUE"));
+			if (JSONUtils.isNull(jo.get("CONTACT"))) {
+				propertyOldValue = "";
+			} else {
+				propertyOldValue = jo.getString("CONTACT");
+			}
+		}
+		//无常规作业履历，则取质检第一条履历oldvalue
+		if (propertyOldValue==null){
+			String existQcHisSql=" SELECT OLDVALUE  FROM (SELECT LD.OLD  OLDVALUE FROM LOG_ACTION LA,  "
+			           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+			           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 AND LD.TB_NM=:5"
+			           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT) WHERE ROWNUM = 1 ";
+								pstmt = regionConn.prepareStatement(existQcHisSql);
+								
+								pstmt.setLong(1, pid);
+								pstmt.setString(2, "CONTACT");
+								pstmt.setInt(3, qualitySubtaskId);
+								pstmt.setLong(4, qcUserId);
+								pstmt.setString(5, "IX_POI_CONTACT");
+								resultSet = pstmt.executeQuery();
+								if (resultSet.next()) {
+									JSONObject jo = JSONObject.fromObject(resultSet
+											.getString("OLDVALUE"));
+									if (JSONUtils.isNull(jo.get("CONTACT"))) {
+										propertyOldValue = "";
+									} else {
+										propertyOldValue = jo.getString("CONTACT");
+									}
+								}
+		}
+		//没作业履历，取当前库里值
+		if (propertyOldValue==null){
+			String queryCurValueSql=" SELECT ROW_ID,CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
+			pstmt = regionConn.prepareStatement(queryCurValueSql);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				propertyOldValue=resultSet.getString("CONTACT");
+			}
+		}
+	  if (propertyOldValue==null){
+		  propertyOldValue="";
+	  }
+	  return propertyOldValue;
+		
+	} catch (Exception e) {
+		throw e;
+	} finally {
+		DbUtils.closeQuietly(resultSet);
+		DbUtils.closeQuietly(pstmt);
+	}
+	}
+	/**
+	 * 查询改前值-通用营业时间
+	 * @param regionConn
+	 * @param pid
+	 * @param subtaskId
+	 * @param qualitySubtaskId
+	 * @param userId
+	 * @param qcUserId
+	 * @return
+	 * @throws Exception
+	 */
+public Map queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
+		ColumnOperate cop=new ColumnOperate();
+		Map<String, String> mapBusinessValue=new HashMap<String, String>();
+		List<String> listBusinessFeilds=Arrays.asList(new String[]{"VALID_WEEK","MON_END","TIME_SRT","MON_SRT",
+				"WEEK_IN_YEAR_SRT","DAY_END","TIME_DUR",
+				"DAY_SRT","WEEK_IN_MONTH_END","WEEK_IN_MONTH_SRT","WEEK_IN_YEAR_END"});
+		
+				String existWorkHisSql=" SELECT NEWVALUE  FROM (SELECT LD.NEW  NEWVALUE FROM LOG_ACTION LA,  "
+				           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.TB_NM='IX_POI_BUSINESSTIME' "
+				           +" AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+				           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 "
+				           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1 ";
+				String existQcHisSql=" SELECT OLDVALUE  FROM (SELECT LD.OLD  OLDVALUE FROM LOG_ACTION LA,  "
+				           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.TB_NM='IX_POI_BUSINESSTIME' "
+				           +" AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+				           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 "
+				           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT) WHERE ROWNUM = 1 ";
+				
+				PreparedStatement pstmt = null;
+				ResultSet resultSet = null;
+		try{
+		for(int i=0;i<listBusinessFeilds.size();i++){
+			String propertyOldValue=null;
+		//先判断是否有常规作业员履历，有则取最后一条newValue
+		String propertyBusiness= (String) listBusinessFeilds.get(i);
+		pstmt = regionConn.prepareStatement(existWorkHisSql);
+		
+		pstmt.setLong(1, pid);
+		pstmt.setString(2, propertyBusiness);
+		pstmt.setInt(3, subtaskId);
+		pstmt.setLong(4, userId);
+		resultSet = pstmt.executeQuery();
+		if (resultSet.next()) {
+			JSONObject jo = JSONObject.fromObject(resultSet
+					.getString("NEWVALUE"));
+			if (JSONUtils.isNull(jo.get(propertyBusiness))) {
+				propertyOldValue = "";
+			} else {
+				propertyOldValue = jo.getString(propertyBusiness);
+			}
+		}
+		//无常规作业履历，则取质检第一条履历oldvalue
+		if (propertyOldValue==null){
+								pstmt = regionConn.prepareStatement(existQcHisSql);
+								
+								pstmt.setLong(1, pid);
+								pstmt.setString(2, propertyBusiness);
+								pstmt.setInt(3, qualitySubtaskId);
+								pstmt.setLong(4, qcUserId);
+								resultSet = pstmt.executeQuery();
+								if (resultSet.next()) {
+									JSONObject jo = JSONObject.fromObject(resultSet
+											.getString("OLDVALUE"));
+									if (JSONUtils.isNull(jo.get(propertyBusiness))) {
+										propertyOldValue = "";
+									} else {
+										propertyOldValue = jo.getString(propertyBusiness);
+									}
+								}
+		}
+		//没作业履历，取当前库里值
+		if (propertyOldValue==null){
+			String queryCurValueSql=" SELECT "+propertyBusiness+" FROM IX_POI_BUSINESSTIME WHERE POI_PID="+pid +" AND U_RECORD<>2 ";
+			pstmt = regionConn.prepareStatement(queryCurValueSql);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				if(resultSet.getObject(propertyBusiness)==null){
+					propertyOldValue="";
+				}else{
+				 propertyOldValue=(resultSet.getObject(propertyBusiness)).toString();
+				}
+			}
+		}
+		mapBusinessValue.put(cop.toCamelCase(propertyBusiness), propertyOldValue);
+		}
+	    return mapBusinessValue;	
+	} catch (Exception e) {
+		throw e;
+	} finally {
+		DbUtils.closeQuietly(resultSet);
+		DbUtils.closeQuietly(pstmt);
+	}
+	}
+	
+	/**
+	 * 
+	 * @param secondWorkItem
+	 * @param operationTime
+	 * @param regionConn
+	 * @param pid
+	 * @param subtaskId
+	 * @param qualitySubtaskId
+	 * @param userId
+	 * @param qcUserId
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private Map queryPropertyOldValue(String secondWorkItem,Connection regionConn, long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId)
+			 throws Exception{
+				Map mapOldValue=new HashMap();
+				ColumnOperate cop=new ColumnOperate();
+				List propertyList=(List) mapDeepQcProperty.get(secondWorkItem);
+				String tableName=(String) mapDeepTable.get(secondWorkItem);
+				String existWorkHisSql=" SELECT NEWVALUE  FROM (SELECT LD.NEW  NEWVALUE FROM LOG_ACTION LA,  "
+				           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI'  AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+				           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 AND LD.TB_NM=:5"
+				           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1 ";
+				String existQcHisSql=" SELECT OLDVALUE  FROM (SELECT LD.OLD  OLDVALUE FROM LOG_ACTION LA,  "
+				           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
+				           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 AND LD.TB_NM=:5"
+				           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT) WHERE ROWNUM = 1 ";
+				
+				
+				PreparedStatement pstmt = null;
+				ResultSet resultSet = null;
+			try{
+				for(int i=0;i<propertyList.size();i++){
+					String propertyOldValue=null;
+					String strProperty=(String) propertyList.get(i);
+					if ("deepDetail".equals(secondWorkItem)){
+						if("FAX".equals(strProperty)){
+						mapOldValue.put("fax",queryDetailFax(regionConn,pid,subtaskId,qualitySubtaskId,userId,qcUserId));
+						continue;
+						}
+						if("OPEN_TIME".equals(strProperty)){
+							mapOldValue.put("openTime",queryDetailOpenTime(regionConn,pid,subtaskId,qualitySubtaskId,userId,qcUserId));
+							continue;
+							}
+					}
+					
+					if(propertyOldValue==null){	
+					//先判断是否有常规作业员履历，有则取最后一条newValue
+					pstmt = regionConn.prepareStatement(existWorkHisSql);
+					
+					pstmt.setLong(1, pid);
+					pstmt.setString(2, strProperty);
+					pstmt.setInt(3, subtaskId);
+					pstmt.setLong(4, userId);
+					pstmt.setString(5, tableName);
+					
+					resultSet = pstmt.executeQuery();
+					if (resultSet.next()) {
+						JSONObject jo = JSONObject.fromObject(resultSet
+								.getString("NEWVALUE"));
+						if (JSONUtils.isNull(jo.get(strProperty))) {
+							propertyOldValue = "";
+						} else {
+							propertyOldValue = jo.getString(strProperty);
+						}
+					}}
+					//无常规作业履历，则取质检第一条履历oldvalue
+					if (propertyOldValue==null){
+											pstmt = regionConn.prepareStatement(existQcHisSql);
+											
+											pstmt.setLong(1, pid);
+											pstmt.setString(2, strProperty);
+											pstmt.setInt(3, qualitySubtaskId);
+											pstmt.setLong(4, qcUserId);
+											pstmt.setString(5, tableName);
+											resultSet = pstmt.executeQuery();
+											if (resultSet.next()) {
+												JSONObject jo = JSONObject.fromObject(resultSet
+														.getString("OLDVALUE"));
+												if (JSONUtils.isNull(jo.get(strProperty))) {
+													propertyOldValue = "";
+												} else {
+													propertyOldValue = jo.getString(strProperty);
+												}
+											}
+					}
+					//没作业履历，取当前库里值
+					if (propertyOldValue==null){
+						String queryCurValueSql=" SELECT "+strProperty+" FROM "+tableName +" WHERE POI_PID="+pid +" AND U_RECORD<>2";
+						pstmt = regionConn.prepareStatement(queryCurValueSql);
+						resultSet = pstmt.executeQuery();
+						if (resultSet.next()) {
+							if(resultSet.getObject(strProperty)==null){
+								propertyOldValue="";
+							}else{
+//							 if ((resultSet.getObject(strProperty)) instanceof Integer){
+//								 propertyOldValue= String.valueOf(resultSet.getObject(strProperty));
+//							 }
+							 propertyOldValue=(resultSet.getObject(strProperty)).toString();
+							}
+						}
+					}
+					
+					mapOldValue.put(cop.toCamelCase(strProperty), propertyOldValue);
+				}
+				return mapOldValue;
+		
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(resultSet);
+					DbUtils.closeQuietly(pstmt);
+				}
+			}
 }

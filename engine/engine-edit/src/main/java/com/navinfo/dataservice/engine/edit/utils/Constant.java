@@ -93,25 +93,43 @@ public class Constant {
     }
 
     /**
-     * RDLINK相关关系要素
+     * RDOBJECT相关关系要素
      */
-    public static List<ObjType> CRF_TYPES = new ArrayList<>();
+    public static List<ObjType> CRF_INTER = new ArrayList<>();
 
     static {
         // INTER
-        CRF_TYPES.add(ObjType.RDINTER);
-        CRF_TYPES.add(ObjType.RDINTERNODE);
-        CRF_TYPES.add(ObjType.RDINTERLINK);
+        CRF_INTER.add(ObjType.RDINTER);
+        CRF_INTER.add(ObjType.RDINTERNODE);
+        CRF_INTER.add(ObjType.RDINTERLINK);
+    }
+
+    public static List<ObjType> CRF_ROAD = new ArrayList<>();
+
+    static {
         // ROAD
-        CRF_TYPES.add(ObjType.RDROAD);
-        CRF_TYPES.add(ObjType.RDROADLINK);
+        CRF_ROAD.add(ObjType.RDROAD);
+        CRF_ROAD.add(ObjType.RDROADLINK);
+    }
+
+    public static List<ObjType> CRF_OBJECT = new ArrayList<>();
+
+    static {
         // OBJECT
-        CRF_TYPES.add(ObjType.RDOBJECT);
-        CRF_TYPES.add(ObjType.RDOBJECTNAME);
-        CRF_TYPES.add(ObjType.RDOBJECTINTER);
-        CRF_TYPES.add(ObjType.RDOBJECTNODE);
-        CRF_TYPES.add(ObjType.RDOBJECTLINK);
-        CRF_TYPES.add(ObjType.RDOBJECTROAD);
+        CRF_OBJECT.add(ObjType.RDOBJECT);
+        CRF_OBJECT.add(ObjType.RDOBJECTNAME);
+        CRF_OBJECT.add(ObjType.RDOBJECTINTER);
+        CRF_OBJECT.add(ObjType.RDOBJECTNODE);
+        CRF_OBJECT.add(ObjType.RDOBJECTLINK);
+        CRF_OBJECT.add(ObjType.RDOBJECTROAD);
+    }
+
+    public static List<ObjType> CRF_TYPES = new ArrayList<>();
+
+    static {
+        CRF_TYPES.addAll(CRF_INTER);
+        CRF_TYPES.addAll(CRF_ROAD);
+        CRF_TYPES.addAll(CRF_OBJECT);
     }
 
     public final static Map<ObjType, Class<? extends IRow>> OBJ_TYPE_CLASS_MAP = new HashMap<>() ;

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.limit.glm.iface;
 
+import com.navinfo.dataservice.dao.glm.iface.ISerializable;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import net.sf.json.JSONObject;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public interface IRow extends ISerializable {
 	/**
 	 * @return 要素类型
 	 */
-	public ObjType objType();
+	public LimitObjType objType();
 
 	/**
 	 * @return 变化的字段

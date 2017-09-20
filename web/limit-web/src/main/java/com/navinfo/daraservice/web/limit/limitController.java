@@ -101,7 +101,7 @@ public class limitController  extends BaseController {
 
             SearchProcess p = new SearchProcess(conn);
 
-            List<? extends IRow> objList = p.searchMetaDataByCondition(
+            List<? extends IRow> objList = p.searchLimitDataByCondition(
                     LimitObjType.valueOf(objType), condition);
 
             JSONArray array = new JSONArray();

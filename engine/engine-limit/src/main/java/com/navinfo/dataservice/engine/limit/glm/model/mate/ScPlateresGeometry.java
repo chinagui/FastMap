@@ -1,32 +1,31 @@
+
 package com.navinfo.dataservice.engine.limit.glm.model.mate;
 
+
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.*;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
-
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import com.navinfo.dataservice.commons.geom.*;
 
-/**
- * Created by ly on 2017/9/18.
- */
 public class ScPlateresGeometry  implements IObj {
 
-    String geometryId = "";//GEOMETRY_ID
+  private   String geometryId = "";//GEOMETRY_ID
 
-    String groupId = ""; //GROUP_ID
+    private String groupId = ""; //GROUP_ID
 
-    Geometry geometry;
+    private  Geometry geometry;
 
-    String  boundary_link="1";//BOUNDARY_LINK
-
-
+    private   String  boundary_link="1";//BOUNDARY_LINK
 
     public String getGeometryId() {
         return geometryId;
@@ -107,8 +106,8 @@ public class ScPlateresGeometry  implements IObj {
     }
 
     @Override
-    public ObjType objType() {
-        return ObjType.SCPLATERESGEOMETRY;
+    public LimitObjType objType() {
+        return LimitObjType.SCPLATERESGEOMETRY;
     }
 
     @Override
@@ -167,7 +166,7 @@ public class ScPlateresGeometry  implements IObj {
 
                     Object objValue = field.get(this);
 
-                    String oldValue = null;
+                    String oldValue ;
 
                     if (objValue == null){
                         oldValue = "null";
@@ -194,11 +193,7 @@ public class ScPlateresGeometry  implements IObj {
             }
         }
 
-        if (changedFields.size() >0){
-            return true;
-        }else{
-            return false;
-        }
+        return changedFields.size() >0;
     }
 
     @Override
@@ -220,8 +215,6 @@ public class ScPlateresGeometry  implements IObj {
 
         while (keys.hasNext()) {
             String key = (String) keys.next();
-
-            JSONArray ja = null;
 
             if ("geometry".equals(key)) {
 

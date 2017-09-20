@@ -46,6 +46,20 @@ public class JobMsgPublisher {
 		jobMsg.put("taskId", taskId);
 		MsgPublisher.publish2WorkQueue("run_job", jobMsg.toString());
 	}
+	
+	public static void runStaticsJob(long jobId,String jobGuid,String type,JSONObject jobRequest,long userId,long taskId)throws Exception{
+		if(jobRequest==null){
+			throw new Exception("jobRequest不能为空");
+		}
+		JSONObject jobMsg = new JSONObject();
+		jobMsg.put("jobId", jobId);
+		jobMsg.put("jobGuid", jobGuid);
+		jobMsg.put("type", type);
+		jobMsg.put("request", jobRequest);
+		jobMsg.put("userId", userId);
+		jobMsg.put("taskId", taskId);
+		MsgPublisher.publish2WorkQueue("run_statics_job", jobMsg.toString());
+	}
 
 	/**
 	 * 用于job web Server 持久化job执行过程中的反馈

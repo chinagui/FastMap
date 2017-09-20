@@ -389,8 +389,8 @@ public class ixpoitest {
 	@Test
 	public void testQcProblemInit() throws Exception{
 		long userId = 5;
-		int subtaskId = 252;
-		long pid=510000003;
+		int subtaskId = 251;
+		long pid=23701;
 		
 		String firstWorkItem = "poi_deep";
 		String secondWorkItem = "deepDetail";

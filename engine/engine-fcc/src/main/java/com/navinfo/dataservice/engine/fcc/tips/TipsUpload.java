@@ -1335,6 +1335,7 @@ public class TipsUpload {
         track.setT_date(currentDate);
         track.setT_dataDate(t_dataDate); //915新增字段，需要重新赋值为系统当前时间 
         track.setT_tipStatus(json.getInt("t_tipStatus"));
+        track.setT_command(json.getInt("t_command"));
         track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));
 
         JSONObject trackJson = JSONObject.fromObject(track);

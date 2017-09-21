@@ -479,9 +479,12 @@ public class StringConverter
         return new String(b);
     }
     
-    public static void manCreatDataUntils(StringBuffer insertPart, StringBuffer valuePart){
+    public static void manCreatDataUtils(StringBuffer insertPart, StringBuffer valuePart){
     	if(insertPart != null && insertPart.toString().length() > 0){
     		insertPart.append(" , ");
+    		if(valuePart == null){
+    			valuePart = new StringBuffer();
+    		}
     		valuePart.append(" , ");
     	}
     }

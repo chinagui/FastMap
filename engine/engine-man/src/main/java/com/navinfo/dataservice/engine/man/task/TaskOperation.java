@@ -23,6 +23,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.StringConverter;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class TaskOperation {
@@ -262,121 +263,121 @@ public class TaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			Map<String, Object> changeFields = bean.getChangeFields();
-			String insertPart="";
-			String valuePart="";
+			StringBuffer insert = new StringBuffer();
+			StringBuffer value = new StringBuffer();
 			if (changeFields.containsKey("WORK_KIND")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" WORK_KIND ";
-				valuePart+= "'" + bean.getWorkKind() + "'";
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" WORK_KIND ");
+				value.append("'" + bean.getWorkKind() + "'");
 			};
 			if (changeFields.containsKey("TASK_ID")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" TASK_ID ";
-				valuePart+=bean.getTaskId();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" TASK_ID ");
+				value.append(bean.getTaskId());
 			};
 			if (changeFields.containsKey("PROGRAM_ID")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PROGRAM_ID ";
-				valuePart+=bean.getProgramId();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PROGRAM_ID ");
+				value.append(bean.getProgramId());
 			};
 			if (changeFields.containsKey("NAME")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" NAME ";
-				valuePart+= "'" + bean.getName() + "'";
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" NAME ");
+				value.append("'" + bean.getName() + "'");
 			};
 			if (changeFields.containsKey("BLOCK_ID")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" BLOCK_ID ";
-				valuePart+=bean.getBlockId();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" BLOCK_ID ");
+				value.append(bean.getBlockId());
 			};
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
-			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
+			
+			StringConverter.manCreatDataUtils(insert, value);
+			insert.append(" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ");
+			value.append(bean.getCreateUserId()+", sysdate, 2, 1");
 			if (changeFields.containsKey("DESCP")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" DESCP ";
-				valuePart+="'"+bean.getDescp()+"'";
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" DESCP ");
+				value.append("'"+bean.getDescp()+"'");
 			};
-			if (changeFields.containsKey("PLAN_START_DATE")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			if (changeFields.containsKey("PLAN_START_DATE") && StringUtils.isNotBlank(changeFields.get("PLAN_START_DATE").toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PLAN_START_DATE ");
+				value.append("to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')");
 			};
-			if (changeFields.containsKey("PLAN_END_DATE")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PLAN_END_DATE ";
-				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			if (changeFields.containsKey("PLAN_END_DATE") && StringUtils.isNotBlank(changeFields.get("PLAN_END_DATE").toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PLAN_END_DATE ");
+				value.append("to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')");
 			};
 			if (changeFields.containsKey("TYPE")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" TYPE ";
-				valuePart+=bean.getType();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" TYPE ");
+				value.append(bean.getType());
 			};
 			if (changeFields.containsKey("LOT")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" LOT";
-				valuePart+= bean.getLot();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" LOT");
+				value.append(bean.getLot());
 			};
 			if (changeFields.containsKey("GROUP_ID")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" GROUP_ID ";
-				valuePart+=bean.getGroupId();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" GROUP_ID ");
+				value.append(bean.getGroupId());
 			};
 			if (changeFields.containsKey("REGION_ID")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" REGION_ID ";
-				valuePart+=bean.getRegionId();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" REGION_ID ");
+				value.append(bean.getRegionId());
 			};
 			if (changeFields.containsKey("ROAD_PLAN_TOTAL")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" ROAD_PLAN_TOTAL ";
-				valuePart+=bean.getRoadPlanTotal();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ROAD_PLAN_TOTAL ");
+				value.append(bean.getRoadPlanTotal());
 			};
 			if (changeFields.containsKey("POI_PLAN_TOTAL")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" POI_PLAN_TOTAL ";
-				valuePart+=bean.getPoiPlanTotal();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" POI_PLAN_TOTAL ");
+				value.append(bean.getPoiPlanTotal());
 			};
 			//modify by songhe 添加road/poi_plan_in/out
 			if (changeFields.containsKey("ROAD_PLAN_IN")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" ROAD_PLAN_IN ";
-				valuePart+=bean.getRoadPlanIn();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ROAD_PLAN_IN ");
+				value.append(bean.getRoadPlanIn());
 			};
 			if (changeFields.containsKey("ROAD_PLAN_OUT")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" ROAD_PLAN_OUT ";
-				valuePart+=bean.getRoadPlanOut();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ROAD_PLAN_OUT ");
+				value.append(bean.getRoadPlanOut());
 			};
 			if (changeFields.containsKey("POI_PLAN_IN")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" POI_PLAN_IN ";
-				valuePart+=bean.getPoiPlanIn();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" POI_PLAN_IN ");
+				value.append(bean.getPoiPlanIn());
 			};
 			if (changeFields.containsKey("POI_PLAN_OUT")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" POI_PLAN_OUT ";
-				valuePart+=bean.getPoiPlanOut();
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" POI_PLAN_OUT ");
+				value.append(bean.getPoiPlanOut());
 			};
-			
-			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PRODUCE_PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			if (changeFields.containsKey("PRODUCE_PLAN_START_DATE") && StringUtils.isNotBlank(changeFields.get("PRODUCE_PLAN_START_DATE").toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PRODUCE_PLAN_START_DATE ");
+				value.append("to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')");
 			};
-			if (changeFields.containsKey("PRODUCE_PLAN_END_DATE")){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PRODUCE_PLAN_END_DATE";
-				valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			if (changeFields.containsKey("PRODUCE_PLAN_END_DATE") && StringUtils.isNotBlank(changeFields.get("PRODUCE_PLAN_END_DATE").toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PRODUCE_PLAN_END_DATE");
+				value.append("to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')");
 			};
-			String createSql = "insert into task ("+insertPart+") values("+valuePart+")";
+			String createSql = "insert into task ("+insert.toString()+") values("+value.toString()+")";
 			
 			log.info("creatTaskSql:" + createSql);
 			run.update(conn,createSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(), e);
 		}
 	}
 		

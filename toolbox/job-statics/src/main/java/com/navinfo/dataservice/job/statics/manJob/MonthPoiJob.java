@@ -100,6 +100,7 @@ public class MonthPoiJob extends AbstractStatJob {
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			shutDownPoolExecutor();
 			throw new JobException(e.getMessage(),e);
 		}finally{
 			shutDownPoolExecutor();

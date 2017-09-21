@@ -107,9 +107,12 @@ public class DayPoiJob extends AbstractStatJob {
 			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
-		} catch (Exception e) {
+		}catch(Exception e) {
 			log.error(e.getMessage(), e);
-			throw new JobException(e.getMessage(),e);
+			shutDownPoolExecutor();
+			throw new JobException(e.getMessage(), e);
+		}finally{
+			shutDownPoolExecutor();
 		}
 	}
 	

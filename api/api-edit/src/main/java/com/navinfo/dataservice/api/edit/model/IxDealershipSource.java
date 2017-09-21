@@ -333,16 +333,24 @@ public class IxDealershipSource  {
 	 * @return
 	 */
 	public String getTelephone() {
-		// TODO Auto-generated method stub
+		StringBuffer sb = new StringBuffer();
 		String telephone = "";
-		if(this.telSale!=null){
-			telephone += this.telSale;
+		String splitChar = "|";
+		if (this.telSale != null && !"".equals(this.telSale)) {
+			sb.append(this.telSale);
+			sb.append(splitChar);
 		}
-		if(this.telService!=null){
-			telephone += this.telService;
+		if (this.telService != null && !"".equals(this.telService)) {
+			sb.append(this.telService);
+			sb.append(splitChar);
 		}
-		if(this.telOther!=null){
-			telephone += this.telOther;
+		if (this.telOther != null && !"".equals(this.telOther)) {
+			sb.append(this.telOther);
+			sb.append(splitChar);
+		}
+		telephone = sb.toString();
+		if (!"".equals(telephone)) {
+			telephone = telephone.substring(0, telephone.length() - 1);
 		}
 		return telephone;
 	}

@@ -1429,7 +1429,9 @@ public class DataEditService {
 						Integer resultId = result.getResultId();
 						IxDealershipResultSelector.updateResultDealStatus(resultId,3,conn);//更新RESULT.DEAL_STATUS＝3（已提交）
 						Integer pid = selectPidByPoiNum(poiNum,regionConn);
-						withoutTaskValuation(pid.toString(), regionConn);
+						if(pid!=null){
+							withoutTaskValuation(pid.toString(), regionConn);
+						}
 						Integer sourceId = IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
 						IxDealershipResultSelector.updateResultSourceId(resultId,sourceId,conn);
 					}

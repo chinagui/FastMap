@@ -1523,11 +1523,12 @@ public class DeepCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map queryDetailFax(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
+	public List queryDetailFax(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		Map MapCurContact=new HashMap(); 
+		Map<String, String> MapCurContact=new HashMap<String, String>(); 
+		List<JSONObject> ListCurContact=new ArrayList<JSONObject>(); 
 		try{
 			
 			String queryCurValueSql=" SELECT ROW_ID,CONTACT FROM IX_POI_CONTACT WHERE POI_PID="+pid +" AND CONTACT_TYPE=11 AND U_RECORD<>2 ";
@@ -1602,7 +1603,13 @@ public class DeepCoreControl {
 								}
 	
 
-	  return MapCurContact;
+	 for(Map.Entry<String, String> entry : MapCurContact.entrySet()){
+		 JSONObject jo =new JSONObject();
+		 jo.put("rowId", entry.getKey());
+		 jo.put("contact", entry.getValue());
+		 ListCurContact.add(jo);
+	 }
+	  return ListCurContact;
 		
 	} catch (Exception e) {
 		throw e;
@@ -1622,10 +1629,11 @@ public class DeepCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
-public Map queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
+public List queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId,Integer qualitySubtaskId,long userId,long qcUserId) throws Exception{
 		ColumnOperate cop=new ColumnOperate();
 		Map<String, Map<String,String>> mapBusinessValue=new HashMap<String, Map<String,String>>();
 		Map<String, Map<String,String>> mapCamelBusinessValue=new HashMap<String, Map<String,String>>();
+		List<JSONObject> listCamelBusinessValue=new ArrayList<JSONObject>();  
 		List<String> listBusinessFeilds=Arrays.asList(new String[]{"VALID_WEEK","MON_END","TIME_SRT","MON_SRT",
 				"WEEK_IN_YEAR_SRT","DAY_END","TIME_DUR",
 				"DAY_SRT","WEEK_IN_MONTH_END","WEEK_IN_MONTH_SRT","WEEK_IN_YEAR_END"});
@@ -1694,16 +1702,18 @@ public Map queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId,
 									}
 								}
 		for(Entry<String, Map<String, String>> entry : mapBusinessValue.entrySet()){
+			 JSONObject jo =new JSONObject();
+			 jo.put("rowId", entry.getKey());
+			
 			Map<String, String> mapTempValue=entry.getValue();
-			Map<String, String> mapCamel=new HashMap();
 			for(Map.Entry<String, String> tempEntry : mapTempValue.entrySet()){
-				mapCamel.put(cop.toCamelCase(tempEntry.getKey()), tempEntry.getValue());
+				 jo.put(cop.toCamelCase(tempEntry.getKey()),  tempEntry.getValue());
 			}
-			mapCamelBusinessValue.put(entry.getKey(), mapCamel);
+			listCamelBusinessValue.add(jo);
 		}
 		
 	
-	    return mapCamelBusinessValue;	
+	    return listCamelBusinessValue;	
 	} catch (Exception e) {
 		throw e;
 	} finally {

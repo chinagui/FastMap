@@ -24,7 +24,7 @@ public class ScPlateresInfo implements IObj {
     private String url;//    URL	来源网址
     private String newsTime;//    NEWS_TIME	新闻发布日期
     private String infoContent;//    INFO_CONTENT	新闻内容
-    private int complete;//    COMPLETE	完成状态
+    private int complete = 1;//    COMPLETE	完成状态
     private String condition;//    CONDITION	限行长短期说明
     private String memo;//    MEMO	备注
 

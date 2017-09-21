@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>engine-limit</artifactId>
+    <name>engine-limit</name>
+	<url>http://maven.apache.org</url>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -143,7 +145,7 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
-
+        
         <dependency>
             <groupId>com.navinfo.dataservice</groupId>
             <artifactId>dao-glm-data</artifactId>
@@ -222,6 +224,25 @@
             <artifactId>gson</artifactId>
             <version>2.3.1</version>
         </dependency>
+        
+        <dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.sgroschupf</groupId>
+			<artifactId>zkclient</artifactId>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
     <properties>

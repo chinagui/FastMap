@@ -9,13 +9,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
@@ -23,9 +27,12 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
+import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.DataConfirmService;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.IxDealershipResultSelector;
+import com.navinfo.dataservice.control.dealership.service.IxDealershipSourceSelector;
 import com.navinfo.dataservice.control.dealership.service.model.ExpClientConfirmResult;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.model.InformationExportResult;
@@ -86,7 +93,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 		try {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getDealershipConnection();
-			de.commitDealership("415D", conn, 59);
+			de.commitDealership("4047", conn, 1540);
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -279,4 +286,28 @@ public class dealtest extends ClassPathXmlAppContextInit{
  			System.out.println(e.getMessage());
  		}
  	}
+	
+	@Test
+ 	public void testAA() throws Exception {
+		Connection conn = null;
+ 		try {
+ 			conn = DBConnector.getInstance().getDealershipConnection();
+ 			List sourceList = new ArrayList<>();
+ 			sourceList.add(6031);
+ 			List resultList = new ArrayList<>();
+ 			resultList.add(15563);
+ 			Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getBySourceIds(conn, sourceList);
+ 			Map<Integer, IxDealershipResult> dealershipResultMap = IxDealershipResultSelector.getByResultIds(conn, resultList);
+ 			List<IxDealershipSource> ixDealershipSourceList = new ArrayList<>();
+ 			List<IxDealershipResult> ixDealershipResultList = new ArrayList<>();
+ 			ixDealershipSourceList.add(dealershipSourceMap.get(6031));
+ 			ixDealershipResultList.add(dealershipResultMap.get(15563));
+ 			DiffService.diff(ixDealershipSourceList, ixDealershipResultList, "4045", "20170901");
+ 			
+ 		}catch (Exception e) {
+ 			System.out.println(e.getMessage());
+ 		}
+ 	}
+	
+	
 }

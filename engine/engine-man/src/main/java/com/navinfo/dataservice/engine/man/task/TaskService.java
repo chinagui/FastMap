@@ -96,23 +96,23 @@ public class TaskService {
 	 */
 	public String create(long userId,JSONObject json) throws Exception{
 		Connection conn = null;
-		int total=0;
+		int total = 0;
 		try{
 			if(!json.containsKey("tasks")){
 				return "任务批量创建"+total+"个成功，0个失败";
 			}
-			JSONArray taskArray=json.getJSONArray("tasks");
+			JSONArray taskArray = json.getJSONArray("tasks");
 			conn = DBConnector.getInstance().getManConnection();
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				
-				JSONArray workKindArray=null;
+				JSONArray workKindArray = null;
 				if(taskJson.containsKey("workKind")){
-					workKindArray=taskJson.getJSONArray("workKind");
+					workKindArray = taskJson.getJSONArray("workKind");
 					taskJson.remove("workKind");
 				}
-				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
+				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setWorkKind(workKindArray);
 				
 				bean.setCreateUserId((int) userId);

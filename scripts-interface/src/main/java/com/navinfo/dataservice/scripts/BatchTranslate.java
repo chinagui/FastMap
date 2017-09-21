@@ -17,7 +17,6 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -47,9 +46,9 @@ public class BatchTranslate {
     private BatchTranslate(){
     }
 
-    private final static Integer INIT_THREAD_SIZE = 32;
+    private final static Integer INIT_THREAD_SIZE = 20;
 
-    private final static Integer MAX_THREAD_SIZE = INIT_THREAD_SIZE << 2;
+    private final static Integer MAX_THREAD_SIZE = 20;
 
     private final static Integer PART_SIZE = 3000;
 
@@ -93,30 +92,24 @@ public class BatchTranslate {
         }
         logger.info(String.format("translate meshes with [%s]", Arrays.toString(map.keySet().toArray(new Integer[]{}))));
 
-        int queueSize = 0;
-        for (List<BasicObj> list : map.values()) {
-            queueSize += list.size() % PART_SIZE == 0 ? list.size() /PART_SIZE : list.size() / PART_SIZE + 1;
-        }
-        queueSize = queueSize > MAX_THREAD_SIZE ? queueSize - MAX_THREAD_SIZE : queueSize;
+        //int queueSize = 0;
+        //for (List<BasicObj> list : map.values()) {
+        //    queueSize += list.size() % PART_SIZE == 0 ? list.size() /PART_SIZE : list.size() / PART_SIZE + 1;
+        //}
+        //queueSize = queueSize > MAX_THREAD_SIZE ? queueSize - MAX_THREAD_SIZE : queueSize;
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(INIT_THREAD_SIZE, MAX_THREAD_SIZE, 3, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(queueSize), new ThreadPoolExecutor.DiscardOldestPolicy());
+                new ArrayBlockingQueue<Runnable>(20000), new ThreadPoolExecutor.DiscardOldestPolicy());
 
         for (final Map.Entry<Integer, List<BasicObj>> entry: map.entrySet()) {
-            //List<BasicObj> list = entry.getValue();
+            //List<List<BasicObj>> parts = ListUtils.partition(entry.getValue(), PART_SIZE);
             //
-            //List<List<BasicObj>> parts = new ArrayList<>();
-            //
-            //int size = list.size();
-            //for (int index = 0; index < size; index += PART_SIZE) {
-            //    parts.add(new ArrayList<>(list.subList(index, Math.min(size, index + PART_SIZE))));
+            //for (List<BasicObj> part : parts) {
+            //    Task task = new Task(entry.getKey(), part);
+            //    executor.execute(task);
             //}
-            List<List<BasicObj>> parts = ListUtils.partition(entry.getValue(), PART_SIZE);
-
-            for (List<BasicObj> part : parts) {
-                Task task = new Task(entry.getKey(), part);
-                executor.execute(task);
-            }
+            Task task = new Task(entry.getKey(), entry.getValue());
+            executor.execute(task);
         }
 
         executor.shutdown();
@@ -150,8 +143,9 @@ public class BatchTranslate {
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT *");
             sb.append("  FROM IX_POI IP");
-            sb.append(" WHERE IP.ROW_ID IN");
-            sb.append("       (SELECT LG.TB_ROW_ID FROM LOG_DETAIL LG WHERE LG.OP_TP <> 2)");
+            sb.append(" WHERE IP.PID IN");
+            sb.append("       (SELECT PID FROM day_mon_poi_915)");
+            //sb.append("       (SELECT ob_pid FROM log_detail)");
 
             String meshes = request.optString("meshes", "");
 
@@ -166,6 +160,7 @@ public class BatchTranslate {
 
             Set<String> tabNames = new HashSet<>();
             tabNames.add("IX_POI_NAME");
+            tabNames.add("IX_POI_NAME_FLAG");
             Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames,false, pids, true, true);
             Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
             ObjHisLogParser.parse(objs, logs);
@@ -279,13 +274,13 @@ public class BatchTranslate {
                     successMesh.put(meshId.toString(), list.size());
                 }
                 //successMesh.put(key, list.size());
+                logger.info(String.format("mesh %d translate success..", meshId));
             } catch (Exception e) {
                 logger.error(String.format("mesh %d translate error..", meshId));
                 failureMesh.add(meshId.toString());
                 e.fillInStackTrace();
             }
 
-            logger.info(String.format("mesh %d translate is over..", meshId));
         }
 
     }

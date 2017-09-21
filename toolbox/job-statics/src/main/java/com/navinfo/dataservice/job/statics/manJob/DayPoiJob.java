@@ -363,7 +363,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * Map<Integer, Long>
 		 * @return
 		 */
-		private ResultSetHandler numRsHandler(){
+		private ResultSetHandler<Map<Integer, Long>> numRsHandler(){
 			ResultSetHandler<Map<Integer, Long>> rsHandler = new ResultSetHandler<Map<Integer, Long>>() {
 				public Map<Integer, Long> handle(ResultSet rs) throws SQLException {
 					Map<Integer, Long> result=new HashMap<>();

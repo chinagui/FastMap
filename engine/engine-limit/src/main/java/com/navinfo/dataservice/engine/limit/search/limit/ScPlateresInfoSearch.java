@@ -4,13 +4,16 @@ import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
 import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScPlateresInfoSearch  {
 
@@ -20,7 +23,7 @@ public class ScPlateresInfoSearch  {
         this.conn = conn;
     }
 
-    public List<IRow> searchDataByCondition(JSONObject condition) throws Exception {
+    public int searchDataByCondition(JSONObject condition, List<IRow> objList) throws Exception {
 
         if(!condition.containsKey("adminArea")||!condition.containsKey("pageSize")||!condition.containsKey("pageNum")){
             throw new Exception("筛选情报参数不完善，请重新输入！");
@@ -30,17 +33,22 @@ public class ScPlateresInfoSearch  {
         int pageSize = condition.getInt("pageSize");
         int pageNum = condition.getInt("pageNum");
 
+        StringBuilder sqlstr = new StringBuilder();
+
+        sqlstr.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE = ");
+        sqlstr.append("'" + adminCode +"'");
+
+        componentSql(condition,sqlstr);
+        
         StringBuilder sql = new StringBuilder();
+        sql.append("WITH query AS (" + sqlstr + ") SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query");
+        sql.append(" WHERE rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
 
-        sql.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE = ");
-        sql.append("'" + adminCode +"'");
-
-        componentSql(condition,sql,pageSize,pageNum);
-
-        List<IRow> rows = new ArrayList<>();
+        //List<IRow> rows = new ArrayList<>();
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
+        int total = 0;
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
@@ -52,8 +60,10 @@ public class ScPlateresInfoSearch  {
                 ScPlateresInfo info = new ScPlateresInfo();
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
+                
+                total = resultSet.getInt("TOTAL_ROW_NUM");
 
-                rows.add(info);
+                objList.add(info);
             }
         } catch (Exception e) {
 
@@ -64,10 +74,10 @@ public class ScPlateresInfoSearch  {
             DBUtils.closeStatement(pstmt);
         }
 
-        return rows;
+        return total;
     }
 
-    private void componentSql(JSONObject obj,StringBuilder sql,int pageSize,int pageNum){
+    private void componentSql(JSONObject obj,StringBuilder sql){
 
         if (obj.containsKey("infoCode")) {
             String infoCode = obj.getString("infoCode");
@@ -114,7 +124,7 @@ public class ScPlateresInfoSearch  {
             }
         }
 
-        sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
+        //sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
     }
 
 }

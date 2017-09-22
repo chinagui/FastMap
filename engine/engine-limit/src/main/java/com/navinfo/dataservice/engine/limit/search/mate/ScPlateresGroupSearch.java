@@ -23,18 +23,31 @@ public class ScPlateresGroupSearch {
         this.conn = conn;
     }
 
-    public List<IRow> searchDataByCondition(JSONObject condition) throws Exception {
+    public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
 
     	if(!condition.containsKey("adminArea") && !condition.containsKey("infoCode")){
             throw new Exception("筛选GROUP参数不完善，请重新输入！");
         }
     	
-    	StringBuilder sql = new StringBuilder();
-    	sql.append("SELECT * FROM SC_PLATERES_GROUP WHERE");
-        componentSql(condition,sql);
+    	StringBuilder sqlstr = new StringBuilder();
+    	sqlstr.append("SELECT * FROM SC_PLATERES_GROUP WHERE");
+        componentSql(condition,sqlstr);
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("WITH query AS (" + sql + ")");
+        sql.append(" SELECT *,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query");
+
+        if (condition.containsKey("pageSize") && condition.containsKey("pageNum")) {
+            int pageSize = condition.getInt("pageSize");
+            int pageNum = condition.getInt("pageNum");
+
+            sql.append(" WHERE rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + "FOR UPDATE NOWAIT");
+        }
+
+        sql.append(" for update nowait");
     	
-        List<IRow> rows = new ArrayList<>();
         PreparedStatement pstmt = null;
+        int total = 0;
 
         ResultSet resultSet = null;
 
@@ -48,6 +61,8 @@ public class ScPlateresGroupSearch {
                 ScPlateresGroup group = new ScPlateresGroup();
 
                 ReflectionAttrUtils.executeResultSet(group, resultSet);
+                
+                total = resultSet.getInt("TOTAL_ROW_NUM");
 
                 rows.add(group);
             }
@@ -60,7 +75,7 @@ public class ScPlateresGroupSearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return rows;
+        return total;
     }
     
     private void componentSql(JSONObject obj,StringBuilder sql){
@@ -77,7 +92,7 @@ public class ScPlateresGroupSearch {
         if (obj.containsKey("adminArea")) {
             String admin = obj.getString("adminArea");
 
-            if (sql.toString().endsWith("WHERE")){
+            if (!sql.toString().endsWith("WHERE")){
             	sql.append(" AND");
             }
             
@@ -104,14 +119,5 @@ public class ScPlateresGroupSearch {
                 sql.append("(" + groupType + ")");
             }
         }
-
-        if (obj.containsKey("pageSize")&&obj.containsKey("pageNum")) {
-            int pageSize = obj.getInt("pageSize");
-            int pageNum = obj.getInt("pageNum");
-
-            sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
-        }
-
-        sql.append(" for update nowait");
     }
 }

@@ -24,20 +24,28 @@ public class ScPlateresRdlinkSearch {
     }
 
 
-    public List<IRow> searchDataByCondition(JSONObject condition) throws Exception {
+    public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
+    	if(condition==null||condition.isNullObject()){
+    		throw new Exception("输入信息为空，无法查询SC_PLATERES_RDLINK信息");
+    	}
+    	
+        StringBuilder sqlstr = new StringBuilder();
+        StringBuilder sql = new StringBuilder();
+        
+        int total = 0;
+        
+        sqlstr.append(" FROM SC_PLATERES_RDLINK WHERE");
+        componentSql(condition,sqlstr);
+        
+        sql.append("SELECT *, (SELECT COUNT(*) " + sqlstr + ") AS TOTAL_ROW_NUM");
+        sql.append(sqlstr);
 
-        String sql = "";
-
-//        if (isLock) {
-//            sql += " for update nowait";
-//        }
-        List<IRow> rows = new ArrayList<>();
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
 
         try {
-            pstmt = this.conn.prepareStatement(sql);
+            pstmt = this.conn.prepareStatement(sql.toString());
 
             resultSet = pstmt.executeQuery();
 
@@ -58,6 +66,32 @@ public class ScPlateresRdlinkSearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return rows;
+        return total;
     }
+    
+    private void componentSql(JSONObject obj,StringBuilder sql){
+
+        if (obj.containsKey("geoId")) {
+            String geoId = obj.getString("geoId");
+
+            if (geoId != null && !geoId.isEmpty()) {
+                sql.append(" GEOMETRY_ID = ");
+                sql.append("'" + geoId + "'");
+            }
+        }
+
+        if (obj.containsKey("linkPid")) {
+            int linkPid = obj.getInt("linkPid");
+            
+            if(!sql.toString().endsWith("WHERE")){
+            	sql.append(" AND");
+            }
+
+            if (linkPid != 0) {
+                sql.append(" LINK_PID = ");
+                sql.append(linkPid);
+            }
+        }
+    }
+
 }

@@ -183,7 +183,7 @@ public class limitController extends BaseController {
 
             json.put("check", t.getCheckLog());
 
-            json.put("pid", t.getPid());
+            json.put("Id", t.getId());
             long endRunTime = System.currentTimeMillis();
             logger.info("END EDIT RUN");
             logger.info("edit run total use time   "

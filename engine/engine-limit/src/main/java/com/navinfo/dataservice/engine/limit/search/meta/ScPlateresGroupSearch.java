@@ -9,12 +9,8 @@ import net.sf.json.JSONObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ly on 2017/9/19.
- */
 public class ScPlateresGroupSearch {
 
     private Connection conn;
@@ -22,6 +18,42 @@ public class ScPlateresGroupSearch {
     public ScPlateresGroupSearch(Connection conn) {
         this.conn = conn;
     }
+
+    public ScPlateresGroup loadById(String groupId) throws Exception {
+
+        ScPlateresGroup group = new ScPlateresGroup();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_GROUP WHERE GROUP_ID=? ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+                ReflectionAttrUtils.executeResultSet(group, resultSet);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询的ID为：" + groupId + "的" + group.tableName().toUpperCase() + "不存在");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return group;
+    }
+
+
+
 
     public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
 

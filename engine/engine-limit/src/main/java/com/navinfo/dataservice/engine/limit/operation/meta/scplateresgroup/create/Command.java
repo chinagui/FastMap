@@ -6,7 +6,6 @@ import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import net.sf.json.JSONObject;
 
-
 public class Command extends AbstractCommand {
 
     private String requester;

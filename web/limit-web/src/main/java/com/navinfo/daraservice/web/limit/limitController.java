@@ -10,8 +10,12 @@ import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
+import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -20,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,7 +33,7 @@ import java.util.List;
  */
 
 @Controller
-public class limitController  extends BaseController {
+public class limitController extends BaseController {
 
     @RequestMapping(value = "/test")
     public ModelAndView test(HttpServletRequest request) throws ServletException, IOException {
@@ -54,22 +59,22 @@ public class limitController  extends BaseController {
 
             SearchProcess p = new SearchProcess(conn);
 
-            List<? extends IRow> objList = p.searchMetaDataByCondition(
-                    LimitObjType.valueOf(objType), condition);
+            List<IRow> objList = new ArrayList<>();
+            int count = p.searchMetaDataByCondition(
+                    LimitObjType.valueOf(objType), condition, objList);
 
+            JSONObject result = new JSONObject();
             JSONArray array = new JSONArray();
 
-            if (objList != null) {
-
-                for (IRow obj : objList) {
-                    JSONObject json = obj.Serialize(ObjLevel.FULL);
-                    json.put("geoLiveType", objType);
-                    array.add(json);
-                }
-                return new ModelAndView("jsonView", success(array));
-            } else {
-                return new ModelAndView("jsonView", success());
+            for (IRow obj : objList) {
+                JSONObject json = obj.Serialize(ObjLevel.FULL);
+                json.put("geoLiveType", objType);
+                array.add(json);
             }
+
+            result.put("total", count);
+            result.put("data", array);
+            return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
 
             logger.error(e.getMessage(), e);
@@ -105,21 +110,24 @@ public class limitController  extends BaseController {
 
             SearchProcess p = new SearchProcess(conn);
 
-            List<? extends IRow> objList = p.searchLimitDataByCondition(
-                    LimitObjType.valueOf(objType), condition);
+            List<IRow> objList = new ArrayList<>();
 
+            int count = p.searchLimitDataByCondition(
+                    LimitObjType.valueOf(objType), condition, objList);
+
+            JSONObject result = new JSONObject();
             JSONArray array = new JSONArray();
 
-            if (objList != null) {
-                for (IRow obj : objList) {
-                    JSONObject json = obj.Serialize(ObjLevel.FULL);
-                    json.put("geoLiveType", objType);
-                    array.add(json);
-                }
-                return new ModelAndView("jsonView", success(array));
-            } else {
-                return new ModelAndView("jsonView", success());
+            for (IRow obj : objList) {
+                JSONObject json = obj.Serialize(ObjLevel.FULL);
+                json.put("geoLiveType", objType);
+                array.add(json);
             }
+
+            result.put("total", count);
+            result.put("data", array);
+
+            return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
 
             logger.error(e.getMessage(), e);
@@ -135,6 +143,7 @@ public class limitController  extends BaseController {
             }
         }
     }
+
     @RequestMapping(value = "/run")
     public ModelAndView run(HttpServletRequest request)
             throws ServletException, IOException {
@@ -194,5 +203,82 @@ public class limitController  extends BaseController {
 
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
+    }
+
+    @RequestMapping(value = "/getRegionIdByAdmin")
+    public ModelAndView getRegionIdByAdiminArea(HttpServletRequest request) throws Exception {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            if (jsonReq == null || !jsonReq.containsKey("adminCode")) {
+                throw new Exception("行政区划编码为空，无法获取相应大区库！");
+            }
+
+            String adminCode = jsonReq.getString("adminCode");
+
+            conn = DBConnector.getInstance().getManConnection();
+
+            QueryRunner run = new QueryRunner();
+
+            String sql = "SELECT A.DAILY_DB_ID FROM REGION A,CP_REGION_PROVINCE B WHERE A.REGION_ID = B.REGION_ID AND B.ADMINCODE = '" + adminCode + "'";
+
+            int dbId = run.queryForInt(conn, sql);
+
+            return new ModelAndView("jsonView", success(dbId));
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    @RequestMapping(value = "/searchRdLinkByName")
+    public ModelAndView getRdLinkByName(HttpServletRequest request) throws Exception {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            if (jsonReq == null || !jsonReq.containsKey("dbId") || !jsonReq.containsKey("type") || !jsonReq.containsKey("condition")) {
+                throw new Exception("输入不完善，无法查询道路link！");
+            }
+
+            int dbId = jsonReq.getInt("dbId");
+
+            JSONObject condition = jsonReq.getJSONObject("condition");
+
+            conn = DBConnector.getInstance().getConnectionById(dbId);
+
+//            RdLinkSearch p = new RdLinkSearch(conn);
+//
+//            JSONObject result = p.searchDataByCondition(condition);
+//
+//            return new ModelAndView("jsonView", success(result));
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public ModelAndView getRdLinkByPid(HttpServletRequest request) throws Exception {
+        return new ModelAndView("jsonView", success());
+
     }
 }

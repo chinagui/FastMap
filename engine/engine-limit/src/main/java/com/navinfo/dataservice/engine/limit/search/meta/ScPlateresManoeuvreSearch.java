@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.engine.limit.search.meta;
 
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
@@ -24,20 +25,25 @@ public class ScPlateresManoeuvreSearch {
     }
 
 
-    public List<IRow> searchDataByCondition(JSONObject condition) throws Exception {
+    public int searchDataByCondition(JSONObject condition, List<IRow> rows) throws Exception {
 
-        String sql = "";
+    	if(!condition.containsKey("groupId")){
+    		throw new Exception("为给定GROUP_ID,无法查询SC_PLATERES_MANOEUVRE信息");
+    	}
+    	
+    	String groupId = condition.getString("groupId");
+        StringBuilder sql = new StringBuilder();
+        
+        sql.append("SELECT *, (SELECT COUNT(1) FROM SC_PLATERES_MANOEUVRE) AS TOTAL_NUM_ROW FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ");
+        sql.append("'" + groupId + "'");        
 
-//        if (isLock) {
-//            sql += " for update nowait";
-//        }
-        List<IRow> rows = new ArrayList<>();
+        int total = 0;
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
 
         try {
-            pstmt = this.conn.prepareStatement(sql);
+            pstmt = this.conn.prepareStatement(sql.toString());
 
             resultSet = pstmt.executeQuery();
 
@@ -58,6 +64,6 @@ public class ScPlateresManoeuvreSearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return rows;
+        return total;
     }
 }

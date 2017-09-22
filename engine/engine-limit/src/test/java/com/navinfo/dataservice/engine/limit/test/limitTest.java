@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.limit.test;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -46,8 +47,10 @@ public class limitTest extends ClassPathXmlAppContextInit{
 
             SearchProcess p = new SearchProcess(conn);
 
-            List<? extends IRow> objList = p.searchLimitDataByCondition(
-                    LimitObjType.valueOf(objType), condition);
+            List<IRow> objList = new ArrayList<>();
+            
+            int total = p.searchLimitDataByCondition(
+                    LimitObjType.valueOf(objType), condition,objList);
 
             JSONArray array = new JSONArray();
 

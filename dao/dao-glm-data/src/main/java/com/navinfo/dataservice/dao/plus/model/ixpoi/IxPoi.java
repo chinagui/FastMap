@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.AbstractIx;
 * @Description: TODO
 */
 public class IxPoi extends AbstractIx {
+	protected long linkPid=0;
 	protected String kindCode ;
 	protected int side ;
 	protected long nameGroupid ;
@@ -79,7 +80,14 @@ public class IxPoi extends AbstractIx {
 	public IxPoi (long objPid){
 		super(objPid);
 	}
-	
+	public long getLinkPid() {
+		return linkPid;
+	}
+	public void setLinkPid(long linkPid) {
+		if(this.checkValue("LINK_PID",this.linkPid,linkPid)){
+			this.linkPid = linkPid;
+		}
+	}
 	public String getKindCode() {
 		return kindCode;
 	}

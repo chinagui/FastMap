@@ -11,6 +11,10 @@ import com.vividsolutions.jts.geom.Point;
  * @author xiaoxiaowen4127
  * @date 2016年11月4日
  * @Description: AbstractIx.java
+ * 适用于IX_POI,IX_POINTADDRESS
+ * @author zhangpengpeng
+ * @date 2017年9月22日
+ * @Description: 将linkPid,get及set方法移至IxPoi中，点门牌IxPointaddress也继承此类
  */
 public abstract class AbstractIx extends BasicRow {
 	
@@ -22,7 +26,6 @@ public abstract class AbstractIx extends BasicRow {
 	protected Geometry geometry;
 	protected double xGuide=0;
 	protected double yGuide=0;
-	protected long linkPid=0;
 	protected int meshId;
 	
 	
@@ -67,14 +70,6 @@ public abstract class AbstractIx extends BasicRow {
 	public void setYGuide(double yGuide) {
 		if(this.checkValue("Y_GUIDE",this.yGuide,yGuide)){
 			this.yGuide = yGuide;
-		}
-	}
-	public long getLinkPid() {
-		return linkPid;
-	}
-	public void setLinkPid(long linkPid) {
-		if(this.checkValue("LINK_PID",this.linkPid,linkPid)){
-			this.linkPid = linkPid;
 		}
 	}
 	public int getMeshId() {

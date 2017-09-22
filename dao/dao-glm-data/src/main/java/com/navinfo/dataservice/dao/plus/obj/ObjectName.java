@@ -14,4 +14,5 @@ public class ObjectName {
 	public static final String AD_FACE="AD_FACE";
 	public static final String AD_LINK="AD_LINK";
 	public static final String AD_NODE="AD_NODE";
+	public static final String IX_POINTADDRESS = "IX_POINTADDRESS";
 }
